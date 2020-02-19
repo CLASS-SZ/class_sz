@@ -1,0 +1,15 @@
+#Boris Bolliet:
+#Additional function used for the SZ power spectrum likelihood.
+#Open 'cobaya/theories/classy/classy.py' and paste the following, bellow the function
+#
+#    def get_Cl(self, ell_factor=False, units="muK2"):
+#         -------------------------------------------
+#          return cls
+#
+def get_Cl_sz(self):
+    params = self.classy.get_params_sz()
+    ell = self.classy.ell_sz()
+    cls = self.classy.cl_sz()
+    trispectrum = self.classy.tllprime_sz()
+    R = [params,ell,cls,trispectrum]
+    return R

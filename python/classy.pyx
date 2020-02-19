@@ -12,6 +12,7 @@ extract cosmological parameters.
 
 """
 from math import exp,log
+from collections import defaultdict #BB: added for class_sz
 import numpy as np
 cimport numpy as np
 from libc.stdlib cimport *
@@ -94,6 +95,8 @@ cdef class Class:
     cdef spectra sp
     cdef output op
     cdef lensing le
+    cdef tszspectrum tsz  #BB: added for class_sz
+    cdef szcount csz  #BB: added for class_sz
     cdef file_content fc
 
     cpdef int computed # Flag to see if classy has already computed with the given pars
@@ -118,9 +121,14 @@ cdef class Class:
         def __get__(self):
             return self.nl.method
 
+#    def set_default(self):
+#        _pars = {
+#            "output":"tCl mPk",}
+#        self.set(**_pars)
+# BB: modified for class_sz
     def set_default(self):
         _pars = {
-            "output":"tCl mPk",}
+            "output":"tSZ",}
         self.set(**_pars)
 
     def __cinit__(self, default=False):
@@ -201,6 +209,10 @@ cdef class Class:
     def struct_cleanup(self):
         if(self.allocated != True):
           return
+        if "szcount" in self.ncp: #BB: added for class_sz
+            szcount_free(&self.csz)
+        if "szpowerspectrum" in self.ncp:  #BB: added for class_sz
+            szpowerspectrum_free(&self.tsz)
         if "lensing" in self.ncp:
             lensing_free(&self.le)
         if "spectra" in self.ncp:
@@ -239,9 +251,15 @@ cdef class Class:
             ['lensing']
 
         """
-        if "distortions" in level:
+        if "szcount" in level:  #BB: added for class_sz
+            if "szpowerspectrum" not in level:
+              level.append("szpowerspectrum")
+        if "szpowerspectrum" in level:  #BB: added for class_sz
             if "lensing" not in level:
-                level.append("lensing")
+              level.append("lensing")
+        #if "distortions" in level:
+        #    if "lensing" not in level:
+        #        level.append("lensing")
         if "lensing" in level:
             if "spectra" not in level:
                 level.append("spectra")
@@ -290,9 +308,10 @@ cdef class Class:
             return True
         return False
 
-    def compute(self, level=["lensing"]):
+    def compute(self, level=["szcount"]):
         """
-        compute(level=["lensing"])
+        #compute(level=["lensing"])
+        compute(level=["szcount"])
 
         Main function, execute all the _init methods for all desired modules.
         This is called in MontePython, and this ensures that the Class instance
@@ -352,7 +371,7 @@ cdef class Class:
         if "input" in level:
             if input_init(&self.fc, &self.pr, &self.ba, &self.th,
                           &self.pt, &self.tr, &self.pm, &self.sp,
-                          &self.nl, &self.le, &self.op, errmsg) == _FAILURE_:
+                          &self.nl, &self.le, &self.tsz, &self.csz, &self.op, errmsg) == _FAILURE_:
                 raise CosmoSevereError(errmsg)
             self.ncp.add("input")
             # This part is done to list all the unread parameters, for debugging
@@ -425,6 +444,24 @@ cdef class Class:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.le.error_message)
             self.ncp.add("lensing")
+
+
+        if "szpowerspectrum" in level:
+            if szpowerspectrum_init(&(self.ba), &(self.nl), &(self.pm),
+            &(self.tsz)) == _FAILURE_:
+                self.struct_cleanup()
+                raise CosmoComputationError(self.tsz.error_message)
+            self.ncp.add("szpowerspectrum")
+
+
+        if "szcount" in level:
+            if szcount_init(&(self.ba), &(self.nl), &(self.pm),
+            &(self.tsz), &(self.csz)) == _FAILURE_:
+                self.struct_cleanup()
+                raise CosmoComputationError(self.tsz.error_message)
+            self.ncp.add("szcount")
+
+
 
         self.computed = True
 
@@ -1367,6 +1404,210 @@ cdef class Class:
         Return the sum of Omega0 for all non-relativistic components
         """
         return self.ba.Omega0_m
+
+    def ell_sz(self):
+        """
+        (SZ) Return the multipole table
+
+        """
+        l = {}
+
+        for index in range(self.tsz.nlSZ):
+            l[index] = self.tsz.ell[index]
+        return l
+
+    def cl_sz(self):
+        """
+        (SZ) Return the C_l
+        """
+        cl = {}
+
+        for index in range(self.tsz.nlSZ):
+            cl[index] = self.tsz.cl_sz[index]
+
+        return cl
+
+    def get_params_sz(self):
+        """
+        (SZ) Return the current parameters
+        """
+        return self._pars
+
+
+    def tllprime_sz(self):
+        """
+        (SZ) Return the trispectrum
+        """
+        T_ll = defaultdict(list)
+        cdef int index_l,index_l_prime
+        for index_l in range(self.tsz.nlSZ):
+            for index_l_prime in range(index_l+1):
+                T_ll[index_l].append(self.tsz.tllprime_sz[index_l][index_l_prime])
+        return T_ll
+
+
+    def A_rs(self):
+        """
+        (SZ) Return the foreground A_rs coefficient
+        """
+        return self.tsz.A_rs
+
+    def B_sz(self):
+        """
+        (SZ) Return the mass bias
+        """
+        return self.tsz.HSEbias
+
+    def ystar(self):
+        """
+        (SZ) Return ystar
+        """
+        return self.csz.ystar
+
+
+    def alpha(self):
+        """
+        (SZ) Return alpha
+        """
+        return self.csz.alpha
+
+    def sigmaM(self):
+        """
+        (SZ) Return sigmaM
+        """
+        return self.csz.sigmaM
+
+
+    def sigma8_Pcb(self):
+        return self.tsz.sigma8_Pcb
+
+    def A_cib(self):
+        """
+        (SZ) Return the foreground A_cib coefficient
+        """
+        return self.tsz.A_cib
+
+
+    def A_ir(self):
+        """
+        (SZ) Return the foreground A_ir coefficient
+        """
+        return self.tsz.A_ir
+
+
+    def A_cn(self):
+        """
+        (SZ) Return the correlated noise A_cn coefficient
+        """
+        return self.tsz.A_cn
+
+
+
+    def redshift_count(self):
+        """
+        (SZ) Return the redshift table
+
+        """
+        redshift = {}
+
+        for index in range(self.csz.nzSZ):
+            redshift[index] = self.csz.redshift[index]
+
+        return redshift
+
+    def dndz_count(self):
+        """
+        (SZ) Return the dndz
+        """
+        dndz = {}
+
+        for index in range(self.csz.nzSZ):
+            dndz[index] = self.csz.dndz[index]
+
+        return dndz
+
+
+    def dndmdz_count(self):
+        """
+        (SZ) Return the dndmdz
+        """
+        dndmdz =  defaultdict(list)
+        cdef int index_m,index_z
+
+        for index_z in range(self.csz.nzSZ):
+             for index_m in range(self.csz.size_logM):
+                dndmdz[index_m].append(self.csz.dndmdz[index_m][index_z])
+        return dndmdz
+
+
+    def dndzdy_theoretical(self):
+        """
+        (SZ) Return the dndzdy theoretical
+        """
+        dndzdy =  defaultdict(list)
+        cdef int index_y,index_z
+
+        for index_z in range(self.csz.Nbins_z):
+            for index_y in range(self.csz.Nbins_y +1):
+                dndzdy[index_z].append(self.csz.dNdzdy_theoretical[index_z][index_y])
+        return dndzdy
+
+
+
+    def temp_0_theoretical(self):
+        """
+        (SZ) Return the temp_0 theoretical
+        """
+        dndzdy =  defaultdict(list)
+        cdef int index_y,index_z
+
+        for index_z in range(self.csz.Nbins_z):
+            for index_y in range(self.csz.Nbins_y +1):
+                dndzdy[index_z].append(self.csz.temp_0_theoretical[index_z][index_y])
+        return dndzdy
+
+
+    def temp_1_theoretical(self):
+        """
+        (SZ) Return the temp_1 theoretical
+        """
+        dndzdy =  defaultdict(list)
+        cdef int index_y,index_z
+
+        for index_z in range(self.csz.Nbins_z):
+            for index_y in range(self.csz.Nbins_y +1):
+                dndzdy[index_z].append(self.csz.temp_1_theoretical[index_z][index_y])
+        return dndzdy
+
+
+
+    def dvdz_count(self):
+        """
+        (SZ) Return the dvdz
+        """
+        dvdz = {}
+
+        for index in range(self.csz.nzSZ):
+            dvdz[index] = self.csz.dvdz[index]
+
+        return dvdz
+
+    def logM_at_z_count(self):
+        """
+        (SZ) Return dndlnM for a given redshift
+        """
+        logM_at_z = {}
+
+        for index in range(self.csz.size_logM):
+            logM_at_z[index] = self.csz.logM_at_z[index]
+
+        return logM_at_z
+
+    def rho_m_at_z_count(self):
+        """
+        (SZ) Return mean density at the given redshift
+        """
+        return self.csz.rho_m_at_z
 
     def get_background(self):
         """

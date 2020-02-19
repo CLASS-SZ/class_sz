@@ -619,7 +619,7 @@ int nonlinear_pk_at_k_and_z(
 int nonlinear_pks_at_k_and_z(
                              struct background * pba,
                              struct primordial * ppm,
-                             struct nonlinear *pnl,
+                             struct nonlinear * pnl,
                              enum pk_outputs pk_output,
                              double k,
                              double z,
@@ -1141,6 +1141,19 @@ int nonlinear_init(
                    struct nonlinear *pnl
                    ) {
 
+  //BB: added for class_sz
+
+  pnl->ln_k_size_for_tSZ = (int)(log(pnl->k_max_for_pk_in_tSZ
+                                     /pnl->k_min_for_pk_in_tSZ)
+                                 /log(10.)*pnl->k_per_decade_for_tSZ) + 2;
+
+  class_alloc(pnl->ln_k_for_tSZ,pnl->ln_k_size_for_tSZ*sizeof(double),pnl->error_message);
+  int i;
+  for (i=0; i<pnl->ln_k_size_for_tSZ; i++)
+      pnl->ln_k_for_tSZ[i]=log(pnl->k_min_for_pk_in_tSZ)+i*log(10.)/pnl->k_per_decade_for_tSZ;
+
+  //end of block
+
   int index_ncdm;
   int index_k;
   int index_tau;
@@ -1638,6 +1651,8 @@ int nonlinear_free(
     free(pnl->pk_eq_ddw_and_ddOmega);
   }
 
+  free(pnl->ln_k_for_tSZ); //BB: added for class_sz
+
   return _SUCCESS_;
 }
 
@@ -1685,6 +1700,8 @@ int nonlinear_indices(
   else {
     pnl->has_pk_cb = _FALSE_;
   }
+
+  pnl->has_pk_cb = _TRUE_; //BB: added for class_sz
 
   index_pk = 0;
   class_define_index(pnl->index_pk_cb, pnl->has_pk_cb, index_pk,1);

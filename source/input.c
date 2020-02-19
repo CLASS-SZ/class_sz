@@ -26,6 +26,8 @@ int input_init_from_arguments(
                               struct spectra *psp,
                               struct nonlinear * pnl,
                               struct lensing *ple,
+                              struct tszspectrum *ptsz, //BB: added for class_sz
+                              struct szcount *pcsz, //BB: added for class_sz
                               struct output *pop,
                               ErrorMsg errmsg
                               ) {
@@ -173,6 +175,8 @@ int input_init_from_arguments(
                         psp,
                         pnl,
                         ple,
+                        ptsz, //BB: added for class_sz
+                        pcsz, //BB: added for class_sz
                         pop,
                         errmsg),
              errmsg,
@@ -202,6 +206,8 @@ int input_init(
                struct spectra *psp,
                struct nonlinear * pnl,
                struct lensing *ple,
+               struct tszspectrum *ptsz, //BB: added for class_sz
+               struct szcount *pcsz, //BB: added for class_sz
                struct output *pop,
                ErrorMsg errmsg
                ) {
@@ -461,6 +467,8 @@ int input_init(
                                      psp,
                                      pnl,
                                      ple,
+                                     ptsz, //BB: added for class_sz
+                                     pcsz, //BB: added for class_sz
                                      pop,
                                      errmsg),
                errmsg,
@@ -500,6 +508,8 @@ int input_init(
                                      psp,
                                      pnl,
                                      ple,
+                                     ptsz, //BB: added for class_sz
+                                     pcsz, //BB: added for class_sz
                                      pop,
                                      errmsg),
                errmsg,
@@ -607,6 +617,8 @@ int input_read_parameters(
                           struct spectra *psp,
                           struct nonlinear * pnl,
                           struct lensing *ple,
+                          struct tszspectrum *ptsz,
+                          struct szcount *pcsz,
                           struct output *pop,
                           ErrorMsg errmsg
                           ) {
@@ -665,6 +677,8 @@ int input_read_parameters(
                                   psp,
                                   pnl,
                                   ple,
+                                  ptsz, //BB: added for class_sz
+                                  pcsz, //BB: added for class_sz
                                   pop),
              errmsg,
              errmsg);
@@ -694,6 +708,7 @@ int input_read_parameters(
       ppt->gauge = synchronous;
     }
   }
+
 
   /** (a) background parameters */
 
@@ -1649,6 +1664,382 @@ int input_read_parameters(
         }*/
 
     }
+
+      /** (sz) SZ parameters */
+      //BB: read SZ parameters from ini file
+      class_read_int("nlSZ",ptsz->nlSZ);
+
+      class_read_int("which_ps_SZ",ptsz->which_ps_sz);
+      if(ptsz->which_ps_sz == 1 || ptsz->which_ps_sz == 2 )
+        ptsz->has_completeness_for_ps_SZ = 1;
+      //  log(ptsz->ell_max_mock) - log(ptsz->ell_min_mock))/ptsz->dlogell
+      class_read_double("ell_max_mock",ptsz->ell_max_mock);
+      class_read_double("ell_min_mock",ptsz->ell_min_mock);
+      class_read_double("dlogell",ptsz->dlogell);
+
+
+
+      //Redshift limits for the integration
+      class_read_double("z1SZ",ptsz->z1SZ);
+      class_read_double("z2SZ",ptsz->z2SZ);
+
+
+      //Array size
+      class_read_int("n_arraySZ",ptsz->n_arraySZ);//number of z in the interpolation for sigma
+      class_read_int("n_arraySZ_for_integral",ptsz->n_arraySZ_for_integral);//number of z in the integration
+
+      //mass limits: h^-1 Msun
+      class_read_double("M1SZ",ptsz->M1SZ);
+      class_read_double("M2SZ",ptsz->M2SZ);
+
+      //Pressure profile is considered between x_in and x_out
+      class_read_double("x_inSZ",ptsz->x_inSZ);
+      class_read_double("x_outSZ",ptsz->x_outSZ);
+
+      class_read_double("delta_alpha",ptsz->delta_alpha);
+      class_read_double("alpha_p",ptsz->alpha_p);
+
+      //Hydrostatic Equilibrium Mass Bias, Piffaretti & Valdarnini [arXiv:0808.1111]
+
+      class_read_double("HSEbias",ptsz->HSEbias);
+      class_read_double("Ap",ptsz->Ap);
+      class_read_double("alpha_b",ptsz->alpha_b);
+      class_read_int("mass_dependent_bias",ptsz->mass_dependent_bias);
+
+      class_read_int("experiment",ptsz->experiment);
+
+      class_read_int("has_completeness_for_cc",pcsz->has_completeness);
+      class_read_int("mass_range",pcsz->mass_range);
+      class_read_double("ystar",pcsz->ystar);
+      class_read_double("alpha",pcsz->alpha);
+      class_read_double("sigmaM",pcsz->sigmaM);
+
+      //For the computation of sigma2
+      class_read_int("ndimSZ",ptsz->ndimSZ);
+      class_read_double("logR1SZ",ptsz->logR1SZ); // 0.0034Mpc/h, 1.8e4  solar mass
+      class_read_double("logR2SZ",ptsz->logR2SZ); // 54.9Mpc/h, 7.5e16 solar mass
+
+      class_read_double("delta_cSZ",ptsz->delta_cSZ);
+
+      //Multplicity function Tinker 2010
+
+      class_read_double("alphaSZ",ptsz->alphaSZ);
+      class_read_double("beta0SZ",ptsz->beta0SZ);
+      class_read_double("gamma0SZ",ptsz->gamma0SZ);
+
+      class_read_double("phi0SZ",ptsz->phi0SZ);
+      class_read_double("eta0SZ",ptsz->eta0SZ);
+
+      //Multplicity function Bocquet 2015
+
+      class_read_double("Ap0",ptsz->Ap0);
+      class_read_double("a0",ptsz->a0);
+      class_read_double("b0",ptsz->b0);
+      class_read_double("c0",ptsz->c0);
+
+      //Precision Parameters For qromb_sz_integrand for the pressure profile
+      class_read_double("K",ptsz->K);
+      class_read_double("JMAX",ptsz->JMAX);
+      class_read_double("EPS",ptsz->EPS);
+
+      //Precision Parameters For qromb_sz_sigma: NOT USED anymore
+      class_read_double("K_sigma",ptsz->K_sigma);
+      class_read_double("JMAX_sigma",ptsz->JMAX_sigma);
+      class_read_double("EPS_sigma",ptsz->EPS_sigma);
+
+      class_read_double("redshift_for_dndm",pcsz->redshift_for_dndm);
+      class_read_double("size_logM_for_dndm",pcsz->size_logM);
+
+
+
+      //Foreground Nuisance parameters
+      class_read_double("A_cib",ptsz->A_cib);
+      class_read_double("A_rs",ptsz->A_rs);
+      class_read_double("A_ir",ptsz->A_ir);
+      class_read_double("A_cn",ptsz->A_cn);
+
+
+      class_read_double("k_per_decade_for_tSZ",pnl->k_per_decade_for_tSZ);
+      class_read_double("k_min_for_pk_in_tSZ",pnl->k_min_for_pk_in_tSZ);
+      class_read_double("k_max_for_pk_in_tSZ",pnl->k_max_for_pk_in_tSZ);
+
+
+      //BB: read the quantities to be computed by class_sz
+      class_call(parser_read_string(pfc,"output",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+
+      if ((strstr(string1,"tSZ") != NULL) || (strstr(string1,"tSZCl") != NULL) || (strstr(string1,"tszCL") != NULL)) {
+        ptsz->has_sz_ps =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+
+      }
+
+      if ((strstr(string1,"tSZ_2h") != NULL) ) {
+        ptsz->has_sz_2halo =_TRUE_;
+        ptsz->has_sz_ps =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"tSZ_te_y_y") != NULL) ) {
+        ptsz->has_sz_te_y_y =_TRUE_;
+        ptsz->has_sz_ps =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"tSZ_cov_N_Cl") != NULL) ) {
+        ptsz->has_sz_cov_N_Cl =_TRUE_;
+        ptsz->has_sz_ps =_TRUE_;
+        ptsz->has_sz_trispec =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+
+      if ((strstr(string1,"tSZ_Trispectrum") != NULL) ) {
+        ptsz->has_sz_trispec =_TRUE_;
+        ptsz->has_sz_ps =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"hmf") != NULL) ) {
+        ptsz->has_hmf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+      if ((strstr(string1,"mean_y") != NULL) ) {
+        ptsz->has_mean_y =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"SZ_counts") != NULL) ) {
+        pcsz->has_sz_counts =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+
+      }
+
+      /* multipoles SZ */
+      class_call(parser_read_string(pfc,"multipoles_sz",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+     if (flag1 == _TRUE_) {
+        if ((strstr(string1,"DKS") != NULL))
+          ptsz->ell_sz=0;
+        else  if ((strstr(string1,"P15") != NULL))
+          ptsz->ell_sz=1;
+        else  if ((strstr(string1,"KS02") != NULL))
+          ptsz->ell_sz=2;
+        else  if ((strstr(string1,"low-ell") != NULL))
+            ptsz->ell_sz=3;
+        else  if ((strstr(string1,"ell_mock") != NULL))
+            ptsz->ell_sz=4;
+     }
+
+
+
+
+
+      //units for tSZ spectrum
+      class_call(parser_read_string(pfc,"units for tSZ spectrum",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"muK2") != NULL))
+          ptsz->exponent_unit=0.;
+        else  if ((strstr(string1,"dimensionless") != NULL))
+          ptsz->exponent_unit=2.;
+      }
+
+      /* concentration parameter SZ */
+      class_call(parser_read_string(pfc,"concentration parameter",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+     if (flag1 == _TRUE_) {
+        if ((strstr(string1,"D08") != NULL))
+          ptsz->concentration_parameter=0;
+        else  if ((strstr(string1,"S00") != NULL))
+          ptsz->concentration_parameter=1;
+        else  if ((strstr(string1,"K10") != NULL))
+          ptsz->concentration_parameter=2;
+        else  if ((strstr(string1,"SC14") != NULL))
+          ptsz->concentration_parameter=3;
+        else  if ((strstr(string1,"Z09") != NULL))
+          ptsz->concentration_parameter=4;
+          }
+
+
+      /* pressure profile SZ */
+      class_call(parser_read_string(pfc,"pressure profile",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+     if (flag1 == _TRUE_) {
+        if ((strstr(string1,"P13") != NULL))
+          ptsz->pressure_profile=0;
+        else  if ((strstr(string1,"A10") != NULL))
+          ptsz->pressure_profile=2;
+       else  if ((strstr(string1,"Custom. GNFW") != NULL))
+          ptsz->pressure_profile=3;
+       else  if ((strstr(string1,"B12") != NULL))
+         ptsz->pressure_profile=4;
+          }
+
+      /* temperature mass relation SZ */
+      class_call(parser_read_string(pfc,"temperature mass relation",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"standard") != NULL))
+          ptsz->temperature_mass_relation=0;
+        else  if ((strstr(string1,"lee et al 2019") != NULL))
+          ptsz->temperature_mass_relation=1;
+      }
+
+        class_call(parser_read_string(pfc,"effective_temperature",&string1,&flag1,errmsg),
+                   errmsg,
+                   errmsg);
+        if (flag1 == _TRUE_) {
+            if ((strstr(string1,"YES") != NULL))
+                ptsz->effective_temperature=1;
+            else  if ((strstr(string1,"NO") != NULL))
+                ptsz->effective_temperature=0;
+            else  if ((strstr(string1,"MASS") != NULL))
+              ptsz->effective_temperature=2;
+
+        }
+
+    /* HMF prescription for massive neutrinos SZ */
+      class_call(parser_read_string(pfc,"HMF_prescription_NCDM",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+     if (flag1 == _TRUE_) {
+        if ((strstr(string1,"Matter") != NULL))
+          ptsz->HMF_prescription_NCDM=0;
+        else  if ((strstr(string1,"CDM") != NULL))
+          ptsz->HMF_prescription_NCDM=1;
+              else  if ((strstr(string1,"No-pres") != NULL))
+          ptsz->HMF_prescription_NCDM=2;
+
+            }
+
+
+
+
+    if (ptsz->pressure_profile==0){
+    //Planck pressure profile 2013, Table 1 of Planck  [arXiv:1207.4061].
+     ptsz->P0GNFW = 6.41;
+     ptsz->c500 = 1.81;
+     ptsz->gammaGNFW = 0.31;
+     ptsz->alphaGNFW = 1.33;
+     ptsz->betaGNFW = 4.13;
+    }
+
+    else if (ptsz->pressure_profile==2){
+    //Arnaud et al pressure profile 2010, Eq B2 of [arXiv:0910.1234].
+     ptsz->P0GNFW = 8.130;
+     ptsz->c500 = 1.156;
+     ptsz->gammaGNFW = 0.3292;
+     ptsz->alphaGNFW = 1.0620;
+     ptsz->betaGNFW = 5.4807;
+    }
+
+
+
+
+     else if (ptsz->pressure_profile==3){
+       //Custom GNFW pressure profile
+       class_read_double("P0GNFW",ptsz->P0GNFW);
+       class_read_double("c500",ptsz->c500);
+       class_read_double("gammaGNFW",ptsz->gammaGNFW);
+       class_read_double("alphaGNFW",ptsz->alphaGNFW);
+       class_read_double("betaGNFW",ptsz->betaGNFW);
+     }
+
+
+     else if (ptsz->pressure_profile==4){
+       //Battaglia et al pressure profile [arXiv:1109.3711]
+
+       ptsz->P0_B12 = 18.1;
+       ptsz->xc_B12 = 0.497;
+       ptsz->beta_B12 = 4.35;
+
+       ptsz->alpha_m_P0_B12 = 0.154;
+       ptsz->alpha_m_xc_B12 = -0.00865;
+       ptsz->alpha_m_beta_B12 = 0.0393;
+
+       ptsz->alpha_z_P0_B12 = -0.758;
+       ptsz->alpha_z_xc_B12 = 0.731;
+       ptsz->alpha_z_beta_B12 = 0.415;
+
+     }
+
+
+      /* mass function SZ */
+      class_call(parser_read_string(pfc,"mass function",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+     if (flag1 == _TRUE_) {
+        if ((strstr(string1,"T10") != NULL))
+          ptsz->MF=1;
+        else  if ((strstr(string1,"B15") != NULL))
+          ptsz->MF=2;
+        else  if ((strstr(string1,"J01") != NULL))
+          ptsz->MF=3;
+        else  if ((strstr(string1,"T08") != NULL))
+          ptsz->MF=4;
+        else  if ((strstr(string1,"M500") != NULL))
+          ptsz->MF=5;
+        else  if ((strstr(string1,"M1600") != NULL))
+          ptsz->MF=6;
+        else  if ((strstr(string1,"B16M500c") != NULL))
+          ptsz->MF=7;
+     }
+
+      class_read_string("path_to_class",ptsz->path_to_class);
+      class_read_string("root",ptsz->root);
+
+      class_read_int("sz_verbose",ptsz->sz_verbose);
+
+      class_call(parser_read_string(pfc,"write sz",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+
+       if ((flag1 == _TRUE_) && ((strstr(string1,"y") != NULL) || (strstr(string1,"Y") != NULL))) {
+
+         ptsz->write_sz = _TRUE_;
+
+       }
+
+
 
     if ((strstr(string1,"mTk") != NULL) || (strstr(string1,"MTk") != NULL) || (strstr(string1,"MTK") != NULL) ||
         (strstr(string1,"dTk") != NULL) || (strstr(string1,"DTk") != NULL) || (strstr(string1,"DTK") != NULL)) {
@@ -3135,6 +3526,8 @@ int input_default_params(
                          struct spectra *psp,
                          struct nonlinear * pnl,
                          struct lensing *ple,
+                         struct tszspectrum *ptsz, //BB: added for class_sz
+                         struct szcount *pcsz, //BB: added for class_sz
                          struct output *pop
                          ) {
 
@@ -3294,7 +3687,7 @@ int input_default_params(
   ppt->l_vector_max=500;
   ppt->l_tensor_max=500;
   ppt->l_lss_max=300;
-  ppt->k_max_for_pk=1.;
+  ppt->k_max_for_pk=10.; //BB: changed in class_sz; was set to 1 in original class version, now 10. [TBC]
 
   ppt->gauge=synchronous;
 
@@ -3448,6 +3841,147 @@ int input_default_params(
   pnl->nonlinear_verbose = 0;
   ple->lensing_verbose = 0;
   pop->output_verbose = 0;
+
+  //BB: SZ parameters default values
+  ptsz->write_sz = _FALSE_;
+  ptsz->ell_sz = 1;
+  ptsz->nlSZ = 10;
+  ptsz->concentration_parameter=0;
+  ptsz->pressure_profile=0;
+  ptsz->effective_temperature=0;
+
+
+  pcsz->redshift_for_dndm = 1.e-5;
+
+
+  ptsz->Tcmb_gNU = pba->T_cmb*((_h_P_*150.0e9/(_k_B_*pba->T_cmb))*(1./tanh((_h_P_*150.0e9/(_k_B_*pba->T_cmb))/2.))-4.);
+
+
+
+
+  ptsz->has_completeness_for_ps_SZ = 0;
+  ptsz->which_ps_sz = 0; //0: total, 1: resolved, 2: unresolved
+  //Redshift limits for the integration
+  ptsz->z1SZ = 1.e-5;
+  ptsz->z2SZ = 4.;
+
+  //Array size
+  ptsz->n_arraySZ = 30;//number of z in the sigma Interpolation
+
+  ptsz->n_arraySZ_for_integral = 600; //used in redshift integral
+
+  //mass limits: h^-1 Msun
+  ptsz->M1SZ = 5.e11;
+  ptsz->M2SZ = 5.e15;
+
+  //Set pressure profile to P13
+  ptsz->pressure_profile=0;
+
+  //Pressure profile is considered between x_in and x_out
+  //See Komatsu
+  ptsz->x_inSZ = 1.e-5; //KS02
+  ptsz->x_outSZ = 6.; //KS02
+  ptsz->ln_x_size_for_pp = 100;
+
+  ptsz->P0GNFW = 6.41;
+  ptsz->c500 = 1.81;
+  ptsz->gammaGNFW = 0.31;
+  ptsz->alphaGNFW = 1.33;
+  ptsz->betaGNFW = 4.13;
+  ptsz->delta_alpha = 0.;
+  ptsz->alpha_p = 0.12;
+  //Hydrostatic Equilibrium Mass Bias, Piffaretti & Valdarnini [arXiv:0808.1111]
+
+  ptsz->HSEbias = 1.2;
+  ptsz->Ap = 0.1;
+  ptsz->alpha_b = 0.7;
+  ptsz->mass_dependent_bias = 0;
+
+  pcsz->has_completeness = 0;
+  pcsz->mass_range = 1;//szcount masses
+  ptsz->experiment = 0; //planck
+
+  pcsz->ystar = -0.19;
+  pcsz->alpha = 1.78;
+  pcsz->sigmaM = 0.075; //in log10 see tab 1 of planck cc 2015 paper
+
+  ptsz->temperature_mass_relation=0;
+
+  //For the computation of sigma2
+  ptsz->ndimSZ = 100;
+  ptsz->logR1SZ = -5.684; // 0.0034Mpc/h, 1.8e4  solar mass
+  ptsz->logR2SZ = 4.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
+
+  ptsz->delta_cSZ = 1.6865;
+
+
+  pnl->k_per_decade_for_tSZ = 40.; //#default 40
+  pnl->k_min_for_pk_in_tSZ = 1.e-3; //#default 1.e-3
+  pnl->k_max_for_pk_in_tSZ = 5.; //#default 5
+
+
+
+  //Multplicity function Tinker 2010
+
+  ptsz->alphaSZ = 0.368;
+  ptsz->beta0SZ = 0.589;
+  ptsz->gamma0SZ = 0.864;
+
+  ptsz->phi0SZ = -0.729;
+  ptsz->eta0SZ = -0.243;
+
+  //Multplicity function Bocquet 2015
+
+  ptsz->Ap0 = 0.228;
+  ptsz->a0 = 2.15;
+  ptsz->b0 = 1.69;
+  ptsz->c0 = 1.30;
+
+
+  ptsz->MF = 2; //Bocquet 2015
+
+
+  ptsz->JMAX = 30; //for the pressure profile
+  ptsz->EPS = 1.e-5; //for the pressure profile (default 1e-5)
+  ptsz->K = 5; //for the pressure profile (default 5)
+
+
+  ptsz->JMAX_sigma = 20; //not used
+  ptsz->EPS_sigma = 1.e-6; //not used
+  ptsz->K_sigma = 5; //not used
+
+
+  //Nuisance
+
+  ptsz->A_cib = 0.29;
+  ptsz->A_rs = 0.01;
+  ptsz->A_ir = 1.97;
+  ptsz->A_cn = 1.0;
+
+  //ptsz->has_tszspectrum = _FALSE_;
+  pcsz->has_sz_counts = _FALSE_;
+
+  ptsz->has_sz_ps = _FALSE_;
+  ptsz->has_sz_trispec = _FALSE_;
+  ptsz->has_hmf = _FALSE_;
+  ptsz->has_mean_y = _FALSE_;
+
+  ptsz->index_md_hmf = 0;
+  ptsz->index_md_mean_y = 1;
+  ptsz->index_md_sz_ps = 2;
+  ptsz->index_md_sz_trispec = 3;
+
+
+  ptsz->HMF_prescription_NCDM=2; //no-pres
+
+  //psp->z_max_pk = 10.;
+  ppt->z_max_pk = 10.;
+
+  pcsz->size_logM = 100;
+
+  ptsz->sz_verbose = 0;
+
+
 
   return _SUCCESS_;
 
@@ -3638,6 +4172,8 @@ int input_try_unknown_parameters(double * unknown_parameter,
   struct spectra sp;          /* for output spectra */
   struct nonlinear nl;        /* for non-linear spectra */
   struct lensing le;          /* for lensed spectra */
+  struct tszspectrum tsz;     /* for tsz spectrum */ //BB: added for class_sz
+  struct szcount csz;         /* for sz cluster count */ //BB: added for class_sz
   struct output op;           /* for output files */
 
   int i;
@@ -3680,6 +4216,8 @@ int input_try_unknown_parameters(double * unknown_parameter,
                                    &sp,
                                    &nl,
                                    &le,
+                                   &tsz,
+                                   &csz,
                                    &op,
                                    errmsg),
              errmsg,
@@ -3885,6 +4423,8 @@ int input_get_guess(double *xguess,
   struct spectra sp;          /* for output spectra */
   struct nonlinear nl;        /* for non-linear spectra */
   struct lensing le;          /* for lensed spectra */
+  struct tszspectrum tsz;     //BB: added for class_sz
+  struct szcount csz;         //BB: added for class_sz
   struct output op;           /* for output files */
   int i;
 
@@ -3904,6 +4444,8 @@ int input_get_guess(double *xguess,
                                    &sp,
                                    &nl,
                                    &le,
+                                   //&tsz, //BB: added for class_sz
+                                   //&csz, //BB: added for class_sz
                                    &op,
                                    errmsg),
              errmsg,
@@ -3919,6 +4461,8 @@ int input_get_guess(double *xguess,
                                    &sp,
                                    &nl,
                                    &le,
+                                   &tsz, //BB: added for class_sz
+                                   &csz, //BB: added for class_sz
                                    &op,
                                    errmsg),
              errmsg,

@@ -1,0 +1,147 @@
+# Nemo config file
+# YAML format 
+# - use null to return None in Python
+# - note that YAML is fussy about large numbers: use e.g. 1.0e+14 for M500MSun (not 1e14)
+
+# Valid units are uK or Jy/sr
+# this should be a list of maps at different frequencies
+# NOTE: surveyMask is optional
+unfilteredMaps:
+    - {mapFileName: "TOnly_la225_small_CAR.fits",
+       weightsFileName: null,
+       obsFreqGHz: 225.0, units: 'uK',
+       beamFileName: "beam_gaussian_la225.txt"}
+    - {mapFileName: "TOnly_la145_small_CAR.fits",
+       weightsFileName: null,
+       obsFreqGHz: 145.3, units: 'uK',
+       beamFileName: "beam_gaussian_la145.txt"}
+    - {mapFileName: "TOnly_la093_small_CAR.fits",
+       weightsFileName: null,
+       obsFreqGHz: 94.1, units: 'uK',
+       beamFileName: "beam_gaussian_la093.txt"}
+
+# Masks
+surveyMask: null
+
+# Instead of giving point source mask, can give catalog instead
+maskPointSourcesFromCatalog: null
+    
+# Detection/catalog options
+# Set useInterpolator; True for sub-pixel flux and SNR measurements
+thresholdSigma: 4.0
+minObjPix: 1
+findCenterOfMass: True
+useInterpolator: True
+rejectBorder: 0
+objIdent: 'ACT-CL'
+longNames: False
+catalogCuts: ['SNR > 4.0']
+
+# Photometry options
+photFilter: 'Arnaud_M2e14_z0p4'
+
+# Optionally override the GNFW parameters - if not present, Arnaud et al. (2010) parameters are used
+# The example below is for the Planck Pressure Profile (PPP)
+#GNFWParams: {P0: 6.41, c500: 1.81, gamma: 0.31, alpha: 1.33, beta: 4.13, tol: 1e-7, npts: 100}
+
+# Mass measurement options - used by nemoMass and nemoSelFn scripts
+# Writes out .fits file to nemoOutDir/nemoOutDir_M500.fits
+# redshiftCatalog:  A .fits table containing name, RADeg, decDeg, redshift, redshiftErr columns
+# forcedPhotometry: If True, calc mass based on extracted y0~ in 'photFilter' map at RADeg, decDeg as given in redshiftCatalog
+#                   If False, cross match redshiftCatalog with optimal catalog made by nemo
+# Q:                If 'H13', use fit to Q from results presented in H13
+#                   If 'fit', use fit to (theta, Q) done by nemo for 'photFilter' kernel
+# tenToA0, B0, Mpivot, sigma_int: Fixed scaling relation options (see H13 or ACTPol paper)
+# rescaleFactor, rescaleFactorErr: For MCal masses, as in the ACTPol paper (i.e., just rescales M500 results by 1/rescaleFactor)
+massOptions: {tenToA0: 4.95e-5, 
+              B0: 0.08, 
+              Mpivot: 3.0e+14, 
+              sigma_int: 0.2,
+              relativisticCorrection: False,
+              rescaleFactor: 0.68, 
+              rescaleFactorErr: 0.11,
+              redshiftCatalog: "redshifts.fits", 
+              forcedPhotometry: False, 
+              Q: 'fit'}
+
+# Selection function options - only used by the nemoSelFn script
+# NOTE: could eventually add 'completenessFraction' to 'massLimitMaps', which is why that's a dictionary list
+# Use selFnFootprints to calculate average completeness in given sky areas - e.g., overlap with optical surveys
+calcSelFn: True
+selFnOptions: {fixedSNRCut: 5.0, 
+               massLimitMaps: [{z: 0.5}]}
+               
+#selFnFootprints: 
+    #- {label: "HSC",
+       #maskList: ["HSCCheckAndSelFn/s18a_fdfc_CAR_contarea.fits.gz"]}
+    #- {label: "KiDS",
+       #maskList: ["KiDSSelFn/mask_KiDSN.fits.gz", "KiDSSelFn/mask_KiDSS.fits.gz"]}
+    #- {label: "DES",
+       #maskList: ["DESY3/AdvACT_y3a2_footprint_griz_1exp_v2.0.fits"]}
+
+# Filter definitions:
+# allFilters is a dictionary of parameters that will be copied into all mapFilters
+# (these can be overridden by keys with the same name in mapFilters)
+allFilters: {class: "ArnaudModelMatchedFilter",
+             params: {noiseParams: {method: "dataMap",
+                                    noiseGridArcmin: 20.},
+                      outputUnits: 'yc',
+                      edgeTrimArcmin: 0.0}
+            }
+                
+# mapFilters is a list of all the different filters to apply
+# (keys in mapFilters with the same name as those in allFilters take priority)
+mapFilters:
+    #- {label: "Arnaud_M1e14_z0p2",
+       #params: {M500MSun: 1.0e+14, z: 0.2}}
+    #- {label: "Arnaud_M2e14_z0p2",
+       #params: {M500MSun: 2.0e+14, z: 0.2}}
+    #- {label: "Arnaud_M4e14_z0p2",
+       #params: {M500MSun: 4.0e+14, z: 0.2}}
+    #- {label: "Arnaud_M8e14_z0p2",
+       #params: {M500MSun: 8.0e+14, z: 0.2}}
+    #- {label: "Arnaud_M1e14_z0p4",
+       #params: {M500MSun: 1.0e+14, z: 0.4}}
+    - {label: "Arnaud_M2e14_z0p4",
+       params: {M500MSun: 2.0e+14, z: 0.4,
+                saveFilteredMaps: True,
+                savePlots: True}}
+    #- {label: "Arnaud_M4e14_z0p4",
+       #params: {M500MSun: 4.0e+14, z: 0.4}}
+    #- {label: "Arnaud_M8e14_z0p4",
+       #params: {M500MSun: 8.0e+14, z: 0.4}}              
+    #- {label: "Arnaud_M1e14_z0p8",
+       #params: {M500MSun: 1.0e+14, z: 0.8}}
+    #- {label: "Arnaud_M2e14_z0p8",
+       #params: {M500MSun: 2.0e+14, z: 0.8}}
+    #- {label: "Arnaud_M4e14_z0p8",
+       #params: {M500MSun: 4.0e+14, z: 0.8}}
+    #- {label: "Arnaud_M8e14_z0p8",
+       #params: {M500MSun: 8.0e+14, z: 0.8}}
+    #- {label: "Arnaud_M1e14_z1p2",
+       #params: {M500MSun: 1.0e+14, z: 1.2}}
+    #- {label: "Arnaud_M2e14_z1p2",
+       #params: {M500MSun: 2.0e+14, z: 1.2}}
+    #- {label: "Arnaud_M4e14_z1p2",
+       #params: {M500MSun: 4.0e+14, z: 1.2}}
+    #- {label: "Arnaud_M8e14_z1p2",
+       #params: {M500MSun: 8.0e+14, z: 1.2}}
+    
+# Set this to True to generate a sky sim (with noise), run all the filters over it, and measure contamination
+# Set numSkySims to number required - we need to average over many as results vary a fair bit
+estimateContaminationFromSkySim: False
+numSkySims: 10
+
+# Set this to True to estimate contamination by running cluster finder over inverted maps
+# This is sensitive to how well point source masking is done
+estimateContaminationFromInvertedMaps: False
+
+# Run position recovery test
+positionRecoveryTest: False
+posRecIterations: 2
+posRecSourcesPerTile: 100
+posRecModels:
+    - {'redshift': 0.8, 'M500': 2.0e+14}
+    - {'redshift': 0.4, 'M500': 2.0e+14}
+    - {'redshift': 0.2, 'M500': 2.0e+14}
+    - {'redshift': 0.1, 'M500': 2.0e+14}

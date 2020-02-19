@@ -239,6 +239,64 @@ cdef extern from "class.h":
     cdef struct output:
         ErrorMsg error_message
 
+    cdef struct tszspectrum:
+        ErrorMsg error_message
+        double A_cib
+        double A_cn
+        double A_ir
+        double A_rs
+        double Sigma8OmegaM_SZ
+        int nlSZ
+        double z1SZ
+        double z2SZ
+        int n_arraySZ
+        int n_arraySZ_for_integral
+        double M1SZ
+        double M2SZ
+        double P0GNFW
+        double c500
+        double gammaGNFW
+        double alphaGNFW
+        double betaGNFW
+        double x_inSZ
+        double x_outSZ
+        double HSEbias
+        int  ndimSZ
+        double logR1SZ
+        double logR2SZ
+        double delta_cSZ
+        double alphaSZ
+        double beta0SZ
+        double gamma0SZ
+        double phi0SZ
+        double eta0SZ
+        double sigma8_Pcb
+        double * ell
+        double * cl_sz
+        double ** tllprime_sz
+        short has_tszspectrum
+        short sz_verbose
+
+    cdef struct szcount:
+        double * redshift
+        double * dndz
+        double ** dndmdz
+        double ** dNdzdy_theoretical
+        double ** temp_0_theoretical
+        double ** temp_1_theoretical
+        double * dvdz
+        double * dndm_at_z
+        double * logM_at_z
+        double ystar
+        double alpha
+        double sigmaM
+        int has_completeness
+        int nzSZ
+        int size_logM
+        int Nbins_z
+        int Nbins_y
+        double rho_m_at_z
+
     cdef struct lensing:
         int has_tt
         int has_ee
@@ -307,13 +365,15 @@ cdef extern from "class.h":
     void thermodynamics_free(void*)
     void background_free(void*)
     void nonlinear_free(void*)
+    void szpowerspectrum_free(void*)
+    void szcount_free(void*)
 
     cdef int _FAILURE_
     cdef int _FALSE_
     cdef int _TRUE_
 
     int input_init(void*, void*, void*, void*, void*, void*, void*, void*, void*,
-        void*, void*, char*)
+        void*, void*, void*, void*, char*)
     int background_init(void*,void*)
     int thermodynamics_init(void*,void*,void*)
     int perturb_init(void*,void*,void*,void*)
@@ -322,6 +382,8 @@ cdef extern from "class.h":
     int transfer_init(void*,void*,void*,void*,void*,void*)
     int spectra_init(void*,void*,void*,void*,void*,void*,void*)
     int lensing_init(void*,void*,void*,void*,void*)
+    int szpowerspectrum_init(void*,void*,void*,void*)
+    int szcount_init(void*,void*,void*,void*,void*)
 
     int background_tau_of_z(void* pba, double z,double* tau)
     int background_at_tau(void* pba, double tau, short return_format, short inter_mode, int * last_index, double *pvecback)

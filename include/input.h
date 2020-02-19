@@ -15,6 +15,8 @@
 #include "nonlinear.h"
 #include "lensing.h"
 #include "output.h"
+#include "szpowerspectrum.h"
+#include "szclustercount.h"
 
 /* macro for reading parameter values with routines from the parser */
 #define class_read_double(name,destination)				\
@@ -175,6 +177,8 @@ extern "C" {
 		 struct spectra *psp,
 		 struct nonlinear *pnl,
 		 struct lensing *ple,
+     struct tszspectrum *ptsz, //BB: added for class_sz
+     struct szcount *pcsz, //BB: added for class_sz
 		 struct output *pop,
 		 ErrorMsg errmsg
 		 );
@@ -190,6 +194,8 @@ extern "C" {
 		 struct spectra *psp,
 		 struct nonlinear *pnl,
 		 struct lensing *ple,
+     struct tszspectrum *ptsz, //BB: added for class_sz
+     struct szcount *pcsz, //BB: added for class_sz
 		 struct output *pop,
 		 ErrorMsg errmsg
 		 );
@@ -205,6 +211,8 @@ extern "C" {
                             struct spectra *psp,
                             struct nonlinear *pnl,
                             struct lensing *ple,
+                            struct tszspectrum *ptsz, //BB: added for class_sz
+                            struct szcount *pcsz, //BB: added for class_sz
                             struct output *pop,
                             ErrorMsg errmsg
                             );
@@ -233,6 +241,8 @@ extern "C" {
 			   struct spectra *psp,
 			   struct nonlinear *pnl,
 			   struct lensing *ple,
+         struct tszspectrum *ptsz, //BB: added for class_sz
+         struct szcount *pcsz, //BB: added for class_sz
 			   struct output *pop
 			   );
 

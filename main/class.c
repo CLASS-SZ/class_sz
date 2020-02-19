@@ -15,10 +15,13 @@ int main(int argc, char **argv) {
   struct transfers tr;        /* for transfer functions */
   struct spectra sp;          /* for output spectra */
   struct lensing le;          /* for lensed spectra */
+  struct tszspectrum tsz;     /* BB: additional structure for thermal sz spectrum*/
+  struct szcount csz;         /* BB: additional structure for sz cluster counts*/
   struct output op;           /* for output files */
   ErrorMsg errmsg;            /* for error messages */
 
-  if (input_init_from_arguments(argc, argv,&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&op,errmsg) == _FAILURE_) {
+  //BB: initialize w. additional sz structures
+  if (input_init_from_arguments(argc, argv,&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&csz,&op,errmsg) == _FAILURE_) {
     printf("\n\nError running input_init_from_arguments \n=>%s\n",errmsg);
     return _FAILURE_;
   }
@@ -63,12 +66,37 @@ int main(int argc, char **argv) {
     return _FAILURE_;
   }
 
+  //BB: sz power spectrum module
+  if (szpowerspectrum_init(&ba,&nl,&pm,&tsz) == _FAILURE_) {
+    printf("\nError in sz power spectrum module\n");
+    return _FAILURE_;
+  }
+
+  //BB: sz cluster counts module
+  if (szcount_init(&ba,&nl,&pm,&tsz,&csz) == _FAILURE_) {
+    printf("\nError in sz cluster count module\n");
+    return _FAILURE_;
+  }
+
   if (output_init(&ba,&th,&pt,&pm,&tr,&sp,&nl,&le,&op) == _FAILURE_) {
     printf("\n\nError in output_init \n=>%s\n",op.error_message);
     return _FAILURE_;
   }
 
   /****** all calculations done, now free the structures ******/
+
+  //BB: free sz cluster count module
+  if (szcount_free(&csz) == _FAILURE_) {
+    printf("\n\nError in szcounts_free\n");
+    return _FAILURE_;
+  }
+
+  //BB: free sz power spectrum module
+  if (szpowerspectrum_free(&tsz) == _FAILURE_) {
+    printf("\n\nError in szpowerspectrum_free\n");
+    return _FAILURE_;
+  }
+
 
   if (lensing_free(&le) == _FAILURE_) {
     printf("\n\nError in lensing_free \n=>%s\n",le.error_message);
