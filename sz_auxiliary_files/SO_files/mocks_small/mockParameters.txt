@@ -1,1 +1,0 @@
-massOptions: {'tenToA0': 4.95e-05, 'B0': 0.08, 'Mpivot': 300000000000000.0, 'sigma_int': 0.2, 'relativisticCorrection': False, 'rescaleFactor': 0.68, 'rescaleFactorErr': 0.11, 'redshiftCatalog': 'redshifts.fits', 'forcedPhotometry': False, 'Q': 'fit'}
