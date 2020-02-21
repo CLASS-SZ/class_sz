@@ -1670,9 +1670,10 @@ int input_read_parameters(
       class_read_int("nlSZ",ptsz->nlSZ);
 
       class_read_int("which_ps_SZ",ptsz->which_ps_sz);
+      //if ps resolved (1) or unresolved (2) --> need completeness
       if(ptsz->which_ps_sz == 1 || ptsz->which_ps_sz == 2 )
         ptsz->has_completeness_for_ps_SZ = 1;
-      //  log(ptsz->ell_max_mock) - log(ptsz->ell_min_mock))/ptsz->dlogell
+
       class_read_double("ell_max_mock",ptsz->ell_max_mock);
       class_read_double("ell_min_mock",ptsz->ell_min_mock);
       class_read_double("dlogell",ptsz->dlogell);
@@ -3860,7 +3861,10 @@ int input_default_params(
 
 
   ptsz->has_completeness_for_ps_SZ = 0;
+
+  //default: total power spectrum (no completeness cut)
   ptsz->which_ps_sz = 0; //0: total, 1: resolved, 2: unresolved
+
   //Redshift limits for the integration
   ptsz->z1SZ = 1.e-5;
   ptsz->z2SZ = 4.;
@@ -3901,8 +3905,8 @@ int input_default_params(
   pcsz->mass_range = 1;//szcount masses
   ptsz->experiment = 0; //planck
 
-  pcsz->ystar = -0.19;
-  pcsz->alpha = 1.78;
+  pcsz->ystar = -0.186; //-0.186 ref. value in SZ_plus_priors.ini (cosmomc)
+  pcsz->alpha = 1.789; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
   pcsz->sigmaM = 0.075; //in log10 see tab 1 of planck cc 2015 paper
 
   ptsz->temperature_mass_relation=0;

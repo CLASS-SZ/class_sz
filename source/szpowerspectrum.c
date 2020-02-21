@@ -16,14 +16,12 @@
 
 
 int szpowerspectrum_init(
-                              struct background * pba,
-                              struct nonlinear * pnl,
-                              struct primordial * ppm,
-                              struct tszspectrum * ptsz
-			 )
+                          struct background * pba,
+                          struct nonlinear * pnl,
+                          struct primordial * ppm,
+                          struct tszspectrum * ptsz
+			                    )
 {
-
-
    select_multipole_array(ptsz);
    show_preamble_messages(pba,pnl,ppm,ptsz);
    read_Planck_noise_map(ptsz);
@@ -637,16 +635,15 @@ int evaluate_pressure_profile(double * pvecback,
 }
 
 int evaluate_completeness(double * pvecback,
-                                       double * pvectsz,
-                                       struct background * pba,
-                                       struct tszspectrum * ptsz){
+                          double * pvectsz,
+                          struct background * pba,
+                          struct tszspectrum * ptsz){
 
     double comp_at_M_and_z = 0.;
 
 
     if (ptsz->has_completeness_for_ps_SZ == 1){
     comp_at_M_and_z = 0.;
-    //printf("->starting comp ps\n");
 
     double mp_bias = pvectsz[ptsz->index_m500]; //biased mass = M/B
     double redshift = pvectsz[ptsz->index_z];
@@ -685,12 +682,11 @@ int evaluate_completeness(double * pvecback,
     double th1,th2;
 
 
-       if (thp > ptsz->theta_bin_max){
+  if (thp > ptsz->theta_bin_max){
           l1 = ptsz->nthetas - 1;
           l2 = ptsz->nthetas - 2;
           th1 = ptsz->thetas[l1];
           th2 = ptsz->thetas[l2];
-          //printf("above\n");
        }
 
     else if (thp < ptsz->theta_bin_min){
@@ -698,7 +694,6 @@ int evaluate_completeness(double * pvecback,
        l2 = 1;
        th1 = ptsz->thetas[l1];
        th2 = ptsz->thetas[l2];
-       //printf("bellow\n");
     }
 
     else{
@@ -740,20 +735,18 @@ int evaluate_completeness(double * pvecback,
     y = y1 + (y2-y1)/(th2-th1)*(thp-th1);
 
     double c2 = erf_compl_ps(yp,y,sn_cutoff);
-    // c2 *= (1.-erf_compl_ps(yp,y,y_max));
 
     comp_at_M_and_z += c2*ptsz->skyfracs[index_patches];
     sum_skyfracs += ptsz->skyfracs[index_patches];
     }
-    //check if we need the averaging procedure
+    //Now divide by total sky fraction
     comp_at_M_and_z = comp_at_M_and_z/sum_skyfracs;
     }
    if (ptsz->which_ps_sz == 0)
       pvectsz[ptsz->index_completeness] = 1.;
-   else if (ptsz->which_ps_sz == 1)
+   else if (ptsz->which_ps_sz == 1) //ps resolved
       pvectsz[ptsz->index_completeness] = comp_at_M_and_z;
-   else if (ptsz->which_ps_sz == 2)
-      //pvectsz[ptsz->index_completeness] = (1.-comp_at_M_and_z)*sum_skyfracs;
+   else if (ptsz->which_ps_sz == 2) //ps unresolved
       pvectsz[ptsz->index_completeness] = (1.-comp_at_M_and_z);
    return _SUCCESS_;
 }
@@ -796,12 +789,6 @@ int evaluate_halo_bias(double * pvecback,
 
   //Input: wavenumber in 1/Mpc
   //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-   //class_call(spectra_pk_at_k_and_z(pba,ppm,pnl,k*pba->h,z,&pk,pk_ic),
-  //                 pnl->error_message,
-  //                 pnl->error_message);
-
-
-
      class_call(nonlinear_pk_at_k_and_z(
                                        pba,
                                        ppm,
@@ -817,11 +804,8 @@ int evaluate_halo_bias(double * pvecback,
                                      pnl->error_message);
 
 
-//P(k) in units of h^-3 Mpc^3
+   //now compute P(k) in units of h^-3 Mpc^3
    pvectsz[ptsz->index_pk_for_halo_bias] = pk*pow(pba->h,3.); //in units Mpc^3/h^3
-
-
-
    return _SUCCESS_;
 }
 
