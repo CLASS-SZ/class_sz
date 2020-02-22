@@ -553,6 +553,30 @@ int input_init(
     fclose(param_unused);
   }
 
+  if(ptsz->create_ref_trispectrum_for_cobaya){
+
+    sprintf(param_output_name,"%s%s",ptsz->path_to_class,"/sz_auxiliary_files/cobaya_class_sz_likelihoods/cobaya_reference_trispectrum/tSZ_params_ref.txt");
+
+    class_open(param_output,param_output_name,"w",errmsg);
+
+    fprintf(param_output,"# List of input/precision parameters actually read\n");
+    fprintf(param_output,"# (all other parameters set to default values)\n");
+    fprintf(param_output,"# Obtained with CLASS %s (for developers: svn version %s)\n",_VERSION_,_SVN_VERSION_);
+    fprintf(param_output,"#\n");
+    fprintf(param_output,"# This file can be used as the input file of another run\n");
+    fprintf(param_output,"#\n");
+
+
+    for (i=0; i<pfc->size; i++)
+    fprintf(param_output,"%s = %s\n",pfc->name[i],pfc->value[i]);
+
+
+    fprintf(param_output,"#\n");
+
+    fclose(param_output);
+
+  }
+
   class_call(parser_read_string(pfc,"write warnings",&string1,&flag1,errmsg),
              errmsg,
              errmsg);
@@ -1937,6 +1961,17 @@ int input_read_parameters(
               ptsz->effective_temperature=2;
 
         }
+
+        class_call(parser_read_string(pfc,"create_ref_trispectrum_for_cobaya",&string1,&flag1,errmsg),
+                   errmsg,
+                   errmsg);
+        if (flag1 == _TRUE_) {
+            if ((strstr(string1,"YES") != NULL))
+                ptsz->create_ref_trispectrum_for_cobaya=1;
+            else
+                ptsz->create_ref_trispectrum_for_cobaya=0;
+        }
+
 
     /* HMF prescription for massive neutrinos SZ */
       class_call(parser_read_string(pfc,"HMF_prescription_NCDM",&string1,&flag1,errmsg),
@@ -3846,10 +3881,10 @@ int input_default_params(
   //BB: SZ parameters default values
   ptsz->write_sz = _FALSE_;
   ptsz->ell_sz = 1;
-  ptsz->nlSZ = 10;
+  ptsz->nlSZ = 18;
   ptsz->concentration_parameter=0;
-  ptsz->pressure_profile=0;
   ptsz->effective_temperature=0;
+  ptsz->create_ref_trispectrum_for_cobaya=0;
 
 
   pcsz->redshift_for_dndm = 1.e-5;
@@ -3885,7 +3920,7 @@ int input_default_params(
   //See Komatsu
   ptsz->x_inSZ = 1.e-5; //KS02
   ptsz->x_outSZ = 6.; //KS02
-  ptsz->ln_x_size_for_pp = 100;
+  ptsz->ln_x_size_for_pp = 1000;
 
   ptsz->P0GNFW = 6.41;
   ptsz->c500 = 1.81;

@@ -28,11 +28,12 @@ struct tszspectrum {
   double ** cov_N_cl;
   double ** r_N_cl;
   double ** r_cl_clp;
+  double ** trispectrum_ref;
   double * cov_cl_cl;
 
   int index_md;
 
-
+  int create_ref_trispectrum_for_cobaya;
 
   int has_sz_2halo;
   int has_sz_te_y_y;

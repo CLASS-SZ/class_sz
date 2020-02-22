@@ -43559,8 +43559,8 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
 
 
 
-    double pp_at_x_and_ell_over_ell_char = plc_gnfw_at_x;
-    array_for_integral[i*index_num+index_x]= x;
+    double pp_at_x_and_ell_over_ell_char = x*plc_gnfw_at_x;
+    array_for_integral[i*index_num+index_x]= log(x);
     array_for_integral[i*index_num+index_y]= pp_at_x_and_ell_over_ell_char;
   }
 
@@ -44184,7 +44184,8 @@ int plc_gnfw(double * plc_gnfw_x,
   int index_md = (int) pvectsz[ptsz->index_md];
   *plc_gnfw_x = 0.;
 
-  if(ptsz->pressure_profile == 3){
+  //Custom. GNFW
+  //if(ptsz->pressure_profile == 3){
 
       *plc_gnfw_x =  (1./(pow(ptsz->c500*x,ptsz->gammaGNFW)
                     *pow(1.+ pow(ptsz->c500*x,ptsz->alphaGNFW),
@@ -44199,7 +44200,7 @@ int plc_gnfw(double * plc_gnfw_x,
                            (ptsz->betaGNFW-ptsz->gammaGNFW)/ptsz->alphaGNFW)))
                       *pow(x,2);
 
-  }
+  //}
 
 
 
@@ -44706,8 +44707,8 @@ int integrate_over_m_at_z_qgaus_sz(double * pvecback,
     class_alloc(vec_results_cov_N_cl,
                 (ptsz->nbins_M-1)*sizeof(double),
                 ptsz->error_message);
-
-    for (int index_M_bins=0; index_M_bins <ptsz->nbins_M-1; index_M_bins++)
+    int index_M_bins;
+    for (index_M_bins=0; index_M_bins <ptsz->nbins_M-1; index_M_bins++)
       vec_results_cov_N_cl[index_M_bins] = 0.;
 
 /*
@@ -44774,8 +44775,8 @@ int integrate_over_m_at_z_qgaus_sz(double * pvecback,
 
     double dlnM;
 
-
-    for (int index_M_bins=0; index_M_bins <ptsz->nbins_M-1; index_M_bins++){
+    //int index_M_bins;
+    for (index_M_bins=0; index_M_bins <ptsz->nbins_M-1; index_M_bins++){
 
       dlnM = log(ptsz->M_bins[index_M_bins+1])-log(ptsz->M_bins[index_M_bins]);
       logM = log(ptsz->M_bins[index_M_bins]) + 0.5*dlnM; //centre of the bin

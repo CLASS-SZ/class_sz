@@ -1,64 +1,40 @@
 # List of input/precision parameters actually read
 # (all other parameters set to default values)
-# Obtained with CLASS v2.6.3 (for developers: svn version 6142M)
+# Obtained with CLASS v2.9.0 (for developers: svn version 6142M)
 #
 # This file can be used as the input file of another run
 #
-
 output = tSZ,tSZ_Trispectrum
 root = output/class-sz_simple_
-
 units for tSZ spectrum = 'dimensionless'
 path_to_class = /Users/boris/Work/CLASS-SZ/SO-SZ/class_sz
 mass function = 'M500'
 pressure profile = 'A10'
-
 create_ref_trispectrum_for_cobaya = YES
-
 HSEbias = 1.41
-
 h = 0.7
 omega_b = 0.0245
 omega_cdm = 0.1225
-
 A_s = 2.02e-9
 n_s = 0.96
 k_pivot = 0.05
-
 tau_reio = 0.07
-
-
-
 multipoles_sz = P15
-
 M1SZ = 1e11
 M2SZ = 5e15
-
-
 z1SZ = 1.e-5
 z2SZ = 4.
-
-#z_max_pk has to be at least z2SZ
-#it is a necessary parameter, class_sz returns 'NaN' if this parameter
-#is not set properly.
 z_max_pk = 4.
-
-
-
-
 N_ncdm = 1
 N_ur = 0.00641
 deg_ncdm = 3
 m_ncdm = 0.02
 T_ncdm = 0.71611
 HMF_prescription_NCDM = CDM
-
-
-
-
 sz_verbose = 2
 background_verbose = 1
 headers = yes
 write primordial = no
 write background = no
 write parameters = no
+#
