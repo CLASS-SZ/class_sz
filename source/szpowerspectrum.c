@@ -137,7 +137,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 
           ptsz->trispectrum_ref[index_l][index_l_prime] = ell*(ell+1.)/(2.*_PI_)*ell_prime*(ell_prime+1.)/(2.*_PI_)*ptsz->tllprime_sz[index_l][index_l_prime];
 
-          if(ptsz->sz_verbose>2) printf("%e\t%e\t%e\n",ell,ell_prime,ptsz->trispectrum_ref[index_l][index_l_prime]); 
+          if(ptsz->sz_verbose>2) printf("%e\t%e\t%e\n",ell,ell_prime,ptsz->trispectrum_ref[index_l][index_l_prime]);
 
           ptsz->trispectrum_ref[index_l_prime][index_l] = ptsz->trispectrum_ref[index_l][index_l_prime];
         };
@@ -455,7 +455,8 @@ pvectsz[ptsz->index_dlnMdeltadlnM] = 1.;
             if (_tSZ_trispectrum_) {
 
       int index_l = (int) pvectsz[ptsz->index_multipole];
-         for (int index_l_prime = 0; index_l_prime<index_l+1;index_l_prime++){
+      int index_l_prime;
+         for ( index_l_prime = 0; index_l_prime<index_l+1;index_l_prime++){
       pvectsz[ptsz->index_multipole_for_pressure_profile] = index_l_prime;
       evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
       double pressure_profile_at_ell_prime = pvectsz[ptsz->index_pressure_profile];
@@ -506,7 +507,8 @@ pvectsz[ptsz->index_dlnMdeltadlnM] = 1.;
 
    }
    else {
-      for (int i = 0; i<ptsz->number_of_integrals_per_thread; i++) pvectsz[ptsz->index_integrand + i] = 0.;
+      int i;
+      for (i = 0; i<ptsz->number_of_integrals_per_thread; i++) pvectsz[ptsz->index_integrand + i] = 0.;
    }
 
 
@@ -1939,8 +1941,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    class_alloc(ptsz->M_bins,
                         ptsz->nbins_M*sizeof(double),
                         ptsz->error_message);
-
-   for (int i=0;i<ptsz->nbins_M;i++){
+   for (i=0;i<ptsz->nbins_M;i++){
       ptsz->M_bins[i] = exp(log(ptsz->M1SZ)+i*(log(ptsz->M2SZ)-log(ptsz->M1SZ))/(ptsz->nbins_M-1.));
       //printf("M = %e \t i=%d\n",ptsz->M_bins[i],i);
    }
