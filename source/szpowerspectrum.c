@@ -418,8 +418,8 @@ pvectsz[ptsz->index_dlnMdeltadlnM] = 1.;
       double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
 
       if (_cov_N_Cl_ && flag_cov_N_cl == _TRUE_){
-
-      for (int index_bins_M = 0; index_bins_M <ptsz->nbins_M-1;index_bins_M++){
+      int index_bins_M;
+      for (index_bins_M = 0; index_bins_M <ptsz->nbins_M-1;index_bins_M++){
 
          pvectsz[ptsz->index_integrand_cov_N_cl_first+index_bins_M] =  pvectsz[ptsz->index_volume]
                                                                        *pvectsz[ptsz->index_hmf]
