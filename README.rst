@@ -68,9 +68,9 @@ If you do not want the **classy** python module do ‘$ make class’.
 For the python module, you need the prerequisites such as **numpy**, **scipy**
 and **Cython** installed on your computer.
 
-Run the code with SZ power spectrum and cluster counts computation
+Run the code with SZ power spectrum computation
 
-    $ ./class explanatory-sz.ini
+    $ ./class class-sz_simple.ini
 
 
 The explanatory files are reference input files, containing and
@@ -88,4 +88,4 @@ TBD
 Support
 -------
 
-To get support on the SZ module, feel free to contact me via slack/email
+To get support on the SZ module, feel free to contact me via slack/email (boris.bolliet@gmail.com), or open an issue on the GitHub page. 
