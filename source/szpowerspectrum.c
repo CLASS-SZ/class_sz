@@ -1371,15 +1371,40 @@ int write_output_to_files_cl(struct nonlinear * pnl,
                   ptsz->Omega_m_0);
       fprintf(fp,"#h = %e\n",
                   pba->h);
+      if (_tSZ_te_y_y_)
       fprintf(fp,"#temperature_mass_relation = %d\n",
                               ptsz->temperature_mass_relation);
 
+       //Halo mass function
+       if (ptsz->MF==3) fprintf(fp,"#HMF: Jenkins et al 2001 @ M180m\n");
+       if (ptsz->MF==1) fprintf(fp,"#HMF: Tinker et al 2010 @ M200m\n");
+       if (ptsz->MF==4) fprintf(fp,"#HMF: Tinker et al 2008 @ M200m\n");
+       if (ptsz->MF==5) fprintf(fp,"#HMF: Tinker et al 2008 @ M500c\n");
+       if (ptsz->MF==6) fprintf(fp,"#HMF: Tinker et al 2008 @ M1600m\n");
+       if (ptsz->MF==2) fprintf(fp,"#HMF: Bocquet et al 2015 @ M200m\n");
+       if (ptsz->MF==7) fprintf(fp,"#HMF: Bocquet et al 2015 @ M500c\n\n");
 
-         fprintf(fp,"#(3-5 need to be divided by f_sky, 6 by sqrt(f_sky)\n");
-         if (ptsz->exponent_unit == 2.)
-            fprintf(fp,"#1:l\t 2:10^12*D_l^tSZ\t 3:sigma_g_C_l^2\t 4:T_ll \t 5:sigma_g_C_l^2_binned \t 6:sig_D_l_binned\t 7:D_l_2h\t 8:Te \n");
-         if (ptsz->exponent_unit == 0.)
-            fprintf(fp,"#1:l\t 2:D_l^tSZ [muK^2]\t 3:sigma_g_C_l^2\t 4:T_ll \t 5:sigma_g_C_l^2_binned \t 6:sig_D_l_binned\t 7:D_l_2h\t 8:Te \n");
+       //Pressure profile
+       if (ptsz->pressure_profile == 0)
+          fprintf(fp,"#Pressure Profile:  Planck 2013\n");
+       if (ptsz->pressure_profile == 2)
+          fprintf(fp,"#Pressure Profile:  Arnaud et al 2010\n");
+       if (ptsz->pressure_profile == 3){
+          fprintf(fp,"#Pressure Profile:  Custom. GNFW\n");
+          fprintf(fp,"#P0GNFW = %e\n",ptsz->P0GNFW);
+          fprintf(fp,"#c500 = %e\n",ptsz->c500);
+          fprintf(fp,"#gammaGNFW = %e\n",ptsz->gammaGNFW);
+          fprintf(fp,"#alphaGNFW = %e\n",ptsz->alphaGNFW);
+          fprintf(fp,"#betaGNFW = %e\n",ptsz->betaGNFW);
+       }
+       if (ptsz->pressure_profile == 4)
+          fprintf(fp,"#Pressure Profile:  Battaglia et al 2012\n");
+
+
+       if (ptsz->exponent_unit == 2.)
+          fprintf(fp,"#1:l\n#2:10^12*D_l^tSZ\n#3:sigma_g_C_l^2 [nb: not divided by f_sky]\n#4:T_ll [nb: not divided by f_sky]\n#5:sigma_g_C_l^2_binned [nb: not divided by f_sky]\n#6:sig_D_l_binned [nb: not divided by f_sky]\n#7:10^12*D_l_2h\n#8:Te \n");
+       if (ptsz->exponent_unit == 0.)
+          fprintf(fp,"#1:l\n#2:D_l^tSZ [muK^2]\n#3:sigma_g_C_l^2 nb: not divided by f_sky]\n#4:T_ll nb: not divided by f_sky]\n#5:sigma_g_C_l^2_binned nb: not divided by f_sky]\n#6:sig_D_l_binned nb: not divided by f_sky]\n#7:D_l_2h\n#8:Te \n");
 
 
       for (index_l=0;index_l<ptsz->nlSZ;index_l++){
