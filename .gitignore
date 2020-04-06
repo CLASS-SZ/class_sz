@@ -16,3 +16,6 @@ doc/manual/html
 doc/manual/latex
 sz_auxiliary_files/SO_files/*
 SO_files
+tSZ_c_ell_ref.txt
+tSZ_params_ref.txt
+tSZ_trispectrum_ref.txt
