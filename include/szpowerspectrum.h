@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "lensing.h"
+#include <gsl/gsl_integration.h>
 
 
 #define _tSZ_power_spectrum_ ((ptsz->has_sz_ps == _TRUE_) && (index_md == ptsz->index_md_sz_ps))
@@ -14,6 +15,8 @@
 #define _cov_N_Cl_ ((ptsz->has_sz_cov_N_Cl == _TRUE_))
 #define _mean_y_ ((ptsz->has_mean_y == _TRUE_) && (index_md == ptsz->index_md_mean_y))
 #define _hmf_ ((ptsz->has_hmf == _TRUE_) && (index_md == ptsz->index_md_hmf))
+
+
 
 
 struct tszspectrum {
@@ -66,8 +69,8 @@ struct tszspectrum {
   int index_integrand_te_y_y;
   int index_integrand_2halo_term;
 
-  int index_integrand_2h_first; //for trispectrum
-  int index_integrand_2h_last;  //for trispectrum
+  int index_integrand_trispectrum_first; //for trispectrum
+  int index_integrand_trispectrum_last;  //for trispectrum
 
   int index_integrand_cov_N_cl_first;
   int index_integrand_cov_N_cl_last;
@@ -141,8 +144,8 @@ struct tszspectrum {
   int index_integral_te_y_y;
   int index_integral_2halo_term;
 
-  int index_integral_2h_first;
-  int index_integral_2h_last;
+  int index_integral_trispectrum_first;
+  int index_integral_trispectrum_last;
 
   int index_integral_cov_N_cl_first;
   int index_integral_cov_N_cl_last;
@@ -162,8 +165,8 @@ struct tszspectrum {
   int  index_integral_over_m;
   int  index_integral_te_y_y_over_m;
   int  index_integral_2halo_term_over_m;
-  int  index_integral_2h_first_over_m;
-  int  index_integral_2h_last_over_m;
+  int  index_integral_trispectrum_first_over_m;
+  int  index_integral_trispectrum_last_over_m;
   int  index_integral_cov_N_cl_first_over_m;
   int  index_integral_cov_N_cl_last_over_m;
   int  index_integral_N_for_cov_N_cl_first_over_m;
@@ -241,6 +244,9 @@ struct tszspectrum {
   double ln_x_size_for_pp;
   double * ln_x_for_pp;
 
+  double x_size_for_pp;
+  double * x_for_pp;
+
 
   //Battaglia pressure profile
   double P0_B12;
@@ -303,6 +309,19 @@ struct tszspectrum {
   double EPS_sigma;
   double JMAX_sigma;
 
+  ////////////////////////
+  //integration method and parameters (mass)
+  int integration_method_mass;
+  double patterson_epsrel;
+  double patterson_epsabs;
+  int patterson_show_neval;
+
+  int number_of_mass_bins; //for trapezoidal rule
+  ////////////////////////
+
+  ////////////////////////
+  //integration method and parameters (pressure profile)
+  int integration_method_pressure_profile;
 
   //Foreground parameters
   double A_cib, A_rs, A_ir, A_cn;
@@ -414,13 +433,13 @@ extern "C" {
 
   //This evaluates the integrand which will be integrated
   //over M and then over z
-  int integrand_at_m_and_z(double logM ,
-                           double * pvecback,
-                           double * pvectsz,
-                           struct background * pba,
-                           struct primordial * ppm,
-                           struct nonlinear * pnl,
-                           struct tszspectrum * ptsz);
+  double integrand_at_m_and_z(double logM ,
+                              double * pvecback,
+                              double * pvectsz,
+                              struct background * pba,
+                              struct primordial * ppm,
+                              struct nonlinear * pnl,
+                              struct tszspectrum * ptsz);
 
 
 
@@ -483,6 +502,9 @@ double evaluate_dlnMdeltadlnM(double logM,
                              struct background * pba,
                              struct nonlinear * pnl,
                              struct tszspectrum * ptsz);
+
+
+double integrand_patterson_test(double xi, void *p);
 
 #ifdef __cplusplus
 }

@@ -1353,6 +1353,7 @@ int nonlinear_init(
                                      pba,
                                      pnl,
                                      8./pba->h,
+                                     //8./0.67, //sigma12
                                      0.,
                                      index_pk,
                                      out_sigma,

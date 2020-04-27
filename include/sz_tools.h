@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include <time.h>
+#include <gsl/gsl_integration.h>
 
 #define _M_sun_  1.989e30 /*solar mass in kg*/
 
@@ -800,6 +801,9 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
                                   double * pvectsz,
                                   double * result
                             ) ;
+
+double integrand_patterson_test(double logM, void *p);
+
 
 #ifdef __cplusplus
 }

@@ -14,9 +14,11 @@
 
 
 struct szcount {
+  FileName root; /**< root for all file names */
+
   int nzSZ;
-  double * dndz;
-  double ** dndmdz;
+  //double * dndz;
+  double ** dndlnM;
 
   double ** dNdzdy_theoretical;
   double ** dNdzdm_theoretical;

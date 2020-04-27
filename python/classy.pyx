@@ -1515,29 +1515,29 @@ cdef class Class:
 
         return redshift
 
-    def dndz_count(self):
-        """
-        (SZ) Return the dndz
-        """
-        dndz = {}
+#    def dndz_count(self):
+#        """
+#        (SZ) Return the dndz
+#        """
+#        dndz = {}
+#
+#        for index in range(self.csz.nzSZ):
+#            dndz[index] = self.csz.dndz[index]
+#
+#        return dndz
 
-        for index in range(self.csz.nzSZ):
-            dndz[index] = self.csz.dndz[index]
 
-        return dndz
-
-
-    def dndmdz_count(self):
-        """
-        (SZ) Return the dndmdz
-        """
-        dndmdz =  defaultdict(list)
-        cdef int index_m,index_z
-
-        for index_z in range(self.csz.nzSZ):
-             for index_m in range(self.csz.size_logM):
-                dndmdz[index_m].append(self.csz.dndmdz[index_m][index_z])
-        return dndmdz
+#    def dndmdz_count(self):
+#        """
+#        (SZ) Return the dndmdz
+#        """
+#        dndmdz =  defaultdict(list)
+#        cdef int index_m,index_z
+#
+#        for index_z in range(self.csz.nzSZ):
+#             for index_m in range(self.csz.size_logM):
+#                dndmdz[index_m].append(self.csz.dndmdz[index_m][index_z])
+#        return dndmdz
 
 
     def dndzdy_theoretical(self):

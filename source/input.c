@@ -1712,6 +1712,8 @@ int input_read_parameters(
       class_read_double("z1SZ",ptsz->z1SZ);
       class_read_double("z2SZ",ptsz->z2SZ);
 
+      class_read_double("max redshift for cluster counts",pcsz->z_max);
+
 
       //Array size
       class_read_int("n_arraySZ",ptsz->n_arraySZ);//number of z in the interpolation for sigma
@@ -1765,6 +1767,51 @@ int input_read_parameters(
       class_read_double("a0",ptsz->a0);
       class_read_double("b0",ptsz->b0);
       class_read_double("c0",ptsz->c0);
+
+
+      //Integration scheme for the mass integral:
+
+      class_call(parser_read_string(pfc,"integration method (mass)",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"patterson") != NULL)){
+          ptsz->integration_method_mass=0;
+          class_read_double("patterson_epsrel",ptsz->patterson_epsrel);
+          class_read_double("patterson_epsabs",ptsz->patterson_epsabs);
+          class_read_int("patterson_show_neval",ptsz->patterson_show_neval);
+        }
+        else if ((strstr(string1,"trapezoidal") != NULL)){
+          ptsz->integration_method_mass=1;
+          class_read_int("mass bins between M_min and M_max",ptsz->number_of_mass_bins);
+        }
+        else if ((strstr(string1,"gaussian") != NULL))
+          ptsz->integration_method_mass=2;
+        }
+
+      // class_call(parser_read_string(pfc,"integration method (mass)",&string1,&flag1,errmsg),
+      //            errmsg,
+      //            errmsg);
+      // if (flag1 == _TRUE_) {
+      //   if ((strstr(string1,"patterson") != NULL)){
+      //     ptsz->integration_method_mass=0;
+      //     class_read_double("patterson_epsrel",ptsz->patterson_epsrel);
+      //     class_read_double("patterson_epsabs",ptsz->patterson_epsabs);
+      //     class_read_int("patterson_show_neval",ptsz->patterson_show_neval);
+      //   }
+      //   else if ((strstr(string1,"trapezoidal") != NULL)){
+      //     ptsz->integration_method_mass=1;
+      //     class_read_int("mass bins between M_min and M_max",ptsz->number_of_mass_bins);
+      //   }
+      //   else if ((strstr(string1,"gaussian") != NULL))
+      //     ptsz->integration_method_mass=2;
+      //   }
+
+      //Precision Parameters For Patterson Scheme
+      class_read_double("K",ptsz->K);
+      class_read_double("JMAX",ptsz->JMAX);
+      class_read_double("EPS",ptsz->EPS);
+
 
       //Precision Parameters For qromb_sz_integrand for the pressure profile
       class_read_double("K",ptsz->K);
@@ -1942,6 +1989,20 @@ int input_read_parameters(
          ptsz->pressure_profile=4;
           }
 
+
+      /* integration method pressure profile SZ */
+      class_call(parser_read_string(pfc,"integration method (pressure profile)",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+     if (flag1 == _TRUE_) {
+        if ((strstr(string1,"patterson") != NULL))
+          ptsz->integration_method_pressure_profile=0;
+        else  if ((strstr(string1,"gsl") != NULL))
+          ptsz->integration_method_pressure_profile=1;
+       else  if ((strstr(string1,"spline") != NULL))
+          ptsz->integration_method_pressure_profile=2;
+          }
+
       /* temperature mass relation SZ */
       class_call(parser_read_string(pfc,"temperature mass relation",&string1,&flag1,errmsg),
                  errmsg,
@@ -1953,18 +2014,6 @@ int input_read_parameters(
           ptsz->temperature_mass_relation=1;
       }
 
-        class_call(parser_read_string(pfc,"effective_temperature",&string1,&flag1,errmsg),
-                   errmsg,
-                   errmsg);
-        if (flag1 == _TRUE_) {
-            if ((strstr(string1,"YES") != NULL))
-                ptsz->effective_temperature=1;
-            else  if ((strstr(string1,"NO") != NULL))
-                ptsz->effective_temperature=0;
-            else  if ((strstr(string1,"MASS") != NULL))
-              ptsz->effective_temperature=2;
-
-        }
 
         class_call(parser_read_string(pfc,"create_ref_trispectrum_for_cobaya",&string1,&flag1,errmsg),
                    errmsg,
@@ -1986,7 +2035,7 @@ int input_read_parameters(
           ptsz->HMF_prescription_NCDM=0;
         else  if ((strstr(string1,"CDM") != NULL))
           ptsz->HMF_prescription_NCDM=1;
-              else  if ((strstr(string1,"No-pres") != NULL))
+        else  if ((strstr(string1,"No-pres") != NULL))
           ptsz->HMF_prescription_NCDM=2;
 
             }
@@ -2060,12 +2109,13 @@ int input_read_parameters(
           ptsz->MF=5;
         else  if ((strstr(string1,"M1600") != NULL))
           ptsz->MF=6;
-        else  if ((strstr(string1,"B16M500c") != NULL))
+        else  if ((strstr(string1,"B16M500c") != NULL)) //not working yet
           ptsz->MF=7;
      }
 
       class_read_string("path_to_class",ptsz->path_to_class);
       class_read_string("root",ptsz->root);
+      class_read_string("root",pcsz->root);
 
       class_read_int("sz_verbose",ptsz->sz_verbose);
 
@@ -3899,6 +3949,7 @@ int input_default_params(
   pcsz->redshift_for_dndm = 1.e-5;
 
 
+
   ptsz->Tcmb_gNU = pba->T_cmb*((_h_P_*150.0e9/(_k_B_*pba->T_cmb))*(1./tanh((_h_P_*150.0e9/(_k_B_*pba->T_cmb))/2.))-4.);
 
 
@@ -3930,6 +3981,14 @@ int input_default_params(
   ptsz->x_inSZ = 1.e-5; //KS02
   ptsz->x_outSZ = 6.; //KS02
   ptsz->ln_x_size_for_pp = 1000;
+  ptsz->x_size_for_pp = 2000;
+
+
+  // integration_method_pressure_profile
+  // 1: 0 -> Patterson rule
+  // 2: 1 -> GSL
+  // 3: 2 -> spline integral
+  ptsz->integration_method_pressure_profile = 1;
 
   ptsz->P0GNFW = 6.41;
   ptsz->c500 = 1.81;
@@ -3988,6 +4047,18 @@ int input_default_params(
 
   ptsz->MF = 2; //Bocquet 2015
 
+  //////////////////////////////////
+  //Integration method and parameters (mass)
+  //patterson
+  ptsz->integration_method_mass = 0;
+  ptsz->patterson_epsrel = 5e-6;
+  ptsz->patterson_epsabs = 1e-20;
+  ptsz->patterson_show_neval = 0;
+
+  //trapezoidal
+  ptsz->number_of_mass_bins = 60;
+  /////////////////////////////////
+
 
   ptsz->JMAX = 30; //for the pressure profile
   ptsz->EPS = 1.e-5; //for the pressure profile (default 1e-5)
@@ -4026,6 +4097,8 @@ int input_default_params(
   ppt->z_max_pk = 10.;
 
   pcsz->size_logM = 100;
+
+  pcsz->z_max = 1.;
 
   ptsz->sz_verbose = 0;
 

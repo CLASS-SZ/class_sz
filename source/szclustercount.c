@@ -23,9 +23,6 @@ int szcount_init(struct background * pba,
 
   else
   {
-
-
-
     double * Pvecback;
     double * Pvectsz;
 
@@ -63,8 +60,8 @@ int szcount_free(struct szcount * pcsz)
 {
   if (pcsz->has_sz_counts == _TRUE_){
   free(pcsz->redshift);
-  free(pcsz->dndz);
-  free(pcsz->dndmdz);
+  //free(pcsz->dndz);
+  free(pcsz->dndlnM);
   free(pcsz->logM_at_z);
   free(pcsz->dNdzdy_theoretical);
   free(pcsz->dNdzdm_theoretical);
@@ -90,31 +87,31 @@ int compute_count_sz(struct background * pba,
 {
   //clock_t begin = clock();
 
-  const int dim1 = pcsz->nsteps_m;
-  const int dim2 = pcsz->nsteps_z;
-  const int dim3 = pcsz->Nbins_y+1;
+  const int dim_mass = pcsz->nsteps_m;
+  const int dim_redshift = pcsz->nsteps_z;
+  const int dim_y = pcsz->Nbins_y+1;
 
   int index_m, index_z, index_y;
 
   double *** completeness_2d = NULL;
   double *** d_completeness_2d_dq = NULL;
-  class_alloc(completeness_2d,dim1*sizeof(double **),pcsz->error_message);
-  class_alloc(d_completeness_2d_dq,dim1*sizeof(double **),pcsz->error_message);
+  class_alloc(completeness_2d,dim_mass*sizeof(double **),pcsz->error_message);
+  class_alloc(d_completeness_2d_dq,dim_mass*sizeof(double **),pcsz->error_message);
 
-  for (index_m=0;index_m<dim1;index_m++)
+  for (index_m=0;index_m<dim_mass;index_m++)
   {
-    class_alloc(completeness_2d[index_m],dim2*sizeof(double*),pcsz->error_message);
-    class_alloc(d_completeness_2d_dq[index_m],dim2*sizeof(double*),pcsz->error_message);
+    class_alloc(completeness_2d[index_m],dim_redshift*sizeof(double*),pcsz->error_message);
+    class_alloc(d_completeness_2d_dq[index_m],dim_redshift*sizeof(double*),pcsz->error_message);
 
-    for (index_z=0;index_z<dim2;index_z++){
+    for (index_z=0;index_z<dim_redshift;index_z++){
       class_alloc(completeness_2d[index_m][index_z],
-                  dim3*sizeof(double),
+                  dim_y*sizeof(double),
                   pcsz->error_message);
       class_alloc(d_completeness_2d_dq[index_m][index_z],
-                  dim3*sizeof(double),
+                  dim_y*sizeof(double),
                   pcsz->error_message);
 
-      for (index_y=0;index_y<dim3;index_y++)
+      for (index_y=0;index_y<dim_y;index_y++)
       { completeness_2d[index_m][index_z][index_y]=0.;
         d_completeness_2d_dq[index_m][index_z][index_y]=0.;
       }
@@ -261,7 +258,7 @@ private(tstart, tstop,pvecsz)
 
 
   double z1SZ = ptsz->z1SZ;
-  double z2SZ = ptsz->z2SZ;
+  double z2SZ = ptsz->z2SZ + pcsz->dz;
 
   Pvectsz[ptsz->index_md] = ptsz->index_md_hmf;
 
@@ -302,13 +299,13 @@ private(tstart, tstop,pvecsz)
                  pcsz->error_message);
 
       // dn/dlogM in units of h^3 Mpc^-3
-      pcsz->dndmdz[j][i] = Pvectsz[ptsz->index_hmf];
+      pcsz->dndlnM[j][i] = Pvectsz[ptsz->index_hmf];
 
 
-      if (pcsz->dndmdz[j][i] == 0.)
+      if (pcsz->dndlnM[j][i] == 0.)
         log_Z[i*pcsz->size_logM +j]=log(1e-100);
       else
-        log_Z[i*pcsz->size_logM +j]=log(pcsz->dndmdz[j][i]);
+        log_Z[i*pcsz->size_logM +j]=log(pcsz->dndlnM[j][i]);
     }
   }
 
@@ -367,7 +364,9 @@ private(tstart, tstop,pvecsz)
                                pvecback),
              ptsz->error_message,
              ptsz->error_message);
-  double H0_class_units = pvecback[pba->index_bg_H];
+  double H0_class_units = pvecback[pba->index_bg_H]; //the same as pba->H0, which is *not* in km/s/Mpc
+
+
 
   double m_asked;
   double z_asked;
@@ -394,9 +393,10 @@ private(tstart, tstop,pvecsz)
     double rz = d_A*(1.+pcsz->steps_z[index_z]);
     double volume = 3.0e8/1.0e5*rz*rz/Eh;
 
+
     //survey area
-    double deg2= 3.046174198e-4;
-    if (ptsz->experiment == 0) deg2 *= 41253.0; //Planck full-sky
+    double deg2= 3.046174198e-4; // conversion deg2 to steradian
+    if (ptsz->experiment == 0) deg2 *= 41253.0; //Planck full-sky (4 x pi x 57.3^2=41253 square degrees where 57.3  = 360 / (2 x pi))
     if (ptsz->experiment == 1) deg2 *= 599.353; //SO
 
     double HMF;
@@ -480,32 +480,32 @@ private(tstart, tstop,pvecsz)
 
       //printf("index_y=%d\t,index_z=%d\tj1=%d\tj2=%d\n",index_y,index_z,j1,j2);
 
-
-      int jj,ii;
+      //Here we compute the number counts per SNR and redshift bin:
+      int grid_index_z,grid_index_m;
       double SUM2 = 0.;
       double SUM2_temp_0 = 0.;
       double SUM2_temp_1 = 0.;
 
-      for (jj=j1;jj<j2;jj++){
-        for (ii=0;ii<pcsz->nsteps_m;ii++){
-          double x1 = pcsz->steps_z[jj];
-          double x2 = pcsz->steps_z[jj+1];
+      for (grid_index_z=j1;grid_index_z<j2;grid_index_z++){
+        for (grid_index_m=0;grid_index_m<pcsz->nsteps_m;grid_index_m++){
+          double x1 = pcsz->steps_z[grid_index_z];
+          double x2 = pcsz->steps_z[grid_index_z+1];
 
-          double f1 = grid[ii][jj];
-          double f2 = grid[ii][jj+1];
+          double f1 = grid[grid_index_m][grid_index_z];
+          double f2 = grid[grid_index_m][grid_index_z+1];
 
-          double f1_temp_0 = grid_temp_0[ii][jj];
-          double f2_temp_0 = grid_temp_0[ii][jj+1];
+          double f1_temp_0 = grid_temp_0[grid_index_m][grid_index_z];
+          double f2_temp_0 = grid_temp_0[grid_index_m][grid_index_z+1];
 
-          double f1_temp_1 = grid_temp_1[ii][jj];
-          double f2_temp_1 = grid_temp_1[ii][jj+1];
+          double f1_temp_1 = grid_temp_1[grid_index_m][grid_index_z];
+          double f2_temp_1 = grid_temp_1[grid_index_m][grid_index_z+1];
 
 
-          double c1 =  completeness_2d[ii][jj][index_y];
-          double c2 = completeness_2d[ii][jj+1][index_y];
+          double c1 =  completeness_2d[grid_index_m][grid_index_z][index_y];
+          double c2 = completeness_2d[grid_index_m][grid_index_z+1][index_y];
 
-          double d_c1_dq =  d_completeness_2d_dq[ii][jj][index_y];
-          double d_c2_dq = d_completeness_2d_dq[ii][jj+1][index_y];
+          double d_c1_dq =  d_completeness_2d_dq[grid_index_m][grid_index_z][index_y];
+          double d_c2_dq = d_completeness_2d_dq[grid_index_m][grid_index_z+1][index_y];
 
 
           if (pcsz->has_completeness == 0){
@@ -535,8 +535,9 @@ private(tstart, tstop,pvecsz)
   }//end loop y bins for lkl
 
 
-
-  for (index_m=0;index_m <pcsz->nsteps_m;index_m++){ //loop over massess
+  //Here we compute the number counts per mass and redshift bin:
+  int grid_index_m;
+  for (grid_index_m=0;grid_index_m <pcsz->nsteps_m;grid_index_m++){ //loop over massess
     for (index_z=0;index_z<pcsz->Nbins_z;index_z++){
 
       double z_bin_min = pcsz->z_center[index_z]-0.5*pcsz->dz;
@@ -569,14 +570,14 @@ private(tstart, tstop,pvecsz)
 
       double SUM2 = 0.;
 
-      int jj;
-      for (jj=j1;jj<j2-1;jj++){
+      int grid_index_z;
+      for (grid_index_z=j1;grid_index_z<j2-1;grid_index_z++){
 
-        double x1 = pcsz->steps_z[jj];
-        double x2 = pcsz->steps_z[jj+1];
+        double x1 = pcsz->steps_z[grid_index_z];
+        double x2 = pcsz->steps_z[grid_index_z+1];
 
-        double f1 = grid[index_m][jj];
-        double f2 = grid[index_m][jj+1];
+        double f1 = grid[grid_index_m][grid_index_z];
+        double f2 = grid[grid_index_m][grid_index_z+1];
 
         double c1 = 1.;
         double c2 = 1.;
@@ -586,7 +587,7 @@ private(tstart, tstop,pvecsz)
 
       }
 
-      pcsz->dNdzdm_theoretical[index_z][index_m]=SUM2;
+      pcsz->dNdzdm_theoretical[index_z][grid_index_m]=SUM2;
 
     }//end loop z
   }//end loop m
@@ -618,12 +619,12 @@ private(tstart, tstop,pvecsz)
   free(grid_temp_1);
 
   for (index_m=0;
-       index_m<dim1;
+       index_m<dim_mass;
        index_m++)
   {
 
     for (index_z=0;
-         index_z<dim2;
+         index_z<dim_redshift;
          index_z++){
       free(completeness_2d[index_m][index_z]);
       free(d_completeness_2d_dq[index_m][index_z]);
@@ -999,12 +1000,10 @@ int grid_C_2d(
           double dy=y-y0;
           double arg0=((lny-mu)/(sqrt(2.)*pcsz->sigmaM));
           double win0=erfs[k][l1][index_y]+(erfs[k][l2][index_y]-erfs[k][l1][index_y])/(th2-th1)*(thp-th1);
-          double win=erfs[k+1][l1][index_y]+(erfs[k+1][l2][index_y]-erfs[k+1][l1][index_y]
-                                             )/(th2-th1)*(thp-th1);
+          double win=erfs[k+1][l1][index_y]+(erfs[k+1][l2][index_y]-erfs[k+1][l1][index_y])/(th2-th1)*(thp-th1);
 
           double d_win0_dq=d_erfs_dq[k][l1][index_y]+(d_erfs_dq[k][l2][index_y]-d_erfs_dq[k][l1][index_y])/(th2-th1)*(thp-th1);
-          double d_win_dq=d_erfs_dq[k+1][l1][index_y]+(d_erfs_dq[k+1][l2][index_y]-d_erfs_dq[k+1][l1][index_y]
-                                                       )/(th2-th1)*(thp-th1);
+          double d_win_dq=d_erfs_dq[k+1][l1][index_y]+(d_erfs_dq[k+1][l2][index_y]-d_erfs_dq[k+1][l1][index_y])/(th2-th1)*(thp-th1);
           lny=lny+pcsz->dlny;
           double arg=((lny-mu)/(sqrt(2.)*pcsz->sigmaM));
           double py=(win0*fac/y0*exp(-arg0*arg0)+win*fac/y*exp(-arg*arg))*0.5;
@@ -1035,17 +1034,19 @@ int grid_C_2d(
 
 int write_output_cluster_counts(struct szcount * pcsz){
 
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
   int i,j,index_m,index_z;
 
 if (pcsz->sz_verbose > 0)
 {
   FILE *fp;
-  fp=fopen("output/dndz_SZ_CLASS.txt", "w");
+  sprintf(Filepath,"%s%s%s",pcsz->root,"dndzdy",".txt");
+  fp=fopen(Filepath, "w");
+
   if(fp == NULL)
     exit(-1);
     int j;
   for (j=0;j<pcsz->Nbins_y+1;j++){
-
     for (i=0;i<pcsz->Nbins_z;i++){
 
       fprintf(fp,"%e\n",pcsz->dNdzdy_theoretical[i][j]);
@@ -1053,70 +1054,68 @@ if (pcsz->sz_verbose > 0)
 
   double total_counts = 0.;
   for (j=0;j<pcsz->Nbins_z;j++){
+      printf("z=%.3e\t",pcsz->z_center[j]);
     for (i=0;i<pcsz->Nbins_y+1;i++){
       total_counts += pcsz->dNdzdy_theoretical[j][i];
       printf("%e\t",pcsz->dNdzdy_theoretical[j][i]);
     }
     printf(" ------ \n");
   }
-  printf("total counts = %e\n", total_counts);
+  if (pcsz->has_completeness == 0)
+    total_counts = total_counts/(pcsz->Nbins_y+1.);
+
+    printf("total counts = %e\n", total_counts);
 
 
-  fp=fopen("output/dndz_SZ_bins_z_center.txt", "w");
+  sprintf(Filepath,"%s%s%s",pcsz->root,"dndzdy_bins_z_center",".txt");
+  fp=fopen(Filepath, "w");
   if(fp == NULL)
     exit(-1);
 
-    for (i=0;
-         i<pcsz->Nbins_z;
-         i++){
+    for (i=0;i<pcsz->Nbins_z;i++){
+      fprintf(fp,"%e\n",pcsz->z_center[i]);
+    }
 
-      fprintf(fp,
-              "%e\n",
-              pcsz->z_center[i]);
+
+  sprintf(Filepath,"%s%s%s",pcsz->root,"dndzdy_bins_y_center",".txt");
+  fp=fopen(Filepath, "w");
+  if(fp == NULL)
+    exit(-1);
+
+    for (i=0;i<pcsz->Nbins_y+1;i++){
+      fprintf(fp,"%e\n",pow(10.,pcsz->logy[i]));
+    }
+
+
+  sprintf(Filepath,"%s%s%s",pcsz->root,"dndzdm_bins_m_center",".txt");
+  fp=fopen(Filepath, "w");
+  if(fp == NULL)
+    exit(-1);
+    fprintf(fp,"# Column 1: ln(M/(Msun/h)) at the center of the mass bin.\n");
+    fprintf(fp,"# Column 2: M [Msun/h]\n");
+    fprintf(fp,"# Note that we use logarithmic binning between M_min = %.4e Msun/h and M_max = %.4e Msun/h.\n\n",exp(pcsz->lnM_min),exp(pcsz->lnM_max));
+
+    for (i=0;i<pcsz->nsteps_m;i++){
+
+      fprintf(fp,"%e\t%e\n",pcsz->steps_m[i],exp(pcsz->steps_m[i]));
     }
 
 
 
-
-  fp=fopen("output/dndz_SZ_bins_y_center.txt", "w");
-  if(fp == NULL)
-    exit(-1);
-
-    for (i=0;
-         i<pcsz->Nbins_y+1;
-         i++){
-
-      fprintf(fp,
-              "%e\n",
-              pow(10.,pcsz->logy[i]));
-    }
-
-
-  fp=fopen("output/dndz_SZ_bins_m_center.txt", "w");
-  if(fp == NULL)
-    exit(-1);
-
-    for (i=0;
-         i<pcsz->nsteps_m;
-         i++){
-
-      fprintf(fp,
-              "%e\n",
-              pcsz->steps_m[i]);
-    }
-
-
-
-
-
-  fp=fopen("output/dNdzdm.txt", "w");
+  sprintf(Filepath,"%s%s%s",pcsz->root,"dndzdm",".txt");
+  fp=fopen(Filepath, "w");
+  fprintf(fp,"# Number counts within dM and dz: \n");
+  fprintf(fp,"# Column 1: HMF * deg2 * volume * dlnM * dz where HMF = dN/(dlnM*dV) and volume = dV/dz\n");
+  fprintf(fp,"# Column 2: mass M in Msun/h\n");
+  fprintf(fp,"# Column 3: redshift z @ center of the redshift bin\n");
+  fprintf(fp,"# Note: dlnM = %.4e and dz = %.4e \n\n", pcsz->dlnM, pcsz->dz);
   for (index_z=0;index_z<pcsz->Nbins_z;index_z++){
     for (index_m=0;index_m<pcsz->nsteps_m;index_m++){
 
       fprintf(fp,
               "%e\t %e\t %e\n",
               pcsz->dNdzdm_theoretical[index_z][index_m],
-              log10(exp(pcsz->steps_m[index_m])),
+              exp(pcsz->steps_m[index_m]),
               pcsz->z_center[index_z]);
     }
   }
@@ -1138,18 +1137,18 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
   //pcsz->nzSZ = 20.; //cosmomc settings
   //pcsz->size_logM = 105; //cosmomc settings
 
-  pcsz->rho_m_at_z = ptsz->Omega_m_0*ptsz->Rho_crit_0*pow((1.+pcsz->redshift_for_dndm),3);
+  //pcsz->rho_m_at_z = ptsz->Omega_m_0*ptsz->Rho_crit_0*pow((1.+pcsz->redshift_for_dndm),3);
 
 
   class_alloc(pcsz->redshift,sizeof(double)*pcsz->nzSZ,pcsz->error_message);
-  class_alloc(pcsz->dndz,sizeof(double)*pcsz->nzSZ,pcsz->error_message);
+  //class_alloc(pcsz->dndz,sizeof(double)*pcsz->nzSZ,pcsz->error_message);
   class_alloc(pcsz->logM_at_z,sizeof(double)*pcsz->size_logM,pcsz->error_message);
-  class_alloc(pcsz->dndmdz,pcsz->size_logM*sizeof(double *),pcsz->error_message);
+  class_alloc(pcsz->dndlnM,pcsz->size_logM*sizeof(double *),pcsz->error_message);
 
   int i;
   for (i=0;i<pcsz->size_logM;i++){
     pcsz->logM_at_z[i] = 10.+i*7./(pcsz->size_logM-1);
-    class_alloc(pcsz->dndmdz[i],pcsz->nzSZ*sizeof(double),pcsz->error_message);
+    class_alloc(pcsz->dndlnM[i],pcsz->nzSZ*sizeof(double),pcsz->error_message);
   }
 
 
@@ -1201,7 +1200,7 @@ if(ptsz->experiment == 1) pcsz->sn_cutoff = 5.;
   //grid for redshift
   //# Redshift bin parameters
   pcsz->z_0 = 0.;
-  pcsz->z_max = 2.; //z_max = 1. for the Planck lkl
+  //pcsz->z_max : 1. for the Planck lkl (default), ste in param file.
   pcsz->dz = 0.1;
 
   pcsz->Nbins_z =floor((pcsz->z_max - pcsz->z_0)/pcsz->dz) + 1;
