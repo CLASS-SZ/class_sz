@@ -7,14 +7,20 @@
 #include "lensing.h"
 #include <gsl/gsl_integration.h>
 
-
-#define _tSZ_power_spectrum_ ((ptsz->has_sz_ps == _TRUE_) && (index_md == ptsz->index_md_sz_ps))
-#define _tSZ_trispectrum_ ((ptsz->has_sz_trispec == _TRUE_))
-#define _tSZ_2halo_ ((ptsz->has_sz_2halo == _TRUE_))
-#define _tSZ_te_y_y_ ((ptsz->has_sz_te_y_y == _TRUE_))
-#define _cov_N_Cl_ ((ptsz->has_sz_cov_N_Cl == _TRUE_))
 #define _mean_y_ ((ptsz->has_mean_y == _TRUE_) && (index_md == ptsz->index_md_mean_y))
 #define _hmf_ ((ptsz->has_hmf == _TRUE_) && (index_md == ptsz->index_md_hmf))
+#define _tSZ_power_spectrum_ ((ptsz->has_sz_ps == _TRUE_) && (index_md == ptsz->index_md_sz_ps))
+#define _trispectrum_ ((ptsz->has_sz_trispec == _TRUE_) && (index_md == ptsz->index_md_trispectrum))
+#define _2halo_ ((ptsz->has_sz_2halo == _TRUE_) && (index_md == ptsz->index_md_2halo))
+#define _te_y_y_ ((ptsz->has_sz_te_y_y == _TRUE_) && (index_md == ptsz->index_md_te_y_y))
+#define _cov_Y_N_ ((ptsz->has_sz_cov_Y_N == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N))
+#define _cov_N_N_ ((ptsz->has_sz_cov_N_N == _TRUE_) && (index_md == ptsz->index_md_cov_N_N))
+
+//#define _tSZ_trispectrum_ ((ptsz->has_sz_trispec == _TRUE_))
+//#define _tSZ_2halo_ ((ptsz->has_sz_2halo == _TRUE_))
+//#define _tSZ_te_y_y_ ((ptsz->has_sz_te_y_y == _TRUE_))
+#define _cov_N_Cl_ ((ptsz->has_sz_cov_N_Cl == _TRUE_))
+
 
 
 
@@ -30,6 +36,9 @@ struct tszspectrum {
   double * cl_sz_2h;
   double ** cov_N_cl;
   double ** r_N_cl;
+  double ** cov_Y_N;
+  double * cov_N_N;
+  double ** r_Y_N;
   double ** r_cl_clp;
   double ** trispectrum_ref;
   double * cov_cl_cl;
@@ -38,9 +47,19 @@ struct tszspectrum {
 
   int create_ref_trispectrum_for_cobaya;
 
-  int has_sz_2halo;
-  int has_sz_te_y_y;
+
+  //int has_sz_te_y_y;
   int has_sz_cov_N_Cl;
+
+  int has_sz_cov_Y_N;
+  int index_md_cov_Y_N;
+  int index_integrand_id_cov_Y_N_first;
+  int index_integrand_id_cov_Y_N_last;
+
+  int has_sz_cov_N_N;
+  int index_md_cov_N_N;
+  int index_integrand_id_cov_N_N_first;
+  int index_integrand_id_cov_N_N_last;
 
   int has_hmf;
   int index_md_hmf;
@@ -57,11 +76,25 @@ struct tszspectrum {
   int index_integrand_id_sz_ps_last;
 
 
-  int has_sz_trispec;
-  int index_md_sz_trispec;
+  int has_sz_2halo;
+  int index_md_2halo;
+  int index_integrand_id_sz_ps_2halo_first;
+  int index_integrand_id_sz_ps_2halo_last;
 
-  int index_integrand_id_sz_trispec_first;
-  int index_integrand_id_sz_trispec_last;
+  int has_sz_te_y_y;
+  int index_md_te_y_y;
+  int index_integrand_id_sz_ps_te_y_y_first;
+  int index_integrand_id_sz_ps_te_y_y_last;
+
+
+
+
+
+  int has_sz_trispec;
+  //int index_md_sz_trispec;
+  int index_integrand_id_trispectrum_first;
+  int index_integrand_id_trispectrum_last;
+  int index_md_trispectrum;
 
 
   int number_of_integrands;
@@ -86,6 +119,9 @@ struct tszspectrum {
 
   int index_integrands_first;
   int index_integrands_last;
+
+
+
 
 
 
@@ -125,6 +161,7 @@ struct tszspectrum {
   int  index_r200c;
   int  index_multipole;
   int  index_multipole_prime;
+  int  index_cov_Y_N_mass_bin;
   int  index_multipole_for_pressure_profile;
   int  index_pressure_profile;
   int  index_completeness;
@@ -179,6 +216,7 @@ struct tszspectrum {
   int nbins_M;
   double * M_bins;
   double dlogM;
+  double * cov_Y_N_mass_bin_edges;
 
 
 

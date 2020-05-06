@@ -628,12 +628,12 @@ double pwl_interp_2d(int nxd, int nyd, double xd[], double yd[], double zd[],
 
 double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
 
-  int integrate_over_m_at_z_qgaus_sz(double * pvecback,
-                                     double * pvectsz,
-                                     struct background * pba,
-                                     struct nonlinear * pnl,
-                                     struct primordial * ppm,
-                                     struct tszspectrum * ptsz);
+   double integrate_over_m_at_z(double * pvecback,
+                               double * pvectsz,
+                               struct background * pba,
+                               struct nonlinear * pnl,
+                               struct primordial * ppm,
+                               struct tszspectrum * ptsz);
 
   int zbrent_sz(double x1,
                 double x2,

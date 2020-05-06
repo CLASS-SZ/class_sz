@@ -682,7 +682,7 @@ int grid_C_2d(
               struct tszspectrum * ptsz,
               struct szcount * pcsz
               ){
-  int i;
+  //int i;
 
   int l_array[3];
   double theta_array[3];
@@ -1035,7 +1035,7 @@ int grid_C_2d(
 int write_output_cluster_counts(struct szcount * pcsz){
 
   char Filepath[_ARGUMENT_LENGTH_MAX_];
-  int i,j,index_m,index_z;
+  int i,index_m,index_z;
 
 if (pcsz->sz_verbose > 0)
 {
@@ -1172,8 +1172,8 @@ if(ptsz->experiment == 1) pcsz->sn_cutoff = 5.;
   }
 
   else {
-    pcsz->lnM_max = 37.;
-    pcsz->lnM_min = 31.54; //[TBC]
+    pcsz->lnM_max = 37.; //cosmomc/szount.f90 range
+    pcsz->lnM_min = 31.54;
 
   }
 

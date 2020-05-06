@@ -42978,11 +42978,10 @@ int spectra_sigma_ncdm(
 
   double pk;
   double * pk_ic = NULL;
-  double * tk = NULL; //transfer
+  //double * tk = NULL; //transfer
 
   double * array_for_sigma;
-  double tk_cdm,tk_b,tk_m,tk_ncdm,Omega_cdm,Omega_b,Omega_ncdm;
-  double primordial_pk;
+  //double tk_cdm,tk_b,tk_m,tk_ncdm,Omega_cdm,Omega_b,Omega_ncdm;
   int index_num;
   int index_k;
   int index_y;
@@ -43016,26 +43015,7 @@ int spectra_sigma_ncdm(
     if (i == (pnl->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
     x=k*R;
     W=3./x/x/x*(sin(x)-x*cos(x));
-/*
 
-    class_call(spectra_tk_at_k_and_z(pba,psp,k,z,tk),
-               psp->error_message,
-               psp->error_message);
-    Omega_cdm =  pba->Omega0_cdm ;
-    Omega_b = pba->Omega0_b;
-    Omega_ncdm = pba->Omega0_ncdm_tot;
-
-    tk_cdm = tk[psp->index_tr_delta_cdm];
-    tk_b = tk[psp->index_tr_delta_b];
-    tk_ncdm = tk[psp->index_tr_delta_ncdm1];
-    tk_m = (Omega_cdm*tk_cdm+Omega_b*tk_b+Omega_ncdm*tk_ncdm)
-    /(Omega_cdm+Omega_b+Omega_ncdm);
-
-    primordial_pk =  ppm->A_s*pow(k/ppm->k_pivot,ppm->n_s-1.);
-
-    pk = (2.*_PI_*_PI_)/k/k/k*primordial_pk*pow((Omega_cdm*tk_cdm+Omega_b*tk_b
-                                                 )/(Omega_cdm+Omega_b),2.);
-*/
 
 
    class_call(nonlinear_pk_at_k_and_z(
@@ -43105,9 +43085,9 @@ int spectra_sigma_ncdm_prime(
 
   double pk;
   double * pk_ic = NULL;
-  double * tk = NULL; //transfer
-  double tk_cdm,tk_b,tk_m,tk_ncdm,Omega_cdm,Omega_b,Omega_ncdm;
-  double primordial_pk;
+  //double * tk = NULL; //transfer
+  //double tk_cdm,tk_b,tk_m,tk_ncdm,Omega_cdm,Omega_b,Omega_ncdm;
+  //double Omega_cdm,Omega_b,Omega_ncdm;
   double * array_for_sigma;
   int index_num;
   int index_k;
@@ -43140,26 +43120,6 @@ int spectra_sigma_ncdm_prime(
     W=3./x/x/x*(sin(x)-x*cos(x));
     W_prime=3./x/x*sin(x)-9./x/x/x/x*(sin(x)-x*cos(x));
 
-/*
-    class_call(spectra_tk_at_k_and_z(pba,psp,k,z,tk),
-               psp->error_message,
-               psp->error_message);
-
-    Omega_cdm =  pba->Omega0_cdm ;
-    Omega_b = pba->Omega0_b;
-    Omega_ncdm = pba->Omega0_ncdm_tot;
-
-    tk_cdm = tk[psp->index_tr_delta_cdm];
-    tk_b = tk[psp->index_tr_delta_b];
-    tk_ncdm = tk[psp->index_tr_delta_ncdm1];
-    tk_m = (Omega_cdm*tk_cdm+Omega_b*tk_b+Omega_ncdm*tk_ncdm)
-    /(Omega_cdm+Omega_b+Omega_ncdm);
-    primordial_pk =  ppm->A_s*pow(k/ppm->k_pivot,ppm->n_s-1.);
-
-    pk = (2.*_PI_*_PI_)/k/k/k*primordial_pk*pow((Omega_cdm*tk_cdm+Omega_b*tk_b
-                                                 )/(Omega_cdm+Omega_b),2.);
-
-*/
 
 class_call(nonlinear_pk_at_k_and_z(
                                   pba,
@@ -43688,21 +43648,6 @@ struct Parameters_for_integrand_patterson_pp{
 };
 
 
-//
-// double integrand_patterson_test_pp(double ln_x, void *p){
-//
-//   struct Parameters_for_integrand_patterson_pp *V = ((struct Parameters_for_integrand_patterson_pp *) p);
-//
-//     double x=exp(ln_x);
-//
-//     double plc_gnfw_at_x = 0.;
-//     plc_gnfw(&plc_gnfw_at_x,x,V->pvectsz,V->pba,V->ptsz);
-//
-//     double result = x*plc_gnfw_at_x;
-//
-//   return result;
-//
-// }
 
 double integrand_patterson_test_pp(double x, void *p){
 
@@ -43719,11 +43664,6 @@ double integrand_patterson_test_pp(double x, void *p){
 
 }
 
-double f (double x, void * params) {
-  double alpha = *(double *) params;
-  double f = log(alpha*x) / sqrt(x);
-  return f;
-}
 
 
 /**
@@ -43744,32 +43684,6 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
                           ) {
 
 
-  //
-  // gsl_integration_workspace * w
-  //   = gsl_integration_workspace_alloc (1000);
-  //
-  // double result_gsl, error;
-  // double expected = -4.0;
-  // double alpha = 1.0;
-  //
-  // gsl_function F;
-  // F.function = &f;
-  // F.params = &alpha;
-  //
-  // gsl_integration_qags (&F, 0, 1, 0, 1e-7, 1000,
-  //                       w, &result_gsl, &error);
-  //
-  // printf ("result          = % .4e\n", result_gsl);
-  // printf ("exact result    = % .4e\n", expected);
-  // printf ("estimated error = % .4e\n", error);
-  // printf ("actual error    = % .4e\n", result_gsl - expected);
-  // printf ("intervals =  %d\n", w->size);
-  //
-  // gsl_integration_workspace_free (w);
-  //
-  // exit(0);
-
-
   ////////////////////////////////
   //Patterson [from Jens Chluba]
   ////////////////////////////////
@@ -43787,13 +43701,7 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   double epsabs=1e-40;//ptsz->patterson_epsabs;
   int show_neval = ptsz->patterson_show_neval;
   //
-  //int id_max = ptsz->ln_x_size_for_pp-1;
-  // double r=Integrate_using_Patterson_adaptive(ptsz->ln_x_for_pp[0],
-  //                                             ptsz->ln_x_for_pp[id_max],
-  //                                             epsrel, epsabs,
-  //                                             integrand_patterson_test_pp,
-  //                                             params,show_neval);
-  //
+
   int id_max = ptsz->x_size_for_pp-1;
   double r=Integrate_using_Patterson_adaptive(ptsz->x_for_pp[0],
                                               ptsz->x_for_pp[id_max],
@@ -43801,7 +43709,6 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
                                               integrand_patterson_test_pp,
                                               params,show_neval);
 
-//pvectsz[ptsz->index_integrals_over_m_first + index_integrals
 *result = r;
 
 }
@@ -43854,42 +43761,6 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   gsl_integration_qawo_table_free(wf);
   gsl_integration_workspace_free(w);
 
-  //   QAGS
-  //   gsl_integration_workspace * w
-  //     = gsl_integration_workspace_alloc (30000);
-  //
-  //
-  //   double result_gsl, error;
-  //
-  //
-  //   struct Parameters_for_integrand_patterson_pp V;
-  //   V.ptsz = ptsz;
-  //   V.pba = pba;
-  //   V.pvectsz = pvectsz;
-  //
-  //   void * params = &V;
-  //
-  //   gsl_function F;
-  //   F.function = &integrand_patterson_test_pp;
-  //   F.params = params;
-  //
-  //   int id_max = ptsz->x_size_for_pp-1;
-  //
-  //   double eps_rel = 1e-2;
-  //
-  //   gsl_integration_qags (&F, ptsz->x_for_pp[0],ptsz->x_for_pp[id_max], 0, eps_rel, 30000,
-  //                         w, &result_gsl, &error);
-  //
-  //
-  //
-  // // printf ("result          = % .4e\n", result_gsl);
-  // // printf ("estimated error = % .4e\n", error);
-  // // printf ("intervals =  %d\n", w->size);
-  //
-  // //gsl_integration_workspace_free (w);
-  //
-  //
-  // *result = result_gsl;
 
 /////////
 
@@ -43939,7 +43810,7 @@ else if (ptsz->integration_method_pressure_profile==2){
   int index_ddy;
   int i;
 
-  double x,W;
+  double x;
 
 
   i=0;
@@ -43952,48 +43823,6 @@ else if (ptsz->integration_method_pressure_profile==2){
   index_num=i;
 
  double plc_gnfw_at_x = 0.;
-  //
-  // class_alloc(array_for_integral,
-  //             ptsz->ln_x_size_for_pp*index_num*sizeof(double),
-  //             ptsz->error_message);
-  //
-  // for (i=0;i<ptsz->ln_x_size_for_pp;i++) {
-  //   x=exp(ptsz->ln_x_for_pp[i]);
-  //
-  //   plc_gnfw(&plc_gnfw_at_x,x,pvectsz,pba,ptsz);
-  //
-  //
-  //
-  //   double pp_at_x_and_ell_over_ell_char = x*plc_gnfw_at_x;
-  //   array_for_integral[i*index_num+index_x]= log(x);
-  //   array_for_integral[i*index_num+index_y]= pp_at_x_and_ell_over_ell_char;
-  // }
-  //
-  //
-  //
-  //
-  // class_call(array_spline(array_for_integral,
-  //                         index_num,
-  //                         ptsz->ln_x_size_for_pp,
-  //                         index_x,
-  //                         index_y,
-  //                         index_ddy,
-  //                         _SPLINE_EST_DERIV_,
-  //                         ptsz->error_message),
-  //            ptsz->error_message,
-  //            ptsz->error_message);
-  //
-  // class_call(array_integrate_all_spline(array_for_integral,
-  //                                       index_num,
-  //                                       ptsz->ln_x_size_for_pp,
-  //                                       index_x,
-  //                                       index_y,
-  //                                       index_ddy,
-  //                                       result,
-  //                                       ptsz->error_message),
-  //            ptsz->error_message,
-  //            ptsz->error_message);
-
 
   class_alloc(array_for_integral,
               ptsz->x_size_for_pp*index_num*sizeof(double),
@@ -44887,6 +44716,37 @@ double d_erf_compl_dq(double y,
   return erf_compl;
 }
 
+
+
+struct Parameters_for_integrand_redshift{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvecback;
+  double * pvectsz;
+};
+
+double integrand_redshift(double ln1pz, void *p){
+
+  struct Parameters_for_integrand_redshift *V = ((struct Parameters_for_integrand_redshift *) p);
+
+   V->pvectsz[V->ptsz->index_z] = exp(ln1pz)-1.;
+
+  double result = integrate_over_m_at_z(V->pvecback,
+                                        V->pvectsz,
+                                        V->pba,
+                                        V->pnl,
+                                        V->ppm,
+                                        V->ptsz);
+
+
+
+  return result;
+
+}
+
+
 int integrate_over_redshift_at_each_ell(struct background * pba,
                                         struct nonlinear * pnl,
                                         struct primordial * ppm,
@@ -44895,98 +44755,31 @@ int integrate_over_redshift_at_each_ell(struct background * pba,
                                         double * Pvectsz)
 {
 
-  //printf("computing hmf int 1\n");
 
-  int i = 0;
+  double z_min = ptsz->z1SZ;
+  double z_max = ptsz->z2SZ;
 
+  struct Parameters_for_integrand_redshift V;
+  V.pnl = pnl;
+  V.ppm = ppm;
+  V.ptsz = ptsz;
+  V.pba = pba;
+  V.pvectsz = Pvectsz;
+  V.pvecback = Pvecback;
+  void * params = &V;
+  double r; //result of the integral
 
-  double z1SZ = ptsz->z1SZ;
-  double z2SZ = ptsz->z2SZ;
-  double n_arraySZ = ptsz->n_arraySZ_for_integral;
-
-  double dlnx = (log(1.+ ptsz->z2SZ)-log(1.+ ptsz->z1SZ))/(n_arraySZ-1.);
-
-  //Comment next two lines for Code Comparaison
-  //with szfastdks
-  //These are here to speed up the high multipoles computation
-  //without a significant loss of accuracy.
-  //(change also needed at begining of qgaus_sz)
-  //TBC
-  //if (ptsz->ell[index_l]<50.) n_arraySZ = 3000;
-  //else  n_arraySZ = ptsz->n_arraySZ;
+  double epsrel= 1.e-3;//ptsz->patterson_epsrel;
+  double epsabs= 1.e-15;//ptsz->patterson_epsabs;
+  int show_neval = ptsz->patterson_show_neval;
 
 
-  double * vec_integrals;
-  int n_integrals;
-  int index_integrals;
-  n_integrals = ptsz->number_of_integrals_per_thread;//ptsz->index_integrals_over_z_last-ptsz->index_integrals_over_z_first+1; //HMF
-  class_alloc(vec_integrals,n_integrals*sizeof(double),ptsz->error_message);
+    r=Integrate_using_Patterson_adaptive(log(1. + z_min), log(1. + z_max),
+                                         epsrel, epsabs,
+                                         integrand_redshift,
+                                         params,show_neval);
 
-
-  //Integration over redshift
-  //Step 1: evaluation at z1SZ
-  Pvectsz[ptsz->index_z] = z1SZ;
-  class_call(integrate_over_m_at_z_qgaus_sz(Pvecback,
-                                            Pvectsz,
-                                            pba,
-                                            pnl,
-                                            ppm,
-                                            ptsz),
-             ptsz->error_message,
-             ptsz->error_message);
-
-  for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-    vec_integrals[index_integrals] = (1.+Pvectsz[ptsz->index_z])
-                                     *Pvectsz[ptsz->index_integrals_over_m_first+index_integrals]
-                                     *0.5*dlnx;
-
-
-  //Integration over redshift
-  //Step 2: evaluation at z2SZ
-  Pvectsz[ptsz->index_z] = z2SZ;
-  class_call(integrate_over_m_at_z_qgaus_sz(Pvecback,
-                                            Pvectsz,
-                                            pba,
-                                            pnl,
-                                            ppm,
-                                            ptsz),
-             ptsz->error_message,
-             ptsz->error_message);
-
-  for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-    vec_integrals[index_integrals] += (1.+Pvectsz[ptsz->index_z])
-                                      *Pvectsz[ptsz->index_integrals_over_m_first+index_integrals]
-                                      *0.5*dlnx;
-
-  //loop over redshifts
-  for (i=2;i<n_arraySZ-1;i++)
-  {
-    Pvectsz[ptsz->index_z] =  exp(log(1.+ z1SZ)+(i-1.)*(log(1.+ z2SZ)-log(1.+ z1SZ))
-                                  /(1.*n_arraySZ-1.))- 1.;
-
-    class_call(integrate_over_m_at_z_qgaus_sz(Pvecback,
-                                              Pvectsz,
-                                              pba,
-                                              pnl,
-                                              ppm,
-                                              ptsz),
-               ptsz->error_message,
-               ptsz->error_message);
-
-    for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-      vec_integrals[index_integrals] += 2.*(1.+Pvectsz[ptsz->index_z])
-                                        *Pvectsz[ptsz->index_integrals_over_m_first+index_integrals]
-                                        *0.5*dlnx;
-  }
-
-
-
-
-  //collect the results
-  for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-    Pvectsz[ptsz->index_integrals_over_z_first+index_integrals] =  vec_integrals[index_integrals];
-
-  free(vec_integrals);
+  Pvectsz[ptsz->index_integral] = r;
   return _SUCCESS_;
 }
 
@@ -45017,7 +44810,6 @@ double integrand_patterson_test(double logM, void *p){
                                         V->pnl,
                                         V->ptsz);
 
-
   return result;
 
 }
@@ -45026,12 +44818,12 @@ double integrand_patterson_test(double logM, void *p){
 
 //Gaussian quadrature for integration
 //over the mass range at a given redshift
-int integrate_over_m_at_z_qgaus_sz(double * pvecback,
-                                   double * pvectsz,
-                                   struct background * pba,
-                                   struct nonlinear * pnl,
-                                   struct primordial * ppm,
-                                   struct tszspectrum * ptsz)
+ double integrate_over_m_at_z(double * pvecback,
+                             double * pvectsz,
+                             struct background * pba,
+                             struct nonlinear * pnl,
+                             struct primordial * ppm,
+                             struct tszspectrum * ptsz)
 {
 
 
@@ -45041,26 +44833,6 @@ int integrate_over_m_at_z_qgaus_sz(double * pvecback,
                                 *pow(pvecback[pba->index_bg_ang_distance]*pba->h,2)
                                 *_c_*1.e-5
                                 /(pvecback[pba->index_bg_H]/pba->H0);
-
-
-
-
-  double * vec_integrals;
-  double * vec_results;
-
-  int n_integrals;
-  int index_integrals;
-
-  n_integrals = ptsz->number_of_integrals_per_thread;// - (ptsz->nbins_M-1);
-
-  class_alloc(vec_integrals,
-              n_integrals*sizeof(double),
-              ptsz->error_message);
-
-
-  class_alloc(vec_results,
-              n_integrals*sizeof(double),
-              ptsz->error_message);
 
 
 
@@ -45094,106 +44866,20 @@ int integrate_over_m_at_z_qgaus_sz(double * pvecback,
                                   -39.*pow((pvecback[pba->index_bg_Omega_m]-1.),2);
 
 
-  //end initialisation of background variables
-  ///
 
-//
-//   //////////////////
-//   //trapezoidal
-//   /////////////////
-//   //else if (ptsz->integration_method_mass==1){
-//
-//
-//   double log_M_min = log(ptsz->M1SZ);
-//   double log_M_max = log(ptsz->M2SZ);
-//   int n_M_per_bin = ptsz->number_of_mass_bins;
-//   double dlnM = (log(ptsz->M2SZ)-log(ptsz->M1SZ))/(n_M_per_bin-1.);
-//
-//   for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-//     vec_results[index_integrals] = 0.;
-//
-//   //step 1:
-//   double logM = log_M_min;
-//   class_call(integrand_at_m_and_z(logM,
-//                                   pvecback,
-//                                   pvectsz,
-//                                   pba,
-//                                   ppm,
-//                                   pnl,
-//                                   ptsz),
-//              ptsz->error_message,
-//              ptsz->error_message);
-//
-//     for (index_integrals=0; index_integrals<n_integrals; index_integrals++){
-//       vec_integrals[index_integrals] = 0.5*dlnM*pvectsz[ptsz->index_integrands_first+index_integrals];
-//       printf("trap rule vec_integrals[index_integrals] = %e n_M_per_bin = %d dlnM = %e logM = %e\n",
-//             vec_integrals[index_integrals],
-//             n_M_per_bin, dlnM, logM);
-//     }
-//
-//   //step 2:
-//   logM = log_M_max;
-//   class_call(integrand_at_m_and_z(logM,
-//                                   pvecback,
-//                                   pvectsz,
-//                                   pba,
-//                                   ppm,
-//                                   pnl,
-//                                   ptsz),
-//              ptsz->error_message,
-//              ptsz->error_message);
-//
-//     for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-//       vec_integrals[index_integrals] += 0.5*dlnM*pvectsz[ptsz->index_integrands_first+index_integrals];
-//
-//
-//   //step 3:
-//   int i;
-//   for (i=2;i<n_M_per_bin-1;i++){
-//
-//   logM = log_M_min +(i-1.)*(log_M_max-log_M_min)/(n_M_per_bin-1.);
-//   class_call(integrand_at_m_and_z(logM,
-//                                   pvecback,
-//                                   pvectsz,
-//                                   pba,
-//                                   ppm,
-//                                   pnl,
-//                                   ptsz),
-//              ptsz->error_message,
-//              ptsz->error_message);
-//
-//
-//     for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-//       vec_integrals[index_integrals] += dlnM*pvectsz[ptsz->index_integrands_first+index_integrals];
-//
-//   }
-//
-//   for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-//     vec_results[index_integrals] = vec_integrals[index_integrals];
-//
-//   for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-//   {
-//
-//
-//     if(ptsz->index_integrands_first + index_integrals == ptsz->index_integrand_2halo_term)
-//     vec_results[index_integrals] = pow(vec_results[index_integrals],2.);
-//
-//
-//     //  (dV/dz) int dlnM dn/dlnM X where X=Tsz2 or some other integrand
-//     pvectsz[ptsz->index_integrals_over_m_first + index_integrals] =  vec_results[index_integrals];
-//
-//   }
-// //}
-//   /////////////////
-//   //end trapezoidal
-//   /////////////////
-//
-//
+  double m_min;
+  double m_max;
 
-  ////////////////////////////////
-  //Patterson [from Jens Chluba]
-  ////////////////////////////////
-  if (ptsz->integration_method_mass==0){
+  if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_Y_N )|| ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_N_N )){
+    int index_m = (int) pvectsz[ptsz->index_cov_Y_N_mass_bin];
+    m_min = ptsz->cov_Y_N_mass_bin_edges[index_m];
+    m_max = ptsz->cov_Y_N_mass_bin_edges[index_m+1];
+  }
+
+  else {
+    m_min = ptsz->M1SZ;
+    m_max = ptsz->M2SZ;
+  }
 
   struct Parameters_for_integrand_patterson V;
   V.pnl = pnl;
@@ -45203,414 +44889,123 @@ int integrate_over_m_at_z_qgaus_sz(double * pvecback,
   V.pvectsz = pvectsz;
   V.pvecback = pvecback;
   void * params = &V;
-  //
-  //
+
+
+  double r; //store result of integral
+
+
+  //Patterson [Jens Chluba]
+  if (ptsz->integration_method_mass==0){
+
   double epsrel=ptsz->patterson_epsrel;
   double epsabs=ptsz->patterson_epsabs;
   int show_neval = ptsz->patterson_show_neval;
-  //
 
-  double r=Integrate_using_Patterson_adaptive(log(ptsz->M1SZ), log(ptsz->M2SZ),
-                                               epsrel, epsabs,
-                                               integrand_patterson_test,
-                                               params,show_neval);
-
-
-//pvectsz[ptsz->index_integrals_over_m_first + index_integrals
-pvectsz[ptsz->index_integrals_over_m_first] = r;
+  r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                       epsrel, epsabs,
+                                       integrand_patterson_test,
+                                       params,show_neval);
 
 }
-  ///////////////////////////////////
-  //end Patterson [from Jens Chluba]
-  //////////////////////////////////
-  //printf("start patterson\n");
-  //printf("integrand_id = %d\n",pvectsz[ptsz->index_integrand_id]);
-  //printf("ell=%e\n",pvectsz[ptsz->index_multipole]);
 
 
-  //exit(0);
-
-
-
-  //////////////////
-  //trapezoidal
-  /////////////////
+  //GSL QAGS
   else if (ptsz->integration_method_mass==1){
 
+  gsl_function F;
+  F.function = &integrand_patterson_test;
+  F.params = params;
 
-  double log_M_min = log(ptsz->M1SZ);
-  double log_M_max = log(ptsz->M2SZ);
-  int n_M_per_bin = ptsz->number_of_mass_bins;
-  double dlnM = (log(ptsz->M2SZ)-log(ptsz->M1SZ))/(n_M_per_bin-1.);
+  int n_subintervals_gsl = 30000;
 
-
-
-  //step 1:
-  double logM = log_M_min;
-  class_call(integrand_at_m_and_z(logM,
-                                  pvecback,
-                                  pvectsz,
-                                  pba,
-                                  ppm,
-                                  pnl,
-                                  ptsz),
-             ptsz->error_message,
-             ptsz->error_message);
-
-    for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-      vec_integrals[index_integrals] = 0.5*dlnM*pvectsz[ptsz->index_integrands_first+index_integrals];
+  double epsrel=ptsz->patterson_epsrel;
+  double epsabs=ptsz->patterson_epsabs;
 
 
-  //step 2:
-  logM = log_M_max;
-  class_call(integrand_at_m_and_z(logM,
-                                  pvecback,
-                                  pvectsz,
-                                  pba,
-                                  ppm,
-                                  pnl,
-                                  ptsz),
-             ptsz->error_message,
-             ptsz->error_message);
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc (n_subintervals_gsl);
 
-    for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-      vec_integrals[index_integrals] += 0.5*dlnM*pvectsz[ptsz->index_integrands_first+index_integrals];
+  double result_gsl, error;
+  gsl_integration_qags(&F,log(m_min),log(m_max),epsabs,epsrel,n_subintervals_gsl,w,&result_gsl,&error);
+  gsl_integration_workspace_free(w);
 
-
-  //step 3:
-  int i;
-  for (i=2;i<n_M_per_bin-1;i++){
-
-  logM = log_M_min +(i-1.)*(log_M_max-log_M_min)/(n_M_per_bin-1.);
-  class_call(integrand_at_m_and_z(logM,
-                                  pvecback,
-                                  pvectsz,
-                                  pba,
-                                  ppm,
-                                  pnl,
-                                  ptsz),
-             ptsz->error_message,
-             ptsz->error_message);
-
-
-    for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-      vec_integrals[index_integrals] += dlnM*pvectsz[ptsz->index_integrands_first+index_integrals];
-
-  }
-
-  for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-    vec_results[index_integrals] = vec_integrals[index_integrals];
-
-  for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-  {
-
-
-    if(ptsz->index_integrands_first + index_integrals == ptsz->index_integrand_2halo_term)
-    vec_results[index_integrals] = pow(vec_results[index_integrals],2.);
-
-
-    //  (dV/dz) int dlnM dn/dlnM X where X=Tsz2 or some other integrand
-    pvectsz[ptsz->index_integrals_over_m_first + index_integrals] =  vec_results[index_integrals];
-
-  }
+  r = result_gsl;
 }
-  /////////////////
-  //end trapezoidal
-  /////////////////
-
-
-  ////Gaussian quadrature
-  else if(ptsz->integration_method_mass==2){
-
-  int jj;
-  double logM;
-  int index_l_prime;
-  double n_arraySZ = ptsz->n_arraySZ_for_integral;
-
-
-  for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-    vec_results[index_integrals] = 0.;
-
-
-  for (jj=1;jj<=5;jj++)
-  {
-    //qgauss -> Step 1:
-    logM =  0.5*(log(ptsz->M2SZ)+log(ptsz->M1SZ))
-            +0.5*(log(ptsz->M2SZ)-log(ptsz->M1SZ))
-            *ptsz->x_gauss[jj];
-
-    class_call(integrand_at_m_and_z(logM,
-                                    pvecback,
-                                    pvectsz,
-                                    pba,
-                                    ppm,
-                                    pnl,
-                                    ptsz),
-               ptsz->error_message,
-               ptsz->error_message);
-
-    for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-      vec_integrals[index_integrals] = pvectsz[ptsz->index_integrands_first+index_integrals];
-
-
-    //qgauss -> Step 2:
-    logM = 0.5*(log(ptsz->M2SZ)+log(ptsz->M1SZ))
-          -0.5*(log(ptsz->M2SZ)-log(ptsz->M1SZ))
-          *ptsz->x_gauss[jj];
-
-
-    class_call(integrand_at_m_and_z(logM,
-                                    pvecback,
-                                    pvectsz,
-                                    pba,
-                                    ppm,
-                                    pnl,
-                                    ptsz),
-               ptsz->error_message,
-               ptsz->error_message);
-
-    for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-      vec_integrals[index_integrals] += pvectsz[ptsz->index_integrands_first+index_integrals];
 
 
 
-    //qgauss -> Step 3:
-    for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-      vec_results[index_integrals] += ptsz->w_gauss[jj]*(vec_integrals[index_integrals]);
+  //GSL QAG
+  else if (ptsz->integration_method_mass==2){
 
-  }
+  gsl_function F;
+  F.function = &integrand_patterson_test;
+  F.params = params;
 
-  //qgauss -> Step 4:
-  for (index_integrals=0; index_integrals<n_integrals; index_integrals++)
-  {
+  int n_subintervals_gsl = 300;
 
-    vec_results[index_integrals] *= 0.5 *(log(ptsz->M2SZ)-log(ptsz->M1SZ));
-
-    if(ptsz->index_integrands_first + index_integrals == ptsz->index_integrand_2halo_term)
-    vec_results[index_integrals] = pow(vec_results[index_integrals],2.);
+  double epsrel=ptsz->patterson_epsrel;
+  double epsabs=ptsz->patterson_epsabs;
 
 
-    //  (dV/dz) int dlnM dn/dlnM X where X=Tsz2 or some other integrand
-    pvectsz[ptsz->index_integrals_over_m_first + index_integrals] =  vec_results[index_integrals];
+  gsl_integration_workspace * w = gsl_integration_workspace_alloc (n_subintervals_gsl);
 
-  }
+  double result_gsl, error;
+  int key = 4;
+  gsl_integration_qag(&F,log(m_min),log(m_max),epsabs,epsrel,n_subintervals_gsl,key,w,&result_gsl,&error);
+  gsl_integration_workspace_free(w);
 
+  r = result_gsl;
 }
-  ////end Gaussian quadrature
-
-    //for (index_integrals=0; index_integrals<n_integrals+(ptsz->nbins_M-1); index_integrals++)
-     // printf("i=%d \t pvec = %e\n",index_integrals,pvectsz[ptsz->index_integrals_over_m_first + index_integrals]);
 
 
-  if (_cov_N_Cl_){
-    pvectsz[ptsz->index_flag_cov_N_cl] = 1.;
+//GSL romberg
+else if (ptsz->integration_method_mass==3){
 
-    // double * vec_results_cov_N_cl;
-    // double * vec_integrals_cov_N_cl;
-    //
-    // class_alloc(vec_integrals_cov_N_cl,
-    //             (ptsz->nbins_M-1)*sizeof(double),
-    //              ptsz->error_message);
-    //
-    // class_alloc(vec_results_cov_N_cl,
-    //             (ptsz->nbins_M-1)*sizeof(double),
-    //              ptsz->error_message);
-    //
-    // //to compute number counts in each mass bin for noarmalisation at the end
-    // double * vec_results_N_for_cov_N_cl;
-    // double * vec_integrals_N_for_cov_N_cl;
-    //
-    // class_alloc(vec_integrals_N_for_cov_N_cl,
-    //             (ptsz->nbins_M-1)*sizeof(double),
-    //              ptsz->error_message);
-    //
-    // class_alloc(vec_results_N_for_cov_N_cl,
-    //             (ptsz->nbins_M-1)*sizeof(double),
-    //              ptsz->error_message);
+gsl_function F;
+F.function = &integrand_patterson_test;
+F.params = params;
+
+int n_subintervals_gsl = 30;
+
+double epsrel=ptsz->patterson_epsrel;
+double epsabs=ptsz->patterson_epsabs;
 
 
+gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
+
+double result_gsl;
+size_t neval;
+gsl_integration_romberg(&F,log(m_min),log(m_max),epsabs,epsrel,&result_gsl,&neval,w);
+gsl_integration_romberg_free(w);
+
+r = result_gsl;
+}
+
+//GSL QNG (Gauss-Kronrod)
+else if (ptsz->integration_method_mass==4){
+
+gsl_function F;
+F.function = &integrand_patterson_test;
+F.params = params;
 
 
+double epsrel=ptsz->patterson_epsrel;
+double epsabs=ptsz->patterson_epsabs;
 
-    int index_M_bins;
-    //
-    // //initialize arrays
-    // for (index_M_bins=0; index_M_bins <ptsz->nbins_M-1; index_M_bins++){
-    //   vec_results_cov_N_cl[index_M_bins] = 0.;
-    //   vec_results_N_for_cov_N_cl[index_M_bins] = 0.;
-    // }
+double result_gsl;
+size_t neval;
+double abserr;
+gsl_integration_qng(&F,log(m_min),log(m_max),epsabs,epsrel,&result_gsl,&abserr,&neval);
 
+r = result_gsl;
+}
 
-
-   //this part integrates over M the covariance
-   //we do not use it but rather approximate the integral by f(x)(x_f-x_i)
-    //int index_M_bins;
-    for (index_M_bins=0; index_M_bins <ptsz->nbins_M-1; index_M_bins++){
-    // for (jj=1;jj<=5;jj++)
-    // {
-    //   //qgauss -> Step 1:
-    //
-    //   logM =  0.5*(log(ptsz->M_bins[index_M_bins+1])+log(ptsz->M_bins[index_M_bins]))
-    //           +0.5*(log(ptsz->M_bins[index_M_bins+1])-log(ptsz->M_bins[index_M_bins]))
-    //           *ptsz->x_gauss[jj];
-    //
-    //   class_call(integrand_at_m_and_z(logM,
-    //                                   pvecback,
-    //                                   pvectsz,
-    //                                   pba,
-    //                                   ppm,
-    //                                   pnl,
-    //                                   ptsz),
-    //              ptsz->error_message,
-    //              ptsz->error_message);
-    //
-    //   vec_integrals_cov_N_cl[index_M_bins] = pvectsz[ptsz->index_integrand_cov_N_cl_first+index_M_bins];
-    //   vec_integrals_N_for_cov_N_cl[index_M_bins] = pvectsz[ptsz->index_integrand_N_for_cov_N_cl_first+index_M_bins];
-    //
-    //
-    //   //qgauss -> Step 2:
-    //   logM = 0.5*(log(ptsz->M_bins[index_M_bins+1])+log(ptsz->M_bins[index_M_bins]))
-    //          -0.5*(log(ptsz->M_bins[index_M_bins+1])-log(ptsz->M_bins[index_M_bins]))
-    //          *ptsz->x_gauss[jj];
-    //
-    //
-    //   class_call(integrand_at_m_and_z(logM,
-    //                                   pvecback,
-    //                                   pvectsz,
-    //                                   pba,
-    //                                   ppm,
-    //                                   pnl,
-    //                                   ptsz),
-    //              ptsz->error_message,
-    //              ptsz->error_message);
-    //
-    //   vec_integrals_cov_N_cl[index_M_bins] += pvectsz[ptsz->index_integrand_cov_N_cl_first+index_M_bins];
-    //   vec_integrals_N_for_cov_N_cl[index_M_bins] += pvectsz[ptsz->index_integrand_N_for_cov_N_cl_first+index_M_bins];
-    //
-    //
-    //   //qgauss -> Step 3:
-    //   vec_results_cov_N_cl[index_M_bins] += ptsz->w_gauss[jj]*(vec_integrals_cov_N_cl[index_M_bins]);
-    //   vec_results_N_for_cov_N_cl[index_M_bins] += ptsz->w_gauss[jj]*(vec_integrals_N_for_cov_N_cl[index_M_bins]);
-    //
-    //
-    // }
-    //
-    //   //qgauss -> Step 4:
-    //   vec_results_cov_N_cl[index_M_bins] *= 0.5 *(log(ptsz->M_bins[index_M_bins+1])-log(ptsz->M_bins[index_M_bins]));
-    //   vec_results_N_for_cov_N_cl[index_M_bins] *= 0.5 *(log(ptsz->M_bins[index_M_bins+1])-log(ptsz->M_bins[index_M_bins]));
-    //
-    //   pvectsz[ptsz->index_integral_cov_N_cl_first_over_m + index_M_bins] = vec_results_cov_N_cl[index_M_bins];
-    //   pvectsz[ptsz->index_integral_N_for_cov_N_cl_first_over_m + index_M_bins] = vec_results_cov_N_cl[index_M_bins];
-
-      ///////////////////
-      //trapezoidal rule:
-      double log_M_min = log(ptsz->M_bins[index_M_bins]);
-      double log_M_max = log(ptsz->M_bins[index_M_bins+1]);
-      int n_M_per_bin = 10;
-      double dlnM = (log(ptsz->M_bins[index_M_bins+1])-log(ptsz->M_bins[index_M_bins]))/(n_M_per_bin-1.);
-
-      //step 1:
-      double logM = log_M_min;
-      class_call(integrand_at_m_and_z(logM,
-                                      pvecback,
-                                      pvectsz,
-                                      pba,
-                                      ppm,
-                                      pnl,
-                                      ptsz),
-                 ptsz->error_message,
-                 ptsz->error_message);
-
-      pvectsz[ptsz->index_integral_cov_N_cl_first_over_m + index_M_bins] =  0.5*dlnM*pvectsz[ptsz->index_integrand_cov_N_cl_first+index_M_bins];
-      pvectsz[ptsz->index_integral_N_for_cov_N_cl_first_over_m + index_M_bins] = 0.5*dlnM*pvectsz[ptsz->index_integrand_N_for_cov_N_cl_first+index_M_bins];
-
-      //step 2:
-      logM = log_M_max;
-      class_call(integrand_at_m_and_z(logM,
-                                      pvecback,
-                                      pvectsz,
-                                      pba,
-                                      ppm,
-                                      pnl,
-                                      ptsz),
-                 ptsz->error_message,
-                 ptsz->error_message);
-
-      pvectsz[ptsz->index_integral_cov_N_cl_first_over_m + index_M_bins] +=  0.5*dlnM*pvectsz[ptsz->index_integrand_cov_N_cl_first+index_M_bins];
-      pvectsz[ptsz->index_integral_N_for_cov_N_cl_first_over_m + index_M_bins] += 0.5*dlnM*pvectsz[ptsz->index_integrand_N_for_cov_N_cl_first+index_M_bins];
-
-      //step 3:
-      int i;
-      for (i=2;i<n_M_per_bin-1;i++){
-
-      logM = log_M_min +(i-1.)*(log_M_max-log_M_min)/(n_M_per_bin-1.);
-      class_call(integrand_at_m_and_z(logM,
-                                      pvecback,
-                                      pvectsz,
-                                      pba,
-                                      ppm,
-                                      pnl,
-                                      ptsz),
-                 ptsz->error_message,
-                 ptsz->error_message);
-
-       pvectsz[ptsz->index_integral_cov_N_cl_first_over_m + index_M_bins] +=  dlnM*pvectsz[ptsz->index_integrand_cov_N_cl_first+index_M_bins];
-       pvectsz[ptsz->index_integral_N_for_cov_N_cl_first_over_m + index_M_bins] += dlnM*pvectsz[ptsz->index_integrand_N_for_cov_N_cl_first+index_M_bins];
-
-      }
-      double result_trap = pvectsz[ptsz->index_integral_cov_N_cl_first_over_m + index_M_bins];
-      double result_N_trap = pvectsz[ptsz->index_integral_N_for_cov_N_cl_first_over_m + index_M_bins];
-
-      // ////////////
-      // //rectangle:
-      // //double dlnM;
-      //
-      // //int index_M_bins;
-      // //for (index_M_bins=0; index_M_bins <ptsz->nbins_M-1; index_M_bins++){
-      //
-      // dlnM = log(ptsz->M_bins[index_M_bins+1])-log(ptsz->M_bins[index_M_bins]);
-      // logM = log(ptsz->M_bins[index_M_bins]) + 0.5*dlnM; //centre of the bin
-      //
-      // class_call(integrand_at_m_and_z(logM,
-      //                                 pvecback,
-      //                                 pvectsz,
-      //                                 pba,
-      //                                 ppm,
-      //                                 pnl,
-      //                                 ptsz),
-      //            ptsz->error_message,
-      //            ptsz->error_message);
-      //
-      // //pvectsz[ptsz->index_integral_cov_N_cl_first_over_m + index_M_bins] = dlnM*pvectsz[ptsz->index_integrand_cov_N_cl_first+index_M_bins];
-      // //pvectsz[ptsz->index_integral_N_for_cov_N_cl_first_over_m + index_M_bins] = dlnM*pvectsz[ptsz->index_integrand_N_for_cov_N_cl_first+index_M_bins];
-      //
-      //
-      // //rectangle rule:
-      // double result_rec = dlnM*pvectsz[ptsz->index_integrand_cov_N_cl_first+index_M_bins];
-      // double result_N_rec = dlnM*pvectsz[ptsz->index_integrand_N_for_cov_N_cl_first+index_M_bins];
-      // //integral rule:
-      // double result_int = 0.;//vec_results_cov_N_cl[index_M_bins];
-      // double result_N_int = 0.;//vec_results_N_for_cov_N_cl[index_M_bins];
-      //
-      // printf("result_rec = %e, result_g =  %e, result_trap =  %e\n",result_rec,result_int,result_trap);
-      // printf("result_N_rec = %e, result_N_g =  %e, result_N_trap =  %e\n",result_N_rec,result_N_int,result_N_trap);
-
-     }
-
-    pvectsz[ptsz->index_flag_cov_N_cl] = 0.;
-    // free(vec_integrals_cov_N_cl);
-    // free(vec_results_cov_N_cl);
-    // free(vec_integrals_N_for_cov_N_cl);
-    // free(vec_results_N_for_cov_N_cl);
-
-  }
+if ( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
+pvectsz[ptsz->index_integral_over_m] = r*r;
+else
+pvectsz[ptsz->index_integral_over_m] = r;
 
 
-
-
-  free(vec_integrals);
-  free(vec_results);
-  return _SUCCESS_;
+  return (1.+z)*pvectsz[ptsz->index_integral_over_m];
 }
 
 
@@ -45632,7 +45027,6 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   double *tmp = NULL;
   double this_lnx;
   int status;
-  int index_x;
 
   n_data = 0;
   n_data_guess = 100;
@@ -45806,7 +45200,6 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
       double *tmp = NULL;
       double this_lnx,this_lny;
       int status;
-      int index_x;
 
       n_data = 0;
       n_data_guess = 100;
@@ -45867,11 +45260,9 @@ int read_SO_noise(struct tszspectrum * ptsz){
         char line[_LINE_LENGTH_MAX_];
         FILE *process;
         int n_data_guess, n_data = 0;
-        //double *thetas = NULL,
         double *tmp = NULL;
         double this_lnx,this_lny;
         int status;
-        int index_x;
 
         n_data = 0;
         n_data_guess = 100;
@@ -45944,14 +45335,12 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
   double * dsigma_var;
   int abort;
 
-  //Array of R
+  //Array of R in Mpc
   double logR_min = log(exp(ptsz->logR1SZ)/pba->h);
   double logR_max = log(exp(ptsz->logR2SZ)/pba->h);
   int index_R;
 
   int index_z_R = 0;
-  double sigma_at_z_and_R;
-  double dsigma2dR_at_z_and_R;
 
   double ** array_sigma_at_z_and_R;
   double ** array_dsigma2dR_at_z_and_R;
@@ -46023,14 +45412,14 @@ private(tstart, tstop,index_R,index_z,sigma_var,dsigma_var)
     for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
     {
       ptsz->array_redshift[index_z] =
-      log(1.+z_min)
-      +index_z*(log(1.+z_max)-log(1.+z_min))
-      /(ptsz->n_arraySZ-1.); // log(1+z)
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_arraySZ-1.); // log(1+z)
 
       ptsz->array_radius[index_R] =
-      logR_min
-      +index_R*(logR_max-logR_min)
-      /(ptsz->ndimSZ-1.); //log(R)
+                                    logR_min
+                                    +index_R*(logR_max-logR_min)
+                                    /(ptsz->ndimSZ-1.); //log(R)
 
       if (ptsz->HMF_prescription_NCDM == 2) //No-pres
         spectra_sigma_for_tSZ( pba,

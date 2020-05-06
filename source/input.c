@@ -1723,6 +1723,9 @@ int input_read_parameters(
       class_read_double("M1SZ",ptsz->M1SZ);
       class_read_double("M2SZ",ptsz->M2SZ);
 
+      //number of mass bins for cov_Y-N:
+      class_read_double("number of mass bins for cov(Y,N)",ptsz->nbins_M);
+
       //Pressure profile is considered between x_in and x_out
       class_read_double("x_inSZ",ptsz->x_inSZ);
       class_read_double("x_outSZ",ptsz->x_outSZ);
@@ -1781,47 +1784,18 @@ int input_read_parameters(
           class_read_double("patterson_epsabs",ptsz->patterson_epsabs);
           class_read_int("patterson_show_neval",ptsz->patterson_show_neval);
         }
-        else if ((strstr(string1,"trapezoidal") != NULL)){
+        else if ((strstr(string1,"gsl_qags") != NULL)){
           ptsz->integration_method_mass=1;
-          class_read_int("mass bins between M_min and M_max",ptsz->number_of_mass_bins);
+          //class_read_int("mass bins between M_min and M_max",ptsz->number_of_mass_bins);
         }
-        else if ((strstr(string1,"gaussian") != NULL))
+        else if ((strstr(string1,"gsl_qag") != NULL)){
           ptsz->integration_method_mass=2;
         }
+        else if ((strstr(string1,"gsl_romberg") != NULL)){
+          ptsz->integration_method_mass=3;
+        }
+      }
 
-      // class_call(parser_read_string(pfc,"integration method (mass)",&string1,&flag1,errmsg),
-      //            errmsg,
-      //            errmsg);
-      // if (flag1 == _TRUE_) {
-      //   if ((strstr(string1,"patterson") != NULL)){
-      //     ptsz->integration_method_mass=0;
-      //     class_read_double("patterson_epsrel",ptsz->patterson_epsrel);
-      //     class_read_double("patterson_epsabs",ptsz->patterson_epsabs);
-      //     class_read_int("patterson_show_neval",ptsz->patterson_show_neval);
-      //   }
-      //   else if ((strstr(string1,"trapezoidal") != NULL)){
-      //     ptsz->integration_method_mass=1;
-      //     class_read_int("mass bins between M_min and M_max",ptsz->number_of_mass_bins);
-      //   }
-      //   else if ((strstr(string1,"gaussian") != NULL))
-      //     ptsz->integration_method_mass=2;
-      //   }
-
-      //Precision Parameters For Patterson Scheme
-      class_read_double("K",ptsz->K);
-      class_read_double("JMAX",ptsz->JMAX);
-      class_read_double("EPS",ptsz->EPS);
-
-
-      //Precision Parameters For qromb_sz_integrand for the pressure profile
-      class_read_double("K",ptsz->K);
-      class_read_double("JMAX",ptsz->JMAX);
-      class_read_double("EPS",ptsz->EPS);
-
-      //Precision Parameters For qromb_sz_sigma: NOT USED anymore
-      class_read_double("K_sigma",ptsz->K_sigma);
-      class_read_double("JMAX_sigma",ptsz->JMAX_sigma);
-      class_read_double("EPS_sigma",ptsz->EPS_sigma);
 
       class_read_double("redshift_for_dndm",pcsz->redshift_for_dndm);
       class_read_double("size_logM_for_dndm",pcsz->size_logM);
@@ -1845,7 +1819,7 @@ int input_read_parameters(
                  errmsg,
                  errmsg);
 
-      if ((strstr(string1,"tSZ") != NULL) || (strstr(string1,"tSZCl") != NULL) || (strstr(string1,"tszCL") != NULL)) {
+      if ((strstr(string1,"tSZ_1h") != NULL) || (strstr(string1,"tSZCl") != NULL) || (strstr(string1,"tszCL") != NULL)) {
         ptsz->has_sz_ps =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
@@ -1857,7 +1831,6 @@ int input_read_parameters(
 
       if ((strstr(string1,"tSZ_2h") != NULL) ) {
         ptsz->has_sz_2halo =_TRUE_;
-        ptsz->has_sz_ps =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
@@ -1867,7 +1840,7 @@ int input_read_parameters(
 
       if ((strstr(string1,"tSZ_te_y_y") != NULL) ) {
         ptsz->has_sz_te_y_y =_TRUE_;
-        ptsz->has_sz_ps =_TRUE_;
+        ptsz->has_sz_ps =_TRUE_; //ps is necessary in this case (Te = "Te_y_y/y_y")
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
@@ -1875,8 +1848,9 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
-      if ((strstr(string1,"tSZ_cov_N_Cl") != NULL) ) {
-        ptsz->has_sz_cov_N_Cl =_TRUE_;
+      if ((strstr(string1,"tSZ_cov_Y_N") != NULL) ) {
+        ptsz->has_sz_cov_Y_N =_TRUE_;
+        ptsz->has_sz_cov_N_N =_TRUE_;
         ptsz->has_sz_ps =_TRUE_;
         ptsz->has_sz_trispec =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -1889,7 +1863,6 @@ int input_read_parameters(
 
       if ((strstr(string1,"tSZ_Trispectrum") != NULL) ) {
         ptsz->has_sz_trispec =_TRUE_;
-        ptsz->has_sz_ps =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
@@ -4059,6 +4032,8 @@ int input_default_params(
   ptsz->number_of_mass_bins = 60;
   /////////////////////////////////
 
+  //number of mass bins for cov(Y,N)
+  ptsz->nbins_M = 20;
 
   ptsz->JMAX = 30; //for the pressure profile
   ptsz->EPS = 1.e-5; //for the pressure profile (default 1e-5)
@@ -4084,11 +4059,17 @@ int input_default_params(
   ptsz->has_sz_trispec = _FALSE_;
   ptsz->has_hmf = _FALSE_;
   ptsz->has_mean_y = _FALSE_;
+  ptsz->has_sz_cov_Y_N = _FALSE_;
+  ptsz->has_sz_cov_N_N = _FALSE_;
 
   ptsz->index_md_hmf = 0;
   ptsz->index_md_mean_y = 1;
   ptsz->index_md_sz_ps = 2;
-  ptsz->index_md_sz_trispec = 3;
+  ptsz->index_md_trispectrum = 3;
+  ptsz->index_md_2halo = 4;
+  ptsz->index_md_te_y_y = 5;
+  ptsz->index_md_cov_Y_N = 6;
+  ptsz->index_md_cov_N_N = 7;
 
 
   ptsz->HMF_prescription_NCDM=2; //no-pres
