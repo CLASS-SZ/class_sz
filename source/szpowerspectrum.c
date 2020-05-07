@@ -47,6 +47,7 @@ int szpowerspectrum_init(
    tabulate_vrms2_from_pk(pba,pnl,ppm,ptsz);
 
 
+   if (ptsz->sz_verbose>0)
    write_redshift_dependent_quantities(pba,ptsz);
 
    //SO data and Functions
