@@ -167,6 +167,7 @@ struct tszspectrum {
   int  index_completeness;
   int  index_te_of_m;
   int  index_volume;
+  int  index_vrms2;
   int  index_pk_for_halo_bias;
   int  index_dlnMdeltadlnM;
 
@@ -437,6 +438,7 @@ struct tszspectrum {
   double * array_sigma_at_z_and_R;
   double * array_dsigma2dR_at_z_and_R;
 
+  double * array_vrms2_at_z;
 
 
   ErrorMsg error_message; /**< zone for writing error messages */
@@ -541,8 +543,17 @@ double evaluate_dlnMdeltadlnM(double logM,
                              struct nonlinear * pnl,
                              struct tszspectrum * ptsz);
 
+int evaluate_vrms2(double * pvecback,
+                   double * pvectsz,
+                   struct background * pba,
+                   struct nonlinear * pnl,
+                   struct tszspectrum * ptsz);
 
 double integrand_patterson_test(double xi, void *p);
+
+
+int write_redshift_dependent_quantities(struct background * pba,
+                                        struct tszspectrum * ptsz);
 
 #ifdef __cplusplus
 }

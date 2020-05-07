@@ -39,7 +39,15 @@ int szpowerspectrum_init(
 
    tabulate_sigma_and_dsigma_from_pk(pba,pnl,ppm,ptsz);
 
+
+
    initialise_and_allocate_memory(ptsz);
+
+
+   tabulate_vrms2_from_pk(pba,pnl,ppm,ptsz);
+
+
+   write_redshift_dependent_quantities(pba,ptsz);
 
    //SO data and Functions
 
@@ -220,6 +228,8 @@ if (ptsz->experiment == 1){
    free(ptsz->array_redshift);
    free(ptsz->array_sigma_at_z_and_R);
    free(ptsz->array_dsigma2dR_at_z_and_R);
+
+   free(ptsz->array_vrms2_at_z);
 
 
    free(ptsz->PP_lnx);
@@ -411,6 +421,9 @@ double integrand_at_m_and_z(double logM,
    pvectsz[ptsz->index_multipole_for_pressure_profile] = pvectsz[ptsz->index_multipole];
 
    evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+
+   //velocity dispersion (kSZ)
+   //evaluate_vrms2(pvecback,pvectsz,pba,pnl,ptsz);
 
 
 
@@ -917,11 +930,11 @@ int evaluate_halo_bias(double * pvecback,
 
 
 int evaluate_HMF(double logM,
-                         double * pvecback,
-                         double * pvectsz,
-                         struct background * pba,
-                         struct nonlinear * pnl,
-                         struct tszspectrum * ptsz)
+                 double * pvecback,
+                 double * pvectsz,
+                 struct background * pba,
+                 struct nonlinear * pnl,
+                 struct tszspectrum * ptsz)
 {
 
    double z = pvectsz[ptsz->index_z];
@@ -1291,10 +1304,39 @@ int evaluate_HMF(double logM,
 return _SUCCESS_;
 }
 
+int evaluate_vrms2(double * pvecback,
+                   double * pvectsz,
+                   struct background * pba,
+                   struct nonlinear * pnl,
+                   struct tszspectrum * ptsz)
+  {
+
+   double z = pvectsz[ptsz->index_z];
+   double z_asked = log(1.+z);
+
+   if (z<exp(ptsz->array_redshift[0])-1.)
+      z_asked = ptsz->array_redshift[0];
+   if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
+      z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
+
+
+   pvectsz[ptsz->index_vrms2] =  exp(pwl_value_1d(ptsz->n_arraySZ,
+                                                  ptsz->array_redshift,
+                                                  ptsz->array_vrms2_at_z,
+                                                  z_asked));
+
+  // pvectsz[ptsz->index_vrms2] = 0.;
+
+
+
+return _SUCCESS_;
+}
+
+
 
 int write_output_to_files_ell_indep_ints(struct nonlinear * pnl,
-                                                             struct background * pba,
-                                                             struct tszspectrum * ptsz){
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz){
 
   //int index_l;
   char Filepath[_ARGUMENT_LENGTH_MAX_];
@@ -1362,6 +1404,101 @@ if (ptsz->has_hmf){
 
 return _SUCCESS_;
 }
+
+
+int write_redshift_dependent_quantities(struct background * pba,
+                                        struct tszspectrum * ptsz){
+
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+  FILE *fp;
+  sprintf(Filepath,"%s%s%s",ptsz->root,"","redshift_dependent_functions.txt");
+  printf("Writing output files in %s\n",Filepath);
+  fp=fopen(Filepath, "w");
+  fprintf(fp,"# Column 1: redshift\n");
+  fprintf(fp,"# Column 2: scale factor\n");
+  fprintf(fp,"# Column 3: Hubble parameter [km/s/Mpc]\n");
+  fprintf(fp,"# Column 4: Hubble parameter [Mpc^-1]\n"); //pba->H0 = pba->h * 1.e5 / _c_;
+  fprintf(fp,"# Column 5: sigma8\n");
+  fprintf(fp,"# Column 6: velocity growth rate f = dlnD/dlna\n");
+  fprintf(fp,"# Column 7: vrms2\n");
+
+  int index_z;
+  int n_z = 1e3;
+  double z_min = ptsz->z1SZ;
+  double z_max = ptsz->z2SZ;
+
+  //background quantities @ z:
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+
+  class_alloc(pvecback,
+              pba->bg_size*sizeof(double),
+              pba->error_message);
+
+
+  for (index_z=0;index_z<n_z;index_z++){
+
+  double ln1pz =  log(1.+z_min)
+                  +index_z*(log(1.+z_max)-log(1.+z_min))
+                  /(n_z-1.); // log(1+z)
+
+  double z = exp(ln1pz)-1.;
+
+
+
+  class_call(background_tau_of_z(pba,z,&tau),
+             pba->error_message,
+             pba->error_message);
+
+  class_call(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             pba->error_message,
+             pba->error_message);
+
+  double f = pvecback[pba->index_bg_f];
+  double a = pvecback[pba->index_bg_a];
+  double H = pvecback[pba->index_bg_H]; //in Mpc^-1
+  double H_cosmo = pvecback[pba->index_bg_H]*_c_/1e5*1e2;
+
+
+  double z_asked = log(1.+z);
+  double R_asked = log(8./pba->h); //log(R) in Mpc
+
+   if (z<exp(ptsz->array_redshift[0])-1.)
+      z_asked = ptsz->array_redshift[0];
+   if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
+      z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
+   if (R_asked<ptsz->array_radius[0])
+      R_asked = ptsz->array_radius[0];
+   if (R_asked>ptsz->array_radius[ptsz->ndimSZ-1])
+      R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
+
+    double sigma8 =  exp(pwl_interp_2d(ptsz->n_arraySZ,
+                       ptsz->ndimSZ,
+                       ptsz->array_redshift,
+                       ptsz->array_radius,
+                       ptsz->array_sigma_at_z_and_R,
+                       1,
+                       &z_asked,
+                       &R_asked));
+   double vrms2 =  exp(pwl_value_1d(ptsz->n_arraySZ,
+                                    ptsz->array_redshift,
+                                    ptsz->array_vrms2_at_z,
+                                    z_asked));
+
+  fprintf(fp,"%.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e\n",z,a,H_cosmo,H,sigma8,f,vrms2);
+
+ }
+
+  free(pvecback);
+
+  fclose(fp);
+                                        }
 
 int write_output_to_files_cl(struct nonlinear * pnl,
                              struct background * pba,
@@ -2076,7 +2213,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_pressure_profile = ptsz->index_multipole +1;
    ptsz->index_completeness = ptsz->index_pressure_profile +1;
    ptsz->index_volume = ptsz->index_completeness + 1;
-   ptsz->index_hmf = ptsz->index_volume + 1;
+   ptsz->index_vrms2 = ptsz->index_volume + 1;
+   ptsz->index_hmf = ptsz->index_vrms2 + 1;
    ptsz->index_halo_bias = ptsz->index_hmf + 1;
    ptsz->index_k_value_for_halo_bias = ptsz->index_halo_bias +1;
    ptsz->index_pk_for_halo_bias = ptsz->index_k_value_for_halo_bias +1;

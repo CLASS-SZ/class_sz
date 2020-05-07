@@ -696,6 +696,18 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
                                double z,
                                double *sigma);
 
+  int spectra_vrms2(
+                   struct background * pba,
+                   struct primordial * ppm,
+                   struct nonlinear *pnl,
+                   double z,
+                   double * vrms2
+                 );
+
+ int tabulate_vrms2_from_pk(struct background * pba,
+                            struct nonlinear * pnl,
+                            struct primordial * ppm,
+                            struct tszspectrum * ptsz);
   int splint(double xa[],
              double ya[],
              double y2a[],

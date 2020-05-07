@@ -42955,6 +42955,217 @@ int m_to_mDEL(
 }
 
 
+int spectra_vrms2(
+                   struct background * pba,
+                   struct primordial * ppm,
+                   struct nonlinear *pnl,
+                   double z,
+                   double * vrms2
+                   //double * sigma_prime
+                   ) {
+  //
+  // double R = 1.;
+  // double pk;
+  // double * pk_ic = NULL;
+  //
+  // double * array_for_sigma;
+  // int index_num;
+  // int index_k;
+  // int index_y;
+  // int index_ddy;
+  // int i;
+  //
+  // double k,W,x,W_prime;
+  //
+  //
+  //
+  // i=0;
+  // index_k=i;
+  // i++;
+  // index_y=i;
+  // i++;
+  // index_ddy=i;
+  // i++;
+  // index_num=i;
+  //
+  // class_alloc(array_for_sigma,
+  //             pnl->ln_k_size_for_tSZ*index_num*sizeof(double),
+  //             pnl->error_message);
+  //
+  // for (i=0;i<pnl->ln_k_size_for_tSZ;i++) {
+  //   k=exp(pnl->ln_k_for_tSZ[i]);
+  //   if (i == (pnl->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
+  //   x=k*R;
+  //   W=3./x/x/x*(sin(x)-x*cos(x));
+  //   W_prime=3./x/x*sin(x)-9./x/x/x/x*(sin(x)-x*cos(x));
+  //
+  // //   //class_call(spectra_pk_at_k_and_z(pba,ppm,psp,k,z,&pk,pk_ic),
+  // //   //           psp->error_message,
+  // //   //           psp->error_message);
+  // //
+  //   class_call(nonlinear_pk_at_k_and_z(
+  //                                     pba,
+  //                                     ppm,
+  //                                     pnl,
+  //                                     pk_linear,
+  //                                     k,
+  //                                     z,
+  //                                     pnl->index_pk_m,
+  //                                     &pk, // number *out_pk_l
+  //                                     pk_ic // array out_pk_ic_l[index_ic_ic]
+  //                                   ),
+  //                                   pnl->error_message,
+  //                                   pnl->error_message);
+  //
+  //
+  //   array_for_sigma[i*index_num+index_k]=k;
+  //   array_for_sigma[i*index_num+index_y]=k*k*pk*k*2.*W*W_prime;
+  //  }
+  // //
+  // class_call(array_spline(array_for_sigma,
+  //                         index_num,
+  //                         pnl->ln_k_size_for_tSZ,
+  //                         index_k,
+  //                         index_y,
+  //                         index_ddy,
+  //                         _SPLINE_EST_DERIV_,
+  //                         pnl->error_message),
+  //            pnl->error_message,
+  //            pnl->error_message);
+  //
+  // class_call(array_integrate_all_spline(array_for_sigma,
+  //                                       index_num,
+  //                                       pnl->ln_k_size_for_tSZ,
+  //                                       index_k,
+  //                                       index_y,
+  //                                       index_ddy,
+  //                                       sigma_prime,
+  //                                       pnl->error_message),
+  //            pnl->error_message,
+  //            pnl->error_message);
+  //
+  // free(array_for_sigma);
+  // //
+  // //
+  // //
+  // // *sigma_prime = *sigma_prime/(2.*_PI_*_PI_);
+  //
+  // return _SUCCESS_;
+//
+//
+  double pk;
+  double * pk_ic = NULL;
+  //double * tk = NULL; //transfer
+
+  double * array_for_sigma;
+  //double tk_cdm,tk_b,tk_m,tk_ncdm,Omega_cdm,Omega_b,Omega_ncdm;
+  int index_num;
+  int index_k;
+  int index_y;
+  int index_ddy;
+  int i;
+
+  double k,W,x;
+
+  i=0;
+  index_k=i;
+  i++;
+  index_y=i;
+  i++;
+  index_ddy=i;
+  i++;
+  index_num=i;
+
+  class_alloc(array_for_sigma,
+              pnl->ln_k_size_for_tSZ*index_num*sizeof(double),
+              pnl->error_message);
+
+    //background quantities @ z:
+    double tau;
+    int first_index_back = 0;
+    double * pvecback;
+    class_alloc(pvecback,
+                pba->bg_size*sizeof(double),
+                pba->error_message);
+
+    class_call(background_tau_of_z(pba,z,&tau),
+               pba->error_message,
+               pba->error_message);
+
+    class_call(background_at_tau(pba,
+                                 tau,
+                                 pba->long_info,
+                                 pba->inter_normal,
+                                 &first_index_back,
+                                 pvecback),
+               pba->error_message,
+               pba->error_message);
+
+    double f = pvecback[pba->index_bg_f];
+    double aH = pvecback[pba->index_bg_a]*pvecback[pba->index_bg_H]; //in Mpc^-1
+    aH *= _c_/1e5*1e2; //in km/s/Mpc
+
+    W = f*aH ;
+    //printf("ok z = %e\n",W);
+
+    free(pvecback);
+
+
+
+      for (i=0;i<pnl->ln_k_size_for_tSZ;i++) {
+        k=exp(pnl->ln_k_for_tSZ[i]);
+        if (i == (pnl->ln_k_size_for_tSZ-1)) k *= 0.9999999;
+
+   class_call(nonlinear_pk_at_k_and_z(
+                                     pba,
+                                     ppm,
+                                     pnl,
+                                     pk_linear,
+                                     k,
+                                     z,
+                                     pnl->index_pk_cb,
+                                     &pk, // number *out_pk_l
+                                     pk_ic // array out_pk_ic_l[index_ic_ic]
+                                   ),
+                                   pnl->error_message,
+                                   pnl->error_message);
+
+
+    array_for_sigma[i*index_num+index_k]=k;
+    array_for_sigma[i*index_num+index_y]=pk*W*W;
+    //printf("ok k = %e I = %e\n",k,pk*W*W);
+  }
+//printf("ok z = %e\n",W);
+  class_call(array_spline(array_for_sigma,
+                          index_num,
+                          pnl->ln_k_size_for_tSZ,
+                          index_k,
+                          index_y,
+                          index_ddy,
+                          _SPLINE_EST_DERIV_,
+                          pnl->error_message),
+             pnl->error_message,
+             pnl->error_message);
+//printf("ok z = %e\n",W);
+  class_call(array_integrate_all_spline(array_for_sigma,
+                                        index_num,
+                                        pnl->ln_k_size_for_tSZ,
+                                        index_k,
+                                        index_y,
+                                        index_ddy,
+                                        vrms2,
+                                        pnl->error_message),
+             pnl->error_message,
+             pnl->error_message);
+//printf("ok z = %e\n",W);
+  free(array_for_sigma);
+  *vrms2 = *vrms2/(2.*_PI_*_PI_);
+//printf("ok z = %e\n",W);
+  return _SUCCESS_;
+
+}
+
+
 /**
  * This routine computes sigma(R) given P(k) and ncdm species (does not check that k_max is large
  * enough)
@@ -43023,7 +43234,7 @@ int spectra_sigma_ncdm(
                                      ppm,
                                      pnl,
                                      pk_linear,
-                                     k,
+                                     k, //Input: wavenumber in 1/Mpc
                                      z,
                                      pnl->index_pk_cb,
                                      &pk, // number *out_pk_l
@@ -44829,10 +45040,6 @@ double integrand_patterson_test(double logM, void *p){
 
   double z = pvectsz[ptsz->index_z];
 
-  pvectsz[ptsz->index_volume] = pow(1.+z,2)
-                                *pow(pvecback[pba->index_bg_ang_distance]*pba->h,2)
-                                *_c_*1.e-5
-                                /(pvecback[pba->index_bg_H]/pba->H0);
 
 
 
@@ -44854,6 +45061,13 @@ double integrand_patterson_test(double logM, void *p){
                                pvecback),
              ptsz->error_message,
              ptsz->error_message);
+
+
+  pvectsz[ptsz->index_volume] = pow(1.+z,2)
+                                *pow(pvecback[pba->index_bg_ang_distance]*pba->h,2)
+                                *_c_*1.e-5
+                                /(pvecback[pba->index_bg_H]/pba->H0);
+
 
   pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
                                   *pow(_Mpc_over_m_,1)
@@ -45317,8 +45531,222 @@ int read_SO_noise(struct tszspectrum * ptsz){
     }
 
 
+//Tabulate vrms2 as functions of redshift
+ int tabulate_vrms2_from_pk(struct background * pba,
+                            struct nonlinear * pnl,
+                            struct primordial * ppm,
+                            struct tszspectrum * ptsz){
+
+// //Array of z
+//   double z_min = ptsz->z1SZ;
+//   double z_max = ptsz->z2SZ;
+//   int index_z;
+//
+//   double tstart, tstop;
+//   int index_l;
+//   double * sigma_var;
+//   double * dsigma_var;
+//   int abort;
+//
+//   //Array of R in Mpc
+//   double logR_min = log(exp(ptsz->logR1SZ)/pba->h); //in Mpc
+//   double logR_max = log(exp(ptsz->logR2SZ)/pba->h); //in Mpc
+//   int index_R;
+//
+//   int index_z_R = 0;
+//
+//   double ** array_sigma_at_z_and_R;
+//   double ** array_dsigma2dR_at_z_and_R;
+//
+//   class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+//   class_alloc(ptsz->array_radius,sizeof(double *)*ptsz->ndimSZ,ptsz->error_message);
+//
+//
+// class_alloc(ptsz->array_sigma_at_z_and_R,
+//             sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+//             ptsz->error_message);
+//
+// class_alloc( ptsz->array_dsigma2dR_at_z_and_R,
+//             sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+//             ptsz->error_message);
+//
+// class_alloc(array_sigma_at_z_and_R,
+//             ptsz->n_arraySZ*sizeof(double *),
+//             ptsz->error_message);
+//
+// class_alloc(array_dsigma2dR_at_z_and_R,
+//             ptsz->n_arraySZ*sizeof(double *),
+//             ptsz->error_message);
+//
+// for (index_l=0;
+//      index_l<ptsz->n_arraySZ;
+//      index_l++)
+// {
+//   class_alloc(array_sigma_at_z_and_R[index_l],
+//               ptsz->ndimSZ*sizeof(double),
+//               ptsz->error_message);
+//
+//   class_alloc(array_dsigma2dR_at_z_and_R[index_l],
+//               ptsz->ndimSZ*sizeof(double),
+//               ptsz->error_message);
+// }
+//
+//
+// //Parallelization of Sigma2(R,z) computation
+// /* initialize error management flag */
+// abort = _FALSE_;
+// /* beginning of parallel region */
+//
+// #pragma omp parallel \
+// shared(abort,index_z_R,\
+// pba,ptsz,ppm,pnl,z_min,z_max,logR_min,logR_max)\
+// private(tstart, tstop,index_R,index_z,sigma_var,dsigma_var)
+// {
+//
+// #ifdef _OPENMP
+//   tstart = omp_get_wtime();
+// #endif
+//
+//   class_alloc_parallel(sigma_var,
+//                        sizeof(double *),
+//                        ptsz->error_message);
+//   //
+//   // class_alloc_parallel(dsigma_var,
+//   //                      sizeof(double *),
+//   //                      ptsz->error_message);
+//
+//
+// #pragma omp for schedule (dynamic)
+//   for (index_R=0; index_R<ptsz->ndimSZ; index_R++)
+//   {
+// #pragma omp flush(abort)
+//
+//     for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
+//     {
+//       ptsz->array_redshift[index_z] =
+//                                       log(1.+z_min)
+//                                       +index_z*(log(1.+z_max)-log(1.+z_min))
+//                                       /(ptsz->n_arraySZ-1.); // log(1+z)
+//
+//       ptsz->array_radius[index_R] =
+//                                     logR_min
+//                                     +index_R*(logR_max-logR_min)
+//                                     /(ptsz->ndimSZ-1.); //log(R)
+//
+//       //if (ptsz->HMF_prescription_NCDM == 2) //No-pres
+//         spectra_sigma_for_tSZ( pba,
+//                               ppm,
+//                               pnl,
+//                               exp(ptsz->array_radius[index_R]),
+//                               exp(ptsz->array_redshift[index_z])-1.,
+//                               sigma_var//&sigma_at_z_and_R
+//                               );
+//       // else
+//       //   spectra_sigma_ncdm( pba,
+//       //                      // spectra_sigma_ncdm( pba,
+//       //                      ppm,
+//       //                      pnl,
+//       //                      //ptsz,
+//       //                      exp(ptsz->array_radius[index_R]),
+//       //                      exp(ptsz->array_redshift[index_z])-1.,
+//       //                      sigma_var//&sigma_at_z_and_R
+//       //                      );
+//
+//
+//       //ptsz->array_sigma_at_z_and_R[index_z_R] = log(*sigma_var);//sigma_at_z_and_R); //log(sigma)
+//       array_sigma_at_z_and_R[index_z][index_R] = log(*sigma_var);//sigma_at_z_and_R); //log(sigma)
+//
+//       // if (ptsz->HMF_prescription_NCDM == 2) //No-pres
+//       //   spectra_sigma_prime( pba,
+//       //                       ppm,
+//       //                       pnl,
+//       //                       exp(ptsz->array_radius[index_R]),
+//       //                       exp(ptsz->array_redshift[index_z])-1.,
+//       //                       dsigma_var//&dsigma2dR_at_z_and_R
+//       //                       );
+//       // else
+//       //   spectra_sigma_ncdm_prime( pba,
+//       //                            ppm,
+//       //                            pnl,
+//       //                            exp(ptsz->array_radius[index_R]),
+//       //                            exp(ptsz->array_redshift[index_z])-1.,
+//       //                            dsigma_var
+//       //                            );
+//       //
+//       //
+//       // array_dsigma2dR_at_z_and_R[index_z][index_R] = *dsigma_var;
+//
+//       index_z_R += 1;
+//     }
+//   }
+// #ifdef _OPENMP
+//   tstop = omp_get_wtime();
+//   if (ptsz->sz_verbose > 0)
+//     printf("In %s: time spent in parallel region (loop over R's) = %e s for thread %d\n",
+//            __func__,tstop-tstart,omp_get_thread_num());
+// #endif
+//
+//     free(sigma_var);
+//     free(dsigma_var);
+//     }
+// if (abort == _TRUE_) return _FAILURE_;
+// //end of parallel region
+//
+// index_z_R = 0;
+// for (index_R=0; index_R<ptsz->ndimSZ; index_R++)
+// {
+//   for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
+//   {
+//     ptsz->array_sigma_at_z_and_R[index_z_R] = array_sigma_at_z_and_R[index_z][index_R];
+//     //ptsz->array_dsigma2dR_at_z_and_R[index_z_R]=array_dsigma2dR_at_z_and_R[index_z][index_R];
+//     index_z_R += 1;
+//   }
+// }
+//
+//   free(array_sigma_at_z_and_R);
+//   //free(array_dsigma2dR_at_z_and_R);
+//
+// return _SUCCESS_;
+
+double * vrms2_var;
+class_alloc(vrms2_var,
+            sizeof(double *),
+            ptsz->error_message);
+
+
+class_alloc(ptsz->array_vrms2_at_z,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+
+//Array of z
+// double z_min = ptsz->z1SZ;
+// double z_max = ptsz->z2SZ;
+int index_z;
+double z;
+
+for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
+        {
+
+          z = ptsz->array_redshift[index_z];
+
+
+            spectra_vrms2(pba,
+                          ppm,
+                          pnl,
+                          exp(ptsz->array_redshift[index_z])-1.,
+                          vrms2_var
+                          );
+          ptsz->array_vrms2_at_z[index_z] = log(*vrms2_var);
+          //printf("z=%e\n",z);
+          //printf("s=%e\n",ptsz->array_vrms2_at_z[index_z]);
+       }
+
+free(vrms2_var);
+
+return _SUCCESS_;
+    }
+
+
 //Tabulate Sigma2(R,z) and dSigma2dR
-//as functions of logR
+//as functions of z and logR
 int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct nonlinear * pnl,
                                       struct primordial * ppm,
@@ -45336,15 +45764,14 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
   int abort;
 
   //Array of R in Mpc
-  double logR_min = log(exp(ptsz->logR1SZ)/pba->h);
-  double logR_max = log(exp(ptsz->logR2SZ)/pba->h);
+  double logR_min = log(exp(ptsz->logR1SZ)/pba->h); //in Mpc
+  double logR_max = log(exp(ptsz->logR2SZ)/pba->h); //in Mpc
   int index_R;
 
   int index_z_R = 0;
 
   double ** array_sigma_at_z_and_R;
   double ** array_dsigma2dR_at_z_and_R;
-
 
   class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
   class_alloc(ptsz->array_radius,sizeof(double *)*ptsz->ndimSZ,ptsz->error_message);
