@@ -271,16 +271,16 @@ int compute_sz(struct background * pba,
 
    if(index_integrand == ptsz->index_integrand_id_hmf && ptsz->has_hmf){
       Pvectsz[ptsz->index_md] = ptsz->index_md_hmf;
-      printf("computing hmf int\n");
+      if (ptsz->sz_verbose > 0) printf("computing hmf int\n");
    }
    else if (index_integrand == ptsz->index_integrand_id_mean_y && ptsz->has_mean_y) {
       Pvectsz[ptsz->index_md] = ptsz->index_md_mean_y;
-      printf("computing mean y\n");
+      if (ptsz->sz_verbose > 0) printf("computing mean y\n");
    }
    else if (index_integrand>=ptsz->index_integrand_id_sz_ps_first && index_integrand <= ptsz->index_integrand_id_sz_ps_last && ptsz->has_sz_ps){
       Pvectsz[ptsz->index_md] = ptsz->index_md_sz_ps;
       Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_sz_ps_first);
-      printf("computing cl^yy @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+      if (ptsz->sz_verbose > 0) printf("computing cl^yy @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
     }
 
     else if (index_integrand>=ptsz->index_integrand_id_trispectrum_first && index_integrand <= ptsz->index_integrand_id_trispectrum_last && ptsz->has_sz_trispec){
@@ -291,19 +291,19 @@ int compute_sz(struct background * pba,
        int index_ell_prime = index_ell_ell_prime -index_ell*(index_ell+1)/2;
        Pvectsz[ptsz->index_multipole] = (double) (index_ell);
        Pvectsz[ptsz->index_multipole_prime] = (double) (index_ell_prime);
-       printf("computing trispectrum @ ell_id = %.0f, ell_id_prime = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_multipole_prime]);
+       if (ptsz->sz_verbose > 0) printf("computing trispectrum @ ell_id = %.0f, ell_id_prime = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_multipole_prime]);
      }
    else if (index_integrand>=ptsz->index_integrand_id_sz_ps_2halo_first && index_integrand <= ptsz->index_integrand_id_sz_ps_2halo_last && ptsz->has_sz_2halo){
       Pvectsz[ptsz->index_md] = ptsz->index_md_2halo;
       Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_sz_ps_2halo_first);
-      printf("computing cl^yy 2-halo term @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+      if (ptsz->sz_verbose > 0) printf("computing cl^yy 2-halo term @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
     }
 
 
    else if (index_integrand>=ptsz->index_integrand_id_sz_ps_te_y_y_first && index_integrand <= ptsz->index_integrand_id_sz_ps_te_y_y_last && ptsz->has_sz_te_y_y){
       Pvectsz[ptsz->index_md] = ptsz->index_md_te_y_y;
       Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_sz_ps_te_y_y_first);
-      printf("computing cl^Teyy @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+      if (ptsz->sz_verbose > 0) printf("computing cl^Teyy @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
     }
 
     else if (index_integrand>=ptsz->index_integrand_id_cov_Y_N_first && index_integrand <= ptsz->index_integrand_id_cov_Y_N_last && ptsz->has_sz_cov_Y_N){
@@ -313,13 +313,13 @@ int compute_sz(struct background * pba,
        int index_mass = index_ell_mass % ptsz->nbins_M;
        Pvectsz[ptsz->index_multipole] = (double) (index_ell);
        Pvectsz[ptsz->index_cov_Y_N_mass_bin] = (double) (index_mass);
-       printf("computing cov(Y,N) @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_cov_Y_N_mass_bin]);
+       if (ptsz->sz_verbose > 0) printf("computing cov(Y,N) @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_cov_Y_N_mass_bin]);
      }
     else if (index_integrand>=ptsz->index_integrand_id_cov_N_N_first && index_integrand <= ptsz->index_integrand_id_cov_N_N_last && ptsz->has_sz_cov_N_N){
        Pvectsz[ptsz->index_md] = ptsz->index_md_cov_N_N;
        int index_mass = (int) (index_integrand - ptsz->index_integrand_id_cov_N_N_first);
        Pvectsz[ptsz->index_cov_Y_N_mass_bin] = (double) (index_mass);
-       printf("computing cov(N,N) @ mass_bin_id = %.0f\n",Pvectsz[ptsz->index_cov_Y_N_mass_bin]);
+       if (ptsz->sz_verbose > 0) printf("computing cov(N,N) @ mass_bin_id = %.0f\n",Pvectsz[ptsz->index_cov_Y_N_mass_bin]);
      }
      else
      return 0;

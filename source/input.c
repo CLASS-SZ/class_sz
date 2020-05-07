@@ -4024,8 +4024,8 @@ int input_default_params(
   //Integration method and parameters (mass)
   //patterson
   ptsz->integration_method_mass = 0;
-  ptsz->patterson_epsrel = 5e-6;
-  ptsz->patterson_epsabs = 1e-20;
+  ptsz->patterson_epsrel = 1e-3;
+  ptsz->patterson_epsabs = 1e-9;
   ptsz->patterson_show_neval = 0;
 
   //trapezoidal
