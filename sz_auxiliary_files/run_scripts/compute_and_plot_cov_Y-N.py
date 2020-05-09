@@ -57,20 +57,24 @@ def run(args):
     param_name = 'output'
     p_dict[param_name] = 'tSZ_cov_Y_N'
 
+
+    param_name = 'ell_min_mock'
+    p_dict[param_name] = '2.'
+
     param_name = 'number of mass bins for cov(Y,N)'
     p_dict[param_name] = float(args.nbins_mass)
 
 
     nbins_M = float(args.nbins_mass)
 
-    M_bins = []
+    # M_bins = []
     M1SZ = float(p_dict['M1SZ'])
     M2SZ = float(p_dict['M2SZ'])
 
-    for i in range(0,50):
-        M_bins.append(np.exp(np.log(M1SZ)+i*(np.log(M2SZ)-np.log(M1SZ))/(nbins_M-1.)))
-    M_bins = np.asarray(M_bins)
-    M_bins
+    # for i in range(0,50):
+    #     M_bins.append(np.exp(np.log(M1SZ)+i*(np.log(M2SZ)-np.log(M1SZ))/(nbins_M-1.)))
+    # M_bins = np.asarray(M_bins)
+    # M_bins
 
     def func_where_is_mp(mp):
         return np.log(mp/M1SZ)*1e2/np.log(M2SZ/M1SZ)
@@ -139,6 +143,7 @@ def run(args):
     #print(p_dict)
     SZ_ps_cov = C
     ell_array = x_axis
+    #print(ell_array)
     bin_M = np.arange(0,101)
     bin_ell = np.arange(0,101)
     from mpl_toolkits.mplot3d import Axes3D

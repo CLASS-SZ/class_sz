@@ -121,9 +121,12 @@ def run(args):
 
     if (args.plot_redshift_dependent_functions == 'yes'):
         ax.set_xlabel(r'$z$',size=title_size)
-        ax.set_ylabel(r'$Q(z)$',size=title_size)
+        #ax.set_ylabel(r'$Q(z)$',size=title_size)
+        ax.set_ylabel(r'$v_\mathrm{rms}\quad [\mathrm{km/s}]$',size=title_size)
         ax.set_xscale('linear')
         ax.set_yscale('linear')
+        ax.set_xlim(0.,6.)
+        ax.set_ylim(0.,600.)
     else:
         ax.set_xscale('log')
         ax.set_yscale('log')
@@ -229,10 +232,12 @@ def run(args):
                         if (args.show_error_bars == 'yes'):
                             ax.errorbar(multipoles[id_p],cl_1h[id_p],yerr=[verr,verr],color=col[id_p],ls='-.',alpha = 1.,label = val_label[id_p])
                         else:
-                            ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+                            #ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+                            ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^1h boris')
                     if ('tSZ_2h' in p_dict['output']):
                         #print(cl_2h[id_p])
-                        ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-',label = val_label[id_p])
+                        #ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-',label = val_label[id_p])
+                        ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-',label = 'Cl^2h boris')
             plt.draw()
             plt.pause(0.05)
             id_p += 1
@@ -258,17 +263,20 @@ def run(args):
                 #L = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data.txt')
                 #L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum_patterson.txt')
                 # L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum_mnu_0d02_ref.txt')
-                L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum.txt')
-                multipoles_ref = L_ref[:,0]
-                cl_1h_ref = L_ref[:,1]
-                trispectrum_ref = L_ref[:,3]
-                cl_2h_ref = L_ref[:,6]
+
+                # L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum.txt')
+                # multipoles_ref = L_ref[:,0]
+                # cl_1h_ref = L_ref[:,1]
+                # trispectrum_ref = L_ref[:,3]
+                # cl_2h_ref = L_ref[:,6]
+
                 #LC = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data_P13.txt')
-                #LC = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data_B12.txt')
+                LC = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data_B12.txt')
                 # LC = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data_A10.txt')
-                # multipoles_ref = LC[:,0]
-                # cl_1h_ref = 1.e12*LC[:,9]*LC[:,0]*(LC[:,0]+1.)/2./np.pi
-                # cl_2h_ref = 1.e12*LC[:,10]*LC[:,0]*(LC[:,0]+1.)/2./np.pi
+                multipoles_ref = LC[:,0]
+                cl_1h_ref = 1.e12*LC[:,9]*LC[:,0]*(LC[:,0]+1.)/2./np.pi
+                cl_2h_ref = 1.e12*LC[:,10]*LC[:,0]*(LC[:,0]+1.)/2./np.pi
+
                 if (args.plot_trispectrum == 'yes'):
                     ax.plot(multipoles_ref,trispectrum_ref,c='k',ls='--',label='ref',alpha=0.7)
                 else :
@@ -280,8 +288,9 @@ def run(args):
                             ax.plot(multipoles_ref,cl_1h_ref,color='k',ls='--',alpha = 1.,label='Cl^1h colin')
                     if ('tSZ_2h' in p_dict['output']):
                         #print(cl_2h_ref)
-                        #ax.plot(multipoles_ref,cl_2h_ref,color='k',ls='-',label='Cl^2h colin')
-                        ax.plot(multipoles_ref,cl_2h_ref,color='k',ls='--',label='Cl^2h ref')
+                        ax.plot(multipoles_ref,cl_2h_ref,color='k',ls='-',label='Cl^2h colin')
+                        #ax.plot(multipoles_ref,cl_2h_ref,color='k',ls='--',label='Cl^2h ref')
+                plt.draw()
 
 
 
@@ -329,7 +338,19 @@ def run(args):
                     for (ell,rdiff) in zip(multipoles_ref,rel_diff):
                         print("ell = %.4e\t rel_diff = %.4e\n"%(ell,rdiff))
 
-                    ax.plot(multipoles_ref,rel_diff,color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+                    #ax.plot(multipoles_ref,rel_diff,color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+                    ax.plot(multipoles_ref,rel_diff,color=col[id_p],ls='-',alpha = 1.,label = '1-halo')
+
+                    if ('tSZ_2h' in p_dict['output']):
+                        y = np.log(cl_2h[id_p])
+                        f = interpolate.interp1d(x, y)
+                        x_new = np.log(multipoles_ref)
+                        cl_new = np.exp(f(x_new))
+                        rel_diff = (cl_new-cl_2h_ref)/cl_2h_ref
+                        for (ell,rdiff) in zip(multipoles_ref,rel_diff):
+                            print("ell = %.4e\t rel_diff_2h = %.4e\n"%(ell,rdiff))
+
+                        ax.plot(multipoles_ref,rel_diff,color=col[id_p],ls='-.',alpha = 1.,label = '2-halo')
                     plt.draw()
                     plt.pause(0.05)
                     id_p += 1
@@ -340,7 +361,7 @@ def run(args):
                 # plt.plot(L[:,0],L[:,6],ls='-.',c='g',label='Cl^2h boris 1d5r200c')
 
             if (args.show_legend == 'yes'):
-                ax1.legend(loc=1)
+                ax1.legend(loc=2)
                 if (args.print_rel_diff == 'yes'):
                     ax2.legend(loc=2,ncol = 2)
 
@@ -382,7 +403,7 @@ def main():
 	parser.add_argument("-compute_scaling_with_param",help="Compute alpha in C_l ~ p^alpha at l=100" ,dest="compute_scaling_with_param", type=str, required=False)
 	parser.add_argument("-save_tsz_ps",help="save file with tsz power spectrum in output directory" ,dest="save_tsz_ps", type=str, required=False)
 	parser.add_argument("-save_figure",help="save figure" ,dest="save_fig", type=str, required=False)
-	parser.add_argument("-print_relative_difference",help="[cl-cl_ref]/cl_ref" ,dest="print_rel_diff", type=str, required=False)
+	parser.add_argument("-print_rel_diff",help="[cl-cl_ref]/cl_ref" ,dest="print_rel_diff", type=str, required=False)
 	parser.add_argument("-plot_trispectrum",help="Tll" ,dest="plot_trispectrum", type=str, required=False)
 	parser.add_argument("-plot_te_y_y",help="Tll" ,dest="plot_te_y_y", type=str, required=False)
 	parser.add_argument("-plot_redshift_dependent_functions",help="redshifty dependent functions" ,dest="plot_redshift_dependent_functions", type=str, required=False)

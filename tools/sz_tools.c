@@ -43065,7 +43065,7 @@ int spectra_vrms2(
   int index_ddy;
   int i;
 
-  double k,W,x;
+  double k,W;
 
   i=0;
   index_k=i;
@@ -43908,8 +43908,8 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   void * params = &V;
   //
   //
-  double epsrel=1e-10;//ptsz->patterson_epsrel;
-  double epsabs=1e-40;//ptsz->patterson_epsabs;
+  double epsrel=1e-15;//ptsz->patterson_epsrel;
+  double epsabs=1e-60;//ptsz->patterson_epsabs;
   int show_neval = ptsz->patterson_show_neval;
   //
 
@@ -43937,7 +43937,7 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 100;
+  int size_w = 1000;
   w = gsl_integration_workspace_alloc(size_w);
 
   int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
@@ -43961,7 +43961,7 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   F.params = params;
 
   double eps_abs = 0;
-  double eps_rel = 1e1;
+  double eps_rel = 1e0;
 
   double result_gsl, error;
   int limit = size_w; //number of sub interval

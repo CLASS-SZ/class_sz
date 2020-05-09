@@ -729,11 +729,11 @@ int evaluate_pressure_profile(double * pvecback,
       else if (ptsz->pressure_profile == 0)
       pressure_normalisation = C_pressure
                                *ptsz->P0GNFW
-                               *pow(0.7/pba->h, 0.); //exponent is 1.5 in integrand.f90
+                               *pow(0.7/pba->h, 1.); //exponent is 1.5 in integrand.f90
       else if (ptsz->pressure_profile == 3)
       pressure_normalisation = C_pressure
                                *ptsz->P0GNFW
-                               *pow(0.7/pba->h, 1.5); //exponent is 1.5 in integrand.f90
+                               *pow(0.7/pba->h, 1.); //exponent is 1.5 in integrand.f90
 
       characteristic_radius = pvectsz[ptsz->index_r500]/pba->h; // in Mpc
       characteristic_multipole = pvectsz[ptsz->index_l500];
