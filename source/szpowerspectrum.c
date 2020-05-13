@@ -716,24 +716,24 @@ int evaluate_pressure_profile(double * pvecback,
                           *pow(pvectsz[ptsz->index_m500]/(3.e14*0.7),2./3.+ptsz->alpha_p)
                           *pow(pvectsz[ptsz->index_m500]*ptsz->HSEbias/3.e14, ptsz->delta_alpha);
 
-     // formula D3 of WMAP 7 year paper (normalisation of pressure profile)
-     //last term should not be there when computing P13 pressure profile? need to ask planck people
-     //this factor actually is in komatsu's integrand.f90...
 
-     //A10:
-     if (ptsz->pressure_profile == 2)
+
+      //A10:
+      if (ptsz->pressure_profile == 2)
       pressure_normalisation = C_pressure
                                *ptsz->P0GNFW
-                               *pow(0.7/pba->h, 1.5); //exponent is 1.5 in integrand.f90
+                               *pow(0.7/pba->h, 1.5); // as found by dimensional analysis (X-ray data)
       //P13:
       else if (ptsz->pressure_profile == 0)
       pressure_normalisation = C_pressure
                                *ptsz->P0GNFW
-                               *pow(0.7/pba->h, 1.); //exponent is 1.5 in integrand.f90
+                               *pow(0.7/pba->h, 1.); // as found by dimensional analysis (sz data)
+
+      //Custom. GNFW
       else if (ptsz->pressure_profile == 3)
       pressure_normalisation = C_pressure
                                *ptsz->P0GNFW
-                               *pow(0.7/pba->h, 1.); //exponent is 1.5 in integrand.f90
+                               *pow(0.7/pba->h, 1.5); // assuming X-ray data based pressure profile
 
       characteristic_radius = pvectsz[ptsz->index_r500]/pba->h; // in Mpc
       characteristic_multipole = pvectsz[ptsz->index_l500];
@@ -859,7 +859,7 @@ int evaluate_completeness(double * pvecback,
     comp_at_M_and_z += c2*ptsz->skyfracs[index_patches];
     sum_skyfracs += ptsz->skyfracs[index_patches];
     }
-    //Now divide by total sky fraction
+    //Now divide by sky fraction
     comp_at_M_and_z = comp_at_M_and_z/sum_skyfracs;
     }
    if (ptsz->which_ps_sz == 0)
@@ -868,6 +868,7 @@ int evaluate_completeness(double * pvecback,
       pvectsz[ptsz->index_completeness] = comp_at_M_and_z;
    else if (ptsz->which_ps_sz == 2) //ps unresolved
       pvectsz[ptsz->index_completeness] = (1.-comp_at_M_and_z);
+
    return _SUCCESS_;
 }
 

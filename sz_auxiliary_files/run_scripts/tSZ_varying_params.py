@@ -29,9 +29,8 @@ def run(args):
 
     if (param_name == 'sigma8'):
         label_key = r'$\sigma_8$'
-    elif (param_name == 'b'):
-        param_name = 'HSEbias'
-        label_key = r'$b$'
+    elif (param_name == 'B'):
+        label_key = r'$B$'
     elif (param_name == 'h'):
         label_key = r'$h$'
     elif (param_name == 'Omega_cdm'):
@@ -160,13 +159,7 @@ def run(args):
         id_p = 0
         for p_val in p:
             #update dictionnary with current value
-            if (param_name == 'HSEbias'):
-                p_dict[param_name] = 1./(1.-p_val)
-            else:
-                p_dict[param_name] = p_val
-
-            #print(p_dict)
-            #create a temporary ini file with parameter value
+            p_dict[param_name] = p_val
             subprocess.call(['rm','-r','-f',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
             subprocess.call(['mkdir','-p',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
             with open(path_to_class+'sz_auxiliary_files/run_scripts/tmp/tmp.ini', 'w') as f:
@@ -232,12 +225,12 @@ def run(args):
                         if (args.show_error_bars == 'yes'):
                             ax.errorbar(multipoles[id_p],cl_1h[id_p],yerr=[verr,verr],color=col[id_p],ls='-.',alpha = 1.,label = val_label[id_p])
                         else:
-                            #ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
-                            ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^1h boris')
+                            ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+                            #ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^1h boris')
                     if ('tSZ_2h' in p_dict['output']):
                         #print(cl_2h[id_p])
-                        #ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-',label = val_label[id_p])
-                        ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-',label = 'Cl^2h boris')
+                        ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-',label = val_label[id_p])
+                        #ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-',label = 'Cl^2h boris')
             plt.draw()
             plt.pause(0.05)
             id_p += 1
@@ -251,10 +244,10 @@ def run(args):
         if ('tSZ_1h' in p_dict['output']):
             if(args.compute_scaling_with_param == 'yes'):
                 ln_cl = np.log(np.asarray(cl_1h_100))
-                if (param_name == 'HSEbias'):
-                    ln_p = np.log(1./(1.-p)) #if HSEbias
-                else:
-                    ln_p = np.log(p)
+                #if (param_name == 'HSEbias'):
+                #     ln_p = np.log(1./(1.-p)) #if HSEbias
+                # else:
+                ln_p = np.log(p)
                 slope, intercept, r_value, p_value, std_err = stats.linregress(ln_p,ln_cl)
                 print("slope = %.4e,\t intercept = %.4e\n"%(slope,intercept))
 
@@ -264,18 +257,18 @@ def run(args):
                 #L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum_patterson.txt')
                 # L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum_mnu_0d02_ref.txt')
 
-                # L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum.txt')
-                # multipoles_ref = L_ref[:,0]
-                # cl_1h_ref = L_ref[:,1]
-                # trispectrum_ref = L_ref[:,3]
-                # cl_2h_ref = L_ref[:,6]
+                L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum.txt')
+                multipoles_ref = L_ref[:,0]
+                cl_1h_ref = L_ref[:,1]
+                trispectrum_ref = L_ref[:,3]
+                cl_2h_ref = L_ref[:,6]
 
                 #LC = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data_P13.txt')
-                LC = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data_B12.txt')
+                #LC = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data_B12.txt')
                 # LC = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data_A10.txt')
-                multipoles_ref = LC[:,0]
-                cl_1h_ref = 1.e12*LC[:,9]*LC[:,0]*(LC[:,0]+1.)/2./np.pi
-                cl_2h_ref = 1.e12*LC[:,10]*LC[:,0]*(LC[:,0]+1.)/2./np.pi
+                #multipoles_ref = LC[:,0]
+                #cl_1h_ref = 1.e12*LC[:,9]*LC[:,0]*(LC[:,0]+1.)/2./np.pi
+                #cl_2h_ref = 1.e12*LC[:,10]*LC[:,0]*(LC[:,0]+1.)/2./np.pi
 
                 if (args.plot_trispectrum == 'yes'):
                     ax.plot(multipoles_ref,trispectrum_ref,c='k',ls='--',label='ref',alpha=0.7)
@@ -285,10 +278,10 @@ def run(args):
                             verr = L_ref[:,5]/np.sqrt(f_sky)
                             ax.errorbar(multipoles_ref,cl_1h_ref,yerr=[verr,verr],color='k',ls='--',alpha = 0.5,label='Cl^1h ref')
                         else:
-                            ax.plot(multipoles_ref,cl_1h_ref,color='k',ls='--',alpha = 1.,label='Cl^1h colin')
+                            ax.plot(multipoles_ref,cl_1h_ref,color='k',ls='--',alpha = 1.,label='Cl^1h ref')
                     if ('tSZ_2h' in p_dict['output']):
                         #print(cl_2h_ref)
-                        ax.plot(multipoles_ref,cl_2h_ref,color='k',ls='-',label='Cl^2h colin')
+                        ax.plot(multipoles_ref,cl_2h_ref,color='k',ls='-',label='Cl^2h ref')
                         #ax.plot(multipoles_ref,cl_2h_ref,color='k',ls='--',label='Cl^2h ref')
                 plt.draw()
 

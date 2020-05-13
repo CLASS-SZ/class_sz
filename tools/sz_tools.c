@@ -43937,7 +43937,7 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 1000;
+  int size_w = 30000;
   w = gsl_integration_workspace_alloc(size_w);
 
   int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
@@ -43960,8 +43960,8 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   F.function = &integrand_patterson_test_pp;
   F.params = params;
 
-  double eps_abs = 0;
-  double eps_rel = 1e0;
+  double eps_abs = 1e-10;
+  double eps_rel = 1e-9;
 
   double result_gsl, error;
   int limit = size_w; //number of sub interval

@@ -1697,10 +1697,7 @@ int input_read_parameters(
       //BB: read SZ parameters from ini file
       class_read_int("nlSZ",ptsz->nlSZ);
 
-      class_read_int("which_ps_SZ",ptsz->which_ps_sz);
-      //if ps resolved (1) or unresolved (2) --> need completeness
-      if(ptsz->which_ps_sz == 1 || ptsz->which_ps_sz == 2 )
-        ptsz->has_completeness_for_ps_SZ = 1;
+
 
       class_read_double("ell_max_mock",ptsz->ell_max_mock);
       class_read_double("ell_min_mock",ptsz->ell_min_mock);
@@ -1735,7 +1732,7 @@ int input_read_parameters(
 
       //Hydrostatic Equilibrium Mass Bias, Piffaretti & Valdarnini [arXiv:0808.1111]
 
-      class_read_double("HSEbias",ptsz->HSEbias);
+      class_read_double("B",ptsz->HSEbias);
       class_read_double("Ap",ptsz->Ap);
       class_read_double("alpha_b",ptsz->alpha_b);
       class_read_int("mass_dependent_bias",ptsz->mass_dependent_bias);
@@ -1772,8 +1769,27 @@ int input_read_parameters(
       class_read_double("c0",ptsz->c0);
 
 
-      //Integration scheme for the mass integral:
 
+        class_call(parser_read_string(pfc,"component of tSZ power spectrum",&string1,&flag1,errmsg),
+                   errmsg,
+                   errmsg);
+        if (flag1 == _TRUE_) {
+          if ((strstr(string1,"total") != NULL)){
+            ptsz->which_ps_sz = 0;
+            ptsz->has_completeness_for_ps_SZ = 0;
+          }
+          else if ((strstr(string1,"resolved") != NULL)){
+            ptsz->which_ps_sz = 1;
+            ptsz->has_completeness_for_ps_SZ = 1;
+          }
+          else if ((strstr(string1,"diffuse") != NULL)){
+            ptsz->which_ps_sz = 2;
+            ptsz->has_completeness_for_ps_SZ = 1;
+          }
+        }
+
+
+      //Integration scheme for the mass integral:
       class_call(parser_read_string(pfc,"integration method (mass)",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
