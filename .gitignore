@@ -54,3 +54,5 @@ sz_auxiliary_files/run_scripts/tmp_ref_cov_no_trispec_10/class-sz_tmp_pk.dat
 sz_auxiliary_files/run_scripts/tmp_ref_cov_no_trispec_10/class-sz_tmp_pk_cb.dat
 sz_auxiliary_files/run_scripts/tmp_ref_cov_no_trispec/class-sz_tmp_szpowerspectrum_r_N_cl.txt
 sz_auxiliary_files/cobaya_class_sz_likelihoods/mcmc_run_scripts/run_completeness_ps_analysis.py
+redshift_dependent_functions.txt
+szpowerspectrum.txt
