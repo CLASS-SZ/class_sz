@@ -212,7 +212,7 @@ int compute_integral_function_Patterson(int order, double xc, double Dx,
     const double *x, *w;
     double Del, dum;
     int nx;
-    double * tmp = NULL;
+    
 
     //==============================================================================================
     // decide which rule to use

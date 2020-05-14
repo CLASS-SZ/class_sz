@@ -70,15 +70,31 @@ int szpowerspectrum_init(
    int index_integrand;
 
    int abort;
+
 #ifdef _OPENMP
    double tstart, tstop;
 #endif
+
    abort = _FALSE_;
     //printf("number_of_integrands=%d\n",ptsz->number_of_integrands);
 
+
+/* number of threads (always one if no openmp) */
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+    //omp_set_num_threads(number_of_threads);
+  }
+#endif
+
+//printf("number_of_threads = %d\n",number_of_threads);
+//number_of_threads= 8;
 #pragma omp parallel \
    shared(abort,pba,ptsz,ppm,pnl)\
-   private(tstart,tstop,Pvectsz,Pvecback,index_integrand)
+   private(tstart,tstop,Pvectsz,Pvecback,index_integrand)\
+   num_threads(number_of_threads)
 	 {
 
 #ifdef _OPENMP
@@ -91,12 +107,13 @@ int szpowerspectrum_init(
 
 	   class_alloc_parallel(Pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
 
-#pragma omp for schedule (dynamic)
+
 
 
 
 //Loop over integrands
 //the computation is parallelized with respect to the integrands
+#pragma omp for schedule (dynamic)
 for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integrand++)
 	     {
 #pragma omp flush(abort)

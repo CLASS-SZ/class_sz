@@ -45812,10 +45812,19 @@ for (index_l=0;
 abort = _FALSE_;
 /* beginning of parallel region */
 
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
 #pragma omp parallel \
 shared(abort,index_z_R,\
 pba,ptsz,ppm,pnl,z_min,z_max,logR_min,logR_max)\
-private(tstart, tstop,index_R,index_z,sigma_var,dsigma_var)
+private(tstart, tstop,index_R,index_z,sigma_var,dsigma_var) \
+num_threads(number_of_threads)
 {
 
 #ifdef _OPENMP
