@@ -47,7 +47,7 @@ int szpowerspectrum_init(
    tabulate_vrms2_from_pk(pba,pnl,ppm,ptsz);
 
 
-   if (ptsz->sz_verbose>0)
+   if (ptsz->write_sz>0)
    write_redshift_dependent_quantities(pba,ptsz);
 
    //SO data and Functions
@@ -150,6 +150,9 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 
    if (ptsz->create_ref_trispectrum_for_cobaya){
 
+     if (ptsz->sz_verbose>=1)
+     printf("creating reference trispectrum for cobaya sz likelihood\n");
+
      char Filepath[_ARGUMENT_LENGTH_MAX_];
      FILE *fp;
 
@@ -174,10 +177,11 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
         };
 
         sprintf(Filepath,
-                    "%s%s%s",
-                    ptsz->path_to_class,
-                    "/sz_auxiliary_files/cobaya_class_sz_likelihoods/cobaya_reference_trispectrum/",
-                    "tSZ_trispectrum_ref.txt");
+                "%s%s%s%s",
+                ptsz->path_to_ref_trispectrum_for_cobaya,
+                "/tSZ_trispectrum_ref_",
+                ptsz->append_name_cobaya_ref,
+                ".txt");
 
         fp=fopen(Filepath, "w");
 
@@ -191,10 +195,11 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 
 
         sprintf(Filepath,
-            "%s%s%s",
-            ptsz->path_to_class,
-            "/sz_auxiliary_files/cobaya_class_sz_likelihoods/cobaya_reference_trispectrum/",
-            "tSZ_c_ell_ref.txt");
+                "%s%s%s%s",
+                ptsz->path_to_ref_trispectrum_for_cobaya,
+                "/tSZ_c_ell_ref_",
+                ptsz->append_name_cobaya_ref,
+                ".txt");
 
         fp=fopen(Filepath, "w");
         for (index_l=0;index_l<ptsz->nlSZ;index_l++)
@@ -202,7 +207,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
         fclose(fp);
   }
 
-   if (ptsz->sz_verbose>0){
+   if (ptsz->write_sz>0){
    write_output_to_files_cl(pnl,pba,ptsz);
    write_output_to_files_ell_indep_ints(pnl,pba,ptsz);
    if (ptsz->sz_verbose>1) show_results(pba,pnl,ppm,ptsz);
@@ -220,8 +225,6 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->cov_cl_cl);
    free(ptsz->cl_sz_2h);
    free(ptsz->tllprime_sz);
-   free(ptsz->cov_N_cl);
-   free(ptsz->r_N_cl);
    free(ptsz->cov_Y_N);
    free(ptsz->cov_N_N);
    free(ptsz->r_Y_N);
@@ -232,10 +235,11 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->skyfracs);
    free(ptsz->ylims);
 
-   free(ptsz->SO_Qfit);
-   free(ptsz->SO_thetas);
+
 
 if (ptsz->experiment == 1){
+    free(ptsz->SO_Qfit);
+    free(ptsz->SO_thetas);
     free(ptsz->SO_RMS);
     free(ptsz->SO_skyfrac);
 }
@@ -739,12 +743,12 @@ int evaluate_pressure_profile(double * pvecback,
       if (ptsz->pressure_profile == 2)
       pressure_normalisation = C_pressure
                                *ptsz->P0GNFW
-                               *pow(0.7/pba->h, 1.5); // as found by dimensional analysis (X-ray data)
+                               *pow(0.7/pba->h, 1.5); // as found by dimensional analysis (X-ray data, see email with E. Komatsu and R. Makya)
       //P13:
       else if (ptsz->pressure_profile == 0)
       pressure_normalisation = C_pressure
                                *ptsz->P0GNFW
-                               *pow(0.7/pba->h, 1.); // as found by dimensional analysis (sz data)
+                               *pow(0.7/pba->h, 1.); // as found by dimensional analysis (sz data, see email with E. Komatsu and R. Makya)
 
       //Custom. GNFW
       else if (ptsz->pressure_profile == 3)

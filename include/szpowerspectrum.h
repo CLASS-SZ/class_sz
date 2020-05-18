@@ -131,6 +131,8 @@ struct tszspectrum {
 
   FileName root; /**< root for all file names */
   FileName path_to_class; /**< root for all file names */
+  FileName append_name_cobaya_ref;
+  FileName path_to_ref_trispectrum_for_cobaya;
 
 
  /* vector of all SZ quantities function of redshift*/

@@ -19,7 +19,8 @@ def run(args):
     # else:
     #     parameter_file = 'class-sz_parameters.ini'
 
-    parameter_file = 'class-sz_parameters.ini'
+    #parameter_file = 'class-sz_parameters.ini'
+    parameter_file = 'class-sz_parameters_for_sz_ps_completeness_analysis_rotti++20.ini'
 
 
     os.chdir(path_to_class)
@@ -84,6 +85,7 @@ def run(args):
     #print(p_dict)
     #set correct Output
     p_dict['output'] = 'tSZ_1h'
+    p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
     if(args.output):
         p_dict['output'] = args.output
     if (args.plot_redshift_dependent_functions == 'yes'):

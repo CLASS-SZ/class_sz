@@ -555,7 +555,11 @@ int input_init(
 
   if(ptsz->create_ref_trispectrum_for_cobaya){
 
-    sprintf(param_output_name,"%s%s",ptsz->path_to_class,"/sz_auxiliary_files/cobaya_class_sz_likelihoods/cobaya_reference_trispectrum/tSZ_params_ref.txt");
+    sprintf(param_output_name,"%s%s%s%s",
+            ptsz->path_to_ref_trispectrum_for_cobaya,
+            "/tSZ_params_ref_",
+            ptsz->append_name_cobaya_ref,
+            ".txt");
 
     class_open(param_output,param_output_name,"w",errmsg);
 
@@ -2008,8 +2012,17 @@ int input_read_parameters(
                    errmsg,
                    errmsg);
         if (flag1 == _TRUE_) {
-            if ((strstr(string1,"YES") != NULL))
+            if ((strstr(string1,"YES") != NULL)){
                 ptsz->create_ref_trispectrum_for_cobaya=1;
+                ptsz->has_sz_ps = _TRUE_;
+                ptsz->has_sz_trispec =_TRUE_;
+                ppt->has_density_transfers=_TRUE_;
+                ppt->has_pk_matter = _TRUE_;
+                ppt->has_perturbations = _TRUE_;
+                pnl->has_pk_cb = _TRUE_;
+                pnl->has_pk_m = _TRUE_;
+              }
+
             else
                 ptsz->create_ref_trispectrum_for_cobaya=0;
         }
@@ -2103,12 +2116,14 @@ int input_read_parameters(
      }
 
       class_read_string("path_to_class",ptsz->path_to_class);
+      class_read_string("append_name_cobaya_ref",ptsz->append_name_cobaya_ref);
+      class_read_string("path_to_ref_trispectrum_for_cobaya",ptsz->path_to_ref_trispectrum_for_cobaya);
       class_read_string("root",ptsz->root);
       class_read_string("root",pcsz->root);
 
       class_read_int("sz_verbose",ptsz->sz_verbose);
 
-      class_call(parser_read_string(pfc,"write sz",&string1,&flag1,errmsg),
+      class_call(parser_read_string(pfc,"write sz results to files",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
 
@@ -4041,7 +4056,7 @@ int input_default_params(
   //patterson
   ptsz->integration_method_mass = 0;
   ptsz->patterson_epsrel = 1e-3;
-  ptsz->patterson_epsabs = 1e-9;
+  ptsz->patterson_epsabs = 1e-30;
   ptsz->patterson_show_neval = 0;
 
   //trapezoidal
@@ -4072,6 +4087,7 @@ int input_default_params(
   pcsz->has_sz_counts = _FALSE_;
 
   ptsz->has_sz_ps = _FALSE_;
+  ptsz->has_sz_2halo = _FALSE_;
   ptsz->has_sz_trispec = _FALSE_;
   ptsz->has_hmf = _FALSE_;
   ptsz->has_mean_y = _FALSE_;
