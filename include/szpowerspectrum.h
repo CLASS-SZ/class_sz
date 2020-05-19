@@ -238,6 +238,7 @@ struct tszspectrum {
 
 
   double ** ylims;
+  double * sky_averaged_ylims;
 
 
   int experiment;
@@ -353,8 +354,16 @@ struct tszspectrum {
   ////////////////////////
   //integration method and parameters (mass)
   int integration_method_mass;
-  double patterson_epsrel;
-  double patterson_epsabs;
+
+  double redshift_epsrel;
+  double redshift_epsabs;
+
+  double mass_epsrel;
+  double mass_epsabs;
+
+  double pressure_profile_epsabs;
+  double pressure_profile_epsrel;
+
   int patterson_show_neval;
 
   int number_of_mass_bins; //for trapezoidal rule
@@ -395,6 +404,8 @@ struct tszspectrum {
   double Sigma8OmegaM_SZ;
   double sigma8_Pcb;
 
+  short has_vrms2;
+  
   short has_tszspectrum;  //do we need tSZ spectrum? */
   short sz_verbose; /**< flag regulating the amount of information sent to standard output (none if set to zero) */
   short write_sz;  //do we need SZ quatitiies vs redshift? */

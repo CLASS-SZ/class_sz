@@ -28,7 +28,7 @@ int szpowerspectrum_init(
    select_multipole_array(ptsz);
    show_preamble_messages(pba,pnl,ppm,ptsz);
 
-   if (ptsz->experiment == 0)
+   if (ptsz->experiment == 0 && ptsz->has_completeness_for_ps_SZ == 1)
       read_Planck_noise_map(ptsz);
 
    //obsolete:
@@ -44,6 +44,7 @@ int szpowerspectrum_init(
    initialise_and_allocate_memory(ptsz);
 
 
+   if (ptsz->has_vrms2)
    tabulate_vrms2_from_pk(pba,pnl,ppm,ptsz);
 
 
@@ -234,6 +235,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->thetas);
    free(ptsz->skyfracs);
    free(ptsz->ylims);
+   free(ptsz->sky_averaged_ylims);
 
 
 
@@ -864,25 +866,36 @@ int evaluate_completeness(double * pvecback,
 
     }
 
-    int index_patches;
-    double sum_skyfracs = 0.;
+    // //Sum over sky pathces:
+    // int index_patches;
+    // double sum_skyfracs = 0.;
+    //
+    // for (index_patches =0;
+    // index_patches<ptsz->nskyfracs;
+    // index_patches++){
+    //
+    // double y1 = ptsz->ylims[index_patches][l1];
+    // double y2 = ptsz->ylims[index_patches][l2];
+    // y = y1 + (y2-y1)/(th2-th1)*(thp-th1);
+    //
+    // double c2 = erf_compl_ps(yp,y,sn_cutoff);
+    //
+    // comp_at_M_and_z += c2*ptsz->skyfracs[index_patches];
+    // sum_skyfracs += ptsz->skyfracs[index_patches];
+    // }
+    // //Now divide by sky fraction
+    // comp_at_M_and_z = comp_at_M_and_z/sum_skyfracs;
 
-    for (index_patches =0;
-    index_patches<ptsz->nskyfracs;
-    index_patches++){
 
-    double y1 = ptsz->ylims[index_patches][l1];
-    double y2 = ptsz->ylims[index_patches][l2];
+    // Using skyaveraged noisemap:
+    double y1 = ptsz->sky_averaged_ylims[l1];
+    double y2 = ptsz->sky_averaged_ylims[l2];
     y = y1 + (y2-y1)/(th2-th1)*(thp-th1);
-
     double c2 = erf_compl_ps(yp,y,sn_cutoff);
+    comp_at_M_and_z =  c2;
 
-    comp_at_M_and_z += c2*ptsz->skyfracs[index_patches];
-    sum_skyfracs += ptsz->skyfracs[index_patches];
     }
-    //Now divide by sky fraction
-    comp_at_M_and_z = comp_at_M_and_z/sum_skyfracs;
-    }
+
    if (ptsz->which_ps_sz == 0)
       pvectsz[ptsz->index_completeness] = 1.;
    else if (ptsz->which_ps_sz == 1) //ps resolved
@@ -1509,10 +1522,14 @@ int write_redshift_dependent_quantities(struct background * pba,
                        1,
                        &z_asked,
                        &R_asked));
-   double vrms2 =  exp(pwl_value_1d(ptsz->n_arraySZ,
+
+  double vrms2 = 0.;
+    if (ptsz->has_vrms2)
+   vrms2 =  exp(pwl_value_1d(ptsz->n_arraySZ,
                                     ptsz->array_redshift,
                                     ptsz->array_vrms2_at_z,
                                     z_asked));
+
 
   fprintf(fp,"%.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e\n",z,a,H_cosmo,H,sigma8,f,vrms2);
 

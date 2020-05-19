@@ -1713,6 +1713,9 @@ int input_read_parameters(
       class_read_double("z1SZ",ptsz->z1SZ);
       class_read_double("z2SZ",ptsz->z2SZ);
 
+      class_read_double("redshift_epsrel",ptsz->redshift_epsrel);
+      class_read_double("redshift_epsabs",ptsz->redshift_epsabs);
+
       class_read_double("max redshift for cluster counts",pcsz->z_max);
 
 
@@ -1800,8 +1803,7 @@ int input_read_parameters(
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"patterson") != NULL)){
           ptsz->integration_method_mass=0;
-          class_read_double("patterson_epsrel",ptsz->patterson_epsrel);
-          class_read_double("patterson_epsabs",ptsz->patterson_epsabs);
+
           class_read_int("patterson_show_neval",ptsz->patterson_show_neval);
         }
         else if ((strstr(string1,"gsl_qags") != NULL)){
@@ -1816,6 +1818,8 @@ int input_read_parameters(
         }
       }
 
+      class_read_double("mass_epsrel",ptsz->mass_epsrel);
+      class_read_double("mass_epsabs",ptsz->mass_epsabs);
 
       class_read_double("redshift_for_dndm",pcsz->redshift_for_dndm);
       class_read_double("size_logM_for_dndm",pcsz->size_logM);
@@ -1995,6 +1999,10 @@ int input_read_parameters(
        else  if ((strstr(string1,"spline") != NULL))
           ptsz->integration_method_pressure_profile=2;
           }
+
+      class_read_double("pressure_profile_epsrel",ptsz->pressure_profile_epsrel);
+      class_read_double("pressure_profile_epsabs",ptsz->pressure_profile_epsabs);
+
 
       /* temperature mass relation SZ */
       class_call(parser_read_string(pfc,"temperature mass relation",&string1,&flag1,errmsg),
@@ -4055,10 +4063,17 @@ int input_default_params(
   //Integration method and parameters (mass)
   //patterson
   ptsz->integration_method_mass = 0;
-  ptsz->patterson_epsrel = 1e-3;
-  ptsz->patterson_epsabs = 1e-30;
   ptsz->patterson_show_neval = 0;
 
+
+  ptsz->redshift_epsrel = 1e-3;
+  ptsz->redshift_epsabs = 1e-30;
+
+  ptsz->mass_epsrel = 1e-3;
+  ptsz->mass_epsabs = 1e-30;
+
+  ptsz->pressure_profile_epsrel = 1e-9;
+  ptsz->pressure_profile_epsabs = 1e-10;
   //trapezoidal
   ptsz->number_of_mass_bins = 60;
   /////////////////////////////////
@@ -4093,6 +4108,8 @@ int input_default_params(
   ptsz->has_mean_y = _FALSE_;
   ptsz->has_sz_cov_Y_N = _FALSE_;
   ptsz->has_sz_cov_N_N = _FALSE_;
+
+  ptsz->has_vrms2 = _FALSE_;
 
   ptsz->index_md_hmf = 0;
   ptsz->index_md_mean_y = 1;

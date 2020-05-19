@@ -43908,8 +43908,8 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   void * params = &V;
   //
   //
-  double epsrel=1e-15;//ptsz->patterson_epsrel;
-  double epsabs=1e-60;//ptsz->patterson_epsabs;
+  double epsrel=ptsz->pressure_profile_epsrel;
+  double epsabs=ptsz->pressure_profile_epsabs;
   int show_neval = ptsz->patterson_show_neval;
   //
 
@@ -43960,8 +43960,8 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   F.function = &integrand_patterson_test_pp;
   F.params = params;
 
-  double eps_abs = 1e-10;
-  double eps_rel = 1e-9;
+  double eps_abs = ptsz->pressure_profile_epsabs;
+  double eps_rel = ptsz->pressure_profile_epsrel;
 
   double result_gsl, error;
   int limit = size_w; //number of sub interval
@@ -44980,8 +44980,8 @@ int integrate_over_redshift_at_each_ell(struct background * pba,
   void * params = &V;
   double r; //result of the integral
 
-  double epsrel= 1.e-6;//ptsz->patterson_epsrel;
-  double epsabs= 1.e-30;//ptsz->patterson_epsabs;
+  double epsrel= ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
+  double epsabs= ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
   int show_neval = ptsz->patterson_show_neval;
 
 
@@ -45111,8 +45111,8 @@ double integrand_patterson_test(double logM, void *p){
   //Patterson [Jens Chluba]
   if (ptsz->integration_method_mass==0){
 
-  double epsrel=ptsz->patterson_epsrel;
-  double epsabs=ptsz->patterson_epsabs;
+  double epsrel=ptsz->mass_epsrel;
+  double epsabs=ptsz->mass_epsabs;
   int show_neval = ptsz->patterson_show_neval;
 
   r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
@@ -45132,8 +45132,8 @@ double integrand_patterson_test(double logM, void *p){
 
   int n_subintervals_gsl = 30000;
 
-  double epsrel=ptsz->patterson_epsrel;
-  double epsabs=ptsz->patterson_epsabs;
+  double epsrel=ptsz->mass_epsrel;
+  double epsabs=ptsz->mass_epsabs;
 
 
   gsl_integration_workspace * w = gsl_integration_workspace_alloc (n_subintervals_gsl);
@@ -45156,8 +45156,8 @@ double integrand_patterson_test(double logM, void *p){
 
   int n_subintervals_gsl = 300;
 
-  double epsrel=ptsz->patterson_epsrel;
-  double epsabs=ptsz->patterson_epsabs;
+  double epsrel=ptsz->mass_epsrel;
+  double epsabs=ptsz->mass_epsabs;
 
 
   gsl_integration_workspace * w = gsl_integration_workspace_alloc (n_subintervals_gsl);
@@ -45180,8 +45180,8 @@ F.params = params;
 
 int n_subintervals_gsl = 30;
 
-double epsrel=ptsz->patterson_epsrel;
-double epsabs=ptsz->patterson_epsabs;
+double epsrel=ptsz->mass_epsrel;
+double epsabs=ptsz->mass_epsabs;
 
 
 gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
@@ -45202,8 +45202,8 @@ F.function = &integrand_patterson_test;
 F.params = params;
 
 
-double epsrel=ptsz->patterson_epsrel;
-double epsabs=ptsz->patterson_epsabs;
+double epsrel=ptsz->mass_epsrel;
+double epsabs=ptsz->mass_epsabs;
 
 double result_gsl;
 size_t neval;
@@ -45362,6 +45362,8 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
               ptsz->nskyfracs*sizeof(double *),
               ptsz->error_message);
 
+
+
   for (index_patches=0;
        index_patches<ptsz->nskyfracs;
        index_patches++)
@@ -45402,6 +45404,25 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
 
   ///end read the files
   //end reads noise map for completeness
+  class_alloc(ptsz->sky_averaged_ylims,
+              ptsz->nthetas*sizeof(double),
+              ptsz->error_message);
+
+double sum_skyfracs = 0.;
+for (index_patches=0;
+     index_patches<ptsz->nskyfracs;
+     index_patches++)
+     sum_skyfracs += ptsz->skyfracs[index_patches];
+
+for (index_thetas = 0; index_thetas<ptsz->nthetas; index_thetas ++){
+  ptsz->sky_averaged_ylims[index_thetas] = 0.;
+  for (index_patches=0;
+       index_patches<ptsz->nskyfracs;
+       index_patches++)
+  {
+    ptsz->sky_averaged_ylims[index_thetas] += ptsz->skyfracs[index_patches]*ptsz->ylims[index_patches][index_thetas]/sum_skyfracs;
+  }
+}
   return  _SUCCESS_;
 }
 
