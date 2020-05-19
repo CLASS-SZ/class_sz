@@ -456,7 +456,8 @@ double DC_sumprod(const double *yarr, const double *zarr, int M)
     if(M<=4)
     {
         double r=yarr[0]*zarr[0];
-        for(int i=1; i<M; i++) r+=yarr[i]*zarr[i];
+        int i;
+        for(i=1; i<M; i++) r+=yarr[i]*zarr[i];
         return r;
     }
 
