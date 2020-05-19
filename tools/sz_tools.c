@@ -44980,8 +44980,8 @@ int integrate_over_redshift_at_each_ell(struct background * pba,
   void * params = &V;
   double r; //result of the integral
 
-  double epsrel= 1.e-3;//ptsz->patterson_epsrel;
-  double epsabs= 1.e-15;//ptsz->patterson_epsabs;
+  double epsrel= 1.e-6;//ptsz->patterson_epsrel;
+  double epsabs= 1.e-30;//ptsz->patterson_epsabs;
   int show_neval = ptsz->patterson_show_neval;
 
 
