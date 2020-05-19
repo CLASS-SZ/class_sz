@@ -12,6 +12,8 @@ from datetime import datetime
 
 path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
 FIG_DIR = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/run_scripts/figures'
+
+
 r_dict = {} #dictionary of results
 def run(args):
     # if(args.plot_ref_data == 'yes'):
@@ -86,7 +88,7 @@ def run(args):
     #set correct Output
     p_dict['output'] = 'tSZ_1h'
     p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
-    p_dict['write sz results to files'] = 'yes' 
+    p_dict['write sz results to files'] = 'yes'
     if(args.output):
         p_dict['output'] = args.output
     if (args.plot_redshift_dependent_functions == 'yes'):
@@ -260,7 +262,7 @@ def run(args):
                 #L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum_patterson.txt')
                 # L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum_mnu_0d02_ref.txt')
 
-                L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum.txt')
+                L_ref = np.loadtxt(path_to_class + 'output/class-sz_tmp_szpowerspectrum.txt')
                 multipoles_ref = L_ref[:,0]
                 cl_1h_ref = L_ref[:,1]
                 trispectrum_ref = L_ref[:,3]

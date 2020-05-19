@@ -247,7 +247,8 @@ int compute_integral_function_Patterson(int order, double xc, double Dx,
     //==============================================================================================
     // evalutation of function at given abscissae
     //==============================================================================================
-    for(int k=0; k<nx; k++)
+    int k;
+    for(k=0; k<nx; k++)
     {
         //printf("inside k loop 0 k=%d, nx=%d, %e\n",k,nx,Patterson_fvals[k]);
         loc_vals[2*k]= Patterson_fvals[k];
@@ -276,7 +277,7 @@ int compute_integral_function_Patterson(int order, double xc, double Dx,
     //printf("before realloc \n");
     //class_realloc(Patterson_fvals,Patterson_fvals,*Patterson_fvals_size*sizeof(double),NULL);
     //printf("after realloc \n");
-    for(int k=0; k<*Patterson_fvals_size; k++)
+    for(k=0; k<*Patterson_fvals_size; k++)
     Patterson_fvals[k] = loc_vals[k];
     //==============================================================================================
     // compute integral; start with smallest terms first
@@ -327,7 +328,8 @@ int Integrate_using_Patterson(double a, double b, double epsrel, double epsabs,
 
     double r1, Dr;
     //
-    for(int it=1; it<8; it++)
+    int it;
+    for(it=1; it<8; it++)
     {
 
         //printf("inside it loop\n");
@@ -372,7 +374,8 @@ int Integrate_Patterson_refine(int reclev, double a, double b, double epsrel, do
     int subint=2;
     double a1, b1=a, fa=(b-a)/subint, err;
 
-    for(int k=1; k<=subint; k++)
+    int k;
+    for(k=1; k<=subint; k++)
     {
         a1=b1;
         b1=a1+fa;
@@ -412,7 +415,8 @@ double Integrate_using_Patterson_adaptive(double a, double b, double epsrel, dou
     int Patterson_fvals_size = 1;
     int Patterson_fvals_size_max = 256;
     class_alloc(Patterson_fvals,Patterson_fvals_size_max*sizeof(double),NULL);
-    for(int k=0; k<Patterson_fvals_size_max; k++)
+    int k;
+    for(k=0; k<Patterson_fvals_size_max; k++)
     Patterson_fvals[k]=0.;
 
 

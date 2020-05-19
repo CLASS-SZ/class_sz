@@ -78,14 +78,23 @@ explaning the use of all possible input parameters.
 
 The computation of the tSZ angular power spectrum is stable with masses up to 1e16 Msun/h.
 
+New version of class_sz requires gsl (for the integration routines)
+One may need to edit the Makefile adding the include path for gsl libraries, e.g.,:
 
-Python Wrapper and Jupyter Notebooks
---------------------------------------
+INCLUDES = -I../include -I/usr/local/include/ -I/path_to_gsl/gsl-2.6/include/
 
-TBD
 
+
+Computing and Plotting results
+------------------------------
+
+There is a script that enables to plot tSZ spectra easily, e.g.:
+
+/path/to/python sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name M1SZ -min 1e13 -max 1e15 -N 3 -spacing log -output 'tSZ_1h,tSZ_Trispectrum'  -show_legend yes -show_error_bars yes -compute_scaling_with_param no -save_tsz_ps no -plot_ref_data no -print_rel_diff no
+
+One just needs to set the path to class_sz properly at the beginning of tSZ_varying_params.py, and it should run.
 
 Support
 -------
 
-To get support on the SZ module, feel free to contact me via slack/email (boris.bolliet@gmail.com), or open an issue on the GitHub page. 
+To get support on the SZ module, feel free to contact me via slack/email (boris.bolliet@gmail.com), or open an issue on the GitHub page.
