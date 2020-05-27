@@ -1824,7 +1824,7 @@ int input_read_parameters(
       class_read_double("redshift_for_dndm",pcsz->redshift_for_dndm);
       class_read_double("size_logM_for_dndm",pcsz->size_logM);
 
-
+      class_read_double("f_sky",ptsz->f_sky);
 
       //Foreground Nuisance parameters
       class_read_double("A_cib",ptsz->A_cib);
@@ -1884,6 +1884,33 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
+      if ((strstr(string1,"tSZ_cov_hsv") != NULL) ) {
+        ptsz->has_sz_cov_Y_N_next_order =_TRUE_;
+        ptsz->has_sz_cov_N_N_hsv =_TRUE_;
+        ptsz->has_sigma2_hsv = _TRUE_;
+        ptsz->has_sz_cov_Y_N =_TRUE_;
+        ptsz->has_sz_cov_N_N =_TRUE_;
+        ptsz->has_sz_ps =_TRUE_;
+        ptsz->has_sz_trispec =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+
+      if ((strstr(string1,"tSZ_cov_N_N") != NULL) ) {
+        ptsz->has_sz_cov_N_N_hsv =_TRUE_;
+        ptsz->has_sigma2_hsv = _TRUE_;
+        ptsz->has_sz_cov_N_N =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
 
       if ((strstr(string1,"tSZ_Trispectrum") != NULL) ) {
         ptsz->has_sz_trispec =_TRUE_;
@@ -1904,6 +1931,15 @@ int input_read_parameters(
       }
       if ((strstr(string1,"mean_y") != NULL) ) {
         ptsz->has_mean_y =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"kSZ_kSZ_gal_1h") != NULL) ) {
+        ptsz->has_kSZ_kSZ_gal_1halo =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
@@ -2003,6 +2039,8 @@ int input_read_parameters(
       class_read_double("pressure_profile_epsrel",ptsz->pressure_profile_epsrel);
       class_read_double("pressure_profile_epsabs",ptsz->pressure_profile_epsabs);
 
+      class_read_double("tau_profile_epsrel",ptsz->tau_profile_epsrel);
+      class_read_double("tau_profile_epsabs",ptsz->tau_profile_epsabs);
 
       /* temperature mass relation SZ */
       class_call(parser_read_string(pfc,"temperature mass relation",&string1,&flag1,errmsg),
@@ -3979,7 +4017,7 @@ int input_default_params(
   //Array size
   ptsz->n_arraySZ = 30;//number of z in the sigma Interpolation
 
-  ptsz->n_arraySZ_for_integral = 600; //used in redshift integral
+  ptsz->n_arraySZ_for_integral = 30; //used in redshift integral
 
   //mass limits: h^-1 Msun
   ptsz->M1SZ = 5.e11;
@@ -3995,6 +4033,7 @@ int input_default_params(
   ptsz->ln_x_size_for_pp = 1000;
   ptsz->x_size_for_pp = 2000;
 
+  ptsz->f_sky = 1.; // full sky
 
   // integration_method_pressure_profile
   // 1: 0 -> Patterson rule
@@ -4034,8 +4073,8 @@ int input_default_params(
   ptsz->delta_cSZ = 1.6865;
 
 
-  pnl->k_per_decade_for_tSZ = 40.; //#default 40
-  pnl->k_min_for_pk_in_tSZ = 1.e-3; //#default 1.e-3
+  pnl->k_per_decade_for_tSZ = 20.; //#default 40
+  pnl->k_min_for_pk_in_tSZ = 1.e-5; //#default 1.e-3
   pnl->k_max_for_pk_in_tSZ = 5.; //#default 5
 
 
@@ -4074,6 +4113,9 @@ int input_default_params(
 
   ptsz->pressure_profile_epsrel = 1e-9;
   ptsz->pressure_profile_epsabs = 1e-10;
+
+  ptsz->tau_profile_epsrel = 1e-9;
+  ptsz->tau_profile_epsabs = 1e-10;
   //trapezoidal
   ptsz->number_of_mass_bins = 60;
   /////////////////////////////////
@@ -4100,16 +4142,20 @@ int input_default_params(
 
   //ptsz->has_tszspectrum = _FALSE_;
   pcsz->has_sz_counts = _FALSE_;
-
+  ptsz->has_kSZ_kSZ_gal_1halo = _FALSE_;
+  ptsz->has_sz_te_y_y = _FALSE_;
   ptsz->has_sz_ps = _FALSE_;
   ptsz->has_sz_2halo = _FALSE_;
   ptsz->has_sz_trispec = _FALSE_;
   ptsz->has_hmf = _FALSE_;
   ptsz->has_mean_y = _FALSE_;
   ptsz->has_sz_cov_Y_N = _FALSE_;
+  ptsz->has_sz_cov_Y_N_next_order = _FALSE_;
   ptsz->has_sz_cov_N_N = _FALSE_;
+  ptsz->has_sz_cov_N_N_hsv = _FALSE_;
 
-  ptsz->has_vrms2 = _FALSE_;
+  ptsz->has_vrms2 = _TRUE_;
+  ptsz->has_sigma2_hsv = _TRUE_;
 
   ptsz->index_md_hmf = 0;
   ptsz->index_md_mean_y = 1;
@@ -4119,7 +4165,9 @@ int input_default_params(
   ptsz->index_md_te_y_y = 5;
   ptsz->index_md_cov_Y_N = 6;
   ptsz->index_md_cov_N_N = 7;
-
+  ptsz->index_md_cov_Y_N_next_order = 8;
+  ptsz->index_md_cov_N_N_hsv = 9;
+  ptsz->index_md_kSZ_kSZ_gal_1halo = 10;
 
   ptsz->HMF_prescription_NCDM=2; //no-pres
 
@@ -4132,6 +4180,8 @@ int input_default_params(
 
   ptsz->sz_verbose = 0;
 
+  ptsz->f_free  = 0.85;
+  ptsz->mu_e = 1.14;
 
 
   return _SUCCESS_;

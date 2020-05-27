@@ -13,33 +13,6 @@ r_dict = {} #dictionary of results
 
 def run(args):
     os.chdir(path_to_class)
-    #collect arguments
-    # param_name = args.param_name
-    #
-    # if (param_name == 'sigma8'):
-    #     label_key = r'$\sigma_8$'
-    # if (param_name == 'b'):
-    #     param_name = 'HSEbias'
-    #     label_key = r'$b$'
-    # if (param_name == 'h'):
-    #     label_key = r'$h$'
-    # if (param_name == 'Omega_cdm'):
-    #     label_key = r'$\Omega_\mathrm{m}$'
-    #
-    # else:
-    #     label_key = 'val'
-
-
-    # p_min = float(args.p_min)
-    # p_max = float(args.p_max)
-    # N = int(args.N)
-    # spacing = args.spacing
-
-    #define array of parameter values
-    # if(spacing=='log'):
-    #     p = np.logspace(np.log10(p_min),np.log10(p_max),N)
-    # elif(spacing=='lin'):
-    #     p = np.linspace(p_min,p_max,N)
 
     #load template parameter file into dictionnary
     p_dict = {}
@@ -52,43 +25,18 @@ def run(args):
                 (key, val) = (key.strip(), val.strip())
                 p_dict[key] = val
 
-
-
     param_name = 'output'
-    p_dict[param_name] = 'tSZ_Trispectrum'
-
-
-    nbins_M = 50. #hard coded
-    M_bins = []
-    M1SZ = float(p_dict['M1SZ'])
-    M2SZ = float(p_dict['M2SZ'])
-
-    for i in range(0,50):
-        M_bins.append(np.exp(np.log(M1SZ)+i*(np.log(M2SZ)-np.log(M1SZ))/(nbins_M-1.)))
-    M_bins = np.asarray(M_bins)
-    M_bins
-
-    def func_where_is_mp(mp):
-        return np.log(mp/M1SZ)*1e2/np.log(M2SZ/M1SZ)
-
-    mp_array_major = np.asarray([1e13,1e14,1e15])
-    mp_array_label_major = [r'$10^{13}$',r'$10^{14}$',r'$10^{15}$']
-    mp_array_major = func_where_is_mp(mp_array_major)
-    one_to_nine = np.arange(1,10)
-    one_to_five = np.arange(1,6)
-    thirteen_to_fifteen = np.arange(13,16)
-    table = []
-    for i in thirteen_to_fifteen:
-        if i != 15:
-            for j in one_to_nine:
-                table.append(j*np.power(10,i))
-        else :
-            for j in one_to_five:
-                table.append(j*np.power(10,i))
-
-    m_ticks_table = np.asarray(table)
-    m_ticks_table = func_where_is_mp(m_ticks_table)
-
+    p_dict[param_name] = 'tSZ_1h,tSZ_Trispectrum'
+    param_name = 'multipoles_sz'
+    p_dict[param_name] = 'ell_mock'
+    param_name = 'ell_min_mock'
+    p_dict[param_name] = 2.
+    param_name = 'ell_max_mock'
+    p_dict[param_name] = 1.e4
+    param_name = 'redshift_epsabs'
+    p_dict[param_name] = 1.e-30
+    param_name = 'mass_epsabs'
+    p_dict[param_name] = 1.e-30
 
     table = []
     for i in np.arange(0,4):
@@ -124,79 +72,38 @@ def run(args):
     R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
     C = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum_r_cl_clp.txt')
     x_axis = R[:,0]
-    # y_axis = R[:,7]
-    # L = [x_axis,y_axis]
-    # r_dict[p_val] = L
     #remove the temporary files
     subprocess.call(['rm','-r',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
 
-
-    #print(p_dict)
     SZ_ps_cov = C
     ell_array = x_axis
-    bin_M = np.arange(0,101)
     bin_ell = np.arange(0,101)
     from mpl_toolkits.mplot3d import Axes3D
-    #import matplotlib.pyplot as plt
-    #from matplotlib import cm
-    #from matplotlib.ticker import LinearLocator, FormatStrFormatter
     from matplotlib.ticker import LinearLocator, FixedLocator, FormatStrFormatter
 
-    #import numpy as np
     label_size = 13
     title_size = 15
     legend_size = 15
     handle_length = 1.5
 
-    #pylab.rc('text', usetex = False)
     fig = plt.figure(figsize=(8,6))
-    #ax = Axes3D(fig)
-    #ax = fig.gca(projection='3d')
+
     ax = fig.add_subplot(111)
     fig.subplots_adjust(right=0.75)
-    #plt.subplots_adjust(left=0, bottom=0, right=10,top =10)
-
-
-
 
     Y = bin_ell
-    X = bin_M
-    #X = p_array
-    #Y = w_array
-
+    X = bin_ell
 
     Xm,Ym = np.meshgrid(X,Y)
     Z = np.log10(SZ_ps_cov)
     print(Z)
 
-    #extent = np.min(Xm), np.max(Xm), np.min(Ym), np.max(Ym)
-    #surf = ax.imshow(Z, cmap='viridis', interpolation='bilinear')
-
-    #ax.plot_surface(Ym,Xm,Z,color='blue',alpha=0.5)
-
-    #surf=ax.contourf(X, Y, Z, 50, cmap='viridis',interpolation='bilinear')
-
-    #surf = plt.pcolormesh(Xm,Ym,Z, cmap='viridis',shading='gouraud')
     surf = ax.imshow(Z, interpolation='nearest', origin='lower', aspect='auto',
             extent=[X[0], X[-1], Y[0], Y[-1]])
-
-    #ax.colorbar()
-    #ax.clabel(surf, inline=1, fontsize=10)
-    #ax.clabel(CS, inline=0, fontsize=10,fmt=fmt)
-
-
-
-    #ax.zaxis.set_rotate_label(True)
-    #ax.set_yscale('log')
 
     ax.tick_params(axis = 'x',which='both',length=5,direction='out', pad=7)
     ax.tick_params(axis = 'y',which='both',length=5,direction='out', pad=5)
 
-
-    #x_label_list = mp_array_label
-    # ax.set_xticks(m_ticks_table, minor=True)
-    # ax.set_xticks(mp_array_major)
-    # ax.set_xticklabels(mp_array_label_major)
 
     y_label_list = ell_array_label
     ax.set_xticks(ell_ticks_table, minor=True)
@@ -221,44 +128,14 @@ def run(args):
     ax.set_xlabel(r'$\mathrm{multipole\,}\,\,\ell^\prime$',size=title_size,labelpad = -1)
 
 
-
-    #sel='_by_bh'
-    #ax.view_init(55,65)
-    #ax.set_xlim3d(0.98*np.min(Ym), np.max(Ym))
-    #ax.set_ylim(0.98*np.min(Ym),3.)
-    #ax.set_xlim(2e11, 3e14)
-
-
-    #props = dict(boxstyle='round', facecolor='wheat', alpha=0.)
-
-
-
-
-
     cbaxes = fig.add_axes([0.81, 0.23, 0.05, 0.6])
-    #cax = plt.axes([0.9, 0.1, 0.075, 0.8])
-    #cb = fix.colorbar(ax1, cax = cbaxes)
 
-    # axins = inset_axes(ax,
-    #                width="5%",  # width = 5% of parent_bbox width
-    #                height="50%",  # height : 50%
-    #                loc='lower left',
-    #                bbox_to_anchor=(1.05, 0., 1, 1),
-    #                bbox_transform=ax.transAxes,
-    #                borderpad=2,
-    #                )
     axcb = fig.colorbar(surf,cax=cbaxes,pad=0.)
     plt.subplots_adjust(wspace = .1)
-    #axcb = fig.colorbar(lc,cax=axins)
-    #axcb.set_clim(-8.5, 0)
     axcb.set_label(r'$\mathrm{log}_{10}[\frac{\mathrm{cov(C_\ell,C_{\ell^\prime})}}{\mathrm{cov(C_\ell,C_\ell)}\mathrm{cov(C_{\ell^\prime},C_{\ell^\prime})}}]$',rotation=-90,labelpad = 40,y=0.5,size=15)
-
-    #fig.subplots_adjust(left=0.01,right=0.1)
-
 
     #fig.tight_layout()
     FIG_NAME = '/cov_Y-Y'
-    #plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
     plt.savefig(FIG_DIR + FIG_NAME +".pdf")
     plt.show()
 
@@ -266,13 +143,7 @@ def run(args):
 
 def main():
 	parser=argparse.ArgumentParser(description="Plot cosmotherm spectra")
-	#parser.add_argument("-param_name",help="name of parameter" ,dest="param_name", type=str, required=False)
-	#parser.add_argument("-param_value",help="value of parameter" ,dest="param_value", type=str, required=False)
-	# parser.add_argument("-min",help="minimum value of parameter" ,dest="p_min", type=str, required=True)
-	# parser.add_argument("-max",help="maximum value of parameter" ,dest="p_max", type=str, required=True)
-	# parser.add_argument("-N",help="number of evaluations" ,dest="N", type=int, required=True)
-	# parser.add_argument("-spacing",help="linear (lin) or log spacing (log)" ,dest="spacing", type=str, required=True)
-	# parser.add_argument("-show_legend",help="show legend on figure? ('yes' or 'no')" ,dest="show_legend", type=str, required=True)
+
 	parser.set_defaults(func=run)
 	args=parser.parse_args()
 	args.func(args)

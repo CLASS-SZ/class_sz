@@ -55,12 +55,24 @@ def run(args):
 
 
     param_name = 'output'
-    p_dict[param_name] = 'tSZ_cov_Y_N'
+    #p_dict[param_name] = 'tSZ_cov_Y_N'
+    p_dict[param_name] = 'tSZ_cov_hsv'
+    #p_dict[param_name] = 'tSZ_cov_N_N'
 
-
+    param_name = 'multipoles_sz'
+    p_dict[param_name] = 'ell_mock'
     param_name = 'ell_min_mock'
-    p_dict[param_name] = '2.'
-
+    p_dict[param_name] = 2.
+    param_name = 'ell_max_mock'
+    p_dict[param_name] = 1.e4
+    param_name = 'redshift_epsabs'
+    p_dict[param_name] = 1.e-30
+    param_name = 'mass_epsabs'
+    p_dict[param_name] = 1.e-30
+    param_name = 'M1SZ'
+    p_dict[param_name] = 1.e11
+    param_name = 'M2SZ'
+    p_dict[param_name] = 1.e16
     param_name = 'number of mass bins for cov(Y,N)'
     p_dict[param_name] = float(args.nbins_mass)
 
@@ -79,8 +91,8 @@ def run(args):
     def func_where_is_mp(mp):
         return np.log(mp/M1SZ)*1e2/np.log(M2SZ/M1SZ)
 
-    mp_array_major = np.asarray([1e11,1e12,1e13,1e14,1e15])
-    mp_array_label_major = [r'$10^{11}$',r'$10^{12}$',r'$10^{13}$',r'$10^{14}$',r'$10^{15}$']
+    mp_array_major = np.asarray([1e11,1e12,1e13,1e14,1e15,1e16])
+    mp_array_label_major = [r'$10^{11}$',r'$10^{12}$',r'$10^{13}$',r'$10^{14}$',r'$10^{15}$',r'$10^{16}$']
     mp_array_major = func_where_is_mp(mp_array_major)
     one_to_nine = np.arange(1,10)
     one_to_five = np.arange(1,6)
@@ -224,7 +236,7 @@ def run(args):
              fontsize=label_size)
 
     ax.set_ylabel(r'$\mathrm{multipole\,}\,\,\ell$',size=title_size,labelpad = 5)
-    ax.set_xlabel('$\mathrm{mass\,\,\, M}\quad\,\,[\mathrm{M_{\odot}}/h]$',size=title_size,labelpad = -1)
+    ax.set_xlabel(r'$\mathrm{mass\,\,\, M}\quad\,\,[\mathrm{M_{\odot}}/h]$',size=title_size,labelpad = -1)
 
 
 

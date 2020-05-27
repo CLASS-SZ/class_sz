@@ -5,6 +5,7 @@
 #include "common.h"
 #include <time.h>
 #include <gsl/gsl_integration.h>
+#include <gsl/gsl_sf_bessel.h>
 
 #define _M_sun_  1.989e30 /*solar mass in kg*/
 
@@ -704,6 +705,7 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
                    double * vrms2
                  );
 
+
  int tabulate_vrms2_from_pk(struct background * pba,
                             struct nonlinear * pnl,
                             struct primordial * ppm,
@@ -731,6 +733,12 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
              struct tszspectrum * ptsz);
 
   int plc_gnfw (double * plc_gnfw_x,
+                double x ,
+                double * pvectsz,
+                struct background * pba,
+                struct tszspectrum * ptsz);
+
+  int rho_nfw (double * rho_nfw_x,
                 double x ,
                 double * pvectsz,
                 struct background * pba,
@@ -803,6 +811,23 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
                                         struct tszspectrum * ptsz);
 
 
+  int spectra_sigma2_hsv(
+                   struct background * pba,
+                   struct primordial * ppm,
+                   struct nonlinear *pnl,
+                   struct tszspectrum * ptsz,
+                   double z,
+                   double * sigma2_hsv
+                 );
+
+  int tabulate_sigma2_hsv_from_pk(struct background * pba,
+                                  struct nonlinear * pnl,
+                                  struct primordial * ppm,
+                                  struct tszspectrum * ptsz);
+
+
+
+
   int read_SO_Qfit(struct tszspectrum * ptsz);
 
   int read_SO_noise(struct tszspectrum * ptsz);
@@ -811,10 +836,17 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
   int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
                                   struct background * pba,
                                   double * pvectsz,
-                                  double * result
-                            ) ;
+                                  double * result) ;
+
+  int two_dim_ft_tau_profile(struct tszspectrum * ptsz,
+                              struct background * pba,
+                              double * pvectsz,
+                              double * result) ;
 
 double integrand_patterson_test(double logM, void *p);
+double integrand_sigma2_hsv(double lnk, void *p);
+
+double Delta_c_of_Omega_m(double Omega_m);
 
 
 #ifdef __cplusplus

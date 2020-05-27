@@ -15,6 +15,9 @@
 #define _te_y_y_ ((ptsz->has_sz_te_y_y == _TRUE_) && (index_md == ptsz->index_md_te_y_y))
 #define _cov_Y_N_ ((ptsz->has_sz_cov_Y_N == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N))
 #define _cov_N_N_ ((ptsz->has_sz_cov_N_N == _TRUE_) && (index_md == ptsz->index_md_cov_N_N))
+#define _cov_N_N_hsv_ ((ptsz->has_sz_cov_N_N_hsv == _TRUE_) && (index_md == ptsz->index_md_cov_N_N_hsv))
+#define _cov_Y_N_next_order_ ((ptsz->has_sz_cov_Y_N_next_order == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N_next_order))
+#define _kSZ_kSZ_gal_1halo_ ((ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1halo))
 
 //#define _tSZ_trispectrum_ ((ptsz->has_sz_trispec == _TRUE_))
 //#define _tSZ_2halo_ ((ptsz->has_sz_2halo == _TRUE_))
@@ -27,21 +30,27 @@
 
 struct tszspectrum {
 
+  double f_sky;
+  double Omega_survey;
 
   double hmf_int;
   double y_monopole;
   double * cl_sz;
+  double * Dl_kSZ_kSZ_gal_1halo;
   double * cl_te_y_y;
   double ** tllprime_sz;
   double * cl_sz_2h;
   double ** cov_N_cl;
   double ** r_N_cl;
   double ** cov_Y_N;
+  double ** cov_Y_N_next_order;
   double * cov_N_N;
+  double ** cov_N_N_hsv;
   double ** r_Y_N;
   double ** r_cl_clp;
   double ** trispectrum_ref;
   double * cov_cl_cl;
+  double * sig_cl_squared_binned;
 
   int index_md;
 
@@ -56,10 +65,22 @@ struct tszspectrum {
   int index_integrand_id_cov_Y_N_first;
   int index_integrand_id_cov_Y_N_last;
 
+  int has_sz_cov_Y_N_next_order;
+  int index_md_cov_Y_N_next_order;
+  int index_integrand_id_cov_Y_N_next_order_first;
+  int index_integrand_id_cov_Y_N_next_order_last;
+
+
   int has_sz_cov_N_N;
   int index_md_cov_N_N;
   int index_integrand_id_cov_N_N_first;
   int index_integrand_id_cov_N_N_last;
+
+  int has_sz_cov_N_N_hsv;
+  int index_md_cov_N_N_hsv;
+  int index_integrand_id_cov_N_N_hsv_first;
+  int index_integrand_id_cov_N_N_hsv_last;
+
 
   int has_hmf;
   int index_md_hmf;
@@ -85,6 +106,12 @@ struct tszspectrum {
   int index_md_te_y_y;
   int index_integrand_id_sz_ps_te_y_y_first;
   int index_integrand_id_sz_ps_te_y_y_last;
+
+
+  int has_kSZ_kSZ_gal_1halo;
+  int index_md_kSZ_kSZ_gal_1halo;
+  int index_integrand_id_kSZ_kSZ_gal_1halo_first;
+  int index_integrand_id_kSZ_kSZ_gal_1halo_last;
 
 
 
@@ -160,22 +187,29 @@ struct tszspectrum {
   int  index_z;
   int  index_m200c;
   int  index_l200c;
+  int  index_characteristic_multipole_for_tau_profile;
   int  index_r200c;
   int  index_multipole;
   int  index_multipole_prime;
-  int  index_cov_Y_N_mass_bin;
+  int  index_mass_bin_1;
+  int  index_mass_bin_2;
   int  index_multipole_for_pressure_profile;
   int  index_pressure_profile;
+  int  index_multipole_for_tau_profile;
+  int  index_tau_profile;
   int  index_completeness;
   int  index_te_of_m;
   int  index_volume;
+  int  index_chi2;
   int  index_vrms2;
   int  index_pk_for_halo_bias;
   int  index_dlnMdeltadlnM;
+  int  index_part_id_cov_hsv;
 
   int  index_mean_y;
   int  index_hmf;
 
+  int index_sigma2_hsv;
 
   int  index_halo_bias;
   int  index_k_value_for_halo_bias;
@@ -303,6 +337,12 @@ struct tszspectrum {
   double alpha_z_xc_B12;
   double alpha_z_beta_B12;
 
+// JCH
+//double precision :: f_free=0.85d0 !for kSZ calculations, fraction of free electrons w.r.t. total
+//double precision :: mu_e=1.14d0 !mean molecular weight per electron, for primordial composition
+
+  double f_free;
+  double mu_e;
 
   /*Pressure profile is considered between x_in and x_out*/
   double x_inSZ;
@@ -364,6 +404,9 @@ struct tszspectrum {
   double pressure_profile_epsabs;
   double pressure_profile_epsrel;
 
+  double tau_profile_epsabs;
+  double tau_profile_epsrel;
+
   int patterson_show_neval;
 
   int number_of_mass_bins; //for trapezoidal rule
@@ -405,7 +448,8 @@ struct tszspectrum {
   double sigma8_Pcb;
 
   short has_vrms2;
-  
+  short has_sigma2_hsv;
+
   short has_tszspectrum;  //do we need tSZ spectrum? */
   short sz_verbose; /**< flag regulating the amount of information sent to standard output (none if set to zero) */
   short write_sz;  //do we need SZ quatitiies vs redshift? */
@@ -452,6 +496,7 @@ struct tszspectrum {
   double * array_dsigma2dR_at_z_and_R;
 
   double * array_vrms2_at_z;
+  double * array_sigma2_hsv_at_z;
 
 
   ErrorMsg error_message; /**< zone for writing error messages */
@@ -512,7 +557,10 @@ extern "C" {
                                 double * pvectsz,
                                 struct background * pba,
                                 struct tszspectrum * ptsz);
-
+  int evaluate_tau_profile(double * pvecback,
+                                double * pvectsz,
+                                struct background * pba,
+                                struct tszspectrum * ptsz);
   int write_output_to_files_ell_indep_ints(struct nonlinear * pnl,
                                            struct background * pba,
                                            struct tszspectrum * ptsz);
@@ -562,11 +610,24 @@ int evaluate_vrms2(double * pvecback,
                    struct nonlinear * pnl,
                    struct tszspectrum * ptsz);
 
+
+int evaluate_sigma2_hsv(double * pvecback,
+                         double * pvectsz,
+                         struct background * pba,
+                         struct nonlinear * pnl,
+                         struct tszspectrum * ptsz);
+
 double integrand_patterson_test(double xi, void *p);
 
 
 int write_redshift_dependent_quantities(struct background * pba,
                                         struct tszspectrum * ptsz);
+
+
+int evaluate_tau_profile(double * pvecback,
+                        double * pvectsz,
+                        struct background * pba,
+                        struct tszspectrum * ptsz);
 
 #ifdef __cplusplus
 }
