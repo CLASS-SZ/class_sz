@@ -3994,6 +3994,8 @@ int input_default_params(
   ptsz->concentration_parameter=0;
   ptsz->effective_temperature=0;
   ptsz->create_ref_trispectrum_for_cobaya=0;
+  sprintf(ptsz->path_to_ref_trispectrum_for_cobaya,"output/");
+  sprintf(ptsz->append_name_cobaya_ref,"for_cobaya");
 
 
   pcsz->redshift_for_dndm = 1.e-5;

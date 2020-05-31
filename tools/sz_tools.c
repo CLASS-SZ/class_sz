@@ -42980,39 +42980,39 @@ double integrand_sigma2_hsv(double lnk, void *p){
   double W;
 
 
-    //background quantities @ z:
-    double tau;
-    int first_index_back = 0;
-    double * pvecback;
-    class_alloc(pvecback,
-                V->pba->bg_size*sizeof(double),
-                V->pba->error_message);
+  //background quantities @ z:
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+              V->pba->bg_size*sizeof(double),
+              V->pba->error_message);
 
-    class_call(background_tau_of_z(V->pba,V->z,&tau),
-               V->pba->error_message,
-               V->pba->error_message);
+  class_call(background_tau_of_z(V->pba,V->z,&tau),
+             V->pba->error_message,
+             V->pba->error_message);
 
-    class_call(background_at_tau(V->pba,
-                                 tau,
-                                 V->pba->long_info,
-                                 V->pba->inter_normal,
-                                 &first_index_back,
-                                 pvecback),
-               V->pba->error_message,
-               V->pba->error_message);
-
-
-    double Theta_s = sqrt(V->ptsz->Omega_survey/_PI_); // see below Eq. 45 of Takada and Spergel 2013
-    double Chi = pvecback[V->pba->index_bg_ang_distance]*(1.+V->z);  //'Chi' comoving distance in Mpc
-    double r_hsv = Chi*Theta_s; // in Mpc
-
-    free(pvecback);
+  class_call(background_at_tau(V->pba,
+                               tau,
+                               V->pba->long_info,
+                               V->pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             V->pba->error_message,
+             V->pba->error_message);
 
 
-    //here k in 1/Mpc
-    double x_hsv = k*r_hsv;
+  double Theta_s = sqrt(V->ptsz->Omega_survey/_PI_); // see below Eq. 45 of Takada and Spergel 2013
+  double Chi = pvecback[V->pba->index_bg_ang_distance]*(1.+V->z);  //'Chi' comoving distance in Mpc
+  double r_hsv = Chi*Theta_s; // in Mpc
 
-    W = 2.*gsl_sf_bessel_J1(x_hsv)/x_hsv; //see e.g., below Eq. 45 of Takada and Spergel 2013
+  free(pvecback);
+
+
+  //here k in 1/Mpc
+  double x_hsv = k*r_hsv;
+
+  W = 2.*gsl_sf_bessel_J1(x_hsv)/x_hsv; //see e.g., below Eq. 45 of Takada and Spergel 2013
 
 
     //Input: wavenumber in 1/Mpc
@@ -43236,6 +43236,10 @@ struct Parameters_for_integrand_sigma2_hsv V;
 // }
 //
 //
+
+// velocity dispersion for kSZ quantities
+// see e.g., eq. 29 of 1807.07324
+// also Appendix B of 1711.07879 for a different approach
 
 int spectra_vrms2(
                    struct background * pba,
@@ -44068,6 +44072,7 @@ double integrand_tau_profile(double x, void *p){
 
     double result = tau_profile_at_x;
 
+
   return result;
 
 }
@@ -44150,6 +44155,7 @@ gsl_integration_romberg(&F,xin,xout,eps_abs,eps_rel,&result_gsl,&neval,w);
 gsl_integration_romberg_free(w);
 *result = result_gsl;
 
+
 }
 
 /**
@@ -44225,12 +44231,12 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   int size_w = 30000;
   w = gsl_integration_workspace_alloc(size_w);
 
-  int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
+  //int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
   double w0;
   if (ptsz->pressure_profile == 4) //for Battaglia et al 2012 pressure profile
-  w0 = (ptsz->ell[index_l]+0.5)/pvectsz[ptsz->index_l200c];
+  w0 = (pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l200c];
   else
-  w0 =  (ptsz->ell[index_l]+0.5)/pvectsz[ptsz->index_l500];
+  w0 =  (pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500];
 
   wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,10);
 
@@ -44953,7 +44959,7 @@ int plc_gnfw(double * plc_gnfw_x,
              struct tszspectrum * ptsz)
 {
   //Custom. GNFW pressure profile
-  int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
+  //int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
   int index_md = (int) pvectsz[ptsz->index_md];
   *plc_gnfw_x = 0.;
 
@@ -44964,7 +44970,7 @@ int plc_gnfw(double * plc_gnfw_x,
                          (ptsz->betaGNFW-ptsz->gammaGNFW)/ptsz->alphaGNFW)))
                     *pow(x,2)
                     //*sin(x*(ptsz->ell[index_l]+0.5)/pvectsz[ptsz->index_l500])
-                    /(x*(ptsz->ell[index_l]+0.5)/pvectsz[ptsz->index_l500]);
+                    /(x*(pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500]);
 
 
     if (_mean_y_)
@@ -45012,7 +45018,7 @@ int plc_gnfw(double * plc_gnfw_x,
       *plc_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)
                     *pow(x,2)
                     //*sin(x*(ptsz->ell[index_l]+0.5)/pvectsz[ptsz->index_l200c])
-                    /(x*(ptsz->ell[index_l]+0.5)/pvectsz[ptsz->index_l200c]);
+                    /(x*(pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l200c]);
     if (_mean_y_)
       *plc_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)*pow(x,2);
 
@@ -45037,8 +45043,10 @@ int rho_nfw(double * rho_nfw_x,
             struct background * pba,
             struct tszspectrum * ptsz)
 {
-  int index_l = (int) pvectsz[ptsz->index_multipole_for_tau_profile];
-  *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*(ptsz->ell[index_l]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_tau_profile]);
+
+  *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*(pvectsz[ptsz->index_multipole_for_tau_profile]+0.5)
+               /pvectsz[ptsz->index_characteristic_multipole_for_tau_profile])
+               *sin(x*(pvectsz[ptsz->index_multipole_for_tau_profile]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_tau_profile]);
 }
 
 //HMF Tinker 2010

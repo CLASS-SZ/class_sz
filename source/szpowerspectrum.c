@@ -224,7 +224,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
 {
    free(ptsz->ell);
    free(ptsz->cl_sz);
-   free(ptsz->Dl_kSZ_kSZ_gal_1halo);
+   free(ptsz->b_kSZ_kSZ_gal_1halo);
    free(ptsz->cl_te_y_y);
    free(ptsz->cov_cl_cl);
    free(ptsz->sig_cl_squared_binned);
@@ -379,7 +379,7 @@ int compute_sz(struct background * pba,
     else if (index_integrand>=ptsz->index_integrand_id_kSZ_kSZ_gal_1halo_first && index_integrand <= ptsz->index_integrand_id_kSZ_kSZ_gal_1halo_last && ptsz->has_kSZ_kSZ_gal_1halo){
        Pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_1halo;
        Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_kSZ_kSZ_gal_1halo_first);
-       if (ptsz->sz_verbose > 0) printf("computing Dl^tau-tau-tau @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+       if (ptsz->sz_verbose > 0) printf("computing b^tau-tau-y @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
      }
 
      else
@@ -405,7 +405,7 @@ int compute_sz(struct background * pba,
    }
 
    if (_mean_y_){
-      ptsz->y_monopole = Pvectsz[ptsz->index_integral]/pow(ptsz->Tcmb_gNU,1)/1.e6;;
+      ptsz->y_monopole = Pvectsz[ptsz->index_integral]/pow(ptsz->Tcmb_gNU,1)/1.e6;
 
    }
 
@@ -481,7 +481,7 @@ int compute_sz(struct background * pba,
     //int index_m = (int) Pvectsz[ptsz->index_mass_bin_1];
 
 
-   ptsz->Dl_kSZ_kSZ_gal_1halo[index_l] = ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)/2./_PI_*Pvectsz[ptsz->index_integral];
+   ptsz->b_kSZ_kSZ_gal_1halo[index_l] = Pvectsz[ptsz->index_integral]/pow(ptsz->Tcmb_gNU,1)/1.e6;;
 
 
  }
@@ -507,8 +507,8 @@ double integrand_at_m_and_z(double logM,
 
 
    evaluate_completeness(pvecback,pvectsz,pba,ptsz);
-
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = pvectsz[ptsz->index_multipole];
+   int index_l = (int) pvectsz[ptsz->index_multipole];
+   pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
    evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
 
@@ -554,7 +554,7 @@ double integrand_at_m_and_z(double logM,
 
 
      int index_l_prime = (int) pvectsz[ptsz->index_multipole_prime];
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = index_l_prime;
+     pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l_prime];
      evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell_prime = pvectsz[ptsz->index_pressure_profile];
 
@@ -568,7 +568,7 @@ double integrand_at_m_and_z(double logM,
  else if (_2halo_){
 
      //int index_l = (int) pvectsz[ptsz->index_multipole];
-     double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
+     //double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
      evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
 
@@ -677,17 +677,38 @@ double integrand_at_m_and_z(double logM,
  else if (_kSZ_kSZ_gal_1halo_){
 
     //int index_l = (int) pvectsz[ptsz->index_multipole];
-   pvectsz[ptsz->index_multipole_for_tau_profile] = pvectsz[ptsz->index_multipole];
+   pvectsz[ptsz->index_multipole_for_tau_profile] = 10.;//the actual multipole
    evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
-   double tau_profile_at_ell = pvectsz[ptsz->index_tau_profile];
-      //velocity dispersion (kSZ)
-   //evaluate_vrms2(pvecback,pvectsz,pba,pnl,ptsz);
+   double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
+   int index_l = (int) pvectsz[ptsz->index_multipole];
+   pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell[index_l];
+   evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
+   double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
+   pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l]+10.;
+   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   double pressure_profile_at_ell_3 = pvectsz[ptsz->index_pressure_profile];
+   //velocity dispersion (kSZ)
+   evaluate_vrms2(pvecback,pvectsz,pba,pnl,ptsz);
 
        pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
                                          *pvectsz[ptsz->index_hmf]
                                          *pvectsz[ptsz->index_dlnMdeltadlnM]
                                          *pvectsz[ptsz->index_completeness]
-                                         *pow(tau_profile_at_ell,3.);
+                                         *tau_profile_at_ell_1
+                                         *tau_profile_at_ell_2
+                                         *pressure_profile_at_ell_3
+                                         *pvectsz[ptsz->index_vrms2]/3.;
+
+  // printf("chi2 = %.4e\n",pvectsz[ptsz->index_chi2]);
+  // printf("hmf = %.4e\n",pvectsz[ptsz->index_hmf]);
+  // printf("dlnM = %.4e\n",pvectsz[ptsz->index_dlnMdeltadlnM]);
+  // printf("comp = %.4e\n",pvectsz[ptsz->index_completeness]);
+  // printf("tau1 = %.4e\n",tau_profile_at_ell_1);
+  // printf("tau2 = %.4e\n",tau_profile_at_ell_2);
+  // printf("y3 = %.4e\n",pressure_profile_at_ell_3);
+  // printf("vrms2 = %.4e\n",pvectsz[ptsz->index_vrms2]/3.);
+  // printf("integrand = %.4e\n",pvectsz[ptsz->index_integrand]);
+
 
   }
 
@@ -762,6 +783,15 @@ int evaluate_tau_profile(double * pvecback,
    //printf("ell pp=%e\n",ptsz->ell[index_l]);
 
    double result;
+   double characteristic_radius;
+   double characteristic_multipole;
+   double tau_normalisation;
+
+
+   characteristic_radius = pvectsz[ptsz->index_rs]/pba->h; // in Mpc
+   characteristic_multipole = pvectsz[ptsz->index_ls];
+   pvectsz[ptsz->index_characteristic_multipole_for_tau_profile] = characteristic_multipole;
+
 
     class_call(two_dim_ft_tau_profile(ptsz,pba,pvectsz,&result),
                                       ptsz->error_message,
@@ -772,9 +802,7 @@ int evaluate_tau_profile(double * pvecback,
    //in units (Mpc/h)**2/Msun
    double sigmaT_over_mpc2 = 8.30702e-17 * pow(pba->h,2); // !this is sigmaT / m_prot in (Mpc/h)**2/Msun
 
-   double characteristic_radius;
-   double characteristic_multipole;
-   double tau_normalisation;
+
 
   // JCH
   // ls=da(z)/rs
@@ -786,12 +814,7 @@ int evaluate_tau_profile(double * pvecback,
 
 
 
-      tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h;
-
-      characteristic_radius = pvectsz[ptsz->index_rs]/pba->h; // in Mpc
-      characteristic_multipole = pvectsz[ptsz->index_ls];
-
-
+  tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h;
 
 
    pvectsz[ptsz->index_tau_profile] =  sigmaT_over_mpc2
@@ -829,7 +852,7 @@ int evaluate_pressure_profile(double * pvecback,
 
    double result = 0.;
 
-   int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
+   //int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
    //printf("ell pp=%e\n",ptsz->ell[index_l]);
 
    //custom gNFW pressure profile or Battaglia et al 2012
@@ -844,7 +867,7 @@ int evaluate_pressure_profile(double * pvecback,
   else {
       //printf("ell pp=%e\n",result);
 
-      lnx_asked = log(ptsz->ell[index_l]/pvectsz[ptsz->index_l500]);
+      lnx_asked = log(pvectsz[ptsz->index_multipole_for_pressure_profile]/pvectsz[ptsz->index_l500]);
 
       if(lnx_asked<ptsz->PP_lnx[0] || _mean_y_)
          result = ptsz->PP_lnI[0];
@@ -1104,6 +1127,7 @@ int evaluate_halo_bias(double * pvecback,
 
    int index_l = (int)  pvectsz[ptsz->index_multipole];
    double z = pvectsz[ptsz->index_z];
+   //identical to sqrt(pvectsz[index_chi2])
    double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
 
    pvectsz[ptsz->index_k_value_for_halo_bias] = (ptsz->ell[index_l]+0.5)/d_A; //units h/Mpc
@@ -1859,7 +1883,7 @@ int write_output_to_files_cl(struct nonlinear * pnl,
        fprintf(fp,"# 6:Binned total std dev (Gaussian + non-Gaussian)\n");
        fprintf(fp,"# 7:2-halo term 10^12*ell*(ell+1)/(2*pi)*C_l^tSZ (2-halo term)\n");
        fprintf(fp,"# 8:SZ temperature, Te [in keV]\n");
-       fprintf(fp,"# 8:Dl_kSZ_kSZ_gal_1halo [TBD]\n");
+       fprintf(fp,"# 8:b_kSZ_kSZ_gal_1halo [TBD]\n");
        fprintf(fp,"\n");
 
       for (index_l=0;index_l<ptsz->nlSZ;index_l++){
@@ -1916,7 +1940,7 @@ int write_output_to_files_cl(struct nonlinear * pnl,
                     ell*(ell+1.)/(2.*_PI_)*sqrt(ptsz->cov_cl_cl[index_l]),
                     ptsz->cl_sz_2h[index_l],
                     ptsz->cl_te_y_y[index_l]/ptsz->cl_sz[index_l],
-                    ptsz->Dl_kSZ_kSZ_gal_1halo[index_l]
+                    ptsz->b_kSZ_kSZ_gal_1halo[index_l]
                     );
 
       }
@@ -2289,7 +2313,7 @@ if (ptsz->has_hmf){
   int index_l;
   for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
-  printf("ell = %e\t\t Dl_kSZ_kSZ_gal_1halo (1h) = %e \n",ptsz->ell[index_l],ptsz->Dl_kSZ_kSZ_gal_1halo[index_l]);
+  printf("ell = %e\t\t b_kSZ_kSZ_gal_1halo (1h) = %e \n",ptsz->ell[index_l],ptsz->b_kSZ_kSZ_gal_1halo[index_l]);
 }
 }
 
@@ -2565,7 +2589,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
 
 
    class_alloc(ptsz->cl_sz,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
-   class_alloc(ptsz->Dl_kSZ_kSZ_gal_1halo,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   class_alloc(ptsz->b_kSZ_kSZ_gal_1halo,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_te_y_y,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cov_cl_cl,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->sig_cl_squared_binned,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
@@ -2583,7 +2607,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    int index_l,index_l_prime;
    for (index_l=0;index_l<ptsz->nlSZ;index_l++){
       ptsz->cl_sz[index_l] = 0.;
-      ptsz->Dl_kSZ_kSZ_gal_1halo[index_l] = 0.;
+      ptsz->b_kSZ_kSZ_gal_1halo[index_l] = 0.;
       ptsz->cl_te_y_y[index_l] = 0.;
       ptsz->cl_sz_2h[index_l] = 0.;
       ptsz->cov_cl_cl[index_l] = 0.;

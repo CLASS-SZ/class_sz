@@ -36,7 +36,7 @@ struct tszspectrum {
   double hmf_int;
   double y_monopole;
   double * cl_sz;
-  double * Dl_kSZ_kSZ_gal_1halo;
+  double * b_kSZ_kSZ_gal_1halo;
   double * cl_te_y_y;
   double ** tllprime_sz;
   double * cl_sz_2h;

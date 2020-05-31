@@ -90,6 +90,9 @@ def run(args):
     #print(p_dict)
     #set correct Output
     p_dict['output'] = 'tSZ_1h'
+    p_dict['mass function'] = 'M500'
+    p_dict['create_ref_trispectrum_for_cobaya'] = 'NO'
+    p_dict['pressure profile'] = 'A10'
     p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
     p_dict['write sz results to files'] = 'yes'
     if(args.output):
@@ -144,7 +147,7 @@ def run(args):
         elif (args.plot_te_y_y == 'yes'):
             ax.set_ylabel(r'$\mathrm{T_e^{tSZ}} \quad [\mathrm{keV}]$',size=title_size)
         elif (args.plot_kSZ_kSZ_gal_1halo == 'yes'):
-            ax.set_ylabel(r'$10^{12}\ell(\ell+1)\mathrm{C^{kSZ^2-g}_{\ell,\ell,\ell}/2\pi}$',size=title_size)
+            ax.set_ylabel(r'$\mathrm{b^{kSZ^2-g}_{\ell_1,\ell_2,\ell_3}}$',size=title_size)
         else:
             ax.set_ylabel(r'$10^{12}\ell(\ell+1)\mathrm{C^{yy}_\ell/2\pi}$',size=title_size)
 
@@ -210,7 +213,7 @@ def run(args):
                 #print(cl_2h)
                 trispectrum.append(R[:,3])
                 te_y_y.append(R[:,7])
-                kSZ_kSZ_gal_1halo.append(R[:,7])
+                kSZ_kSZ_gal_1halo.append(R[:,8])
                 # L = [multipole,cl_1h]
                 # r_dict[p_val] = L
 
@@ -234,7 +237,8 @@ def run(args):
                     ax.plot(multipoles[id_p],te_y_y[id_p],color=col[id_p],ls='-.',alpha = 1.,label = val_label[id_p],marker='o')
                 elif (args.plot_kSZ_kSZ_gal_1halo == 'yes'):
                     print(kSZ_kSZ_gal_1halo[id_p])
-                    ax.plot(multipoles[id_p],kSZ_kSZ_gal_1halo[id_p],color=col[id_p],ls='-.',alpha = 1.,label = val_label[id_p],marker='o')
+                    ax.plot(multipoles[id_p],kSZ_kSZ_gal_1halo[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p],marker='o')
+                    ax.plot(multipoles[id_p],-kSZ_kSZ_gal_1halo[id_p],color=col[id_p],ls='--',alpha = 1.,marker='o')
                 else:
                     if ('tSZ_1h' in p_dict['output']):
                         if (args.show_error_bars == 'yes'):
@@ -404,7 +408,7 @@ def run(args):
 
 
         plt.show(block=True)
-        subprocess.call(['rm','-r',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
+        #subprocess.call(['rm','-r',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
 
 
 
