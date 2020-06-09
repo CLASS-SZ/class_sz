@@ -447,7 +447,7 @@ cdef class Class:
 
 
         if "szpowerspectrum" in level:
-            if szpowerspectrum_init(&(self.ba), &(self.nl), &(self.pm),
+            if szpowerspectrum_init(&(self.ba), &(self.th),  &(self.nl), &(self.pm),
             &(self.tsz)) == _FAILURE_:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.tsz.error_message)

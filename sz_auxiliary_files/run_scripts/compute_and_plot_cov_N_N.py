@@ -59,6 +59,9 @@ def run(args):
     #p_dict[param_name] = 'tSZ_cov_hsv'
     p_dict[param_name] = 'tSZ_cov_N_N'
 
+    f_sky = 0.5
+    param_name = 'f_sky'
+    p_dict[param_name] = f_sky
     param_name = 'redshift_epsabs'
     p_dict[param_name] = 1.e-30
     param_name = 'mass_epsabs'
@@ -158,10 +161,10 @@ def run(args):
     m_array_major = func_where_is_mp(m_array_major)
     one_to_nine = np.arange(1,10)
     one_to_five = np.arange(1,6)
-    thirteen_to_fifteen = np.arange(13,16)
+    thirteen_to_fifteen = np.arange(11,16)
     table = []
     for i in thirteen_to_fifteen:
-        if i != 15:
+        if i != 16:
             for j in one_to_nine:
                 table.append(j*np.power(10,i))
         else :
@@ -227,7 +230,7 @@ def run(args):
              fontsize=label_size)
 
     ax.set_xlabel(r'$\mathrm{mass\,\,\, M}\quad\,\,[\mathrm{M_{\odot}}/h]$',size=title_size,labelpad = 5)
-    ax.set_xlabel(r'$\mathrm{mass\,\,\, M}\quad\,\,[\mathrm{M_{\odot}}/h]$',size=title_size,labelpad = -1)
+    ax.set_ylabel(r'$\mathrm{mass\,\,\, M}\quad\,\,[\mathrm{M_{\odot}}/h]$',size=title_size,labelpad = -1)
 
 
 
@@ -235,7 +238,7 @@ def run(args):
 
     axcb = fig.colorbar(surf,cax=cbaxes,pad=0.)
     plt.subplots_adjust(wspace = .1)
-    axcb.set_label(r'$\mathrm{log}_{10}[\frac{\mathrm{cov(N_i,N_j)}}{\mathrm{cov(N_i,N_i)}\mathrm{cov(N_j,N_j)}}]$',rotation=-90,labelpad = 40,y=0.5,size=15)
+    axcb.set_label(r'$\mathrm{log}_{10}[\frac{\mathrm{cov(N_i,N_j)}}{\sqrt{\mathrm{cov(N_i,N_i)}\mathrm{cov(N_j,N_j)}}}]$',rotation=-90,labelpad = 40,y=0.5,size=15)
 
     #fig.tight_layout()
     FIG_NAME = '/cov_N-N'

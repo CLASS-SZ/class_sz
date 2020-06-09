@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
   }
 
   //BB: sz power spectrum module
-  if (szpowerspectrum_init(&ba,&nl,&pm,&tsz) == _FAILURE_) {
+  if (szpowerspectrum_init(&ba,&th,&nl,&pm,&tsz) == _FAILURE_) {
     printf("\nError in sz power spectrum module\n");
     return _FAILURE_;
   }

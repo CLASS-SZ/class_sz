@@ -18,6 +18,10 @@
 #define _cov_N_N_hsv_ ((ptsz->has_sz_cov_N_N_hsv == _TRUE_) && (index_md == ptsz->index_md_cov_N_N_hsv))
 #define _cov_Y_N_next_order_ ((ptsz->has_sz_cov_Y_N_next_order == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N_next_order))
 #define _kSZ_kSZ_gal_1halo_ ((ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1halo))
+#define _tSZ_lens_1h_ ((ptsz->has_tSZ_lens_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lens_1h))
+#define _isw_lens_ ((ptsz->has_isw_lens == _TRUE_) && (index_md == ptsz->index_md_isw_lens))
+#define _isw_tsz_ ((ptsz->has_isw_tsz == _TRUE_) && (index_md == ptsz->index_md_isw_tsz))
+#define _isw_auto_ ((ptsz->has_isw_auto == _TRUE_) && (index_md == ptsz->index_md_isw_auto))
 
 //#define _tSZ_trispectrum_ ((ptsz->has_sz_trispec == _TRUE_))
 //#define _tSZ_2halo_ ((ptsz->has_sz_2halo == _TRUE_))
@@ -33,9 +37,15 @@ struct tszspectrum {
   double f_sky;
   double Omega_survey;
 
+  double chi_star; //comoving distance to the surface of last scattering [Mpc/h]
+
   double hmf_int;
   double y_monopole;
   double * cl_sz;
+  double * cl_tSZ_lens_1h;
+  double * cl_isw_lens;
+  double * cl_isw_tsz;
+  double * cl_isw_auto;
   double * b_kSZ_kSZ_gal_1halo;
   double * cl_te_y_y;
   double ** tllprime_sz;
@@ -114,8 +124,25 @@ struct tszspectrum {
   int index_integrand_id_kSZ_kSZ_gal_1halo_last;
 
 
+  int has_tSZ_lens_1h;
+  int index_md_tSZ_lens_1h;
+  int index_integrand_id_tSZ_lens_1h_first;
+  int index_integrand_id_tSZ_lens_1h_last;
 
+  int has_isw_lens;
+  int index_md_isw_lens;
+  int index_integrand_id_isw_lens_first;
+  int index_integrand_id_isw_lens_last;
 
+  int has_isw_tsz;
+  int index_md_isw_tsz;
+  int index_integrand_id_isw_tsz_first;
+  int index_integrand_id_isw_tsz_last;
+
+  int has_isw_auto;
+  int index_md_isw_auto;
+  int index_integrand_id_isw_auto_first;
+  int index_integrand_id_isw_auto_last;
 
   int has_sz_trispec;
   //int index_md_sz_trispec;
@@ -171,6 +198,7 @@ struct tszspectrum {
   int  index_Delta_c;
   int  index_rVIR;
   int  index_cVIR;
+  int  index_mVIR;
   int  index_m500;
   int  index_r500;
   int  index_l500;
@@ -187,7 +215,7 @@ struct tszspectrum {
   int  index_z;
   int  index_m200c;
   int  index_l200c;
-  int  index_characteristic_multipole_for_tau_profile;
+  int  index_characteristic_multipole_for_nfw_profile;
   int  index_r200c;
   int  index_multipole;
   int  index_multipole_prime;
@@ -196,11 +224,16 @@ struct tszspectrum {
   int  index_multipole_for_pressure_profile;
   int  index_pressure_profile;
   int  index_multipole_for_tau_profile;
+  int  index_multipole_for_nfw_profile;
   int  index_tau_profile;
+  int  index_lensing_profile;
+  int  index_multipole_for_lensing_profile;
   int  index_completeness;
   int  index_te_of_m;
   int  index_volume;
-  int  index_chi2;
+  int  index_chi2; // in [Mpc/h]^2
+  int  index_dgdz; // d(D/a)/dz = D(1-f)
+  int  index_lensing_Sigma_crit;
   int  index_vrms2;
   int  index_pk_for_halo_bias;
   int  index_dlnMdeltadlnM;
@@ -404,8 +437,8 @@ struct tszspectrum {
   double pressure_profile_epsabs;
   double pressure_profile_epsrel;
 
-  double tau_profile_epsabs;
-  double tau_profile_epsrel;
+  double nfw_profile_epsabs;
+  double nfw_profile_epsrel;
 
   int patterson_show_neval;
 
@@ -440,6 +473,7 @@ struct tszspectrum {
   double Tcmb_gNU;
 
   double Rho_crit_0;
+  double D_0;
   double D_z1SZ;
   double Omega_m_0;
   double Omega_ncdm_0;
@@ -511,10 +545,11 @@ struct tszspectrum {
 extern "C" {
 #endif
 
-  int szpowerspectrum_init(struct background * pba,
-                           struct nonlinear * pnl,
-                           struct primordial * ppm,
-                           struct tszspectrum * ptsz);
+int szpowerspectrum_init(struct background * pba,
+                         struct thermo * pth,
+                         struct nonlinear * pnl,
+                         struct primordial * ppm,
+                         struct tszspectrum * ptsz);
 
 
   int szpowerspectrum_free(struct tszspectrum *ptsz);
@@ -539,7 +574,19 @@ extern "C" {
                               struct nonlinear * pnl,
                               struct tszspectrum * ptsz);
 
+  double integrand_isw_lens_at_z( double * pvecback,
+                                  double * pvectsz,
+                                  struct background * pba,
+                                  struct primordial * ppm,
+                                  struct nonlinear * pnl,
+                                  struct tszspectrum * ptsz);
 
+  double delta_ell_isw_at_ell_and_z( double * pvecback,
+                                  double * pvectsz,
+                                  struct background * pba,
+                                  struct primordial * ppm,
+                                  struct nonlinear * pnl,
+                                  struct tszspectrum * ptsz);
 
   int evaluate_HMF(double logM ,
                    double * pvecback,
@@ -557,10 +604,19 @@ extern "C" {
                                 double * pvectsz,
                                 struct background * pba,
                                 struct tszspectrum * ptsz);
+
   int evaluate_tau_profile(double * pvecback,
-                                double * pvectsz,
-                                struct background * pba,
-                                struct tszspectrum * ptsz);
+                           double * pvectsz,
+                           struct background * pba,
+                           struct tszspectrum * ptsz);
+
+  int evaluate_lensing_profile(double * pvecback,
+                               double * pvectsz,
+                               struct background * pba,
+                               struct tszspectrum * ptsz);
+
+
+
   int write_output_to_files_ell_indep_ints(struct nonlinear * pnl,
                                            struct background * pba,
                                            struct tszspectrum * ptsz);
@@ -571,6 +627,7 @@ extern "C" {
 
 
   int show_preamble_messages(struct background * pba,
+                             struct thermo * pth,
                              struct nonlinear * pnl,
                              struct primordial * ppm,
                              struct tszspectrum * ptsz);

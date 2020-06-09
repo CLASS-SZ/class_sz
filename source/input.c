@@ -1947,6 +1947,39 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
+      if ((strstr(string1,"tSZ_lens_1h") != NULL) ) {
+        ptsz->has_tSZ_lens_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"isw_lens") != NULL) ) {
+        ptsz->has_isw_lens =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+      if ((strstr(string1,"isw_tsz") != NULL) ) {
+        ptsz->has_isw_tsz =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+      if ((strstr(string1,"isw_auto") != NULL) ) {
+        ptsz->has_isw_auto =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
       if ((strstr(string1,"SZ_counts") != NULL) ) {
         pcsz->has_sz_counts =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2039,8 +2072,8 @@ int input_read_parameters(
       class_read_double("pressure_profile_epsrel",ptsz->pressure_profile_epsrel);
       class_read_double("pressure_profile_epsabs",ptsz->pressure_profile_epsabs);
 
-      class_read_double("tau_profile_epsrel",ptsz->tau_profile_epsrel);
-      class_read_double("tau_profile_epsabs",ptsz->tau_profile_epsabs);
+      class_read_double("nfw_profile_epsrel",ptsz->nfw_profile_epsrel);
+      class_read_double("nfw_profile_epsabs",ptsz->nfw_profile_epsabs);
 
       /* temperature mass relation SZ */
       class_call(parser_read_string(pfc,"temperature mass relation",&string1,&flag1,errmsg),
@@ -4116,8 +4149,8 @@ int input_default_params(
   ptsz->pressure_profile_epsrel = 1e-9;
   ptsz->pressure_profile_epsabs = 1e-10;
 
-  ptsz->tau_profile_epsrel = 1e-9;
-  ptsz->tau_profile_epsabs = 1e-10;
+  ptsz->nfw_profile_epsrel = 1e-9;
+  ptsz->nfw_profile_epsabs = 1e-10;
   //trapezoidal
   ptsz->number_of_mass_bins = 60;
   /////////////////////////////////
@@ -4144,6 +4177,10 @@ int input_default_params(
 
   //ptsz->has_tszspectrum = _FALSE_;
   pcsz->has_sz_counts = _FALSE_;
+  ptsz->has_isw_lens = _FALSE_;
+  ptsz->has_isw_tsz = _FALSE_;
+  ptsz->has_isw_auto = _FALSE_;
+  ptsz->has_tSZ_lens_1h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_1halo = _FALSE_;
   ptsz->has_sz_te_y_y = _FALSE_;
   ptsz->has_sz_ps = _FALSE_;
@@ -4170,6 +4207,10 @@ int input_default_params(
   ptsz->index_md_cov_Y_N_next_order = 8;
   ptsz->index_md_cov_N_N_hsv = 9;
   ptsz->index_md_kSZ_kSZ_gal_1halo = 10;
+  ptsz->index_md_tSZ_lens_1h = 11;
+  ptsz->index_md_isw_lens = 12;
+  ptsz->index_md_isw_tsz = 13;
+  ptsz->index_md_isw_auto = 14;
 
   ptsz->HMF_prescription_NCDM=2; //no-pres
 

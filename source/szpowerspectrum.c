@@ -17,6 +17,7 @@
 
 int szpowerspectrum_init(
                           struct background * pba,
+                          struct thermo * pth,
                           struct nonlinear * pnl,
                           struct primordial * ppm,
                           struct tszspectrum * ptsz
@@ -26,7 +27,7 @@ int szpowerspectrum_init(
 
 
    select_multipole_array(ptsz);
-   show_preamble_messages(pba,pnl,ppm,ptsz);
+   show_preamble_messages(pba,pth,pnl,ppm,ptsz);
 
    if (ptsz->experiment == 0 && ptsz->has_completeness_for_ps_SZ == 1)
       read_Planck_noise_map(ptsz);
@@ -60,7 +61,7 @@ int szpowerspectrum_init(
       read_SO_noise(ptsz);}
 
 
-   if (ptsz->has_sz_ps + ptsz->has_hmf + ptsz->has_mean_y + ptsz->has_sz_2halo + ptsz->has_sz_trispec + ptsz->has_sz_te_y_y + ptsz->has_sz_cov_N_N + ptsz->has_kSZ_kSZ_gal_1halo== _FALSE_)
+   if (ptsz->has_sz_ps + ptsz->has_hmf + ptsz->has_mean_y + ptsz->has_sz_2halo + ptsz->has_sz_trispec + ptsz->has_sz_te_y_y + ptsz->has_sz_cov_N_N + ptsz->has_kSZ_kSZ_gal_1halo + ptsz->has_tSZ_lens_1h + ptsz->has_isw_lens + ptsz->has_isw_tsz + ptsz->has_isw_auto == _FALSE_)
    {
       if (ptsz->sz_verbose > 0)
          printf("->No SZ-y or N quantities requested. SZ ps module skipped.\n");
@@ -224,6 +225,10 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
 {
    free(ptsz->ell);
    free(ptsz->cl_sz);
+   free(ptsz->cl_isw_lens);
+   free(ptsz->cl_isw_tsz);
+   free(ptsz->cl_isw_auto);
+   free(ptsz->cl_tSZ_lens_1h);
    free(ptsz->b_kSZ_kSZ_gal_1halo);
    free(ptsz->cl_te_y_y);
    free(ptsz->cov_cl_cl);
@@ -382,6 +387,26 @@ int compute_sz(struct background * pba,
        if (ptsz->sz_verbose > 0) printf("computing b^tau-tau-y @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
      }
 
+     else if (index_integrand>=ptsz->index_integrand_id_tSZ_lens_1h_first && index_integrand <= ptsz->index_integrand_id_tSZ_lens_1h_last && ptsz->has_tSZ_lens_1h){
+        Pvectsz[ptsz->index_md] = ptsz->index_md_tSZ_lens_1h;
+        Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_tSZ_lens_1h_first);
+        if (ptsz->sz_verbose > 0) printf("computing cl^y-phi @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+      }
+      else if (index_integrand>=ptsz->index_integrand_id_isw_lens_first && index_integrand <= ptsz->index_integrand_id_isw_lens_last && ptsz->has_isw_lens){
+         Pvectsz[ptsz->index_md] = ptsz->index_md_isw_lens;
+         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_isw_lens_first);
+         if (ptsz->sz_verbose > 0) printf("computing cl^isw-phi @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+       }
+     else if (index_integrand>=ptsz->index_integrand_id_isw_tsz_first && index_integrand <= ptsz->index_integrand_id_isw_tsz_last && ptsz->has_isw_tsz){
+        Pvectsz[ptsz->index_md] = ptsz->index_md_isw_tsz;
+        Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_isw_tsz_first);
+        if (ptsz->sz_verbose > 0) printf("computing cl^isw-y @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+      }
+     else if (index_integrand>=ptsz->index_integrand_id_isw_auto_first && index_integrand <= ptsz->index_integrand_id_isw_auto_last && ptsz->has_isw_auto){
+        Pvectsz[ptsz->index_md] = ptsz->index_md_isw_auto;
+        Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_isw_auto_first);
+        if (ptsz->sz_verbose > 0) printf("computing cl^isw-isw @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+      }
      else
      return 0;
 
@@ -405,7 +430,7 @@ int compute_sz(struct background * pba,
    }
 
    if (_mean_y_){
-      ptsz->y_monopole = Pvectsz[ptsz->index_integral]/pow(ptsz->Tcmb_gNU,1)/1.e6;
+      ptsz->y_monopole = Pvectsz[ptsz->index_integral]/pow(ptsz->Tcmb_gNU,1)/1.e6; //1e6 to convert Tcmb in micro Kelvins
 
    }
 
@@ -479,13 +504,36 @@ int compute_sz(struct background * pba,
   if (_kSZ_kSZ_gal_1halo_){
     int index_l = (int) Pvectsz[ptsz->index_multipole];
     //int index_m = (int) Pvectsz[ptsz->index_mass_bin_1];
-
-
-   ptsz->b_kSZ_kSZ_gal_1halo[index_l] = Pvectsz[ptsz->index_integral]/pow(ptsz->Tcmb_gNU,1)/1.e6;;
+   ptsz->b_kSZ_kSZ_gal_1halo[index_l] = Pvectsz[ptsz->index_integral]/pow(ptsz->Tcmb_gNU,1)/1.e6;
 
 
  }
+ if (_tSZ_lens_1h_){
+   int index_l = (int) Pvectsz[ptsz->index_multipole];
+   //int index_m = (int) Pvectsz[ptsz->index_mass_bin_1];
+  ptsz->cl_tSZ_lens_1h[index_l] = Pvectsz[ptsz->index_integral]; //result in [muK]
 
+
+}
+
+if (_isw_lens_){
+  int index_l = (int) Pvectsz[ptsz->index_multipole];
+  //int index_m = (int) Pvectsz[ptsz->index_mass_bin_1];
+ ptsz->cl_isw_lens[index_l] = Pvectsz[ptsz->index_integral]*pow(pba->T_cmb,1)*1e6; //result in [muK]
+}
+
+
+if (_isw_tsz_){
+  int index_l = (int) Pvectsz[ptsz->index_multipole];
+  //int index_m = (int) Pvectsz[ptsz->index_mass_bin_1];
+ ptsz->cl_isw_tsz[index_l] = Pvectsz[ptsz->index_integral]/pow(ptsz->Tcmb_gNU,1)/1.e6;
+}
+
+if (_isw_auto_){
+  int index_l = (int) Pvectsz[ptsz->index_multipole];
+  //int index_m = (int) Pvectsz[ptsz->index_mass_bin_1];
+ ptsz->cl_isw_auto[index_l] = Pvectsz[ptsz->index_integral];
+}
 return _SUCCESS_;
 }
 
@@ -572,6 +620,7 @@ double integrand_at_m_and_z(double logM,
      evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
 
+     //this integrand is squared afterward
      pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                         *pvectsz[ptsz->index_dlnMdeltadlnM]
                                         *pvectsz[ptsz->index_halo_bias]
@@ -711,7 +760,39 @@ double integrand_at_m_and_z(double logM,
 
 
   }
+  else if (_tSZ_lens_1h_){
 
+     int index_l = (int) pvectsz[ptsz->index_multipole];
+    pvectsz[ptsz->index_multipole_for_lensing_profile] = ptsz->ell[index_l];
+    evaluate_lensing_profile(pvecback,pvectsz,pba,ptsz);
+    double lensing_profile_at_ell_1 = pvectsz[ptsz->index_lensing_profile];
+    pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
+    evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+    double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
+
+        pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
+                                          *pvectsz[ptsz->index_hmf]
+                                          *pvectsz[ptsz->index_dlnMdeltadlnM]
+                                          *pvectsz[ptsz->index_completeness]
+                                          *lensing_profile_at_ell_1
+                                          *pressure_profile_at_ell_2;
+
+
+   }
+
+   else if (_isw_tsz_){
+
+     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+     pvectsz[ptsz->index_integrand] =   pvectsz[ptsz->index_chi2]
+                                       *pvectsz[ptsz->index_hmf]
+                                       *pvectsz[ptsz->index_dlnMdeltadlnM]
+                                       *pvectsz[ptsz->index_completeness]
+                                       *pressure_profile_at_ell
+                                       *pvectsz[ptsz->index_pk_for_halo_bias]
+                                       *pvectsz[ptsz->index_halo_bias];
+
+
+   }
 
    return pvectsz[ptsz->index_integrand];
 }
@@ -790,17 +871,14 @@ int evaluate_tau_profile(double * pvecback,
 
    characteristic_radius = pvectsz[ptsz->index_rs]/pba->h; // in Mpc
    characteristic_multipole = pvectsz[ptsz->index_ls];
-   pvectsz[ptsz->index_characteristic_multipole_for_tau_profile] = characteristic_multipole;
+   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
+   pvectsz[ptsz->index_multipole_for_nfw_profile] = pvectsz[ptsz->index_multipole_for_tau_profile];
 
-
-    class_call(two_dim_ft_tau_profile(ptsz,pba,pvectsz,&result),
+    class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result),
                                       ptsz->error_message,
                                       ptsz->error_message);
 
    pvectsz[ptsz->index_tau_profile] = result;
-
-   //in units (Mpc/h)**2/Msun
-   double sigmaT_over_mpc2 = 8.30702e-17 * pow(pba->h,2); // !this is sigmaT / m_prot in (Mpc/h)**2/Msun
 
 
 
@@ -814,11 +892,18 @@ int evaluate_tau_profile(double * pvecback,
 
 
 
-  tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h;
+  tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; //in units (Mpc/h)**2/Msun
+
+  double sigmaT_over_mpc2 = 8.30702e-17 * pow(pba->h,2); // !this is sigmaT / m_prot in (Mpc/h)**2/Msun
+
+  double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+pvectsz[ptsz->index_cVIR])-pvectsz[ptsz->index_cVIR]/(1.+pvectsz[ptsz->index_cVIR])));
+
+  // rho0=mvir/(4d0*pi*rs**3d0*(dlog(1d0+cvir)-cvir/(1d0+cvir))) !Eq. (2.66) of Binney & Tremaine
 
 
    pvectsz[ptsz->index_tau_profile] =  sigmaT_over_mpc2
                                        *tau_normalisation
+                                       *rho0
                                        *pvectsz[ptsz->index_tau_profile]
                                        *(4*_PI_)
                                        *pow(characteristic_multipole,-2)
@@ -828,6 +913,56 @@ int evaluate_tau_profile(double * pvecback,
    return _SUCCESS_;
 }
 
+
+int evaluate_lensing_profile(double * pvecback,
+                        double * pvectsz,
+                        struct background * pba,
+                        struct tszspectrum * ptsz)
+{
+
+   //int index_md = (int) pvectsz[ptsz->index_md];
+
+   //int index_l = (int) pvectsz[ptsz->index_multipole_for_tau_profile];
+   //printf("ell pp=%e\n",ptsz->ell[index_l]);
+
+   double result;
+   double characteristic_radius;
+   double characteristic_multipole;
+   double lensing_normalisation;
+
+
+   characteristic_radius = pvectsz[ptsz->index_rs]/pba->h; // in Mpc
+   characteristic_multipole = pvectsz[ptsz->index_ls];
+   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
+   pvectsz[ptsz->index_multipole_for_nfw_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];
+
+    class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result),
+                                      ptsz->error_message,
+                                      ptsz->error_message);
+
+   pvectsz[ptsz->index_lensing_profile] = result;
+
+
+  lensing_normalisation = 2./(pvectsz[ptsz->index_multipole_for_lensing_profile]*(pvectsz[ptsz->index_multipole_for_lensing_profile]+1.));
+
+
+
+  double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+pvectsz[ptsz->index_cVIR])-pvectsz[ptsz->index_cVIR]/(1.+pvectsz[ptsz->index_cVIR])));
+
+  // rho0=mvir/(4d0*pi*rs**3d0*(dlog(1d0+cvir)-cvir/(1d0+cvir))) !Eq. (2.66) of Binney & Tremaine
+
+
+   pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
+                                           *rho0
+                                           *pvectsz[ptsz->index_lensing_profile]
+                                           /pvectsz[ptsz->index_lensing_Sigma_crit]
+                                           *(4*_PI_)
+                                           *pow(characteristic_multipole,-2)
+                                           *characteristic_radius; //rs in Mpc
+
+
+   return _SUCCESS_;
+}
 
 int evaluate_pressure_profile(double * pvecback,
                               double * pvectsz,
@@ -1175,14 +1310,14 @@ int evaluate_HMF(double logM,
    pvectsz[ptsz->index_dlnMdeltadlnM] = 1.;
 
    //beginning of mass function
+   pvectsz[ptsz->index_mVIR] = exp(logM);
    pvectsz[ptsz->index_rVIR] =
-   pow(3.*exp(logM)/(4*_PI_*pvectsz[ptsz->index_Delta_c]*pvectsz[ptsz->index_Rho_crit]),1./3.);
+   pow(3.*pvectsz[ptsz->index_mVIR]/(4*_PI_*pvectsz[ptsz->index_Delta_c]*pvectsz[ptsz->index_Rho_crit]),1./3.);
 
    //For SC14 C-M relation
    //we need r200crit in place of rVIR:
    if (ptsz->concentration_parameter==3)
-      pvectsz[ptsz->index_rVIR] =
-      pow(3.*exp(logM)/(4*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+      pvectsz[ptsz->index_rVIR] = pow(3.*exp(logM)/(4*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
 
 
 
@@ -1762,11 +1897,12 @@ int write_redshift_dependent_quantities(struct background * pba,
 
 
   double rhoc =  (3./(8.*_PI_*_G_*_M_sun_))
-          *pow(_Mpc_over_m_,1)
-          *pow(_c_,2)
-          *pvecback[pba->index_bg_rho_crit]
-          /pow(pba->h,2);
-  double omega = pvecback[pba->index_bg_Omega_m];
+                *pow(_Mpc_over_m_,1)
+                *pow(_c_,2)
+                *pvecback[pba->index_bg_rho_crit]
+                /pow(pba->h,2);
+  double Eh = pvecback[pba->index_bg_H]/ptsz->H0_in_class_units;
+  double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
   double delc = Delta_c_of_Omega_m(omega);
 
   double mvir = pow(10.,13.5); //m200m for M=10^{13.5} Msun/h
@@ -1807,7 +1943,7 @@ int write_output_to_files_cl(struct nonlinear * pnl,
    {
       FILE *fp;
 
-    if (ptsz->has_sz_ps + ptsz->has_sz_trispec + ptsz->has_sz_2halo + ptsz->has_sz_te_y_y){
+    if (ptsz->has_sz_ps + ptsz->has_sz_trispec + ptsz->has_sz_2halo + ptsz->has_sz_te_y_y +   ptsz->has_kSZ_kSZ_gal_1halo + ptsz->has_tSZ_lens_1h + ptsz->has_isw_lens + ptsz->has_isw_tsz + ptsz->has_isw_auto){
 
       sprintf(Filepath,
                   "%s%s%s",
@@ -1876,14 +2012,23 @@ int write_output_to_files_cl(struct nonlinear * pnl,
        fprintf(fp,"\n");
        fprintf(fp,"# Columns:\n");
        fprintf(fp,"# 1:multipole\n");
-       fprintf(fp,"# 2:10^12*ell*(ell+1)/(2*pi)*C_l^tSZ (1-halo term)\n");
+       if (ptsz->exponent_unit == 2.)
+          fprintf(fp,"# 2:10^12*ell*(ell+1)/(2*pi)*C_l^tSZ (1-halo term)\n");
+       if (ptsz->exponent_unit == 0.)
+          fprintf(fp,"# 2:ell*(ell+1)/(2*pi)*C_l^tSZ (1-halo term, [muK^2])\n");
        fprintf(fp,"# 3:Unbinned Gaussian sampling variance (sigma_g_C_l^2)\n");
        fprintf(fp,"# 4:Diagonal elements of non-Gaussian sampling variance (trispectrum, T_ll/Omega_survey) \n");
        fprintf(fp,"# 5:Binned Gaussian sampling variance (sigma_g_C_l^2_binned)\n");
        fprintf(fp,"# 6:Binned total std dev (Gaussian + non-Gaussian)\n");
-       fprintf(fp,"# 7:2-halo term 10^12*ell*(ell+1)/(2*pi)*C_l^tSZ (2-halo term)\n");
+        if (ptsz->exponent_unit == 2.)
+          fprintf(fp,"# 7:2-halo term 10^12*ell*(ell+1)/(2*pi)*C_l^tSZ (2-halo term)\n");
+        if (ptsz->exponent_unit == 0.)
+          fprintf(fp,"# 7:2-halo term ell*(ell+1)/(2*pi)*C_l^tSZ (2-halo term, [muK^2])\n");
        fprintf(fp,"# 8:SZ temperature, Te [in keV]\n");
-       fprintf(fp,"# 8:b_kSZ_kSZ_gal_1halo [TBD]\n");
+       fprintf(fp,"# 9:b_kSZ_kSZ_gal_1halo [TBC]\n");
+       fprintf(fp,"# 10:ell*(ell+1)/(2*pi)*C_l^y-phi (1-halo term) [muK] [TBC]\n");
+       fprintf(fp,"# 11:ell*(ell+1)/(2*pi)*C_l^isw-phi [muK] [TBC]\n");
+       fprintf(fp,"# 11:ell*(ell+1)/(2*pi)*C_l^isw-y [muK] [TBC]\n");
        fprintf(fp,"\n");
 
       for (index_l=0;index_l<ptsz->nlSZ;index_l++){
@@ -1931,7 +2076,7 @@ int write_output_to_files_cl(struct nonlinear * pnl,
 
 
             fprintf(fp,
-                    "%e\t\t %e\t\t %e\t\t %e\t\t %e\t\t%e\t\t%e\t\t%e\t\t%e\n",
+                    "%e\t\t %e\t\t %e\t\t %e\t\t %e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\n",
                     ptsz->ell[index_l],
                     ptsz->cl_sz[index_l],
                     sig_cl_squared,
@@ -1940,7 +2085,11 @@ int write_output_to_files_cl(struct nonlinear * pnl,
                     ell*(ell+1.)/(2.*_PI_)*sqrt(ptsz->cov_cl_cl[index_l]),
                     ptsz->cl_sz_2h[index_l],
                     ptsz->cl_te_y_y[index_l]/ptsz->cl_sz[index_l],
-                    ptsz->b_kSZ_kSZ_gal_1halo[index_l]
+                    ptsz->b_kSZ_kSZ_gal_1halo[index_l],
+                    ell*ell*(ell+1.)/(2.*_PI_)*ptsz->cl_tSZ_lens_1h[index_l],
+                    ell*(ell+1.)/(2.*_PI_)*ptsz->cl_isw_lens[index_l],
+                    ell*(ell+1.)/(2.*_PI_)*ptsz->cl_isw_tsz[index_l],
+                    ell*(ell+1.)/(2.*_PI_)*ptsz->cl_isw_auto[index_l]
                     );
 
       }
@@ -1958,6 +2107,9 @@ int write_output_to_files_cl(struct nonlinear * pnl,
                                                     /sqrt(ptsz->cov_cl_cl[index_l_prime]);
 
            ptsz->r_cl_clp[index_l_prime][index_l] = ptsz->r_cl_clp[index_l][index_l_prime];
+
+           if (index_l==index_l_prime)
+             ptsz->r_cl_clp[index_l_prime][index_l] = 1.;
 
            ell_prime = ptsz->ell[index_l_prime];
            ell = ptsz->ell[index_l];
@@ -2085,15 +2237,19 @@ if (ptsz->has_sz_cov_Y_N){
 
 
 int show_preamble_messages(struct background * pba,
-                                        struct nonlinear * pnl,
-                                        struct primordial * ppm,
-                                        struct tszspectrum * ptsz){
+                          struct thermo * pth,
+                          struct nonlinear * pnl,
+                          struct primordial * ppm,
+                          struct tszspectrum * ptsz){
 
 
    double tau;
    int first_index_back = 0;
    double * pvecback;
    double OmegaM;
+
+
+
 
 
    class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
@@ -2125,6 +2281,9 @@ int show_preamble_messages(struct background * pba,
       *pvecback[pba->index_bg_rho_crit]
       /pow(pba->h,2);
 
+      //ptsz->D_0 =  pvecback[pba->index_bg_D];
+      //printf("D0 = %e\n",ptsz->D_0);
+
       ptsz->Omega_m_0 = pvecback[pba->index_bg_Omega_m];
       ptsz->Omega_ncdm_0 = ptsz->Omega_m_0
       -pba->Omega0_b
@@ -2137,6 +2296,14 @@ int show_preamble_messages(struct background * pba,
 
 
       ptsz->Sigma8OmegaM_SZ = pnl->sigma8[pnl->index_pk_m]*pow(OmegaM/0.28,3./8.);
+
+
+      //quantities at surface of last scattering
+      // conformal distance to redshift of last scattering in Mpc/h
+      ptsz->chi_star = pth->ra_star*pba->h;
+
+
+
 
       if (ptsz->sz_verbose > 0)
       {
@@ -2229,7 +2396,7 @@ int show_preamble_messages(struct background * pba,
                      /2.))
       -4.);
    if (ptsz->sz_verbose > 0){
-       printf("->Tcmb_gNU at 150GHz= %e\n",ptsz->Tcmb_gNU);
+       printf("->Tcmb_gNU at 150GHz= %e Kelvins\n",ptsz->Tcmb_gNU);
    //    printf("->gNU at 150GHz= %e\n",ptsz->Tcmb_gNU/pba->T_cmb);
    //    printf("->Tcmb = %e K\n",pba->T_cmb);
    //
@@ -2523,8 +2690,10 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
 
 
    //function of redshift
-   ptsz->index_characteristic_multipole_for_tau_profile = 0;
-   ptsz->index_multipole_for_tau_profile = ptsz->index_characteristic_multipole_for_tau_profile + 1;
+   ptsz->index_multipole_for_lensing_profile = 0;
+   ptsz->index_characteristic_multipole_for_nfw_profile = ptsz->index_multipole_for_lensing_profile + 1;
+   ptsz->index_multipole_for_nfw_profile = ptsz->index_characteristic_multipole_for_nfw_profile + 1;
+   ptsz->index_multipole_for_tau_profile = ptsz->index_multipole_for_nfw_profile + 1;
    ptsz->index_dlnMdeltadlnM = ptsz->index_multipole_for_tau_profile + 1;
    ptsz->index_te_of_m = ptsz->index_dlnMdeltadlnM + 1;
    ptsz->index_multipole_for_pressure_profile = ptsz->index_te_of_m  + 1;
@@ -2534,7 +2703,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_Delta_c  = ptsz->index_Rho_crit +1;
    ptsz->index_rVIR  = ptsz->index_Delta_c +1;
    ptsz->index_cVIR  = ptsz->index_rVIR +1;
-   ptsz->index_m500  = ptsz->index_cVIR +1;
+   ptsz->index_mVIR  = ptsz->index_cVIR +1;
+   ptsz->index_m500  = ptsz->index_mVIR +1;
    ptsz->index_r500  = ptsz->index_m500 +1;
    ptsz->index_l500  = ptsz->index_r500 +1;
    ptsz->index_m200  = ptsz->index_l500 +1;
@@ -2554,11 +2724,14 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_multipole = ptsz->index_l200c +1;
    ptsz->index_pressure_profile = ptsz->index_multipole +1;
    ptsz->index_tau_profile = ptsz->index_pressure_profile +1;
-   ptsz->index_completeness = ptsz->index_tau_profile +1;
+   ptsz->index_lensing_profile = ptsz->index_tau_profile +1;
+   ptsz->index_completeness = ptsz->index_lensing_profile +1;
    ptsz->index_volume = ptsz->index_completeness + 1;
    ptsz->index_chi2 = ptsz->index_volume + 1;
    ptsz->index_vrms2 = ptsz->index_chi2 + 1;
-   ptsz->index_hmf = ptsz->index_vrms2 + 1;
+   ptsz->index_dgdz = ptsz->index_vrms2 + 1;
+   ptsz->index_lensing_Sigma_crit = ptsz->index_dgdz + 1;
+   ptsz->index_hmf = ptsz->index_lensing_Sigma_crit + 1;
    ptsz->index_halo_bias = ptsz->index_hmf + 1;
    ptsz->index_k_value_for_halo_bias = ptsz->index_halo_bias +1;
    ptsz->index_pk_for_halo_bias = ptsz->index_k_value_for_halo_bias +1;
@@ -2589,6 +2762,10 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
 
 
    class_alloc(ptsz->cl_sz,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   class_alloc(ptsz->cl_isw_lens,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   class_alloc(ptsz->cl_isw_tsz,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   class_alloc(ptsz->cl_isw_auto,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   class_alloc(ptsz->cl_tSZ_lens_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->b_kSZ_kSZ_gal_1halo,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_te_y_y,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cov_cl_cl,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
@@ -2607,6 +2784,10 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    int index_l,index_l_prime;
    for (index_l=0;index_l<ptsz->nlSZ;index_l++){
       ptsz->cl_sz[index_l] = 0.;
+      ptsz->cl_isw_lens[index_l] = 0.;
+      ptsz->cl_isw_tsz[index_l] = 0.;
+      ptsz->cl_isw_auto[index_l] = 0.;
+      ptsz->cl_tSZ_lens_1h[index_l] = 0.;
       ptsz->b_kSZ_kSZ_gal_1halo[index_l] = 0.;
       ptsz->cl_te_y_y[index_l] = 0.;
       ptsz->cl_sz_2h[index_l] = 0.;
@@ -2670,8 +2851,16 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_integrand_id_cov_Y_N_next_order_last = ptsz->index_integrand_id_cov_Y_N_next_order_first + ptsz->nlSZ*ptsz->nbins_M - 1;
    ptsz->index_integrand_id_kSZ_kSZ_gal_1halo_first = ptsz->index_integrand_id_cov_Y_N_next_order_last + 1;
    ptsz->index_integrand_id_kSZ_kSZ_gal_1halo_last = ptsz->index_integrand_id_kSZ_kSZ_gal_1halo_first + ptsz->nlSZ - 1;
+   ptsz->index_integrand_id_tSZ_lens_1h_first = ptsz->index_integrand_id_kSZ_kSZ_gal_1halo_last + 1;
+   ptsz->index_integrand_id_tSZ_lens_1h_last = ptsz->index_integrand_id_tSZ_lens_1h_first + ptsz->nlSZ - 1;
+   ptsz->index_integrand_id_isw_lens_first = ptsz->index_integrand_id_tSZ_lens_1h_last + 1;
+   ptsz->index_integrand_id_isw_lens_last = ptsz->index_integrand_id_isw_lens_first + ptsz->nlSZ - 1;
+   ptsz->index_integrand_id_isw_tsz_first = ptsz->index_integrand_id_isw_lens_last + 1;
+   ptsz->index_integrand_id_isw_tsz_last = ptsz->index_integrand_id_isw_tsz_first + ptsz->nlSZ - 1;
+   ptsz->index_integrand_id_isw_auto_first = ptsz->index_integrand_id_isw_tsz_last + 1;
+   ptsz->index_integrand_id_isw_auto_last = ptsz->index_integrand_id_isw_auto_first + ptsz->nlSZ - 1;
 
-   ptsz->number_of_integrands =  ptsz->index_integrand_id_kSZ_kSZ_gal_1halo_last + 1;
+   ptsz->number_of_integrands =  ptsz->index_integrand_id_isw_auto_last + 1;
 
 
 
@@ -2744,3 +2933,109 @@ double z = pvectsz[ptsz->index_z];
 
 return result;
 }
+
+
+
+double integrand_isw_lens_at_z( double * pvecback,
+                                double * pvectsz,
+                                struct background * pba,
+                                struct primordial * ppm,
+                                struct nonlinear * pnl,
+                                struct tszspectrum * ptsz){
+
+// double result;
+//
+double chi = sqrt(pvectsz[ptsz->index_chi2]);
+double chi_star =  ptsz->chi_star;
+double Omega_m = ptsz->Omega_m_0;
+double c = _c_;
+double H0 = 100.*pba->h;
+double z = pvectsz[ptsz->index_z];
+double dgdz = pvectsz[ptsz->index_dgdz]; // d(D/a)/dz = D(1-f)
+double D = pvecback[pba->index_bg_D];
+double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
+
+int index_l = (int)  pvectsz[ptsz->index_multipole];
+double ell = ptsz->ell[index_l];
+double pk = 1.;
+double pk_cb= 1.;
+double * pk_ic = NULL;
+// //Input: wavenumber in 1/Mpc
+// //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+ // class_call(nonlinear_pk_at_k_and_z(
+ //                                   pba,
+ //                                   ppm,
+ //                                   pnl,
+ //                                   pk_linear,
+ //                                   (ell+0.5)/chi*pba->h,
+ //                                   z,
+ //                                   pnl->index_pk_m,
+ //                                   &pk, // number *out_pk_l
+ //                                   pk_ic // array out_pk_ic_l[index_ic_ic]
+ //                                 ),
+ //                                 pnl->error_message,
+ //                                 pnl->error_message);
+ double kvec[1] ={(ell+0.5)/chi*pba->h};
+ double zvec[1] = {z};
+ class_call(nonlinear_pks_at_kvec_and_zvec(
+                                   pba,
+                                   pnl,
+                                   pk_linear,
+                                   kvec,
+                                   1,
+                                   zvec,
+                                   1,
+                                   &pk, // number *out_pk_l
+                                   &pk_cb // array out_pk_ic_l[index_ic_ic]
+                                 ),
+                                 pnl->error_message,
+                                 pnl->error_message);
+
+//
+ //now compute P(k) in units of h^-3 Mpc^3
+ pk = pk*pow(pba->h,3.); //in units Mpc^3/h^3
+ //ell = 1.;
+
+ double result = 9.*pow(Omega_m,2.)*pow(pba->H0/pba->h,4)/(2.*pow(ell+0.5,2.)*chi_star)*chi*(chi_star-chi)*(1.+z)*dgdz/D*pk;
+//  result = 0.;//dgdz/D;
+//
+ //result *= pow(pba->h,-4.);
+ result *= H_over_c_in_h_over_Mpc;
+ //double result = 10.;//pba->h;
+
+ //printf("pba->h=%.4e\n",pba->h);
+
+return result;
+                                }
+
+double delta_ell_isw_at_ell_and_z( double * pvecback,
+                                double * pvectsz,
+                                struct background * pba,
+                                struct primordial * ppm,
+                                struct nonlinear * pnl,
+                                struct tszspectrum * ptsz){
+
+// double result;
+//
+double chi = sqrt(pvectsz[ptsz->index_chi2]);
+double chi_star =  ptsz->chi_star;
+double Omega_m = ptsz->Omega_m_0;
+double c = _c_;
+double H0 = 100.*pba->h;
+double z = pvectsz[ptsz->index_z];
+double dgdz = pvectsz[ptsz->index_dgdz]; // d(D/a)/dz = D(1-f)
+double D = pvecback[pba->index_bg_D];
+double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
+int index_l = (int)  pvectsz[ptsz->index_multipole];
+double ell = ptsz->ell[index_l];
+
+
+ double result = 3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/(pow(ell+0.5,2.))*dgdz*H_over_c_in_h_over_Mpc/D;
+
+//
+ //result *= pow(pba->h,-4.);
+ //result *= H_over_c_in_h_over_Mpc;
+
+
+return result;
+                                }

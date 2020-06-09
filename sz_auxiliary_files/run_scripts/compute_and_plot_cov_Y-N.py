@@ -269,7 +269,7 @@ def run(args):
     plt.subplots_adjust(wspace = .1)
     #axcb = fig.colorbar(lc,cax=axins)
     #axcb.set_clim(-8.5, 0)
-    axcb.set_label(r'$\mathrm{log}_{10}[\frac{\mathrm{cov(N,C_\ell)}}{\mathrm{cov(N,N)}\mathrm{cov(C_\ell,C_\ell)}}]$',rotation=-90,labelpad = 40,y=0.5,size=15)
+    axcb.set_label(r'$\mathrm{log}_{10}[\frac{\mathrm{cov(N,C_\ell)}}{\sqrt{\mathrm{cov(N,N)}\mathrm{cov(C_\ell,C_\ell)}}}]$',rotation=-90,labelpad = 40,y=0.5,size=15)
 
     #fig.subplots_adjust(left=0.01,right=0.1)
 

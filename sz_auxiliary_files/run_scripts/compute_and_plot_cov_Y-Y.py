@@ -132,7 +132,7 @@ def run(args):
 
     axcb = fig.colorbar(surf,cax=cbaxes,pad=0.)
     plt.subplots_adjust(wspace = .1)
-    axcb.set_label(r'$\mathrm{log}_{10}[\frac{\mathrm{cov(C_\ell,C_{\ell^\prime})}}{\mathrm{cov(C_\ell,C_\ell)}\mathrm{cov(C_{\ell^\prime},C_{\ell^\prime})}}]$',rotation=-90,labelpad = 40,y=0.5,size=15)
+    axcb.set_label(r'$\mathrm{log}_{10}[\frac{\mathrm{cov(C_\ell,C_{\ell^\prime})}}{\sqrt{\mathrm{cov(C_\ell,C_\ell)}\mathrm{cov(C_{\ell^\prime},C_{\ell^\prime})}}}]$',rotation=-90,labelpad = 40,y=0.5,size=15)
 
     #fig.tight_layout()
     FIG_NAME = '/cov_Y-Y'

@@ -67,6 +67,11 @@ def run(args):
     cl_2h = []
     te_y_y = []
     kSZ_kSZ_gal_1halo = []
+    tSZ_lens_1h = []
+    isw_lens = []
+    isw_tsz = []
+    isw_auto = []
+
 
     redshift_dependent_functions_z = []
     redshift_dependent_functions_Q = []
@@ -90,9 +95,11 @@ def run(args):
     #print(p_dict)
     #set correct Output
     p_dict['output'] = 'tSZ_1h'
-    p_dict['mass function'] = 'M500'
+    p_dict['mass function'] = 'T10'
     p_dict['create_ref_trispectrum_for_cobaya'] = 'NO'
-    p_dict['pressure profile'] = 'A10'
+    p_dict['pressure profile'] = 'B12'
+    p_dict['background_verbose'] = 2
+    p_dict['thermodynamics_verbose'] = 2
     p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
     p_dict['write sz results to files'] = 'yes'
     if(args.output):
@@ -148,6 +155,14 @@ def run(args):
             ax.set_ylabel(r'$\mathrm{T_e^{tSZ}} \quad [\mathrm{keV}]$',size=title_size)
         elif (args.plot_kSZ_kSZ_gal_1halo == 'yes'):
             ax.set_ylabel(r'$\mathrm{b^{kSZ^2-g}_{\ell_1,\ell_2,\ell_3}}$',size=title_size)
+        elif (args.plot_tSZ_lens_1h == 'yes'):
+            ax.set_ylabel(r'$\ell^2(\ell+1)\mathrm{C^{y\phi}_\ell/2\pi}$',size=title_size)
+        elif (args.plot_isw_lens == 'yes'):
+            ax.set_ylabel(r'$\ell^2(\ell+1)\mathrm{C^{ISW\times\phi}_\ell/2\pi}$',size=title_size)
+        elif (args.plot_isw_tsz == 'yes'):
+            ax.set_ylabel(r'$\ell(\ell+1)\mathrm{C^{ISW\times y}_\ell/2\pi}$',size=title_size)
+        elif (args.plot_isw_auto == 'yes'):
+            ax.set_ylabel(r'$\ell(\ell+1)\mathrm{C^{ISW\times ISW}_\ell/2\pi}$',size=title_size)
         else:
             ax.set_ylabel(r'$10^{12}\ell(\ell+1)\mathrm{C^{yy}_\ell/2\pi}$',size=title_size)
 
@@ -204,7 +219,7 @@ def run(args):
                 redshift_dependent_functions_Q.append(R[:,8]) # 6: v2rms, 7: sigma2_hsv, 8: m200m/m200c @ m200m = 10^{13.5} Msun/h
                 ax.plot(redshift_dependent_functions_z[id_p],np.sqrt(redshift_dependent_functions_Q[id_p]),color=col[id_p],ls='-',label = val_label[id_p])
 
-            elif ('tSZ_1h' in p_dict['output'] or 'kSZ_kSZ_gal_1h' in p_dict['output']):
+            elif ('tSZ_1h' in p_dict['output'] or 'kSZ_kSZ_gal_1h' in p_dict['output'] or 'tSZ_lens_1h' in p_dict['output'] or 'isw_lens' in p_dict['output'] or 'isw_tsz' in p_dict['output']  or 'isw_auto' in p_dict['output']):
                 R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
                 multipoles.append(R[:,0])
                 cl_1h.append(R[:,1])
@@ -214,6 +229,10 @@ def run(args):
                 trispectrum.append(R[:,3])
                 te_y_y.append(R[:,7])
                 kSZ_kSZ_gal_1halo.append(R[:,8])
+                tSZ_lens_1h.append(R[:,9])
+                isw_lens.append(R[:,10])
+                isw_tsz.append(R[:,11])
+                isw_auto.append(R[:,12])
                 # L = [multipole,cl_1h]
                 # r_dict[p_val] = L
 
@@ -239,6 +258,22 @@ def run(args):
                     print(kSZ_kSZ_gal_1halo[id_p])
                     ax.plot(multipoles[id_p],kSZ_kSZ_gal_1halo[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p],marker='o')
                     ax.plot(multipoles[id_p],-kSZ_kSZ_gal_1halo[id_p],color=col[id_p],ls='--',alpha = 1.,marker='o')
+                elif (args.plot_tSZ_lens_1h == 'yes'):
+                    print(tSZ_lens_1h[id_p])
+                    ax.plot(multipoles[id_p],tSZ_lens_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p],marker='o')
+                    ax.plot(multipoles[id_p],-tSZ_lens_1h[id_p],color=col[id_p],ls='--',alpha = 1.,marker='o')
+                elif (args.plot_isw_lens == 'yes'):
+                    print(isw_lens[id_p])
+                    ax.plot(multipoles[id_p],isw_lens[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p],marker='o')
+                    ax.plot(multipoles[id_p],-isw_lens[id_p],color=col[id_p],ls='--',alpha = 1.,marker='o')
+                elif (args.plot_isw_tsz == 'yes'):
+                    print(isw_tsz[id_p])
+                    ax.plot(multipoles[id_p],isw_tsz[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^isw-y class_sz')
+                    ax.plot(multipoles[id_p],-isw_tsz[id_p],color=col[id_p],ls='--',alpha = 1.)
+                elif (args.plot_isw_auto == 'yes'):
+                    print(isw_auto[id_p])
+                    ax.plot(multipoles[id_p],isw_auto[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^isw-isw class_sz')
+                    ax.plot(multipoles[id_p],-isw_auto[id_p],color=col[id_p],ls='--',alpha = 1.)
                 else:
                     if ('tSZ_1h' in p_dict['output']):
                         if (args.show_error_bars == 'yes'):
@@ -255,7 +290,7 @@ def run(args):
 
             id_p += 1
 
-        #end loop on pover param values
+        #end loop on p over param values
 
         if ('hmf' in p_dict['output']):
             #HMF = 3.046174198e-4*41253.0*np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_hmf_int.txt')
@@ -265,8 +300,22 @@ def run(args):
             mean_y = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_mean_y.txt')
             print("(nb) y_mean = %.10e"%mean_y)
 
-
-
+        if (args.plot_ref_data == 'yes' and args.plot_isw_tsz == 'yes'):
+            LC = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cl-isw_y.txt')
+            multipoles_ref = LC[:,0]
+            cl_1h_ref = LC[:,1]*LC[:,0]*(LC[:,0]+1.)/2./np.pi
+            ax.plot(multipoles_ref,cl_1h_ref,color='k',ls='--',alpha = 1.,label='Cl^isw-y hill')
+            LC = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/cs2016_cl-isw_y.txt')
+            multipoles_ref = LC[:,0]
+            cl_1h_ref = LC[:,1]
+            ax.plot(multipoles_ref,cl_1h_ref,color='green',ls='--',alpha = 1.,label='Cl^isw-y cs16')
+            plt.draw()
+        if (args.plot_ref_data == 'yes' and args.plot_isw_auto == 'yes'):
+            LC = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cl-isw_y.txt')
+            multipoles_ref = LC[:,0]
+            cl_1h_ref = LC[:,2]*LC[:,0]*(LC[:,0]+1.)/2./np.pi
+            ax.plot(multipoles_ref,cl_1h_ref,color='k',ls='--',alpha = 1.,label='Cl^isw-isw hill')
+            plt.draw()
         if ('tSZ_1h' in p_dict['output']):
             if(args.compute_scaling_with_param == 'yes'):
                 ln_cl = np.log(np.asarray(cl_1h_100))
@@ -372,8 +421,8 @@ def run(args):
                             print("ell = %.4e\t rel_diff_2h = %.4e\n"%(ell,rdiff))
 
                         ax.plot(multipoles_ref,rel_diff,color=col[id_p],ls='-.',alpha = 1.,label = '2-halo')
-                    plt.draw()
-                    plt.pause(0.05)
+                    #plt.draw()
+                    #plt.pause(0.05)
                     id_p += 1
 
 
@@ -391,7 +440,10 @@ def run(args):
 
 
         if (args.show_legend == 'yes'):
-            ax1.legend(loc=2)
+            if (args.plot_isw_tsz == 'yes' or args.plot_isw_auto == 'yes'):
+                ax1.legend(loc=1)
+            else:
+                ax1.legend(loc=2)
             if (args.print_rel_diff == 'yes'):
                 ax2.legend(loc=1,ncol = 1)
 
@@ -439,6 +491,10 @@ def main():
 	parser.add_argument("-plot_trispectrum",help="Tll" ,dest="plot_trispectrum", type=str, required=False)
 	parser.add_argument("-plot_te_y_y",help="Tll" ,dest="plot_te_y_y", type=str, required=False)
 	parser.add_argument("-plot_kSZ_kSZ_gal_1halo",help="kSZ_kSZ_gal_1halo" ,dest="plot_kSZ_kSZ_gal_1halo", type=str, required=False)
+	parser.add_argument("-plot_tSZ_lens_1h",help="tSZ_lens_1h" ,dest="plot_tSZ_lens_1h", type=str, required=False)
+	parser.add_argument("-plot_isw_lens",help="isw_lens" ,dest="plot_isw_lens", type=str, required=False)
+	parser.add_argument("-plot_isw_tsz",help="isw_tsz" ,dest="plot_isw_tsz", type=str, required=False)
+	parser.add_argument("-plot_isw_auto",help="isw_auto" ,dest="plot_isw_auto", type=str, required=False)
 	parser.add_argument("-plot_redshift_dependent_functions",help="redshift dependent functions" ,dest="plot_redshift_dependent_functions", type=str, required=False)
 	parser.set_defaults(func=run)
 	args=parser.parse_args()

@@ -44056,21 +44056,21 @@ struct Parameters_for_integrand_patterson_pp{
 };
 
 
-struct Parameters_for_integrand_tau_profile{
+struct Parameters_for_integrand_nfw_profile{
   struct tszspectrum * ptsz;
   struct background * pba;
   double * pvectsz;
 };
 
 
-double integrand_tau_profile(double x, void *p){
+double integrand_nfw_profile(double x, void *p){
 
-  struct Parameters_for_integrand_tau_profile *V = ((struct Parameters_for_integrand_tau_profile *) p);
+  struct Parameters_for_integrand_nfw_profile *V = ((struct Parameters_for_integrand_nfw_profile *) p);
 
-    double tau_profile_at_x = 0.;
-    rho_nfw(&tau_profile_at_x,x,V->pvectsz,V->pba,V->ptsz);
+    double nfw_profile_at_x = 0.;
+    rho_nfw(&nfw_profile_at_x,x,V->pvectsz,V->pba,V->ptsz);
 
-    double result = tau_profile_at_x;
+    double result = nfw_profile_at_x;
 
 
   return result;
@@ -44092,13 +44092,13 @@ double integrand_patterson_test_pp(double x, void *p){
 
 }
 
-int two_dim_ft_tau_profile(struct tszspectrum * ptsz,
+int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
                                 struct background * pba,
                                 double * pvectsz,
                                 double * result
                           ) {
 
-  struct Parameters_for_integrand_tau_profile V;
+  struct Parameters_for_integrand_nfw_profile V;
   V.ptsz = ptsz;
   V.pba = pba;
   V.pvectsz = pvectsz;
@@ -44106,11 +44106,11 @@ int two_dim_ft_tau_profile(struct tszspectrum * ptsz,
   void * params = &V;
 
   gsl_function F;
-  F.function = &integrand_tau_profile;
+  F.function = &integrand_nfw_profile;
   F.params = params;
 
-  double eps_abs = ptsz->tau_profile_epsabs;
-  double eps_rel = ptsz->tau_profile_epsrel;
+  double eps_abs = ptsz->nfw_profile_epsabs;
+  double eps_rel = ptsz->nfw_profile_epsrel;
 
   double result_gsl, error;
 
@@ -44605,6 +44605,8 @@ int spectra_sigma_prime(
 int external_pressure_profile_init(struct tszspectrum * ptsz)
 {
 
+if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
+  return 0;
 
 
   class_alloc(ptsz->PP_lnx,sizeof(double *)*100,ptsz->error_message);
@@ -45044,9 +45046,9 @@ int rho_nfw(double * rho_nfw_x,
             struct tszspectrum * ptsz)
 {
 
-  *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*(pvectsz[ptsz->index_multipole_for_tau_profile]+0.5)
-               /pvectsz[ptsz->index_characteristic_multipole_for_tau_profile])
-               *sin(x*(pvectsz[ptsz->index_multipole_for_tau_profile]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_tau_profile]);
+  *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
+               /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile])
+               *sin(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
 }
 
 //HMF Tinker 2010
@@ -45281,6 +45283,7 @@ double integrand_redshift(double ln1pz, void *p){
   //volume element in units h^-3 Mpc^3
   //volume = dv/(dzdOmega)*(c/H)
   // Chi^2 dChi = dV/(dzdOmega)*(c/H) dz
+
   V->pvectsz[V->ptsz->index_volume] = pow(1.+z,2)
                                       *pow(V->pvecback[V->pba->index_bg_ang_distance]*V->pba->h,2)
                                       *_c_*1.e-5
@@ -45289,30 +45292,120 @@ double integrand_redshift(double ln1pz, void *p){
 
   V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2); // conformal distance squared in [Mpc/h]^2
 
+  V->pvectsz[V->ptsz->index_dgdz] = V->pvecback[V->pba->index_bg_D]*(1.-V->pvecback[V->pba->index_bg_f]); // d/dz(D/a)
+
+  V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = _c_/_Mpc_over_m_*_c_/_Mpc_over_m_*V->ptsz->chi_star*(1.+z)
+                                                  /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)*sqrt(V->pvectsz[V->ptsz->index_chi2])*(V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2])));
+
   V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
                                   *pow(_Mpc_over_m_,1)
                                   *pow(_c_,2)
                                   *V->pvecback[V->pba->index_bg_rho_crit]
                                   /pow(V->pba->h,2);
-
-  V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(V->pvecback[V->pba->index_bg_Omega_m]);
-
-
-
+  double Eh = V->pvecback[V->pba->index_bg_H]/V->ptsz->H0_in_class_units;
+  double omega = V->pvecback[V->pba->index_bg_Omega_m];//pow(Eh,2.);
+  V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
 
 
 
-  double result = integrate_over_m_at_z(V->pvecback,
-                                        V->pvectsz,
-                                        V->pba,
-                                        V->pnl,
-                                        V->ppm,
-                                        V->ptsz);
+  int index_md = (int) V->pvectsz[V->ptsz->index_md];
+  double result = 0.;
+
+  if ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens))
+  result = integrand_isw_lens_at_z(V->pvecback,
+                                  V->pvectsz,
+                                  V->pba,
+                                  V->ppm,
+                                  V->pnl,
+                                  V->ptsz);
+
+  else if ((V->ptsz->has_isw_tsz == _TRUE_) && (index_md == V->ptsz->index_md_isw_tsz)){
+
+  double delta_ell_isw = delta_ell_isw_at_ell_and_z(V->pvecback,
+                                                          V->pvectsz,
+                                                          V->pba,
+                                                          V->ppm,
+                                                          V->pnl,
+                                                          V->ptsz);
+  double delta_ell_y = integrate_over_m_at_z(V->pvecback,
+                                              V->pvectsz,
+                                              V->pba,
+                                              V->pnl,
+                                              V->ppm,
+                                              V->ptsz);
+
+  result = delta_ell_isw*delta_ell_y;
+
+
+  }
+  else if ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_auto)){
+
+  double delta_ell_isw = delta_ell_isw_at_ell_and_z(V->pvecback,
+                                                          V->pvectsz,
+                                                          V->pba,
+                                                          V->ppm,
+                                                          V->pnl,
+                                                          V->ptsz);
+
+  result = pow(delta_ell_isw,2.)*V->pvectsz[V->ptsz->index_chi2];
+
+   int index_l = (int)  V->pvectsz[V->ptsz->index_multipole];
+   double z = V->pvectsz[V->ptsz->index_z];
+   //identical to sqrt(pvectsz[index_chi2])
+   double d_A = V->pvecback[V->pba->index_bg_ang_distance]*V->pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+
+   V->pvectsz[V->ptsz->index_k_value_for_halo_bias] = (V->ptsz->ell[index_l]+0.5)/d_A; //units h/Mpc
+
+
+   double k = V->pvectsz[V->ptsz->index_k_value_for_halo_bias]; //in h/Mpc
+
+   double pk;
+   double * pk_ic = NULL;
+
+
+
+  //Input: wavenumber in 1/Mpc
+  //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+     class_call(nonlinear_pk_at_k_and_z(
+                                       V->pba,
+                                       V->ppm,
+                                       V->pnl,
+                                       pk_linear,
+                                       k*V->pba->h,
+                                       z,
+                                       V->pnl->index_pk_m,
+                                       &pk, // number *out_pk_l
+                                       pk_ic // array out_pk_ic_l[index_ic_ic]
+                                     ),
+                                     V->pnl->error_message,
+                                     V->pnl->error_message);
+
+
+   //now compute P(k) in units of h^-3 Mpc^3
+   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = pk*pow(V->pba->h,3.); //in units Mpc^3/h^3
+
+  result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+
+  }
+  else
+  result = integrate_over_m_at_z(V->pvecback,
+                                  V->pvectsz,
+                                  V->pba,
+                                  V->pnl,
+                                  V->ppm,
+                                  V->ptsz);
 
 
   // integrate w.r.t ln(1+z); dz =  (1+z)dln(1+z)
+  //volume element in units h^-3 Mpc^3
+  //volume = dv/(dzdOmega)*(c/H)
+  // Chi^2 dChi = dV/(dzdOmega)*(c/H) dz
+  // Chi^2 dChi = dV/(dzdOmega)*(c/H) *(1+z) dln(1+z)
+  // dChi = (c/H) *(1+z) dln(1+z)
+  // dChi = (c/H) dz
   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
   result = (1.+V->pvectsz[V->ptsz->index_z])*result/H_over_c_in_h_over_Mpc;
+  //result = (1.+V->pvectsz[V->ptsz->index_z])*result;
   return result;
 
 }
@@ -45350,7 +45443,29 @@ int integrate_over_redshift_at_each_ell(struct background * pba,
                                          integrand_redshift,
                                          params,show_neval);
 
+//   ///////
+// gsl_function F;
+// F.function = &integrand_redshift;
+// F.params = params;
+//
+// int n_subintervals_gsl = 30;
+//
+//
+// gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
+//
+// double result_gsl;
+// size_t neval;
+// gsl_integration_romberg(&F,log(1. + z_min), log(1. + z_max),epsabs,epsrel,&result_gsl,&neval,w);
+// gsl_integration_romberg_free(w);
+//
+// r = result_gsl;
+//
+//
+//   /////////
+
   Pvectsz[ptsz->index_integral] = r;
+  int index_l = (int)  Pvectsz[ptsz->index_multipole];
+  //printf("result=%.4e z_min = %.3e z_max=%.3e ell = %f\n",r,log(1. + z_min),log(1. + z_max),ptsz->ell[index_l]);
   return _SUCCESS_;
 }
 
@@ -45397,6 +45512,9 @@ double integrand_patterson_test(double logM, void *p){
 {
 
 
+
+
+
   double epsrel=ptsz->mass_epsrel;
   double epsabs=ptsz->mass_epsabs;
 
@@ -45426,7 +45544,17 @@ double integrand_patterson_test(double logM, void *p){
 
   double r; //store result of mass integral
 
+//   if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_isw_lens ){
+//
+//   double logM = 1.;
+//   r = integrand_patterson_test(logM, params);
+//
+//     pvectsz[ptsz->index_integral_over_m] = r;
+//
+// }
 
+
+   // else {
 
   //Patterson [Jens Chluba]
   if (ptsz->integration_method_mass==0){
@@ -45601,9 +45729,10 @@ pvectsz[ptsz->index_integral_over_m] = r*r;
 else
 pvectsz[ptsz->index_integral_over_m] = r;
 
-
+//}
 
   return pvectsz[ptsz->index_integral_over_m];
+
 }
 
 

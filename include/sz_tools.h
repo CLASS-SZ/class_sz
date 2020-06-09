@@ -10,6 +10,7 @@
 #define _M_sun_  1.989e30 /*solar mass in kg*/
 
 
+
 /**
  * Boilerplate for C++
  */
@@ -838,7 +839,7 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
                                   double * pvectsz,
                                   double * result) ;
 
-  int two_dim_ft_tau_profile(struct tszspectrum * ptsz,
+  int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
                               struct background * pba,
                               double * pvectsz,
                               double * result) ;
