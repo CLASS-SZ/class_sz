@@ -45760,6 +45760,7 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   ptsz->thetas   = (double *)malloc(n_data_guess*sizeof(double));
 
   char Filepath[_ARGUMENT_LENGTH_MAX_];
+  //printf("%s\n",ptsz->path_to_class);
   sprintf(Filepath,
           "%s%s%s",
           "cat ",

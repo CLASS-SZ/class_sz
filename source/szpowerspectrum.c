@@ -29,7 +29,7 @@ int szpowerspectrum_init(
    select_multipole_array(ptsz);
    show_preamble_messages(pba,pth,pnl,ppm,ptsz);
 
-   if (ptsz->experiment == 0 && ptsz->has_completeness_for_ps_SZ == 1)
+   if ((ptsz->experiment == 0 && ptsz->has_completeness_for_ps_SZ == 1) || (ptsz->experiment == 0 && ptsz->has_sz_counts  == 1))
       read_Planck_noise_map(ptsz);
 
    //obsolete:

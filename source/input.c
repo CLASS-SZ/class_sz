@@ -1982,6 +1982,7 @@ int input_read_parameters(
       }
       if ((strstr(string1,"SZ_counts") != NULL) ) {
         pcsz->has_sz_counts =_TRUE_;
+        ptsz->has_sz_counts =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
@@ -4177,6 +4178,7 @@ int input_default_params(
 
   //ptsz->has_tszspectrum = _FALSE_;
   pcsz->has_sz_counts = _FALSE_;
+  ptsz->has_sz_counts = _FALSE_;
   ptsz->has_isw_lens = _FALSE_;
   ptsz->has_isw_tsz = _FALSE_;
   ptsz->has_isw_auto = _FALSE_;

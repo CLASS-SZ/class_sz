@@ -64,6 +64,8 @@ struct tszspectrum {
 
   int index_md;
 
+  int has_sz_counts;
+
   int create_ref_trispectrum_for_cobaya;
 
 

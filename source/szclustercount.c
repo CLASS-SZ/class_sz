@@ -23,6 +23,8 @@ int szcount_init(struct background * pba,
 
   else
   {
+    if (pcsz->sz_verbose > 0)
+      printf("->Computing SZ cluster counts.\n");
     double * Pvecback;
     double * Pvectsz;
 
@@ -153,7 +155,8 @@ int compute_count_sz(struct background * pba,
   //clock_t end = clock();
   //double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
   //printf("time spent in allocating = %e\n",time_spent);
-
+  if (pcsz->sz_verbose > 0)
+    printf("->SZ_counts starting grid computation.\n");
   ///PARALLEL
   double * pvecsz;
   int abort;
@@ -168,6 +171,7 @@ int compute_count_sz(struct background * pba,
 shared(abort,completeness_2d,d_completeness_2d_dq,erfs,d_erfs_dq,pba,ppm,pnl,ptsz,pcsz)\
 private(tstart, tstop,pvecsz)
   {
+
 
 #ifdef _OPENMP
     tstart = omp_get_wtime();
@@ -593,7 +597,8 @@ private(tstart, tstop,pvecsz)
   }//end loop m
 
   //end bin in mass
-
+  if (pcsz->sz_verbose > 0)
+    printf("->SZ_counts computations done.\n");
 
   write_output_cluster_counts(pcsz);
 
@@ -684,6 +689,9 @@ int grid_C_2d(
               ){
   //int i;
 
+  if (pcsz->sz_verbose > 3)
+    printf("->SZ_counts grid_C_2d.\n");
+
   int l_array[3];
   double theta_array[3];
 
@@ -738,6 +746,7 @@ int grid_C_2d(
 
       double Eh = pvecback[pba->index_bg_H]/H0_class_units;
       double d_A = pvecback[pba->index_bg_ang_distance]*pba->h;
+
 
       for (index_m=0;index_m<pcsz->nsteps_m;index_m++){
 
@@ -896,7 +905,8 @@ int grid_C_2d(
   else {
     double fac =1./sqrt(2.*_PI_*pow(pcsz->sigmaM,2));
 
-
+    if (pcsz->sz_verbose > 3)
+      printf("->SZ_counts grid_C_2d debug 1.\n");
     double fsky = 0.;
     int index_patches;
     int index2,index1;
@@ -938,7 +948,8 @@ int grid_C_2d(
       } //end loop y
     } //end loop thetas
 
-
+    if (pcsz->sz_verbose > 3)
+      printf("->SZ_counts grid_C_2d debug 2.\n");
     for (index_z=0;index_z<pcsz->nsteps_z;index_z++){
 
       double zp = pcsz->steps_z[index_z];
@@ -961,6 +972,9 @@ int grid_C_2d(
       double Eh = pvecback[pba->index_bg_H]/H0_class_units;
       double d_A = pvecback[pba->index_bg_ang_distance]*pba->h;
 
+      if (pcsz->sz_verbose > 3)
+        printf("->SZ_counts grid_C_2d debug 3, z = %.4e.\n",zp);
+
       for (index_m=0;index_m<pcsz->nsteps_m;index_m++){
 
         //compute_theta_and_y_at_z_and_m
@@ -980,6 +994,9 @@ int grid_C_2d(
 
 
         find_theta_bin(ptsz,thp,l_array,theta_array);
+
+        if (pcsz->sz_verbose > 3)
+          printf("->SZ_counts grid_C_2d debug 4, z = %.4e.\n",zp);
         int l1 = l_array[1];
         int l2 = l_array[2];
 
@@ -994,6 +1011,10 @@ int grid_C_2d(
         double d_int_comp_dq =0.;
         double lny=pcsz->lnymin;
         int k;
+
+        if (pcsz->sz_verbose > 3)
+          printf("->SZ_counts grid_C_2d debug 5, z = %.4e.\n",zp);
+
         for (k=0;k<pcsz->Ny-1;k++){
           double y0=exp(lny);
           y=exp(lny+pcsz->dlny);
@@ -1022,6 +1043,7 @@ int grid_C_2d(
         d_completeness_2d_dq[index_m][index_z][index_y] =d_int_comp_dq;
 
       }//end m loop
+
     }//end z loop
   }// end else sigmaM != 0
 
