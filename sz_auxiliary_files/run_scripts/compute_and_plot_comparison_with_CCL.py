@@ -1,5 +1,4 @@
 # <!> RUN WITH:  $ python compute_and_plot_comparison_with_CCL.py
-
 # <!> SET THIS TO YOUR CONFIG <!>:
 path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
 FIG_DIR = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/run_scripts/figures'
@@ -242,3 +241,5 @@ def main():
 
 if __name__=="__main__":
 	main()
+
+# Boris Bolliet and David Alonso
