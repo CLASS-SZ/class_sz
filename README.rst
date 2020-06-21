@@ -68,7 +68,7 @@ Clean up and Compile
 The code **class_sz** runs in parallel, so you need a **gcc** compiler that is not **clang**.
 
 The previous commands compile both the executable and the python wrapper.
-If you do not want the **classy** python module do ‘$ make class’.
+If you do not want to compile the **classy** python module do ‘$ make class’.
 
 For the python module, you need the prerequisites such as **numpy**, **scipy**
 and **Cython** installed on your computer.
@@ -123,3 +123,8 @@ Support
 -------
 
 To get support on the SZ module, feel free to contact me via slack/email (boris.bolliet@gmail.com), or open an issue on the GitHub page.
+
+Acknowledgments
+-------
+
+Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, David Alonso for help, suggestions and/or running tests with **class_sz**.
