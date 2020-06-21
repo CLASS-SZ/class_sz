@@ -1,4 +1,4 @@
-# <!> RUN WITH:  $ python compute_and_plot_comparison_w_CCL.py
+# <!> RUN WITH:  $ python compute_and_plot_comparison_with_CCL.py
 
 # <!> SET THIS TO YOUR CONFIG <!>:
 path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
@@ -37,23 +37,16 @@ def run(args):
     p_dict['mass function'] = 'M500'
     p_dict['ndimSZ'] = 100
     p_dict['n_arraySZ'] = 100
-    param_name = 'redshift_epsabs'
-    p_dict[param_name] = 1.e-30
-    param_name = 'mass_epsabs'
-    p_dict[param_name] = 1.e-30
-    param_name = 'M1SZ'
-    p_dict[param_name] = 1.e11
-    param_name = 'M2SZ'
-    p_dict[param_name] = 1.e16
-    param_name = 'sz_verbose'
-    p_dict[param_name]  = 3
-    param_name = 'm_ncdm'
-    p_dict[param_name]  = 0.
-    param_name = 'HMF_prescription_NCDM'
-    p_dict[param_name]  = 'CDM'
-    param_name = 'B'
-    p_dict[param_name]  = 1.41
+    p_dict['redshift_epsabs'] = 1.e-30
+    p_dict['mass_epsabs'] = 1.e-30
+    p_dict['M1SZ'] = 1.e11
+    p_dict['M2SZ'] = 1.e16
+    p_dict['sz_verbose']  = 3
+    p_dict['m_ncdm']  = 0.
+    p_dict['HMF_prescription_NCDM']  = 'CDM'
+    p_dict['B']  = 1.41
     p_dict['pressure profile']  = 'Custom. GNFW'
+    # note: currently p_dict['pressure profile']  = 'B12' works with HMF = T08 or T10, not yet with M500 (T08@M500c)
     p_dict['P0GNFW'] = 6.41
     p_dict['c500'] = 1.81
     p_dict['gammaGNFW'] = 0.31
@@ -65,10 +58,12 @@ def run(args):
     p_dict['ell_min_mock'] = 2.
     p_dict['sz_verbose'] = 1
 
+
+
     p_dict['h'] = 0.7
 
-    M1SZ = float(p_dict['M1SZ'])
-    M2SZ = float(p_dict['M2SZ'])
+    # M1SZ = float(p_dict['M1SZ'])
+    # M2SZ = float(p_dict['M2SZ'])
 
 
     #create a temporary ini file with parameter value
@@ -97,7 +92,7 @@ def run(args):
     y_axis_class_sz = dndlnM[:,0]
 
 
-
+    # CCL calculation
     cosmo = ccl.Cosmology(
         Omega_b=float(p_dict['Omega_b']),
         Omega_c=float(p_dict['Omega_cdm']),
@@ -110,33 +105,24 @@ def run(args):
         m_nu_type='normal',
         Neff=3.046,
         Omega_k=0)
+
     mass_def = ccl.halos.MassDef(500, 'critical')
     hmf = ccl.halos.MassFuncTinker08(cosmo, mass_def=mass_def)
-    #mass_def = ccl.halos.MassDef(200, 'matter')
-    # hmf = ccl.halos.MassFuncTinker10(cosmo, mass_def=mass_def)
+    dndlnM_ccl = np.array([hmf.get_mass_function(cosmo,
+                                                 dndlnM_masses/float(p_dict['h']),
+                                                 1/(1+zz))
+                           for zz in dndlnM_redshifts])
+
+    dndlnM_ccl /= float(p_dict['h'])**3*np.log(10.)
+
     if "tSZ_1h" in p_dict['output']:
         hbf = ccl.halos.HaloBiasTinker10(cosmo, mass_def=mass_def)
         hmc = ccl.halos.HMCalculator(cosmo, hmf, hbf, mass_def)
         prf = ccl.halos.HaloProfilePressureArnaud(mass_bias=1./float(p_dict['B']))
         pk = ccl.halos.halomod_Pk2D(cosmo, hmc, prf, get_2h=False)
         tr_y = ccl.tSZTracer(cosmo, z_max=4.)
-
-
-    dndlnM_ccl = []
-    for zz in dndlnM_redshifts:
-        dndlnM_ccl_zz = []
-        for mm in dndlnM_masses:
-            dndlnM_ccl_p = hmf.get_mass_function(cosmo, mm/float(p_dict['h']), 1/(1+zz))*float(p_dict['h'])**-3.*(1./np.log(10.))
-            #dndlnM_ccl_p = hmf.get_mass_function(cosmo, mm/float(p_dict['h']), 1/(1+zz))*float(p_dict['h'])**-3.*(1./np.log(10.))
-            dndlnM_ccl_zz.append(dndlnM_ccl_p)
-        dndlnM_ccl_zz = np.asarray(dndlnM_ccl_zz)
-        dndlnM_ccl.append(dndlnM_ccl_zz)
-    if "tSZ_1h" in p_dict['output']:
-        c_ell_yy_ccl = []
-        for ell in multipoles:
-            c_ell_yy_ccl.append(ccl.angular_cl(cosmo, tr_y, tr_y, ell, p_of_k_a=pk)*(ell)*(ell+1.)/2./np.pi*1e12)
-        c_ell_yy_ccl =  np.asarray(c_ell_yy_ccl)
-
+        c_ell_yy_ccl = ccl.angular_cl(cosmo, tr_y, tr_y, multipoles, p_of_k_a=pk)
+        c_ell_yy_ccl *= multipoles*(multipoles+1.)/2./np.pi*1e12
 
     #prepare the figure
     label_size = 12

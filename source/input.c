@@ -4066,8 +4066,6 @@ int input_default_params(
   ptsz->M2SZ_dndlnM = 5.e16;
   ptsz->N_mass_dndlnM = 200;
 
-  //Array size
-  ptsz->n_arraySZ = 100;//number of z in the sigma Interpolation
 
   ptsz->n_arraySZ_for_integral = 30; //used in redshift integral
 
@@ -4122,6 +4120,10 @@ int input_default_params(
   ptsz->temperature_mass_relation=0;
 
   //For the computation of sigma2
+
+  //Array size
+  ptsz->n_arraySZ = 100;//number of z in the sigma Interpolation
+
   ptsz->ndimSZ = 100;
   ptsz->logR1SZ = -5.684; // 0.0034Mpc/h, 1.8e4  solar mass
   ptsz->logR2SZ = 4.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass

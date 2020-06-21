@@ -46126,8 +46126,8 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct tszspectrum * ptsz){
 
   //Array of z
-  double z_min = ptsz->z1SZ;
-  double z_max = ptsz->z2SZ;
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   int index_z;
 
   double tstart, tstop;
@@ -46316,7 +46316,7 @@ int tabulate_dndlnM(struct background * pba,
 
   //Array of z
   double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
-  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);;
+  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   int index_z;
 
   double tstart, tstop;
