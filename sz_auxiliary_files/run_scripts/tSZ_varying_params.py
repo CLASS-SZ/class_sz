@@ -30,7 +30,7 @@ def run(args):
     os.chdir(path_to_class)
     #collect arguments
     param_name = args.param_name
-    #print(param_name)
+    print(param_name)
 
     if (param_name == 'sigma8'):
         label_key = r'$\sigma_8$'
@@ -46,6 +46,8 @@ def run(args):
         label_key = r'$M_\mathrm{min}$'
     elif (param_name == 'm_ncdm'):
         label_key = r'$\Sigma m_\mathrm{\nu}$'
+    elif (param_name == 'signal-to-noise cut-off for ps completeness analysis'):
+        label_key = 'SNR cut'
     else:
         label_key = 'val'
 
@@ -95,9 +97,9 @@ def run(args):
     #print(p_dict)
     #set correct Output
     p_dict['output'] = 'tSZ_1h'
-    p_dict['mass function'] = 'T10'
+    p_dict['mass function'] = 'M500'
     p_dict['create_ref_trispectrum_for_cobaya'] = 'NO'
-    p_dict['pressure profile'] = 'B12'
+    p_dict['pressure profile'] = 'A10'
     p_dict['background_verbose'] = 2
     p_dict['thermodynamics_verbose'] = 2
     p_dict['sz_verbose'] = 2
@@ -107,6 +109,7 @@ def run(args):
     p_dict['pressure_profile_epsrel'] = 1.e-2
     p_dict['redshift_epsabs'] = 1.e-30
     p_dict['mass_epsabs'] = 1.e-30
+    p_dict['component of tSZ power spectrum'] = 'diffuse'
     if(args.output):
         print(args.output)
         p_dict['output'] = args.output
