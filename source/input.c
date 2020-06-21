@@ -1795,6 +1795,7 @@ int input_read_parameters(
           }
         }
 
+      class_read_double("signal-to-noise cut-off for ps completeness analysis",ptsz->sn_cutoff);
 
       //Integration scheme for the mass integral:
       class_call(parser_read_string(pfc,"integration method (mass)",&string1,&flag1,errmsg),
@@ -4054,6 +4055,7 @@ int input_default_params(
   //default: total power spectrum (no completeness cut)
   ptsz->which_ps_sz = 0; //0: total, 1: resolved, 2: unresolved
 
+  ptsz->sn_cutoff;
   //Redshift limits for the integration
   ptsz->z1SZ = 1.e-5;
   ptsz->z2SZ = 4.;

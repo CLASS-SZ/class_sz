@@ -1226,7 +1226,7 @@ int evaluate_completeness(double * pvecback,
     double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/3.e14* (100./H0),alpha);
     y500_for_mp_at_zp *=   pow(Eh,beta) *pow(100.*d_A/(500.0*H0),-2.);
     double yp = y500_for_mp_at_zp;
-    double sn_cutoff = 6.;
+    double sn_cutoff = ptsz->sn_cutoff;
     double y;
     int l1,l2;
     double th1,th2;

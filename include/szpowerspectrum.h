@@ -35,6 +35,8 @@
 
 struct tszspectrum {
 
+  double sn_cutoff;
+
   double f_sky;
   double Omega_survey;
 
