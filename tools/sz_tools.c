@@ -45027,7 +45027,6 @@ int plc_gnfw(double * plc_gnfw_x,
 
       *plc_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)
                     *pow(x,2)
-                    //*sin(x*(ptsz->ell[index_l]+0.5)/pvectsz[ptsz->index_l200c])
                     /(x*(pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l200c]);
     if (_mean_y_)
       *plc_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)*pow(x,2);

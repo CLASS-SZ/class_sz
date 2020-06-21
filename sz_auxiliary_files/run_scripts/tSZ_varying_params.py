@@ -100,8 +100,13 @@ def run(args):
     p_dict['pressure profile'] = 'B12'
     p_dict['background_verbose'] = 2
     p_dict['thermodynamics_verbose'] = 2
+    p_dict['sz_verbose'] = 2
     p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
     p_dict['write sz results to files'] = 'yes'
+    p_dict['pressure_profile_epsabs'] = 1.e-9
+    p_dict['pressure_profile_epsrel'] = 1.e-2
+    p_dict['redshift_epsabs'] = 1.e-30
+    p_dict['mass_epsabs'] = 1.e-30
     if(args.output):
         print(args.output)
         p_dict['output'] = args.output
