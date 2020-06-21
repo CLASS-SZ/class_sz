@@ -89,13 +89,13 @@ One may need to edit the **Makefile** adding the include path for gsl libraries,
 
     INCLUDES = -I../include -I/usr/local/include/ -I/path_to_gsl/gsl-2.6/include/
 
-    class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS) $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm -L/path_to_gsl/gsl-2.6/lib/ -lgsl -lgslcblas
+    class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS) $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm **-L/path_to_gsl/gsl-2.6/lib/ -lgsl -lgslcblas**
 
 For the python wrapper, one also may need to add the absolute path to gsl libraries, e.g.,:
 
 in **class_sz/python/setup.py**:
 
-    classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")], include_dirs=[nm.get_include(), include_folder], libraries=liblist,library_dirs=[root_folder, GCCPATH],extra_link_args=['-lgomp','-L/path_to_gsl/gsl-2.6/lib/','-lgsl','-lgslcblas'])
+    classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")], include_dirs=[nm.get_include(), include_folder], libraries=liblist,library_dirs=[root_folder, GCCPATH],extra_link_args=['-lgomp',**'-L/path_to_gsl/gsl-2.6/lib/','-lgsl','-lgslcblas'**])
 
 
 
