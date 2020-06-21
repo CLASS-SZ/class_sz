@@ -1,4 +1,11 @@
-#! python3
+# <!> RUN WITH:  $ python compute_and_plot_comparison_w_CCL.py
+
+# <!> SET THIS TO YOUR CONFIG <!>:
+path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
+FIG_DIR = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/run_scripts/figures'
+
+
+
 import argparse
 import numpy as np
 import os
@@ -6,8 +13,8 @@ import subprocess
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
-FIG_DIR = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/run_scripts/figures'
+
+
 import pyccl as ccl
 
 
@@ -25,12 +32,11 @@ def run(args):
 
 
 
-    param_name = 'output'
-    p_dict[param_name] = 'tSZ_1h,dndlnM'
 
-    f_sky = 0.5
-    param_name = 'f_sky'
-    p_dict[param_name] = f_sky
+    p_dict['output'] = 'dndlnM,tSZ_1h'
+    p_dict['mass function'] = 'M500'
+    p_dict['ndimSZ'] = 100
+    p_dict['n_arraySZ'] = 100
     param_name = 'redshift_epsabs'
     p_dict[param_name] = 1.e-30
     param_name = 'mass_epsabs'
@@ -44,11 +50,10 @@ def run(args):
     param_name = 'm_ncdm'
     p_dict[param_name]  = 0.
     param_name = 'HMF_prescription_NCDM'
-    p_dict[param_name]  = 'No-pres'
+    p_dict[param_name]  = 'CDM'
     param_name = 'B'
     p_dict[param_name]  = 1.41
-    param_name = 'pressure profile'
-    p_dict[param_name]  = 'Custom. GNFW'
+    p_dict['pressure profile']  = 'Custom. GNFW'
     p_dict['P0GNFW'] = 6.41
     p_dict['c500'] = 1.81
     p_dict['gammaGNFW'] = 0.31
@@ -58,6 +63,9 @@ def run(args):
     p_dict['pressure_profile_epsrel'] = 1.e-2
     p_dict['ell_max_mock'] = 15000.
     p_dict['ell_min_mock'] = 2.
+    p_dict['sz_verbose'] = 1
+
+    p_dict['h'] = 0.7
 
     M1SZ = float(p_dict['M1SZ'])
     M2SZ = float(p_dict['M2SZ'])
@@ -77,10 +85,14 @@ def run(args):
     dndlnM_masses = C
 
     dndlnM = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum_dndlnM.txt')
+
+
     cl_1h = []
-    R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
-    multipoles = R[:,0]
-    cl_1h = R[:,1]
+    if "tSZ_1h" in p_dict['output']:
+        R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
+        multipoles = R[:,0]
+        cl_1h = R[:,1]
+
     x_axis_class_sz = dndlnM_masses
     y_axis_class_sz = dndlnM[:,0]
 
@@ -100,11 +112,14 @@ def run(args):
         Omega_k=0)
     mass_def = ccl.halos.MassDef(500, 'critical')
     hmf = ccl.halos.MassFuncTinker08(cosmo, mass_def=mass_def)
-    hbf = ccl.halos.HaloBiasTinker10(cosmo, mass_def=mass_def)
-    hmc = ccl.halos.HMCalculator(cosmo, hmf, hbf, mass_def)
-    prf = ccl.halos.HaloProfilePressureArnaud(mass_bias=1./float(p_dict['B']))
-    pk = ccl.halos.halomod_Pk2D(cosmo, hmc, prf, get_2h=False)
-    tr_y = ccl.tSZTracer(cosmo, z_max=4.)
+    #mass_def = ccl.halos.MassDef(200, 'matter')
+    # hmf = ccl.halos.MassFuncTinker10(cosmo, mass_def=mass_def)
+    if "tSZ_1h" in p_dict['output']:
+        hbf = ccl.halos.HaloBiasTinker10(cosmo, mass_def=mass_def)
+        hmc = ccl.halos.HMCalculator(cosmo, hmf, hbf, mass_def)
+        prf = ccl.halos.HaloProfilePressureArnaud(mass_bias=1./float(p_dict['B']))
+        pk = ccl.halos.halomod_Pk2D(cosmo, hmc, prf, get_2h=False)
+        tr_y = ccl.tSZTracer(cosmo, z_max=4.)
 
 
     dndlnM_ccl = []
@@ -112,14 +127,15 @@ def run(args):
         dndlnM_ccl_zz = []
         for mm in dndlnM_masses:
             dndlnM_ccl_p = hmf.get_mass_function(cosmo, mm/float(p_dict['h']), 1/(1+zz))*float(p_dict['h'])**-3.*(1./np.log(10.))
+            #dndlnM_ccl_p = hmf.get_mass_function(cosmo, mm/float(p_dict['h']), 1/(1+zz))*float(p_dict['h'])**-3.*(1./np.log(10.))
             dndlnM_ccl_zz.append(dndlnM_ccl_p)
         dndlnM_ccl_zz = np.asarray(dndlnM_ccl_zz)
         dndlnM_ccl.append(dndlnM_ccl_zz)
-
-    c_ell_yy_ccl = []
-    for ell in multipoles:
-        c_ell_yy_ccl.append(ccl.angular_cl(cosmo, tr_y, tr_y, ell, p_of_k_a=pk)*(ell)*(ell+1.)/2./np.pi*1e12)
-    c_ell_yy_ccl =  np.asarray(c_ell_yy_ccl)
+    if "tSZ_1h" in p_dict['output']:
+        c_ell_yy_ccl = []
+        for ell in multipoles:
+            c_ell_yy_ccl.append(ccl.angular_cl(cosmo, tr_y, tr_y, ell, p_of_k_a=pk)*(ell)*(ell+1.)/2./np.pi*1e12)
+        c_ell_yy_ccl =  np.asarray(c_ell_yy_ccl)
 
 
     #prepare the figure
@@ -133,7 +149,7 @@ def run(args):
     ax.tick_params(axis = 'y',which='both',length=5,direction='in', pad=5)
     ax.xaxis.set_ticks_position('both')
     ax.yaxis.set_ticks_position('both')
-    plt.setp(ax.get_yticklabels(), rotation='vertical', fontsize=label_size)
+    plt.setp(ax.get_yticklabels(), fontsize=label_size)
     plt.setp(ax.get_xticklabels(), fontsize=label_size)
     plt.grid( b=True, which="both", alpha=0.3, linestyle='--')
 
@@ -141,7 +157,7 @@ def run(args):
     ax.set_yscale('linear')
 
     ax.set_xlabel(r'$M\,\, [\mathrm{M_\odot}/h]$',size=title_size)
-    ax.set_ylabel(r'$\Delta dndlnM/dndlnM$',size=title_size)
+    ax.set_ylabel(r'$\Delta dndlnM/dndlnM$' + '  [%]',size=title_size)
 
     x_axis_class_sz = dndlnM_masses
     color=iter(cm.viridis(np.linspace(1,0,len(dndlnM_redshifts))))
@@ -151,77 +167,83 @@ def run(args):
         y_axis_ccl = dndlnM_ccl[i]
         #ax.plot(x_axis_class_sz,y_axis_class_sz,color='k',ls='-',alpha = 1.,label = "class_sz")
         label = "z=%.2e"%dndlnM_redshifts[i]
-        ax.plot(x_axis_class_sz,y_axis_ccl/y_axis_class_sz-1.,color=col,ls='-',alpha = 1.,label = label)
+        ax.plot(x_axis_class_sz,100.*(y_axis_ccl/y_axis_class_sz-1.),color=col,ls='-',alpha = 1.,label = label)
 
-    ax1.legend(loc=2)
+    ax1.legend(loc=3,ncol=2)
     plt.draw()
-    plt.ylim(-2.,2.)
+    plt.xlim(1e11,1e16)
+    plt.ylim(-20.,2.)
 
     fig.tight_layout()
     FIG_NAME = '/dndlnM'
     fig.savefig(FIG_DIR + FIG_NAME +".pdf")
-    plt.show(block=False)
+    if "tSZ_1h" in p_dict['output']:
+        plt.show(block=False)
+    else:
+        plt.show(block=True)
+
+    if "tSZ_1h" in p_dict['output']:
 
 
-    #cl^yy
-    fig, (ax1,ax2) = plt.subplots(2,1,figsize=(7,10))
-    ax = ax1
-    ax.tick_params(axis = 'x',which='both',length=5,direction='in', pad=10)
-    ax.tick_params(axis = 'y',which='both',length=5,direction='in', pad=5)
-    ax.xaxis.set_ticks_position('both')
-    ax.yaxis.set_ticks_position('both')
-    plt.setp(ax.get_yticklabels(), rotation='vertical', fontsize=label_size)
-    plt.setp(ax.get_xticklabels(), fontsize=label_size)
-    ax.grid( b=True, which="both", alpha=0.3, linestyle='--')
+        #cl^yy
+        fig, (ax1,ax2) = plt.subplots(2,1,figsize=(7,10))
+        ax = ax1
+        ax.tick_params(axis = 'x',which='both',length=5,direction='in', pad=10)
+        ax.tick_params(axis = 'y',which='both',length=5,direction='in', pad=5)
+        ax.xaxis.set_ticks_position('both')
+        ax.yaxis.set_ticks_position('both')
+        plt.setp(ax.get_yticklabels(), rotation='vertical', fontsize=label_size)
+        plt.setp(ax.get_xticklabels(), fontsize=label_size)
+        ax.grid( b=True, which="both", alpha=0.3, linestyle='--')
 
-    ax.set_xscale('log')
-    ax.set_yscale('log')
+        ax.set_xscale('log')
+        ax.set_yscale('log')
 
-    ax.set_xlabel(r'$\ell$',size=title_size)
-    ax.set_ylabel(r'$10^{12}\ell(\ell+1)C_\ell^{yy}/2\pi$',size=title_size)
+        ax.set_xlabel(r'$\ell$',size=title_size)
+        ax.set_ylabel(r'$10^{12}\ell(\ell+1)C_\ell^{yy}/2\pi$',size=title_size)
 
-    x_axis_class_sz = multipoles
-    color='k'
+        x_axis_class_sz = multipoles
+        color='k'
 
-    col = color
-    y_axis_class_sz = cl_1h
-    y_axis_ccl = c_ell_yy_ccl
+        col = color
+        y_axis_class_sz = cl_1h
+        y_axis_ccl = c_ell_yy_ccl
 
-    ax.plot(x_axis_class_sz,y_axis_class_sz,c='k',ls='-',alpha = 1.,label = 'class_sz')
-    ax.plot(x_axis_class_sz,y_axis_ccl,c='r',ls='-',alpha = 1,label='ccl')
+        ax.plot(x_axis_class_sz,y_axis_class_sz,c='k',ls='-',alpha = 1.,label = 'class_sz')
+        ax.plot(x_axis_class_sz,y_axis_ccl,c='r',ls='--',alpha = 1,label='ccl')
 
-    ax1.legend(loc=2)
-    plt.draw()
+        ax1.legend(loc=2)
+        plt.draw()
 
-    ax = ax2
-    ax.tick_params(axis = 'x',which='both',length=5,direction='in', pad=10)
-    ax.tick_params(axis = 'y',which='both',length=5,direction='in', pad=5)
-    ax.xaxis.set_ticks_position('both')
-    ax.yaxis.set_ticks_position('both')
-    plt.setp(ax.get_yticklabels(), rotation='vertical', fontsize=label_size)
-    plt.setp(ax.get_xticklabels(), fontsize=label_size)
-    ax.grid( b=True, which="both", alpha=0.3, linestyle='--')
+        ax = ax2
+        ax.tick_params(axis = 'x',which='both',length=5,direction='in', pad=10)
+        ax.tick_params(axis = 'y',which='both',length=5,direction='in', pad=5)
+        ax.xaxis.set_ticks_position('both')
+        ax.yaxis.set_ticks_position('both')
+        plt.setp(ax.get_yticklabels(), rotation='vertical', fontsize=label_size)
+        plt.setp(ax.get_xticklabels(), fontsize=label_size)
+        ax.grid( b=True, which="both", alpha=0.3, linestyle='--')
 
-    ax.set_xscale('log')
-    ax.set_yscale('linear')
+        ax.set_xscale('log')
+        ax.set_yscale('linear')
 
-    ax.set_xlabel(r'$\ell$',size=title_size)
-    ax.set_ylabel(r'$C_\ell^{yy,\mathrm{ccl}}/C_\ell^{yy,\mathrm{class\_sz}}-1$'+'   [%]',size=title_size)
+        ax.set_xlabel(r'$\ell$',size=title_size)
+        ax.set_ylabel(r'$C_\ell^{yy,\mathrm{ccl}}/C_\ell^{yy,\mathrm{class\_sz}}-1$'+'   [%]',size=title_size)
 
-    x_axis_class_sz = multipoles
-    color='k'
-    col = color
-    y_axis_class_sz = cl_1h
-    y_axis_ccl = c_ell_yy_ccl
-    ax.plot(x_axis_class_sz,100.*(y_axis_ccl-y_axis_class_sz)/y_axis_class_sz,c='r',ls='-',alpha = 1)
+        x_axis_class_sz = multipoles
+        color='k'
+        col = color
+        y_axis_class_sz = cl_1h
+        y_axis_ccl = c_ell_yy_ccl
+        ax.plot(x_axis_class_sz,100.*(y_axis_ccl-y_axis_class_sz)/y_axis_class_sz,c='r',ls='-',alpha = 1)
 
-    ax1.legend(loc=2)
-    plt.draw()
+        ax1.legend(loc=2)
+        plt.draw()
 
-    fig.tight_layout()
-    FIG_NAME = '/cl_1h'
-    fig.savefig(FIG_DIR + FIG_NAME +".pdf")
-    plt.show(block=True)
+        fig.tight_layout()
+        FIG_NAME = '/cl_1h'
+        fig.savefig(FIG_DIR + FIG_NAME +".pdf")
+        plt.show(block=True)
 
 
 

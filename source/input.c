@@ -4064,10 +4064,10 @@ int input_default_params(
 
   ptsz->M1SZ_dndlnM = 1.e11;
   ptsz->M2SZ_dndlnM = 5.e16;
-  ptsz->N_mass_dndlnM = 100;
+  ptsz->N_mass_dndlnM = 200;
 
   //Array size
-  ptsz->n_arraySZ = 30;//number of z in the sigma Interpolation
+  ptsz->n_arraySZ = 100;//number of z in the sigma Interpolation
 
   ptsz->n_arraySZ_for_integral = 30; //used in redshift integral
 
@@ -4075,8 +4075,8 @@ int input_default_params(
   ptsz->M1SZ = 5.e11;
   ptsz->M2SZ = 5.e15;
 
-  ptsz->n_z_dndlnM = 30;
-  ptsz->n_m_dndlnM = 30;
+  ptsz->n_z_dndlnM = 500;
+  ptsz->n_m_dndlnM = 500;
 
   //Set pressure profile to P13
   ptsz->pressure_profile=0;

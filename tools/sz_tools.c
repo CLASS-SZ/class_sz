@@ -44952,6 +44952,8 @@ int MF_T08_m500(
   free(b0);
   free(c0);
 
+  //sigma = 1.;
+
   *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
   //*result = 0.5*(Ap*(pow(1.0/b,-a)+1.)*exp(-c/pow(1.0,2.)));
 
@@ -45518,7 +45520,14 @@ double integrand_patterson_test(double logM, void *p){
                              struct tszspectrum * ptsz)
 {
 
-
+// if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_dndlnM)
+//   return integrand_at_m_and_z(log(1e16),
+//                               pvecback,
+//                               pvectsz,
+//                               pba,
+//                               ppm,
+//                               pnl,
+//                               ptsz);
 
 
 
@@ -46306,8 +46315,8 @@ int tabulate_dndlnM(struct background * pba,
                     struct tszspectrum * ptsz){
 
   //Array of z
-  double z_min = ptsz->z1SZ_dndlnM;
-  double z_max = ptsz->z2SZ_dndlnM;
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);;
   int index_z;
 
   double tstart, tstop;
@@ -46382,12 +46391,13 @@ num_threads(number_of_threads)
   class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
 
 #pragma omp for schedule (dynamic)
-  for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
-  {
+for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++)
+{
+
 #pragma omp flush(abort)
 
-    for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++)
-    {
+for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
+{
       ptsz->array_z_dndlnM[index_z] =
                                       log(1.+z_min)
                                       +index_z*(log(1.+z_max)-log(1.+z_min))
@@ -46399,7 +46409,7 @@ num_threads(number_of_threads)
                                     /(ptsz->n_m_dndlnM-1.); //log(R)
 
       //background quantities @ z:
-      double z =   ptsz->array_z_dndlnM[index_z];
+      double z =   exp(ptsz->array_z_dndlnM[index_z])-1.;
       double logM =   ptsz->array_m_dndlnM[index_M];
       double tau;
       int first_index_back = 0;
@@ -46434,7 +46444,7 @@ num_threads(number_of_threads)
       evaluate_HMF(logM,pvecback,pvectsz,pba,pnl,ptsz);
 
 
-      *dndlnM_var = pvectsz[ptsz->index_hmf];
+      *dndlnM_var = pvectsz[ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
 
 
 
@@ -46446,7 +46456,7 @@ num_threads(number_of_threads)
 #ifdef _OPENMP
   tstop = omp_get_wtime();
   if (ptsz->sz_verbose > 0)
-    printf("In %s: time spent in parallel region (loop over M's) = %e s for thread %d\n",
+    printf("In %s: time spent in parallel region (loop over z's) = %e s for thread %d\n",
            __func__,tstop-tstart,omp_get_thread_num());
 #endif
 
@@ -46514,12 +46524,12 @@ return _SUCCESS_;
 double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
-  return exp(pwl_interp_2d(ptsz->n_z_dndlnM,
-                    ptsz->n_m_dndlnM,
-                    ptsz->array_z_dndlnM,
-                    ptsz->array_m_dndlnM,
-                    ptsz->array_dndlnM_at_z_and_M,
-                    1,
-                    &z,
-                    &m));
+ return exp(pwl_interp_2d(ptsz->n_z_dndlnM,
+                          ptsz->n_m_dndlnM,
+                          ptsz->array_z_dndlnM,
+                          ptsz->array_m_dndlnM,
+                          ptsz->array_dndlnM_at_z_and_M,
+                          1,
+                          &z,
+                          &m));
 }

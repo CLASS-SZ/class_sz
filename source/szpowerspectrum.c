@@ -619,7 +619,13 @@ double integrand_at_m_and_z(double logM,
 
 
    evaluate_HMF(logM,pvecback,pvectsz,pba,pnl,ptsz);
-
+   // double z_asked = pvectsz[ptsz->index_z];
+   // double m_asked = exp(logM);
+   // // double calc_dn = get_dndlnM_at_z_and_M(z_asked,m_asked,ptsz);
+   // // printf("z = %.2e M = %.4e \t eHMF = %.4e \t get_dn = %.4e\n",pvectsz[ptsz->index_z],m_asked,pvectsz[ptsz->index_hmf],
+   // // calc_dn );
+   //
+   // pvectsz[ptsz->index_hmf] = get_dndlnM_at_z_and_M(z_asked,m_asked,ptsz);
 
    evaluate_completeness(pvecback,pvectsz,pba,ptsz);
    int index_l = (int) pvectsz[ptsz->index_multipole];
@@ -1069,7 +1075,7 @@ int evaluate_pressure_profile(double * pvecback,
   else {
       //printf("ell pp=%e\n",result);
 
-      lnx_asked = log(pvectsz[ptsz->index_multipole_for_pressure_profile]/pvectsz[ptsz->index_l500]);
+      lnx_asked = log((pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500]);
 
       if(lnx_asked<ptsz->PP_lnx[0] || _mean_y_)
          result = ptsz->PP_lnI[0];
@@ -2988,9 +2994,6 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
 
    ptsz->index_integrand_id_dndlnM_first  = 0;
    ptsz->index_integrand_id_dndlnM_last = ptsz->index_integrand_id_dndlnM_first + ptsz->N_redshift_dndlnM*ptsz->N_mass_dndlnM - 1;
-   printf("ptsz->index_integrand_id_dndlnM_last = %d\n",ptsz->index_integrand_id_dndlnM_last );
-   printf("ptsz->index_integrand_id_dndlnM_first = %d\n",ptsz->index_integrand_id_dndlnM_first );
-   printf("ptsz->N_redshift_dndlnM*ptsz->N_mass_dndlnM = %d\n",ptsz->N_redshift_dndlnM*ptsz->N_mass_dndlnM );
    ptsz->index_integrand_id_hmf = ptsz->index_integrand_id_dndlnM_last + 1;
    ptsz->index_integrand_id_mean_y = ptsz->index_integrand_id_hmf + 1;
    ptsz->index_integrand_id_sz_ps_first = ptsz->index_integrand_id_mean_y + 1;
