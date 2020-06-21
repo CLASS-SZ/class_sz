@@ -32,8 +32,11 @@ Go to https://github.com/borisbolliet/class_sz_public
 Using the code
 --------------
 
-You can use **class_sz** freely, provided that in your publications you cite
-at least the papers:
+The **class_sz** code is public.
+
+References:
+
+`Including massive neutrinos in thermal Sunyaev Zeldovich power spectrum and cluster counts analyses (Bolliet, Brinckmann, Chluba, Lesgourgues, 2020) <https://arxiv.org/abs/1906.10359>`_.
 
 `Dark Energy from the Thermal Sunyaev Zeldovich Power Spectrum (Bolliet, Comis, Komatsu, Macias-Perez, 2017)
 <https://arxiv.org/abs/1712.00788>`_.
@@ -79,7 +82,7 @@ explaning the use of all possible input parameters.
 The computation of the tSZ angular power spectrum is stable with masses up to 1e16 Msun/h.
 
 New version of class_sz requires gsl (for the integration routines)
-One may need to edit the Makefile adding the include path for gsl libraries, e.g.,:
+One may need to edit the **Makefile** adding the include path for gsl libraries, e.g.,:
 
 
   INCLUDES = -I../include -I/usr/local/include/ -I/path_to_gsl/gsl-2.6/include/
@@ -89,9 +92,7 @@ One may need to edit the Makefile adding the include path for gsl libraries, e.g
 
 For the python wrapper, one also may need to add the absolute path to gsl libraries, e.g.,:
 
-in class_sz/python/setup.py:
-
-# Define cython extension and fix Python version
+in **class_sz/python/setup.py**:
 
   classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")],
                              include_dirs=[nm.get_include(), include_folder],
@@ -104,8 +105,9 @@ in class_sz/python/setup.py:
 When running, the gsl library also need to be included in the environment variables, i.e., one may
 need to do:
 
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path_to_gsl/gsl-2.6/lib
-    export LD_LIBRARY_PATH
+    $ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path_to_gsl/gsl-2.6/lib
+
+    $ export LD_LIBRARY_PATH
 
 
 
