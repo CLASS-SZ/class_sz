@@ -81,6 +81,7 @@ The computation of the tSZ angular power spectrum is stable with masses up to 1e
 New version of class_sz requires gsl (for the integration routines)
 One may need to edit the Makefile adding the include path for gsl libraries, e.g.,:
 
+
 INCLUDES = -I../include -I/usr/local/include/ -I/path_to_gsl/gsl-2.6/include/
 
 class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
@@ -91,6 +92,7 @@ For the python wrapper, one also may need to add the absolute path to gsl librar
 in class_sz/python/setup.py:
 
 # Define cython extension and fix Python version
+
 classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")],
                            include_dirs=[nm.get_include(), include_folder],
                            libraries=liblist,
@@ -101,9 +103,10 @@ classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")],
 
 When running, the gsl library also need to be included in the environment variables, i.e., one may
 need to do:
-
+```
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path_to_gsl/gsl-2.6/lib
 export LD_LIBRARY_PATH
+```
 
 
 Computing and Plotting results
@@ -111,7 +114,9 @@ Computing and Plotting results
 
 There is a script that enables to plot tSZ spectra easily, e.g.:
 
-/path/to/python sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name M1SZ -min 1e13 -max 1e15 -N 3 -spacing log -output 'tSZ_1h,tSZ_Trispectrum'  -show_legend yes -show_error_bars yes -compute_scaling_with_param no -save_tsz_ps no -plot_ref_data no -print_rel_diff no
+```
+/path/to/python /path/to/class_sz/sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name M1SZ -min 1e13 -max 1e15 -N 3 -spacing log -output 'tSZ_1h,tSZ_Trispectrum'  -show_legend yes -show_error_bars yes -compute_scaling_with_param no -save_tsz_ps no -plot_ref_data no -print_rel_diff no
+```
 
 One just needs to set the path to class_sz properly at the beginning of tSZ_varying_params.py, and it should run.
 
