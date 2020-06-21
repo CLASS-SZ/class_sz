@@ -3,7 +3,6 @@ output/
 build/
 class
 *.prof
-*.ini
 libclass.a
 *out
 python/classy.c
@@ -79,3 +78,13 @@ sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_pk_cb.dat
 sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_redshift_dependent_functions.txt
 sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt
 sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_tk.dat
+sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum_dndlnM.txt
+sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum_dndlnM_masses.txt
+sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum_dndlnM_redshifts.txt
+class-sz_so_hack_070220_parameters.ini
+sz_auxiliary_files/run_scripts/class-sz_parameters_for_sz_ps_completeness_analysis_rotti++20.ini
+sz_auxiliary_files/run_scripts/tmp/tmp.ini
+sz_auxiliary_files/run_scripts/tmp_ref_cov/tmp.ini
+sz_auxiliary_files/run_scripts/tmp_ref_cov_no_trispec/tmp.ini
+sz_auxiliary_files/run_scripts/tmp_ref_cov_no_trispec_10/tmp.ini
+class-compare_with_colin_07022020_1d5r200c_parameters.ini

@@ -44218,17 +44218,23 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   //int id_max = ptsz->x_size_for_pp-1;
   //double delta_l = ptsz->x_for_pp[id_max] - ptsz->x_for_pp[0];
 
-  double xin = 1.e-5;
+  double xin = ptsz->x_inSZ;
+  double xout = 0.;
+    if (ptsz->pressure_profile == 4) { //for Battaglia et al 2012 pressure profile
   double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
   double r200c = pvectsz[ptsz->index_r200c]; //in Mpc/h
-  double xout = 1.5*rvir/r200c;
+  xout = 1.5*rvir/r200c;
+}
+
+  else
+  xout = ptsz->x_outSZ;
 
   double delta_l = xout - xin;
 
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 30000;
+  int size_w = 50;
   w = gsl_integration_workspace_alloc(size_w);
 
   //int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
@@ -45387,6 +45393,7 @@ double integrand_redshift(double ln1pz, void *p){
   result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
 
   }
+
   else
   result = integrate_over_m_at_z(V->pvecback,
                                   V->pvectsz,
@@ -45411,12 +45418,12 @@ double integrand_redshift(double ln1pz, void *p){
 }
 
 
-int integrate_over_redshift_at_each_ell(struct background * pba,
-                                        struct nonlinear * pnl,
-                                        struct primordial * ppm,
-                                        struct tszspectrum * ptsz,
-                                        double * Pvecback,
-                                        double * Pvectsz)
+int integrate_over_redshift(struct background * pba,
+                            struct nonlinear * pnl,
+                            struct primordial * ppm,
+                            struct tszspectrum * ptsz,
+                            double * Pvecback,
+                            double * Pvectsz)
 {
 
 
@@ -46291,6 +46298,181 @@ return _SUCCESS_;
 }
 
 
+///Tabulate dndlnM
+//as functions of z and M
+int tabulate_dndlnM(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz){
+
+  //Array of z
+  double z_min = ptsz->z1SZ_dndlnM;
+  double z_max = ptsz->z2SZ_dndlnM;
+  int index_z;
+
+  double tstart, tstop;
+  int index_l;
+  double * dndlnM_var;
+  double * pvecback;
+  double * pvectsz;
+  int abort;
+
+  //Array of M in Msun/h
+  double logM_min = log(ptsz->M1SZ_dndlnM); //in Msun/h
+  double logM_max = log(ptsz->M2SZ_dndlnM); //in Msun/h
+  int index_M;
+
+  int index_z_M = 0;
+
+  double ** array_dndlnM_at_z_and_M;
+
+  class_alloc(ptsz->array_z_dndlnM,sizeof(double *)*ptsz->n_z_dndlnM,ptsz->error_message);
+  class_alloc(ptsz->array_m_dndlnM,sizeof(double *)*ptsz->n_m_dndlnM,ptsz->error_message);
+
+
+class_alloc(ptsz->array_dndlnM_at_z_and_M,
+            sizeof(double *)*ptsz->n_z_dndlnM*ptsz->n_m_dndlnM,
+            ptsz->error_message);
+
+
+class_alloc(array_dndlnM_at_z_and_M,
+            ptsz->n_z_dndlnM*sizeof(double *),
+            ptsz->error_message);
+
+
+for (index_l=0;
+     index_l<ptsz->n_z_dndlnM;
+     index_l++)
+{
+  class_alloc(array_dndlnM_at_z_and_M[index_l],
+              ptsz->n_m_dndlnM*sizeof(double),
+              ptsz->error_message);
+}
+
+
+//Parallelization of Sigma2(R,z) computation
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,index_z_M,\
+pba,ptsz,ppm,pnl,z_min,z_max,logM_min,logM_max)\
+private(tstart, tstop,index_M,index_z,dndlnM_var,pvecback,pvectsz) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+  class_alloc_parallel(dndlnM_var,
+                       sizeof(double *),
+                       ptsz->error_message);
+  class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+
+  class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+#pragma omp for schedule (dynamic)
+  for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
+  {
+#pragma omp flush(abort)
+
+    for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++)
+    {
+      ptsz->array_z_dndlnM[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_dndlnM-1.); // log(1+z)
+
+      ptsz->array_m_dndlnM[index_M] =
+                                    logM_min
+                                    +index_M*(logM_max-logM_min)
+                                    /(ptsz->n_m_dndlnM-1.); //log(R)
+
+      //background quantities @ z:
+      double z =   ptsz->array_z_dndlnM[index_z];
+      double logM =   ptsz->array_m_dndlnM[index_M];
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call_parallel(background_tau_of_z(pba,z,&tau),
+                 pba->error_message,
+                 pba->error_message);
+
+      class_call_parallel(background_at_tau(pba,
+                                   tau,
+                                   pba->long_info,
+                                   pba->inter_normal,
+                                   &first_index_back,
+                                   pvecback),
+                 pba->error_message,
+                 pba->error_message);
+
+
+
+
+      pvectsz[ptsz->index_z] = z;
+      pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                      *pow(_Mpc_over_m_,1)
+                                      *pow(_c_,2)
+                                      *pvecback[pba->index_bg_rho_crit]
+                                      /pow(pba->h,2);
+
+      double omega = pvecback[pba->index_bg_Omega_m];
+      pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+
+      evaluate_HMF(logM,pvecback,pvectsz,pba,pnl,ptsz);
+
+
+      *dndlnM_var = pvectsz[ptsz->index_hmf];
+
+
+
+      array_dndlnM_at_z_and_M[index_z][index_M] = log(*dndlnM_var);
+
+      index_z_M += 1;
+    }
+  }
+#ifdef _OPENMP
+  tstop = omp_get_wtime();
+  if (ptsz->sz_verbose > 0)
+    printf("In %s: time spent in parallel region (loop over M's) = %e s for thread %d\n",
+           __func__,tstop-tstart,omp_get_thread_num());
+#endif
+
+    free(dndlnM_var);
+    free(pvecback);
+    free(pvectsz);
+    }
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+
+index_z_M = 0;
+for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
+{
+  for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++)
+  {
+    ptsz->array_dndlnM_at_z_and_M[index_z_M] = array_dndlnM_at_z_and_M[index_z][index_M];
+    index_z_M += 1;
+  }
+}
+
+  free(array_dndlnM_at_z_and_M);
+
+return _SUCCESS_;
+}
+
+
 
 //Tabulate vrms2 as functions of redshift
  int tabulate_sigma2_hsv_from_pk(struct background * pba,
@@ -46327,3 +46509,17 @@ free(sigma2_hsv_var);
 
 return _SUCCESS_;
     }
+
+
+double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double m = log(m_asked);
+  return exp(pwl_interp_2d(ptsz->n_z_dndlnM,
+                    ptsz->n_m_dndlnM,
+                    ptsz->array_z_dndlnM,
+                    ptsz->array_m_dndlnM,
+                    ptsz->array_dndlnM_at_z_and_M,
+                    1,
+                    &z,
+                    &m));
+}

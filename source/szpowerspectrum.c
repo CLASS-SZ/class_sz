@@ -40,12 +40,17 @@ int szpowerspectrum_init(
 
    tabulate_sigma_and_dsigma_from_pk(pba,pnl,ppm,ptsz);
 
+
+
    if (ptsz->has_sigma2_hsv)
    tabulate_sigma2_hsv_from_pk(pba,pnl,ppm,ptsz);
 
 
    initialise_and_allocate_memory(ptsz);
 
+
+   if (ptsz->has_dndlnM)
+   tabulate_dndlnM(pba,pnl,ppm,ptsz);
 
    if (ptsz->has_vrms2)
    tabulate_vrms2_from_pk(pba,pnl,ppm,ptsz);
@@ -61,7 +66,7 @@ int szpowerspectrum_init(
       read_SO_noise(ptsz);}
 
 
-   if (ptsz->has_sz_ps + ptsz->has_hmf + ptsz->has_mean_y + ptsz->has_sz_2halo + ptsz->has_sz_trispec + ptsz->has_sz_te_y_y + ptsz->has_sz_cov_N_N + ptsz->has_kSZ_kSZ_gal_1halo + ptsz->has_tSZ_lens_1h + ptsz->has_isw_lens + ptsz->has_isw_tsz + ptsz->has_isw_auto == _FALSE_)
+   if (ptsz->has_sz_ps + ptsz->has_hmf + ptsz->has_mean_y + ptsz->has_sz_2halo + ptsz->has_sz_trispec + ptsz->has_sz_te_y_y + ptsz->has_sz_cov_N_N + ptsz->has_kSZ_kSZ_gal_1halo + ptsz->has_tSZ_lens_1h + ptsz->has_isw_lens + ptsz->has_isw_tsz + ptsz->has_isw_auto + ptsz->has_dndlnM == _FALSE_)
    {
       if (ptsz->sz_verbose > 0)
          printf("->No SZ-y or N quantities requested. SZ ps module skipped.\n");
@@ -117,10 +122,12 @@ int number_of_threads= 1;
 
 //Loop over integrands
 //the computation is parallelized with respect to the integrands
+//printf("ptsz->number_of_integrands loop = %d\n",ptsz->number_of_integrands);
 #pragma omp for schedule (dynamic)
 for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integrand++)
 	     {
 #pragma omp flush(abort)
+//printf("Pvectsz[ptsz->index_integrand_id] = %d\n",index_integrand);
 
        Pvectsz[ptsz->index_integrand_id] = index_integrand;
        //printf("integrand_id = %d\n",index_integrand);
@@ -137,7 +144,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 #ifdef _OPENMP
                   tstop = omp_get_wtime();
                   if (ptsz->sz_verbose > 0)
-                     printf("In %s: time spent in parallel region (loop over l's) = %e s for thread %d\n",
+                     printf("In %s: time spent in parallel region (loop over X's) = %e s for thread %d\n",
                                __func__,tstop-tstart,omp_get_thread_num());
 
 
@@ -259,6 +266,15 @@ if (ptsz->experiment == 1){
    free(ptsz->w_gauss);
    free(ptsz->x_gauss);
 
+if (ptsz->has_dndlnM){
+   free(ptsz->array_m_dndlnM);
+   free(ptsz->array_z_dndlnM);
+   free(ptsz->array_dndlnM_at_z_and_M);}
+
+   free(ptsz->dndlnM_at_z_and_M);
+   free(ptsz->dndlnM_array_z);
+   free(ptsz->dndlnM_array_m);
+
    free(ptsz->array_radius);
    free(ptsz->array_redshift);
    free(ptsz->array_sigma_at_z_and_R);
@@ -292,20 +308,42 @@ return _SUCCESS_;
 
 
 int compute_sz(struct background * pba,
-                      struct nonlinear * pnl,
-                      struct primordial * ppm,
-                      struct tszspectrum * ptsz,
-                      double * Pvecback,
-                      double * Pvectsz){
+                struct nonlinear * pnl,
+                struct primordial * ppm,
+                struct tszspectrum * ptsz,
+                double * Pvecback,
+                double * Pvectsz){
 
 
 
 
    int index_integrand = (int) Pvectsz[ptsz->index_integrand_id];
+
    //printf("index_integrand = %d\n",index_integrand);
    //Pvectsz[ptsz->index_multipole] = 0.;
+   if (index_integrand>=ptsz->index_integrand_id_dndlnM_first && index_integrand <= ptsz->index_integrand_id_dndlnM_last && ptsz->has_dndlnM){
+      Pvectsz[ptsz->index_md] = ptsz->index_md_dndlnM;
 
-   if(index_integrand == ptsz->index_integrand_id_hmf && ptsz->has_hmf){
+      //printf("N_m = %d N_z = %d\n",ptsz->N_mass_dndlnM,ptsz->N_redshift_dndlnM);
+      int index_redshift_mass = (int) (index_integrand - ptsz->index_integrand_id_dndlnM_first);
+      //printf("index_redshift_mass = %d ptsz->N_mass_dndlnM = %d nptsz->index_integrand_id_dndlnM_last = %d\n",index_redshift_mass,ptsz->N_mass_dndlnM,ptsz->index_integrand_id_dndlnM_last);
+      int index_redshift = index_redshift_mass / ptsz->N_mass_dndlnM;
+      //printf("index_redshift = %d\n",index_redshift);
+      int index_mass = index_redshift_mass % ptsz->N_mass_dndlnM;
+      Pvectsz[ptsz->index_redshift_for_dndlnM] = (double)  (index_redshift);
+      Pvectsz[ptsz->index_mass_for_dndlnM] = (double) (index_mass);
+
+      // int index_ell_mass = (int) (index_integrand - ptsz->index_integrand_id_cov_Y_N_first);
+      // int index_ell = index_ell_mass / ptsz->nbins_M;
+      // int index_mass = index_ell_mass % ptsz->nbins_M;
+      // Pvectsz[ptsz->index_multipole] = (double) (index_ell);
+      // Pvectsz[ptsz->index_mass_bin_1] = (double) (index_mass);
+
+
+
+      if (ptsz->sz_verbose > 0) printf("computing dndlnM @ redshift_id = %.0f and mass_id = %.0f\n",Pvectsz[ptsz->index_redshift_for_dndlnM], Pvectsz[ptsz->index_mass_for_dndlnM]);
+    }
+   else if(index_integrand == ptsz->index_integrand_id_hmf && ptsz->has_hmf){
       Pvectsz[ptsz->index_md] = ptsz->index_md_hmf;
       if (ptsz->sz_verbose > 0) printf("computing hmf int\n");
    }
@@ -407,21 +445,47 @@ int compute_sz(struct background * pba,
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_isw_auto_first);
         if (ptsz->sz_verbose > 0) printf("computing cl^isw-isw @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
-     else
-     return 0;
 
-   class_call(integrate_over_redshift_at_each_ell(pba,
-                                                  pnl,
-                                                  ppm,
-                                                  ptsz,
-                                                  Pvecback,
-                                                  Pvectsz),
+
+     else
+     {
+       //printf("id not found. index_integrand = %d \n",index_integrand);
+     return 0;
+}
+
+
+ int index_md = (int) Pvectsz[ptsz->index_md];
+
+
+ if (_dndlnM_){
+   int index_z = (int) Pvectsz[ptsz->index_redshift_for_dndlnM];
+   int index_m = (int) Pvectsz[ptsz->index_mass_for_dndlnM];
+
+   double z_asked = ptsz->dndlnM_array_z[index_z];
+   double m_asked = ptsz->dndlnM_array_m[index_m];
+
+  ptsz->dndlnM_at_z_and_M[index_z][index_m] = get_dndlnM_at_z_and_M(z_asked,m_asked,ptsz);
+
+  //printf("index_z = %d index_m =%d\n",index_z,index_m);
+  //printf("z = %.4e m = %.4e dndlnM = %.4e\n",ptsz->dndlnM_array_z[index_z],ptsz->dndlnM_array_m[index_m],ptsz->dndlnM_at_z_and_M[index_z][index_m]);
+
+
+ }
+ else {
+
+   class_call(integrate_over_redshift(pba,
+                                      pnl,
+                                      ppm,
+                                      ptsz,
+                                      Pvecback,
+                                      Pvectsz),
                    ptsz->error_message,
                    ptsz->error_message);
 
 
+ }
+//printf("ok\n");
 
-   int index_md = (int) Pvectsz[ptsz->index_md];
 
    if (_hmf_){
 
@@ -476,6 +540,8 @@ int compute_sz(struct background * pba,
 
 
   }
+
+
    if (_cov_N_N_){
      int index_m_1 = (int) Pvectsz[ptsz->index_mass_bin_1];
     ptsz->cov_N_N[index_m_1] = Pvectsz[ptsz->index_integral];
@@ -534,6 +600,7 @@ if (_isw_auto_){
   //int index_m = (int) Pvectsz[ptsz->index_mass_bin_1];
  ptsz->cl_isw_auto[index_l] = Pvectsz[ptsz->index_integral];
 }
+
 return _SUCCESS_;
 }
 
@@ -1084,11 +1151,17 @@ int evaluate_pressure_profile(double * pvecback,
                                *ptsz->P0GNFW
                                *pow(0.7/pba->h, 1.); // as found by dimensional analysis (sz data, see email with E. Komatsu and R. Makya)
 
-      //Custom. GNFW
-      else if (ptsz->pressure_profile == 3)
-      pressure_normalisation = C_pressure
-                               *ptsz->P0GNFW
-                               *pow(0.7/pba->h, 1.5); // assuming X-ray data based pressure profile
+      // //Custom. GNFW
+      // else if (ptsz->pressure_profile == 3)
+      // pressure_normalisation = C_pressure
+      //                          *ptsz->P0GNFW
+      //                          *pow(0.7/pba->h, 1.5); // assuming X-ray data based pressure profile
+     //Custom. GNFW
+     else if (ptsz->pressure_profile == 3)
+     pressure_normalisation = C_pressure
+                              *ptsz->P0GNFW
+                              *pow(0.7/pba->h, 1.); // assuming SZ data based pressure profile
+
 
       characteristic_radius = pvectsz[ptsz->index_r500]/pba->h; // in Mpc
       characteristic_multipole = pvectsz[ptsz->index_l500];
@@ -2204,7 +2277,58 @@ if (ptsz->has_sz_cov_Y_N){
 
 
     }
+    if (ptsz->has_dndlnM){
 
+      sprintf(Filepath,
+                "%s%s%s",
+                ptsz->root,
+                "szpowerspectrum_dndlnM_masses",
+                ".txt");
+
+      fp=fopen(Filepath, "w");
+
+      int index_M_bins;
+      for (index_M_bins=0;index_M_bins<ptsz->N_mass_dndlnM;index_M_bins++)
+      fprintf(fp,"%e\n",ptsz->dndlnM_array_m[index_M_bins]);
+
+      fclose(fp);
+
+      sprintf(Filepath,
+                "%s%s%s",
+                ptsz->root,
+                "szpowerspectrum_dndlnM_redshifts",
+                ".txt");
+
+      fp=fopen(Filepath, "w");
+
+      int index_z_bins;
+      for (index_z_bins=0;index_z_bins<ptsz->N_redshift_dndlnM;index_z_bins++)
+      fprintf(fp,"%e\n",ptsz->dndlnM_array_z[index_z_bins]);
+
+      fclose(fp);
+
+      sprintf(Filepath,
+                "%s%s%s",
+                ptsz->root,
+                "szpowerspectrum_dndlnM",
+                ".txt");
+
+      fp=fopen(Filepath, "w");
+
+      int index_masses;
+      int index_redshifts;
+      for (index_masses=0;index_masses<ptsz->N_mass_dndlnM;index_masses++) {
+      for (index_redshifts=0;index_redshifts<ptsz->N_redshift_dndlnM;index_redshifts++){
+
+
+        fprintf(fp,"%e\t",ptsz->dndlnM_at_z_and_M[index_redshifts][index_masses]);
+        }
+        fprintf(fp,"\n");
+     }
+      fclose(fp);
+
+
+      }
 
  if (ptsz->has_sz_trispec){
       sprintf(Filepath,
@@ -2688,6 +2812,29 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       ptsz->cov_Y_N_mass_bin_edges[i] = exp(log(ptsz->M1SZ)+i*(log(ptsz->M2SZ)-log(ptsz->M1SZ))/(ptsz->nbins_M));
    }
 
+   class_alloc(ptsz->dndlnM_array_z,
+              ptsz->N_redshift_dndlnM*sizeof(double),
+              ptsz->error_message);
+   for (i=0;i<ptsz->N_redshift_dndlnM;i++){
+     if (ptsz->N_redshift_dndlnM == 1)
+     ptsz->dndlnM_array_z[i] =  ptsz->z1SZ_dndlnM;
+     else
+      ptsz->dndlnM_array_z[i] =  ptsz->z1SZ_dndlnM +
+                                  +i*(ptsz->z2SZ_dndlnM-ptsz->z1SZ_dndlnM)
+                                  /(ptsz->N_redshift_dndlnM-1.);
+ }
+
+   class_alloc(ptsz->dndlnM_array_m,
+              ptsz->N_mass_dndlnM*sizeof(double),
+              ptsz->error_message);
+   for (i=0;i<ptsz->N_mass_dndlnM;i++){
+     if (ptsz->N_mass_dndlnM == 1)
+     ptsz->dndlnM_array_m[i] = ptsz->M1SZ_dndlnM;
+     else
+      ptsz->dndlnM_array_m[i] =  exp(log(ptsz->M1SZ_dndlnM)+i*(log(ptsz->M2SZ_dndlnM)-log(ptsz->M1SZ_dndlnM))/(ptsz->N_mass_dndlnM-1.));
+  }
+
+
 
    //function of redshift
    ptsz->index_multipole_for_lensing_profile = 0;
@@ -2739,11 +2886,13 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_mass_bin_2 = ptsz->index_mass_bin_1 + 1;
    ptsz->index_sigma2_hsv = ptsz->index_mass_bin_2 + 1;
    ptsz->index_part_id_cov_hsv = ptsz->index_sigma2_hsv + 1;
+   ptsz->index_redshift_for_dndlnM = ptsz->index_part_id_cov_hsv + 1;
+   ptsz->index_mass_for_dndlnM = ptsz->index_redshift_for_dndlnM +1;
 
 
 
    //quantities integrated over redshift
-   ptsz->index_integral = ptsz->index_part_id_cov_hsv+1;
+   ptsz->index_integral = ptsz->index_mass_for_dndlnM+1;
    ptsz->index_integral_over_m = ptsz->index_integral+1;
 
 
@@ -2772,6 +2921,13 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    class_alloc(ptsz->sig_cl_squared_binned,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
 
    class_alloc(ptsz->cl_sz_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+
+   class_alloc(ptsz->dndlnM_at_z_and_M,ptsz->N_redshift_dndlnM*sizeof(double *),ptsz->error_message);
+   int index_z;
+   for (index_z = 0; index_z<ptsz->N_redshift_dndlnM;index_z ++)
+   {
+     class_alloc(ptsz->dndlnM_at_z_and_M[index_z],(ptsz->N_mass_dndlnM)*sizeof(double),ptsz->error_message);
+   }
 
    class_alloc(ptsz->tllprime_sz,ptsz->nlSZ*sizeof(double *),ptsz->error_message);
    class_alloc(ptsz->trispectrum_ref,ptsz->nlSZ*sizeof(double *),ptsz->error_message);
@@ -2830,8 +2986,12 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
 
    }
 
-
-   ptsz->index_integrand_id_hmf = 0;
+   ptsz->index_integrand_id_dndlnM_first  = 0;
+   ptsz->index_integrand_id_dndlnM_last = ptsz->index_integrand_id_dndlnM_first + ptsz->N_redshift_dndlnM*ptsz->N_mass_dndlnM - 1;
+   printf("ptsz->index_integrand_id_dndlnM_last = %d\n",ptsz->index_integrand_id_dndlnM_last );
+   printf("ptsz->index_integrand_id_dndlnM_first = %d\n",ptsz->index_integrand_id_dndlnM_first );
+   printf("ptsz->N_redshift_dndlnM*ptsz->N_mass_dndlnM = %d\n",ptsz->N_redshift_dndlnM*ptsz->N_mass_dndlnM );
+   ptsz->index_integrand_id_hmf = ptsz->index_integrand_id_dndlnM_last + 1;
    ptsz->index_integrand_id_mean_y = ptsz->index_integrand_id_hmf + 1;
    ptsz->index_integrand_id_sz_ps_first = ptsz->index_integrand_id_mean_y + 1;
    ptsz->index_integrand_id_sz_ps_last = ptsz->index_integrand_id_sz_ps_first + ptsz->nlSZ - 1;
@@ -2861,6 +3021,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_integrand_id_isw_auto_last = ptsz->index_integrand_id_isw_auto_first + ptsz->nlSZ - 1;
 
    ptsz->number_of_integrands =  ptsz->index_integrand_id_isw_auto_last + 1;
+   //printf("number_of_integrands = %d\n",ptsz->number_of_integrands );
 
 
 

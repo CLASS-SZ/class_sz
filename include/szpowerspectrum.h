@@ -22,6 +22,7 @@
 #define _isw_lens_ ((ptsz->has_isw_lens == _TRUE_) && (index_md == ptsz->index_md_isw_lens))
 #define _isw_tsz_ ((ptsz->has_isw_tsz == _TRUE_) && (index_md == ptsz->index_md_isw_tsz))
 #define _isw_auto_ ((ptsz->has_isw_auto == _TRUE_) && (index_md == ptsz->index_md_isw_auto))
+#define _dndlnM_ ((ptsz->has_dndlnM == _TRUE_) && (index_md == ptsz->index_md_dndlnM))
 
 //#define _tSZ_trispectrum_ ((ptsz->has_sz_trispec == _TRUE_))
 //#define _tSZ_2halo_ ((ptsz->has_sz_2halo == _TRUE_))
@@ -49,6 +50,7 @@ struct tszspectrum {
   double * b_kSZ_kSZ_gal_1halo;
   double * cl_te_y_y;
   double ** tllprime_sz;
+  double ** dndlnM_at_z_and_M;
   double * cl_sz_2h;
   double ** cov_N_cl;
   double ** r_N_cl;
@@ -146,6 +148,12 @@ struct tszspectrum {
   int index_integrand_id_isw_auto_first;
   int index_integrand_id_isw_auto_last;
 
+
+  int has_dndlnM;
+  int index_md_dndlnM;
+  int index_integrand_id_dndlnM_first;
+  int index_integrand_id_dndlnM_last;
+
   int has_sz_trispec;
   //int index_md_sz_trispec;
   int index_integrand_id_trispectrum_first;
@@ -223,6 +231,8 @@ struct tszspectrum {
   int  index_multipole_prime;
   int  index_mass_bin_1;
   int  index_mass_bin_2;
+  int  index_redshift_for_dndlnM;
+  int  index_mass_for_dndlnM;
   int  index_multipole_for_pressure_profile;
   int  index_pressure_profile;
   int  index_multipole_for_tau_profile;
@@ -330,9 +340,21 @@ struct tszspectrum {
   double z1SZ;
   double z2SZ;
 
+  double z1SZ_dndlnM;
+  double z2SZ_dndlnM;
+
+  double M1SZ_dndlnM;
+  double M2SZ_dndlnM;
+
   /*Array size*/
   int n_arraySZ;//number of z in the interpolation
   int n_arraySZ_for_integral;//number of z in the integration
+
+  int n_z_dndlnM;
+  int n_m_dndlnM;
+
+  int N_redshift_dndlnM;
+  int N_mass_dndlnM;
 
   //mass limits: h^-1 Msun
   double M1SZ;
@@ -525,6 +547,13 @@ struct tszspectrum {
   int CM_redshift_size;
   int CM_logM_size;
   double * CM_logC;
+
+  double * dndlnM_array_z;
+  double * dndlnM_array_m;
+
+  double * array_m_dndlnM;
+  double * array_z_dndlnM;
+  double * array_dndlnM_at_z_and_M;
 
   double * array_redshift;
   double * array_radius;

@@ -797,12 +797,12 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
 
   double next_z(double z_i, double dz);
 
-  int integrate_over_redshift_at_each_ell(struct background * pba,
-                                          struct nonlinear * pnl,
-                                          struct primordial * ppm,
-                                          struct tszspectrum * ptsz,
-                                          double * Pvecback,
-                                          double * Pvectsz);
+  int integrate_over_redshift(struct background * pba,
+                              struct nonlinear * pnl,
+                              struct primordial * ppm,
+                              struct tszspectrum * ptsz,
+                              double * Pvecback,
+                              double * Pvectsz);
 
   int read_Planck_noise_map(struct tszspectrum * ptsz);
 
@@ -849,6 +849,11 @@ double integrand_sigma2_hsv(double lnk, void *p);
 
 double Delta_c_of_Omega_m(double Omega_m);
 
+double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
+int tabulate_dndlnM(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz);
 
 #ifdef __cplusplus
 }

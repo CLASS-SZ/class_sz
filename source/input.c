@@ -1980,6 +1980,14 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
       }
+      if ((strstr(string1,"dndlnM") != NULL) ) {
+        ptsz->has_dndlnM =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
       if ((strstr(string1,"SZ_counts") != NULL) ) {
         pcsz->has_sz_counts =_TRUE_;
         ptsz->has_sz_counts =_TRUE_;
@@ -4050,6 +4058,14 @@ int input_default_params(
   ptsz->z1SZ = 1.e-5;
   ptsz->z2SZ = 4.;
 
+  ptsz->z1SZ_dndlnM = 0.;
+  ptsz->z2SZ_dndlnM = 1.;
+  ptsz->N_redshift_dndlnM = 11;
+
+  ptsz->M1SZ_dndlnM = 1.e11;
+  ptsz->M2SZ_dndlnM = 5.e16;
+  ptsz->N_mass_dndlnM = 100;
+
   //Array size
   ptsz->n_arraySZ = 30;//number of z in the sigma Interpolation
 
@@ -4058,6 +4074,9 @@ int input_default_params(
   //mass limits: h^-1 Msun
   ptsz->M1SZ = 5.e11;
   ptsz->M2SZ = 5.e15;
+
+  ptsz->n_z_dndlnM = 30;
+  ptsz->n_m_dndlnM = 30;
 
   //Set pressure profile to P13
   ptsz->pressure_profile=0;
@@ -4077,6 +4096,7 @@ int input_default_params(
   // 3: 2 -> spline integral
   ptsz->integration_method_pressure_profile = 1;
 
+  //P13 UPP parameters
   ptsz->P0GNFW = 6.41;
   ptsz->c500 = 1.81;
   ptsz->gammaGNFW = 0.31;
@@ -4182,6 +4202,7 @@ int input_default_params(
   ptsz->has_isw_lens = _FALSE_;
   ptsz->has_isw_tsz = _FALSE_;
   ptsz->has_isw_auto = _FALSE_;
+  ptsz->has_dndlnM = _FALSE_;
   ptsz->has_tSZ_lens_1h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_1halo = _FALSE_;
   ptsz->has_sz_te_y_y = _FALSE_;
@@ -4213,6 +4234,7 @@ int input_default_params(
   ptsz->index_md_isw_lens = 12;
   ptsz->index_md_isw_tsz = 13;
   ptsz->index_md_isw_auto = 14;
+  ptsz->index_md_dndlnM = 15;
 
   ptsz->HMF_prescription_NCDM=2; //no-pres
 
