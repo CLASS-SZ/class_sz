@@ -36,8 +36,6 @@ def run(args):
     p_dict['mass function'] = 'M500'
     p_dict['ndimSZ'] = 100
     p_dict['n_arraySZ'] = 100
-    p_dict['redshift_epsabs'] = 1.e-30
-    p_dict['mass_epsabs'] = 1.e-30
     p_dict['M1SZ'] = 1.e11
     p_dict['M2SZ'] = 1.e16
     p_dict['sz_verbose']  = 3
@@ -52,7 +50,11 @@ def run(args):
     p_dict['alphaGNFW'] = 1.33
     p_dict['betaGNFW'] = 4.13
     p_dict['pressure_profile_epsabs'] = 1.e-9
-    p_dict['pressure_profile_epsrel'] = 1.e-2
+    p_dict['pressure_profile_epsrel'] = 1.e-3
+    p_dict['redshift_epsabs'] = 1.e-30
+    p_dict['redshift_epsrel'] = 1.e-3
+    p_dict['mass_epsabs'] = 1.e-30
+    p_dict['mass_epsrel'] = 1e-3
     p_dict['ell_max_mock'] = 15000.
     p_dict['ell_min_mock'] = 2.
     p_dict['sz_verbose'] = 1
@@ -171,13 +173,13 @@ def run(args):
 
 
         #cl^yy
-        fig, (ax1,ax2) = plt.subplots(2,1,figsize=(7,10))
+        fig, (ax1,ax2) = plt.subplots(2,1,figsize=(7,7))
         ax = ax1
         ax.tick_params(axis = 'x',which='both',length=5,direction='in', pad=10)
         ax.tick_params(axis = 'y',which='both',length=5,direction='in', pad=5)
         ax.xaxis.set_ticks_position('both')
         ax.yaxis.set_ticks_position('both')
-        plt.setp(ax.get_yticklabels(), rotation='vertical', fontsize=label_size)
+        plt.setp(ax.get_yticklabels(),  fontsize=label_size)
         plt.setp(ax.get_xticklabels(), fontsize=label_size)
         ax.grid( b=True, which="both", alpha=0.3, linestyle='--')
 
@@ -194,8 +196,8 @@ def run(args):
         y_axis_class_sz = cl_1h
         y_axis_ccl = c_ell_yy_ccl
 
-        ax.plot(x_axis_class_sz,y_axis_class_sz,c='k',ls='-',alpha = 1.,label = 'class_sz')
-        ax.plot(x_axis_class_sz,y_axis_ccl,c='r',ls='--',alpha = 1,label='ccl')
+        ax.plot(x_axis_class_sz,y_axis_class_sz,c='r',ls='-',alpha = 1.,label = 'Cl^1h class_sz')
+        ax.plot(x_axis_class_sz,y_axis_ccl,c='k',ls='--',alpha = 1,label='Cl^1h CCL')
 
         ax1.legend(loc=2)
         plt.draw()
@@ -205,7 +207,7 @@ def run(args):
         ax.tick_params(axis = 'y',which='both',length=5,direction='in', pad=5)
         ax.xaxis.set_ticks_position('both')
         ax.yaxis.set_ticks_position('both')
-        plt.setp(ax.get_yticklabels(), rotation='vertical', fontsize=label_size)
+        plt.setp(ax.get_yticklabels(), fontsize=label_size)
         plt.setp(ax.get_xticklabels(), fontsize=label_size)
         ax.grid( b=True, which="both", alpha=0.3, linestyle='--')
 
@@ -220,13 +222,14 @@ def run(args):
         col = color
         y_axis_class_sz = cl_1h
         y_axis_ccl = c_ell_yy_ccl
-        ax.plot(x_axis_class_sz,100.*(y_axis_ccl-y_axis_class_sz)/y_axis_class_sz,c='r',ls='-',alpha = 1)
+        ax.plot(x_axis_class_sz,100.*(y_axis_ccl-y_axis_class_sz)/y_axis_class_sz,c='r',ls='-',alpha = 1,label='1-halo')
 
         ax1.legend(loc=2)
+        ax2.legend(loc=1)
         plt.draw()
 
         fig.tight_layout()
-        FIG_NAME = '/cl_1h'
+        FIG_NAME = '/comparison_ccl_class_sz'
         fig.savefig(FIG_DIR + FIG_NAME +".pdf")
         plt.show(block=True)
 

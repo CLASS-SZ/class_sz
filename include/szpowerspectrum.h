@@ -16,6 +16,7 @@
 #define _cov_Y_N_ ((ptsz->has_sz_cov_Y_N == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N))
 #define _cov_N_N_ ((ptsz->has_sz_cov_N_N == _TRUE_) && (index_md == ptsz->index_md_cov_N_N))
 #define _cov_N_N_hsv_ ((ptsz->has_sz_cov_N_N_hsv == _TRUE_) && (index_md == ptsz->index_md_cov_N_N_hsv))
+#define _cov_Y_Y_ssc_ ((ptsz->has_sz_cov_Y_Y_ssc == _TRUE_) && (index_md == ptsz->index_md_cov_Y_Y_ssc))
 #define _cov_Y_N_next_order_ ((ptsz->has_sz_cov_Y_N_next_order == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N_next_order))
 #define _kSZ_kSZ_gal_1halo_ ((ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1halo))
 #define _tSZ_lens_1h_ ((ptsz->has_tSZ_lens_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lens_1h))
@@ -58,6 +59,7 @@ struct tszspectrum {
   double ** r_N_cl;
   double ** cov_Y_N;
   double ** cov_Y_N_next_order;
+  double ** cov_Y_Y_ssc;
   double * cov_N_N;
   double ** cov_N_N_hsv;
   double ** r_Y_N;
@@ -86,6 +88,10 @@ struct tszspectrum {
   int index_integrand_id_cov_Y_N_next_order_first;
   int index_integrand_id_cov_Y_N_next_order_last;
 
+  int has_sz_cov_Y_Y_ssc;
+  int index_md_cov_Y_Y_ssc;
+  int index_integrand_id_cov_Y_Y_ssc_first;
+  int index_integrand_id_cov_Y_Y_ssc_last;
 
   int has_sz_cov_N_N;
   int index_md_cov_N_N;
@@ -233,6 +239,8 @@ struct tszspectrum {
   int  index_multipole_prime;
   int  index_mass_bin_1;
   int  index_mass_bin_2;
+  int  index_multipole_1;
+  int  index_multipole_2;
   int  index_redshift_for_dndlnM;
   int  index_mass_for_dndlnM;
   int  index_multipole_for_pressure_profile;

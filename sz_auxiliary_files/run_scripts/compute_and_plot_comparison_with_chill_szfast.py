@@ -1,5 +1,6 @@
 #! python3
 #e.g., python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name sigma8 -min 0.7 -max 0.9 -N 5 -spacing log -show_legend yes -show_error_bars yes -output ' ' -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions yes
+# <!> Never modify parameters in this file.
 import argparse
 import numpy as np
 import os
@@ -23,7 +24,7 @@ def run(args):
 
     #'class-sz_chill_B12_parameters.ini'
     #parameter_file = 'class-sz_parameters.ini'
-    parameter_file = 'class-sz_chill_B12_parameters.ini'
+    parameter_file = 'class-sz_chill_B12_parameters_for_comparison.ini'
     #parameter_file = 'class-sz_parameters_for_sz_ps_completeness_analysis_rotti++20.ini'
 
 
@@ -108,7 +109,9 @@ def run(args):
     p_dict['pressure_profile_epsabs'] = 1.e-20
     p_dict['pressure_profile_epsrel'] = 1.e-3
     p_dict['redshift_epsabs'] = 1.e-30
+    p_dict['redshift_epsrel'] = 1.e-8
     p_dict['mass_epsabs'] = 1.e-30
+    p_dict['mass_epsrel'] = 1e-8
     p_dict['component of tSZ power spectrum'] = 'total'
     if(args.output):
         print(args.output)
@@ -129,7 +132,7 @@ def run(args):
     label_size = 12
     title_size = 15
     legend_size = 13
-    handle_length = 1.5
+    handle_length = 1.8
     if (args.print_rel_diff == 'yes'):
         fig, (ax1,ax2) = plt.subplots(2,1,figsize=(7,7))
     else:
@@ -403,7 +406,8 @@ def run(args):
                 ax.set_yscale('linear')
                 ax.set_xlabel(r'$\ell$',size=title_size)
                 #ax.set_ylabel(r'$[\mathrm{C^{tSZ}_\ell-C^{tSZ,ref}_\ell}]/\mathrm{C^{tSZ,ref}_\ell}}$',size=title_size)
-                ax.set_ylabel(r'$\Delta\mathrm{C^{yy}_\ell}/\mathrm{C^{yy}_\ell}$',size=title_size)
+                #ax.set_ylabel(r'$\Delta\mathrm{C^{yy}_\ell}/\mathrm{C^{yy}_\ell}$',size=title_size)
+                ax.set_ylabel(r'$C_\ell^{yy,\mathrm{szfast}}/C_\ell^{yy,\mathrm{class\_sz}}-1$'+'   [%]',size=title_size)
 
                 id_p = 0
                 for p_val in p:
@@ -412,23 +416,23 @@ def run(args):
                     f = interpolate.interp1d(x, y)
                     x_new = np.log(multipoles_ref)
                     cl_new = np.exp(f(x_new))
-                    rel_diff = (cl_new-cl_1h_ref)/cl_1h_ref
+                    rel_diff = (cl_1h_ref-cl_new)/cl_new
                     for (ell,rdiff) in zip(multipoles_ref,rel_diff):
                         print("ell = %.4e\t rel_diff = %.4e\n"%(ell,rdiff))
 
                     #ax.plot(multipoles_ref,rel_diff,color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
-                    ax.plot(multipoles_ref,rel_diff,color=col[id_p],ls='-',alpha = 1.,label = '1-halo')
+                    ax.plot(multipoles_ref,100.*rel_diff,color=col[id_p],ls='-',alpha = 1.,label = '1-halo')
 
                     if ('tSZ_2h' in p_dict['output']):
                         y = np.log(cl_2h[id_p])
                         f = interpolate.interp1d(x, y)
                         x_new = np.log(multipoles_ref)
                         cl_new = np.exp(f(x_new))
-                        rel_diff = (cl_new-cl_2h_ref)/cl_2h_ref
+                        rel_diff = (cl_2h_ref-cl_new)/cl_new
                         for (ell,rdiff) in zip(multipoles_ref,rel_diff):
                             print("ell = %.4e\t rel_diff_2h = %.4e\n"%(ell,rdiff))
 
-                        ax.plot(multipoles_ref,rel_diff,color=col[id_p],ls='-.',alpha = 1.,label = '2-halo')
+                        ax.plot(multipoles_ref,100*rel_diff,color=col[id_p],ls='-.',alpha = 1.,label = '2-halo')
                     #plt.draw()
                     #plt.pause(0.05)
                     id_p += 1
@@ -453,12 +457,12 @@ def run(args):
             else:
                 ax1.legend(loc=2)
             if (args.print_rel_diff == 'yes'):
-                ax2.legend(loc=1,ncol = 1)
+                ax2.legend(loc=2,ncol = 1)
 
 
         fig.tight_layout()
         if (args.save_fig == 'yes'):
-            FIG_NAME = '/tSZ_varying_' + param_name
+            FIG_NAME = '/comparison_szfast_class_sz'
             plt.savefig(FIG_DIR + FIG_NAME +".pdf")
 
 

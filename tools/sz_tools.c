@@ -44234,7 +44234,7 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 50;
+  int size_w = 3000;
   w = gsl_integration_workspace_alloc(size_w);
 
   //int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
@@ -45639,6 +45639,36 @@ double integrand_patterson_test(double logM, void *p){
   r = r_cov_N_N_hsv_1*r_cov_N_N_hsv_2;
                                      }
 
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_Y_Y_ssc )){
+
+  double r_cov_Y_Y_ssc_1; // for cov_Y_Y_ssc: first part of redshift integrand
+  double r_cov_Y_Y_ssc_2; // for cov_Y_Y_ssc: second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  pvectsz[ptsz->index_multipole] =  pvectsz[ptsz->index_multipole_1];
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Y' part)
+  r_cov_Y_Y_ssc_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                                     epsrel, epsabs,
+                                                     integrand_patterson_test,
+                                                     params,ptsz->patterson_show_neval);
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  pvectsz[ptsz->index_multipole] =  pvectsz[ptsz->index_multipole_2];
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('Y' part)
+  r_cov_Y_Y_ssc_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                                     epsrel, epsabs,
+                                                     integrand_patterson_test,
+                                                     params,ptsz->patterson_show_neval);
+  r = r_cov_Y_Y_ssc_1*r_cov_Y_Y_ssc_2;
+                                     }
+
 
   else
   r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
@@ -46125,7 +46155,7 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct tszspectrum * ptsz){
 
   //Array of z
-  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM)+1e-7;
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   int index_z;
 
@@ -46511,7 +46541,7 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
                                 sigma2_hsv_var
                                 );
           ptsz->array_sigma2_hsv_at_z[index_z] = log(*sigma2_hsv_var);
-
+          //printf("%.4e \t %.4e\n",exp(ptsz->array_redshift[index_z])-1.,ptsz->array_sigma2_hsv_at_z[index_z]);
        }
 
 free(sigma2_hsv_var);

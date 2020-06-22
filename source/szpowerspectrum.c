@@ -244,6 +244,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->tllprime_sz);
    free(ptsz->cov_Y_N);
    free(ptsz->cov_Y_N_next_order);
+   free(ptsz->cov_Y_Y_ssc);
    free(ptsz->cov_N_N);
    free(ptsz->cov_N_N_hsv);
    free(ptsz->r_Y_N);
@@ -413,9 +414,22 @@ int compute_sz(struct background * pba,
         int index_mass = index_ell_mass % ptsz->nbins_M;
         Pvectsz[ptsz->index_multipole] = (double) (index_ell);
         Pvectsz[ptsz->index_mass_bin_1] = (double) (index_mass);
-        if (ptsz->sz_verbose > 0 && index_integrand==ptsz->index_integrand_id_cov_Y_N_next_order_first) printf("computing cov(Y,N) [hsv] @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_mass_bin_1]);
-        if (ptsz->sz_verbose > 0 && index_integrand==ptsz->index_integrand_id_cov_Y_N_next_order_last) printf("computing cov(Y,N) [hsv] @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_mass_bin_1]);
+        if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_cov_Y_N_next_order_first) printf("computing cov(Y,N) [ssc] @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_mass_bin_1]);
+        if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_cov_Y_N_next_order_last) printf("computing cov(Y,N) [ssc] @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_mass_bin_1]);
+        if (ptsz->sz_verbose > 1) printf("computing cov(Y,N) [hsv] @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_mass_bin_1]);
       }
+      else if (index_integrand>=ptsz->index_integrand_id_cov_Y_Y_ssc_first && index_integrand <= ptsz->index_integrand_id_cov_Y_Y_ssc_last && ptsz->has_sz_cov_Y_Y_ssc){
+         Pvectsz[ptsz->index_md] = ptsz->index_md_cov_Y_Y_ssc;
+         int index_multipole_1_multipole_2 = (int) (index_integrand - ptsz->index_integrand_id_cov_Y_Y_ssc_first);
+         int n = (-1.+sqrt(1. + 4.*2.*index_multipole_1_multipole_2))/2.;
+         int index_multipole_1 = floor(n);
+         int index_multipole_2 = index_multipole_1_multipole_2 -index_multipole_1*(index_multipole_1+1)/2;
+         Pvectsz[ptsz->index_multipole_1] = (double) (index_multipole_1);
+         Pvectsz[ptsz->index_multipole_2] = (double) (index_multipole_2);
+         if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_cov_Y_Y_ssc_first) printf("computing cov(Y,Y) [ssc] @ ell_id = %.0f, ell_id = %.0f\n",Pvectsz[ptsz->index_multipole_1],Pvectsz[ptsz->index_multipole_2]);
+         if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_cov_Y_Y_ssc_last) printf("computing cov(Y,Y) [ssc] @ ell_id = %.0f, ell_id = %.0f\n",Pvectsz[ptsz->index_multipole_1],Pvectsz[ptsz->index_multipole_2]);
+         if (ptsz->sz_verbose > 1) printf("computing cov(Y,Y) [ssc] @ ell_id = %.0f, ell_id = %.0f\n",Pvectsz[ptsz->index_multipole_1],Pvectsz[ptsz->index_multipole_2]);
+       }
 
     else if (index_integrand>=ptsz->index_integrand_id_kSZ_kSZ_gal_1halo_first && index_integrand <= ptsz->index_integrand_id_kSZ_kSZ_gal_1halo_last && ptsz->has_kSZ_kSZ_gal_1halo){
        Pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_1halo;
@@ -564,6 +578,17 @@ int compute_sz(struct background * pba,
 
 
  }
+ if (_cov_Y_Y_ssc_){
+   int index_multipole_1 = (int) Pvectsz[ptsz->index_multipole_1];
+   int index_multipole_2 = (int) Pvectsz[ptsz->index_multipole_2];
+
+
+  ptsz->cov_Y_Y_ssc[index_multipole_1][index_multipole_2] = Pvectsz[ptsz->index_integral]
+                                                            /pow(ptsz->Tcmb_gNU,2.*ptsz->exponent_unit);
+  ptsz->cov_Y_Y_ssc[index_multipole_2][index_multipole_1] = ptsz->cov_Y_Y_ssc[index_multipole_1][index_multipole_2];
+
+
+}
 
   if (_kSZ_kSZ_gal_1halo_){
     int index_l = (int) Pvectsz[ptsz->index_multipole];
@@ -743,6 +768,8 @@ double integrand_at_m_and_z(double logM,
            evaluate_sigma2_hsv(pvecback,pvectsz,pba,pnl,ptsz);
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
+           //printf("%.4e \t %.4e \t %4.e \n",pvectsz[ptsz->index_sigma2_hsv],pvectsz[ptsz->index_halo_bias],pvectsz[ptsz->index_completeness]);
+
            pvectsz[ptsz->index_integrand] =  ptsz->Omega_survey
                                              *pvectsz[ptsz->index_chi2]
                                              *pvectsz[ptsz->index_hmf]
@@ -778,6 +805,33 @@ double integrand_at_m_and_z(double logM,
                                              *pvectsz[ptsz->index_hmf]
                                              *pvectsz[ptsz->index_completeness]
                                              *pvectsz[ptsz->index_halo_bias]
+                                             *pvectsz[ptsz->index_sigma2_hsv];
+                                           }
+
+           if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
+
+           evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+
+           pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
+                                             *pvectsz[ptsz->index_hmf]
+                                             *pvectsz[ptsz->index_completeness]
+                                             *pvectsz[ptsz->index_halo_bias]
+                                             *pow(pressure_profile_at_ell,2.);
+
+                                           }
+        }
+ else if  (_cov_Y_Y_ssc_){
+
+           if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
+
+           evaluate_sigma2_hsv(pvecback,pvectsz,pba,pnl,ptsz);
+           evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+
+           pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
+                                             *pvectsz[ptsz->index_hmf]
+                                             *pvectsz[ptsz->index_completeness]
+                                             *pvectsz[ptsz->index_halo_bias]
+                                             *pow(pressure_profile_at_ell,2.)
                                              *pvectsz[ptsz->index_sigma2_hsv];
                                            }
 
@@ -2179,14 +2233,19 @@ int write_output_to_files_cl(struct nonlinear * pnl,
       double ell;
       for (index_l=0;index_l<ptsz->nlSZ;index_l++)
          for (index_l_prime=0;index_l_prime<index_l+1;index_l_prime++) {
-           ptsz->r_cl_clp[index_l][index_l_prime] = ptsz->tllprime_sz[index_l][index_l_prime]/ptsz->Omega_survey
-                                                    /sqrt(ptsz->cov_cl_cl[index_l])
-                                                    /sqrt(ptsz->cov_cl_cl[index_l_prime]);
+           ptsz->r_cl_clp[index_l][index_l_prime] = (ptsz->tllprime_sz[index_l][index_l_prime]/ptsz->Omega_survey + ptsz->cov_Y_Y_ssc[index_l][index_l_prime])
+                                                    /sqrt(ptsz->cov_cl_cl[index_l] + ptsz->cov_Y_Y_ssc[index_l][index_l])
+                                                    /sqrt(ptsz->cov_cl_cl[index_l_prime]+ ptsz->cov_Y_Y_ssc[index_l_prime][index_l_prime]);
+          // ptsz->r_cl_clp[index_l][index_l_prime] = (ptsz->cov_Y_Y_ssc[index_l][index_l_prime])
+          //                                          /sqrt(ptsz->cov_cl_cl[index_l] + ptsz->cov_Y_Y_ssc[index_l][index_l])
+          //                                          /sqrt(ptsz->cov_cl_cl[index_l_prime]+ ptsz->cov_Y_Y_ssc[index_l_prime][index_l_prime]);
+
+
 
            ptsz->r_cl_clp[index_l_prime][index_l] = ptsz->r_cl_clp[index_l][index_l_prime];
 
-           if (index_l==index_l_prime)
-             ptsz->r_cl_clp[index_l_prime][index_l] = 1.;
+           // if (index_l==index_l_prime)
+           //   ptsz->r_cl_clp[index_l_prime][index_l] = 1.;
 
            ell_prime = ptsz->ell[index_l_prime];
            ell = ptsz->ell[index_l];
@@ -2231,9 +2290,9 @@ if (ptsz->has_sz_cov_Y_N){
       for (index_l=0;index_l<ptsz->nlSZ;index_l++){
          for (index_M_bins=0;index_M_bins<ptsz->nbins_M;index_M_bins++){
 
-           ptsz->r_Y_N[index_l][index_M_bins] = ptsz->cov_Y_N[index_l][index_M_bins]
-                                                /sqrt(ptsz->cov_N_N[index_M_bins])
-                                                /sqrt(ptsz->cov_cl_cl[index_l]);
+           ptsz->r_Y_N[index_l][index_M_bins] = (ptsz->cov_Y_N[index_l][index_M_bins]+ptsz->cov_Y_N_next_order[index_l][index_M_bins])
+                                                /sqrt(ptsz->cov_N_N[index_M_bins]+ptsz->cov_N_N_hsv[index_M_bins][index_M_bins])
+                                                /sqrt(ptsz->cov_cl_cl[index_l]+ptsz->cov_Y_Y_ssc[index_l][index_l]);
 
             fprintf(fp,"%e\t",ptsz->r_Y_N[index_l][index_M_bins]);
          }
@@ -2579,7 +2638,7 @@ printf("\n");
       {
 
 
-         printf("ell = %.3e\t M_min = %.3e\t M_max = %.3e\t cov_Y_N = %.3e\t cov_Y_N [hsv] = %.3e\t cov_N_N = %.3e\t cov_N_N [hsv] = %.3e\t cov_Y_Y = %.3e\n",
+         printf("ell = %.3e\t M_min = %.3e\t M_max = %.3e\t cov_Y_N = %.3e\t cov_Y_N [ssc] = %.3e\t cov_N_N = %.3e\t cov_N_N [ssc] = %.3e\t cov_Y_Y = %.3e\t cov_Y_Y [ssc] = %.3e\n",
                    ptsz->ell[index_l],
                    ptsz->cov_Y_N_mass_bin_edges[index_M_bins],
                    ptsz->cov_Y_N_mass_bin_edges[index_M_bins+1],
@@ -2587,7 +2646,8 @@ printf("\n");
                    ptsz->cov_Y_N_next_order[index_l][index_M_bins],
                    ptsz->cov_N_N[index_M_bins],
                    ptsz->cov_N_N_hsv[index_M_bins][index_M_bins],
-                   ptsz->cov_cl_cl[index_l]);
+                   ptsz->cov_cl_cl[index_l],
+                   ptsz->cov_Y_Y_ssc[index_l][index_l]);
       }
 
         printf("\n");
@@ -2888,7 +2948,9 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_pk_for_halo_bias = ptsz->index_k_value_for_halo_bias +1;
    ptsz->index_mass_bin_1 = ptsz->index_pk_for_halo_bias + 1;
    ptsz->index_mass_bin_2 = ptsz->index_mass_bin_1 + 1;
-   ptsz->index_sigma2_hsv = ptsz->index_mass_bin_2 + 1;
+   ptsz->index_multipole_1 = ptsz->index_mass_bin_2  + 1;
+   ptsz->index_multipole_2 = ptsz->index_multipole_1 + 1;
+   ptsz->index_sigma2_hsv = ptsz->index_multipole_2 + 1;
    ptsz->index_part_id_cov_hsv = ptsz->index_sigma2_hsv + 1;
    ptsz->index_redshift_for_dndlnM = ptsz->index_part_id_cov_hsv + 1;
    ptsz->index_mass_for_dndlnM = ptsz->index_redshift_for_dndlnM +1;
@@ -2940,6 +3002,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    class_alloc(ptsz->cov_N_N_hsv,ptsz->nbins_M*sizeof(double *),ptsz->error_message);
    class_alloc(ptsz->cov_Y_N,ptsz->nlSZ*sizeof(double *),ptsz->error_message);
    class_alloc(ptsz->cov_Y_N_next_order,ptsz->nlSZ*sizeof(double *),ptsz->error_message);
+   class_alloc(ptsz->cov_Y_Y_ssc,ptsz->nlSZ*sizeof(double *),ptsz->error_message);
    class_alloc(ptsz->r_Y_N,ptsz->nlSZ*sizeof(double *),ptsz->error_message);
    int index_l,index_l_prime;
    for (index_l=0;index_l<ptsz->nlSZ;index_l++){
@@ -2990,6 +3053,14 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
 
    }
 
+   int index_multipole_1;
+   for (index_multipole_1 = 0; index_multipole_1<ptsz->nlSZ; index_multipole_1 ++){
+      class_alloc(ptsz->cov_Y_Y_ssc[index_multipole_1],(ptsz->nlSZ)*sizeof(double),ptsz->error_message);
+      int index_multipole_2;
+      for (index_multipole_2 = 0; index_multipole_2<ptsz->nlSZ; index_multipole_2 ++)
+      ptsz->cov_Y_Y_ssc[index_multipole_1][index_multipole_2] = 0.;
+
+   }
    ptsz->index_integrand_id_dndlnM_first  = 0;
    ptsz->index_integrand_id_dndlnM_last = ptsz->index_integrand_id_dndlnM_first + ptsz->N_redshift_dndlnM*ptsz->N_mass_dndlnM - 1;
    ptsz->index_integrand_id_hmf = ptsz->index_integrand_id_dndlnM_last + 1;
@@ -3006,7 +3077,9 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_integrand_id_cov_Y_N_last = ptsz->index_integrand_id_cov_Y_N_first + ptsz->nlSZ*ptsz->nbins_M - 1;
    ptsz->index_integrand_id_cov_N_N_hsv_first = ptsz->index_integrand_id_cov_Y_N_last + 1;
    ptsz->index_integrand_id_cov_N_N_hsv_last = ptsz->index_integrand_id_cov_N_N_hsv_first +ptsz->nbins_M*(ptsz->nbins_M+1)/2 - 1;
-   ptsz->index_integrand_id_cov_N_N_first = ptsz->index_integrand_id_cov_N_N_hsv_last + 1;
+   ptsz->index_integrand_id_cov_Y_Y_ssc_first = ptsz->index_integrand_id_cov_N_N_hsv_last + 1;
+   ptsz->index_integrand_id_cov_Y_Y_ssc_last = ptsz->index_integrand_id_cov_Y_Y_ssc_first +ptsz->nlSZ*(ptsz->nlSZ+1)/2 - 1;
+   ptsz->index_integrand_id_cov_N_N_first = ptsz->index_integrand_id_cov_Y_Y_ssc_last + 1;
    ptsz->index_integrand_id_cov_N_N_last = ptsz->index_integrand_id_cov_N_N_first + ptsz->nbins_M - 1;
    ptsz->index_integrand_id_cov_Y_N_next_order_first = ptsz->index_integrand_id_cov_N_N_last + 1;
    ptsz->index_integrand_id_cov_Y_N_next_order_last = ptsz->index_integrand_id_cov_Y_N_next_order_first + ptsz->nlSZ*ptsz->nbins_M - 1;

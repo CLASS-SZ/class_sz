@@ -4,6 +4,7 @@ import numpy as np
 import os
 import subprocess
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib.pyplot import cm
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
@@ -13,33 +14,6 @@ r_dict = {} #dictionary of results
 
 def run(args):
     os.chdir(path_to_class)
-    #collect arguments
-    # param_name = args.param_name
-    #
-    # if (param_name == 'sigma8'):
-    #     label_key = r'$\sigma_8$'
-    # if (param_name == 'b'):
-    #     param_name = 'HSEbias'
-    #     label_key = r'$b$'
-    # if (param_name == 'h'):
-    #     label_key = r'$h$'
-    # if (param_name == 'Omega_cdm'):
-    #     label_key = r'$\Omega_\mathrm{m}$'
-    #
-    # else:
-    #     label_key = 'val'
-
-
-    # p_min = float(args.p_min)
-    # p_max = float(args.p_max)
-    # N = int(args.N)
-    # spacing = args.spacing
-
-    #define array of parameter values
-    # if(spacing=='log'):
-    #     p = np.logspace(np.log10(p_min),np.log10(p_max),N)
-    # elif(spacing=='lin'):
-    #     p = np.linspace(p_min,p_max,N)
 
     #load template parameter file into dictionnary
     p_dict = {}
@@ -70,6 +44,7 @@ def run(args):
     p_dict[param_name] = 1.e11
     param_name = 'M2SZ'
     p_dict[param_name] = 1.e16
+    p_dict['include_ssc'] = 'yes'
     param_name = 'number of mass bins for cov(Y,N)'
     p_dict[param_name] = float(args.nbins_mass)
 
@@ -124,9 +99,9 @@ def run(args):
     ax.set_ylabel(r'$\sigma_N/N$',size=title_size)
 
     y_axis = shot_error
-    ax.plot(x_axis,y_axis,color='k',ls='--',alpha = 1.,label = "shot error")
+    ax.plot(x_axis,y_axis,color='k',ls='--',alpha = 1.,label = "Poisson")
     y_axis = sample_error
-    ax.plot(x_axis,y_axis,color='k',ls='-',alpha = 1.,label = "sample error")
+    ax.plot(x_axis,y_axis,color='k',ls='-',alpha = 1.,label = "SSC")
 
     ax2 = ax1.twinx()
     ax = ax2
@@ -177,7 +152,7 @@ def run(args):
     C = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum_r_N_N.txt')
     x_axis = m_bins_center
     #remove the temporary files
-    subprocess.call(['rm','-r',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
+    #subprocess.call(['rm','-r',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
 
     SZ_ps_cov = C
     m_array = x_axis
@@ -203,8 +178,14 @@ def run(args):
     Z = np.log10(SZ_ps_cov)
     print(Z)
 
+    if (p_dict['include_ssc']!='yes'):
+        colors=['yellow']
+        cmap = mpl.colors.ListedColormap(colors)
+    else:
+        cmap = plt.get_cmap('viridis')
+
     surf = ax.imshow(Z, interpolation='nearest', origin='lower', aspect='auto',
-            extent=[X[0], X[-1], Y[0], Y[-1]])
+            extent=[X[0], X[-1], Y[0], Y[-1]],cmap=cmap)
 
     ax.tick_params(axis = 'x',which='both',length=5,direction='out', pad=7)
     ax.tick_params(axis = 'y',which='both',length=5,direction='out', pad=5)
@@ -234,11 +215,12 @@ def run(args):
 
 
 
-    cbaxes = fig.add_axes([0.81, 0.23, 0.05, 0.6])
 
-    axcb = fig.colorbar(surf,cax=cbaxes,pad=0.)
-    plt.subplots_adjust(wspace = .1)
-    axcb.set_label(r'$\mathrm{log}_{10}[\frac{\mathrm{cov(N_i,N_j)}}{\sqrt{\mathrm{cov(N_i,N_i)}\mathrm{cov(N_j,N_j)}}}]$',rotation=-90,labelpad = 40,y=0.5,size=15)
+    if (p_dict['include_ssc']=='yes'):
+        cbaxes = fig.add_axes([0.81, 0.23, 0.05, 0.6])
+        axcb = fig.colorbar(surf,cax=cbaxes,pad=0.)
+        plt.subplots_adjust(wspace = .1)
+        axcb.set_label(r'$\mathrm{log}_{10}[\frac{\mathrm{cov(N_i,N_j)}}{\sqrt{\mathrm{cov(N_i,N_i)}\mathrm{cov(N_j,N_j)}}}]$',rotation=-90,labelpad = 40,y=0.5,size=15)
 
     #fig.tight_layout()
     FIG_NAME = '/cov_N-N'

@@ -1890,6 +1890,7 @@ int input_read_parameters(
         ptsz->has_sz_cov_N_N_hsv =_TRUE_;
         ptsz->has_sigma2_hsv = _TRUE_;
         ptsz->has_sz_cov_Y_N =_TRUE_;
+        ptsz->has_sz_cov_Y_Y_ssc =_TRUE_;
         ptsz->has_sz_cov_N_N =_TRUE_;
         ptsz->has_sz_ps =_TRUE_;
         ptsz->has_sz_trispec =_TRUE_;
@@ -1998,6 +1999,18 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
 
+      }
+
+
+      class_call(parser_read_string(pfc,"include_ssc",&string1,&flag1,errmsg),
+                   errmsg,
+                   errmsg);
+        if (flag1 == _TRUE_) {
+            if ((strstr(string1,"yes") != NULL)){
+            // ptsz->has_sz_cov_N_N_hsv = _TRUE_;
+            // ptsz->has_sz_cov_Y_N_next_order = _TRUE_;
+            ptsz->has_sz_cov_Y_Y_ssc = _TRUE_;
+        }
       }
 
       /* multipoles SZ */
@@ -4216,6 +4229,7 @@ int input_default_params(
   ptsz->has_hmf = _FALSE_;
   ptsz->has_mean_y = _FALSE_;
   ptsz->has_sz_cov_Y_N = _FALSE_;
+  ptsz->has_sz_cov_Y_Y_ssc = _FALSE_;
   ptsz->has_sz_cov_Y_N_next_order = _FALSE_;
   ptsz->has_sz_cov_N_N = _FALSE_;
   ptsz->has_sz_cov_N_N_hsv = _FALSE_;
@@ -4239,6 +4253,7 @@ int input_default_params(
   ptsz->index_md_isw_tsz = 13;
   ptsz->index_md_isw_auto = 14;
   ptsz->index_md_dndlnM = 15;
+  ptsz->index_md_cov_Y_Y_ssc = 16;
 
   ptsz->HMF_prescription_NCDM=2; //no-pres
 

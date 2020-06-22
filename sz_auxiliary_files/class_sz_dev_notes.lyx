@@ -532,10 +532,6 @@ noprefix "false"
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
@@ -610,6 +606,17 @@ assuming a circular-shaped survey geometry with area
 \[
 N_{i}=\int d\chi\Omega_{s}\chi^{2}\int dM_{i}\frac{dn}{dM_{i}}
 \]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\mathrm{cov}\left(A,B\right) & \simeq\underset{Poisson}{\underbrace{\left.\mathrm{cov}\left(A,B\right)\right|_{\delta_{b}=0}}}+\underset{Super\,\,Sample\,\,Covariance}{\underbrace{\sigma_{m}^{2}\left(V_{\mathrm{S}}\right)\frac{\partial A}{\partial\delta_{b}}\frac{\partial B}{\partial\delta_{b}}}}
+\end{align*}
 
 \end_inset
 

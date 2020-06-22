@@ -57,8 +57,12 @@ def run(args):
     param_name = 'output'
     #p_dict[param_name] = 'tSZ_cov_Y_N'
     p_dict[param_name] = 'tSZ_cov_hsv'
+    #p_dict[param_name] = 'tSZ_1h'
     #p_dict[param_name] = 'tSZ_cov_N_N'
 
+    f_sky = 0.5
+    param_name = 'f_sky'
+    p_dict[param_name] = f_sky
     param_name = 'multipoles_sz'
     p_dict[param_name] = 'ell_mock'
     param_name = 'ell_min_mock'
@@ -69,10 +73,13 @@ def run(args):
     p_dict[param_name] = 1.e-30
     param_name = 'mass_epsabs'
     p_dict[param_name] = 1.e-30
+    p_dict['mass_epsrel'] = 1.e-4
+    p_dict['redshift_epsrel'] = 1.e-4
     param_name = 'M1SZ'
     p_dict[param_name] = 1.e11
     param_name = 'M2SZ'
     p_dict[param_name] = 1.e16
+    p_dict['include_ssc'] = 'yes'
     param_name = 'number of mass bins for cov(Y,N)'
     p_dict[param_name] = float(args.nbins_mass)
 
