@@ -17,7 +17,7 @@ vpath .base build
 ########################################################
 
 # your C compiler:
-CC       = gcc  
+CC       = gcc
 #CC       = gcc  -Wunused-variable
 #CC       = icc
 #CC       = pgcc
@@ -32,6 +32,7 @@ AR        = ar rv
 # "PYTHON=python3 make all" (THanks to Marius Millea for pyhton3
 # compatibility)
 PYTHON ?= /Users/boris/opt/anaconda3/bin/python
+#PYTHON ?= /Users/boris/opt/anaconda2/bin/python
 
 # your optimization flag
 OPTFLAG = -O4 -ffast-math #-march=native

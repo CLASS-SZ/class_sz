@@ -4178,11 +4178,11 @@ int input_default_params(
   ptsz->patterson_show_neval = 0;
 
 
-  ptsz->redshift_epsrel = 1e-3;
-  ptsz->redshift_epsabs = 1e-30;
+  ptsz->redshift_epsrel = 1e-6;
+  ptsz->redshift_epsabs = 1e-40;
 
-  ptsz->mass_epsrel = 1e-3;
-  ptsz->mass_epsabs = 1e-30;
+  ptsz->mass_epsrel = 1e-6;
+  ptsz->mass_epsabs = 1e-40;
 
   ptsz->pressure_profile_epsrel = 1e-9;
   ptsz->pressure_profile_epsabs = 1e-10;
