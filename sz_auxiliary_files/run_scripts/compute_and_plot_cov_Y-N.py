@@ -13,6 +13,8 @@ r_dict = {} #dictionary of results
 
 def run(args):
     os.chdir(path_to_class)
+    #param_file = "class-sz_parameters.ini"
+    param_file = "class-sz_parameters_rotti++20.ini"
     #collect arguments
     # param_name = args.param_name
     #
@@ -43,7 +45,7 @@ def run(args):
 
     #load template parameter file into dictionnary
     p_dict = {}
-    with open(path_to_class+"sz_auxiliary_files/run_scripts/class-sz_parameters.ini") as f:
+    with open(path_to_class+"sz_auxiliary_files/run_scripts/" + param_file) as f:
         for line in f:
             x = line.strip()
             if not x.startswith("#"):
@@ -57,6 +59,9 @@ def run(args):
     param_name = 'output'
     #p_dict[param_name] = 'tSZ_cov_Y_N'
     p_dict[param_name] = 'tSZ_cov_hsv'
+    p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
+    p_dict['component of tSZ power spectrum'] = 'diffuse'
+    p_dict['signal-to-noise cut-off for ps completeness analysis'] = 6.
     #p_dict[param_name] = 'tSZ_1h'
     #p_dict[param_name] = 'tSZ_cov_N_N'
 

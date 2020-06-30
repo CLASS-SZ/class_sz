@@ -22,8 +22,9 @@ def run(args):
     #     parameter_file = 'class-sz_parameters.ini'
 
     #'class-sz_chill_B12_parameters.ini'
-    #parameter_file = 'class-sz_parameters.ini'
-    parameter_file = 'class-sz_chill_B12_parameters.ini'
+    parameter_file = 'class-sz_parameters_rotti++20.ini'
+    #parameter_file ='tSZ_params_ref_resolved-rotti++20_snr12_step_2.ini'
+    # parameter_file = 'class-sz_chill_B12_parameters.ini'
     #parameter_file = 'class-sz_parameters_for_sz_ps_completeness_analysis_rotti++20.ini'
 
 
@@ -96,20 +97,20 @@ def run(args):
                 p_dict[key] = val
     #print(p_dict)
     #set correct Output
-    p_dict['output'] = 'tSZ_1h'
-    p_dict['mass function'] = 'T10'
-    p_dict['pressure profile'] = 'B12'
-    p_dict['create_ref_trispectrum_for_cobaya'] = 'NO'
-    p_dict['background_verbose'] = 2
-    p_dict['thermodynamics_verbose'] = 2
+    # p_dict['output'] = 'tSZ_1h'
+    # #p_dict['mass function'] = 'T10'
+    # #p_dict['pressure profile'] = 'B12'
+    # p_dict['create_ref_trispectrum_for_cobaya'] = 'NO'
+    # p_dict['background_verbose'] = 2
+    # p_dict['thermodynamics_verbose'] = 2
     p_dict['sz_verbose'] = 2
     p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
     p_dict['write sz results to files'] = 'yes'
-    p_dict['pressure_profile_epsabs'] = 1.e-20
-    p_dict['pressure_profile_epsrel'] = 1.e-3
-    p_dict['redshift_epsabs'] = 1.e-30
-    p_dict['mass_epsabs'] = 1.e-30
-    p_dict['component of tSZ power spectrum'] = 'total'
+    #p_dict['pressure_profile_epsabs'] = 1.e-20
+    # p_dict['pressure_profile_epsrel'] = 1.e-3
+    # p_dict['redshift_epsabs'] = 1.e-30
+    # p_dict['mass_epsabs'] = 1.e-30
+    p_dict['component of tSZ power spectrum'] = 'diffuse'
     if(args.output):
         print(args.output)
         p_dict['output'] = args.output
