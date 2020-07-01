@@ -649,6 +649,17 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
                 double * logMDEL,
                 struct tszspectrum * ptsz);
 
+  int zbrent_V_to_D_sz(double x1,
+                double x2,
+                double tol,
+                double VAR1,
+                double VAR4,
+                double * fa,
+                double * fb,
+                double * logMDEL,
+                double * pvectsz,
+                struct tszspectrum * ptsz);
+
   int CvirMvirKLYPIN(double * result,
                      double logM ,
                      double z,
@@ -732,6 +743,23 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
              double,
              double *,
              struct tszspectrum * ptsz);
+
+ int mDEL_to_mVIR(
+               double mDEL ,
+               double delrho,
+               double * result,
+               double * pvectsz,
+               struct tszspectrum * ptsz
+             );
+
+ int mDtomV (
+             double logMVIR ,
+             double mD,
+             double delrho,
+             double * mRES,
+             double * pvectsz,
+             struct tszspectrum * ptsz
+           );
 
   int plc_gnfw (double * plc_gnfw_x,
                 double x ,

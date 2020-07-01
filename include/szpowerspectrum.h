@@ -223,6 +223,12 @@ struct tszspectrum {
   int  index_ls;
   int  index_rs;
   int  index_m200;
+  int  index_m180m;
+  int  index_m200m;
+  int  index_m1600m;
+  int  index_m500c;
+  int  index_mass_for_hmf;
+  int  index_r500c;
   int  index_Rh;
   int  index_mf;
   int  index_dlognudlogRh;

@@ -10,8 +10,46 @@ from scipy import interpolate
 from scipy import stats
 from datetime import datetime
 
+
 path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
 FIG_DIR = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/run_scripts/figures'
+
+
+def scientific_notation(p_value,digit=2):
+    str_xinj_asked = str("%.3e"%p_value)
+    text_gamma_str1 = ''
+    if p_value>1.:
+        num = float(str_xinj_asked.split('e+')[0])
+        exp = int(str_xinj_asked.split('e+')[1])
+        if (round(num,digit)==10.):
+            num = 1.
+            exp = exp + 1
+        if digit == 1:
+            text_gamma_str1 = r'$%.1f \times 10^{%d}$'% (num,exp)
+        if digit == 2:
+            text_gamma_str1 = r'$%.2f \times 10^{%d}$'% (num,exp)
+        if digit == 0:
+            text_gamma_str1 = r'$%.0f \times 10^{%d}$'% (num,exp)
+        if num == 1.:
+            text_gamma_str1 = r'$10^{%d}$'% (exp)
+    if p_value<1.:
+        num = float(str_xinj_asked.split('e-')[0])
+        exp = int(str_xinj_asked.split('e-')[1])
+        if (round(num,digit)==10.):
+            num = 1.
+            exp = exp - 1
+        if digit == 1:
+            text_gamma_str1 = r'$%.1f \times 10^{-%d}$'% (num,exp)
+        if digit == 2:
+            text_gamma_str1 = r'$%.2f \times 10^{-%d}$'% (num,exp)
+        if digit == 0:
+            text_gamma_str1 = r'$%.0f \times 10^{-%d}$'% (num,exp)
+        if num == 1.:
+            text_gamma_str1 = r'$10^{-%d}$'% (exp)
+    if p_value==1.:
+        text_gamma_str1 = r'$1$'
+    return text_gamma_str1
+
 
 
 r_dict = {} #dictionary of results
@@ -48,7 +86,7 @@ def run(args):
     elif (param_name == 'm_ncdm'):
         label_key = r'$\Sigma m_\mathrm{\nu}$'
     elif (param_name == 'signal-to-noise cut-off for ps completeness analysis'):
-        label_key = 'SNR cut'
+        label_key = r'$q_\mathrm{cut}$'
     else:
         label_key = 'val'
 
@@ -110,6 +148,10 @@ def run(args):
     # p_dict['pressure_profile_epsrel'] = 1.e-3
     # p_dict['redshift_epsabs'] = 1.e-30
     # p_dict['mass_epsabs'] = 1.e-30
+    p_dict['redshift_epsrel'] = 1.e-3
+    p_dict['mass_epsrel'] = 1.e-3
+    p_dict['ndimSZ'] = 50
+    p_dict['n_arraySZ'] = 15
     p_dict['component of tSZ power spectrum'] = 'diffuse'
     if(args.output):
         print(args.output)
@@ -185,7 +227,7 @@ def run(args):
     else:
         f_sky = 1.
 
-    colors = iter(cm.autumn(np.linspace(0, 1, N)))
+    colors = iter(cm.viridis(np.linspace(0, 1, N)))
 
 
 
@@ -217,7 +259,8 @@ def run(args):
             if (param_name == 'm_ncdm'):
                 val_label.append(label_key + ' = %3.0f'%(1000*p_val)+ ' meV')
             else:
-                val_label.append(label_key + ' = %.2e'%(p_val))
+                #val_label.append(label_key + ' = ' + scientific_notation(p_val))
+                val_label.append(label_key + ' = ' + "%.2f"%(p_val))
 
             col.append(next(colors))
 
@@ -288,12 +331,14 @@ def run(args):
                         if (args.show_error_bars == 'yes'):
                             ax.errorbar(multipoles[id_p],cl_1h[id_p],yerr=[verr,verr],color=col[id_p],ls='-.',alpha = 1.,label = val_label[id_p])
                         else:
-                            #ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
-                            ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^1h class_sz')
+                            ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+                            #ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^1h class_sz')
                     if ('tSZ_2h' in p_dict['output']):
                         #print(cl_2h[id_p])
                         #ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-',label = val_label[id_p])
-                        ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-.',label = 'Cl^2h class_sz')
+                        #ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-.',label = 'Cl^2h class_sz')
+                        ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-.')
+
             plt.draw()
             plt.pause(0.05)
 
@@ -448,27 +493,29 @@ def run(args):
                 subprocess.call(['cp',path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt', path_to_class+'output/'])
 
 
-        if (args.show_legend == 'yes'):
-            if (args.plot_isw_tsz == 'yes' or args.plot_isw_auto == 'yes'):
-                ax1.legend(loc=1)
-            else:
-                ax1.legend(loc=2)
-            if (args.print_rel_diff == 'yes'):
-                ax2.legend(loc=1,ncol = 1)
+    if (args.show_legend == 'yes'):
+        if (args.plot_isw_tsz == 'yes' or args.plot_isw_auto == 'yes'):
+            ax1.legend(loc=1)
+        else:
+            ax1.legend(loc=2)
+        if (args.print_rel_diff == 'yes'):
+            ax2.legend(loc=1,ncol = 1)
 
 
-        fig.tight_layout()
-        if (args.save_fig == 'yes'):
-            FIG_NAME = '/tSZ_varying_' + param_name
-            plt.savefig(FIG_DIR + FIG_NAME +".pdf")
+    fig.tight_layout()
+
+
+    if (args.save_fig == 'yes'):
+        FIG_NAME = '/tSZ_varying_' + param_name
+        plt.savefig(FIG_DIR + FIG_NAME +".pdf")
+
+    plt.show(block=True)
 
 
 
 
 
 
-
-        plt.show(block=True)
         #subprocess.call(['rm','-r',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
 
 

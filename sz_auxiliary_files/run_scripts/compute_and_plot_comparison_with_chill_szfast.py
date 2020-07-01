@@ -1,5 +1,5 @@
 #! python3
-#e.g., python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name sigma8 -min 0.7 -max 0.9 -N 5 -spacing log -show_legend yes -show_error_bars yes -output ' ' -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions yes
+# $ python sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_chill_szfast.py  -param_name h  -min 0.697 -max 0.9 -N 1 -spacing log -show_legend yes -show_error_bars no -output 'tSZ_1h,tSZ_2h' -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions no -plot_ref_data yes -print_rel_diff yes
 # <!> Never modify parameters in this file.
 import argparse
 import numpy as np
