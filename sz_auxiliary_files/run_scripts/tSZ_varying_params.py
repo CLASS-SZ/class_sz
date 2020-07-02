@@ -148,8 +148,8 @@ def run(args):
     # p_dict['pressure_profile_epsrel'] = 1.e-3
     # p_dict['redshift_epsabs'] = 1.e-30
     # p_dict['mass_epsabs'] = 1.e-30
-    p_dict['redshift_epsrel'] = 1.e-3
-    p_dict['mass_epsrel'] = 1.e-3
+    p_dict['redshift_epsrel'] = 1.e-4
+    p_dict['mass_epsrel'] = 1.e-4
     p_dict['ndimSZ'] = 50
     p_dict['n_arraySZ'] = 15
     p_dict['component of tSZ power spectrum'] = 'diffuse'
