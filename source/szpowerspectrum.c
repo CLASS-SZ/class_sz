@@ -2215,13 +2215,14 @@ int write_output_to_files_cl(struct nonlinear * pnl,
        fprintf(fp,"# 10:ell*(ell+1)/(2*pi)*C_l^y-phi (1-halo term) [muK] [TBC]\n");
        fprintf(fp,"# 11:ell*(ell+1)/(2*pi)*C_l^isw-phi [muK] [TBC]\n");
        fprintf(fp,"# 11:ell*(ell+1)/(2*pi)*C_l^isw-y [muK] [TBC]\n");
+       fprintf(fp,"# 12: signal-to-noise for cl_yy\n");
        fprintf(fp,"\n");
 
       for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
          double sig_cl_squared;
          double ell = ptsz->ell[index_l];
-         sig_cl_squared = 2.*pow(ptsz->cl_sz_1h[index_l]/(ell*(ell+1.))*2.*_PI_,2.)/(2.*ell+1.);
+         sig_cl_squared = 2.*pow((ptsz->cl_sz_1h[index_l]+ptsz->cl_sz_1h[index_l])/(ell*(ell+1.))*2.*_PI_,2.)/(2.*ell+1.);
 
 
          //binned gaussian variance
@@ -2255,14 +2256,14 @@ int write_output_to_files_cl(struct nonlinear * pnl,
          }
 
          //normalised cov:
-         // see e.g., Eq. 38 of Takada and Spergel 2013
+         // see e.g., A 28 of Hill and Pajer 2013
          ptsz->sig_cl_squared_binned[index_l] = sig_cl_squared_binned/ptsz->f_sky;
          ptsz->cov_cl_cl[index_l] = ptsz->sig_cl_squared_binned[index_l] +  ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey;
 
 
 
             fprintf(fp,
-                    "%e\t\t %e\t\t %e\t\t %e\t\t %e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\n",
+                    "%e\t\t %e\t\t %e\t\t %e\t\t %e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\n",
                     ptsz->ell[index_l],
                     ptsz->cl_sz_1h[index_l],
                     sig_cl_squared,
@@ -2275,7 +2276,8 @@ int write_output_to_files_cl(struct nonlinear * pnl,
                     ell*ell*(ell+1.)/(2.*_PI_)*ptsz->cl_tSZ_lens_1h[index_l],
                     ell*(ell+1.)/(2.*_PI_)*ptsz->cl_isw_lens[index_l],
                     ell*(ell+1.)/(2.*_PI_)*ptsz->cl_isw_tsz[index_l],
-                    ell*(ell+1.)/(2.*_PI_)*ptsz->cl_isw_auto[index_l]
+                    ell*(ell+1.)/(2.*_PI_)*ptsz->cl_isw_auto[index_l],
+                    ell*(ell+1.)/(2.*_PI_)*sqrt(ptsz->cov_cl_cl[index_l])/(ptsz->cl_sz_1h[index_l]+ptsz->cl_sz_2h[index_l])
                     );
 
       }
