@@ -214,7 +214,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 
         fp=fopen(Filepath, "w");
         for (index_l=0;index_l<ptsz->nlSZ;index_l++)
-              fprintf(fp,"%e\t %e\n",ptsz->ell[index_l],ptsz->cl_sz[index_l]);
+              fprintf(fp,"%e\t %e\t %e\n",ptsz->ell[index_l],ptsz->cl_sz_1h[index_l],ptsz->cl_sz_2h[index_l]);
         fclose(fp);
   }
 
@@ -231,7 +231,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 int szpowerspectrum_free(struct tszspectrum *ptsz)
 {
    free(ptsz->ell);
-   free(ptsz->cl_sz);
+   free(ptsz->cl_sz_1h);
    free(ptsz->cl_isw_lens);
    free(ptsz->cl_isw_tsz);
    free(ptsz->cl_isw_auto);
@@ -514,7 +514,7 @@ int compute_sz(struct background * pba,
 
    if (_tSZ_power_spectrum_){
       int index_l = (int) Pvectsz[ptsz->index_multipole];
-       ptsz->cl_sz[index_l] = Pvectsz[ptsz->index_integral]
+       ptsz->cl_sz_1h[index_l] = Pvectsz[ptsz->index_integral]
                               *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
                               /(2*_PI_*pow(ptsz->Tcmb_gNU,ptsz->exponent_unit));
 
@@ -2221,7 +2221,7 @@ int write_output_to_files_cl(struct nonlinear * pnl,
 
          double sig_cl_squared;
          double ell = ptsz->ell[index_l];
-         sig_cl_squared = 2.*pow(ptsz->cl_sz[index_l]/(ell*(ell+1.))*2.*_PI_,2.)/(2.*ell+1.);
+         sig_cl_squared = 2.*pow(ptsz->cl_sz_1h[index_l]/(ell*(ell+1.))*2.*_PI_,2.)/(2.*ell+1.);
 
 
          //binned gaussian variance
@@ -2264,13 +2264,13 @@ int write_output_to_files_cl(struct nonlinear * pnl,
             fprintf(fp,
                     "%e\t\t %e\t\t %e\t\t %e\t\t %e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\n",
                     ptsz->ell[index_l],
-                    ptsz->cl_sz[index_l],
+                    ptsz->cl_sz_1h[index_l],
                     sig_cl_squared,
                     ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey,
                     ptsz->sig_cl_squared_binned[index_l],
                     ell*(ell+1.)/(2.*_PI_)*sqrt(ptsz->cov_cl_cl[index_l]),
                     ptsz->cl_sz_2h[index_l],
-                    ptsz->cl_te_y_y[index_l]/ptsz->cl_sz[index_l],
+                    ptsz->cl_te_y_y[index_l]/ptsz->cl_sz_1h[index_l],
                     ptsz->b_kSZ_kSZ_gal_1halo[index_l],
                     ell*ell*(ell+1.)/(2.*_PI_)*ptsz->cl_tSZ_lens_1h[index_l],
                     ell*(ell+1.)/(2.*_PI_)*ptsz->cl_isw_lens[index_l],
@@ -2662,7 +2662,7 @@ int show_results(struct background * pba,
    int index_l;
    for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
-   printf("ell = %e\t\t C_ell (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_sz[index_l]);
+   printf("ell = %e\t\t C_ell (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_sz_1h[index_l]);
 
 
  if (ptsz->has_sz_trispec){
@@ -3037,7 +3037,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->y_monopole = 0.;
 
 
-   class_alloc(ptsz->cl_sz,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   class_alloc(ptsz->cl_sz_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_isw_lens,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_isw_tsz,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_isw_auto,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
@@ -3067,7 +3067,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    class_alloc(ptsz->r_Y_N,ptsz->nlSZ*sizeof(double *),ptsz->error_message);
    int index_l,index_l_prime;
    for (index_l=0;index_l<ptsz->nlSZ;index_l++){
-      ptsz->cl_sz[index_l] = 0.;
+      ptsz->cl_sz_1h[index_l] = 0.;
       ptsz->cl_isw_lens[index_l] = 0.;
       ptsz->cl_isw_tsz[index_l] = 0.;
       ptsz->cl_isw_auto[index_l] = 0.;

@@ -45,7 +45,7 @@ struct tszspectrum {
 
   double hmf_int;
   double y_monopole;
-  double * cl_sz;
+  double * cl_sz_1h;
   double * cl_tSZ_lens_1h;
   double * cl_isw_lens;
   double * cl_isw_tsz;

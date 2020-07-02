@@ -1418,14 +1418,16 @@ cdef class Class:
 
     def cl_sz(self):
         """
-        (SZ) Return the C_l
+        (SZ) Return the 1-halo and 2-halo terms of tSZ power spectrum
         """
         cl = {}
-
+        cl['1h'] = []
+        cl['2h'] = []
         for index in range(self.tsz.nlSZ):
-            cl[index] = self.tsz.cl_sz[index]
-
+            cl['1h'].append(self.tsz.cl_sz_1h[index])
+            cl['2h'].append(self.tsz.cl_sz_2h[index])
         return cl
+
 
     def get_params_sz(self):
         """

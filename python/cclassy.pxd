@@ -272,7 +272,8 @@ cdef extern from "class.h":
         double eta0SZ
         double sigma8_Pcb
         double * ell
-        double * cl_sz
+        double * cl_sz_1h
+        double * cl_sz_2h
         double ** tllprime_sz
         short has_tszspectrum
         short sz_verbose
