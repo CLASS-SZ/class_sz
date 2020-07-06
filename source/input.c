@@ -1817,6 +1817,9 @@ int input_read_parameters(
         else if ((strstr(string1,"gsl_romberg") != NULL)){
           ptsz->integration_method_mass=3;
         }
+        else if ((strstr(string1,"gsl_qng") != NULL)){
+          ptsz->integration_method_mass=4;
+        }
       }
 
       class_read_double("mass_epsrel",ptsz->mass_epsrel);
@@ -1863,6 +1866,24 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
+      if ((strstr(string1,"m_y_y_2h") != NULL) ) {
+        ptsz->has_sz_m_y_y_2h =_TRUE_;
+        ptsz->has_sz_2halo =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+      if ((strstr(string1,"m_y_y_1h") != NULL) ) {
+        ptsz->has_sz_m_y_y_1h =_TRUE_;
+        ptsz->has_sz_ps =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
       if ((strstr(string1,"tSZ_te_y_y") != NULL) ) {
         ptsz->has_sz_te_y_y =_TRUE_;
         ptsz->has_sz_ps =_TRUE_; //ps is necessary in this case (Te = "Te_y_y/y_y")
@@ -4223,6 +4244,8 @@ int input_default_params(
   ptsz->has_tSZ_lens_1h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_1halo = _FALSE_;
   ptsz->has_sz_te_y_y = _FALSE_;
+  ptsz->has_sz_m_y_y_1h = _FALSE_;
+  ptsz->has_sz_m_y_y_2h = _FALSE_;
   ptsz->has_sz_ps = _FALSE_;
   ptsz->has_sz_2halo = _FALSE_;
   ptsz->has_sz_trispec = _FALSE_;
@@ -4254,6 +4277,8 @@ int input_default_params(
   ptsz->index_md_isw_auto = 14;
   ptsz->index_md_dndlnM = 15;
   ptsz->index_md_cov_Y_Y_ssc = 16;
+  ptsz->index_md_m_y_y_1h = 17;
+  ptsz->index_md_m_y_y_2h = 18;
 
   ptsz->HMF_prescription_NCDM=2; //no-pres
 

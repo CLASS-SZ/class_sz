@@ -45854,7 +45854,7 @@ int integrate_over_redshift(struct background * pba,
 //   /////////
 
   Pvectsz[ptsz->index_integral] = r;
-  int index_l = (int)  Pvectsz[ptsz->index_multipole];
+  //int index_l = (int)  Pvectsz[ptsz->index_multipole];
   //printf("result=%.4e z_min = %.3e z_max=%.3e ell = %f\n",r,log(1. + z_min),log(1. + z_max),ptsz->ell[index_l]);
   return _SUCCESS_;
 }
@@ -46151,7 +46151,7 @@ gsl_integration_qng(&F,log(m_min),log(m_max),epsabs,epsrel,&result_gsl,&abserr,&
 r = result_gsl;
 }
 
-if ( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
+if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo) || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h) )
 pvectsz[ptsz->index_integral_over_m] = r*r;
 else
 pvectsz[ptsz->index_integral_over_m] = r;

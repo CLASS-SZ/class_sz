@@ -1,5 +1,5 @@
 #! python3
-#$ python sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20.py -param_name 'signal-to-noise cut-off for ps completeness analysis' -p_val '[1,3,6,20,50]' -spacing log -show_legend yes -show_error_bars no -output 'tSZ_1h,tSZ_2h' -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -plot_ref_data yes
+#$ python sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20-resolved.py -param_name 'signal-to-noise cut-off for ps completeness analysis' -p_val '[1,3,6,20,50]' -spacing log -show_legend yes -show_error_bars no -output 'tSZ_1h,tSZ_2h' -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -plot_ref_data yes
 import argparse
 import numpy as np
 import os
@@ -342,13 +342,14 @@ def run(args):
                         if (args.show_error_bars == 'yes'):
                             ax.errorbar(multipoles[id_p],cl_1h[id_p],yerr=[verr,verr],color=col[id_p],ls='-.',alpha = 1.,label = val_label[id_p])
                         else:
-                            ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+                            ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-.',alpha = 0.5)
                             #ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^1h class_sz')
                     if ('tSZ_2h' in p_dict['output']):
                         #print(cl_2h[id_p])
                         #ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-',label = val_label[id_p])
                         #ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-.',label = 'Cl^2h class_sz')
-                        ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-.')
+                        ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='--',alpha=0.3)
+                        ax.plot(multipoles[id_p],cl_1h[id_p]+cl_2h[id_p],color=col[id_p],ls='-',label = val_label[id_p],alpha=1.)
 
             plt.draw()
             plt.pause(0.05)
@@ -421,11 +422,12 @@ def run(args):
                             verr = L_ref[:,5]/np.sqrt(f_sky)
                             ax.errorbar(multipoles_ref,cl_1h_ref,yerr=[verr,verr],color='k',ls='--',alpha = 0.5,label='Cl^1h ref')
                         else:
-                            ax.plot(multipoles_ref,cl_1h_ref,color='k',ls='-',alpha = 1.,label='Total')
+                            ax.plot(multipoles_ref,cl_1h_ref,color='k',ls='-.',alpha = 0.5)
                     if ('tSZ_2h' in p_dict['output']):
                         #print(cl_2h_ref)
                         #ax.plot(multipoles_ref,cl_2h_ref,color='k',ls=':',label='Cl^2h SZFAST')
-                        ax.plot(multipoles_ref,cl_2h_ref,color='k',ls='-.')
+                        ax.plot(multipoles_ref,cl_2h_ref,color='k',ls='--',alpha=0.3)
+                        ax.plot(multipoles_ref,cl_1h_ref+cl_2h_ref,color='k',ls='-',alpha=1.,label='Total')
 
                 plt.draw()
 
@@ -503,9 +505,10 @@ def run(args):
     leg1 = plt.legend(loc=2,ncol=2,frameon=True,framealpha=0.6,fontsize = 10)
     legend_elements = [
                     #Line2D([0], [0], color='k', alpha= 0.8,label='Unresolved',linestyle='None'),
-                    Line2D([0], [0], color='k', alpha= 0.8,label='1-halo',ls='-'),
-                    Line2D([0], [0], color='k',alpha=0.8, label='2-halo',ls='-.')]
-    leg2 = plt.legend(title= 'Resolved (RC)', handles=legend_elements, loc=4)
+                    Line2D([0], [0], color='k', alpha= 0.8,label='1-halo',ls='-.'),
+                    Line2D([0], [0], color='k',alpha=0.8, label='2-halo',ls='--'),
+                    Line2D([0], [0], color='k',alpha=0.8, label='1+2-halo',ls='-')]
+    leg2 = plt.legend(title= 'Resolved (RC)', handles=legend_elements, loc=4,frameon=True,framealpha=1.)
     ax.add_artist(leg1)
     ax.add_artist(leg2)
     ax.set_ylim(2.e-6,9)
@@ -530,7 +533,7 @@ def run(args):
 
 
     if (args.save_fig == 'yes'):
-        FIG_NAME = '/tSZ_varying_' + param_name
+        FIG_NAME = '/figure_snr_cut_resolved'
         plt.savefig(FIG_DIR + FIG_NAME +".pdf")
 
     plt.show(block=True)

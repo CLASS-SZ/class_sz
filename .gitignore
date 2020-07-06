@@ -95,3 +95,12 @@ sz_auxiliary_files/run_scripts/tmp
 sz_auxiliary_files/run_scripts/tSZ_params_ref_resolved-rotti++20_snr12_step_2.ini
 sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20.py
 sz_auxiliary_files/run_scripts/class-sz_parameters_rotti++20.ini
+sz_auxiliary_files/run_scripts/THEORY_CURVES_ROTTI++20
+sz_auxiliary_files/run_scripts/*rotti++20*
+sz_auxiliary_files/run_scripts/THEORY_CURVES_ROTTI++20.zip
+sz_auxiliary_files/run_scripts/compute_and_plot_cov_Y-Y-rotti++20.py
+sz_auxiliary_files/run_scripts/compare-2h.py
+sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20-mean-mass-resolved.py
+sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20-resolved.py
+sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20-resolved.py
+sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20-unresolved.py

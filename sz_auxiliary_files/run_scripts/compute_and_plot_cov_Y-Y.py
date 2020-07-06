@@ -42,7 +42,7 @@ def run(args):
     p_dict[param_name] = 1.e-30
     p_dict['mass_epsrel'] = 1.e-4
     p_dict['redshift_epsrel'] = 1.e-4
-    p_dict['include_ssc'] = 'yes'
+    p_dict['include_ssc'] = 'no'
 
     table = []
     for i in np.arange(0,4):

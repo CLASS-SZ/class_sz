@@ -13,6 +13,8 @@
 #define _trispectrum_ ((ptsz->has_sz_trispec == _TRUE_) && (index_md == ptsz->index_md_trispectrum))
 #define _2halo_ ((ptsz->has_sz_2halo == _TRUE_) && (index_md == ptsz->index_md_2halo))
 #define _te_y_y_ ((ptsz->has_sz_te_y_y == _TRUE_) && (index_md == ptsz->index_md_te_y_y))
+#define _m_y_y_1h_ ((ptsz->has_sz_m_y_y_1h == _TRUE_) && (index_md == ptsz->index_md_m_y_y_1h))
+#define _m_y_y_2h_ ((ptsz->has_sz_m_y_y_2h == _TRUE_) && (index_md == ptsz->index_md_m_y_y_2h))
 #define _cov_Y_N_ ((ptsz->has_sz_cov_Y_N == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N))
 #define _cov_N_N_ ((ptsz->has_sz_cov_N_N == _TRUE_) && (index_md == ptsz->index_md_cov_N_N))
 #define _cov_N_N_hsv_ ((ptsz->has_sz_cov_N_N_hsv == _TRUE_) && (index_md == ptsz->index_md_cov_N_N_hsv))
@@ -52,6 +54,8 @@ struct tszspectrum {
   double * cl_isw_auto;
   double * b_kSZ_kSZ_gal_1halo;
   double * cl_te_y_y;
+  double * m_y_y_1h;
+  double * m_y_y_2h;
   double ** tllprime_sz;
   double ** dndlnM_at_z_and_M;
   double * cl_sz_2h;
@@ -129,6 +133,16 @@ struct tszspectrum {
   int index_integrand_id_sz_ps_te_y_y_first;
   int index_integrand_id_sz_ps_te_y_y_last;
 
+  int has_sz_m_y_y_1h;
+  int index_md_m_y_y_1h;
+  int index_integrand_id_sz_ps_m_y_y_1h_first;
+  int index_integrand_id_sz_ps_m_y_y_1h_last;
+
+
+  int has_sz_m_y_y_2h;
+  int index_md_m_y_y_2h;
+  int index_integrand_id_sz_ps_m_y_y_2h_first;
+  int index_integrand_id_sz_ps_m_y_y_2h_last;
 
   int has_kSZ_kSZ_gal_1halo;
   int index_md_kSZ_kSZ_gal_1halo;
