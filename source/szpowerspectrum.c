@@ -2272,7 +2272,7 @@ int write_output_to_files_cl(struct nonlinear * pnl,
        fprintf(fp,"# 16: mean mass m_y_y_2h\n");
        fprintf(fp,"# 17: signal-to-noise for cl_yy_1h\n");
        fprintf(fp,"# 18: signal-to-noise for cl_yy_2h\n");
-       fprintf(fp,"# 19: 10^12*ell*(ell+1)/(2*pi)*sqrt[cov(Y,Y)] ssc\n");
+       fprintf(fp,"# 19: sqrt[cov(Y,Y)^ssc/Trispectrum]\n");
        fprintf(fp,"\n");
 
       for (index_l=0;index_l<ptsz->nlSZ;index_l++){
@@ -2356,7 +2356,7 @@ int write_output_to_files_cl(struct nonlinear * pnl,
                     sqrt(ptsz->m_y_y_2h[index_l]/ptsz->cl_sz_2h[index_l]),
                     1./(ell*(ell+1.)/(2.*_PI_)*sqrt(cov_cl_cl_1h)/(ptsz->cl_sz_1h[index_l])),
                     1./(ell*(ell+1.)/(2.*_PI_)*sqrt(cov_cl_cl_2h)/(ptsz->cl_sz_2h[index_l])),
-                    ell*(ell+1.)/(2.*_PI_)*sqrt(ptsz->cov_Y_Y_ssc[index_l][index_l])
+                    sqrt(ptsz->cov_Y_Y_ssc[index_l][index_l]/(ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey))
                     );
 
       }
@@ -2541,7 +2541,7 @@ if (ptsz->has_sz_cov_Y_N){
       int index_l_prime;
       for (index_l=0;index_l<ptsz->nlSZ;index_l++){
        for (index_l_prime=0;index_l_prime<ptsz->nlSZ;index_l_prime++) {
-            fprintf(fp,"%e\t",ptsz->r_cl_clp[index_l][index_l_prime]);
+            fprintf(fp,"%e\t",ptsz->r_cl_clp[index_l][index_l_prime]/ptsz->r_cl_clp[index_l][index_l]);
          }
          fprintf(fp,"\n");
       }
