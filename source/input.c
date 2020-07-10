@@ -2131,7 +2131,7 @@ int input_read_parameters(
       }
 
 
-        class_call(parser_read_string(pfc,"create_ref_trispectrum_for_cobaya",&string1,&flag1,errmsg),
+        class_call(parser_read_string(pfc,"create reference trispectrum for likelihood code",&string1,&flag1,errmsg),
                    errmsg,
                    errmsg);
         if (flag1 == _TRUE_) {
@@ -2239,8 +2239,8 @@ int input_read_parameters(
      }
 
       class_read_string("path_to_class",ptsz->path_to_class);
-      class_read_string("append_name_cobaya_ref",ptsz->append_name_cobaya_ref);
-      class_read_string("path_to_ref_trispectrum_for_cobaya",ptsz->path_to_ref_trispectrum_for_cobaya);
+      class_read_string("append_name_trispectrum_ref",ptsz->append_name_cobaya_ref);
+      class_read_string("path to reference trispectrum for likelihood code",ptsz->path_to_ref_trispectrum_for_cobaya);
       class_read_string("root",ptsz->root);
       class_read_string("root",pcsz->root);
 
