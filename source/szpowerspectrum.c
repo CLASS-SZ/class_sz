@@ -32,8 +32,9 @@ int szpowerspectrum_init(
    if ((ptsz->experiment == 0 && ptsz->has_completeness_for_ps_SZ == 1) || (ptsz->experiment == 0 && ptsz->has_sz_counts  == 1))
       read_Planck_noise_map(ptsz);
 
-   //obsolete:
+
    external_pressure_profile_init(ptsz);
+   load_rho_nfw_profile(ptsz);
 
    if (ptsz->concentration_parameter == 4)
       read_Zhao_CM_init(ptsz);
@@ -293,6 +294,10 @@ if (ptsz->has_dndlnM){
    free(ptsz->PP_d2lnI);
 
 
+   free(ptsz->RNFW_lnx);
+   free(ptsz->RNFW_lnI);
+
+
    free(ptsz->CM_redshift);
    free(ptsz->CM_logM);
    free(ptsz->CM_logC);
@@ -527,8 +532,8 @@ int compute_sz(struct background * pba,
    if (_tSZ_power_spectrum_){
       int index_l = (int) Pvectsz[ptsz->index_multipole];
        ptsz->cl_sz_1h[index_l] = Pvectsz[ptsz->index_integral]
-                              *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
-                              /(2*_PI_*pow(ptsz->Tcmb_gNU,ptsz->exponent_unit));
+                                  *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                                  /(2*_PI_*pow(ptsz->Tcmb_gNU,ptsz->exponent_unit));
 
    }
 
@@ -626,28 +631,34 @@ int compute_sz(struct background * pba,
  if (_tSZ_lens_1h_){
    int index_l = (int) Pvectsz[ptsz->index_multipole];
    //int index_m = (int) Pvectsz[ptsz->index_mass_bin_1];
-  ptsz->cl_tSZ_lens_1h[index_l] = Pvectsz[ptsz->index_integral]; //result in [muK]
-
-
+  ptsz->cl_tSZ_lens_1h[index_l] = Pvectsz[ptsz->index_integral]
+                                  *ptsz->ell[index_l]*ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                                  /(2*_PI_); //result in muK
 }
 
 if (_isw_lens_){
   int index_l = (int) Pvectsz[ptsz->index_multipole];
   //int index_m = (int) Pvectsz[ptsz->index_mass_bin_1];
- ptsz->cl_isw_lens[index_l] = Pvectsz[ptsz->index_integral]*pow(pba->T_cmb,1)*1e6; //result in [muK]
+ ptsz->cl_isw_lens[index_l] = Pvectsz[ptsz->index_integral]
+                              *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                              /(2*_PI_)*pow(pba->T_cmb*1e6,1); //result in muK
 }
 
 
 if (_isw_tsz_){
   int index_l = (int) Pvectsz[ptsz->index_multipole];
   //int index_m = (int) Pvectsz[ptsz->index_mass_bin_1];
- ptsz->cl_isw_tsz[index_l] = Pvectsz[ptsz->index_integral]/pow(ptsz->Tcmb_gNU,1)/1.e6;
+ ptsz->cl_isw_tsz[index_l] = Pvectsz[ptsz->index_integral]
+                             *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                             /(2*_PI_*pow(ptsz->Tcmb_gNU*1e6,1.));
 }
 
 if (_isw_auto_){
   int index_l = (int) Pvectsz[ptsz->index_multipole];
   //int index_m = (int) Pvectsz[ptsz->index_mass_bin_1];
- ptsz->cl_isw_auto[index_l] = Pvectsz[ptsz->index_integral];
+ ptsz->cl_isw_auto[index_l] =  Pvectsz[ptsz->index_integral]
+                               *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                               /(2*_PI_); //dimensionnless
 }
 
 return _SUCCESS_;
@@ -689,8 +700,8 @@ double integrand_at_m_and_z(double logM,
 
    if (_hmf_){
 
-      pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_chi2]
-                                       *pvectsz[ptsz->index_hmf]
+      pvectsz[ptsz->index_integrand] = //pvectsz[ptsz->index_chi2]
+                                       pvectsz[ptsz->index_hmf]
                                        *pvectsz[ptsz->index_completeness];
    }
 
@@ -698,8 +709,8 @@ double integrand_at_m_and_z(double logM,
 
 
    else if (_mean_y_){
-     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
-                                       *pvectsz[ptsz->index_hmf]
+     pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
+                                       pvectsz[ptsz->index_hmf]
                                        *pvectsz[ptsz->index_completeness]
                                        *pow(pressure_profile_at_ell,1.);
 
@@ -710,8 +721,8 @@ double integrand_at_m_and_z(double logM,
 
       //int index_l = (int) pvectsz[ptsz->index_multipole];
 
-         pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
-                                           *pvectsz[ptsz->index_hmf]
+         pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
+                                           pvectsz[ptsz->index_hmf]
                                            *pvectsz[ptsz->index_dlnMdeltadlnM]
                                            *pvectsz[ptsz->index_completeness]
                                            *pow(pressure_profile_at_ell,2.);
@@ -728,8 +739,8 @@ double integrand_at_m_and_z(double logM,
      evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell_prime = pvectsz[ptsz->index_pressure_profile];
 
-     pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_chi2]
-                                     *pvectsz[ptsz->index_hmf]
+     pvectsz[ptsz->index_integrand] = //pvectsz[ptsz->index_chi2]
+                                     pvectsz[ptsz->index_hmf]
                                      *pvectsz[ptsz->index_completeness]
                                      *pow(pressure_profile_at_ell,2.)
                                      *pow(pressure_profile_at_ell_prime,2.);
@@ -747,9 +758,9 @@ double integrand_at_m_and_z(double logM,
                                         *pvectsz[ptsz->index_dlnMdeltadlnM]
                                         *pvectsz[ptsz->index_halo_bias]
                                         *pvectsz[ptsz->index_completeness]
-                                        *pow(pressure_profile_at_ell,1.)
-                                        *pow(pvectsz[ptsz->index_chi2]
-                                        *pvectsz[ptsz->index_pk_for_halo_bias],0.5);
+                                        *pow(pressure_profile_at_ell,1.);
+                                        //*pow(pvectsz[ptsz->index_chi2]
+                                        //*pvectsz[ptsz->index_pk_for_halo_bias],0.5);
 
  }
 
@@ -759,7 +770,7 @@ double integrand_at_m_and_z(double logM,
            evaluate_temperature_mass_relation(pvecback,pvectsz,pba,ptsz);
 
           pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_te_of_m]
-                                           *pvectsz[ptsz->index_chi2]
+                                           //*pvectsz[ptsz->index_chi2]
                                            *pvectsz[ptsz->index_hmf]
                                            *pvectsz[ptsz->index_completeness]
                                            *pow(pvectsz[ptsz->index_pressure_profile],2.);
@@ -771,8 +782,8 @@ double integrand_at_m_and_z(double logM,
           //int index_l = (int) pvectsz[ptsz->index_multipole];
            //evaluate_temperature_mass_relation(pvecback,pvectsz,pba,ptsz);
 
-           pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
-                                             *pvectsz[ptsz->index_mass_for_hmf]
+           pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
+                                             pvectsz[ptsz->index_mass_for_hmf]
                                              *pvectsz[ptsz->index_hmf]
                                              *pvectsz[ptsz->index_dlnMdeltadlnM]
                                              *pvectsz[ptsz->index_completeness]
@@ -781,6 +792,7 @@ double integrand_at_m_and_z(double logM,
  else if  (_m_y_y_2h_){
 
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+           evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
            //this integrand is squared afterward
            pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
@@ -796,8 +808,8 @@ double integrand_at_m_and_z(double logM,
  else if  (_cov_Y_N_){
 
 
-           pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
-                                             *pvectsz[ptsz->index_hmf]
+           pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
+                                             pvectsz[ptsz->index_hmf]
                                              *pvectsz[ptsz->index_completeness]
                                              *pow(pvectsz[ptsz->index_pressure_profile],2.);
 
@@ -807,7 +819,7 @@ double integrand_at_m_and_z(double logM,
  else if  (_cov_N_N_){
 
            pvectsz[ptsz->index_integrand] =  ptsz->Omega_survey
-                                             *pvectsz[ptsz->index_chi2]
+                                             //*pvectsz[ptsz->index_chi2]
                                              *pvectsz[ptsz->index_hmf]
                                              *pvectsz[ptsz->index_completeness];
                       }
@@ -819,11 +831,12 @@ double integrand_at_m_and_z(double logM,
 
            evaluate_sigma2_hsv(pvecback,pvectsz,pba,pnl,ptsz);
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+           //evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
            //printf("%.4e \t %.4e \t %4.e \n",pvectsz[ptsz->index_sigma2_hsv],pvectsz[ptsz->index_halo_bias],pvectsz[ptsz->index_completeness]);
 
            pvectsz[ptsz->index_integrand] =  ptsz->Omega_survey
-                                             *pvectsz[ptsz->index_chi2]
+                                             //*pvectsz[ptsz->index_chi2]
                                              *pvectsz[ptsz->index_hmf]
                                              *pvectsz[ptsz->index_completeness]
                                              *pvectsz[ptsz->index_halo_bias]
@@ -835,7 +848,7 @@ double integrand_at_m_and_z(double logM,
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
            pvectsz[ptsz->index_integrand] =  ptsz->Omega_survey
-                                             *pvectsz[ptsz->index_chi2]
+                                             //*pvectsz[ptsz->index_chi2]
                                              *pvectsz[ptsz->index_hmf]
                                              *pvectsz[ptsz->index_completeness]
                                              *pvectsz[ptsz->index_halo_bias];
@@ -853,7 +866,7 @@ double integrand_at_m_and_z(double logM,
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
            pvectsz[ptsz->index_integrand] =  ptsz->Omega_survey
-                                             *pvectsz[ptsz->index_chi2]
+                                             //*pvectsz[ptsz->index_chi2]
                                              *pvectsz[ptsz->index_hmf]
                                              *pvectsz[ptsz->index_completeness]
                                              *pvectsz[ptsz->index_halo_bias]
@@ -864,8 +877,8 @@ double integrand_at_m_and_z(double logM,
 
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-           pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
-                                             *pvectsz[ptsz->index_hmf]
+           pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
+                                             pvectsz[ptsz->index_hmf]
                                              *pvectsz[ptsz->index_completeness]
                                              *pvectsz[ptsz->index_halo_bias]
                                              *pow(pressure_profile_at_ell,2.);
@@ -879,8 +892,8 @@ double integrand_at_m_and_z(double logM,
            evaluate_sigma2_hsv(pvecback,pvectsz,pba,pnl,ptsz);
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-           pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
-                                             *pvectsz[ptsz->index_hmf]
+           pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
+                                             pvectsz[ptsz->index_hmf]
                                              *pvectsz[ptsz->index_completeness]
                                              *pvectsz[ptsz->index_halo_bias]
                                              *pow(pressure_profile_at_ell,2.)
@@ -891,8 +904,8 @@ double integrand_at_m_and_z(double logM,
 
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-           pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
-                                             *pvectsz[ptsz->index_hmf]
+           pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
+                                             pvectsz[ptsz->index_hmf]
                                              *pvectsz[ptsz->index_completeness]
                                              *pvectsz[ptsz->index_halo_bias]
                                              *pow(pressure_profile_at_ell,2.);
@@ -916,8 +929,8 @@ double integrand_at_m_and_z(double logM,
    //velocity dispersion (kSZ)
    evaluate_vrms2(pvecback,pvectsz,pba,pnl,ptsz);
 
-       pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
-                                         *pvectsz[ptsz->index_hmf]
+       pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
+                                         pvectsz[ptsz->index_hmf]
                                          *pvectsz[ptsz->index_dlnMdeltadlnM]
                                          *pvectsz[ptsz->index_completeness]
                                          *tau_profile_at_ell_1
@@ -947,8 +960,8 @@ double integrand_at_m_and_z(double logM,
     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
     double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
 
-        pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_chi2]
-                                          *pvectsz[ptsz->index_hmf]
+        pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
+                                          pvectsz[ptsz->index_hmf]
                                           *pvectsz[ptsz->index_dlnMdeltadlnM]
                                           *pvectsz[ptsz->index_completeness]
                                           *lensing_profile_at_ell_1
@@ -960,13 +973,13 @@ double integrand_at_m_and_z(double logM,
    else if (_isw_tsz_){
 
      evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
-     pvectsz[ptsz->index_integrand] =   pvectsz[ptsz->index_chi2]
-                                       *pvectsz[ptsz->index_hmf]
+     //evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+     pvectsz[ptsz->index_integrand] =   //pvectsz[ptsz->index_chi2]
+                                       pvectsz[ptsz->index_hmf]
                                        *pvectsz[ptsz->index_dlnMdeltadlnM]
                                        *pvectsz[ptsz->index_completeness]
-                                       *pressure_profile_at_ell
-                                       *pvectsz[ptsz->index_pk_for_halo_bias]
-                                       *pvectsz[ptsz->index_halo_bias];
+                                       *pvectsz[ptsz->index_halo_bias]
+                                       *pressure_profile_at_ell;
 
 
    }
@@ -1108,14 +1121,26 @@ int evaluate_lensing_profile(double * pvecback,
    double lensing_normalisation;
 
 
-   characteristic_radius = pvectsz[ptsz->index_rs]/pba->h; // in Mpc
+   characteristic_radius = pvectsz[ptsz->index_rs]; // in Mpc/h
    characteristic_multipole = pvectsz[ptsz->index_ls];
    pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
    pvectsz[ptsz->index_multipole_for_nfw_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];
 
-    class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result),
-                                      ptsz->error_message,
-                                      ptsz->error_message);
+    // class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result),
+    //                                   ptsz->error_message,
+    //                                   ptsz->error_message);
+
+      double lnx_asked = log((pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)/characteristic_multipole);
+
+      if(lnx_asked<ptsz->RNFW_lnx[0])
+         result = ptsz->RNFW_lnI[0];
+      else if (lnx_asked>ptsz->RNFW_lnx[ptsz->RNFW_lnx_size-1])
+         result = -100.;
+      else  result =  pwl_value_1d(ptsz->RNFW_lnx_size,
+                                   ptsz->RNFW_lnx,
+                                   ptsz->RNFW_lnI,
+                                   lnx_asked);
+      result = exp(result);
 
    pvectsz[ptsz->index_lensing_profile] = result;
 
@@ -1135,7 +1160,7 @@ int evaluate_lensing_profile(double * pvecback,
                                            /pvectsz[ptsz->index_lensing_Sigma_crit]
                                            *(4*_PI_)
                                            *pow(characteristic_multipole,-2)
-                                           *characteristic_radius; //rs in Mpc
+                                           *characteristic_radius; //rs in Mpc/h
 
 
    return _SUCCESS_;
@@ -1286,7 +1311,8 @@ int evaluate_pressure_profile(double * pvecback,
                                            *(4*_PI_)
                                            *pow(characteristic_multipole,-2)
                                            *characteristic_radius //rs in Mpc
-                                           /50.; //pressure normalised to 50eV/cm^3
+                                           /50. //pressure normalised to 50eV/cm^3
+                                           *ptsz->Tcmb_gNU/ptsz->Tcmb_gNU_at_150GHz;
 
 
    return _SUCCESS_;
@@ -1463,6 +1489,88 @@ int evaluate_halo_bias(double * pvecback,
 
    pvectsz[ptsz->index_halo_bias] = 1.-ATT*(pow(nuTink,aTTT)/(pow(nuTink,aTTT)+pow(ptsz->delta_cSZ,aTTT)))
                                                       +BTT*pow(nuTink,bTTT)+CTT*pow(nuTink,cTTT);
+  //
+  //  int index_l = (int)  pvectsz[ptsz->index_multipole];
+  //  double z = pvectsz[ptsz->index_z];
+  //  //identical to sqrt(pvectsz[index_chi2])
+  //  double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+  //
+  //  pvectsz[ptsz->index_k_value_for_halo_bias] = (ptsz->ell[index_l]+0.5)/d_A; //units h/Mpc
+  //
+  //
+  //  double k = pvectsz[ptsz->index_k_value_for_halo_bias]; //in h/Mpc
+  //
+  //  double pk;
+  //  double * pk_ic = NULL;
+  //
+  //
+  //
+  // //Input: wavenumber in 1/Mpc
+  // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+  //    class_call(nonlinear_pk_at_k_and_z(
+  //                                      pba,
+  //                                      ppm,
+  //                                      pnl,
+  //                                      pk_linear,
+  //                                      k*pba->h,
+  //                                      z,
+  //                                      pnl->index_pk_m,
+  //                                      &pk, // number *out_pk_l
+  //                                      pk_ic // array out_pk_ic_l[index_ic_ic]
+  //                                    ),
+  //                                    pnl->error_message,
+  //                                    pnl->error_message);
+  //
+  //
+  //  //now compute P(k) in units of h^-3 Mpc^3
+  //  pvectsz[ptsz->index_pk_for_halo_bias] = pk*pow(pba->h,3.); //in units Mpc^3/h^3
+   return _SUCCESS_;
+}
+
+
+
+
+int evaluate_pk_at_ell_plus_one_half_over_chi(double * pvecback,
+                                             double * pvectsz,
+                                             struct background * pba,
+                                             struct primordial * ppm,
+                                             struct nonlinear * pnl,
+                                             struct tszspectrum * ptsz)
+{
+
+   // double nu = exp(pvectsz[ptsz->index_lognu]);
+   // double nuTink = sqrt(nu); //in T10 paper: nu=delta/sigma while here nu=(delta/sigma)^2
+   //
+   // double Delta;
+   //
+   // //Tinker et al 2008 @ M1600-mean
+   // if (ptsz->MF==6)
+   // Delta = 1600.;
+   //
+   // //Jenkins et al 2001
+   // else if (ptsz->MF==3)
+   // Delta = 180.;
+   //
+   // //Tinker et al 2008 @ m500
+   // //Boquet et al 2015
+   // else if (ptsz->MF==5 || ptsz->MF==7)
+   // Delta = 500./pvecback[pba->index_bg_Omega_m];
+   //
+   // else
+   // Delta = 200.;
+   //
+   //
+   // // Table 2 of Tinker et al 2010:
+   // double y = log10(Delta);
+   // double ATT = 1.+0.24*y*exp(-pow(4./y,4.));
+   // double aTTT = 0.44*y-0.88;
+   // double BTT = 0.183;
+   // double bTTT = 1.5;
+   // double CTT = 0.019+0.107*y+0.19*exp(-pow(4./y,4.));
+   // double cTTT = 2.4;
+   //
+   // pvectsz[ptsz->index_halo_bias] = 1.-ATT*(pow(nuTink,aTTT)/(pow(nuTink,aTTT)+pow(ptsz->delta_cSZ,aTTT)))
+   //                                                    +BTT*pow(nuTink,bTTT)+CTT*pow(nuTink,cTTT);
 
    int index_l = (int)  pvectsz[ptsz->index_multipole];
    double z = pvectsz[ptsz->index_z];
@@ -2242,7 +2350,7 @@ int write_output_to_files_cl(struct nonlinear * pnl,
           fprintf(fp,"# Dimensions for y power: 'dimensionless'\n");
 
        if (ptsz->exponent_unit == 0.)
-         fprintf(fp,"# Dimensions for tSZ power: 'muK' (micro Kelvin)\n");
+         fprintf(fp,"# Dimensions for y-distortion: 'muK' (micro Kelvin)\n");
 
        fprintf(fp,"# Omega_survey = %.5e deg2\n", ptsz->Omega_survey*pow(57.3,2));
        fprintf(fp,"# f_sky = %f\n", ptsz->f_sky);
@@ -2263,10 +2371,10 @@ int write_output_to_files_cl(struct nonlinear * pnl,
           fprintf(fp,"# 7:2-halo term ell*(ell+1)/(2*pi)*C_l^tSZ (2-halo term, [muK^2])\n");
        fprintf(fp,"# 8:SZ temperature, Te [in keV]\n");
        fprintf(fp,"# 9:b_kSZ_kSZ_gal_1halo [TBC]\n");
-       fprintf(fp,"# 10:ell*(ell+1)/(2*pi)*C_l^y-phi (1-halo term) [muK] [TBC]\n");
+       fprintf(fp,"# 10:ell*(ell+1)/(2*pi)*C_l^y-phi (1-halo term) [muK] [TBC] at nu = %.3e GHz\n",ptsz->nu_y_dist_GHz);
        fprintf(fp,"# 11:ell*(ell+1)/(2*pi)*C_l^isw-phi [muK] [TBC]\n");
-       fprintf(fp,"# 12:ell*(ell+1)/(2*pi)*C_l^isw-y [muK] [TBC]\n");
-       fprintf(fp,"# 13:ell*(ell+1)/(2*pi)*C_l^isw-isw [muK] [TBC]\n");
+       fprintf(fp,"# 12:ell*(ell+1)/(2*pi)*C_l^isw-y [dimensionless] \n");
+       fprintf(fp,"# 13:ell*(ell+1)/(2*pi)*C_l^isw-isw [dimensionless]\n");
        fprintf(fp,"# 14: signal-to-noise for cl_yy_tot\n");
        fprintf(fp,"# 15: mean mass m_y_y_1h\n");
        fprintf(fp,"# 16: mean mass m_y_y_2h\n");
@@ -2347,10 +2455,10 @@ int write_output_to_files_cl(struct nonlinear * pnl,
                     ptsz->cl_sz_2h[index_l],
                     ptsz->cl_te_y_y[index_l]/ptsz->cl_sz_1h[index_l],
                     ptsz->b_kSZ_kSZ_gal_1halo[index_l],
-                    ell*ell*(ell+1.)/(2.*_PI_)*ptsz->cl_tSZ_lens_1h[index_l],
-                    ell*(ell+1.)/(2.*_PI_)*ptsz->cl_isw_lens[index_l],
-                    ell*(ell+1.)/(2.*_PI_)*ptsz->cl_isw_tsz[index_l],
-                    ell*(ell+1.)/(2.*_PI_)*ptsz->cl_isw_auto[index_l],
+                    ptsz->cl_tSZ_lens_1h[index_l],
+                    ptsz->cl_isw_lens[index_l],
+                    ptsz->cl_isw_tsz[index_l],
+                    ptsz->cl_isw_auto[index_l],
                     1./(ell*(ell+1.)/(2.*_PI_)*sqrt(ptsz->cov_cl_cl[index_l])/(ptsz->cl_sz_1h[index_l]+ptsz->cl_sz_2h[index_l])),
                     ptsz->m_y_y_1h[index_l]/ptsz->cl_sz_1h[index_l],
                     sqrt(ptsz->m_y_y_2h[index_l]/ptsz->cl_sz_2h[index_l]),
@@ -2710,7 +2818,7 @@ int show_preamble_messages(struct background * pba,
    double frequency_in_Hz = 150.0e9;
    //double frequency_in_Hz = 0.0;
    //double frequency_in_Hz = 100.0e9;
-   ptsz->Tcmb_gNU =
+   ptsz->Tcmb_gNU_at_150GHz =
    pba->T_cmb
    *((_h_P_*frequency_in_Hz
        /(_k_B_*pba->T_cmb))
@@ -2718,8 +2826,18 @@ int show_preamble_messages(struct background * pba,
                       /(_k_B_*pba->T_cmb))
                      /2.))
       -4.);
+
+    frequency_in_Hz = ptsz->nu_y_dist_GHz*1e9;
+    ptsz->Tcmb_gNU =
+    pba->T_cmb
+    *((_h_P_*frequency_in_Hz
+        /(_k_B_*pba->T_cmb))
+       *(1./tanh((_h_P_*frequency_in_Hz
+                       /(_k_B_*pba->T_cmb))
+                      /2.))
+       -4.);
    if (ptsz->sz_verbose > 0){
-       printf("->Tcmb_gNU at 150GHz= %e Kelvins\n",ptsz->Tcmb_gNU);
+       printf("->Tcmb_gNU at 150GHz= %e Kelvins\n",ptsz->Tcmb_gNU_at_150GHz);
    //    printf("->gNU at 150GHz= %e\n",ptsz->Tcmb_gNU/pba->T_cmb);
    //    printf("->Tcmb = %e K\n",pba->T_cmb);
    //
@@ -3321,30 +3439,30 @@ return result;
 
 
 
-double integrand_isw_lens_at_z( double * pvecback,
-                                double * pvectsz,
-                                struct background * pba,
-                                struct primordial * ppm,
-                                struct nonlinear * pnl,
-                                struct tszspectrum * ptsz){
+double delta_ell_lens_at_ell_and_z(  double * pvecback,
+                                    double * pvectsz,
+                                    struct background * pba,
+                                    struct primordial * ppm,
+                                    struct nonlinear * pnl,
+                                    struct tszspectrum * ptsz){
 
 // double result;
 //
 double chi = sqrt(pvectsz[ptsz->index_chi2]);
 double chi_star =  ptsz->chi_star;
 double Omega_m = ptsz->Omega_m_0;
-double c = _c_;
-double H0 = 100.*pba->h;
+// double c = _c_;
+// double H0 = 100.*pba->h;
 double z = pvectsz[ptsz->index_z];
-double dgdz = pvectsz[ptsz->index_dgdz]; // d(D/a)/dz = D(1-f)
-double D = pvecback[pba->index_bg_D];
+// double dgdz = pvectsz[ptsz->index_dgdz]; // d(D/a)/dz = D(1-f)
+// double D = 1.;//pvecback[pba->index_bg_D];
 double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
-
-int index_l = (int)  pvectsz[ptsz->index_multipole];
-double ell = ptsz->ell[index_l];
-double pk = 1.;
-double pk_cb= 1.;
-double * pk_ic = NULL;
+//
+// int index_l = (int)  pvectsz[ptsz->index_multipole];
+// double ell = ptsz->ell[index_l];
+// double pk = 1.;
+// double pk_cb= 1.;
+// double * pk_ic = NULL;
 // //Input: wavenumber in 1/Mpc
 // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
  // class_call(nonlinear_pk_at_k_and_z(
@@ -3360,32 +3478,33 @@ double * pk_ic = NULL;
  //                                 ),
  //                                 pnl->error_message,
  //                                 pnl->error_message);
- double kvec[1] ={(ell+0.5)/chi*pba->h};
- double zvec[1] = {z};
- class_call(nonlinear_pks_at_kvec_and_zvec(
-                                   pba,
-                                   pnl,
-                                   pk_linear,
-                                   kvec,
-                                   1,
-                                   zvec,
-                                   1,
-                                   &pk, // number *out_pk_l
-                                   &pk_cb // array out_pk_ic_l[index_ic_ic]
-                                 ),
-                                 pnl->error_message,
-                                 pnl->error_message);
-
+//  double kvec[1] ={(ell+0.5)/chi*pba->h};
+//  double zvec[1] = {z};
+//  class_call(nonlinear_pks_at_kvec_and_zvec(
+//                                    pba,
+//                                    pnl,
+//                                    pk_linear,
+//                                    kvec,
+//                                    1,
+//                                    zvec,
+//                                    1,
+//                                    &pk, // number *out_pk_l
+//                                    &pk_cb // array out_pk_ic_l[index_ic_ic]
+//                                  ),
+//                                  pnl->error_message,
+//                                  pnl->error_message);
 //
- //now compute P(k) in units of h^-3 Mpc^3
- pk = pk*pow(pba->h,3.); //in units Mpc^3/h^3
- //ell = 1.;
+// //
+//  //now compute P(k) in units of h^-3 Mpc^3
+//  pk = pk*pow(pba->h,3.); //in units Mpc^3/h^3
+//  //ell = 1.;
 
- double result = 9.*pow(Omega_m,2.)*pow(pba->H0/pba->h,4)/(2.*pow(ell+0.5,2.)*chi_star)*chi*(chi_star-chi)*(1.+z)*dgdz/D*pk;
+ //double result = 9.*pow(Omega_m,2.)*pow(pba->H0/pba->h,4)/(2.*pow(ell+0.5,2.)*chi_star)*chi*(chi_star-chi)*(1.+z)*dgdz/D*pk;
+ double result = 3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/2.*(chi_star-chi)/chi/chi_star*(1.+z)/H_over_c_in_h_over_Mpc;
 //  result = 0.;//dgdz/D;
 //
  //result *= pow(pba->h,-4.);
- result *= H_over_c_in_h_over_Mpc;
+ //result *= H_over_c_in_h_over_Mpc;
  //double result = 10.;//pba->h;
 
  //printf("pba->h=%.4e\n",pba->h);
@@ -3413,6 +3532,7 @@ double D = pvecback[pba->index_bg_D];
 double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
 int index_l = (int)  pvectsz[ptsz->index_multipole];
 double ell = ptsz->ell[index_l];
+
 
 
  double result = 3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/(pow(ell+0.5,2.))*dgdz*H_over_c_in_h_over_Mpc/D;

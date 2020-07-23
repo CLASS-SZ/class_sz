@@ -490,6 +490,7 @@ struct tszspectrum {
 
   double pressure_profile_epsabs;
   double pressure_profile_epsrel;
+  double nu_y_dist_GHz;
 
   double nfw_profile_epsabs;
   double nfw_profile_epsrel;
@@ -524,6 +525,7 @@ struct tszspectrum {
 
 
 
+  double Tcmb_gNU_at_150GHz;
   double Tcmb_gNU;
 
   double Rho_crit_0;
@@ -569,6 +571,11 @@ struct tszspectrum {
   double * PP_d2lnI;
 
   int PP_lnx_size;
+
+  double * RNFW_lnx;
+  double * RNFW_lnI;
+
+  int RNFW_lnx_size;
 
 
   double * CM_redshift;
@@ -635,7 +642,7 @@ int szpowerspectrum_init(struct background * pba,
                               struct nonlinear * pnl,
                               struct tszspectrum * ptsz);
 
-  double integrand_isw_lens_at_z( double * pvecback,
+  double delta_ell_lens_at_ell_and_z( double * pvecback,
                                   double * pvectsz,
                                   struct background * pba,
                                   struct primordial * ppm,
@@ -706,6 +713,14 @@ int szpowerspectrum_init(struct background * pba,
                          struct primordial * ppm,
                          struct nonlinear * pnl,
                          struct tszspectrum * ptsz);
+
+ int evaluate_pk_at_ell_plus_one_half_over_chi(double * pvecback,
+                                              double * pvectsz,
+                                              struct background * pba,
+                                              struct primordial * ppm,
+                                              struct nonlinear * pnl,
+                                              struct tszspectrum * ptsz);
+
 
   int initialise_and_allocate_memory(struct tszspectrum * ptsz);
 

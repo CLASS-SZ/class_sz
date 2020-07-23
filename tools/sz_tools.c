@@ -44497,48 +44497,73 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   double result_gsl, error;
 
   double xin = 1.e-5;
-  double xout = 1.5;
+  double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
+  double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
+  double xout = 1.5*rvir/rs;
 
-// // QAWO
-//
-//
-//
-//   double delta_l = xout - xin;
-//
-//   gsl_integration_workspace * w;
-//   gsl_integration_qawo_table * wf;
-//
-//   int size_w = 30000;
-//   w = gsl_integration_workspace_alloc(size_w);
-//
-//   int index_l = (int) pvectsz[ptsz->index_multipole_for_tau_profile];
-//   double w0;
-//   w0 = (ptsz->ell[index_l]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_tau_profile];
-//
-//
-//   wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,10);
-//
-//
-//   int limit = size_w; //number of sub interval
-//   gsl_integration_qawo(&F,xin,eps_abs,eps_rel,limit,w,wf,&result_gsl,&error);
-//
-//   *result = result_gsl;
-//
-//   gsl_integration_qawo_table_free(wf);
-//   gsl_integration_workspace_free(w);
+// QAWO
 
 
-//ROMBERG
-int n_subintervals_gsl = 30;
-gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
 
-size_t neval;
-gsl_integration_romberg(&F,xin,xout,eps_abs,eps_rel,&result_gsl,&neval,w);
-gsl_integration_romberg_free(w);
-*result = result_gsl;
+  double delta_l = xout - xin;
+
+  gsl_integration_workspace * w;
+  gsl_integration_qawo_table * wf;
+
+  int size_w = 30000;
+  w = gsl_integration_workspace_alloc(size_w);
+
+  int index_l = (int) pvectsz[ptsz->index_multipole_for_nfw_profile];
+  double w0;
+  w0 = (ptsz->ell[index_l]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+
+
+  wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,50);
+
+
+  int limit = size_w; //number of sub interval
+  gsl_integration_qawo(&F,xin,eps_abs,eps_rel,limit,w,wf,&result_gsl,&error);
+
+  *result = result_gsl;
+
+  gsl_integration_qawo_table_free(wf);
+  gsl_integration_workspace_free(w);
+
+//
+// //ROMBERG
+// int n_subintervals_gsl = 100;
+// gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
+//
+// size_t neval;
+// gsl_integration_romberg(&F,xin,xout,eps_abs,eps_rel,&result_gsl,&neval,w);
+// gsl_integration_romberg_free(w);
+// *result = result_gsl;
 
 
 }
+
+// Code sample from Colin Hill
+// DOUBLE PRECISION FUNCTION rhoNFW(x,y,cvir) ! x=r/rs & y=(l+1/2)/ls & cvir=cvir
+//   IMPLICIT none
+//   double precision :: x,y,cvir
+//
+//   rhoNFW=x**(-1d0)*(1d0+x)**(-2d0)*x**2d0*dsin(y*x)/(y*x)
+//   return
+// END FUNCTION rhoNFW
+
+int rho_nfw(double * rho_nfw_x,
+            double x ,
+            double * pvectsz,
+            struct background * pba,
+            struct tszspectrum * ptsz)
+{
+
+  *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
+               /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
+               //*sin(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
+               ///pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
+}
+
 
 /**
  * This routine computes 2d ft of pressure profile at ell/ell_characteristic
@@ -44985,11 +45010,6 @@ int spectra_sigma_prime(
 //pressure profiles,
 //and stores the tabulated values.
 
-
-
-
-
-
 int external_pressure_profile_init(struct tszspectrum * ptsz)
 {
 
@@ -45127,6 +45147,131 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
   return _SUCCESS_;
 }
 
+
+//This routine reads the tabulated
+//pressure profiles,
+//and stores the tabulated values.
+
+int load_rho_nfw_profile(struct tszspectrum * ptsz)
+{
+
+if (ptsz->has_tSZ_lens_1h != _TRUE_ )
+  return 0;
+
+
+  class_alloc(ptsz->PP_lnx,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->PP_lnI,sizeof(double *)*100,ptsz->error_message);
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+
+  /* Prepare the command */
+  /* If the command is just a "cat", no arguments need to be passed */
+  // if(strncmp("cat ", ptsz->command, 4) == 0)
+  // {
+  // sprintf(arguments, " ");
+  // }
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+    sprintf(Filepath,
+            "%s%s%s",
+            "cat ",
+            ptsz->path_to_class,
+            "/sz_auxiliary_files/class_sz_lnInfw-vs-lnell-over-ells.txt");
+  process = popen(Filepath, "r");
+
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+    sscanf(line, "%lf %lf", &this_lnx, &this_lnI);
+    //printf("lnx = %e\n",this_lnx);
+
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  status = pclose(process);
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->RNFW_lnx_size = n_data;
+  /** Make room */
+
+  class_realloc(ptsz->RNFW_lnx,
+                ptsz->RNFW_lnx,
+                ptsz->RNFW_lnx_size*sizeof(double),
+                ptsz->error_message);
+  class_realloc(ptsz->RNFW_lnI,
+                ptsz->RNFW_lnI,
+                ptsz->RNFW_lnx_size*sizeof(double),
+                ptsz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<ptsz->PP_lnx_size; index_x++) {
+    ptsz->RNFW_lnx[index_x] = lnx[index_x];
+    ptsz->RNFW_lnI[index_x] = lnI[index_x];
+  };
+
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  return _SUCCESS_;
+}
 
 
 
@@ -45419,26 +45564,7 @@ int plc_gnfw(double * plc_gnfw_x,
   return _SUCCESS_;
 }
 
-// Code sample from Colin Hill
-// DOUBLE PRECISION FUNCTION rhoNFW(x,y,cvir) ! x=r/rs & y=(l+1/2)/ls & cvir=cvir
-//   IMPLICIT none
-//   double precision :: x,y,cvir
-//
-//   rhoNFW=x**(-1d0)*(1d0+x)**(-2d0)*x**2d0*dsin(y*x)/(y*x)
-//   return
-// END FUNCTION rhoNFW
 
-int rho_nfw(double * rho_nfw_x,
-            double x ,
-            double * pvectsz,
-            struct background * pba,
-            struct tszspectrum * ptsz)
-{
-
-  *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
-               /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile])
-               *sin(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
-}
 
 //HMF Tinker 2010
 int MF_T10 (
@@ -45700,13 +45826,25 @@ double integrand_redshift(double ln1pz, void *p){
   int index_md = (int) V->pvectsz[V->ptsz->index_md];
   double result = 0.;
 
-  if ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens))
-  result = integrand_isw_lens_at_z(V->pvecback,
-                                  V->pvectsz,
-                                  V->pba,
-                                  V->ppm,
-                                  V->pnl,
-                                  V->ptsz);
+  if ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens)) {
+
+  double delta_ell_lens =  delta_ell_lens_at_ell_and_z(V->pvecback,
+                                                  V->pvectsz,
+                                                  V->pba,
+                                                  V->ppm,
+                                                  V->pnl,
+                                                  V->ptsz);
+
+  double delta_ell_isw = delta_ell_isw_at_ell_and_z(V->pvecback,
+                                                          V->pvectsz,
+                                                          V->pba,
+                                                          V->ppm,
+                                                          V->pnl,
+                                                          V->ptsz);
+  result = delta_ell_lens*delta_ell_isw;
+
+  }
+
 
   else if ((V->ptsz->has_isw_tsz == _TRUE_) && (index_md == V->ptsz->index_md_isw_tsz)){
 
@@ -45730,68 +45868,49 @@ double integrand_redshift(double ln1pz, void *p){
   else if ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_auto)){
 
   double delta_ell_isw = delta_ell_isw_at_ell_and_z(V->pvecback,
-                                                          V->pvectsz,
-                                                          V->pba,
-                                                          V->ppm,
-                                                          V->pnl,
-                                                          V->ptsz);
+                                                    V->pvectsz,
+                                                    V->pba,
+                                                    V->ppm,
+                                                    V->pnl,
+                                                    V->ptsz);
 
-  result = pow(delta_ell_isw,2.)*V->pvectsz[V->ptsz->index_chi2];
-
-   int index_l = (int)  V->pvectsz[V->ptsz->index_multipole];
-   double z = V->pvectsz[V->ptsz->index_z];
-   //identical to sqrt(pvectsz[index_chi2])
-   double d_A = V->pvecback[V->pba->index_bg_ang_distance]*V->pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
-
-   V->pvectsz[V->ptsz->index_k_value_for_halo_bias] = (V->ptsz->ell[index_l]+0.5)/d_A; //units h/Mpc
-
-
-   double k = V->pvectsz[V->ptsz->index_k_value_for_halo_bias]; //in h/Mpc
-
-   double pk;
-   double * pk_ic = NULL;
-
-
-
-  //Input: wavenumber in 1/Mpc
-  //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-     class_call(nonlinear_pk_at_k_and_z(
-                                       V->pba,
-                                       V->ppm,
-                                       V->pnl,
-                                       pk_linear,
-                                       k*V->pba->h,
-                                       z,
-                                       V->pnl->index_pk_m,
-                                       &pk, // number *out_pk_l
-                                       pk_ic // array out_pk_ic_l[index_ic_ic]
-                                     ),
-                                     V->pnl->error_message,
-                                     V->pnl->error_message);
-
-
-   //now compute P(k) in units of h^-3 Mpc^3
-   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = pk*pow(V->pba->h,3.); //in units Mpc^3/h^3
-
-  result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+  result = delta_ell_isw*delta_ell_isw;
 
   }
 
-  else
+  else {
   result = integrate_over_m_at_z(V->pvecback,
                                   V->pvectsz,
                                   V->pba,
                                   V->pnl,
                                   V->ppm,
                                   V->ptsz);
+                                }
 
+if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
+ ||  ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_auto))
+ ||  ((V->ptsz->has_isw_tsz == _TRUE_) && (index_md == V->ptsz->index_md_isw_tsz))
+ ||  ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens))
+    ){
+
+
+
+  evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+
+  result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+}
+
+
+
+  // finally multiply by volume element Chi^2 dChi
+  result *= V->pvectsz[V->ptsz->index_chi2];
 
   // integrate w.r.t ln(1+z); dz =  (1+z)dln(1+z)
-  //volume element in units h^-3 Mpc^3
-  //volume = dv/(dzdOmega)*(c/H)
+  // volume element in units h^-3 Mpc^3
+  // volume = dv/(dzdOmega)*(c/H)
   // Chi^2 dChi = dV/(dzdOmega)*(c/H) dz
   // Chi^2 dChi = dV/(dzdOmega)*(c/H) *(1+z) dln(1+z)
-  // dChi = (c/H) *(1+z) dln(1+z)
+  // dChi = (c/H) *(1+z) dln(1+z) ---> this is used
   // dChi = (c/H) dz
   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
   result = (1.+V->pvectsz[V->ptsz->index_z])*result/H_over_c_in_h_over_Mpc;

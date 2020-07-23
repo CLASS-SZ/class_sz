@@ -2066,6 +2066,10 @@ int input_read_parameters(
           ptsz->exponent_unit=2.;
       }
 
+      //frequency for tSZ spectrum
+     //class_call(parser_read_string(pfc,"Frequency for y-distortion",&string1,&flag1,errmsg),
+     class_read_double("Frequency for y-distortion in GHz",ptsz->nu_y_dist_GHz);
+
       /* concentration parameter SZ */
       class_call(parser_read_string(pfc,"concentration parameter",&string1,&flag1,errmsg),
                  errmsg,
@@ -4139,6 +4143,10 @@ int input_default_params(
   ptsz->delta_alpha = 0.;
   ptsz->alpha_p = 0.12;
   //Hydrostatic Equilibrium Mass Bias, Piffaretti & Valdarnini [arXiv:0808.1111]
+
+  //units
+  ptsz->nu_y_dist_GHz = 150.;
+  ptsz->exponent_unit = 2;
 
   ptsz->HSEbias = 1.2;
   ptsz->Ap = 0.1;

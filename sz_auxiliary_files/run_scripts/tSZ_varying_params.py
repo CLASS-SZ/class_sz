@@ -1,5 +1,6 @@
 #! python3
 #e.g., python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name sigma8 -min 0.7 -max 0.9 -N 5 -spacing log -show_legend yes -show_error_bars yes -output ' ' -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions yes
+# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name sigma8 -min 0.8 -max 0.9 -N 1 -spacing log -show_legend yes -show_error_bars no -output 'tSZ_lens_1h' -plot_tSZ_lens_1h yes -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions no
 import argparse
 import numpy as np
 import os
@@ -58,9 +59,9 @@ def run(args):
     #     parameter_file = 'class-sz_chill_B12_parameters.ini'
     # else:
     #     parameter_file = 'class-sz_parameters.ini'
-
+    parameter_file = 'class-sz_parameters.ini'
     #'class-sz_chill_B12_parameters.ini'
-    parameter_file = 'class-sz_parameters_rotti++20.ini'
+    #parameter_file = 'class-sz_parameters_rotti++20.ini'
     #parameter_file ='tSZ_params_ref_resolved-rotti++20_snr12_step_2.ini'
     # parameter_file = 'class-sz_chill_B12_parameters.ini'
     #parameter_file = 'class-sz_parameters_for_sz_ps_completeness_analysis_rotti++20.ini'
@@ -137,22 +138,24 @@ def run(args):
     #set correct Output
     # p_dict['output'] = 'tSZ_1h'
     p_dict['mass function'] = 'T10'
-    #p_dict['pressure profile'] = 'B12'
+    p_dict['pressure profile'] = 'B12'
     # p_dict['create_ref_trispectrum_for_cobaya'] = 'NO'
     # p_dict['background_verbose'] = 2
     # p_dict['thermodynamics_verbose'] = 2
     p_dict['sz_verbose'] = 2
     p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
     p_dict['write sz results to files'] = 'yes'
-    #p_dict['pressure_profile_epsabs'] = 1.e-20
-    # p_dict['pressure_profile_epsrel'] = 1.e-3
-    # p_dict['redshift_epsabs'] = 1.e-30
-    # p_dict['mass_epsabs'] = 1.e-30
-    p_dict['redshift_epsrel'] = 1.e-3
-    p_dict['mass_epsrel'] = 1.e-2
-    p_dict['ndimSZ'] = 50
-    p_dict['n_arraySZ'] = 15
-    p_dict['component of tSZ power spectrum'] = 'diffuse'
+    p_dict['pressure_profile_epsabs'] = 1.e-10
+    p_dict['pressure_profile_epsrel'] = 1.e-5
+    p_dict['units for tSZ spectrum'] = 'muK2'
+    p_dict['redshift_epsabs'] = 1.e-17
+    p_dict['mass_epsabs'] = 1.e-15
+    p_dict['redshift_epsrel'] = 1.e-9
+    p_dict['mass_epsrel'] = 1.e-9
+    p_dict['ndimSZ'] = 100
+    p_dict['n_arraySZ'] = 100
+    p_dict['Frequency for y-distortion in GHz'] = 353.
+    p_dict['component of tSZ power spectrum'] = 'total'
     if(args.output):
         print(args.output)
         p_dict['output'] = args.output
@@ -209,7 +212,7 @@ def run(args):
         elif (args.plot_tSZ_lens_1h == 'yes'):
             ax.set_ylabel(r'$\ell^2(\ell+1)\mathrm{C^{y\phi}_\ell/2\pi}$',size=title_size)
         elif (args.plot_isw_lens == 'yes'):
-            ax.set_ylabel(r'$\ell^2(\ell+1)\mathrm{C^{ISW\times\phi}_\ell/2\pi}$',size=title_size)
+            ax.set_ylabel(r'$\ell(\ell+1)\mathrm{C^{ISW\times\phi}_\ell/2\pi}$' + ' [muK]',size=title_size)
         elif (args.plot_isw_tsz == 'yes'):
             ax.set_ylabel(r'$\ell(\ell+1)\mathrm{C^{ISW\times y}_\ell/2\pi}$',size=title_size)
         elif (args.plot_isw_auto == 'yes'):
@@ -312,19 +315,19 @@ def run(args):
                     ax.plot(multipoles[id_p],-kSZ_kSZ_gal_1halo[id_p],color=col[id_p],ls='--',alpha = 1.,marker='o')
                 elif (args.plot_tSZ_lens_1h == 'yes'):
                     print(tSZ_lens_1h[id_p])
-                    ax.plot(multipoles[id_p],tSZ_lens_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p],marker='o')
-                    ax.plot(multipoles[id_p],-tSZ_lens_1h[id_p],color=col[id_p],ls='--',alpha = 1.,marker='o')
+                    ax.plot(multipoles[id_p],tSZ_lens_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+                    ax.plot(multipoles[id_p],-tSZ_lens_1h[id_p],color=col[id_p],ls='--',alpha = 1.)
                 elif (args.plot_isw_lens == 'yes'):
                     print(isw_lens[id_p])
-                    ax.plot(multipoles[id_p],isw_lens[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p],marker='o')
-                    ax.plot(multipoles[id_p],-isw_lens[id_p],color=col[id_p],ls='--',alpha = 1.,marker='o')
+                    ax.plot(multipoles[id_p],isw_lens[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+                    ax.plot(multipoles[id_p],-isw_lens[id_p],color=col[id_p],ls='--',alpha = 1.)
                 elif (args.plot_isw_tsz == 'yes'):
                     print(isw_tsz[id_p])
                     ax.plot(multipoles[id_p],isw_tsz[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^isw-y class_sz')
                     ax.plot(multipoles[id_p],-isw_tsz[id_p],color=col[id_p],ls='--',alpha = 1.)
                 elif (args.plot_isw_auto == 'yes'):
                     print(isw_auto[id_p])
-                    ax.plot(multipoles[id_p],isw_auto[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^isw-isw class_sz')
+                    ax.plot(multipoles[id_p],isw_auto[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^isw-isw class_sz',marker='o')
                     ax.plot(multipoles[id_p],-isw_auto[id_p],color=col[id_p],ls='--',alpha = 1.)
                 else:
                     if ('tSZ_1h' in p_dict['output']):
