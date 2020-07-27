@@ -160,66 +160,9 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 
    ////////////////end - cl
 
-   if (ptsz->create_ref_trispectrum_for_cobaya){
-
-     if (ptsz->sz_verbose>=1)
-     printf("creating reference trispectrum for cobaya sz likelihood\n");
-
-     char Filepath[_ARGUMENT_LENGTH_MAX_];
-     FILE *fp;
-
-     double ell;
-     double ell_prime;
-
-     int index_l;
-     int index_l_prime;
-
-     for (index_l=0;index_l<ptsz->nlSZ;index_l++)
-        for (index_l_prime=0;index_l_prime<index_l+1;index_l_prime++) {
-
-          ell_prime = ptsz->ell[index_l_prime];
-          ell = ptsz->ell[index_l];
 
 
-          ptsz->trispectrum_ref[index_l][index_l_prime] = ell*(ell+1.)/(2.*_PI_)*ell_prime*(ell_prime+1.)/(2.*_PI_)*ptsz->tllprime_sz[index_l][index_l_prime];
-
-          if(ptsz->sz_verbose>2) printf("%e\t%e\t%e\n",ell,ell_prime,ptsz->trispectrum_ref[index_l][index_l_prime]);
-
-          ptsz->trispectrum_ref[index_l_prime][index_l] = ptsz->trispectrum_ref[index_l][index_l_prime];
-        };
-
-        sprintf(Filepath,
-                "%s%s%s%s",
-                ptsz->path_to_ref_trispectrum_for_cobaya,
-                "/tSZ_trispectrum_ref_",
-                ptsz->append_name_cobaya_ref,
-                ".txt");
-
-        fp=fopen(Filepath, "w");
-
-        for (index_l=0;index_l<ptsz->nlSZ;index_l++){
-         for (index_l_prime=0;index_l_prime<ptsz->nlSZ;index_l_prime++) {
-              fprintf(fp,"%e\t",ptsz->trispectrum_ref[index_l][index_l_prime]);
-           }
-           fprintf(fp,"\n");
-        }
-        fclose(fp);
-
-
-        sprintf(Filepath,
-                "%s%s%s%s",
-                ptsz->path_to_ref_trispectrum_for_cobaya,
-                "/tSZ_c_ell_ref_",
-                ptsz->append_name_cobaya_ref,
-                ".txt");
-
-        fp=fopen(Filepath, "w");
-        for (index_l=0;index_l<ptsz->nlSZ;index_l++)
-              fprintf(fp,"%e\t %e\t %e\n",ptsz->ell[index_l],ptsz->cl_sz_1h[index_l],ptsz->cl_sz_2h[index_l]);
-        fclose(fp);
-  }
-
-   if (ptsz->write_sz>0){
+   if (ptsz->write_sz>0 || ptsz->create_ref_trispectrum_for_cobaya){
    write_output_to_files_cl(pnl,pba,ptsz);
    write_output_to_files_ell_indep_ints(pnl,pba,ptsz);
    if (ptsz->sz_verbose>1) show_results(pba,pnl,ppm,ptsz);
@@ -2283,12 +2226,154 @@ int write_output_to_files_cl(struct nonlinear * pnl,
 
    int index_l;
    char Filepath[_ARGUMENT_LENGTH_MAX_];
+   //
+   // if (ptsz->sz_verbose > 0)
+   // {
 
-   if (ptsz->sz_verbose > 0)
-   {
+/// fill arrays:
+
+
+if (ptsz->has_sz_ps + ptsz->has_sz_trispec + ptsz->has_sz_2halo + ptsz->has_sz_m_y_y_2h + ptsz->has_sz_m_y_y_1h + ptsz->has_sz_te_y_y +   ptsz->has_kSZ_kSZ_gal_1halo + ptsz->has_tSZ_lens_1h + ptsz->has_isw_lens + ptsz->has_isw_tsz + ptsz->has_isw_auto){
+
+double bin_ell_low[ptsz->nlSZ];
+double bin_ell_up[ptsz->nlSZ];
+
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+   double sig_cl_squared;
+   double sig_cl_squared_1h;
+   double sig_cl_squared_2h;
+   double ell = ptsz->ell[index_l];
+   sig_cl_squared = 2.*pow((ptsz->cl_sz_1h[index_l]+ptsz->cl_sz_2h[index_l])/(ell*(ell+1.))*2.*_PI_,2.)/(2.*ell+1.);
+   sig_cl_squared_1h = 2.*pow((ptsz->cl_sz_1h[index_l])/(ell*(ell+1.))*2.*_PI_,2.)/(2.*ell+1.);
+   sig_cl_squared_2h = 2.*pow((ptsz->cl_sz_2h[index_l])/(ell*(ell+1.))*2.*_PI_,2.)/(2.*ell+1.);
+
+
+   //binned gaussian variance
+   double sig_cl_squared_binned;
+   double sig_cl_squared_binned_1h;
+   double sig_cl_squared_binned_2h;
+   double ln_ell_min;
+   double ln_ell_max;
+   double ln_ell_down;
+   double ln_ell_up;
+   double n_modes;
+   if (index_l == 0){
+      ln_ell_up = log(ptsz->ell[index_l+1]);
+      ln_ell_max = log(ell) + 0.5*(ln_ell_up-log(ell));
+      ln_ell_min = log(ell) - 0.5*(ln_ell_up-log(ell));
+      bin_ell_low[index_l] = exp(ln_ell_min);
+      bin_ell_up[index_l] = exp(ln_ell_max);
+      n_modes = exp(ln_ell_max)-exp(ln_ell_min);
+      sig_cl_squared_binned = sig_cl_squared/n_modes;
+      sig_cl_squared_binned_1h = sig_cl_squared_1h/n_modes;
+      sig_cl_squared_binned_2h = sig_cl_squared_2h/n_modes;
+   }
+   else if (index_l == ptsz->nlSZ -1){
+      ln_ell_down = log(ptsz->ell[index_l-1]);
+      ln_ell_min = log(ell) - 0.5*(log(ell)-ln_ell_down);
+      ln_ell_max = log(ell) + 0.5*(log(ell)-ln_ell_down);
+      bin_ell_low[index_l] = exp(ln_ell_min);
+      bin_ell_up[index_l] = exp(ln_ell_max);
+      n_modes = exp(ln_ell_max)-exp(ln_ell_min);
+      sig_cl_squared_binned = sig_cl_squared/n_modes;
+      sig_cl_squared_binned_1h = sig_cl_squared_1h/n_modes;
+      sig_cl_squared_binned_2h = sig_cl_squared_2h/n_modes;
+   }
+   else {
+      ln_ell_down = log(ptsz->ell[index_l-1]);
+      ln_ell_up = log(ptsz->ell[index_l+1]);
+      ln_ell_min = log(ell) - 0.5*(log(ell)-ln_ell_down);
+      ln_ell_max = log(ell) + 0.5*(ln_ell_up-log(ell));
+      bin_ell_low[index_l] = exp(ln_ell_min);
+      bin_ell_up[index_l] = exp(ln_ell_max);
+      n_modes = exp(ln_ell_max)-exp(ln_ell_min);
+      sig_cl_squared_binned = sig_cl_squared/n_modes;
+      sig_cl_squared_binned_1h = sig_cl_squared_1h/n_modes;
+      sig_cl_squared_binned_2h = sig_cl_squared_2h/n_modes;
+   }
+
+   //normalised cov:
+   // see e.g., A 28 of Hill and Pajer 2013
+   ptsz->sig_cl_squared_binned[index_l] = sig_cl_squared_binned/ptsz->f_sky;
+   ptsz->cov_cl_cl[index_l] = ptsz->sig_cl_squared_binned[index_l] +  ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey;
+
+   sig_cl_squared_binned_1h = sig_cl_squared_binned_1h/ptsz->f_sky;
+   sig_cl_squared_binned_2h = sig_cl_squared_binned_2h/ptsz->f_sky;
+
+   double cov_cl_cl_1h = sig_cl_squared_binned_1h + ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey;
+   double cov_cl_cl_2h = sig_cl_squared_binned_2h + ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey;
+
+
+
+}
+
+if (ptsz->create_ref_trispectrum_for_cobaya){
+
+  if (ptsz->sz_verbose>=1)
+  printf("creating reference trispectrum for cobaya sz likelihood\n");
+
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+  FILE *fp;
+
+  double ell;
+  double ell_prime;
+
+  int index_l;
+  int index_l_prime;
+
+  for (index_l=0;index_l<ptsz->nlSZ;index_l++)
+     for (index_l_prime=0;index_l_prime<index_l+1;index_l_prime++) {
+
+       ell_prime = ptsz->ell[index_l_prime];
+       ell = ptsz->ell[index_l];
+
+
+       ptsz->trispectrum_ref[index_l][index_l_prime] = ell*(ell+1.)/(2.*_PI_)*ell_prime*(ell_prime+1.)/(2.*_PI_)*ptsz->tllprime_sz[index_l][index_l_prime];
+
+       if(ptsz->sz_verbose>2) printf("%e\t%e\t%e\n",ell,ell_prime,ptsz->trispectrum_ref[index_l][index_l_prime]);
+
+       ptsz->trispectrum_ref[index_l_prime][index_l] = ptsz->trispectrum_ref[index_l][index_l_prime];
+     };
+
+     sprintf(Filepath,
+             "%s%s%s%s",
+             ptsz->path_to_ref_trispectrum_for_cobaya,
+             "/tSZ_trispectrum_ref_",
+             ptsz->append_name_cobaya_ref,
+             ".txt");
+
+     fp=fopen(Filepath, "w");
+
+     for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+      for (index_l_prime=0;index_l_prime<ptsz->nlSZ;index_l_prime++) {
+           fprintf(fp,"%e\t",ptsz->trispectrum_ref[index_l][index_l_prime]);
+        }
+        fprintf(fp,"\n");
+     }
+     fclose(fp);
+
+
+     sprintf(Filepath,
+             "%s%s%s%s",
+             ptsz->path_to_ref_trispectrum_for_cobaya,
+             "/tSZ_c_ell_ref_",
+             ptsz->append_name_cobaya_ref,
+             ".txt");
+
+     fp=fopen(Filepath, "w");
+     for (index_l=0;index_l<ptsz->nlSZ;index_l++)
+           fprintf(fp,"%e\t %e\t %e \t %e \t %e \t %e\n",ptsz->ell[index_l],ptsz->cl_sz_1h[index_l],ptsz->cl_sz_2h[index_l],pow(ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)/2./_PI_,2.)*ptsz->sig_cl_squared_binned[index_l],bin_ell_low[index_l],bin_ell_up[index_l]);
+     fclose(fp);
+}
+
+
+}
+
+// write arrays:
       FILE *fp;
 
-    if (ptsz->has_sz_ps + ptsz->has_sz_trispec + ptsz->has_sz_2halo + ptsz->has_sz_m_y_y_2h + ptsz->has_sz_m_y_y_1h + ptsz->has_sz_te_y_y +   ptsz->has_kSZ_kSZ_gal_1halo + ptsz->has_tSZ_lens_1h + ptsz->has_isw_lens + ptsz->has_isw_tsz + ptsz->has_isw_auto){
+    if ((ptsz->has_sz_ps + ptsz->has_sz_trispec + ptsz->has_sz_2halo + ptsz->has_sz_m_y_y_2h + ptsz->has_sz_m_y_y_1h + ptsz->has_sz_te_y_y +   ptsz->has_kSZ_kSZ_gal_1halo + ptsz->has_tSZ_lens_1h + ptsz->has_isw_lens + ptsz->has_isw_tsz + ptsz->has_isw_auto > 0) && (ptsz->write_sz>0)){
 
       sprintf(Filepath,
                   "%s%s%s",
@@ -2471,6 +2556,8 @@ int write_output_to_files_cl(struct nonlinear * pnl,
       printf("->Output written in %s\n",Filepath);
       fclose(fp);
 
+
+
     }
       int index_l_prime;
       double ell_prime;
@@ -2491,20 +2578,18 @@ int write_output_to_files_cl(struct nonlinear * pnl,
            // if (index_l==index_l_prime)
            //   ptsz->r_cl_clp[index_l_prime][index_l] = 1.;
 
-           ell_prime = ptsz->ell[index_l_prime];
-           ell = ptsz->ell[index_l];
-           ptsz->trispectrum_ref[index_l][index_l_prime] = ell*(ell+1.)/(2.*_PI_)*ell_prime*(ell_prime+1.)/(2.*_PI_)*ptsz->tllprime_sz[index_l][index_l_prime];
-
-           ptsz->trispectrum_ref[index_l_prime][index_l] = ptsz->trispectrum_ref[index_l][index_l_prime];
-
-
+           // ell_prime = ptsz->ell[index_l_prime];
+           // ell = ptsz->ell[index_l];
+           // ptsz->trispectrum_ref[index_l][index_l_prime] = ell*(ell+1.)/(2.*_PI_)*ell_prime*(ell_prime+1.)/(2.*_PI_)*ptsz->tllprime_sz[index_l][index_l_prime];
+           //
+           // ptsz->trispectrum_ref[index_l_prime][index_l] = ptsz->trispectrum_ref[index_l][index_l_prime];
 
          };
 
 
 
 
-if (ptsz->has_sz_cov_Y_N){
+if (ptsz->has_sz_cov_Y_N && ptsz->write_sz>0){
       sprintf(Filepath,
                   "%s%s%s",
                   ptsz->root,
@@ -2545,7 +2630,7 @@ if (ptsz->has_sz_cov_Y_N){
       fclose(fp);
   }
 
-  if (ptsz->has_sz_cov_N_N){
+  if (ptsz->has_sz_cov_N_N && ptsz->write_sz>0){
 
     sprintf(Filepath,
               "%s%s%s",
@@ -2584,7 +2669,7 @@ if (ptsz->has_sz_cov_Y_N){
 
 
     }
-    if (ptsz->has_dndlnM){
+    if (ptsz->has_dndlnM && ptsz->write_sz>0){
 
       sprintf(Filepath,
                 "%s%s%s",
@@ -2637,7 +2722,7 @@ if (ptsz->has_sz_cov_Y_N){
 
       }
 
- if (ptsz->has_sz_trispec){
+ if (ptsz->has_sz_trispec && ptsz->write_sz>0){
       sprintf(Filepath,
                   "%s%s%s",
                   ptsz->root,
@@ -2659,7 +2744,7 @@ if (ptsz->has_sz_cov_Y_N){
 
 
 
-   }
+   //}
 
    return _SUCCESS_;
 }
