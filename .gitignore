@@ -92,6 +92,7 @@ sz_auxiliary_files/run_scripts/tmp_ref_cov_no_trispec_10/tmp.ini
 class-compare_with_colin_07022020_1d5r200c_parameters.ini
 sz_auxiliary_files/#class_sz_dev_notes.lyx#
 sz_auxiliary_files/run_scripts/tmp
+sz_auxiliary_files/run_scripts/tmp_ref_cov
 sz_auxiliary_files/run_scripts/tSZ_params_ref_resolved-rotti++20_snr12_step_2.ini
 sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20.py
 sz_auxiliary_files/run_scripts/class-sz_parameters_rotti++20.ini

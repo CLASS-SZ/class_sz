@@ -45155,7 +45155,8 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
 int load_rho_nfw_profile(struct tszspectrum * ptsz)
 {
 
-if (ptsz->has_tSZ_lens_1h != _TRUE_ )
+// don't load the lensing profile if lensing observables not required
+if (ptsz->has_tSZ_lens_1h != _TRUE_ || ptsz->has_tSZ_lens_2h != _TRUE_)
   return 0;
 
 
@@ -45889,6 +45890,7 @@ double integrand_redshift(double ln1pz, void *p){
 
 if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  ||  ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_auto))
+ ||  ((V->ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lens_2h))
  ||  ((V->ptsz->has_isw_tsz == _TRUE_) && (index_md == V->ptsz->index_md_isw_tsz))
  ||  ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens))
     ){
@@ -45897,6 +45899,8 @@ if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo)
 
   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
 
+  // For all the above cases we add the linear matter power spectrum to the redshift integrand
+  // evaluated at (ell+1/2)/Chi and redshift z
   result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
 }
 
@@ -46170,6 +46174,33 @@ double integrand_patterson_test(double logM, void *p){
   r = r_cov_Y_Y_ssc_1*r_cov_Y_Y_ssc_2;
                                      }
 
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tSZ_lens_2h )){
+
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Y' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('Phi' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+  r = r_m_1*r_m_2;
+                                     }
 
   else
   r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),

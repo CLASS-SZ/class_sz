@@ -17,7 +17,7 @@ vpath .base build
 ########################################################
 
 # your C compiler:
-CC       = gcc
+CC       = gcc-10
 #CC       = gcc  -Wunused-variable
 #CC       = icc
 #CC       = pgcc
@@ -31,7 +31,7 @@ AR        = ar rv
 # add a compilation option on the terminal command line:
 # "PYTHON=python3 make all" (THanks to Marius Millea for pyhton3
 # compatibility)
-PYTHON ?= /Users/boris/opt/anaconda3/bin/python
+PYTHON ?= python
 #PYTHON ?= /Users/boris/opt/anaconda2/bin/python
 
 # your optimization flag
@@ -66,7 +66,7 @@ HYREC = hyrec
 CCFLAG += -D__CLASSDIR__='"$(MDIR)"'
 
 # where to find include files *.h
-INCLUDES = -I../include -I/usr/local/include/
+INCLUDES =  -I/Users/boris/gsl-2.6/include/ -I../include -I/usr/local/include/
 
 # automatically add external programs if needed. First, initialize to blank.
 EXTERNAL =
@@ -152,7 +152,7 @@ libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
 	$(AR)  $@ $(addprefix build/, $(TOOLS) $(SOURCE) $(EXTERNAL))
 
 class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm -lgsl -lgslcblas
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/Users/boris/gsl-2.6/lib/ -lm -lgsl -lgslcblas
 
 test_sigma: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(TEST_SIGMA)
 	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o test_sigma $(addprefix build/,$(notdir $^)) -lm
