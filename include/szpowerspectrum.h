@@ -6,6 +6,8 @@
 #include "common.h"
 #include "lensing.h"
 #include <gsl/gsl_integration.h>
+#include <gsl/gsl_sf_erf.h>
+#include <gsl/gsl_sf_expint.h>
 
 #define _mean_y_ ((ptsz->has_mean_y == _TRUE_) && (index_md == ptsz->index_md_mean_y))
 #define _hmf_ ((ptsz->has_hmf == _TRUE_) && (index_md == ptsz->index_md_hmf))
@@ -21,6 +23,7 @@
 #define _cov_Y_Y_ssc_ ((ptsz->has_sz_cov_Y_Y_ssc == _TRUE_) && (index_md == ptsz->index_md_cov_Y_Y_ssc))
 #define _cov_Y_N_next_order_ ((ptsz->has_sz_cov_Y_N_next_order == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N_next_order))
 #define _kSZ_kSZ_gal_1halo_ ((ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1halo))
+#define _tSZ_gal_1h_ ((ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_1h))
 #define _tSZ_lens_1h_ ((ptsz->has_tSZ_lens_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lens_1h))
 #define _tSZ_lens_2h_ ((ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lens_2h))
 #define _isw_lens_ ((ptsz->has_isw_lens == _TRUE_) && (index_md == ptsz->index_md_isw_lens))
@@ -39,6 +42,12 @@
 
 struct tszspectrum {
 
+
+  int use_central_hod; // Eq. 15 or 16 of KA20
+  int unwise_galaxy_sample_id;
+  int galaxy_sample;
+  //double unwise_m_min_cut;
+
   double sn_cutoff;
 
   double f_sky;
@@ -49,6 +58,7 @@ struct tszspectrum {
   double hmf_int;
   double y_monopole;
   double * cl_sz_1h;
+  double * cl_tSZ_gal_1h;
   double * cl_tSZ_lens_1h;
   double * cl_tSZ_lens_2h;
   double * cl_isw_lens;
@@ -155,6 +165,11 @@ struct tszspectrum {
   int index_md_tSZ_lens_1h;
   int index_integrand_id_tSZ_lens_1h_first;
   int index_integrand_id_tSZ_lens_1h_last;
+
+  int has_tSZ_gal_1h;
+  int index_md_tSZ_gal_1h;
+  int index_integrand_id_tSZ_gal_1h_first;
+  int index_integrand_id_tSZ_gal_1h_last;
 
 
   int has_tSZ_lens_2h;
@@ -296,6 +311,14 @@ struct tszspectrum {
   int  index_halo_bias;
   int  index_k_value_for_halo_bias;
 
+  int index_phi_galaxy_counts;
+  int index_mean_galaxy_number_density;
+  int index_c500c_KA20;
+  int index_multipole_for_galaxy_profile;
+  int index_galaxy_profile;
+
+  //////////////
+
   int index_integral;
   int index_integral_te_y_y;
   int index_integral_2halo_term;
@@ -338,6 +361,13 @@ struct tszspectrum {
   double * cov_Y_N_mass_bin_edges;
 
 
+
+  //HOD
+  double M_min_HOD;
+  double sigma_lnM_HOD;
+  double alpha_s_HOD;
+  double M1_prime_HOD;
+  double rho_y_gal;
 
 
   //units for tSZ spectrum
@@ -585,6 +615,12 @@ struct tszspectrum {
   int RNFW_lnx_size;
 
 
+  double * normalized_dndz_z;
+  double * normalized_dndz_phig;
+
+  int normalized_dndz_size;
+
+
   double * CM_redshift;
   double * CM_logM;
 
@@ -607,6 +643,7 @@ struct tszspectrum {
   double * array_vrms2_at_z;
   double * array_sigma2_hsv_at_z;
 
+  double * array_mean_galaxy_number_density;
 
   ErrorMsg error_message; /**< zone for writing error messages */
 
@@ -728,6 +765,13 @@ int szpowerspectrum_init(struct background * pba,
                                               struct nonlinear * pnl,
                                               struct tszspectrum * ptsz);
 
+ int evaluate_pk_at_ell_plus_one_half_over_chi_today(double * pvecback,
+                                                      double * pvectsz,
+                                                      struct background * pba,
+                                                      struct primordial * ppm,
+                                                      struct nonlinear * pnl,
+                                                      struct tszspectrum * ptsz);
+
 
   int initialise_and_allocate_memory(struct tszspectrum * ptsz);
 
@@ -768,6 +812,49 @@ int evaluate_tau_profile(double * pvecback,
                         double * pvectsz,
                         struct background * pba,
                         struct tszspectrum * ptsz);
+
+
+int evaluate_mean_galaxy_number_density_at_z(double * pvectsz,
+                                             struct tszspectrum * ptsz);
+
+double HOD_mean_number_of_central_galaxies(double M_halo,
+                                           double M_min,
+                                           double sigma_lnM);
+
+double HOD_mean_number_of_satellite_galaxies(double M_halo,
+                                             double Nc_mean,
+                                             double M_min,
+                                             double alpha_s,
+                                             double M1_prime);
+int evaluate_galaxy_profile(double * pvecback,
+                            double * pvectsz,
+                            struct background * pba,
+                            struct tszspectrum * ptsz);
+
+int evaluate_truncated_nfw_profile(double * pvecback,
+                                   double * pvectsz,
+                                   struct background * pba,
+                                   struct tszspectrum * ptsz);
+
+
+int evaluate_c500c_KA20(double * pvecback,
+                        double * pvectsz,
+                        struct background * pba,
+                        struct tszspectrum * ptsz);
+
+
+double radial_kernel_W_galaxy_at_z( double * pvecback,
+                                    double * pvectsz,
+                                    struct background * pba,
+                                    struct tszspectrum * ptsz);
+
+double evaluate_galaxy_number_counts( double * pvecback,
+                                    double * pvectsz,
+                                    struct background * pba,
+                                    struct tszspectrum * ptsz);
+
+double evaluate_unwise_m_min_cut(double z,
+                                 int sample_id);
 
 #ifdef __cplusplus
 }

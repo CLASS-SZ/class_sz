@@ -105,3 +105,12 @@ sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20-mean-mass-r
 sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20-resolved.py
 sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20-resolved.py
 sz_auxiliary_files/run_scripts/compute_and_plot_snr_figure_rotti++20-unresolved.py
+sz_auxiliary_files/WISE_galaxy_distributions/blue.txt
+sz_auxiliary_files/WISE_galaxy_distributions/green.txt
+sz_auxiliary_files/WISE_galaxy_distributions/README.txt
+sz_auxiliary_files/WISE_galaxy_distributions/red_16.2.txt
+sz_auxiliary_files/UNWISE_galaxy_distributions/blue.txt
+sz_auxiliary_files/UNWISE_galaxy_distributions/green.txt
+sz_auxiliary_files/UNWISE_galaxy_distributions/normalised_dndz.txt
+sz_auxiliary_files/UNWISE_galaxy_distributions/README.txt
+sz_auxiliary_files/UNWISE_galaxy_distributions/red_16.2.txt

@@ -45148,8 +45148,154 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
 }
 
 
+
 //This routine reads the tabulated
-//pressure profiles,
+//nfw profiles,
+//and stores the tabulated values.
+
+int load_normalized_dndz_unwise(struct tszspectrum * ptsz)
+{
+
+// don't load the unwise  dndz  if not required
+if (ptsz->has_tSZ_gal_1h != _TRUE_ && ptsz->galaxy_sample!= 1)
+  return 0;
+
+
+  class_alloc(ptsz->normalized_dndz_z,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->normalized_dndz_phig,sizeof(double *)*100,ptsz->error_message);
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI, this_lnJ, this_lnK;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+
+  /* Prepare the command */
+  /* If the command is just a "cat", no arguments need to be passed */
+  // if(strncmp("cat ", ptsz->command, 4) == 0)
+  // {
+  // sprintf(arguments, " ");
+  // }
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+    sprintf(Filepath,
+            "%s%s%s",
+            "cat ",
+            ptsz->path_to_class,
+            "/sz_auxiliary_files/UNWISE_galaxy_distributions/normalised_dndz.txt");
+  process = popen(Filepath, "r");
+
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+    sscanf(line, "%lf %lf %lf %lf", &this_lnx, &this_lnI, &this_lnJ, &this_lnK);
+
+    // red
+    if (ptsz->unwise_galaxy_sample_id == 0)
+    this_lnI = this_lnK;
+
+    // green
+    if (ptsz->unwise_galaxy_sample_id == 1 || ptsz->unwise_galaxy_sample_id == 2)
+    this_lnI = this_lnJ;
+
+    // blue
+    if (ptsz->unwise_galaxy_sample_id == 3)
+    this_lnI = this_lnI;
+
+    //printf("lnx = %e\n",this_lnx);
+
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  status = pclose(process);
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->normalized_dndz_size = n_data;
+  /** Make room */
+
+  class_realloc(ptsz->normalized_dndz_z,
+                ptsz->normalized_dndz_z,
+                ptsz->normalized_dndz_size*sizeof(double),
+                ptsz->error_message);
+  class_realloc(ptsz->normalized_dndz_phig,
+                ptsz->normalized_dndz_phig,
+                ptsz->normalized_dndz_size*sizeof(double),
+                ptsz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<ptsz->normalized_dndz_size; index_x++) {
+    ptsz->normalized_dndz_z[index_x] = lnx[index_x];
+    ptsz->normalized_dndz_phig[index_x] = lnI[index_x];
+    //print("z=%.3e phig=%.3e\n",ptsz->normalized_dndz_z[index_x])
+  };
+
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  return _SUCCESS_;
+}
+
+
+
+
+
+
+//This routine reads the tabulated
+//nfw profiles,
 //and stores the tabulated values.
 
 int load_rho_nfw_profile(struct tszspectrum * ptsz)
@@ -45160,8 +45306,8 @@ if (ptsz->has_tSZ_lens_1h != _TRUE_ || ptsz->has_tSZ_lens_2h != _TRUE_)
   return 0;
 
 
-  class_alloc(ptsz->PP_lnx,sizeof(double *)*100,ptsz->error_message);
-  class_alloc(ptsz->PP_lnI,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->RNFW_lnx,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->RNFW_lnI,sizeof(double *)*100,ptsz->error_message);
   //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
 
   //char arguments[_ARGUMENT_LENGTH_MAX_];
@@ -45262,7 +45408,7 @@ if (ptsz->has_tSZ_lens_1h != _TRUE_ || ptsz->has_tSZ_lens_2h != _TRUE_)
 
 
   /** Store them */
-  for (index_x=0; index_x<ptsz->PP_lnx_size; index_x++) {
+  for (index_x=0; index_x<ptsz->RNFW_lnx_size; index_x++) {
     ptsz->RNFW_lnx[index_x] = lnx[index_x];
     ptsz->RNFW_lnI[index_x] = lnI[index_x];
   };
@@ -45825,6 +45971,13 @@ double integrand_redshift(double ln1pz, void *p){
 
 
   int index_md = (int) V->pvectsz[V->ptsz->index_md];
+
+if ((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h)) {
+ evaluate_mean_galaxy_number_density_at_z(V->pvectsz,V->ptsz);
+ //printf("z = %.3e ng = %.3e\n",z,V->pvectsz[V->ptsz->index_mean_galaxy_number_density]);
+}
+
+
   double result = 0.;
 
   if ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens)) {
@@ -45889,13 +46042,11 @@ double integrand_redshift(double ln1pz, void *p){
                                 }
 
 if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
- ||  ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_auto))
+ //||  ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_auto))
  ||  ((V->ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lens_2h))
- ||  ((V->ptsz->has_isw_tsz == _TRUE_) && (index_md == V->ptsz->index_md_isw_tsz))
- ||  ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens))
+ //||  ((V->ptsz->has_isw_tsz == _TRUE_) && (index_md == V->ptsz->index_md_isw_tsz))
+ //||  ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens))
     ){
-
-
 
   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
 
@@ -45903,6 +46054,30 @@ if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo)
   // evaluated at (ell+1/2)/Chi and redshift z
   result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
 }
+
+if ( //((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
+     ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_auto))
+ //||  ((V->ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lens_2h))
+ ||  ((V->ptsz->has_isw_tsz == _TRUE_) && (index_md == V->ptsz->index_md_isw_tsz))
+ ||  ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens))
+    ){
+
+  evaluate_pk_at_ell_plus_one_half_over_chi_today(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+
+  // For all the above cases we add the linear matter power spectrum to the redshift integrand
+  // evaluated at (ell+1/2)/Chi and redshift z=0
+  result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+}
+
+if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))){
+// multiply by radial kernel for galaxies
+double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+  result *= Wg*(1.+V->ptsz->rho_y_gal)/V->pvectsz[V->ptsz->index_chi2];
+
+}
+
+
+
 
 
 
@@ -46201,6 +46376,26 @@ double integrand_patterson_test(double logM, void *p){
                                            params,ptsz->patterson_show_neval);
   r = r_m_1*r_m_2;
                                      }
+
+
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tSZ_gal_1h )){
+
+  // if using unwise we set a specific lower bound
+  if (ptsz->galaxy_sample==1)
+  m_min = evaluate_unwise_m_min_cut(pvectsz[ptsz->index_z],ptsz->unwise_galaxy_sample_id);
+
+
+  //pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  //V.pvectsz = pvectsz;
+  //params = &V;
+
+  // integrate over the mass range
+  r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+                               }
 
   else
   r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
@@ -46679,6 +46874,145 @@ return _SUCCESS_;
     }
 
 
+
+
+
+struct Parameters_for_integrand_mean_galaxy_number{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+};
+
+
+
+double integrand_mean_galaxy_number(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_mean_galaxy_number *V = ((struct Parameters_for_integrand_mean_galaxy_number *) p);
+
+    //double x=exp(ln_x);
+
+    double M_halo = exp(lnM_halo);
+    double nc = HOD_mean_number_of_central_galaxies(M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD);
+    double ns = HOD_mean_number_of_satellite_galaxies(M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD);
+
+      double z = V->z;
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+
+      evaluate_HMF(lnM_halo,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
+
+      double z_asked = z;
+      double  m_asked = M_halo;
+      // this  also works:
+      //double hmf = get_dndlnM_at_z_and_M(z_asked,m_asked,V->ptsz);
+
+
+
+      double result = hmf*(ns+nc);
+
+  return result;
+
+}
+
+
+
+int tabulate_mean_galaxy_number_density(struct background * pba,
+                                        struct nonlinear * pnl,
+                                        struct primordial * ppm,
+                                        struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_mean_galaxy_number_density,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+
+int index_z;
+double r;
+double m_min,m_max;
+m_min = ptsz->M1SZ;
+m_max = ptsz->M2SZ;
+
+double * pvecback;
+double * pvectsz;
+
+
+ class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+
+
+for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
+        {
+          double z = exp(ptsz->array_redshift[index_z])-1.;
+
+          if (ptsz->galaxy_sample==1)
+          m_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id);
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_mean_galaxy_number V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+
+          void * params = &V;
+          double epsrel=ptsz->mass_epsrel;
+          double epsabs=ptsz->mass_epsabs;
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_mean_galaxy_number,
+                                               params,ptsz->patterson_show_neval);
+
+          ptsz->array_mean_galaxy_number_density[index_z] = log(r);
+
+       }
+ free(pvecback);
+ free(pvectsz);
+
+return _SUCCESS_;
+    }
+
+
+
+
+
 //Tabulate Sigma2(R,z) and dSigma2dR
 //as functions of z and logR
 int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
@@ -46707,8 +47041,8 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
   double ** array_sigma_at_z_and_R;
   double ** array_dsigma2dR_at_z_and_R;
 
-  class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
-  class_alloc(ptsz->array_radius,sizeof(double *)*ptsz->ndimSZ,ptsz->error_message);
+class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+class_alloc(ptsz->array_radius,sizeof(double *)*ptsz->ndimSZ,ptsz->error_message);
 
 
 class_alloc(ptsz->array_sigma_at_z_and_R,

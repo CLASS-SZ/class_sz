@@ -2,6 +2,11 @@
 #e.g., python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name sigma8 -min 0.7 -max 0.9 -N 5 -spacing log -show_legend yes -show_error_bars yes -output ' ' -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions yes
 # $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name sigma8 -min 0.8 -max 0.9 -N 1 -spacing log -show_legend yes -show_error_bars no -output 'tSZ_lens_1h' -plot_tSZ_lens yes -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions no
 # $ $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'Frequency for y-distortion in GHz' -p_val '[100.,143.,353.]'  -show_legend yes -show_error_bars no -output 'tSZ_lens_1h' -plot_tSZ_lens yes -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions no
+# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'h' -p_val '[0.7]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_1h' -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -y_min 1e-15 -y_max 1e-10
+# isw-phi :
+# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'h' -p_val '[0.5,0.6,0.7,0.8]'  -show_legend yes -show_error_bars no -output 'isw_lens,tCl,lCl' -plot_tSZ_lens no -plot_isw_lens yes  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -y_min 1e-18 -y_max 1e-9
+# yxg
+# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","green_shallow","blue"]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_1h' -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no
 import argparse
 import numpy as np
 import os
@@ -141,6 +146,7 @@ def run(args):
     cl_2h = []
     te_y_y = []
     kSZ_kSZ_gal_1halo = []
+    tSZ_gal_1h = []
     tSZ_lens_1h = []
     tSZ_lens_2h = []
     isw_lens = []
@@ -168,23 +174,26 @@ def run(args):
                 (key, val) = (key.strip(), val.strip())
                 p_dict[key] = val
     #print(p_dict)
+    #p_dict['h'] = 0.65
     #set correct Output
     # p_dict['output'] = 'tSZ_1h'
-    p_dict['mass function'] = 'T10'
-    p_dict['pressure profile'] = 'B12'
+    p_dict['mass function'] = 'T08'  #fiducial  T10
+    p_dict['pressure profile'] = 'A10' #fiducial B12
 
     # p_dict['create_ref_trispectrum_for_cobaya'] = 'NO'
     # p_dict['background_verbose'] = 2
     # p_dict['thermodynamics_verbose'] = 2
     p_dict['sz_verbose'] = 2
     p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
-    p_dict['write sz results to files'] = 'yes'
+    p_dict['write sz results to files'] = 'yes' # this writes  PS and f(z)
     p_dict['pressure_profile_epsabs'] = 1.e-8
     p_dict['pressure_profile_epsrel'] = 1.e-3
-    p_dict['redshift_epsabs'] = 1.e-30
-    p_dict['redshift_epsrel'] = 1.e-8
-    p_dict['mass_epsabs'] = 1.e-30
-    p_dict['mass_epsrel'] = 1e-8
+    p_dict['redshift_epsabs'] = 1.e-20
+    p_dict['redshift_epsrel'] = 1.e-10 # fiducial value 1e-8
+    p_dict['mass_epsabs'] = 1.e-20
+    p_dict['mass_epsrel'] = 1e-10
+
+    p_dict['dlogell'] = 0.2
     #p_dict['units for tSZ spectrum'] = 'muK2'
     #p_dict['redshift_epsabs'] = 1.e-17
     #p_dict['mass_epsabs'] = 1.e-15
@@ -196,6 +205,7 @@ def run(args):
     p_dict['component of tSZ power spectrum'] = 'total'
     p_dict['temperature contributions'] = 'lisw'
     p_dict['early/late isw redshift'] = p_dict['z2SZ']
+    #p_dict['tol_shooting_1d'] = 1e-2
     if(args.output):
         print(args.output)
         p_dict['output'] = args.output
@@ -249,6 +259,8 @@ def run(args):
             ax.set_ylabel(r'$\mathrm{T_e^{tSZ}} \quad [\mathrm{keV}]$',size=title_size)
         elif (args.plot_kSZ_kSZ_gal_1halo == 'yes'):
             ax.set_ylabel(r'$\mathrm{b^{kSZ^2-g}_{\ell_1,\ell_2,\ell_3}}$',size=title_size)
+        elif (args.plot_tSZ_gal == 'yes'):
+            ax.set_ylabel(r'$\mathrm{C^{yg}_\ell}$',size=title_size)
         elif (args.plot_tSZ_lens == 'yes'):
             ax.set_ylabel(r'$\ell^2(\ell+1)\mathrm{C^{y\phi}_\ell/2\pi}$ [$\mu$K]',size=title_size)
         elif (args.plot_isw_lens == 'yes'):
@@ -301,6 +313,10 @@ def run(args):
             #val_label.append(label_key + ' = %.2e'%(p_val))
             if (param_name == 'm_ncdm'):
                 val_label.append(label_key + ' = %3.0f'%(1000*p_val)+ ' meV')
+            if (param_name == 'use_central_hod'):
+                val_label.append(label_key + ' = %d'%(p_val))
+            if (param_name == 'unwise_galaxy_sample_id'):
+                val_label.append('%s'%(p_val))
             else:
                 val_label.append(label_key + ' = ' + scientific_notation(p_val))
                 #val_label.append(label_key + ' = ' + "%.2f"%(p_val))
@@ -314,7 +330,7 @@ def run(args):
                 redshift_dependent_functions_Q.append(R[:,8]) # 6: v2rms, 7: sigma2_hsv, 8: m200m/m200c @ m200m = 10^{13.5} Msun/h
                 ax.plot(redshift_dependent_functions_z[id_p],np.sqrt(redshift_dependent_functions_Q[id_p]),color=col[id_p],ls='-',label = val_label[id_p])
 
-            elif ('tSZ_1h' in p_dict['output'] or 'kSZ_kSZ_gal_1h' in p_dict['output'] or 'tSZ_lens_1h' in p_dict['output'] or 'tSZ_lens_2h' in p_dict['output'] or 'isw_lens' in p_dict['output'] or 'isw_tsz' in p_dict['output']  or 'isw_auto' in p_dict['output']):
+            elif ('tSZ_1h' in p_dict['output'] or 'kSZ_kSZ_gal_1h' in p_dict['output'] or 'tSZ_lens_1h' in p_dict['output'] or 'tSZ_lens_2h' in p_dict['output'] or 'tSZ_gal' in p_dict['output'] or 'isw_lens' in p_dict['output'] or 'isw_tsz' in p_dict['output']  or 'isw_auto' in p_dict['output']):
                 R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
                 multipoles.append(R[:,0])
                 cl_1h.append(R[:,1])
@@ -329,6 +345,7 @@ def run(args):
                 isw_lens.append(R[:,11])
                 isw_tsz.append(R[:,12])
                 isw_auto.append(R[:,13])
+                tSZ_gal_1h.append(R[:,20])
                 # L = [multipole,cl_1h]
                 # r_dict[p_val] = L
 
@@ -357,34 +374,65 @@ def run(args):
                 elif (args.plot_tSZ_lens == 'yes'):
                     print(tSZ_lens_1h[id_p])
                     print(tSZ_lens_2h[id_p])
-                    for (nu,colg) in zip((100,143,353),('k','r','b')):
+                    #for (nu,colg) in zip((100,143,353),('k','r','b')):
+                    for (nu,colg) in zip((100,353),('k','r')):
                         g = g_nu(nu)
                         print(g)
                         if g>0:
-                            ax.plot(multipoles[id_p],g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='-',alpha = 1.,label = '1-halo @ %.2f GHz'%nu)
-                            ax.plot(multipoles[id_p],g*tSZ_lens_2h[id_p]*Tcmb,color=colg,ls='-',alpha = 1.,label = '2-halo')
-                            ax.plot(multipoles[id_p],g*(tSZ_lens_2h[id_p]+tSZ_lens_1h[id_p])*Tcmb,color=colg,ls=':',alpha = 1.,label = 'total')
+                            #ax.plot(multipoles[id_p],g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='-',alpha = 1.,label = '1-halo @ %.2f GHz'%nu)
+                            #ax.plot(multipoles[id_p],g*tSZ_lens_2h[id_p]*Tcmb,color=colg,ls='-',alpha = 1.,label = '2-halo')
+                            ax.plot(multipoles[id_p],g*(tSZ_lens_2h[id_p]+tSZ_lens_1h[id_p])*Tcmb,color=colg,ls=':',alpha = 1.,label = val_label[id_p])
                         else:
-                            ax.plot(multipoles[id_p],-g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='--',alpha = 1.,label='1-halo @ %.2f GHz'%nu)
-                            ax.plot(multipoles[id_p],-g*tSZ_lens_2h[id_p]*Tcmb,color=colg,ls='--',alpha = 1.,label='2-halo')
-                            ax.plot(multipoles[id_p],-g*(tSZ_lens_2h[id_p]+tSZ_lens_1h[id_p])*Tcmb,color=colg,ls=':',alpha = 1.,label = 'total')
+                            #ax.plot(multipoles[id_p],-g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='--',alpha = 1.,label='1-halo @ %.2f GHz'%nu)
+                            #ax.plot(multipoles[id_p],-g*tSZ_lens_2h[id_p]*Tcmb,color=colg,ls='--',alpha = 1.,label='2-halo')
+                            ax.plot(multipoles[id_p],-g*(tSZ_lens_2h[id_p]+tSZ_lens_1h[id_p])*Tcmb,color=colg,ls=':',alpha = 1.,label = val_label[id_p])
+                elif (args.plot_tSZ_gal == 'yes'):
+                    print(tSZ_gal_1h[id_p])
+                    #print(tSZ_lens_2h[id_p])
+                    #for (nu,colg) in zip((100,143,353),('k','r','b')):
+                    fac = multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi*1e6
+                    if (val_label[id_p] == 'green_shallow'):
+                        ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color='forestgreen',ls='--',alpha = 1.,label = val_label[id_p])
+                    elif (val_label[id_p] == 'green'):
+                        ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color='green',ls='-',alpha = 1.,label = val_label[id_p])
+                    elif (val_label[id_p] == 'blue'):
+                        ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color='blue',ls='-',alpha = 1.,label = val_label[id_p])
+                    elif (val_label[id_p] == 'red'):
+                        ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color='red',ls='-',alpha = 1.,label = val_label[id_p])
+                    else:
+                        ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+
+                    # for (nu,colg) in zip((100,353),('k','r')):
+                    #     g = g_nu(nu)
+                    #     print(g)
+                    #     if g>0:
+                    #         ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p]),color=colg,ls='-',alpha = 1.,label = '1-halo')
+                    #         #ax.plot(multipoles[id_p],g*tSZ_lens_2h[id_p]*Tcmb,color=colg,ls='-',alpha = 1.,label = '2-halo')
+                    #         #ax.plot(multipoles[id_p],g*(tSZ_gal_2h[id_p]+tSZ_gal_1h[id_p])*Tcmb,color=colg,ls=':',alpha = 1.,label = val_label[id_p])
+                    #     else:
+                    #         #ax.plot(multipoles[id_p],-g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='--',alpha = 1.,label='1-halo @ %.2f GHz'%nu)
+                    #         #ax.plot(multipoles[id_p],-g*tSZ_lens_2h[id_p]*Tcmb,color=colg,ls='--',alpha = 1.,label='2-halo')
+                    #         ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p]),color=colg,ls=':',alpha = 1.,label = val_label[id_p])
 
 
                 elif (args.plot_isw_lens == 'yes'):
                     print(isw_lens[id_p])
                     ax.plot(multipoles[id_p],isw_lens[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
                     ax.plot(multipoles[id_p],-isw_lens[id_p],color=col[id_p],ls='--',alpha = 1.)
+                    class_cls = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_cl.dat')
+                    ax.plot(class_cls[:,0],class_cls[:,3],ls=':',c=col[id_p],label = 'Cl^isw-lens class')
+
                 elif (args.plot_isw_tsz == 'yes'):
                     print(isw_tsz[id_p])
-                    ax.plot(multipoles[id_p],isw_tsz[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^isw-y class_sz')
+                    ax.plot(multipoles[id_p],isw_tsz[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^isw-y class_sz %s'%(val_label[id_p]))
                     ax.plot(multipoles[id_p],-isw_tsz[id_p],color=col[id_p],ls='--',alpha = 1.)
                 elif (args.plot_isw_auto == 'yes'):
                     print(isw_auto[id_p])
-                    ax.plot(multipoles[id_p],isw_auto[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^isw-isw class_sz',marker='o',markersize=1)
+                    ax.plot(multipoles[id_p],isw_auto[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^isw-isw class_sz %s'%(val_label[id_p]),marker='o',markersize=1)
                     ax.plot(multipoles[id_p],-isw_auto[id_p],color=col[id_p],ls='--',alpha = 1.)
-                    if ('tCl' in p_dict['output'] and id_p == 0):
+                    if ('tCl' in p_dict['output']):
                         class_cls = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_cl.dat')
-                        ax.plot(class_cls[:,0],class_cls[:,1],ls='-',c='r',label = 'Cl^isw-isw class')
+                        ax.plot(class_cls[:,0],class_cls[:,1],ls='-',c='r',label = 'Cl^isw-isw class %s'%(val_label[id_p]))
                 else:
                     if ('tSZ_1h' in p_dict['output']):
                         if (args.show_error_bars == 'yes'):
@@ -555,7 +603,7 @@ def run(args):
     if (args.show_legend == 'yes'):
         if (args.plot_isw_tsz == 'yes' or args.plot_isw_auto == 'yes'):
             ax1.legend(loc=1)
-        elif (args.plot_tSZ_lens == 'yes' or args.plot_isw_lens == 'yes'):
+        elif (args.plot_tSZ_lens == 'yes' or args.plot_isw_lens == 'yes'  or args.plot_tSZ_gal == 'yes'):
             ax1.legend(loc=3,ncol = 2)
         else:
             ax1.legend(loc=2)
@@ -610,6 +658,7 @@ def main():
 	parser.add_argument("-plot_te_y_y",help="Tll" ,dest="plot_te_y_y", type=str, required=False)
 	parser.add_argument("-plot_kSZ_kSZ_gal_1halo",help="kSZ_kSZ_gal_1halo" ,dest="plot_kSZ_kSZ_gal_1halo", type=str, required=False)
 	parser.add_argument("-plot_tSZ_lens",help="tSZ_lens" ,dest="plot_tSZ_lens", type=str, required=False)
+	parser.add_argument("-plot_tSZ_gal",help="tSZ_gal" ,dest="plot_tSZ_gal", type=str, required=False)
 	parser.add_argument("-plot_isw_lens",help="isw_lens" ,dest="plot_isw_lens", type=str, required=False)
 	parser.add_argument("-plot_isw_tsz",help="isw_tsz" ,dest="plot_isw_tsz", type=str, required=False)
 	parser.add_argument("-plot_isw_auto",help="isw_auto" ,dest="plot_isw_auto", type=str, required=False)
