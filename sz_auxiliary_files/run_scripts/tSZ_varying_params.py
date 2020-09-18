@@ -188,9 +188,9 @@ def run(args):
     p_dict['write sz results to files'] = 'yes' # this writes  PS and f(z)
     p_dict['pressure_profile_epsabs'] = 1.e-8
     p_dict['pressure_profile_epsrel'] = 1.e-3
-    p_dict['redshift_epsabs'] = 1.e-20
+    p_dict['redshift_epsabs'] = 1.e-40
     p_dict['redshift_epsrel'] = 1.e-10 # fiducial value 1e-8
-    p_dict['mass_epsabs'] = 1.e-20
+    p_dict['mass_epsabs'] = 1.e-40
     p_dict['mass_epsrel'] = 1e-10
 
     p_dict['dlogell'] = 0.2
@@ -379,12 +379,12 @@ def run(args):
                         g = g_nu(nu)
                         print(g)
                         if g>0:
-                            #ax.plot(multipoles[id_p],g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='-',alpha = 1.,label = '1-halo @ %.2f GHz'%nu)
-                            #ax.plot(multipoles[id_p],g*tSZ_lens_2h[id_p]*Tcmb,color=colg,ls='-',alpha = 1.,label = '2-halo')
+                            ax.plot(multipoles[id_p],g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='-',alpha = 1.,label = '1-halo @ %.2f GHz'%nu)
+                            ax.plot(multipoles[id_p],g*tSZ_lens_2h[id_p]*Tcmb,color='g',ls='-',alpha = 1.,label = '2-halo')
                             ax.plot(multipoles[id_p],g*(tSZ_lens_2h[id_p]+tSZ_lens_1h[id_p])*Tcmb,color=colg,ls=':',alpha = 1.,label = val_label[id_p])
                         else:
-                            #ax.plot(multipoles[id_p],-g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='--',alpha = 1.,label='1-halo @ %.2f GHz'%nu)
-                            #ax.plot(multipoles[id_p],-g*tSZ_lens_2h[id_p]*Tcmb,color=colg,ls='--',alpha = 1.,label='2-halo')
+                            ax.plot(multipoles[id_p],-g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='--',alpha = 1.,label='1-halo @ %.2f GHz'%nu)
+                            ax.plot(multipoles[id_p],-g*tSZ_lens_2h[id_p]*Tcmb,color='g',ls='--',alpha = 1.,label='2-halo')
                             ax.plot(multipoles[id_p],-g*(tSZ_lens_2h[id_p]+tSZ_lens_1h[id_p])*Tcmb,color=colg,ls=':',alpha = 1.,label = val_label[id_p])
                 elif (args.plot_tSZ_gal == 'yes'):
                     print(tSZ_gal_1h[id_p])

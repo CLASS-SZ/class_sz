@@ -3959,7 +3959,7 @@ double HOD_mean_number_of_central_galaxies(double M_halo,
                                            double M_min,
                                            double sigma_lnM){
 
-  return 0.5*(1.+gsl_sf_erf((log(M_halo/M_min)/sigma_lnM)));
+  return 1.;//0.5*(1.+gsl_sf_erf((log(M_halo/M_min)/sigma_lnM)));
                                        }
 
 // alpha_s = 1.
@@ -3972,7 +3972,7 @@ double HOD_mean_number_of_satellite_galaxies(double M_halo,
                                              double M1_prime){
 double result =  0.;
 if (M_halo>M_min)
-   result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
+   result = 0.;//Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
    return result;
                                          }
 
@@ -4126,7 +4126,7 @@ m_cut = 13.55;
 }
 
 // 2 is green_shallow
-if (sample_id == 1){
+if (sample_id == 2){
 
 if (z<=1.)
 m_cut = pwl_value_1d(11,zall_green_shallow,mcut_all_green_shallow,z);
@@ -4139,7 +4139,7 @@ m_cut = 13.42;
 
 
 // 3 is blue
-if (sample_id == 1){
+if (sample_id == 3){
 m_cut =  11.65 + z;
 }
 
