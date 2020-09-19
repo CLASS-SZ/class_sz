@@ -243,7 +243,8 @@ def run(args):
 
     if (args.plot_redshift_dependent_functions == 'yes'):
         ax.set_xlabel(r'$z$',size=title_size)
-        ax.set_ylabel(r'$Q(z)$',size=title_size)
+        #ax.set_ylabel(r'$Q(z)$',size=title_size)
+        ax.set_ylabel(r'$\bar{n}_g=\int_{M_{min}}^{M_{max}}dM dn/dM$',size=title_size)
         #ax.set_ylabel(r'$v_\mathrm{rms}\quad [\mathrm{km/s}]$',size=title_size)
         ax.set_xscale('linear')
         ax.set_yscale('log')
@@ -327,8 +328,19 @@ def run(args):
             if (args.plot_redshift_dependent_functions == 'yes'):
                 R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_redshift_dependent_functions.txt')
                 redshift_dependent_functions_z.append(R[:,0])
-                redshift_dependent_functions_Q.append(R[:,8]) # 6: v2rms, 7: sigma2_hsv, 8: m200m/m200c @ m200m = 10^{13.5} Msun/h
-                ax.plot(redshift_dependent_functions_z[id_p],np.sqrt(redshift_dependent_functions_Q[id_p]),color=col[id_p],ls='-',label = val_label[id_p])
+                redshift_dependent_functions_Q.append(R[:,9]) # 6: v2rms, 7: sigma2_hsv, 8: m200m/m200c @ m200m = 10^{13.5} Msun/h
+                if (val_label[id_p] == 'gr_shallow'):
+                    ax.plot(redshift_dependent_functions_z[id_p],redshift_dependent_functions_Q[id_p],color='forestgreen',ls='--',alpha = 1.,label = val_label[id_p])
+                elif (val_label[id_p] == 'green'):
+                    ax.plot(redshift_dependent_functions_z[id_p],redshift_dependent_functions_Q[id_p],color='green',ls='-',alpha = 1.,label = val_label[id_p])
+                elif (val_label[id_p] == 'blue'):
+                    ax.plot(redshift_dependent_functions_z[id_p],redshift_dependent_functions_Q[id_p],color='blue',ls='-',alpha = 1.,label = val_label[id_p])
+                elif (val_label[id_p] == 'red'):
+                    ax.plot(redshift_dependent_functions_z[id_p],redshift_dependent_functions_Q[id_p],color='red',ls='-',alpha = 1.,label = val_label[id_p])
+                else:
+                    ax.plot(redshift_dependent_functions_z[id_p],redshift_dependent_functions_Q[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+
+
 
             elif ('tSZ_1h' in p_dict['output'] or 'kSZ_kSZ_gal_1h' in p_dict['output'] or 'tSZ_lens_1h' in p_dict['output'] or 'tSZ_lens_2h' in p_dict['output'] or 'tSZ_gal' in p_dict['output'] or 'isw_lens' in p_dict['output'] or 'isw_tsz' in p_dict['output']  or 'isw_auto' in p_dict['output']):
                 R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
@@ -609,6 +621,8 @@ def run(args):
             ax1.legend(loc=2)
         if (args.print_rel_diff == 'yes'):
             ax2.legend(loc=1,ncol = 1)
+        else:
+            ax1.legend(loc=3,ncol = 2)
 
 
     fig.tight_layout()

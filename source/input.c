@@ -2336,7 +2336,7 @@ int input_read_parameters(
           ptsz->unwise_galaxy_sample_id=0;
         else  if ((strstr(string1,"green") != NULL))
           ptsz->unwise_galaxy_sample_id=1;
-        else  if ((strstr(string1,"green_shallow") != NULL))
+        else  if ((strstr(string1,"gr_shallow") != NULL))
           ptsz->unwise_galaxy_sample_id=2;
         else  if ((strstr(string1,"blue") != NULL))
           ptsz->unwise_galaxy_sample_id=3;

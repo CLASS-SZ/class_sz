@@ -2331,7 +2331,7 @@ int write_redshift_dependent_quantities(struct background * pba,
   fprintf(fp,"# Column 7: vrms2 [km/s]\n");
   fprintf(fp,"# Column 8: Delta Chi sigma2_hsv [Mpc/h,see Eq. 33 of Takada and Spergel 2013]\n");
   fprintf(fp,"# Column 9: m200m/m200c @ m200m = 10^{13.5} Msun/h (typical <M>)\n");
-  fprintf(fp,"# Column 10: mean galaxy number \n");
+  fprintf(fp,"# Column 10: mean galaxy number density ng_bar\n");
   int index_z;
   int n_z = 1e3;
   double z_min = ptsz->z1SZ;
@@ -4129,11 +4129,13 @@ m_cut = 13.55;
 if (sample_id == 2){
 
 if (z<=1.)
-m_cut = pwl_value_1d(11,zall_green_shallow,mcut_all_green_shallow,z);
+m_cut = pwl_value_1d(6,zall_green_shallow,mcut_all_green_shallow,z);
 else if (z < 2.5 )
 m_cut = -0.5161*pow(z,4)+2.919*pow(z,3)-5.384*pow(z,2)+3.842*z+12.01;
 else
 m_cut = 13.42;
+
+
 
 }
 
