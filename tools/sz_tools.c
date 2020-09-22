@@ -45980,6 +45980,7 @@ if ((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_ga
 
   double result = 0.;
 
+  // first deal with quantities that does not require mass integration:
   if ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens)) {
 
   double delta_ell_lens =  delta_ell_lens_at_ell_and_z(V->pvecback,
@@ -46031,7 +46032,7 @@ if ((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_ga
   result = delta_ell_isw*delta_ell_isw;
 
   }
-
+  // then quantities that require mass integration
   else {
   result = integrate_over_m_at_z(V->pvecback,
                                   V->pvectsz,

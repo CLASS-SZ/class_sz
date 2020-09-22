@@ -3849,7 +3849,7 @@ double ell = ptsz->ell[index_l];
  double D = pvecback[pba->index_bg_D];
  //double result = 9.*pow(Omega_m,2.)*pow(pba->H0/pba->h,4)/(2.*pow(ell+0.5,2.)*chi_star)*chi*(chi_star-chi)*(1.+z)*dgdz/D*pk;
  //double result = 3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/2.*(chi_star-chi)/chi/chi_star*(1.+z)/H_over_c_in_h_over_Mpc/D;
- double result = 3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/2.*(chi_star-chi)*(1.+z)/chi/chi_star/(pow(ell+0.5,2.))*D; // homogeneous to (H0/h)^2 * h/Mpc
+ double result = 3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/2.*(chi_star-chi)*pow(1.+z,1.)/chi/chi_star/(pow(ell+0.5,2.))*D; // homogeneous to (H0/h)^2 * h/Mpc
 //  result = 0.;//dgdz/D;
 //
  //result *= pow(pba->h,-2.);
@@ -3884,7 +3884,7 @@ double ell = ptsz->ell[index_l];
 
 
 
- double result = 3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/(pow(ell+0.5,2.))*dgdz*H_over_c_in_h_over_Mpc; // homogeneous to (H0/h)^2 * h/Mpc
+ double result = 2.*3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/(pow(ell+0.5,2.))*dgdz*H_over_c_in_h_over_Mpc; // homogeneous to (H0/h)^2 * h/Mpc
 
 //
  //result *= pow(pba->h,-1.);
