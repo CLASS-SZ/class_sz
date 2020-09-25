@@ -668,9 +668,9 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
   int read_Zhao_CM_init(struct tszspectrum * ptsz);
 
   int load_rho_nfw_profile(struct tszspectrum * ptsz);
-  int load_normalized_dndz_unwise(struct tszspectrum * ptsz);
+  int load_normalized_dndz(struct tszspectrum * ptsz);
 
-  
+
   int CvirMvirZHAO(double * result,
                    double logM ,
                    double z,

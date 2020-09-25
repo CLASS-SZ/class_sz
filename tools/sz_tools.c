@@ -45153,13 +45153,18 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
 //nfw profiles,
 //and stores the tabulated values.
 
-int load_normalized_dndz_unwise(struct tszspectrum * ptsz)
+int load_normalized_dndz(struct tszspectrum * ptsz)
 {
 
 // don't load the unwise  dndz  if not required
-if (ptsz->has_tSZ_gal_1h != _TRUE_ && ptsz->galaxy_sample!= 1)
+if ( (ptsz->has_tSZ_gal_1h != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_1halo != _TRUE_ ))
   return 0;
 
+if (ptsz->galaxy_sample == 0)
+printf("-> Loading dndz WIxSC\n");
+if (ptsz->galaxy_sample == 1)
+printf("-> Loading dndz unwise");
 
   class_alloc(ptsz->normalized_dndz_z,sizeof(double *)*100,ptsz->error_message);
   class_alloc(ptsz->normalized_dndz_phig,sizeof(double *)*100,ptsz->error_message);
@@ -45195,15 +45200,25 @@ if (ptsz->has_tSZ_gal_1h != _TRUE_ && ptsz->galaxy_sample!= 1)
   /* Launch the process */
   char Filepath[_ARGUMENT_LENGTH_MAX_];
 
+  if (ptsz->galaxy_sample == 1)
     sprintf(Filepath,
             "%s%s%s",
             "cat ",
             ptsz->path_to_class,
             "/sz_auxiliary_files/UNWISE_galaxy_distributions/normalised_dndz.txt");
+
+  else if (ptsz->galaxy_sample == 0)
+  sprintf(Filepath,
+          "%s%s%s",
+          "cat ",
+          ptsz->path_to_class,
+          "/sz_auxiliary_files/WIxSC_galaxy_ditributions/normalised_dndz.txt");
+
   process = popen(Filepath, "r");
 
   /* Read output and store it */
   while (fgets(line, sizeof(line)-1, process) != NULL) {
+      if (ptsz->galaxy_sample == 1){
     sscanf(line, "%lf %lf %lf %lf", &this_lnx, &this_lnI, &this_lnJ, &this_lnK);
 
     // red
@@ -45215,12 +45230,17 @@ if (ptsz->has_tSZ_gal_1h != _TRUE_ && ptsz->galaxy_sample!= 1)
     this_lnI = this_lnJ;
 
     // blue
-    if (ptsz->unwise_galaxy_sample_id == 3)
-    this_lnI = this_lnI;
+    //if (ptsz->unwise_galaxy_sample_id == 3)
+    //this_lnI = this_lnI;
 
     //printf("lnx = %e\n",this_lnx);
+  }
 
+  // WIxSC
+  else if (ptsz->galaxy_sample == 0){
 
+    sscanf(line, "%lf %lf ", &this_lnx, &this_lnI);
+  }
 
 
     /* Standard technique in C:
@@ -45301,8 +45321,8 @@ if (ptsz->has_tSZ_gal_1h != _TRUE_ && ptsz->galaxy_sample!= 1)
 int load_rho_nfw_profile(struct tszspectrum * ptsz)
 {
 
-// don't load the lensing profile if lensing observables not required
-if (ptsz->has_tSZ_lens_1h != _TRUE_ || ptsz->has_tSZ_lens_2h != _TRUE_)
+// don't load the lensing profile if lensing/kSZ observables not required
+if (ptsz->has_tSZ_lens_1h != _TRUE_ && ptsz->has_tSZ_lens_2h != _TRUE_ && ptsz->has_kSZ_kSZ_gal_1halo != _TRUE_)
   return 0;
 
 
@@ -45972,7 +45992,8 @@ double integrand_redshift(double ln1pz, void *p){
 
   int index_md = (int) V->pvectsz[V->ptsz->index_md];
 
-if ((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h)) {
+if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
+     || ((V->ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1halo)) ) {
  evaluate_mean_galaxy_number_density_at_z(V->pvectsz,V->ptsz);
  //printf("z = %.3e ng = %.3e\n",z,V->pvectsz[V->ptsz->index_mean_galaxy_number_density]);
 }
@@ -46068,12 +46089,18 @@ if ( //((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2hal
   // For all the above cases we add the linear matter power spectrum to the redshift integrand
   // evaluated at (ell+1/2)/Chi and redshift z=0
   result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+
+
 }
 
-if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))){
+if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
+      || ((V->ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1halo))){
 // multiply by radial kernel for galaxies
 double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+if (V->ptsz->galaxy_sample == 0)
   result *= Wg*(1.+V->ptsz->rho_y_gal)/V->pvectsz[V->ptsz->index_chi2];
+else if (V->ptsz->galaxy_sample == 1)
+  result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 
 }
 
@@ -46087,9 +46114,9 @@ double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
 
   // integrate w.r.t ln(1+z); dz =  (1+z)dln(1+z)
   // volume element in units h^-3 Mpc^3
-  // volume = dv/(dzdOmega)*(c/H)
-  // Chi^2 dChi = dV/(dzdOmega)*(c/H) dz
-  // Chi^2 dChi = dV/(dzdOmega)*(c/H) *(1+z) dln(1+z)
+  // volume = dv/(dzdOmega)
+  // Chi^2 dChi = dV/(dzdOmega) dz
+  // Chi^2 dChi = dV/(dzdOmega)*(1+z) dln(1+z)
   // dChi = (c/H) *(1+z) dln(1+z) ---> this is used
   // dChi = (c/H) dz
   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
@@ -46379,11 +46406,14 @@ double integrand_patterson_test(double logM, void *p){
                                      }
 
 
-  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tSZ_gal_1h )){
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tSZ_gal_1h ) || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_gal_1halo )){
 
   // if using unwise we set a specific lower bound
-  if (ptsz->galaxy_sample==1)
+  if (ptsz->galaxy_sample==1){
   m_min = evaluate_unwise_m_min_cut(pvectsz[ptsz->index_z],ptsz->unwise_galaxy_sample_id);
+  if (m_min>=m_max)
+  m_min=m_max;
+}
 
 
   //pvectsz[ptsz->index_part_id_cov_hsv] = 1;
@@ -46899,6 +46929,11 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
     double M_halo = exp(lnM_halo);
     double nc = HOD_mean_number_of_central_galaxies(M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD);
     double ns = HOD_mean_number_of_satellite_galaxies(M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD);
+
+    if (V->ptsz->galaxy_sample ==1){ //unwise case, at the moment just nc=1, ns=0
+    nc = 1.;
+    ns = 0.;
+    }
 
       double z = V->z;
       double tau;

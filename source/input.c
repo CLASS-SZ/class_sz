@@ -1983,6 +1983,15 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
+      if ((strstr(string1,"tSZ_tSZ_tSZ_1h") != NULL) ) {
+        ptsz->has_tSZ_tSZ_tSZ_1halo =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
       if ((strstr(string1,"tSZ_gal_1h") != NULL) ) {
         ptsz->has_tSZ_gal_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2155,6 +2164,12 @@ int input_read_parameters(
       class_read_double("nfw_profile_epsrel",ptsz->nfw_profile_epsrel);
       class_read_double("nfw_profile_epsabs",ptsz->nfw_profile_epsabs);
 
+      class_read_double("M_min_HOD",ptsz->M_min_HOD);
+      class_read_double("M1_prime_HOD",ptsz->M1_prime_HOD);
+      class_read_double("alpha_s_HOD",ptsz->alpha_s_HOD);
+      class_read_double("sigma_lnM_HOD",ptsz->sigma_lnM_HOD);
+      class_read_double("rho_y_gal",ptsz->rho_y_gal);
+
       /* temperature mass relation SZ */
       class_call(parser_read_string(pfc,"temperature mass relation",&string1,&flag1,errmsg),
                  errmsg,
@@ -2233,6 +2248,10 @@ int input_read_parameters(
        class_read_double("alphaGNFW",ptsz->alphaGNFW);
        class_read_double("betaGNFW",ptsz->betaGNFW);
      }
+
+
+
+
 
 
      else if (ptsz->pressure_profile==4){
@@ -2316,16 +2335,6 @@ int input_read_parameters(
         ptsz->galaxy_sample=1;
       }
 
-      /* galaxy sample */
-      class_call(parser_read_string(pfc,"galaxy_sample",&string1,&flag1,errmsg),
-                 errmsg,
-                 errmsg);
-     if (flag1 == _TRUE_) {
-        if ((strstr(string1,"WIxSC") != NULL))
-          ptsz->galaxy_sample=0;
-        else  if ((strstr(string1,"unwise") != NULL))
-          ptsz->galaxy_sample=1;
-        }
 
       /* unwise galaxy sample id */
       class_call(parser_read_string(pfc,"unwise_galaxy_sample_id",&string1,&flag1,errmsg),
@@ -4330,6 +4339,7 @@ int input_default_params(
   ptsz->has_tSZ_lens_1h = _FALSE_;
   ptsz->has_tSZ_lens_2h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_1halo = _FALSE_;
+  ptsz->has_tSZ_tSZ_tSZ_1halo = _FALSE_;
   ptsz->has_sz_te_y_y = _FALSE_;
   ptsz->has_sz_m_y_y_1h = _FALSE_;
   ptsz->has_sz_m_y_y_2h = _FALSE_;
@@ -4368,6 +4378,7 @@ int input_default_params(
   ptsz->index_md_m_y_y_1h = 18;
   ptsz->index_md_m_y_y_2h = 19;
   ptsz->index_md_tSZ_gal_1h = 20;
+  ptsz->index_md_tSZ_tSZ_tSZ_1halo = 21;
 
   ptsz->HMF_prescription_NCDM=2; //no-pres
 

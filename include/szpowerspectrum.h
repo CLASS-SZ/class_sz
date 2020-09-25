@@ -30,6 +30,7 @@
 #define _isw_tsz_ ((ptsz->has_isw_tsz == _TRUE_) && (index_md == ptsz->index_md_isw_tsz))
 #define _isw_auto_ ((ptsz->has_isw_auto == _TRUE_) && (index_md == ptsz->index_md_isw_auto))
 #define _dndlnM_ ((ptsz->has_dndlnM == _TRUE_) && (index_md == ptsz->index_md_dndlnM))
+#define _tSZ_tSZ_tSZ_1halo_ ((ptsz->has_tSZ_tSZ_tSZ_1halo == _TRUE_) && (index_md == ptsz->index_md_tSZ_tSZ_tSZ_1halo))
 
 //#define _tSZ_trispectrum_ ((ptsz->has_sz_trispec == _TRUE_))
 //#define _tSZ_2halo_ ((ptsz->has_sz_2halo == _TRUE_))
@@ -65,6 +66,7 @@ struct tszspectrum {
   double * cl_isw_tsz;
   double * cl_isw_auto;
   double * b_kSZ_kSZ_gal_1halo;
+  double * b_tSZ_tSZ_tSZ_1halo;
   double * cl_te_y_y;
   double * m_y_y_1h;
   double * m_y_y_2h;
@@ -160,6 +162,12 @@ struct tszspectrum {
   int index_md_kSZ_kSZ_gal_1halo;
   int index_integrand_id_kSZ_kSZ_gal_1halo_first;
   int index_integrand_id_kSZ_kSZ_gal_1halo_last;
+
+  int has_tSZ_tSZ_tSZ_1halo;
+  int index_md_tSZ_tSZ_tSZ_1halo;
+  int index_integrand_id_tSZ_tSZ_tSZ_1halo_first;
+  int index_integrand_id_tSZ_tSZ_tSZ_1halo_last;
+
 
   int has_tSZ_lens_1h;
   int index_md_tSZ_lens_1h;

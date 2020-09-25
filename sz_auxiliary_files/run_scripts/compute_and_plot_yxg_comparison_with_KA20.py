@@ -8,6 +8,9 @@
 # yxg : careful with zmax, still some bug to figure out after z2SZ>4 blue returns inf
 # $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","gr_shallow","blue"]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_1h' -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no
 
+
+# CMD for comparison:
+# $ python3 sz_auxiliary_files/run_scripts/compute_and_plot_yxg_comparison_with_KA20.py -param_name 'h' -p_val '[0.6766]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_1h' -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no
 import argparse
 import numpy as np
 import os
@@ -80,7 +83,7 @@ def run(args):
     #     parameter_file = 'class-sz_chill_B12_parameters.ini'
     # else:
     #     parameter_file = 'class-sz_parameters.ini'
-    parameter_file = 'class-sz_parameters.ini'
+    parameter_file = 'class-sz_parameters_KA20.ini'
     #'class-sz_chill_B12_parameters.ini'
     #parameter_file = 'class-sz_parameters_rotti++20.ini'
     #parameter_file ='tSZ_params_ref_resolved-rotti++20_snr12_step_2.ini'
@@ -180,7 +183,38 @@ def run(args):
     #set correct Output
     # p_dict['output'] = 'tSZ_1h'
     p_dict['mass function'] = 'T08'  #fiducial  T10
-    p_dict['pressure profile'] = 'A10' #fiducial B12
+    p_dict['pressure profile'] = 'P13' #fiducial B12
+    p_dict['galaxy_sample'] = "WIxSC"
+
+    # masses are in M_sun, not M_sun/h
+    # 'b_hydro': 0.4656
+    p_dict['B'] = 1./(1.-0.4656)
+    # 'Omega_c': 0.26066676
+    p_dict['Omega_cdm'] = 0.26066676
+    # 'Omega_b': 0.048974682
+    p_dict['Omega_b'] = 0.048974682
+    # 'h': 0.6766
+    p_dict['h'] = 0.6766
+    # 'sigma8': 0.8102
+    p_dict['sigma8'] = 0.8102
+    # 'n_s': 0.9665
+    p_dict['n_s'] = 0.9665
+    # 'lMmin': 11.99
+    p_dict['M_min_HOD'] = pow(10.,11.99)*p_dict['h'] # convert to Msun/h
+    # 'lM0': 11.99
+    # 'lM1': 13.23
+    p_dict['M1_prime_HOD'] = pow(10.,13.23)*p_dict['h'] # convert to Msun/h
+    # 'sigmaLogM': 0.15
+    p_dict['sigma_lnM_HOD'] = 0.15
+    # 'r_corr_gy': -0.5492
+    p_dict['r_corr_gy'] = -0.5492
+    # 'mass_function': <class 'pyccl.halos.hmfunc.MassFuncTinker08'>
+    # 'halo_bias': <class 'pyccl.halos.hbias.HaloBiasTinker10'>
+
+    p_dict['use_central_hod'] = "yes" # ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+
+
+
 
     # p_dict['create_ref_trispectrum_for_cobaya'] = 'NO'
     # p_dict['background_verbose'] = 2
@@ -217,7 +251,9 @@ def run(args):
 
     # if(args.plot_ref_data == 'yes'):
     #     #L = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data.txt')
-    #     #L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum_patterson.txt')
+    L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/WIxSC_galaxy_ditributions/cl4boris.txt')
+    ell_KA20 = L_ref[:,0]
+    cl_yg_1h_KA20 = L_ref[:,3]
     #     L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum_mnu_0d02_ref.txt')
     #     multipoles_ref = L_ref[:,0]
     #     cl_1h_ref = L_ref[:,1]
@@ -421,7 +457,8 @@ def run(args):
                     elif (val_label[id_p] == 'red'):
                         ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color='red',ls='-',alpha = 1.,label = val_label[id_p])
                     else:
-                        ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+                        ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color=col[id_p],ls='-',alpha = 1.,label = 'class_sz')
+                    ax.plot(ell_KA20,cl_yg_1h_KA20,label='KA20')
 
                     # for (nu,colg) in zip((100,353),('k','r')):
                     #     g = g_nu(nu)
