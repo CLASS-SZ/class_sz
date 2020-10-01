@@ -11,6 +11,9 @@
 
 # CMD for comparison:
 # $ python3 sz_auxiliary_files/run_scripts/compute_and_plot_yxg_comparison_with_KA20.py -param_name 'h' -p_val '[0.6766]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_1h' -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no
+# gxg 1-halo and 2-halo
+# $ python3 sz_auxiliary_files/run_scripts/compute_and_plot_yxg_comparison_with_KA20.py -param_name 'h' -p_val '[0.6766]'  -show_legend yes -show_error_bars no -output 'gal_gal_2h,gal_gal_1h' -plot_gal_gal yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no
+
 import argparse
 import numpy as np
 import os
@@ -152,6 +155,8 @@ def run(args):
     kSZ_kSZ_gal_1halo = []
     tSZ_tSZ_tSZ_1h = []
     tSZ_gal_1h = []
+    gal_gal_1h = []
+    gal_gal_2h = []
     tSZ_lens_1h = []
     tSZ_lens_2h = []
     isw_lens = []
@@ -182,9 +187,10 @@ def run(args):
     #p_dict['h'] = 0.65
     #set correct Output
     # p_dict['output'] = 'tSZ_1h'
-    p_dict['mass function'] = 'T08'  #fiducial  T10
+    p_dict['mass function'] = 'T10'  #fiducial  T10
     p_dict['pressure profile'] = 'P13' #fiducial B12
     p_dict['galaxy_sample'] = "WIxSC"
+    p_dict['use_simplified_hod'] = "no"
 
     # masses are in M_sun, not M_sun/h
     # 'b_hydro': 0.4656
@@ -212,6 +218,17 @@ def run(args):
     # 'halo_bias': <class 'pyccl.halos.hbias.HaloBiasTinker10'>
 
     p_dict['use_central_hod'] = "yes" # ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+    p_dict['non linear'] = 'halofit'
+
+    # DA: In the previous pipeline (that generated the plots in Nick's paper)
+    # we were removing stuff at the edges of the redshift interval
+    # to make all the integral faster (basically the integrals in z
+    # were in the range of redshifts where the N(z) was at least 0.5% of its maximum value).
+    # For the particular redshift bin I sent this cut removes z < 0.0175 and z > 0.4365.
+    # We checked that the results are stable to this cut, which they are,
+    # since the 1-halo term is completely subdominant at these low ells.
+    p_dict['z1SZ']  = 0.0175
+    p_dict['z2SZ']  = 0.4365
 
 
 
@@ -253,6 +270,8 @@ def run(args):
     #     #L = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data.txt')
     L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/WIxSC_galaxy_ditributions/cl4boris.txt')
     ell_KA20 = L_ref[:,0]
+    cl_gg_1h_KA20 = L_ref[:,1]
+    cl_gg_2h_KA20 = L_ref[:,2]
     cl_yg_1h_KA20 = L_ref[:,3]
     #     L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum_mnu_0d02_ref.txt')
     #     multipoles_ref = L_ref[:,0]
@@ -302,6 +321,8 @@ def run(args):
             ax.set_ylabel(r'$\mathrm{b^{y-y-y}_{\ell_1,\ell_2,\ell_3}}$',size=title_size)
         elif (args.plot_tSZ_gal == 'yes'):
             ax.set_ylabel(r'$\mathrm{C^{yg}_\ell}$',size=title_size)
+        elif (args.plot_gal_gal == 'yes'):
+            ax.set_ylabel(r'$\mathrm{C^{gg}_\ell}$',size=title_size)
         elif (args.plot_tSZ_lens == 'yes'):
             ax.set_ylabel(r'$\ell^2(\ell+1)\mathrm{C^{y\phi}_\ell/2\pi}$ [$\mu$K]',size=title_size)
         elif (args.plot_isw_lens == 'yes'):
@@ -382,7 +403,11 @@ def run(args):
 
 
 
-            elif ('tSZ_1h' in p_dict['output'] or 'kSZ_kSZ_gal_1h' in p_dict['output'] or 'tSZ_lens_1h' in p_dict['output'] or 'tSZ_lens_2h' in p_dict['output'] or 'tSZ_gal' in p_dict['output'] or 'isw_lens' in p_dict['output'] or 'isw_tsz' in p_dict['output']  or 'isw_auto' in p_dict['output']):
+            elif ('tSZ_1h' in p_dict['output'] or 'kSZ_kSZ_gal_1h' in p_dict['output'] \
+            or 'tSZ_lens_1h' in p_dict['output'] or 'tSZ_lens_2h' in p_dict['output'] \
+            or 'tSZ_gal' in p_dict['output'] or 'isw_lens' in p_dict['output'] \
+            or 'gal_gal' in p_dict['output']\
+            or 'isw_tsz' in p_dict['output']  or 'isw_auto' in p_dict['output']):
                 R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
                 multipoles.append(R[:,0])
                 cl_1h.append(R[:,1])
@@ -399,6 +424,8 @@ def run(args):
                 isw_auto.append(R[:,13])
                 tSZ_gal_1h.append(R[:,20])
                 tSZ_tSZ_tSZ_1h.append(R[:,21])
+                gal_gal_1h.append(R[:,22])
+                gal_gal_2h.append(R[:,23])
                 # L = [multipole,cl_1h]
                 # r_dict[p_val] = L
 
@@ -459,6 +486,14 @@ def run(args):
                     else:
                         ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color=col[id_p],ls='-',alpha = 1.,label = 'class_sz')
                     ax.plot(ell_KA20,cl_yg_1h_KA20,label='KA20')
+                elif (args.plot_gal_gal == 'yes'):
+                    print('plotting gxg')
+                    fac = multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi
+                    print(gal_gal_1h[id_p])
+                    ax.plot(multipoles[id_p],(gal_gal_1h[id_p])/fac,color=col[id_p],ls='-',alpha = 1.,label = 'class_sz gg-1h')
+                    ax.plot(ell_KA20,cl_gg_1h_KA20,label='KA20-1h')
+                    ax.plot(multipoles[id_p],(gal_gal_2h[id_p])/fac,color=col[id_p],ls='--',alpha = 1.,label = 'class_sz gg-2h')
+                    ax.plot(ell_KA20,cl_gg_2h_KA20,label='KA20-2h')
 
                     # for (nu,colg) in zip((100,353),('k','r')):
                     #     g = g_nu(nu)
@@ -696,37 +731,38 @@ def run(args):
 
 
 def main():
-	parser=argparse.ArgumentParser(description="Plot cosmotherm spectra")
-	parser.add_argument("-param_name",help="name of varying parameter" ,dest="param_name", type=str, required=True)
-	parser.add_argument("-min",help="minimum value of parameter" ,dest="p_min", type=str, required=False)
-	parser.add_argument("-max",help="maximum value of parameter" ,dest="p_max", type=str, required=False)
-	parser.add_argument("-N",help="number of evaluations" ,dest="N", type=int, required=False)
-	parser.add_argument("-p_val",help="list of param values" ,dest="p_val", type=str, required=False)
-	parser.add_argument("-spacing",help="linear (lin) or log spacing (log)" ,dest="spacing", type=str, required=False)
-	parser.add_argument("-show_legend",help="show legend on figure? ('yes' or 'no')" ,dest="show_legend", type=str, required=True)
-	parser.add_argument("-show_error_bars",help="show error bars on figure? ('yes' or 'no')" ,dest="show_error_bars", type=str, required=True)
-	parser.add_argument("-y_min",help="ylim for y-axis" ,dest="y_min", type=str, required=False)
-	parser.add_argument("-y_max",help="ylim for y-axis" ,dest="y_max", type=str, required=False)
-	parser.add_argument("-f_sky",help="sky fraction f_sky" ,dest="f_sky", type=str, required=False)
-	parser.add_argument("-output",help="what quantities to plot" ,dest="output", type=str, required=False)
-	parser.add_argument("-plot_ref_data",help="some other spectra" ,dest="plot_ref_data", type=str, required=False)
-	parser.add_argument("-compute_scaling_with_param",help="Compute alpha in C_l ~ p^alpha at l=100" ,dest="compute_scaling_with_param", type=str, required=False)
-	parser.add_argument("-save_tsz_ps",help="save file with tsz power spectrum in output directory" ,dest="save_tsz_ps", type=str, required=False)
-	parser.add_argument("-save_figure",help="save figure" ,dest="save_fig", type=str, required=False)
-	parser.add_argument("-print_rel_diff",help="[cl-cl_ref]/cl_ref" ,dest="print_rel_diff", type=str, required=False)
-	parser.add_argument("-plot_trispectrum",help="Tll" ,dest="plot_trispectrum", type=str, required=False)
-	parser.add_argument("-plot_te_y_y",help="Tll" ,dest="plot_te_y_y", type=str, required=False)
-	parser.add_argument("-plot_kSZ_kSZ_gal_1halo",help="kSZ_kSZ_gal_1halo" ,dest="plot_kSZ_kSZ_gal_1halo", type=str, required=False)
-	parser.add_argument("-plot_tSZ_tSZ_tSZ_1h",help="tSZ_tSZ_tSZ_1h" ,dest="plot_tSZ_tSZ_tSZ_1h", type=str, required=False)
-	parser.add_argument("-plot_tSZ_lens",help="tSZ_lens" ,dest="plot_tSZ_lens", type=str, required=False)
-	parser.add_argument("-plot_tSZ_gal",help="tSZ_gal" ,dest="plot_tSZ_gal", type=str, required=False)
-	parser.add_argument("-plot_isw_lens",help="isw_lens" ,dest="plot_isw_lens", type=str, required=False)
-	parser.add_argument("-plot_isw_tsz",help="isw_tsz" ,dest="plot_isw_tsz", type=str, required=False)
-	parser.add_argument("-plot_isw_auto",help="isw_auto" ,dest="plot_isw_auto", type=str, required=False)
-	parser.add_argument("-plot_redshift_dependent_functions",help="redshift dependent functions" ,dest="plot_redshift_dependent_functions", type=str, required=False)
-	parser.set_defaults(func=run)
-	args=parser.parse_args()
-	args.func(args)
+    parser=argparse.ArgumentParser(description="Plot cosmotherm spectra")
+    parser.add_argument("-param_name",help="name of varying parameter" ,dest="param_name", type=str, required=True)
+    parser.add_argument("-min",help="minimum value of parameter" ,dest="p_min", type=str, required=False)
+    parser.add_argument("-max",help="maximum value of parameter" ,dest="p_max", type=str, required=False)
+    parser.add_argument("-N",help="number of evaluations" ,dest="N", type=int, required=False)
+    parser.add_argument("-p_val",help="list of param values" ,dest="p_val", type=str, required=False)
+    parser.add_argument("-spacing",help="linear (lin) or log spacing (log)" ,dest="spacing", type=str, required=False)
+    parser.add_argument("-show_legend",help="show legend on figure? ('yes' or 'no')" ,dest="show_legend", type=str, required=True)
+    parser.add_argument("-show_error_bars",help="show error bars on figure? ('yes' or 'no')" ,dest="show_error_bars", type=str, required=True)
+    parser.add_argument("-y_min",help="ylim for y-axis" ,dest="y_min", type=str, required=False)
+    parser.add_argument("-y_max",help="ylim for y-axis" ,dest="y_max", type=str, required=False)
+    parser.add_argument("-f_sky",help="sky fraction f_sky" ,dest="f_sky", type=str, required=False)
+    parser.add_argument("-output",help="what quantities to plot" ,dest="output", type=str, required=False)
+    parser.add_argument("-plot_ref_data",help="some other spectra" ,dest="plot_ref_data", type=str, required=False)
+    parser.add_argument("-compute_scaling_with_param",help="Compute alpha in C_l ~ p^alpha at l=100" ,dest="compute_scaling_with_param", type=str, required=False)
+    parser.add_argument("-save_tsz_ps",help="save file with tsz power spectrum in output directory" ,dest="save_tsz_ps", type=str, required=False)
+    parser.add_argument("-save_figure",help="save figure" ,dest="save_fig", type=str, required=False)
+    parser.add_argument("-print_rel_diff",help="[cl-cl_ref]/cl_ref" ,dest="print_rel_diff", type=str, required=False)
+    parser.add_argument("-plot_trispectrum",help="Tll" ,dest="plot_trispectrum", type=str, required=False)
+    parser.add_argument("-plot_te_y_y",help="Tll" ,dest="plot_te_y_y", type=str, required=False)
+    parser.add_argument("-plot_kSZ_kSZ_gal_1halo",help="kSZ_kSZ_gal_1halo" ,dest="plot_kSZ_kSZ_gal_1halo", type=str, required=False)
+    parser.add_argument("-plot_tSZ_tSZ_tSZ_1h",help="tSZ_tSZ_tSZ_1h" ,dest="plot_tSZ_tSZ_tSZ_1h", type=str, required=False)
+    parser.add_argument("-plot_tSZ_lens",help="tSZ_lens" ,dest="plot_tSZ_lens", type=str, required=False)
+    parser.add_argument("-plot_tSZ_gal",help="tSZ_gal" ,dest="plot_tSZ_gal", type=str, required=False)
+    parser.add_argument("-plot_gal_gal",help="gal_gal" ,dest="plot_gal_gal", type=str, required=False)
+    parser.add_argument("-plot_isw_lens",help="isw_lens" ,dest="plot_isw_lens", type=str, required=False)
+    parser.add_argument("-plot_isw_tsz",help="isw_tsz" ,dest="plot_isw_tsz", type=str, required=False)
+    parser.add_argument("-plot_isw_auto",help="isw_auto" ,dest="plot_isw_auto", type=str, required=False)
+    parser.add_argument("-plot_redshift_dependent_functions",help="redshift dependent functions" ,dest="plot_redshift_dependent_functions", type=str, required=False)
+    parser.set_defaults(func=run)
+    args=parser.parse_args()
+    args.func(args)
 
 if __name__=="__main__":
 	main()

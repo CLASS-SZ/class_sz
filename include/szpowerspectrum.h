@@ -23,7 +23,12 @@
 #define _cov_Y_Y_ssc_ ((ptsz->has_sz_cov_Y_Y_ssc == _TRUE_) && (index_md == ptsz->index_md_cov_Y_Y_ssc))
 #define _cov_Y_N_next_order_ ((ptsz->has_sz_cov_Y_N_next_order == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N_next_order))
 #define _kSZ_kSZ_gal_1halo_ ((ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1halo))
+#define _gal_gal_1h_ ((ptsz->has_gal_gal_1h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_1h))
+#define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
+#define _gal_lens_2h_ ((ptsz->has_gal_lens_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_2h))
+#define _gal_lens_1h_ ((ptsz->has_gal_lens_1h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_1h))
 #define _tSZ_gal_1h_ ((ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_1h))
+#define _tSZ_gal_2h_ ((ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_2h))
 #define _tSZ_lens_1h_ ((ptsz->has_tSZ_lens_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lens_1h))
 #define _tSZ_lens_2h_ ((ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lens_2h))
 #define _isw_lens_ ((ptsz->has_isw_lens == _TRUE_) && (index_md == ptsz->index_md_isw_lens))
@@ -44,7 +49,7 @@
 struct tszspectrum {
 
 
-  int use_central_hod; // Eq. 15 or 16 of KA20
+  int use_simplified_hod; // Eq. 15 or 16 of KA20
   int unwise_galaxy_sample_id;
   int galaxy_sample;
   //double unwise_m_min_cut;
@@ -59,7 +64,12 @@ struct tszspectrum {
   double hmf_int;
   double y_monopole;
   double * cl_sz_1h;
+  double * cl_gal_gal_1h;
+  double * cl_gal_gal_2h;
+  double * cl_gal_lens_2h;
+  double * cl_gal_lens_1h;
   double * cl_tSZ_gal_1h;
+  double * cl_tSZ_gal_2h;
   double * cl_tSZ_lens_1h;
   double * cl_tSZ_lens_2h;
   double * cl_isw_lens;
@@ -174,10 +184,39 @@ struct tszspectrum {
   int index_integrand_id_tSZ_lens_1h_first;
   int index_integrand_id_tSZ_lens_1h_last;
 
+  int has_gal_gal_1h;
+  int index_md_gal_gal_1h;
+  int index_integrand_id_gal_gal_1h_first;
+  int index_integrand_id_gal_gal_1h_last;
+
+  int has_gal_gal_2h;
+  int index_md_gal_gal_2h;
+  int index_integrand_id_gal_gal_2h_first;
+  int index_integrand_id_gal_gal_2h_last;
+
+
+  int has_gal_lens_2h;
+  int index_md_gal_lens_2h;
+  int index_integrand_id_gal_lens_2h_first;
+  int index_integrand_id_gal_lens_2h_last;
+
+  int has_gal_lens_1h;
+  int index_md_gal_lens_1h;
+  int index_integrand_id_gal_lens_1h_first;
+  int index_integrand_id_gal_lens_1h_last;
+
+
+
   int has_tSZ_gal_1h;
   int index_md_tSZ_gal_1h;
   int index_integrand_id_tSZ_gal_1h_first;
   int index_integrand_id_tSZ_gal_1h_last;
+
+  int has_tSZ_gal_2h;
+  int index_md_tSZ_gal_2h;
+  int index_integrand_id_tSZ_gal_2h_first;
+  int index_integrand_id_tSZ_gal_2h_last;
+
 
 
   int has_tSZ_lens_2h;
@@ -766,6 +805,14 @@ int szpowerspectrum_init(struct background * pba,
                          struct nonlinear * pnl,
                          struct tszspectrum * ptsz);
 
+ int evaluate_effective_galaxy_bias(double * pvecback,
+                                    double * pvectsz,
+                                    struct background * pba,
+                                    struct primordial * ppm,
+                                    struct nonlinear * pnl,
+                                    struct tszspectrum * ptsz);
+
+
  int evaluate_pk_at_ell_plus_one_half_over_chi(double * pvecback,
                                               double * pvectsz,
                                               struct background * pba,
@@ -854,6 +901,13 @@ int evaluate_c500c_KA20(double * pvecback,
 double radial_kernel_W_galaxy_at_z( double * pvecback,
                                     double * pvectsz,
                                     struct background * pba,
+                                    struct tszspectrum * ptsz);
+
+double radial_kernel_W_lensing_at_z(double * pvecback,
+                                    double * pvectsz,
+                                    struct background * pba,
+                                    struct primordial * ppm,
+                                    struct nonlinear * pnl,
                                     struct tszspectrum * ptsz);
 
 double evaluate_galaxy_number_counts( double * pvecback,

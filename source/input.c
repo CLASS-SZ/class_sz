@@ -1992,6 +1992,43 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
+      if ((strstr(string1,"gal_gal_1h") != NULL) ) {
+        ptsz->has_gal_gal_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"gal_gal_2h") != NULL) ) {
+        ptsz->has_gal_gal_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"gal_lens_1h") != NULL) ) {
+        ptsz->has_gal_lens_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"gal_lens_2h") != NULL) ) {
+        ptsz->has_gal_lens_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+
       if ((strstr(string1,"tSZ_gal_1h") != NULL) ) {
         ptsz->has_tSZ_gal_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2001,6 +2038,14 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
+      if ((strstr(string1,"tSZ_gal_2h") != NULL) ) {
+        ptsz->has_tSZ_gal_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
 
       if ((strstr(string1,"tSZ_lens_1h") != NULL) ) {
         ptsz->has_tSZ_lens_1h =_TRUE_;
@@ -2314,14 +2359,14 @@ int input_read_parameters(
 
 
     /* // Eq. 15 or 16 of KA20 */
-    class_call(parser_read_string(pfc,"use_central_hod",&string1,&flag1,errmsg),
+    class_call(parser_read_string(pfc,"use_simplified_hod",&string1,&flag1,errmsg),
                errmsg,
                errmsg);
    if (flag1 == _TRUE_) {
       if ((strstr(string1,"yes") != NULL))
-        ptsz->use_central_hod=1;
+        ptsz->use_simplified_hod=1;
       else  if ((strstr(string1,"no") != NULL))
-        ptsz->use_central_hod=0;
+        ptsz->use_simplified_hod=0;
       }
 
     /* galaxy sample */
@@ -4174,7 +4219,7 @@ int input_default_params(
   //default: total power spectrum (no completeness cut)
   ptsz->which_ps_sz = 0; //0: total, 1: resolved, 2: unresolved
 
-  ptsz->use_central_hod = 1;
+  ptsz->use_simplified_hod = 1;
   ptsz->galaxy_sample = 0; // WIxSC
   ptsz->unwise_galaxy_sample_id = 0; // red
   //ptsz->unwise_m_min_cut = 1e10; // Msun/h
@@ -4335,7 +4380,12 @@ int input_default_params(
   ptsz->has_isw_tsz = _FALSE_;
   ptsz->has_isw_auto = _FALSE_;
   ptsz->has_dndlnM = _FALSE_;
+  ptsz->has_gal_gal_1h = _FALSE_;
+  ptsz->has_gal_gal_2h = _FALSE_;
+  ptsz->has_gal_lens_1h = _FALSE_;
+  ptsz->has_gal_lens_2h = _FALSE_;
   ptsz->has_tSZ_gal_1h = _FALSE_;
+  ptsz->has_tSZ_gal_2h = _FALSE_;
   ptsz->has_tSZ_lens_1h = _FALSE_;
   ptsz->has_tSZ_lens_2h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_1halo = _FALSE_;
@@ -4379,6 +4429,11 @@ int input_default_params(
   ptsz->index_md_m_y_y_2h = 19;
   ptsz->index_md_tSZ_gal_1h = 20;
   ptsz->index_md_tSZ_tSZ_tSZ_1halo = 21;
+  ptsz->index_md_gal_gal_1h = 22;
+  ptsz->index_md_gal_gal_2h = 23;
+  ptsz->index_md_gal_lens_2h = 24;
+  ptsz->index_md_gal_lens_1h = 25;
+  ptsz->index_md_tSZ_gal_2h = 26;
 
   ptsz->HMF_prescription_NCDM=2; //no-pres
 
