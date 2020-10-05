@@ -288,6 +288,7 @@ struct tszspectrum {
   FileName path_to_class; /**< root for all file names */
   FileName append_name_cobaya_ref;
   FileName path_to_ref_trispectrum_for_cobaya;
+  FileName full_path_to_noise_curve_for_y_y;
 
 
  /* vector of all SZ quantities function of redshift*/
@@ -416,6 +417,10 @@ struct tszspectrum {
   double M1_prime_HOD;
   double rho_y_gal;
 
+
+  // noise curve for cov(y,y)
+
+  int include_noise_cov_y_y;
 
   //units for tSZ spectrum
   double exponent_unit;
@@ -594,6 +599,7 @@ struct tszspectrum {
   //Cl spectrum
   double * ell;
   double * ell_plc;
+  double * ell_plc_no_low_ell;
   double * ell_plc_low;
   double * ell_mock;
   double * ell_trispectrum;
@@ -666,6 +672,13 @@ struct tszspectrum {
   double * normalized_dndz_phig;
 
   int normalized_dndz_size;
+
+  double * unbinned_nl_yy_ell;
+  double * unbinned_nl_yy_n_ell;
+  int nl_yy_is_binned;
+  int unbinned_nl_yy_size;
+
+
 
 
   double * CM_redshift;

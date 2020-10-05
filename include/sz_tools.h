@@ -669,7 +669,7 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
 
   int load_rho_nfw_profile(struct tszspectrum * ptsz);
   int load_normalized_dndz(struct tszspectrum * ptsz);
-
+  int load_unbinned_nl_yy(struct tszspectrum * ptsz);
 
   int CvirMvirZHAO(double * result,
                    double logM ,

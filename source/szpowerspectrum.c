@@ -99,8 +99,13 @@ int szpowerspectrum_init(
 
    // only performed if requested:
    load_normalized_dndz(ptsz);
+
+
+
  }
 
+   // only performed when requested:
+   load_unbinned_nl_yy(ptsz);
 
    if (ptsz->write_sz>0)
    write_redshift_dependent_quantities(pba,ptsz);
@@ -297,6 +302,11 @@ if (ptsz->has_tSZ_gal_1h
   free(ptsz->normalized_dndz_phig);
 //}
 
+ }
+
+ if (ptsz->include_noise_cov_y_y==1){
+   free(ptsz->unbinned_nl_yy_ell);
+   free(ptsz->unbinned_nl_yy_n_ell);
  }
 
    free(ptsz->array_sigma2_hsv_at_z);
@@ -938,7 +948,7 @@ double integrand_at_m_and_z(double logM,
  else if  (_m_y_y_2h_){
 
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
-           evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+           //evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
            //this integrand is squared afterward
            pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
@@ -2924,7 +2934,7 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
       sig_cl_squared_binned_2h = sig_cl_squared_2h/n_modes;
    }
 
-   //normalised cov:
+   // normalised cov:
    // see e.g., A 28 of Hill and Pajer 2013
    ptsz->sig_cl_squared_binned[index_l] = sig_cl_squared_binned/ptsz->f_sky;
    ptsz->cov_cl_cl[index_l] = ptsz->sig_cl_squared_binned[index_l] +  ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey;
@@ -2978,6 +2988,13 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
 
      for (index_l=0;index_l<ptsz->nlSZ;index_l++){
       for (index_l_prime=0;index_l_prime<ptsz->nlSZ;index_l_prime++) {
+// Here we save:
+// ell*(ell+1.)/(2.*_PI_)*ell_prime*(ell_prime+1.)/(2.*_PI_)*ptsz->tllprime_sz[index_l][index_l_prime];
+// where tllprime_sz is the dimensionless trispectrum (set: units for tSZ spectrum = dimensionless)
+// and scaled so that T_ll' ~ (10^6 y)^4, so sqrt(T_ll') ~ 10^12 y^2 ~ C_l in the same convention
+// This does not include the factor 1/Omega_survey with Omega_survey = 4*pi*f_sky,
+// which needs to be taken into account in the computation of the covmat
+// this is done in the likelihood codes (in cobaya and montepython).
            fprintf(fp,"%e\t",ptsz->trispectrum_ref[index_l][index_l_prime]);
         }
         fprintf(fp,"\n");
@@ -2998,7 +3015,7 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
            ptsz->ell[index_l],
            ptsz->cl_sz_1h[index_l],
            ptsz->cl_sz_2h[index_l],
-           pow(ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)/2./_PI_,2.)*ptsz->sig_cl_squared_binned[index_l],
+           pow(ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)/2./_PI_,2.)*ptsz->sig_cl_squared_binned[index_l], // this includes the fsky factor
            bin_ell_low[index_l],
            bin_ell_up[index_l]);
      fclose(fp);
@@ -3012,7 +3029,8 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
 
     if ((ptsz->has_sz_ps + ptsz->has_sz_trispec + ptsz->has_sz_2halo \
       + ptsz->has_sz_m_y_y_2h + ptsz->has_sz_m_y_y_1h + ptsz->has_sz_te_y_y  \
-      +   ptsz->has_tSZ_tSZ_tSZ_1halo+   ptsz->has_kSZ_kSZ_gal_1halo \
+      + ptsz->has_tSZ_tSZ_tSZ_1halo
+      + ptsz->has_kSZ_kSZ_gal_1halo
       + ptsz->has_gal_gal_1h + ptsz->has_gal_gal_2h
       + ptsz->has_gal_lens_1h + ptsz->has_gal_lens_2h \
       + ptsz->has_tSZ_gal_1h
@@ -3091,10 +3109,10 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
           fprintf(fp,"# 2:10^12*ell*(ell+1)/(2*pi)*C_l^tSZ (1-halo term)\n");
        if (ptsz->exponent_unit == 0.)
           fprintf(fp,"# 2:ell*(ell+1)/(2*pi)*C_l^tSZ (1-halo term, [muK^2])\n");
-       fprintf(fp,"# 3:Unbinned Gaussian sampling variance (sigma_g_C_l^2)\n");
-       fprintf(fp,"# 4:Diagonal elements of non-Gaussian sampling variance (trispectrum, T_ll/Omega_survey) \n");
-       fprintf(fp,"# 5:Binned Gaussian sampling variance (sigma_g_C_l^2_binned)\n");
-       fprintf(fp,"# 6:Binned total std dev (Gaussian + non-Gaussian)\n");
+       fprintf(fp,"# 3:Unbinned Gaussian sampling variance (sigma_g_C_l^2), does NOT include f_sky factor\n");
+       fprintf(fp,"# 4:Diagonal elements of non-Gaussian sampling variance (trispectrum, T_ll/Omega_survey, i.e.,includes f_sky factor) \n");
+       fprintf(fp,"# 5:Binned Gaussian sampling variance (sigma_g_C_l^2_binned, includes f_sky factor)\n");
+       fprintf(fp,"# 6:Binned total std dev (Gaussian + non-Gaussian, includes f_sky factor)\n");
         if (ptsz->exponent_unit == 2.)
           fprintf(fp,"# 7:2-halo term 10^12*ell*(ell+1)/(2*pi)*C_l^tSZ (2-halo term)\n");
         if (ptsz->exponent_unit == 0.)
@@ -3131,8 +3149,31 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
          sig_cl_squared_1h = 2.*pow((ptsz->cl_sz_1h[index_l])/(ell*(ell+1.))*2.*_PI_,2.)/(2.*ell+1.);
          sig_cl_squared_2h = 2.*pow((ptsz->cl_sz_2h[index_l])/(ell*(ell+1.))*2.*_PI_,2.)/(2.*ell+1.);
 
+         double sig_nl_yy_squared;
+         if (ptsz->include_noise_cov_y_y == 1){
+         //sig_nl_yy_squared = 0.;
+         double nl_yy  =  pwl_value_1d(ptsz->unbinned_nl_yy_size,
+                                            ptsz->unbinned_nl_yy_ell,
+                                            ptsz->unbinned_nl_yy_n_ell,
+                                            ell);
+
+         if (ptsz->nl_yy_is_binned == 1){
+           sig_nl_yy_squared = pow(nl_yy/(ell*(ell+1.))*2.*_PI_,2.);
+           printf("%d %.3e %.3e\n",ptsz->unbinned_nl_yy_size,ell,nl_yy);
+         }
+         else {
+         sig_nl_yy_squared = 2.*pow(nl_yy/(ell*(ell+1.))*2.*_PI_,2.)/(2.*ell+1.);
+
+          }
+
+         }
+         else{
+         sig_nl_yy_squared = 0.;
+         }
 
          //binned gaussian variance
+         double sig_nl_yy_squared_binned;
+
          double sig_cl_squared_binned;
          double sig_cl_squared_binned_1h;
          double sig_cl_squared_binned_2h;
@@ -3141,6 +3182,8 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
          double ln_ell_down;
          double ln_ell_up;
          double n_modes;
+
+         if (ptsz->nl_yy_is_binned == 0) {
          if (index_l == 0){
             ln_ell_up = log(ptsz->ell[index_l+1]);
             ln_ell_max = log(ell) + 0.5*(ln_ell_up-log(ell));
@@ -3149,6 +3192,7 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
             sig_cl_squared_binned = sig_cl_squared/n_modes;
             sig_cl_squared_binned_1h = sig_cl_squared_1h/n_modes;
             sig_cl_squared_binned_2h = sig_cl_squared_2h/n_modes;
+            sig_nl_yy_squared_binned = sig_nl_yy_squared/n_modes;
          }
          else if (index_l == ptsz->nlSZ -1){
             ln_ell_down = log(ptsz->ell[index_l-1]);
@@ -3158,6 +3202,7 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
             sig_cl_squared_binned = sig_cl_squared/n_modes;
             sig_cl_squared_binned_1h = sig_cl_squared_1h/n_modes;
             sig_cl_squared_binned_2h = sig_cl_squared_2h/n_modes;
+            sig_nl_yy_squared_binned = sig_nl_yy_squared/n_modes;
          }
          else {
             ln_ell_down = log(ptsz->ell[index_l-1]);
@@ -3168,11 +3213,21 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
             sig_cl_squared_binned = sig_cl_squared/n_modes;
             sig_cl_squared_binned_1h = sig_cl_squared_1h/n_modes;
             sig_cl_squared_binned_2h = sig_cl_squared_2h/n_modes;
+            sig_nl_yy_squared_binned = sig_nl_yy_squared/n_modes;
          }
 
          //normalised cov:
          // see e.g., A 28 of Hill and Pajer 2013
-         ptsz->sig_cl_squared_binned[index_l] = sig_cl_squared_binned/ptsz->f_sky;
+         ptsz->sig_cl_squared_binned[index_l] = (sig_cl_squared_binned
+                                                +sig_nl_yy_squared_binned)
+                                                +2.*sqrt(sig_cl_squared_binned*sig_nl_yy_squared_binned)
+                                                /ptsz->f_sky;
+
+         }
+         else {
+           ptsz->sig_cl_squared_binned[index_l] = sig_nl_yy_squared;
+
+         }
          ptsz->cov_cl_cl[index_l] = ptsz->sig_cl_squared_binned[index_l] +  ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey;
 
          sig_cl_squared_binned_1h = sig_cl_squared_binned_1h/ptsz->f_sky;
@@ -3400,6 +3455,47 @@ if (ptsz->has_sz_cov_Y_N && ptsz->write_sz>0){
          fprintf(fp,"\n");
       }
       fclose(fp);
+
+
+      sprintf(Filepath,
+            "%s%s%s",
+            ptsz->root,
+            "szpowerspectrum_covariance_matrix_1e12_Dl_yxy_with_fsky",
+            ".txt");
+
+      fp=fopen(Filepath, "w");
+      double ** cov_y_y;
+      class_alloc(cov_y_y,ptsz->nlSZ*sizeof(double *),ptsz->error_message);
+      //int index_l_prime;
+      for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+        class_alloc(cov_y_y[index_l],ptsz->nlSZ*sizeof(double),ptsz->error_message);
+       for (index_l_prime=0;index_l_prime<index_l+1;index_l_prime++) {
+            double ell = ptsz->ell[index_l];
+            double ell_prime= ptsz->ell[index_l_prime];
+
+            double dl_fac = ell*(ell+1.)/(2.*_PI_)*ell_prime*(ell_prime+1.)/(2.*_PI_);
+            double m_l_lp;
+            if (index_l == index_l_prime)
+                  m_l_lp = ptsz->cov_cl_cl[index_l];
+            else
+                  m_l_lp = ptsz->tllprime_sz[index_l][index_l_prime]/ptsz->Omega_survey;
+
+            cov_y_y[index_l][index_l_prime] = m_l_lp*dl_fac;
+            cov_y_y[index_l_prime][index_l] = cov_y_y[index_l][index_l_prime];
+
+            //fprintf(fp,"%e\t",m_l_lp*dl_fac);
+         }
+         //fprintf(fp,"\n");
+      }
+
+      for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+        for (index_l_prime=0;index_l_prime<ptsz->nlSZ;index_l_prime++) {
+          fprintf(fp,"%e\t",cov_y_y[index_l][index_l_prime]);
+        }
+        fprintf(fp,"\n");
+      }
+      fclose(fp);
+      free(cov_y_y);
 }
 
 
@@ -3717,6 +3813,22 @@ int select_multipole_array(struct tszspectrum * ptsz)
    ptsz->ell_plc[24] = 10000.;
    ptsz->ell_plc[25] = 20000.;
 
+   class_alloc(ptsz->ell_plc_no_low_ell,
+                     13*sizeof(double),
+                     ptsz->error_message);
+   ptsz->ell_plc_no_low_ell[0] = 40.;
+   ptsz->ell_plc_no_low_ell[1] = 52.5;
+   ptsz->ell_plc_no_low_ell[2] = 68.5;
+   ptsz->ell_plc_no_low_ell[3] = 89.5;
+   ptsz->ell_plc_no_low_ell[4] = 117.;
+   ptsz->ell_plc_no_low_ell[5] = 152.5;
+   ptsz->ell_plc_no_low_ell[6] = 198.;
+   ptsz->ell_plc_no_low_ell[7] = 257.5;
+   ptsz->ell_plc_no_low_ell[8] = 335.5;
+   ptsz->ell_plc_no_low_ell[9] = 436.5;
+   ptsz->ell_plc_no_low_ell[10] = 567.5;
+   ptsz->ell_plc_no_low_ell[11] = 738.;
+   ptsz->ell_plc_no_low_ell[12] = 959.5;
 
    class_alloc(ptsz->ell_plc_low,
                      29*sizeof(double),
@@ -3810,12 +3922,15 @@ int select_multipole_array(struct tszspectrum * ptsz)
          ptsz->ell[index_l] = ptsz->ell_plc_low[index_l];
       else if (ptsz->ell_sz == 4)
          ptsz->ell[index_l] = ptsz->ell_mock[index_l];
+     else if (ptsz->ell_sz == 5)
+        ptsz->ell[index_l] = ptsz->ell_plc_no_low_ell[index_l];
    }
 
 
    free(ptsz->ell_trispectrum);
    free(ptsz->ell_plc);
    free(ptsz->ell_plc_low);
+   free(ptsz->ell_plc_no_low_ell);
    free(ptsz->ell_mock);
 
    return _SUCCESS_;

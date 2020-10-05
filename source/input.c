@@ -2135,6 +2135,8 @@ int input_read_parameters(
             ptsz->ell_sz=3;
         else  if ((strstr(string1,"ell_mock") != NULL))
             ptsz->ell_sz=4;
+        else  if ((strstr(string1,"Pl15_no_low_ell") != NULL))
+          ptsz->ell_sz=5;
      }
 
 
@@ -2214,6 +2216,23 @@ int input_read_parameters(
       class_read_double("alpha_s_HOD",ptsz->alpha_s_HOD);
       class_read_double("sigma_lnM_HOD",ptsz->sigma_lnM_HOD);
       class_read_double("rho_y_gal",ptsz->rho_y_gal);
+
+      /* temperature mass relation SZ */
+      class_call(parser_read_string(pfc,"include noise curve in cov(y,y)",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"no") != NULL))
+          ptsz->include_noise_cov_y_y=0;
+        else  if ((strstr(string1,"yes") != NULL)){
+          ptsz->include_noise_cov_y_y=1;
+          class_read_string("full path to noise curve for yxy",ptsz->full_path_to_noise_curve_for_y_y);
+          class_read_int("nl_yy_is_binned",ptsz->nl_yy_is_binned);
+        }
+
+      }
+
+
 
       /* temperature mass relation SZ */
       class_call(parser_read_string(pfc,"temperature mass relation",&string1,&flag1,errmsg),
@@ -4203,7 +4222,9 @@ int input_default_params(
   ptsz->create_ref_trispectrum_for_cobaya=0;
   sprintf(ptsz->path_to_ref_trispectrum_for_cobaya,"output/");
   sprintf(ptsz->append_name_cobaya_ref,"for_cobaya");
+  sprintf(ptsz->full_path_to_noise_curve_for_y_y,"sz_auxiliary_files/my_noise_curve_yxy.txt");
 
+  ptsz->nl_yy_is_binned = 0;
 
   pcsz->redshift_for_dndm = 1.e-5;
 
@@ -4455,6 +4476,9 @@ int input_default_params(
   ptsz->alpha_s_HOD = 1.;
   ptsz->sigma_lnM_HOD = 0.15;
   ptsz->rho_y_gal = -0.6;
+
+
+  ptsz->include_noise_cov_y_y = 0;
 
 
   return _SUCCESS_;

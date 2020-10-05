@@ -342,13 +342,15 @@ def run(args):
                         if (args.show_error_bars == 'yes'):
                             ax.errorbar(multipoles[id_p],cl_1h[id_p],yerr=[verr,verr],color=col[id_p],ls='-.',alpha = 1.,label = val_label[id_p])
                         else:
-                            ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-.',alpha = 0.5)
+                            if p_val == 50:
+                                ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-.',alpha = 0.5)
                             #ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = 'Cl^1h class_sz')
                     if ('tSZ_2h' in p_dict['output']):
                         #print(cl_2h[id_p])
                         #ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-',label = val_label[id_p])
                         #ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-.',label = 'Cl^2h class_sz')
-                        ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='--',alpha=0.3)
+                        if p_val == 50:
+                            ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='--',alpha=0.3)
                         ax.plot(multipoles[id_p],cl_1h[id_p]+cl_2h[id_p],color=col[id_p],ls='-',label = val_label[id_p],alpha=1.)
 
             plt.draw()
@@ -360,6 +362,18 @@ def run(args):
 
 
         #end loop on p over param values
+        #end loop on p over param values
+        Noise = np.loadtxt(path_to_class+'sz_auxiliary_files/SZ_and_fg_models-high_ell.txt')
+        # multiply noise by relevant factor (see B18)
+        ax.plot(Noise[:,0],0.903*Noise[:,6],ls=':')
+
+        ax.text(50, 2.5e-5, 'Planck Noise Power Spectrum', rotation= 46, fontsize=9, verticalalignment='bottom')
+        ax.text(2e0, 9e-4, '2-halo (Total)', rotation= 23, fontsize=9, verticalalignment='top')
+        ax.text(2e0, 4e-5, r'2-halo ($q_\mathrm{cut}=50$)', rotation= 10, fontsize=9, verticalalignment='top')
+        ax.text(1.6e3, 2e-4, r'$q_\mathrm{cut}=50$', rotation= -55, fontsize=9, verticalalignment='bottom')
+        ax.text(6e3, 8e-3, r'$q_\mathrm{cut}=6$', rotation= -53, fontsize=9, verticalalignment='bottom')
+        ax.text(1e4, 4e-2, r'$q_\mathrm{cut}=1$', rotation= -34, fontsize=9, verticalalignment='bottom')
+        ax.text(1e4, 1.5e0, 'Total', rotation= -15, fontsize=9, verticalalignment='top')
 
         if ('hmf' in p_dict['output']):
             #HMF = 3.046174198e-4*41253.0*np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_hmf_int.txt')
@@ -502,13 +516,13 @@ def run(args):
 
         # ax.text(0.03, 0.93, r'$(\Delta \rho/\rho)_\mathrm{inj}=3\times10^{-5}$', transform=ax.transAxes, fontsize=9, verticalalignment='top',
         #   bbox=dict(boxstyle='round', facecolor='grey', alpha=0.2))
-    leg1 = plt.legend(loc=2,ncol=2,frameon=True,framealpha=0.6,fontsize = 10)
+    leg1 = plt.legend(loc=4,ncol=2,frameon=True,framealpha=1,fontsize = 10)
     legend_elements = [
                     #Line2D([0], [0], color='k', alpha= 0.8,label='Unresolved',linestyle='None'),
                     Line2D([0], [0], color='k', alpha= 0.8,label='1-halo',ls='-.'),
                     Line2D([0], [0], color='k',alpha=0.8, label='2-halo',ls='--'),
                     Line2D([0], [0], color='k',alpha=0.8, label='1+2-halo',ls='-')]
-    leg2 = plt.legend(title= 'Resolved (RC)', handles=legend_elements, loc=4,frameon=True,framealpha=1.)
+    leg2 = plt.legend(title= 'Resolved (RC)', handles=legend_elements, loc=2,frameon=True,framealpha=1.)
     ax.add_artist(leg1)
     ax.add_artist(leg2)
     ax.set_ylim(2.e-6,9)
