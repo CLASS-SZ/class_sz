@@ -1437,7 +1437,9 @@ int evaluate_tau_profile(double * pvecback,
     //                                   ptsz->error_message);
     //
     //
-
+    // two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result);
+    //
+    // pvectsz[ptsz->index_tau_profile] = result;
 
    double lnx_asked = log((pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)/characteristic_multipole);
 
@@ -1529,9 +1531,13 @@ int evaluate_lensing_profile(double * pvecback,
                                    lnx_asked);
       result = exp(result);
 
+   // this is the transform of the nfw, dimensionless
+   // x**(-1d0)*(1d0+x)**(-2d0)*x**2d0*dsin(y*x)/(y*x)
    pvectsz[ptsz->index_lensing_profile] = result;
 
 
+  // lensing normalisation is dimensionless
+  // we write down things in terms of phi here
   lensing_normalisation = 2./(pvectsz[ptsz->index_multipole_for_lensing_profile]*(pvectsz[ptsz->index_multipole_for_lensing_profile]+1.));
 
 
@@ -1613,8 +1619,24 @@ int evaluate_pressure_profile(double * pvecback,
 
    pvectsz[ptsz->index_pressure_profile] = result;
 
-   //in units of Mpc^-1*micro Kelvins
-   double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283./0.5176; //1./0.5176=1.932=(5Xh+3)/2(Xh+1) with Xh = 0.76 and Pth=1.932Pe
+    // in units of Mpc^-1*micro Kelvins
+    // old version (szfast)
+    // double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283./0.5176; //1./0.5176=1.932=(5Xh+3)/2(Xh+1) with Xh = 0.76 and Pth=1.932Pe
+    // (Xh is the primodial hydrogen mass fraction)
+    // more accurate version (see explanation below):
+    // in units of Mpc^-1*micro Kelvins
+    double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283.2980000259841/0.5176*pba->T_cmb/2.725;
+
+    // Explanation of the above factors:
+    // sigma_thomson_in_m2 = 6.6524587321e-29
+    // me_in_eV = 0.510998946e6
+    // Mpc_over_m =  3.085677581282e22
+    // factor_in_inverse_Mpc =  sigma_thomson_in_m2/me_in_eV*50.*1e6*Mpc_over_m*0.5176
+    // print(factor_in_inverse_Mpc*2.725e6)
+    // 283.2980000259841
+    // we divide by 0.5176 because it was included in the 283. It is necessary when working with
+    // thermal pressure, but not when we work with electron pressure:  Pth=1.932*Pe, Pe = 0.5176*Pth
+
 
    double characteristic_radius;
    double characteristic_multipole;
@@ -1640,6 +1662,17 @@ int evaluate_pressure_profile(double * pvecback,
 
       P_200 = pvectsz[ptsz->index_m200c]/(R_200crit)*f_b
               *2.61051e-18*pow(100.*pba->h*Eh,2.);
+
+
+     // NB JCH implementation:
+     // transform2d=4.0d0*pi*(r500/h0)/(l500**2d0)* &
+     //      2.61051d-18*(obh2/om0/h0**2d0)*(100.0d0*h0*Ez(z))**2d0* &
+     //      m500/r500*2.5d0*rombint3(padia,xin,xoutpress,tol,(ell+0.5d0)/l500,m500,z)
+     // ! the 10.94d0 factor below is sigmaT/m_e/c^2*Mpcincm*Tcmb*10^6
+     // ! in units that agree with the eV/cm^3 in transform2d
+     // Tsz=-2d0*10.94d0*transform2d ! uK, Rayleigh-Jeans limit
+
+     // link with class_sz: (283./0.5176/50.)=10.935085007727976
 
 
 
@@ -1691,19 +1724,36 @@ int evaluate_pressure_profile(double * pvecback,
 
    }
 
-   pvectsz[ptsz->index_pressure_profile] = -0.953652      //gnu at 150 GHz, should be -0.9533281807274405
-                                           *sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb
+
+   //(see comments after to link this way of writing with the szfast implementation)
+   pvectsz[ptsz->index_pressure_profile] = sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb // here Tcmb is in muK
+                                           /50. // to cancel the factor 50 above 50eV/cm^3
+                                           /pba->T_cmb
                                            *pressure_normalisation
                                            *pvectsz[ptsz->index_pressure_profile]
                                            *(4*_PI_)
                                            *pow(characteristic_multipole,-2)
                                            *characteristic_radius //rs in Mpc
-                                           /50. //pressure normalised to 50eV/cm^3
-                                           *ptsz->Tcmb_gNU/ptsz->Tcmb_gNU_at_150GHz;
+                                           *ptsz->Tcmb_gNU;
                                            // now in units Tcmb*gNU at the requested frequency
-                                           // in muK due to the units in the expression above
+                                           // Result in muK due to the units in sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb
+                                           // which is in units of Mpc^-1*micro Kelvins
                                            // (but Tcmb is in K in Tcmb_gNU)
 
+   // Ancient way of writing (like in szfast):
+   // pvectsz[ptsz->index_pressure_profile] = (ptsz->Tcmb_gNU_at_150GHz/pba->T_cmb)      //gnu at 150 GHz (was -0.953652 in sz_fast), we replace it with the exact formula
+   //                                         *sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb
+   //                                         *pressure_normalisation
+   //                                         *pvectsz[ptsz->index_pressure_profile]
+   //                                         *(4*_PI_)
+   //                                         *pow(characteristic_multipole,-2)
+   //                                         *characteristic_radius //rs in Mpc
+   //                                         /50. //pressure normalised to 50eV/cm^3
+   //                                         *ptsz->Tcmb_gNU/ptsz->Tcmb_gNU_at_150GHz;
+   //                                         // now in units Tcmb*gNU at the requested frequency
+   //                                         // Result in muK due to the units in sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb
+   //                                         // which is in units of Mpc^-1*micro Kelvins
+   //                                         // (but Tcmb is in K in Tcmb_gNU)
 
    return _SUCCESS_;
 }
@@ -4478,6 +4528,7 @@ double ell = ptsz->ell[index_l];
  double D = pvecback[pba->index_bg_D];
  //double result = 9.*pow(Omega_m,2.)*pow(pba->H0/pba->h,4)/(2.*pow(ell+0.5,2.)*chi_star)*chi*(chi_star-chi)*(1.+z)*dgdz/D*pk;
  //double result = 3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/2.*(chi_star-chi)/chi/chi_star*(1.+z)/H_over_c_in_h_over_Mpc/D;
+ // note the factor 2
  double result = 2.*3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/2.*(chi_star-chi)*pow(1.+z,1.)/chi/chi_star/(pow(ell+0.5,2.))*D; // homogeneous to (H0/h)^2 * h/Mpc
 //  result = 0.;//dgdz/D;
 //

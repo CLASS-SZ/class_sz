@@ -80,7 +80,8 @@ def run(args):
     #     parameter_file = 'class-sz_chill_B12_parameters.ini'
     # else:
     #     parameter_file = 'class-sz_parameters.ini'
-    parameter_file = 'class-sz_parameters.ini'
+    #parameter_file = 'class-sz_parameters.ini'
+    parameter_file = 'class-sz_chill_B12_parameters_for_comparison.ini'
     #'class-sz_chill_B12_parameters.ini'
     #parameter_file = 'class-sz_parameters_rotti++20.ini'
     #parameter_file ='tSZ_params_ref_resolved-rotti++20_snr12_step_2.ini'
@@ -180,7 +181,7 @@ def run(args):
     #set correct Output
     # p_dict['output'] = 'tSZ_1h'
     p_dict['mass function'] = 'T10'  #fiducial  T10
-    p_dict['pressure profile'] = 'A10' #fiducial B12
+    p_dict['pressure profile'] = 'B12' #fiducial B12
 
     # p_dict['create_ref_trispectrum_for_cobaya'] = 'NO'
     # p_dict['background_verbose'] = 2
@@ -188,12 +189,14 @@ def run(args):
     p_dict['sz_verbose'] = 2
     p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
     p_dict['write sz results to files'] = 'yes' # this writes  PS and f(z)
-    p_dict['pressure_profile_epsabs'] = 1.e-8
-    p_dict['pressure_profile_epsrel'] = 1.e-3
-    p_dict['redshift_epsabs'] = 1.e-40
-    p_dict['redshift_epsrel'] = 1.e-10 # fiducial value 1e-8
-    p_dict['mass_epsabs'] = 1.e-40
-    p_dict['mass_epsrel'] = 1e-10
+    p_dict['pressure_profile_epsabs'] = 1.e-8  # fiducial -8
+    p_dict['pressure_profile_epsrel'] = 1.e-3 # fiducial -3
+    p_dict['nfw_profile_epsabs'] = 1.e-8  # fiducial -8
+    p_dict['nfw_profile_epsrel'] = 1.e-3 # fiducial -3
+    p_dict['redshift_epsabs'] =   1e-40 #1.e-40
+    p_dict['redshift_epsrel'] =  1e-10 #1.e-10 # fiducial value 1e-8
+    p_dict['mass_epsabs'] = 1.e-40 # 1e-40
+    p_dict['mass_epsrel'] = 1e-10 #1e-10
 
     p_dict['dlogell'] = 0.2
     #p_dict['units for tSZ spectrum'] = 'muK2'
@@ -254,7 +257,7 @@ def run(args):
         # ax.set_ylim(0.,600.)
     else:
         ax.set_xscale('log')
-        ax.set_yscale('log')
+        ax.set_yscale('linear')
         ax.set_xlabel(r'$\ell$',size=title_size)
         if (args.plot_trispectrum == 'yes'):
             ax.set_ylabel(r'$T_{\ell,\ell}$',size=title_size)
@@ -267,7 +270,7 @@ def run(args):
         elif (args.plot_tSZ_gal == 'yes'):
             ax.set_ylabel(r'$\mathrm{C^{yg}_\ell}$',size=title_size)
         elif (args.plot_tSZ_lens == 'yes'):
-            ax.set_ylabel(r'$\ell^2(\ell+1)\mathrm{C^{y\phi}_\ell/2\pi}$ [$\mu$K]',size=title_size)
+            ax.set_ylabel(r'$\ell^2(\ell+1)\mathrm{C^{y\phi}_\ell/2\pi}$',size=title_size)
         elif (args.plot_isw_lens == 'yes'):
             ax.set_ylabel(r'$\ell(\ell+1)\mathrm{C^{ISW\times\phi}_\ell/2\pi}$',size=title_size)
         elif (args.plot_isw_tsz == 'yes'):
@@ -300,14 +303,15 @@ def run(args):
         for p_val in p:
             #update dictionnary with current value
             p_dict[param_name] = p_val
-            subprocess.call(['rm','-r','-f',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
-            subprocess.call(['mkdir','-p',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
-            with open(path_to_class+'sz_auxiliary_files/run_scripts/tmp/tmp.ini', 'w') as f:
-                for k, v in p_dict.items():
-                    f.write(str(k) + ' = '+ str(v) + '\n')
-            startTime = datetime.now()
-            subprocess.call(['./class',path_to_class+'sz_auxiliary_files/run_scripts/tmp/tmp.ini'])
-            print("time in class -> " + str((datetime.now() - startTime)))
+            if args.mode == 'run':
+                subprocess.call(['rm','-r','-f',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
+                subprocess.call(['mkdir','-p',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
+                with open(path_to_class+'sz_auxiliary_files/run_scripts/tmp/tmp.ini', 'w') as f:
+                    for k, v in p_dict.items():
+                        f.write(str(k) + ' = '+ str(v) + '\n')
+                startTime = datetime.now()
+                subprocess.call(['./class',path_to_class+'sz_auxiliary_files/run_scripts/tmp/tmp.ini'])
+                print("time in class -> " + str((datetime.now() - startTime)))
             #print(datetime.now() - startTime)
 
 
@@ -347,7 +351,12 @@ def run(args):
 
 
             elif ('tSZ_1h' in p_dict['output'] or 'kSZ_kSZ_gal_1h' in p_dict['output'] or 'tSZ_lens_1h' in p_dict['output'] or 'tSZ_lens_2h' in p_dict['output'] or 'tSZ_gal' in p_dict['output'] or 'isw_lens' in p_dict['output'] or 'isw_tsz' in p_dict['output']  or 'isw_auto' in p_dict['output']):
-                R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
+                if args.mode == 'run':
+                    R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
+                elif args.mode == 'plot':
+                    R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_szpowerspectrum_' + str(p_val) + '.txt')
+
+                #R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
                 multipoles.append(R[:,0])
                 cl_1h.append(R[:,1])
                 y_err.append(R[:,5]/np.sqrt(f_sky))
@@ -395,18 +404,22 @@ def run(args):
                 elif (args.plot_tSZ_lens == 'yes'):
                     print(tSZ_lens_1h[id_p])
                     print(tSZ_lens_2h[id_p])
-                    #for (nu,colg) in zip((100,143,353),('k','r','b')):
-                    for (nu,colg) in zip((100,353),('k','r')):
-                        g = g_nu(nu)
-                        print(g)
-                        if g>0:
-                            ax.plot(multipoles[id_p],g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='-',alpha = 1.,label = '1-halo @ %.2f GHz'%nu)
-                            ax.plot(multipoles[id_p],g*tSZ_lens_2h[id_p]*Tcmb,color='g',ls='-',alpha = 1.,label = '2-halo')
-                            ax.plot(multipoles[id_p],g*(tSZ_lens_2h[id_p]+tSZ_lens_1h[id_p])*Tcmb,color=colg,ls=':',alpha = 1.,label = val_label[id_p])
-                        else:
-                            ax.plot(multipoles[id_p],-g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='--',alpha = 1.,label='1-halo @ %.2f GHz'%nu)
-                            ax.plot(multipoles[id_p],-g*tSZ_lens_2h[id_p]*Tcmb,color='g',ls='--',alpha = 1.,label='2-halo')
-                            ax.plot(multipoles[id_p],-g*(tSZ_lens_2h[id_p]+tSZ_lens_1h[id_p])*Tcmb,color=colg,ls=':',alpha = 1.,label = val_label[id_p])
+                    ax.plot(multipoles[id_p],tSZ_lens_1h[id_p]*1e-6,color='b',ls='-',alpha = 1.,label = '1-halo')
+                    ax.plot(multipoles[id_p],tSZ_lens_2h[id_p]*1e-6,color='r',ls='-',alpha = 1.,label = '2-halo')
+                    ax.plot(multipoles[id_p],(tSZ_lens_2h[id_p]+tSZ_lens_1h[id_p])*1e-6,color='g',ls=':',alpha = 1.,label = val_label[id_p])
+                    #
+                    # #for (nu,colg) in zip((100,143,353),('k','r','b')):
+                    # for (nu,colg) in zip((100,353),('k','r')):
+                    #     g = g_nu(nu)
+                    #     print(g)
+                    #     if g>0:
+                    #         ax.plot(multipoles[id_p],g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='-',alpha = 1.,label = '1-halo @ %.2f GHz'%nu)
+                    #         ax.plot(multipoles[id_p],g*tSZ_lens_2h[id_p]*Tcmb,color='g',ls='-',alpha = 1.,label = '2-halo')
+                    #         ax.plot(multipoles[id_p],g*(tSZ_lens_2h[id_p]+tSZ_lens_1h[id_p])*Tcmb,color=colg,ls=':',alpha = 1.,label = val_label[id_p])
+                    #     else:
+                    #         ax.plot(multipoles[id_p],-g*tSZ_lens_1h[id_p]*Tcmb,color=colg,ls='--',alpha = 1.,label='1-halo @ %.2f GHz'%nu)
+                    #         ax.plot(multipoles[id_p],-g*tSZ_lens_2h[id_p]*Tcmb,color='g',ls='--',alpha = 1.,label='2-halo')
+                    #         ax.plot(multipoles[id_p],-g*(tSZ_lens_2h[id_p]+tSZ_lens_1h[id_p])*Tcmb,color=colg,ls=':',alpha = 1.,label = val_label[id_p])
                 elif (args.plot_tSZ_gal == 'yes'):
                     print(tSZ_gal_1h[id_p])
                     #print(tSZ_lens_2h[id_p])
@@ -469,6 +482,9 @@ def run(args):
 
             plt.draw()
             plt.pause(0.05)
+            if args.mode == 'run':
+                #save some results and remove the temporary files
+                subprocess.call(['mv',path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt', path_to_class+'sz_auxiliary_files/run_scripts/tmp/' + 'class-sz_szpowerspectrum_' + str(p_val) + '.txt'])
 
             id_p += 1
 
@@ -659,37 +675,38 @@ def run(args):
 
 
 def main():
-	parser=argparse.ArgumentParser(description="Plot cosmotherm spectra")
-	parser.add_argument("-param_name",help="name of varying parameter" ,dest="param_name", type=str, required=True)
-	parser.add_argument("-min",help="minimum value of parameter" ,dest="p_min", type=str, required=False)
-	parser.add_argument("-max",help="maximum value of parameter" ,dest="p_max", type=str, required=False)
-	parser.add_argument("-N",help="number of evaluations" ,dest="N", type=int, required=False)
-	parser.add_argument("-p_val",help="list of param values" ,dest="p_val", type=str, required=False)
-	parser.add_argument("-spacing",help="linear (lin) or log spacing (log)" ,dest="spacing", type=str, required=False)
-	parser.add_argument("-show_legend",help="show legend on figure? ('yes' or 'no')" ,dest="show_legend", type=str, required=True)
-	parser.add_argument("-show_error_bars",help="show error bars on figure? ('yes' or 'no')" ,dest="show_error_bars", type=str, required=True)
-	parser.add_argument("-y_min",help="ylim for y-axis" ,dest="y_min", type=str, required=False)
-	parser.add_argument("-y_max",help="ylim for y-axis" ,dest="y_max", type=str, required=False)
-	parser.add_argument("-f_sky",help="sky fraction f_sky" ,dest="f_sky", type=str, required=False)
-	parser.add_argument("-output",help="what quantities to plot" ,dest="output", type=str, required=False)
-	parser.add_argument("-plot_ref_data",help="some other spectra" ,dest="plot_ref_data", type=str, required=False)
-	parser.add_argument("-compute_scaling_with_param",help="Compute alpha in C_l ~ p^alpha at l=100" ,dest="compute_scaling_with_param", type=str, required=False)
-	parser.add_argument("-save_tsz_ps",help="save file with tsz power spectrum in output directory" ,dest="save_tsz_ps", type=str, required=False)
-	parser.add_argument("-save_figure",help="save figure" ,dest="save_fig", type=str, required=False)
-	parser.add_argument("-print_rel_diff",help="[cl-cl_ref]/cl_ref" ,dest="print_rel_diff", type=str, required=False)
-	parser.add_argument("-plot_trispectrum",help="Tll" ,dest="plot_trispectrum", type=str, required=False)
-	parser.add_argument("-plot_te_y_y",help="Tll" ,dest="plot_te_y_y", type=str, required=False)
-	parser.add_argument("-plot_kSZ_kSZ_gal_1halo",help="kSZ_kSZ_gal_1halo" ,dest="plot_kSZ_kSZ_gal_1halo", type=str, required=False)
-	parser.add_argument("-plot_tSZ_tSZ_tSZ_1h",help="tSZ_tSZ_tSZ_1h" ,dest="plot_tSZ_tSZ_tSZ_1h", type=str, required=False)
-	parser.add_argument("-plot_tSZ_lens",help="tSZ_lens" ,dest="plot_tSZ_lens", type=str, required=False)
-	parser.add_argument("-plot_tSZ_gal",help="tSZ_gal" ,dest="plot_tSZ_gal", type=str, required=False)
-	parser.add_argument("-plot_isw_lens",help="isw_lens" ,dest="plot_isw_lens", type=str, required=False)
-	parser.add_argument("-plot_isw_tsz",help="isw_tsz" ,dest="plot_isw_tsz", type=str, required=False)
-	parser.add_argument("-plot_isw_auto",help="isw_auto" ,dest="plot_isw_auto", type=str, required=False)
-	parser.add_argument("-plot_redshift_dependent_functions",help="redshift dependent functions" ,dest="plot_redshift_dependent_functions", type=str, required=False)
-	parser.set_defaults(func=run)
-	args=parser.parse_args()
-	args.func(args)
+    parser=argparse.ArgumentParser(description="Plot cosmotherm spectra")
+    parser.add_argument("-mode",help="plot or run" ,dest="mode", type=str, required=True)
+    parser.add_argument("-param_name",help="name of varying parameter" ,dest="param_name", type=str, required=True)
+    parser.add_argument("-min",help="minimum value of parameter" ,dest="p_min", type=str, required=False)
+    parser.add_argument("-max",help="maximum value of parameter" ,dest="p_max", type=str, required=False)
+    parser.add_argument("-N",help="number of evaluations" ,dest="N", type=int, required=False)
+    parser.add_argument("-p_val",help="list of param values" ,dest="p_val", type=str, required=False)
+    parser.add_argument("-spacing",help="linear (lin) or log spacing (log)" ,dest="spacing", type=str, required=False)
+    parser.add_argument("-show_legend",help="show legend on figure? ('yes' or 'no')" ,dest="show_legend", type=str, required=True)
+    parser.add_argument("-show_error_bars",help="show error bars on figure? ('yes' or 'no')" ,dest="show_error_bars", type=str, required=True)
+    parser.add_argument("-y_min",help="ylim for y-axis" ,dest="y_min", type=str, required=False)
+    parser.add_argument("-y_max",help="ylim for y-axis" ,dest="y_max", type=str, required=False)
+    parser.add_argument("-f_sky",help="sky fraction f_sky" ,dest="f_sky", type=str, required=False)
+    parser.add_argument("-output",help="what quantities to plot" ,dest="output", type=str, required=False)
+    parser.add_argument("-plot_ref_data",help="some other spectra" ,dest="plot_ref_data", type=str, required=False)
+    parser.add_argument("-compute_scaling_with_param",help="Compute alpha in C_l ~ p^alpha at l=100" ,dest="compute_scaling_with_param", type=str, required=False)
+    parser.add_argument("-save_tsz_ps",help="save file with tsz power spectrum in output directory" ,dest="save_tsz_ps", type=str, required=False)
+    parser.add_argument("-save_figure",help="save figure" ,dest="save_fig", type=str, required=False)
+    parser.add_argument("-print_rel_diff",help="[cl-cl_ref]/cl_ref" ,dest="print_rel_diff", type=str, required=False)
+    parser.add_argument("-plot_trispectrum",help="Tll" ,dest="plot_trispectrum", type=str, required=False)
+    parser.add_argument("-plot_te_y_y",help="Tll" ,dest="plot_te_y_y", type=str, required=False)
+    parser.add_argument("-plot_kSZ_kSZ_gal_1halo",help="kSZ_kSZ_gal_1halo" ,dest="plot_kSZ_kSZ_gal_1halo", type=str, required=False)
+    parser.add_argument("-plot_tSZ_tSZ_tSZ_1h",help="tSZ_tSZ_tSZ_1h" ,dest="plot_tSZ_tSZ_tSZ_1h", type=str, required=False)
+    parser.add_argument("-plot_tSZ_lens",help="tSZ_lens" ,dest="plot_tSZ_lens", type=str, required=False)
+    parser.add_argument("-plot_tSZ_gal",help="tSZ_gal" ,dest="plot_tSZ_gal", type=str, required=False)
+    parser.add_argument("-plot_isw_lens",help="isw_lens" ,dest="plot_isw_lens", type=str, required=False)
+    parser.add_argument("-plot_isw_tsz",help="isw_tsz" ,dest="plot_isw_tsz", type=str, required=False)
+    parser.add_argument("-plot_isw_auto",help="isw_auto" ,dest="plot_isw_auto", type=str, required=False)
+    parser.add_argument("-plot_redshift_dependent_functions",help="redshift dependent functions" ,dest="plot_redshift_dependent_functions", type=str, required=False)
+    parser.set_defaults(func=run)
+    args=parser.parse_args()
+    args.func(args)
 
 if __name__=="__main__":
 	main()

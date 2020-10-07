@@ -44499,7 +44499,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   double xin = 1.e-5;
   double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
   double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
-  double xout = 1.5*rvir/rs;
+  double xout = 5.;//1.5*rvir/rs; //rvir/rs = cvir
 
 // QAWO
 
@@ -44510,15 +44510,15 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 30000;
+  int size_w = 3000;
   w = gsl_integration_workspace_alloc(size_w);
 
-  int index_l = (int) pvectsz[ptsz->index_multipole_for_nfw_profile];
+  //int index_l = (int) pvectsz[ptsz->index_multipole_for_nfw_profile];
   double w0;
-  w0 = (ptsz->ell[index_l]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+  w0 = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
 
 
-  wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,50);
+  wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,10);
 
 
   int limit = size_w; //number of sub interval
@@ -45510,7 +45510,7 @@ if (ptsz->has_tSZ_lens_1h != _TRUE_ && ptsz->has_tSZ_lens_2h != _TRUE_ && ptsz->
             "%s%s%s",
             "cat ",
             ptsz->path_to_class,
-            "/sz_auxiliary_files/class_sz_lnInfw-vs-lnell-over-ells.txt");
+            "/sz_auxiliary_files/class_sz_lnInfw-vs-lnell-over-ells_xout_5.txt");
   process = popen(Filepath, "r");
 
   /* Read output and store it */
@@ -46122,14 +46122,17 @@ double integrand_redshift(double ln1pz, void *p){
 
   V->pvectsz[V->ptsz->index_dgdz] = V->pvecback[V->pba->index_bg_D]*(1.-V->pvecback[V->pba->index_bg_f]); // d/dz(D/a)
 
-  V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = _c_/_Mpc_over_m_*_c_/_Mpc_over_m_*V->ptsz->chi_star*(1.+z)
-                                                  /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)*sqrt(V->pvectsz[V->ptsz->index_chi2])*(V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2])));
+  V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = _c_/_Mpc_over_m_*_c_/_Mpc_over_m_*V->ptsz->chi_star*pow((1.+z),1.) 
+                                                 /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)*sqrt(V->pvectsz[V->ptsz->index_chi2])*(V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2])));
+
+  // V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = 1.6625e18*V->ptsz->chi_star*pow((1.+z),1.) //there is an issue somewhere with (1+z)...
+  //                                                 /(sqrt(V->pvectsz[V->ptsz->index_chi2])*(V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2])));
 
   V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
                                   *pow(_Mpc_over_m_,1)
                                   *pow(_c_,2)
                                   *V->pvecback[V->pba->index_bg_rho_crit]
-                                  /pow(V->pba->h,2);
+                                  /pow(V->pba->h,2); // critical density in (Msun/h)/(Mpc/h)^3
   double Eh = V->pvecback[V->pba->index_bg_H]/V->ptsz->H0_in_class_units;
   double omega = V->pvecback[V->pba->index_bg_Omega_m];//pow(Eh,2.);
   V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
