@@ -190,7 +190,7 @@ def run(args):
     p_dict['mass function'] = 'T10'  #fiducial  T10
     p_dict['pressure profile'] = 'P13' #fiducial B12
     p_dict['galaxy_sample'] = "WIxSC"
-    p_dict['use_simplified_hod'] = "no"
+    p_dict['use_simplified_hod'] = "yes"
 
     # masses are in M_sun, not M_sun/h
     # 'b_hydro': 0.4656

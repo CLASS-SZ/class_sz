@@ -80,8 +80,10 @@ def run(args):
     #     parameter_file = 'class-sz_chill_B12_parameters.ini'
     # else:
     #     parameter_file = 'class-sz_parameters.ini'
-    #parameter_file = 'class-sz_parameters.ini'
-    parameter_file = 'class-sz_chill_B12_parameters_for_comparison.ini'
+    #parameter_file = 'class-sz_parameters_rotti++20.ini'
+
+    parameter_file = 'class-sz_parameters.ini'
+    #parameter_file = 'class-sz_chill_B12_parameters_for_comparison.ini'
     #'class-sz_chill_B12_parameters.ini'
     #parameter_file = 'class-sz_parameters_rotti++20.ini'
     #parameter_file ='tSZ_params_ref_resolved-rotti++20_snr12_step_2.ini'
@@ -106,6 +108,8 @@ def run(args):
         label_key = r'$M_\mathrm{max}$'
     elif (param_name == 'z2SZ'):
         label_key = r'$z_\mathrm{max}$'
+    elif (param_name == 'z1SZ'):
+        label_key = r'$z_\mathrm{min}$'
     elif (param_name == 'M1SZ'):
         label_key = r'$M_\mathrm{min}$'
     elif (param_name == 'm_ncdm'):
@@ -155,6 +159,12 @@ def run(args):
     isw_lens = []
     isw_tsz = []
     isw_auto = []
+    tSZ_gal_1h = []
+    tSZ_gal_2h = []
+    gal_gal_1h = []
+    gal_gal_2h = []
+    gal_lens_1h = []
+    gal_lens_2h = []
 
 
     redshift_dependent_functions_z = []
@@ -182,7 +192,9 @@ def run(args):
     # p_dict['output'] = 'tSZ_1h'
     p_dict['mass function'] = 'T10'  #fiducial  T10
     p_dict['pressure profile'] = 'B12' #fiducial B12
-
+    p_dict['galaxy_sample'] = "unwise"
+    p_dict['use_simplified_hod'] = "yes"
+    p_dict['non linear'] = 'halofit'
     # p_dict['create_ref_trispectrum_for_cobaya'] = 'NO'
     # p_dict['background_verbose'] = 2
     # p_dict['thermodynamics_verbose'] = 2
@@ -193,19 +205,19 @@ def run(args):
     p_dict['pressure_profile_epsrel'] = 1.e-3 # fiducial -3
     p_dict['nfw_profile_epsabs'] = 1.e-8  # fiducial -8
     p_dict['nfw_profile_epsrel'] = 1.e-3 # fiducial -3
-    p_dict['redshift_epsabs'] =   1e-40 #1.e-40
-    p_dict['redshift_epsrel'] =  1e-10 #1.e-10 # fiducial value 1e-8
-    p_dict['mass_epsabs'] = 1.e-40 # 1e-40
-    p_dict['mass_epsrel'] = 1e-10 #1e-10
+    #p_dict['redshift_epsabs'] =   1e-40 #1.e-40
+    p_dict['redshift_epsrel'] =  1e-4 #1.e-10 # fiducial value 1e-8
+    #p_dict['mass_epsabs'] = 1.e-40 # 1e-40
+    p_dict['mass_epsrel'] = 1e-4 #1e-10
 
-    p_dict['dlogell'] = 0.2
+    p_dict['dlogell'] = .5
     #p_dict['units for tSZ spectrum'] = 'muK2'
     #p_dict['redshift_epsabs'] = 1.e-17
     #p_dict['mass_epsabs'] = 1.e-15
     #p_dict['redshift_epsrel'] = 1.e-9
     #p_dict['mass_epsrel'] = 1.e-9
-    p_dict['ndimSZ'] = 100
-    p_dict['n_arraySZ'] = 100
+    p_dict['ndimSZ'] = 50#100
+    p_dict['n_arraySZ'] = 15#0
     p_dict['Frequency for y-distortion in GHz'] = 143.
     p_dict['component of tSZ power spectrum'] = 'total'
     p_dict['temperature contributions'] = 'lisw'
@@ -257,7 +269,7 @@ def run(args):
         # ax.set_ylim(0.,600.)
     else:
         ax.set_xscale('log')
-        ax.set_yscale('linear')
+        ax.set_yscale('log')
         ax.set_xlabel(r'$\ell$',size=title_size)
         if (args.plot_trispectrum == 'yes'):
             ax.set_ylabel(r'$T_{\ell,\ell}$',size=title_size)
@@ -278,7 +290,8 @@ def run(args):
         elif (args.plot_isw_auto == 'yes'):
             ax.set_ylabel(r'$\ell(\ell+1)\mathrm{C^{ISW\times ISW}_\ell/2\pi}$',size=title_size)
         else:
-            ax.set_ylabel(r'$10^{12}\ell(\ell+1)\mathrm{C^{yy}_\ell/2\pi}$',size=title_size)
+            #ax.set_ylabel(r'$10^{12}\ell(\ell+1)\mathrm{C^{yy}_\ell/2\pi}$',size=title_size)
+            ax.set_ylabel(r'$10^{12}\mathrm{C^{yy}_\ell}$',size=title_size)
 
 
     if(args.y_min):
@@ -290,7 +303,7 @@ def run(args):
     else:
         f_sky = 1.
 
-    colors = iter(cm.viridis(np.linspace(0, 1, N)))
+    colors = iter(cm.viridis(np.linspace(0., 0.7, N)))
 
 
 
@@ -304,8 +317,9 @@ def run(args):
             #update dictionnary with current value
             p_dict[param_name] = p_val
             if args.mode == 'run':
-                subprocess.call(['rm','-r','-f',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
-                subprocess.call(['mkdir','-p',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
+                if id_p == 0:
+                    subprocess.call(['rm','-r','-f',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
+                    subprocess.call(['mkdir','-p',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
                 with open(path_to_class+'sz_auxiliary_files/run_scripts/tmp/tmp.ini', 'w') as f:
                     for k, v in p_dict.items():
                         f.write(str(k) + ' = '+ str(v) + '\n')
@@ -372,6 +386,9 @@ def run(args):
                 isw_auto.append(R[:,13])
                 tSZ_gal_1h.append(R[:,20])
                 tSZ_tSZ_tSZ_1h.append(R[:,21])
+                tSZ_tSZ_tSZ_1h.append(R[:,21])
+                gal_gal_1h.append(R[:,22])
+                gal_gal_2h.append(R[:,23])
                 # L = [multipole,cl_1h]
                 # r_dict[p_val] = L
 
@@ -469,11 +486,12 @@ def run(args):
                         ax.plot(class_cls[:,0],class_cls[:,1],ls='-',c='r',label = 'Cl^isw-isw class %s'%(val_label[id_p]))
                 else:
                     if ('tSZ_1h' in p_dict['output']):
+                        fac = multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi
                         if (args.show_error_bars == 'yes'):
-                            ax.errorbar(multipoles[id_p],cl_1h[id_p],yerr=[verr,verr],color=col[id_p],ls='-.',alpha = 1.,label = val_label[id_p])
+                            ax.errorbar(multipoles[id_p],cl_1h[id_p]/fac,yerr=[verr,verr],color=col[id_p],ls='-.',alpha = 1.,label = val_label[id_p])
                         else:
-                            #ax.plot(multipoles[id_p],cl_1h[id_p],color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
-                            ax.plot(multipoles[id_p],cl_1h[id_p],color='r',ls='-',alpha = 1.,label = 'Cl^1h [A10,T10]')
+                            ax.plot(multipoles[id_p],cl_1h[id_p]/fac,color=col[id_p],ls='-',alpha = 1.,label = val_label[id_p])
+                            #ax.plot(multipoles[id_p],cl_1h[id_p]/fac,color='r',ls='-',alpha = 1.,label = 'Cl^1h [A10,T10]')
                     if ('tSZ_2h' in p_dict['output']):
                         #print(cl_2h[id_p])
                         #ax.plot(multipoles[id_p],cl_2h[id_p],color=col[id_p],ls='-',label = val_label[id_p])

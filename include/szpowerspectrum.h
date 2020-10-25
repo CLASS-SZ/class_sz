@@ -27,6 +27,8 @@
 #define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
 #define _gal_lens_2h_ ((ptsz->has_gal_lens_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_2h))
 #define _gal_lens_1h_ ((ptsz->has_gal_lens_1h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_1h))
+#define _lens_lens_1h_ ((ptsz->has_lens_lens_1h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_1h))
+#define _lens_lens_2h_ ((ptsz->has_lens_lens_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_2h))
 #define _tSZ_gal_1h_ ((ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_1h))
 #define _tSZ_gal_2h_ ((ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_2h))
 #define _tSZ_lens_1h_ ((ptsz->has_tSZ_lens_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lens_1h))
@@ -68,6 +70,8 @@ struct tszspectrum {
   double * cl_gal_gal_2h;
   double * cl_gal_lens_2h;
   double * cl_gal_lens_1h;
+  double * cl_lens_lens_1h;
+  double * cl_lens_lens_2h;
   double * cl_tSZ_gal_1h;
   double * cl_tSZ_gal_2h;
   double * cl_tSZ_lens_1h;
@@ -204,6 +208,18 @@ struct tszspectrum {
   int index_md_gal_lens_1h;
   int index_integrand_id_gal_lens_1h_first;
   int index_integrand_id_gal_lens_1h_last;
+
+
+
+  int has_lens_lens_1h;
+  int index_md_lens_lens_1h;
+  int index_integrand_id_lens_lens_1h_first;
+  int index_integrand_id_lens_lens_1h_last;
+
+  int has_lens_lens_2h;
+  int index_md_lens_lens_2h;
+  int index_integrand_id_lens_lens_2h_first;
+  int index_integrand_id_lens_lens_2h_last;
 
 
 
@@ -840,6 +856,13 @@ int szpowerspectrum_init(struct background * pba,
                                                       struct nonlinear * pnl,
                                                       struct tszspectrum * ptsz);
 
+
+double evaluate_pk_halofit_over_pk_linear_at_ell_plus_one_half_over_chi(double * pvecback,
+                                                                     double * pvectsz,
+                                                                     struct background * pba,
+                                                                     struct primordial * ppm,
+                                                                     struct nonlinear * pnl,
+                                                                     struct tszspectrum * ptsz);
 
   int initialise_and_allocate_memory(struct tszspectrum * ptsz);
 

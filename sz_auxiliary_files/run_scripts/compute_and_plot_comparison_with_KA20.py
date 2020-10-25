@@ -112,7 +112,7 @@ def run(args):
     #     parameter_file = 'class-sz_parameters.ini'
 
     # important parameters are re-ajusted later, here we just load a template file:
-    parameter_file = 'class-sz_parameters_KFSW20.ini'
+    parameter_file = 'class-sz_parameters_KA20.ini'
     #'class-sz_chill_B12_parameters.ini'
     #parameter_file = 'class-sz_parameters_rotti++20.ini'
     #parameter_file ='tSZ_params_ref_resolved-rotti++20_snr12_step_2.ini'
@@ -217,37 +217,37 @@ def run(args):
     #p_dict['h'] = 0.65
     #set correct Output
     # p_dict['output'] = 'tSZ_1h'
-    p_dict['mass function'] = 'T10'  #fiducial  T10
+    p_dict['mass function'] = 'M500'  #fiducial  T10
     p_dict['pressure profile'] = 'A10' #fiducial B12
-    p_dict['galaxy_sample'] = "unwise"
+    p_dict['galaxy_sample'] ="WIxSC"
     couleur = 'blue'
     p_dict['unwise_galaxy_sample_id'] = couleur
-    p_dict['use_simplified_hod'] = "no" # if no this uses halofit P(k) and skip the mass integral for 2-halo term
+    p_dict['use_simplified_hod'] = "yes" # if no this uses halofit P(k) and skip the mass integral for 2-halo term
     # if 'yes' this uses the mass cut and the halo model computation with nc=1, ns=0
 
     # P8 parameters
     # masses are in M_sun, not M_sun/h
     # 'b_hydro': 0.4656
-    p_dict['B'] = 1.40
+    p_dict['B'] = 1./(1.-0.4656)
     # 'Omega_c': 0.26066676
-    #p_dict['Omega_cdm'] = 0.26066676
+    p_dict['Omega_cdm'] = 0.26066676
 
     # 'Omega_b': 0.048974682
-    #p_dict['Omega_b'] = 0.048974682
+    p_dict['Omega_b'] = 0.048974682
     # 'h': 0.6766
-    #p_dict['h'] = 0.6732
+    p_dict['h'] = 0.6766
     #print('omega_b=%.3e'%(p_dict['Omega_b']*p_dict['h']**2.))
     #print('omega_c=%.3e'%(p_dict['Omega_cdm']*p_dict['h']**2.))
     # 'sigma8': 0.8102
-    #p_dict['sigma8'] = 0.8102
+    p_dict['sigma8'] = 0.8102
     #p_dict['sigma8'] = 2.105
     # 'n_s': 0.9665
-    #p_dict['n_s'] = 0.9665 #P18: 0.9665
+    p_dict['n_s'] = 0.9665 #P18: 0.9665
     # 'lMmin': 11.99
-    p_dict['M_min_HOD'] = pow(10.,12)
+    p_dict['M_min_HOD'] = pow(10.,11.99)*p_dict['h']
     # 'lM0': 11.99
     # 'lM1': 13.23
-    p_dict['M1_prime_HOD'] =pow(10.,14)
+    p_dict['M1_prime_HOD'] =pow(10.,13.23)*p_dict['h']
     # 'sigmaLogM': 0.15
     p_dict['sigma_lnM_HOD'] = 0.15
     # 'r_corr_gy': -0.5492
@@ -338,8 +338,8 @@ def run(args):
         #ax.set_xlim(0.,6.)
         # ax.set_ylim(0.,600.)
     else:
-        ax.set_xscale('linear')
-        ax.set_yscale('linear')
+        ax.set_xscale('log')
+        ax.set_yscale('log')
         ax.set_xlabel(r'$\ell$',size=title_size)
         if (args.plot_trispectrum == 'yes'):
             ax.set_ylabel(r'$T_{\ell,\ell}$',size=title_size)
@@ -550,7 +550,8 @@ def run(args):
                     print(gal_gal_1h[id_p]/(fac*1e5))
                     print(gal_gal_2h[id_p])
                     #ax.plot(multipoles[id_p],(gal_gal_1h[id_p])/fac,color=col[id_p],ls='-',alpha = 1.,label = 'class_sz gg-1h')
-                    #ax.plot(ell_KA20,cl_gg_1h_KA20,label='KA20-1h')
+                    ax.plot(ell_KA20,cl_gg_1h_KA20*1e5,label='KA20-1h')
+                    ax.plot(ell_KA20,cl_gg_2h_KA20*1e5,ls='--',label='KA20-2h')
                     #ax.plot(multipoles[id_p],(gal_gal_2h[id_p])/fac,color=col[id_p],ls='--',alpha = 1.,label = 'class_sz gg-2h')
                     # for shot_noise see Table 1 of KFSW20
                     if (val_label[id_p] == 'gr_shallow'):
@@ -584,11 +585,11 @@ def run(args):
                             # label = 'simplified hod: ' + val_label[id_p] + ' (1+2-halo)')
                         else:
                             ax.plot(multipoles[id_p],(gal_gal_2h[id_p])/fac,color=couleur,ls='-',alpha = 1.,
-                            marker =  '*',markersize = 7,
+                            marker =  '*',markersize = 1,
                             label = 'simplified hod: ' + val_label[id_p] + ' (2-halo)')
-                            # ax.plot(multipoles[id_p],(gal_gal_1h[id_p])/fac,color=couleur,ls='--',alpha = 1.,
-                            # marker =  '*',markersize = 7,
-                            # label = 'simplified hod: ' + val_label[id_p] + ' (1-halo)')
+                            ax.plot(multipoles[id_p],(gal_gal_1h[id_p])/fac,color=couleur,ls='--',alpha = 1.,
+                             marker =  '*',markersize = 1,
+                             label = 'simplified hod: ' + val_label[id_p] + ' (1-halo)')
 
                 elif (args.plot_gal_lens == 'yes'):
                     print('plotting gxkappa')
@@ -866,7 +867,7 @@ def run(args):
         if (args.print_rel_diff == 'yes'):
             ax2.legend(loc=1,ncol = 1)
         else:
-            ax1.legend(loc=1,ncol = 1)
+            ax1.legend(loc=3,ncol = 1)
 
 
     fig.tight_layout()
