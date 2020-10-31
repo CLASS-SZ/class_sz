@@ -35,10 +35,14 @@ with open(os.path.join(include_folder, 'common.h'), 'r') as v_file:
 
 # Define cython extension and fix Python version
 classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")],
-                           include_dirs=[nm.get_include(), include_folder,'/Users/boris/gsl-2.6/include'],
+                           #include_dirs=[nm.get_include(), include_folder,'/Users/boris/gsl-2.6/include'],
+                           include_dirs=[nm.get_include(), include_folder],
                            libraries=liblist,
                            library_dirs=[root_folder, GCCPATH],
-                           extra_link_args=['-lgomp','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/','-L/Users/boris/gsl-2.6/lib/','-lgsl','-lgslcblas'])
+                           #extra_link_args=['-lgomp','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/','-L/Users/boris/gsl-2.6/lib/','-lgsl','-lgslcblas'])
+                           #extra_link_args=['-lgomp','-L/Users/boris/gsl-2.6/lib/','-lgsl','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/'])
+                           extra_link_args=['-lgomp','-lgsl','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/'])
+
 import six
 classy_ext.cython_directives = {'language_level': "3" if six.PY3 else "2"}
 

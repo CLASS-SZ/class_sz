@@ -46822,24 +46822,26 @@ else {
 //GSL romberg
 else if (ptsz->integration_method_mass==3){
 
-gsl_function F;
-F.function = &integrand_patterson_test;
-F.params = params;
-
-int n_subintervals_gsl = 30;
-
-// double epsrel=ptsz->mass_epsrel;
-// double epsabs=ptsz->mass_epsabs;
-
-
-gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
-
-double result_gsl;
-size_t neval;
-gsl_integration_romberg(&F,log(m_min),log(m_max),epsabs,epsrel,&result_gsl,&neval,w);
-gsl_integration_romberg_free(w);
-
-r = result_gsl;
+printf("romberg method has been deactivated.\n");
+exit(0);
+// gsl_function F;
+// F.function = &integrand_patterson_test;
+// F.params = params;
+//
+// int n_subintervals_gsl = 30;
+//
+// // double epsrel=ptsz->mass_epsrel;
+// // double epsabs=ptsz->mass_epsabs;
+//
+//
+// gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
+//
+// double result_gsl;
+// size_t neval;
+// gsl_integration_romberg(&F,log(m_min),log(m_max),epsabs,epsrel,&result_gsl,&neval,w);
+// gsl_integration_romberg_free(w);
+//
+// r = result_gsl;
 }
 
 //GSL QNG (Gauss-Kronrod)

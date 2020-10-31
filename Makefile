@@ -66,7 +66,8 @@ HYREC = hyrec
 CCFLAG += -D__CLASSDIR__='"$(MDIR)"'
 
 # where to find include files *.h
-INCLUDES =  -I/Users/boris/gsl-2.6/include/ -I../include -I/usr/local/include/
+#INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/gsl-2.6/include/
+INCLUDES =  -I../include -I/usr/local/include/# -I/Users/boris/gsl-2.6/include/
 
 # automatically add external programs if needed. First, initialize to blank.
 EXTERNAL =
