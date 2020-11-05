@@ -46226,8 +46226,9 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
 
   // Halofit approach
   else if (
-    ((V->ptsz->galaxy_sample==1 && V->ptsz->use_simplified_hod == 0) && (V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
-  ||((V->ptsz->galaxy_sample==1 && V->ptsz->use_simplified_hod == 0) && (V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
+    // galaxy_sample = 1 : unwise
+    ((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
+  ||((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
 ){
 
   if (index_md == V->ptsz->index_md_gal_lens_2h){
@@ -46251,8 +46252,9 @@ else {
 }
 // halofit approach
 else if (
-  ((V->ptsz->galaxy_sample==1 && V->ptsz->use_simplified_hod == 0) && (V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
-||((V->ptsz->galaxy_sample==1 && V->ptsz->use_simplified_hod == 0) && (V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h))
+  // galaxy_sample = 1 : unwise
+  ((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
+||((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h))
 ){
   if (index_md == V->ptsz->index_md_gal_gal_1h) {
     result = 0.;
@@ -46266,8 +46268,8 @@ result = V->pvectsz[V->ptsz->index_halo_bias]*V->pvectsz[V->ptsz->index_halo_bia
 }
 // halofit approach
 else if (
-  ((V->ptsz->use_simplified_hod == 0) && (V->ptsz->has_lens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_2h))
-  || ((V->ptsz->use_simplified_hod == 0) && (V->ptsz->has_lens_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_1h))
+  ((V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_2h))
+  || ((V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_1h))
 ){
 
 
@@ -46291,12 +46293,17 @@ result = W_lens*W_lens;
 
   // then quantities that require mass integration
   else {
+  // if ((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h)){
+  //   result = 0.;
+  // }
+  // else{
   result = integrate_over_m_at_z(V->pvecback,
                                   V->pvectsz,
                                   V->pba,
                                   V->pnl,
                                   V->ppm,
                                   V->ptsz);
+                                // }
                                 }
 
 
@@ -46319,17 +46326,19 @@ if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo)
   // For all the above cases we multiply the linear matter power spectrum to the redshift integrand
   // evaluated at (ell+1/2)/Chi and redshift z
   result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-}
-
-// Halofit correction facto as in KAP20:
-if (((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h) && (V->ptsz->galaxy_sample==0)) // WIxSC
-    || ((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h) && (V->ptsz->galaxy_sample==0)) // WIxSC
-    )
-{
-
-result *= evaluate_pk_halofit_over_pk_linear_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
 
 }
+
+// // Halofit correction facto as in KAP20:
+// // [commented out for now
+// if (((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h) && (V->ptsz->galaxy_sample==0)) // WIxSC
+//     || ((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h) && (V->ptsz->galaxy_sample==0)) // WIxSC
+//     )
+// {
+//
+// result *= evaluate_pk_halofit_over_pk_linear_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+//
+// }
 
 // Power spectrum today : needed for ISW  stuff
 if ( ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_auto))
@@ -46347,7 +46356,7 @@ if ( ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_au
 }
 
 // galaxy radial kernel
-if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
+    if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
       || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
       || ((V->ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1halo))
       || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
@@ -46355,27 +46364,22 @@ if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
     ){
 // multiply by radial kernel for galaxies
 double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
-// if WIxSC (KA20):
-if (V->ptsz->galaxy_sample == 0)
-  result *= Wg*(1.+V->ptsz->rho_y_gal)/V->pvectsz[V->ptsz->index_chi2];
-// if unWISE:
-else if (V->ptsz->galaxy_sample == 1)
+// // if WIxSC (KA20):
+// if (V->ptsz->galaxy_sample == 0)
+//   result *= Wg*(1.+V->ptsz->rho_y_gal)/V->pvectsz[V->ptsz->index_chi2];
+// // if unWISE:
+// else if (V->ptsz->galaxy_sample == 1)
   result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 
 }
 
 if  (((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h))
-    || ((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
+   ||((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
     ){
-// multiply by radial kernel for galaxies (squared for gxg quantities)
-double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
-// if WIxSC (KA20)
-//if (V->ptsz->galaxy_sample == 0)
-  result *= pow(Wg/V->pvectsz[V->ptsz->index_chi2],2.);
-// if unWISE:
-//else if (V->ptsz->galaxy_sample == 1)
-  //result *= pow(Wg/V->pvectsz[V->ptsz->index_chi2],2.);
+  // multiply by radial kernel for galaxies (squared for gxg quantities)
+  double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
 
+  result *= pow(Wg/V->pvectsz[V->ptsz->index_chi2],2.);
 }
 
 
@@ -46395,7 +46399,34 @@ double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
   // dChi = (c/H) dz
   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
   result = (1.+V->pvectsz[V->ptsz->index_z])*result/H_over_c_in_h_over_Mpc;
-  //result = (1.+V->pvectsz[V->ptsz->index_z])*result;
+
+
+
+  // test agains KA20
+  //
+  // result = (1.+V->pvectsz[V->ptsz->index_z])/H_over_c_in_h_over_Mpc/V->pba->h/(V->pvectsz[V->ptsz->index_chi2]/V->pba->h/V->pba->h);
+  // double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+  //
+  // result *= pow(Wg*V->pba->h,2.);
+  //
+  //
+  // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+  //
+  // // For all the above cases we multiply the linear matter power spectrum to the redshift integrand
+  // // evaluated at (ell+1/2)/Chi and redshift z
+  // result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias]/pow(V->pba->h,3.);
+  //  evaluate_mean_galaxy_number_density_at_z(V->pvectsz,V->ptsz);
+  // result *= 1./(V->pvectsz[V->ptsz->index_mean_galaxy_number_density]*V->pvectsz[V->ptsz->index_mean_galaxy_number_density]);
+  // //result *= pow(V->pba->h,-6.);
+  //
+  //
+  // result *= integrate_over_m_at_z(V->pvecback,
+  //                                 V->pvectsz,
+  //                                 V->pba,
+  //                                 V->pnl,
+  //                                 V->ppm,
+  //                                 V->ptsz);
+
   return result;
 
 }
@@ -46412,6 +46443,8 @@ int integrate_over_redshift(struct background * pba,
 
   double z_min = ptsz->z1SZ;
   double z_max = ptsz->z2SZ;
+
+  //printf("integrating between z_min=%.3e and z_max=%.3e\n",z_min,z_max);
 
   struct Parameters_for_integrand_redshift V;
   V.pnl = pnl;
@@ -46689,11 +46722,11 @@ double integrand_patterson_test(double logM, void *p){
          || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_gal_1halo)){
 
   // if using unwise we set a specific lower bound
-  if (ptsz->galaxy_sample==1 && (ptsz->use_simplified_hod ==1)){
-  m_min = evaluate_unwise_m_min_cut(pvectsz[ptsz->index_z],ptsz->unwise_galaxy_sample_id);
-  if (m_min>=m_max)
-  m_min=m_max;
-   }
+  // if (ptsz->galaxy_sample==1 && (ptsz->use_hod ==1)){
+  // m_min = evaluate_unwise_m_min_cut(pvectsz[ptsz->index_z],ptsz->unwise_galaxy_sample_id);
+  // if (m_min>=m_max)
+  //m_min=m_max;
+   //}
 
 if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tSZ_gal_2h){
   double r_m_1; // first part of redshift integrand
@@ -47264,17 +47297,25 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
   struct Parameters_for_integrand_mean_galaxy_number *V = ((struct Parameters_for_integrand_mean_galaxy_number *) p);
 
     //double x=exp(ln_x);
+    double z = V->z;
 
     double M_halo = exp(lnM_halo);
-    double nc = HOD_mean_number_of_central_galaxies(M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD);
-    double ns = HOD_mean_number_of_satellite_galaxies(M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD);
+    double nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->ptsz);
+    double ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD,V->ptsz);
 
-    if (V->ptsz->galaxy_sample ==1){ //unwise case, at the moment just nc=1, ns=0
-    nc = 1.;
-    ns = 0.;
-    }
+    // M_halo = 1e16;
+    // z = .5;
+    // nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->ptsz);
+    // ns =  HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD,V->ptsz);
+    // printf("z=%.3e Mhalo=%.3e  nc=%.3e ns=%.3e\n",z,M_halo,nc,ns);
+    // exit(0);
+    //exit(0);
+    // if (V->ptsz->galaxy_sample ==1){ //unwise case, at the moment just nc=1, ns=0
+    // nc = 1.;
+    // ns = 0.;
+    // }
 
-      double z = V->z;
+
       double tau;
       int first_index_back = 0;
 
@@ -47317,6 +47358,7 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
 
 
       double result = hmf*(ns+nc);
+      //double result = (ns+nc)/log(10.);
 
   return result;
 
@@ -47355,11 +47397,11 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
           double z = exp(ptsz->array_redshift[index_z])-1.;
 
           // if using unwise we set a specific lower bound
-          if (ptsz->galaxy_sample==1 &&  (ptsz->use_simplified_hod ==1)){
-          m_min = evaluate_unwise_m_min_cut(pvectsz[ptsz->index_z],ptsz->unwise_galaxy_sample_id);
-          if (m_min>=m_max)
-          m_min=m_max;
-           }
+          // if (ptsz->galaxy_sample==1 &&  (ptsz->use_hod ==1)){
+          // m_min = evaluate_unwise_m_min_cut(pvectsz[ptsz->index_z],ptsz->unwise_galaxy_sample_id);
+          // if (m_min>=m_max)
+          // m_min=m_max;
+          //  }
           // at each z, perform the mass integral
           struct Parameters_for_integrand_mean_galaxy_number V;
           V.pnl = pnl;

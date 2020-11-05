@@ -1,43 +1,4 @@
-#! python3
-#e.g., python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name sigma8 -min 0.7 -max 0.9 -N 5 -spacing log -show_legend yes -show_error_bars yes -output ' ' -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions yes
-# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name sigma8 -min 0.8 -max 0.9 -N 1 -spacing log -show_legend yes -show_error_bars no -output 'tSZ_lens_1h' -plot_tSZ_lens yes -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions no
-# $ $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'Frequency for y-distortion in GHz' -p_val '[100.,143.,353.]'  -show_legend yes -show_error_bars no -output 'tSZ_lens_1h' -plot_tSZ_lens yes -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions no
-# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'h' -p_val '[0.7]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_1h' -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -y_min 1e-15 -y_max 1e-10
-# isw-phi :
-# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'h' -p_val '[0.5,0.6,0.7,0.8]'  -show_legend yes -show_error_bars no -output 'isw_lens,tCl,lCl' -plot_tSZ_lens no -plot_isw_lens yes  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -y_min 1e-18 -y_max 1e-9
-# yxg : careful with zmax, still some bug to figure out after z2SZ>4 blue returns inf
-# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","gr_shallow","blue"]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_1h' -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no
-
-
-# Comparison script for Fig 9 of https://arxiv.org/pdf/1909.07412.pdf "KFW20"
-# CMD for comparison:
-# gxy 1-halo
-# $ python3 sz_auxiliary_files/run_scripts/compute_and_plot_yxg_comparison_with_KA20.py -param_name 'h' -p_val '[0.6766]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_1h' -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no
-# gxg 1-halo, 2-halo
-# $ python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","gr_shallow","blue"]'  -show_legend yes -show_error_bars no -output 'gal_gal_1h' -plot_gal_gal yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no
-
-
-#$ python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","gr_shallow","blue"]'  -show_legend yes -show_error_bars no -output 'gal_gal_2h' -plot_gal_gal yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -y_min 0. -y_max 0.15 -x_min 100 -x_max 1000
-
-
-# CMBD gxg
-#$  python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","gr_shallow","blue"]'  -show_legend yes -show_error_bars no -output 'gal_gal_2h' -plot_gal_gal yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -y_min 0. -y_max 0.15 -x_min 100 -x_max 1000
-# CMBD gxkappa
-# $  python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","blue"]'  -show_legend yes -show_error_bars no -output 'gal_lens_2h' -plot_gal_lens yes -plot_gal_gal no -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no  -x_min 100 -x_max 1000
-
-# simplified vs non-simplified hod
-# python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'use_simplified_hod' -p_val '["yes","no"]'  -show_legend yes -show_error_bars no -output 'gal_lens_1h,gal_lens_2h' -plot_gal_lens yes -plot_gal_gal no -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no  -x_min 100 -x_max 1000
-
-# yxg
-# $ python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'use_simplified_hod' -p_val '["yes"]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_2h' -plot_gal_lens no -plot_gal_gal no -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no  -x_min 0 -x_max 3000
-
-
-#$ python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'use_simplified_hod' -p_val '["yes","no"]'  -show_legend yes -show_error_bars no -output 'gal_lens_1h,gal_lens_2h' -plot_gal_lens yes -plot_gal_gal no -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no  -x_min 100 -x_max 1000 -mode plot -y_min 0 -y_max 6
-# red gxkappa
-#$ python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'unwise_galaxy_sample_id' -p_val '["red"]'  -show_legend yes -show_error_bars no -output 'gal_lens_2h' -plot_gal_lens yes -plot_gal_gal no -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no  -x_min 100 -x_max 1000 -mode plot
-
-# lens-lens
-
+# $ python3 compute_and_plot_comparison_with_KA20_yg.py -param_name 'h' -p_val '[0.6766]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_2h,tSZ_gal_1h' -plot_gal_gal no -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -mode run
 import argparse
 import numpy as np
 import os

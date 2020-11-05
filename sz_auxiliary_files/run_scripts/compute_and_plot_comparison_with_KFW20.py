@@ -220,8 +220,9 @@ def run(args):
     p_dict['mass function'] = 'T10'  #fiducial  T10
     p_dict['pressure profile'] = 'A10' #fiducial B12
     p_dict['galaxy_sample'] = "unwise"
-    couleur = 'blue'
+    couleur = 'green'
     p_dict['unwise_galaxy_sample_id'] = couleur
+    p_dict['concentration parameter'] = 'DM14'
     p_dict['use_simplified_hod'] = "no" # if no this uses halofit P(k) and skip the mass integral for 2-halo term
     # if 'yes' this uses the mass cut and the halo model computation with nc=1, ns=0
 
@@ -271,8 +272,9 @@ def run(args):
     p_dict['redshift_epsrel'] = 1.e-12 # fiducial value 1e-8
     p_dict['mass_epsabs'] = 1.e-40
     p_dict['mass_epsrel'] = 1e-10
+    p_dict['halo occupation distribution'] = 'KFSW20'
 
-    p_dict['dlogell'] = 0.1
+    p_dict['dlogell'] = 0.2
     p_dict['ell_max_mock'] = 5000.
     p_dict['ell_min_mock'] = 2.
     #p_dict['units for tSZ spectrum'] = 'muK2'
@@ -576,16 +578,22 @@ def run(args):
                             ax.plot(multipoles[id_p],(gal_gal_2h[id_p])/fac,color=couleur,ls='-',alpha = 1.,
                             marker =  'o',markersize = 5,markerfacecolor='None',
                             label = 'simplified hod: ' + val_label[id_p] + ' (2-halo)')
-                            ax.plot(multipoles[id_p],(gal_gal_1h[id_p])/fac,color=couleur,ls='--',alpha = 1.,
-                             marker =  'o',markersize = 5,markerfacecolor='None',
-                             label = 'simplified hod: ' + val_label[id_p] + ' (1-halo)')
+                            # ax.plot(multipoles[id_p],(gal_gal_1h[id_p])/fac,color=couleur,ls='--',alpha = 1.,
+                            #  marker =  'o',markersize = 5,markerfacecolor='None',
+                            #  label = 'simplified hod: ' + val_label[id_p] + ' (1-halo)')
                             #ax.plot(multipoles[id_p],(gal_gal_1h[id_p])/fac+(gal_gal_2h[id_p])/fac,color=couleur,ls=':',alpha = 1.,
                             # marker =  'o',markersize = 5,markerfacecolor='None',
                             # label = 'simplified hod: ' + val_label[id_p] + ' (1+2-halo)')
                         else:
                             ax.plot(multipoles[id_p],(gal_gal_2h[id_p])/fac,color=couleur,ls='-',alpha = 1.,
                             marker =  '*',markersize = 7,
-                            label = 'simplified hod: ' + val_label[id_p] + ' (2-halo)')
+                            label = 'halofit -- like in KFSW20')
+                            #shot_noise = (144/3.046174198e-4)**-1*1e5 # red
+                            #shot_noise = (3409/3.046174198e-4)**-1*1e5 # blue
+                            shot_noise = (1846/3.046174198e-4)**-1*1e5
+                            ax.plot(multipoles[id_p],(multipoles[id_p])/(multipoles[id_p])*shot_noise,color='grey',ls='-',alpha = 1.,
+                            marker =  'v',markersize = 2,
+                            label = 'shot noise')
                             # ax.plot(multipoles[id_p],(gal_gal_1h[id_p])/fac,color=couleur,ls='--',alpha = 1.,
                             # marker =  '*',markersize = 7,
                             # label = 'simplified hod: ' + val_label[id_p] + ' (1-halo)')
@@ -604,15 +612,15 @@ def run(args):
                     if (val_label[id_p] == 'gr_shallow'):
                         ax.plot(multipoles[id_p],(gal_lens_2h[id_p])/fac,color='forestgreen',ls='--',alpha = 1.,label = val_label[id_p])
                     elif (val_label[id_p] == 'green'):
-                        OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/NEWgreen_c_ell_kappa_g.txt')
+                        OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/FINALgreen_c_ell_kappa_g.txt')
                         ax.plot(OK[1,:],1e5*OK[0,:]*OK[1,:],label='Ola',c='k',ls='-')
                         ax.plot(multipoles[id_p],(gal_lens_2h[id_p])/fac,color='green',ls='--',alpha = 1.,label = val_label[id_p])
                     elif (val_label[id_p] == 'blue'):
-                        OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/NEWblue_c_ell_kappa_g.txt')
+                        OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/FINALblue_c_ell_kappa_g.txt')
                         ax.plot(OK[1,:],1e5*OK[0,:]*OK[1,:],label='Ola',c='k',ls='-')
                         ax.plot(multipoles[id_p],(gal_lens_2h[id_p])/fac,color='blue',ls='--',alpha = 1.,label = val_label[id_p])
                     elif (val_label[id_p] == 'red'):
-                        OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/NEWred_c_ell_kappa_g.txt')
+                        OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/FINALred_c_ell_kappa_g.txt')
                         ax.plot(OK[1,:],1e5*OK[0,:]*OK[1,:],label='Ola',c='k',ls='-')
                         ax.plot(multipoles[id_p],(gal_lens_2h[id_p])/fac,color='red',ls='--',alpha = 1.,label = val_label[id_p])
                     else:
@@ -632,13 +640,13 @@ def run(args):
                         else:
                             ax.plot(multipoles[id_p],(gal_lens_2h[id_p])/fac,color=couleur,ls='--',alpha = 1.,
                             marker =  '*',markersize = 7,
-                            label = 'halofit -- like in KFW20')
+                            label = 'halofit -- like in KFSW20')
                             if couleur == 'blue':
-                                OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/NEWblue_c_ell_kappa_g.txt')
+                                OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/FINALblue_c_ell_kappa_g.txt')
                             elif couleur == 'green':
-                                OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/NEWgreen_c_ell_kappa_g.txt')
+                                OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/FINALgreen_c_ell_kappa_g.txt')
                             elif couleur == 'red':
-                                OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/NEWred_c_ell_kappa_g.txt')
+                                OK = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/FINALred_c_ell_kappa_g.txt')
                             ax.plot(OK[1,:],1e5*OK[0,:]*OK[1,:],label='Ola',c='k',ls='-')
 
                     #ax.plot(ell_KA20,cl_gg_2h_KA20,label='KA20-2h')

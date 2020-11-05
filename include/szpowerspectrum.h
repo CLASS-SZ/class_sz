@@ -51,7 +51,7 @@
 struct tszspectrum {
 
 
-  int use_simplified_hod; // Eq. 15 or 16 of KA20
+  int use_hod; // Eq. 15 or 16 of KA20
   int unwise_galaxy_sample_id;
   int galaxy_sample;
   //double unwise_m_min_cut;
@@ -658,6 +658,10 @@ struct tszspectrum {
   // Planck 2015 effective multipoles -> P15
   // SZFASTDKS -> DKS
 
+  // halo occupation distribution
+  int hod_model;
+
+
   int concentration_parameter;
   //Duffy 2008: D08
   //Seljak 2000: S00
@@ -908,21 +912,25 @@ int evaluate_tau_profile(double * pvecback,
 int evaluate_mean_galaxy_number_density_at_z(double * pvectsz,
                                              struct tszspectrum * ptsz);
 
-double HOD_mean_number_of_central_galaxies(double M_halo,
+double HOD_mean_number_of_central_galaxies(double z,
+                                           double M_halo,
                                            double M_min,
-                                           double sigma_lnM);
+                                           double sigma_lnM,
+                                           struct tszspectrum * ptsz);
 
-double HOD_mean_number_of_satellite_galaxies(double M_halo,
+double HOD_mean_number_of_satellite_galaxies(double z,
+                                             double M_halo,
                                              double Nc_mean,
                                              double M_min,
                                              double alpha_s,
-                                             double M1_prime);
+                                             double M1_prime,
+                                             struct tszspectrum * ptsz);
 int evaluate_galaxy_profile(double * pvecback,
                             double * pvectsz,
                             struct background * pba,
                             struct tszspectrum * ptsz);
 
-int evaluate_truncated_nfw_profile(double * pvecback,
+double evaluate_truncated_nfw_profile(double * pvecback,
                                    double * pvectsz,
                                    struct background * pba,
                                    struct tszspectrum * ptsz);

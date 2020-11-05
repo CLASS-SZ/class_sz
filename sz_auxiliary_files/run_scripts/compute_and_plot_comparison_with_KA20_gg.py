@@ -1,42 +1,4 @@
-#! python3
-#e.g., python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name sigma8 -min 0.7 -max 0.9 -N 5 -spacing log -show_legend yes -show_error_bars yes -output ' ' -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions yes
-# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name sigma8 -min 0.8 -max 0.9 -N 1 -spacing log -show_legend yes -show_error_bars no -output 'tSZ_lens_1h' -plot_tSZ_lens yes -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions no
-# $ $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'Frequency for y-distortion in GHz' -p_val '[100.,143.,353.]'  -show_legend yes -show_error_bars no -output 'tSZ_lens_1h' -plot_tSZ_lens yes -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure no -plot_redshift_dependent_functions no
-# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'h' -p_val '[0.7]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_1h' -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -y_min 1e-15 -y_max 1e-10
-# isw-phi :
-# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'h' -p_val '[0.5,0.6,0.7,0.8]'  -show_legend yes -show_error_bars no -output 'isw_lens,tCl,lCl' -plot_tSZ_lens no -plot_isw_lens yes  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -y_min 1e-18 -y_max 1e-9
-# yxg : careful with zmax, still some bug to figure out after z2SZ>4 blue returns inf
-# $ python3 sz_auxiliary_files/run_scripts/tSZ_varying_params.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","gr_shallow","blue"]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_1h' -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no
-
-
-# Comparison script for Fig 9 of https://arxiv.org/pdf/1909.07412.pdf "KFW20"
-# CMD for comparison:
-# gxy 1-halo
-# $ python3 sz_auxiliary_files/run_scripts/compute_and_plot_yxg_comparison_with_KA20.py -param_name 'h' -p_val '[0.6766]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_1h' -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no
-# gxg 1-halo, 2-halo
-# $ python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","gr_shallow","blue"]'  -show_legend yes -show_error_bars no -output 'gal_gal_1h' -plot_gal_gal yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no
-
-
-#$ python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","gr_shallow","blue"]'  -show_legend yes -show_error_bars no -output 'gal_gal_2h' -plot_gal_gal yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -y_min 0. -y_max 0.15 -x_min 100 -x_max 1000
-
-
-# CMBD gxg
-#$  python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","gr_shallow","blue"]'  -show_legend yes -show_error_bars no -output 'gal_gal_2h' -plot_gal_gal yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -y_min 0. -y_max 0.15 -x_min 100 -x_max 1000
-# CMBD gxkappa
-# $  python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'unwise_galaxy_sample_id' -p_val '["red","green","blue"]'  -show_legend yes -show_error_bars no -output 'gal_lens_2h' -plot_gal_lens yes -plot_gal_gal no -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no  -x_min 100 -x_max 1000
-
-# simplified vs non-simplified hod
-# python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'use_simplified_hod' -p_val '["yes","no"]'  -show_legend yes -show_error_bars no -output 'gal_lens_1h,gal_lens_2h' -plot_gal_lens yes -plot_gal_gal no -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no  -x_min 100 -x_max 1000
-
-# yxg
-# $ python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'use_simplified_hod' -p_val '["yes"]'  -show_legend yes -show_error_bars no -output 'tSZ_gal_2h' -plot_gal_lens no -plot_gal_gal no -plot_tSZ_gal yes -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no  -x_min 0 -x_max 3000
-
-
-#$ python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'use_simplified_hod' -p_val '["yes","no"]'  -show_legend yes -show_error_bars no -output 'gal_lens_1h,gal_lens_2h' -plot_gal_lens yes -plot_gal_gal no -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no  -x_min 100 -x_max 1000 -mode plot -y_min 0 -y_max 6
-# red gxkappa
-#$ python3 sz_auxiliary_files/run_scripts/compute_and_plot_comparison_with_KFW20.py -param_name 'unwise_galaxy_sample_id' -p_val '["red"]'  -show_legend yes -show_error_bars no -output 'gal_lens_2h' -plot_gal_lens yes -plot_gal_gal no -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no  -x_min 100 -x_max 1000 -mode plot
-
-# lens-lens
+# $ python3 compute_and_plot_comparison_with_KA20_gg.py -param_name 'h' -p_val '[0.6766]'  -show_legend yes -show_error_bars no -output 'gal_gal_2h,gal_gal_1h' -plot_gal_gal yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -mode run
 
 import argparse
 import numpy as np
@@ -223,7 +185,7 @@ def run(args):
     #set correct Output
     # p_dict['output'] = 'tSZ_1h'
     p_dict['mass function'] = 'M500'  #fiducial  T10
-    p_dict['pressure profile'] = 'P13' #fiducial B12
+    p_dict['pressure profile'] = 'A10' #fiducial B12
     p_dict['galaxy_sample'] ="WIxSC"
     #couleur = 'blue'
     #p_dict['unwise_galaxy_sample_id'] = couleur
@@ -233,7 +195,7 @@ def run(args):
     # P8 parameters
     # masses are in M_sun, not M_sun/h
     # 'b_hydro': 0.4656
-    p_dict['B'] = 1./(1.-0.19452851)
+    p_dict['B'] = 1./(1.-0.4656)
     # 'Omega_c': 0.26066676
     p_dict['Omega_cdm'] = 0.26066676
 
@@ -306,12 +268,11 @@ def run(args):
 
     # if(args.plot_ref_data == 'yes'):
     #     #L = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data.txt')
-    # L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/WIxSC_galaxy_ditributions/cl4boris.txt')
-    # ell_KA20 = L_ref[:,0]
-    # cl_gg_1h_KA20 = L_ref[:,1]
-    # cl_gg_2h_KA20 = L_ref[:,2]
-    # cl_yg_1h_KA20 = L_ref[:,3]
-    # cl_yg_2h_KA20 = L_ref[:,3]
+    L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/WIxSC_galaxy_ditributions/cl4boris.txt')
+    ell_KA20 = L_ref[:,0]
+    cl_gg_1h_KA20 = L_ref[:,1]
+    cl_gg_2h_KA20 = L_ref[:,2]
+    cl_yg_1h_KA20 = L_ref[:,3]
     #     L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/class-sz_tmp_szpowerspectrum_mnu_0d02_ref.txt')
     #     multipoles_ref = L_ref[:,0]
     #     cl_1h_ref = L_ref[:,1]
@@ -382,13 +343,13 @@ def run(args):
     # ############################
 
 
-    cell_gy_2h = hm_ang_power_spectrum(cosmo, ell, (g,y),
+    cell_gg_2h = hm_ang_power_spectrum(cosmo, ell, (g,g),
                                     zrange=zrange,
                                     include_1h=False,
                                     hm_correction=None,
                                     **m["model"])
 
-    cell_gy_1h = hm_ang_power_spectrum(cosmo, ell, (g,y),
+    cell_gg_1h = hm_ang_power_spectrum(cosmo, ell, (g,g),
                                     zrange=zrange,
                                     include_2h=False,
                                     include_1h=True,
@@ -403,8 +364,8 @@ def run(args):
     #                                 **m["model"])
 
     print('KA20')
-    print(cell_gy_2h)
-    print(cell_gy_1h)
+    print(cell_gg_2h)
+    print(cell_gg_1h)
     #exit(0)
 
 
@@ -453,7 +414,7 @@ def run(args):
         elif (args.plot_tSZ_tSZ_tSZ_1h == 'yes'):
             ax.set_ylabel(r'$\mathrm{b^{y-y-y}_{\ell_1,\ell_2,\ell_3}}$',size=title_size)
         elif (args.plot_tSZ_gal == 'yes'):
-            ax.set_ylabel(r'$10^9 \mathrm{C^{yg}_\ell}$',size=title_size)
+            ax.set_ylabel(r'$10^9 \ell(\ell+1)\mathrm{C^{yg}_\ell}/2\pi$',size=title_size)
         elif (args.plot_gal_gal == 'yes'):
             ax.set_ylabel(r'$10^{5}\times\mathrm{C^{gg}_\ell}$',size=title_size)
         elif (args.plot_gal_lens == 'yes'):
@@ -631,11 +592,10 @@ def run(args):
                     print(tSZ_gal_2h[id_p])
                     #for (nu,colg) in zip((100,143,353),('k','r','b')):
                     # b_ell = exp(-0.5 * ell * (ell + 1) * sigma^2) where sigma = fwhm / sqrt(8 * log(2))
-                    #beam_fwhm = 0.00290888 # 10' in radians
-                    #beam_sigma = beam_fwhm / np.sqrt(8 * np.log(2))
-                    #beam_factor = np.exp(-0.5 * multipoles[id_p] * (multipoles[id_p] + 1.) * beam_sigma**2.)
-                    #fac = 1e6/1e9/beam_factor
-                    fac = multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi/1e3
+                    beam_fwhm = 0.00290888 # 10' in radians
+                    beam_sigma = beam_fwhm / np.sqrt(8 * np.log(2))
+                    beam_factor = np.exp(-0.5 * multipoles[id_p] * (multipoles[id_p] + 1.) * beam_sigma**2.)
+                    fac = 1e6/1e9/beam_factor
                     if (val_label[id_p] == 'gr_shallow'):
                         ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color='forestgreen',ls='--',alpha = 1.,label = val_label[id_p])
                     elif (val_label[id_p] == 'green'):
@@ -645,11 +605,9 @@ def run(args):
                     elif (val_label[id_p] == 'red'):
                         ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color='red',ls='-',alpha = 1.,label = val_label[id_p])
                     else:
-                        ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color='r',ls='--',alpha = 1.,label = 'class_sz hod (1-halo)')
-                        ax.plot(multipoles[id_p],(tSZ_gal_2h[id_p])/fac,color='orange',ls='-',alpha = 1.,label = 'class_sz hod (2-halo)')
+                        ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,color=couleur,ls='--',alpha = 1.,label = 'simplified hod: 1-halo')
+                        ax.plot(multipoles[id_p],(tSZ_gal_2h[id_p])/fac,color=couleur,ls='-',alpha = 1.,label = 'simplified hod: 2-halo')
                     #ax.plot(ell_KA20,cl_yg_1h_KA20,label='KA20')
-                    ax.plot(ell,cell_gy_2h*1e9,label='KA20 (2-halo)')
-                    ax.plot(ell,cell_gy_1h*1e9,label='KA20 (1-halo)')
                 elif (args.plot_gal_gal == 'yes'):
                     print('plotting gxg')
                     fac = multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi/1e5

@@ -2189,7 +2189,30 @@ int input_read_parameters(
           ptsz->concentration_parameter=3;
         else  if ((strstr(string1,"Z09") != NULL))
           ptsz->concentration_parameter=4;
+        else  if ((strstr(string1,"DM14") != NULL))
+          ptsz->concentration_parameter=5; // Dutton and Maccio 2014 (https://arxiv.org/pdf/1402.7073.pdf)
           }
+
+          /* HOD */
+          class_call(parser_read_string(pfc,"halo occupation distribution",&string1,&flag1,errmsg),
+                     errmsg,
+                     errmsg);
+         if (flag1 == _TRUE_) {
+            if ((strstr(string1,"KFSW20") != NULL))
+              ptsz->hod_model=0;
+           //  else  if ((strstr(string1,"A10") != NULL))
+           //    ptsz->pressure_profile=2;
+           // else  if ((strstr(string1,"Custom. GNFW") != NULL))
+           //    ptsz->pressure_profile=3;
+           // else  if ((strstr(string1,"B12") != NULL))
+           //   ptsz->pressure_profile=4;
+              }
+
+
+
+
+
+
 
 
       /* pressure profile SZ */
@@ -2206,6 +2229,8 @@ int input_read_parameters(
        else  if ((strstr(string1,"B12") != NULL))
          ptsz->pressure_profile=4;
           }
+
+
 
 
       /* integration method pressure profile SZ */
@@ -2394,14 +2419,14 @@ int input_read_parameters(
 
 
     /* // Eq. 15 or 16 of KA20 */
-    class_call(parser_read_string(pfc,"use_simplified_hod",&string1,&flag1,errmsg),
+    class_call(parser_read_string(pfc,"use_hod",&string1,&flag1,errmsg),
                errmsg,
                errmsg);
    if (flag1 == _TRUE_) {
       if ((strstr(string1,"yes") != NULL))
-        ptsz->use_simplified_hod=1;
+        ptsz->use_hod=1;
       else  if ((strstr(string1,"no") != NULL))
-        ptsz->use_simplified_hod=0;
+        ptsz->use_hod=0;
       }
 
     /* galaxy sample */
@@ -4234,6 +4259,7 @@ int input_default_params(
   ptsz->ell_sz = 1;
   ptsz->nlSZ = 18;
   ptsz->concentration_parameter=0;
+  ptsz->hod_model=-1;
   ptsz->effective_temperature=0;
   ptsz->create_ref_trispectrum_for_cobaya=0;
   sprintf(ptsz->path_to_ref_trispectrum_for_cobaya,"output/");
@@ -4256,7 +4282,7 @@ int input_default_params(
   //default: total power spectrum (no completeness cut)
   ptsz->which_ps_sz = 0; //0: total, 1: resolved, 2: unresolved
 
-  ptsz->use_simplified_hod = 1;
+  ptsz->use_hod = 1;
   ptsz->galaxy_sample = 0; // WIxSC
   ptsz->unwise_galaxy_sample_id = 0; // red
   //ptsz->unwise_m_min_cut = 1e10; // Msun/h
