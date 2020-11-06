@@ -3890,8 +3890,10 @@ int show_preamble_messages(struct background * pba,
             printf("->Pressure Profile:  Battaglia et al 2012\n");
 
          //Concentration-Mass relations
-         if (ptsz->MF!=5 && ptsz->MF!=7)
-         {
+         // if (ptsz->MF!=5 && ptsz->MF!=7)
+         // {
+         printf("The following concentration-mass relation is set.\n");
+         printf("(Only used when NFW profiles are involved, e.g., for conversions between different mass definitions.)\n");
             if (ptsz->concentration_parameter==0)
                printf("->C-M relation:  Duffy et al 2008\n");
             if (ptsz->concentration_parameter==1)
@@ -3902,7 +3904,9 @@ int show_preamble_messages(struct background * pba,
                printf("->C-M relation:  Sanchez-Conde 2014\n");
             if (ptsz->concentration_parameter==4)
                printf("->C-M relation:  Zhao 2009\n");
-         }
+            if (ptsz->concentration_parameter==5)
+               printf("->C-M relation:  DM14\n");
+         // }
          printf("->h = %e\n",pba->h);
          printf("->OmegaM (all except DE/Lambda) = %e\n",OmegaM);
          printf("->OmegaL = %e\n",1.-OmegaM);
@@ -4868,7 +4872,7 @@ double HOD_mean_number_of_central_galaxies(double z,
                                            struct tszspectrum * ptsz){
 double result = 0.;
 //if (M_halo>M_min){
-   if (ptsz->hod_model == 0){ // KFSW20
+   if (ptsz->galaxy_sample == 1){ // KFSW20
    M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id);
    result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/(sqrt(2.)*0.25))));
  }
@@ -4892,7 +4896,7 @@ double HOD_mean_number_of_satellite_galaxies(double z,
                                              struct tszspectrum * ptsz){
 double result =  0.;
 
-   if (ptsz->hod_model == 0){ // KFSW20
+   if (ptsz->galaxy_sample == 1){ // KFSW20
    M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id);
    if (M_halo>M_min){
    result = pow((M_halo-0.1*M_min)/(15.*M_min),0.8);
@@ -5026,8 +5030,21 @@ r_delta = pvectsz[ptsz->index_r500c];
 }
 // unWISE
 else if (ptsz->galaxy_sample == 1) {
-r_delta = 1.17*pvectsz[ptsz->index_rs];
-c_delta = pvectsz[ptsz->index_cVIR];
+// mail from alex:
+// The code that we use is here:
+// https://github.com/bccp/simplehod/blob/master/simplehod/simplehod.pyx
+// in particular, see the get_nfw_r function within the RNGAdapter class (line 499).  I believe this is NFW truncated at the virial radius.  If the concentration is > 1, it is set to 1 (I *think* this is what the linked code is doing in lines 507-515). The concentration is coming from the fitting formula of Dutton & Maccio 2014:
+// https://nbodykit.readthedocs.io/en/latest/api/_autosummary/nbodykit.transform.html#nbodykit.transform.HaloConcentration
+// In particular, concentration, virial radius and velocity dispersion are all generated from the mass as described in the README here:
+// https://github.com/bccp/simplehod
+  r_delta = pvectsz[ptsz->index_rVIR];
+  c_delta = pvectsz[ptsz->index_cVIR];
+  if (c_delta>1.) c_delta = 1.;
+}
+
+else {
+  r_delta =1.17*pvectsz[ptsz->index_rs];
+  c_delta = pvectsz[ptsz->index_cVIR];
 }
 
 // //r_delta = pvectsz[ptsz->index_rVIR];//
@@ -5041,7 +5058,7 @@ double ell = pvectsz[ptsz->index_multipole_for_galaxy_profile];
 double chi = sqrt(pvectsz[ptsz->index_chi2]);
 double k = (ell+0.5)/chi;
 //double k = 1/chi;
-double q = k*r_delta/c_delta*(1.+z);//c_delta;
+double q = k*r_delta/c_delta;//*(1.+z);//c_delta; //TBC: (1+z)
 double denominator = (log(1.+c_delta)-c_delta/(1.+c_delta));
 
 //double numerator = cos(q);
@@ -5178,5 +5195,7 @@ m_cut =  11.65 + z;
 m_cut = pow(10.,m_cut);
 
 // for unwise red a good fit is 2.5*m_cut
-  return 1.4*m_cut;
+// for unwise blue a good fit is 1.0*m_cut
+// for unwise green a good fit is 1.5*m_cut
+  return 3.*m_cut;
 }
