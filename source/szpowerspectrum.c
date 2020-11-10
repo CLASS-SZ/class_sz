@@ -4991,7 +4991,7 @@ double nu;
 int index_md = (int) pvectsz[ptsz->index_md];
 
 
-// 2-halo terms or 1-halo cross
+// 2-halo terms 
 if (_tSZ_cib_2h_
   ||_cib_cib_2h_
    ){
