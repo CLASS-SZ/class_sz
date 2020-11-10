@@ -184,15 +184,12 @@ int number_of_threads= 1;
 
 //Loop over integrands
 //the computation is parallelized with respect to the integrands
-//printf("ptsz->number_of_integrands loop = %d\n",ptsz->number_of_integrands);
 #pragma omp for schedule (dynamic)
 for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integrand++)
 	     {
 #pragma omp flush(abort)
-//printf("Pvectsz[ptsz->index_integrand_id] = %d\n",index_integrand);
 
        Pvectsz[ptsz->index_integrand_id] = index_integrand;
-       //printf("integrand_id = %d\n",index_integrand);
        class_call_parallel(compute_sz(pba,
                                       pnl,
                                       ppm,
@@ -213,8 +210,6 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 #endif
    free(Pvecback);
    free(Pvectsz);
-
-
 	} //end of parallel region
 
    if (abort == _TRUE_) return _FAILURE_;
@@ -4021,7 +4016,7 @@ int show_preamble_messages(struct background * pba,
 
       if (ptsz->sz_verbose > 0)
       {
-         printf("Computing SZ angular power spectrum\n");
+         printf("Class_sz computations\n");
 
          //   double z_star;  /**< redshift at which photon optical depth crosses one */
          printf("->lss at z_star = %e\n",pth->z_star);
@@ -4991,7 +4986,7 @@ double nu;
 int index_md = (int) pvectsz[ptsz->index_md];
 
 
-// 2-halo terms 
+// 2-halo terms
 if (_tSZ_cib_2h_
   ||_cib_cib_2h_
    ){
