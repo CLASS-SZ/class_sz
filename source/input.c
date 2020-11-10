@@ -1992,6 +1992,24 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
+      if ((strstr(string1,"cib_cib_1h") != NULL) ) {
+        ptsz->has_cib_cib_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"cib_cib_2h") != NULL) ) {
+        ptsz->has_cib_cib_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
       if ((strstr(string1,"gal_gal_1h") != NULL) ) {
         ptsz->has_gal_gal_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2028,7 +2046,6 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
-
       if ((strstr(string1,"tSZ_gal_1h") != NULL) ) {
         ptsz->has_tSZ_gal_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2046,6 +2063,26 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
       }
+
+      if ((strstr(string1,"tSZ_cib_1h") != NULL) ) {
+        ptsz->has_tSZ_cib_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"tSZ_cib_2h") != NULL) ) {
+        ptsz->has_tSZ_cib_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+
       if ((strstr(string1,"lens_lens_1h") != NULL) ) {
         ptsz->has_lens_lens_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2173,6 +2210,20 @@ int input_read_parameters(
       //frequency for tSZ spectrum
      //class_call(parser_read_string(pfc,"Frequency for y-distortion",&string1,&flag1,errmsg),
      class_read_double("Frequency for y-distortion in GHz",ptsz->nu_y_dist_GHz);
+
+     class_read_double("Frequency nu for cib in GHz",ptsz->nu_cib_GHz);
+     class_read_double("Frequency nu^prime for cib in GHz",ptsz->nu_prime_cib_GHz);
+
+     // Table 1  of MM20
+     class_read_double("Redshift evolution of dust temperature",ptsz->alpha_cib);  //redshift evolution of dust temperature
+     class_read_double("Dust temperature today in Kelvins",ptsz->T0_cib);  // dust temperature today in Kelvins
+     class_read_double("Emissivity index of sed",ptsz->beta_cib); // emissivity index of sed
+     class_read_double("Power law index of SED at high frequency",ptsz->gamma_cib); // Power law index of SED at high frequency
+     class_read_double("Redshift evolution of L − M normalisation",ptsz->delta_cib); // Redshift evolution of L − M normalisation
+     class_read_double("Most efficient halo mass in Msun/h",ptsz->m_eff_cib); // Most efficient halo mass in Msun/h
+     class_read_double("Normalisation of L − M relation in [Jy MPc2/Msun/Hz]",ptsz->L0_cib); // Normalisation of L − M relation in [Jy MPc2/Msun/Hz]
+     class_read_double("Size of of halo masses sourcing CIB emission",ptsz->sigma2_LM_cib); // Size of of halo masses sourcing CIB emission
+
 
       /* concentration parameter SZ */
       class_call(parser_read_string(pfc,"concentration parameter",&string1,&flag1,errmsg),
@@ -4342,6 +4393,19 @@ int input_default_params(
   ptsz->nu_y_dist_GHz = 150.;
   ptsz->exponent_unit = 2;
 
+  ptsz->nu_cib_GHz = 217.;
+  ptsz->nu_prime_cib_GHz = 217.;
+  // Table 1  of MM20
+  ptsz->alpha_cib = 0.36; //redshift evolution of dust temperature
+  ptsz->T0_cib = 24.4; // dust temperature today in Kelvins
+  ptsz->beta_cib = 1.75; // emissivity index of sed
+  ptsz->gamma_cib = 1.7; // Power law index of SED at high frequency
+  ptsz->delta_cib = 3.6; // Redshift evolution of L − M normalisation
+  ptsz->m_eff_cib = pow(10.,12.6)*0.7; // Most efficient halo mass in Msun/h
+  ptsz->L0_cib = 6.4e-8; // Normalisation of L − M relation in [Jy MPc2/Msun/Hz]
+  ptsz->sigma2_LM_cib = 0.5; // Size of of halo masses sourcing CIB emission
+
+
   ptsz->HSEbias = 1.2;
   ptsz->Ap = 0.1;
   ptsz->alpha_b = 0.7;
@@ -4449,6 +4513,10 @@ int input_default_params(
   ptsz->has_gal_lens_2h = _FALSE_;
   ptsz->has_tSZ_gal_1h = _FALSE_;
   ptsz->has_tSZ_gal_2h = _FALSE_;
+  ptsz->has_tSZ_cib_1h = _FALSE_;
+  ptsz->has_tSZ_cib_2h = _FALSE_;
+  ptsz->has_cib_cib_1h = _FALSE_;
+  ptsz->has_cib_cib_2h = _FALSE_;
   ptsz->has_lens_lens_1h = _FALSE_;
   ptsz->has_lens_lens_2h = _FALSE_;
   ptsz->has_tSZ_lens_1h = _FALSE_;
@@ -4501,6 +4569,10 @@ int input_default_params(
   ptsz->index_md_tSZ_gal_2h = 26;
   ptsz->index_md_lens_lens_2h = 27;
   ptsz->index_md_lens_lens_1h = 28;
+  ptsz->index_md_tSZ_cib_1h = 29;
+  ptsz->index_md_tSZ_cib_2h = 30;
+  ptsz->index_md_cib_cib_1h = 31;
+  ptsz->index_md_cib_cib_2h = 32;
 
 
   ptsz->HMF_prescription_NCDM=2; //no-pres

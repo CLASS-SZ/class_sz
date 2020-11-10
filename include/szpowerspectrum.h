@@ -31,6 +31,10 @@
 #define _lens_lens_2h_ ((ptsz->has_lens_lens_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_2h))
 #define _tSZ_gal_1h_ ((ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_1h))
 #define _tSZ_gal_2h_ ((ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_2h))
+#define _tSZ_cib_1h_ ((ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_cib_1h))
+#define _tSZ_cib_2h_ ((ptsz->has_tSZ_cib_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_cib_2h))
+#define _cib_cib_1h_ ((ptsz->has_cib_cib_1h == _TRUE_) && (index_md == ptsz->index_md_cib_cib_1h))
+#define _cib_cib_2h_ ((ptsz->has_cib_cib_2h == _TRUE_) && (index_md == ptsz->index_md_cib_cib_2h))
 #define _tSZ_lens_1h_ ((ptsz->has_tSZ_lens_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lens_1h))
 #define _tSZ_lens_2h_ ((ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lens_2h))
 #define _isw_lens_ ((ptsz->has_isw_lens == _TRUE_) && (index_md == ptsz->index_md_isw_lens))
@@ -74,6 +78,10 @@ struct tszspectrum {
   double * cl_lens_lens_2h;
   double * cl_tSZ_gal_1h;
   double * cl_tSZ_gal_2h;
+  double * cl_tSZ_cib_1h;
+  double * cl_tSZ_cib_2h;
+  double * cl_cib_cib_1h;
+  double * cl_cib_cib_2h;
   double * cl_tSZ_lens_1h;
   double * cl_tSZ_lens_2h;
   double * cl_isw_lens;
@@ -140,7 +148,6 @@ struct tszspectrum {
   int index_md_hmf;
   int index_integrand_id_hmf;
 
-
   int has_mean_y;
   int index_md_mean_y;
   int index_integrand_id_mean_y;
@@ -149,7 +156,6 @@ struct tszspectrum {
   int index_md_sz_ps;
   int index_integrand_id_sz_ps_first;
   int index_integrand_id_sz_ps_last;
-
 
   int has_sz_2halo;
   int index_md_2halo;
@@ -166,7 +172,6 @@ struct tszspectrum {
   int index_integrand_id_sz_ps_m_y_y_1h_first;
   int index_integrand_id_sz_ps_m_y_y_1h_last;
 
-
   int has_sz_m_y_y_2h;
   int index_md_m_y_y_2h;
   int index_integrand_id_sz_ps_m_y_y_2h_first;
@@ -181,7 +186,6 @@ struct tszspectrum {
   int index_md_tSZ_tSZ_tSZ_1halo;
   int index_integrand_id_tSZ_tSZ_tSZ_1halo_first;
   int index_integrand_id_tSZ_tSZ_tSZ_1halo_last;
-
 
   int has_tSZ_lens_1h;
   int index_md_tSZ_lens_1h;
@@ -198,7 +202,6 @@ struct tszspectrum {
   int index_integrand_id_gal_gal_2h_first;
   int index_integrand_id_gal_gal_2h_last;
 
-
   int has_gal_lens_2h;
   int index_md_gal_lens_2h;
   int index_integrand_id_gal_lens_2h_first;
@@ -208,8 +211,6 @@ struct tszspectrum {
   int index_md_gal_lens_1h;
   int index_integrand_id_gal_lens_1h_first;
   int index_integrand_id_gal_lens_1h_last;
-
-
 
   int has_lens_lens_1h;
   int index_md_lens_lens_1h;
@@ -221,8 +222,6 @@ struct tszspectrum {
   int index_integrand_id_lens_lens_2h_first;
   int index_integrand_id_lens_lens_2h_last;
 
-
-
   int has_tSZ_gal_1h;
   int index_md_tSZ_gal_1h;
   int index_integrand_id_tSZ_gal_1h_first;
@@ -233,7 +232,26 @@ struct tszspectrum {
   int index_integrand_id_tSZ_gal_2h_first;
   int index_integrand_id_tSZ_gal_2h_last;
 
+  int has_tSZ_cib_1h;
+  int index_md_tSZ_cib_1h;
+  int index_integrand_id_tSZ_cib_1h_first;
+  int index_integrand_id_tSZ_cib_1h_last;
 
+  int has_tSZ_cib_2h;
+  int index_md_tSZ_cib_2h;
+  int index_integrand_id_tSZ_cib_2h_first;
+  int index_integrand_id_tSZ_cib_2h_last;
+
+
+  int has_cib_cib_1h;
+  int index_md_cib_cib_1h;
+  int index_integrand_id_cib_cib_1h_first;
+  int index_integrand_id_cib_cib_1h_last;
+
+  int has_cib_cib_2h;
+  int index_md_cib_cib_2h;
+  int index_integrand_id_cib_cib_2h_first;
+  int index_integrand_id_cib_cib_2h_last;
 
   int has_tSZ_lens_2h;
   int index_md_tSZ_lens_2h;
@@ -381,6 +399,9 @@ struct tszspectrum {
   int index_multipole_for_galaxy_profile;
   int index_galaxy_profile;
 
+  int index_multipole_for_cib_profile;
+  int index_frequency_for_cib_profile;
+  int index_cib_profile;
   //////////////
 
   int index_integral;
@@ -596,6 +617,18 @@ struct tszspectrum {
   double pressure_profile_epsabs;
   double pressure_profile_epsrel;
   double nu_y_dist_GHz;
+
+  double nu_cib_GHz;
+  double nu_prime_cib_GHz;
+  // Table 1  of MM20
+  double alpha_cib; //redshift evolution of dust temperature
+  double T0_cib; // dust temperature today
+  double beta_cib; // emissivity index of sed
+  double gamma_cib; // Power law index of SED at high frequency
+  double delta_cib; // Redshift evolution of L − M normalisation
+  double m_eff_cib; // Most efficient halo mass in Msun/h
+  double L0_cib; // Normalisation of L − M relation
+  double sigma2_LM_cib; // Size of of halo masses sourcing CIB emission
 
   double nfw_profile_epsabs;
   double nfw_profile_epsrel;
@@ -925,6 +958,7 @@ double HOD_mean_number_of_satellite_galaxies(double z,
                                              double alpha_s,
                                              double M1_prime,
                                              struct tszspectrum * ptsz);
+
 int evaluate_galaxy_profile(double * pvecback,
                             double * pvectsz,
                             struct background * pba,
@@ -962,6 +996,27 @@ double evaluate_galaxy_number_counts( double * pvecback,
 double evaluate_unwise_m_min_cut(double z,
                                  int sample_id);
 
+
+int evaluate_cib_profile(double * pvecback,
+                         double * pvectsz,
+                         struct background * pba,
+                         struct tszspectrum * ptsz);
+
+double Luminosity_of_central_galaxies(double z,
+                                      double  M_halo,
+                                      double nu,
+                                      struct tszspectrum * ptsz);
+
+double Luminosity_of_satellite_galaxies(double z,
+                                        double  M_halo,
+                                        double nu,
+                                        struct tszspectrum * ptsz);
+
+double evaluate_Sigma_cib(double M, struct tszspectrum * ptsz);
+double evaluate_phi_cib(double z, struct tszspectrum * ptsz);
+double evaluate_sed_cib(double z, double nu, struct tszspectrum * ptsz);
+double evaluate_dust_temperature(double z, struct tszspectrum * ptsz);
+double evaluate_galaxy_luminosity(double z, double M, double nu, struct tszspectrum * ptsz);
 #ifdef __cplusplus
 }
 #endif

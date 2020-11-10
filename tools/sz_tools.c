@@ -46293,18 +46293,14 @@ result = W_lens*W_lens;
 
   // then quantities that require mass integration
   else {
-  // if ((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h)){
-  //   result = 0.;
-  // }
-  // else{
+
   result = integrate_over_m_at_z(V->pvecback,
-                                  V->pvectsz,
-                                  V->pba,
-                                  V->pnl,
-                                  V->ppm,
-                                  V->ptsz);
-                                // }
-                                }
+                                 V->pvectsz,
+                                 V->pba,
+                                 V->pnl,
+                                 V->ppm,
+                                 V->ptsz);
+  }
 
 
 

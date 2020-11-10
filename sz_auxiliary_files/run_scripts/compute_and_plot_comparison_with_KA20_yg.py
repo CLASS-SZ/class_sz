@@ -295,7 +295,7 @@ def run(args):
     # take the first and last elements of the N(z) func above 0.005
     zrange = g.z[g.nzf(g.z) > 0.005].take((0, -1))
     print('zrange = ',zrange[0],zrange[1])
-    p_dict['z1SZ'] = 0.1#zrange[0]
+    p_dict['z1SZ'] = zrange[0]
     p_dict['z2SZ'] = zrange[1]
     p_dict['z_max_pk'] = p_dict['z2SZ']
     #exit(0)
