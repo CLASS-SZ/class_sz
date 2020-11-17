@@ -186,7 +186,10 @@ def run(args):
     #p_dict['h'] = 0.65
     #set correct Output
     # p_dict['output'] = 'tSZ_1h'
-    p_dict['mass function'] = 'M500'  #fiducial  T10
+
+    # 'M500' is Tinker et al 2008 @ M500
+    # 'T10' is Tinker et al 2010 @ m200_mean
+    p_dict['mass function'] = 'T10'  #fiducial  T10
     p_dict['pressure profile'] = 'A10' #fiducial B12
     p_dict['galaxy_sample'] ="WIxSC"
     #couleur = 'blue'

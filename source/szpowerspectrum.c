@@ -5156,8 +5156,8 @@ if (_tSZ_cib_2h_
   ||_cib_cib_2h_
    ){
 nu = frequency_for_cib_profile;
-Ls_nu = Luminosity_of_central_galaxies(z,M_halo,nu,ptsz);
-Lc_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,ptsz);
+Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
 
 // eq. 13 of MM20
 ug_at_ell  = 1./(4.*_PI_)*(Lc_nu+Ls_nu*us);
@@ -5168,13 +5168,13 @@ else if(_tSZ_cib_1h_
        ){
 
 nu = ptsz->nu_cib_GHz;
-Ls_nu = Luminosity_of_central_galaxies(z,M_halo,nu,ptsz);
-Lc_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,ptsz);
+Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
 
 
 nu = ptsz->nu_prime_cib_GHz;
-Ls_nu_prime = Luminosity_of_central_galaxies(z,M_halo,nu,ptsz);
-Lc_nu_prime = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
+Lc_nu_prime = Luminosity_of_central_galaxies(z,M_halo,nu,ptsz);
+Ls_nu_prime = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
 
 // eq. 15 of MM20
 ug_at_ell  = 1./(4.*_PI_)*sqrt(Ls_nu*Ls_nu_prime*us*us+Lc_nu*Ls_nu_prime*us+Lc_nu_prime*Ls_nu*us);
@@ -5204,14 +5204,15 @@ return result;
                                       }
 
 double evaluate_Sigma_cib(double M, struct tszspectrum * ptsz){
+// eq. 33 MM20
 double result = 0.;
 
 return result;
                                       }
 
 double evaluate_phi_cib(double z, struct tszspectrum * ptsz){
-double result = 0.;
-
+// eq. 31 of MM20
+double result = pow(1.+z,ptsz->delta_cib);
 return result;
                                       }
 
