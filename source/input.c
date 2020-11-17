@@ -1714,6 +1714,7 @@ int input_read_parameters(
       //BB: read SZ parameters from ini file
       class_read_int("nlSZ",ptsz->nlSZ);
 
+      class_read_int("N_kSZ2_gal_multipole_grid",ptsz->N_kSZ2_gal_multipole_grid);
 
 
       class_read_double("ell_max_mock",ptsz->ell_max_mock);
@@ -2244,20 +2245,20 @@ int input_read_parameters(
           ptsz->concentration_parameter=5; // Dutton and Maccio 2014 (https://arxiv.org/pdf/1402.7073.pdf)
           }
 
-          /* HOD */
-          class_call(parser_read_string(pfc,"halo occupation distribution",&string1,&flag1,errmsg),
-                     errmsg,
-                     errmsg);
-         if (flag1 == _TRUE_) {
-            if ((strstr(string1,"KFSW20") != NULL))
-              ptsz->hod_model=0;
-           //  else  if ((strstr(string1,"A10") != NULL))
-           //    ptsz->pressure_profile=2;
-           // else  if ((strstr(string1,"Custom. GNFW") != NULL))
-           //    ptsz->pressure_profile=3;
-           // else  if ((strstr(string1,"B12") != NULL))
-           //   ptsz->pressure_profile=4;
-              }
+         //  /* HOD */
+         //  class_call(parser_read_string(pfc,"halo occupation distribution",&string1,&flag1,errmsg),
+         //             errmsg,
+         //             errmsg);
+         // if (flag1 == _TRUE_) {
+         //    if ((strstr(string1,"KFSW20") != NULL))
+         //      ptsz->hod_model=0;
+         //   //  else  if ((strstr(string1,"A10") != NULL))
+         //   //    ptsz->pressure_profile=2;
+         //   // else  if ((strstr(string1,"Custom. GNFW") != NULL))
+         //   //    ptsz->pressure_profile=3;
+         //   // else  if ((strstr(string1,"B12") != NULL))
+         //   //   ptsz->pressure_profile=4;
+         //      }
 
 
 
@@ -4309,8 +4310,11 @@ int input_default_params(
   ptsz->write_sz = _FALSE_;
   ptsz->ell_sz = 1;
   ptsz->nlSZ = 18;
+
+  ptsz->N_kSZ2_gal_multipole_grid = 20;
+
   ptsz->concentration_parameter=0;
-  ptsz->hod_model=-1;
+  //ptsz->hod_model=-1;
   ptsz->effective_temperature=0;
   ptsz->create_ref_trispectrum_for_cobaya=0;
   sprintf(ptsz->path_to_ref_trispectrum_for_cobaya,"output/");

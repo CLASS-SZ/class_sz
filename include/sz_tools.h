@@ -670,6 +670,7 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
   int load_rho_nfw_profile(struct tszspectrum * ptsz);
   int load_normalized_dndz(struct tszspectrum * ptsz);
   int load_unbinned_nl_yy(struct tszspectrum * ptsz);
+  int load_unwise_filter(struct tszspectrum * ptsz);
 
   int CvirMvirZHAO(double * result,
                    double logM ,
@@ -887,6 +888,7 @@ int tabulate_dndlnM(struct background * pba,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
+int bispectrum_condition(double ell_1, double ell_2, double ell_3);
 
 int tabulate_mean_galaxy_number_density(struct background * pba,
                                         struct nonlinear * pnl,

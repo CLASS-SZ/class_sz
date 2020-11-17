@@ -87,7 +87,7 @@ struct tszspectrum {
   double * cl_isw_lens;
   double * cl_isw_tsz;
   double * cl_isw_auto;
-  double * b_kSZ_kSZ_gal_1halo;
+  double * cl_kSZ_kSZ_gal_1h;
   double * b_tSZ_tSZ_tSZ_1halo;
   double * cl_te_y_y;
   double * m_y_y_1h;
@@ -365,6 +365,7 @@ struct tszspectrum {
   int  index_mass_bin_2;
   int  index_multipole_1;
   int  index_multipole_2;
+  int  index_multipole_3;
   int  index_redshift_for_dndlnM;
   int  index_mass_for_dndlnM;
   int  index_multipole_for_pressure_profile;
@@ -489,6 +490,11 @@ struct tszspectrum {
   //INPUT PARAMETERS
   int nlSZ;
   int n_ell_independent_integrals;
+
+  double * l_unwise_filter;
+  double * f_unwise_filter;
+  int unwise_filter_size;
+
 
 
 
@@ -654,6 +660,9 @@ struct tszspectrum {
   double * ell_trispectrum;
   double * x_gauss;
   double * w_gauss;
+
+  double * ell_kSZ2_gal_multipole_grid;
+  int N_kSZ2_gal_multipole_grid;
 
 
 

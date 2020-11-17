@@ -43695,6 +43695,8 @@ int spectra_vrms2(
         k=exp(pnl->ln_k_for_tSZ[i]);
         if (i == (pnl->ln_k_size_for_tSZ-1)) k *= 0.9999999;
 
+    // //Input: wavenumber in 1/Mpc
+    // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
    class_call(nonlinear_pk_at_k_and_z(
                                      pba,
                                      ppm,
@@ -44499,8 +44501,10 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   double xin = 1.e-5;
   double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
   double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
-  //double xout = 5.;//1.5*rvir/rs; //rvir/rs = cvir
-  double xout = 2*rvir/rs; //rvir/rs = cvir
+
+  // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
+  // in the settings of KFSW20
+  double xout = 2.5*rvir/rs; //rvir/rs = cvir
 
 // QAWO
 
@@ -45297,7 +45301,7 @@ int load_normalized_dndz(struct tszspectrum * ptsz)
 {
 
 // don't load the unwise  dndz  if none of the following are required:
-if ( (ptsz->has_tSZ_gal_1h != _TRUE_ )
+if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1halo != _TRUE_ )
     && (ptsz->has_gal_gal_1h != _TRUE_ )
@@ -45459,6 +45463,120 @@ printf("-> Loading dndz unwise\n");
 }
 
 
+
+
+int load_unwise_filter(struct tszspectrum * ptsz)
+{
+
+  if (ptsz->sz_verbose >= 1)
+    printf("-> loading the filter f(l) for cl^kSZ2_gal\n");
+
+
+  class_alloc(ptsz->l_unwise_filter,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->f_unwise_filter,sizeof(double *)*100,ptsz->error_message);
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+    sprintf(Filepath,
+            "%s%s%s",
+            "cat ",
+            ptsz->path_to_class,
+            "/sz_auxiliary_files/unwise_filter_functions_l_fl.txt");
+  process = popen(Filepath, "r");
+
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+    sscanf(line, "%lf %lf", &this_lnx, &this_lnI);
+    //printf("lnx = %e\n",this_lnx);
+
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  status = pclose(process);
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->unwise_filter_size = n_data;
+  /** Make room */
+
+  class_realloc(ptsz->l_unwise_filter,
+                ptsz->l_unwise_filter,
+                ptsz->unwise_filter_size*sizeof(double),
+                ptsz->error_message);
+  class_realloc(ptsz->f_unwise_filter,
+                ptsz->f_unwise_filter,
+                ptsz->unwise_filter_size*sizeof(double),
+                ptsz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<ptsz->unwise_filter_size; index_x++) {
+    ptsz->l_unwise_filter[index_x] = lnx[index_x];
+    ptsz->f_unwise_filter[index_x] = lnI[index_x];
+  };
+
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  return _SUCCESS_;
+}
 
 
 
@@ -46352,22 +46470,23 @@ if ( ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_au
 }
 
 // galaxy radial kernel
-    if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
-      || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
-      || ((V->ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1halo))
-      || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
-      || ((V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
+if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
+  || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
+  || ((V->ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1halo))
+  || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
+  || ((V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
     ){
 // multiply by radial kernel for galaxies
 double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
-// // if WIxSC (KA20):
-// if (V->ptsz->galaxy_sample == 0)
-//   result *= Wg*(1.+V->ptsz->rho_y_gal)/V->pvectsz[V->ptsz->index_chi2];
-// // if unWISE:
-// else if (V->ptsz->galaxy_sample == 1)
   result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 
 }
+
+if ((V->ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1halo)){
+  evaluate_vrms2(V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+  result *= V->pvectsz[V->ptsz->index_vrms2]/3./pow(_c_*1e-3,2.);
+}
+
 
 if  (((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h))
    ||((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
@@ -47833,6 +47952,7 @@ return _SUCCESS_;
     }
 
 
+
 double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
@@ -47844,4 +47964,21 @@ double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum 
                           1,
                           &z,
                           &m));
+}
+
+int bispectrum_condition(double ell_1, double ell_2, double ell_3){
+int ell_1_min = abs(ell_2-ell_3);
+// TBC
+if (ell_1_min<2)
+ ell_1_min  = 2;
+
+
+
+// full sky:
+//if ( (ell_1 >= ell_1_min) && (( (int)floor(ell_1 + ell_2 + ell_3)) % 2 == 0) )
+// flat sky:
+if ( (ell_1 >= ell_1_min))
+  return 1;
+else
+  return 0;
 }
