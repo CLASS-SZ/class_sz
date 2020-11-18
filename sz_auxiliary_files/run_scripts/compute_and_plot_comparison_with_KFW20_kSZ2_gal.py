@@ -277,9 +277,9 @@ def run(args):
 
     # if(args.plot_ref_data == 'yes'):
     #     #L = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data.txt')
-    L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/run_scripts/class-sz_szpowerspectrum_kSZ2_gal_ref.txt')
-    ell_ref = L_ref[:,0]
-    kSZ_kSZ_gal_1halo_ref = L_ref[:,8]
+    # L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/run_scripts/class-sz_szpowerspectrum_kSZ2_gal_ref.txt')
+    # ell_ref = L_ref[:,0]
+    # kSZ_kSZ_gal_1halo_ref = L_ref[:,8]
 
     if couleur == 'red':
         L_ref_sf = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/run_scripts/kSZ2_gal_unwise/07-28-2020-kappa_mag_l2Cl_filtered_planck_gilmarin_YESJeans_kSZ2xgals-red_16.2.dat')
