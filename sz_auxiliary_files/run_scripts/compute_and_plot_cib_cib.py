@@ -1,4 +1,4 @@
-# $ python3 compute_and_plot_cib_cib.py -param_name 'h' -p_val '[0.6766]'  -show_legend yes -show_error_bars no -output 'cib_cib_1h,cib_cib_2h' -plot_gal_gal no -plot_cib_cib yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -mode run
+# $ python3 compute_and_plot_cib_cib.py -param_name 'h' -p_val '[0.6711]'  -show_legend yes -show_error_bars no -output 'cib_cib_1h,cib_cib_2h' -plot_gal_gal no -plot_cib_cib yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -mode run
 #cib ref in Microkelvin^2
 
 import argparse

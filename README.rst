@@ -15,7 +15,7 @@ The SZ module is included in the file **source/szpowerspectrum.c**
 and its dependencies.
 
 In addition to SZ power spectrum, class_sz can compute cross and auto power spectra for other tracers
-in the halo model (currently being developped: kSZ, galaxy, isw, lensing and cib). 
+in the halo model (currently being developped: kSZ, galaxy, isw, lensing and cib).
 
 **The code CLASS_SZ is an extension of the CLASS code.**
 
@@ -85,6 +85,12 @@ explaning the use of all possible input parameters.
 
 The computation of the tSZ angular power spectrum is stable with masses up to 1e16 Msun/h.
 
+
+
+GSL library
+------------------------------
+
+
 New version of class_sz requires gsl (for the integration routines)
 One may need to edit the **Makefile** adding the include path for gsl libraries, e.g.,:
 
@@ -110,6 +116,18 @@ need to do:
 
 
 
+Compiler - GCC version
+------------------------------
+
+The current gcc version used in the makefile is gcc-10. But this  can be changed easily to any gcc version that is available to you.
+There is two modifications:
+
+1) Line 20 of Makefile: CC = gcc-XX (where XX=10 in my case.)
+
+2) Line 12 of python/setup.py: replace 'gcc-10' with, e.g., 'gcc-XX'.
+
+
+
 Computing and Plotting results
 ------------------------------
 
@@ -121,10 +139,6 @@ There is a script that enables to plot tSZ spectra easily, e.g.:
 
 One just needs to set the path to class_sz properly at the beginning of tSZ_varying_params.py, and it should run.
 
-The current gcc version used in the makefile is gcc-10. But this  can be changed easily to any gcc version that is available to you.
-There is two modifications:
-1) Line 20 of Makefile: CC = gcc-XX (where XX=10 in my case.)
-2) Line 12 of python/setup.py: replace 'gcc-10' with, e.g., 'gcc-XX'.
 
 
 Support
