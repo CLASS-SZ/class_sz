@@ -5063,6 +5063,7 @@ double HOD_mean_number_of_central_galaxies(double z,
                                            double M_halo,
                                            double M_min,
                                            double sigma_lnM,
+                                           double * pvectsz,
                                            struct tszspectrum * ptsz){
  double result = 0.;
 
@@ -5074,6 +5075,12 @@ double HOD_mean_number_of_central_galaxies(double z,
  else {
  result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_lnM)));
  }
+
+int index_md = (int) pvectsz[ptsz->index_md];
+if (_cib_cib_1h_ || _cib_cib_2h_){
+if (M_halo>=M_min) result = 1.;
+else result = 0.;
+}
 
 
  return result;
@@ -5139,7 +5146,7 @@ if (_tSZ_cib_2h_
   ||_cib_cib_2h_
    ){
 nu = frequency_for_cib_profile;
-Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,ptsz);
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
 Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
 
 // eq. 13 of MM20
@@ -5152,12 +5159,12 @@ else if(_tSZ_cib_1h_
        ){
 
 nu = ptsz->nu_cib_GHz;
-Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,ptsz);
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
 Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
 
 
 nu = ptsz->nu_prime_cib_GHz;
-Lc_nu_prime = Luminosity_of_central_galaxies(z,M_halo,nu,ptsz);
+Lc_nu_prime = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
 Ls_nu_prime = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
 
 // eq. 15 of MM20
@@ -5172,11 +5179,12 @@ pvectsz[ptsz->index_cib_profile] = ug_at_ell;
 double Luminosity_of_central_galaxies(double z,
                                       double  M_halo,
                                       double nu,
+                                      double * pvectsz,
                                       struct tszspectrum * ptsz){
 double result = 0.;
 
 double L_gal = evaluate_galaxy_luminosity(z, M_halo, nu, ptsz);
-double nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,ptsz);
+double nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,pvectsz,ptsz);
 return result =  nc*L_gal;
                                       }
 
@@ -5293,7 +5301,7 @@ double ns;
 double us;
 double z = pvectsz[ptsz->index_z];
 
-nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,ptsz);
+nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,pvectsz,ptsz);
 ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,ptsz->M_min_HOD,ptsz->alpha_s_HOD,ptsz->M1_prime_HOD,ptsz);
 us = evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz);
 

@@ -219,7 +219,7 @@ def run(args):
     # 'n_s': 0.9665
     p_dict['n_s'] = .9624 #P18: 0.9665
     # 'lMmin': 11.99
-    p_dict['M_min_HOD'] = pow(10.,11.32914985)*p_dict['h']
+    p_dict['M_min_HOD'] = pow(10.,10)
     # 'lM0': 11.99
     # 'lM1': 13.23
     p_dict['M1_prime_HOD'] =pow(10.,12.51536196)*p_dict['h']

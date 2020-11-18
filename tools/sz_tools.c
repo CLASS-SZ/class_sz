@@ -46435,7 +46435,7 @@ if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo)
  //||  ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens))
     ){
 
-  
+
   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
 
   // For all the above cases we multiply the linear matter power spectrum to the redshift integrand
@@ -47417,7 +47417,7 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
     double z = V->z;
 
     double M_halo = exp(lnM_halo);
-    double nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->ptsz);
+    double nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->pvectsz,V->ptsz);
     double ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD,V->ptsz);
 
     // M_halo = 1e16;

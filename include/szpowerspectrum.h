@@ -959,6 +959,7 @@ double HOD_mean_number_of_central_galaxies(double z,
                                            double M_halo,
                                            double M_min,
                                            double sigma_lnM,
+                                           double * pvectsz,
                                            struct tszspectrum * ptsz);
 
 double HOD_mean_number_of_satellite_galaxies(double z,
@@ -1015,6 +1016,7 @@ int evaluate_cib_profile(double * pvecback,
 double Luminosity_of_central_galaxies(double z,
                                       double  M_halo,
                                       double nu,
+                                      double * pvectsz,
                                       struct tszspectrum * ptsz);
 
 double Luminosity_of_satellite_galaxies(double z,
