@@ -162,6 +162,8 @@ def run(args):
     lens_lens_2h = []
     cib_cib_1h = []
     cib_cib_2h = []
+    tSZ_cib_1h = []
+    tSZ_cib_2h = []
 
     redshift_dependent_functions_z = []
     redshift_dependent_functions_Q = []
@@ -282,10 +284,11 @@ def run(args):
 
     # if(args.plot_ref_data == 'yes'):
     #     #L = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/chill_cltsz_data.txt')
-    L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/MM20_cib/cl_cib_cib_217_217_MM20.txt')
+    L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/cib_files/cib_1h_217x217.txt')
     ell_MM20 = L_ref[:,0]
     cl_cib_cib_1h_MM20 = L_ref[:,1]
-    cl_cib_cib_2h_MM20 = L_ref[:,2]
+    L_ref = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/cib_files/cib_2h_217x217.txt')
+    cl_cib_cib_2h_MM20 = L_ref[:,1]
 
 
 
@@ -469,7 +472,7 @@ def run(args):
                 lens_lens_2h.append(R[:,28])
                 tSZ_cib_1h.append(R[:,29])
                 tSZ_cib_2h.append(R[:,30])
-                cib_cib_2h.append(R[:,31])
+                cib_cib_1h.append(R[:,31])
                 cib_cib_2h.append(R[:,32])                # L = [multipole,cl_1h]
                 # r_dict[p_val] = L
 
@@ -930,6 +933,7 @@ def main():
     parser.add_argument("-plot_tSZ_lens",help="tSZ_lens" ,dest="plot_tSZ_lens", type=str, required=False)
     parser.add_argument("-plot_tSZ_gal",help="tSZ_gal" ,dest="plot_tSZ_gal", type=str, required=False)
     parser.add_argument("-plot_gal_gal",help="gal_gal" ,dest="plot_gal_gal", type=str, required=False)
+    parser.add_argument("-plot_cib_cib",help="cib_cib" ,dest="plot_cib_cib", type=str, required=False)
     parser.add_argument("-plot_gal_lens",help="gal_lens" ,dest="plot_gal_lens", type=str, required=False)
     parser.add_argument("-plot_isw_lens",help="isw_lens" ,dest="plot_isw_lens", type=str, required=False)
     parser.add_argument("-plot_lens_lens",help="lens_lens" ,dest="plot_lens_lens", type=str, required=False)
