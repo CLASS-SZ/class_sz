@@ -14,6 +14,8 @@ CLASS_SZ
 The SZ module is included in the file **source/szpowerspectrum.c**
 and its dependencies.
 
+In addition to SZ power spectrum, class_sz can compute cross and auto power spectra for other tracers
+in the halo model (currently being developped: kSZ, galaxy, isw, lensing and cib). 
 
 **The code CLASS_SZ is an extension of the CLASS code.**
 
@@ -119,6 +121,12 @@ There is a script that enables to plot tSZ spectra easily, e.g.:
 
 One just needs to set the path to class_sz properly at the beginning of tSZ_varying_params.py, and it should run.
 
+The current gcc version used in the makefile is gcc-10. But this  can be changed easily to any gcc version that is available to you.
+There is two modifications:
+1) Line 20 of Makefile: CC = gcc-XX (where XX=10 in my case.)
+2) Line 12 of python/setup.py: replace 'gcc-10' with, e.g., 'gcc-XX'.
+
+
 Support
 -------
 
@@ -127,4 +135,4 @@ To get support on the SZ module, feel free to contact me via slack/email (boris.
 Acknowledgment
 -------
 
-Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas for help, suggestions and/or running tests with **class_sz**.
+Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas, Fiona McCarthy for help, suggestions and/or running tests with **class_sz**.
