@@ -8,6 +8,7 @@
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_sf_erf.h>
 #include <gsl/gsl_sf_expint.h>
+#include <gsl/gsl_sf_lambert.h>
 
 #define _mean_y_ ((ptsz->has_mean_y == _TRUE_) && (index_md == ptsz->index_md_mean_y))
 #define _hmf_ ((ptsz->has_hmf == _TRUE_) && (index_md == ptsz->index_md_hmf))

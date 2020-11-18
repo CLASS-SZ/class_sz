@@ -1,4 +1,5 @@
-# $ python3 compute_and_plot_cib_cib.py -param_name 'h' -p_val '[0.6766]'  -show_legend yes -show_error_bars no -output 'gal_gal_2h,gal_gal_1h' -plot_gal_gal yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -mode run
+# $ python3 compute_and_plot_cib_cib.py -param_name 'h' -p_val '[0.6766]'  -show_legend yes -show_error_bars no -output 'cib_cib_1h,cib_cib_2h' -plot_gal_gal no -plot_cib_cib yes -plot_tSZ_gal no -plot_tSZ_lens no -plot_isw_lens no  -plot_isw_tsz no -plot_isw_auto no -save_tsz_ps no -save_figure yes -plot_redshift_dependent_functions no -mode run
+#cib ref in Microkelvin^2
 
 import argparse
 import numpy as np
@@ -79,7 +80,7 @@ def run(args):
     #     parameter_file = 'class-sz_parameters.ini'
 
     # important parameters are re-ajusted later, here we just load a template file:
-    parameter_file = 'class-sz_parameters_KA20.ini'
+    parameter_file = 'class-sz_parameters_MM20.ini'
     #'class-sz_chill_B12_parameters.ini'
     #parameter_file = 'class-sz_parameters_rotti++20.ini'
     #parameter_file ='tSZ_params_ref_resolved-rotti++20_snr12_step_2.ini'
@@ -204,19 +205,19 @@ def run(args):
     # 'b_hydro': 0.4656
     p_dict['B'] = 1./(1.-0.4656)
     # 'Omega_c': 0.26066676
-    p_dict['Omega_cdm'] = 0.26066676
+    p_dict['Omega_cdm'] = 0.3175-0.022068/0.6711/0.6711
 
     # 'Omega_b': 0.048974682
-    p_dict['Omega_b'] = 0.048974682
+    p_dict['omega_b'] = 0.022068
     # 'h': 0.6766
-    p_dict['h'] = 0.6766
+    p_dict['h'] = 0.6711
     #print('omega_b=%.3e'%(p_dict['Omega_b']*p_dict['h']**2.))
     #print('omega_c=%.3e'%(p_dict['Omega_cdm']*p_dict['h']**2.))
     # 'sigma8': 0.8102
-    p_dict['sigma8'] = 0.8102
+    p_dict['A_s'] = 2.2e-9
     #p_dict['sigma8'] = 2.105
     # 'n_s': 0.9665
-    p_dict['n_s'] = 0.9665 #P18: 0.9665
+    p_dict['n_s'] = .9624 #P18: 0.9665
     # 'lMmin': 11.99
     p_dict['M_min_HOD'] = pow(10.,11.32914985)*p_dict['h']
     # 'lM0': 11.99
@@ -237,7 +238,7 @@ def run(args):
     p_dict['Emissivity index of sed'] = 1.75
     p_dict['Power law index of SED at high frequency'] = 1.7
     p_dict['Redshift evolution of L − M normalisation'] = 3.6
-    p_dict['Most efficient halo mass in Msun/h'] = pow(10.,12.6)*p_dict['h']
+    p_dict['Most efficient halo mass in Msun/h'] = pow(10.,12.6)
     p_dict['Normalisation of L − M relation in [Jy MPc2/Msun/Hz]'] = 6.4e-8
     p_dict['Size of of halo masses sourcing CIB emission'] = 0.5
 
@@ -591,13 +592,15 @@ def run(args):
                     print('plotting cibxcib')
                     fac = multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi/1e5
                     #ax.plot(multipoles[id_p],(gal_gal_1h[id_p])/fac,color=col[id_p],ls='-',alpha = 1.,label = 'class_sz gg-1h')
-                    ax.plot(ell_MM20,cl_cib_cib_1h_MM20*1e5,label='MM20-1h')
-                    ax.plot(ell_MM20,cl_cib_cib_2h_MM20*1e5,ls='--',label='MM20-2h')
+                    ax.plot(ell_MM20,cl_cib_cib_1h_MM20,label='MM20-1h')
+                    ax.plot(ell_MM20,cl_cib_cib_2h_MM20,ls='--',label='MM20-2h')
 
-                    ax.plot(multipoles[id_p],(cib_cib_2h[id_p])/fac,color='r',ls='--',alpha = 1.,
+                    print(cib_cib_1h[id_p])
+                    print(cib_cib_2h[id_p])
+                    ax.plot(multipoles[id_p],(cib_cib_2h[id_p])/(2.725e6**2),color='r',ls='--',alpha = 1.,
                     marker =  'o',markersize = 2,
                     label = 'class_sz hod (2-halo)')
-                    ax.plot(multipoles[id_p],(cib_cib_1h[id_p])/fac,color='r',ls='--',alpha = 1.,
+                    ax.plot(multipoles[id_p],(cib_cib_1h[id_p])/(2.725e6**2),color='k',ls='--',alpha = 1.,
                     marker =  '*',markersize = 1,
                     label = 'class_sz hod (1-halo)')
 
@@ -878,6 +881,7 @@ def run(args):
             ax2.legend(loc=1,ncol = 1)
         else:
             ax1.legend(loc=1,ncol = 1)
+    ax1.legend(loc=4,ncol = 1)
 
 
     fig.tight_layout()

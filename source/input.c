@@ -2221,7 +2221,7 @@ int input_read_parameters(
      class_read_double("Emissivity index of sed",ptsz->beta_cib); // emissivity index of sed
      class_read_double("Power law index of SED at high frequency",ptsz->gamma_cib); // Power law index of SED at high frequency
      class_read_double("Redshift evolution of L − M normalisation",ptsz->delta_cib); // Redshift evolution of L − M normalisation
-     class_read_double("Most efficient halo mass in Msun/h",ptsz->m_eff_cib); // Most efficient halo mass in Msun/h
+     class_read_double("Most efficient halo mass in Msun",ptsz->m_eff_cib); // Most efficient halo mass in Msun/h
      class_read_double("Normalisation of L − M relation in [Jy MPc2/Msun/Hz]",ptsz->L0_cib); // Normalisation of L − M relation in [Jy MPc2/Msun/Hz]
      class_read_double("Size of of halo masses sourcing CIB emission",ptsz->sigma2_LM_cib); // Size of of halo masses sourcing CIB emission
 

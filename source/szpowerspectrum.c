@@ -1030,7 +1030,7 @@ int index_l = (int) Pvectsz[ptsz->index_multipole];
 ptsz->cl_cib_cib_2h[index_l] = Pvectsz[ptsz->index_integral]
                                *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
                                /(2*_PI_);
-//printf("ell = %.3e and cl_yg = %.3e\n",ptsz->ell[index_l],ptsz->cl_tSZ_gal_1h[index_l]);
+//printf("ell = %.3e and cl_cib_cib = %.3e\n",ptsz->ell[index_l],ptsz->cl_cib_cib_2h[index_l]);
 
 }
 
@@ -1517,34 +1517,17 @@ double integrand_at_m_and_z(double logM,
 
    else if (_cib_cib_2h_){
 
-             if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
-
-             evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
-
-             int index_l = (int) pvectsz[ptsz->index_multipole];
-             pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
-             pvectsz[ptsz->index_frequency_for_cib_profile] = ptsz->nu_cib_GHz;
-             evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
-
-             pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
-                                               *pvectsz[ptsz->index_pressure_profile]
-                                               *pvectsz[ptsz->index_halo_bias];
-                                             }
-
-             if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
              evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
              int index_l = (int) pvectsz[ptsz->index_multipole];
              pvectsz[ptsz->index_multipole_for_cib_profile] = ptsz->ell[index_l];
-             pvectsz[ptsz->index_frequency_for_cib_profile] = ptsz->nu_prime_cib_GHz;
+             pvectsz[ptsz->index_frequency_for_cib_profile] = ptsz->nu_cib_GHz;
              evaluate_cib_profile(pvecback,pvectsz,pba,ptsz);
 
-             pvectsz[ptsz->index_integrand] =   pvectsz[ptsz->index_hmf]
+             pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                                *pvectsz[ptsz->index_cib_profile]
                                                *pvectsz[ptsz->index_halo_bias];
-
-                                             }
 
     }
 
@@ -5130,7 +5113,7 @@ int evaluate_cib_profile(double * pvecback,
                          struct tszspectrum * ptsz){
 
 
-double M_halo = pvectsz[ptsz->index_mass_for_hmf]; // Msun_over_h
+double M_halo = pvectsz[ptsz->index_mass_for_hmf]/pba->h; // convet to Msun
 
 double frequency_for_cib_profile = pvectsz[ptsz->index_frequency_for_cib_profile]; // in GHz
 
@@ -5161,6 +5144,7 @@ Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
 
 // eq. 13 of MM20
 ug_at_ell  = 1./(4.*_PI_)*(Lc_nu+Ls_nu*us);
+//printf(".3e\n",ug_at_ell);
 
 }
 else if(_tSZ_cib_1h_
@@ -5191,21 +5175,48 @@ double Luminosity_of_central_galaxies(double z,
                                       struct tszspectrum * ptsz){
 double result = 0.;
 
-return result;
+double L_gal = evaluate_galaxy_luminosity(z, M_halo, nu, ptsz);
+double nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,ptsz);
+return result =  nc*L_gal;
                                       }
 
 double Luminosity_of_satellite_galaxies(double z,
-                                        double  M_halo,
+                                        double M_halo,
                                         double nu,
                                         struct tszspectrum * ptsz){
-double result = 0.;
 
+double result = 0.;
+double lnMs_min = log(1e6);
+double lnMs_max = log(1e11);
+double dlnM = (lnMs_max - lnMs_min)/50.;
+
+double L_sat = 0.;
+double L_gal;
+double lnMs = lnMs_min;
+double M_sub;
+double M_host =  M_halo;
+double dNdlnMs;
+while (lnMs<lnMs_max){
+M_sub = exp(lnMs);
+L_gal = evaluate_galaxy_luminosity(z, M_sub, nu, ptsz);
+//printf("Lgal = %.3e\n",L_gal);
+
+// Subhalo mass function: Equation 12 of https://iopscience.iop.org/article/10.1088/0004-637X/719/1/88/pdf
+dNdlnMs = 0.30*pow(M_sub/M_host,-0.7)*exp(-9.9*pow(M_sub/M_host,2.5));
+L_sat += L_gal*dNdlnMs;
+lnMs += dlnM;
+}
+result = L_sat;
+//printf("%.3e\n",result);
 return result;
                                       }
 
 double evaluate_Sigma_cib(double M, struct tszspectrum * ptsz){
 // eq. 33 MM20
-double result = 0.;
+double result;
+double log10M = log10(M);
+double log10Meff = log10(ptsz->m_eff_cib);
+result = M/sqrt(2.*_PI_*ptsz->sigma2_LM_cib)*exp(-pow(log10M-log10Meff,2.)/(2.*ptsz->sigma2_LM_cib));
 
 return result;
                                       }
@@ -5219,9 +5230,30 @@ return result;
 double evaluate_sed_cib(double z, double nu, struct tszspectrum * ptsz){
 double result = 0.;
 double Td = evaluate_dust_temperature(z,ptsz);
-// double B_nu_at_T = evaluate_B_nu_at_T(nu,Td);
-// double nu0 = nu;
-// double B_nu0_at_T = evaluate_B_nu_at_T(nu0,Td);
+
+double nu0;
+double x = -(3.+ptsz->beta_cib+ptsz->gamma_cib)*exp(-(3.+ptsz->beta_cib+ptsz->gamma_cib));
+double hplanck=6.62607004e-34; //#m2 kg / s
+double kb = 1.38064852e-23; //#m2 kg s-2 K-1
+double clight = 299792458.;
+nu0 = 1e-9*kb*Td/hplanck*(3.+ptsz->beta_cib+ptsz->gamma_cib+gsl_sf_lambert_W0(x));
+
+//printf("nu=%.3e, nu0 = %.3e\n",nu,nu0);
+if (nu>=nu0){
+result = pow(nu/nu0,-ptsz->gamma_cib);
+}
+else{
+double B_nu_at_Td = (2.*hplanck/clight/clight)*pow(nu,3.)
+                    /(exp(hplanck*nu/kb/Td)-1.);
+double B_nu0_at_Td = (2.*hplanck/clight/clight)*pow(nu0,3.)
+                    /(exp(hplanck*nu0/kb/Td)-1.);
+result = pow(nu/nu0,ptsz->beta_cib)*B_nu_at_Td/B_nu0_at_Td;
+}
+
+
+//printf("nu0=%.6e\n",nu0);
+//exit(0);
+//
 return result;
                                       }
 
@@ -5243,6 +5275,7 @@ double Phi = evaluate_phi_cib(z,ptsz);
 double Theta =  evaluate_sed_cib(z,nu,ptsz);
 double Sigma = evaluate_Sigma_cib(M,ptsz);
 result = L0*Phi*Sigma*Theta;
+//printf("Phi =  %.3e, Theta = %.3e, Sigma = %.3e\n",Phi, Theta, Sigma);
 return result;
                                       }
 
@@ -5333,6 +5366,14 @@ else {
   evaluate_c500c_KA20(pvecback,pvectsz,pba,ptsz);
   c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
   r_delta = pvectsz[ptsz->index_r500c];
+}
+
+int index_md = (int) pvectsz[ptsz->index_md];
+
+if (_cib_cib_1h_ || _cib_cib_2h_){
+  //printf("cib\n");
+  r_delta =1.17*pvectsz[ptsz->index_rs];
+  c_delta = pvectsz[ptsz->index_cVIR];
 }
 
 double z = pvectsz[ptsz->index_z];
