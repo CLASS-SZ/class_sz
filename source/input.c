@@ -1975,6 +1975,17 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
+
+      if ((strstr(string1,"kSZ_kSZ_lensmag_1h") != NULL) ) {
+        ptsz->has_kSZ_kSZ_lensmag_1halo =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+
       if ((strstr(string1,"kSZ_kSZ_gal_1h") != NULL) ) {
         ptsz->has_kSZ_kSZ_gal_1halo =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -4365,6 +4376,9 @@ int input_default_params(
   ptsz->n_z_dndlnM = 500;
   ptsz->n_m_dndlnM = 500;
 
+
+  ptsz->n_z_W_lensmag = 500;
+
   //Set pressure profile to P13
   ptsz->pressure_profile=0;
 
@@ -4526,6 +4540,7 @@ int input_default_params(
   ptsz->has_tSZ_lens_1h = _FALSE_;
   ptsz->has_tSZ_lens_2h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_1halo = _FALSE_;
+  ptsz->has_kSZ_kSZ_lensmag_1halo = _FALSE_;
   ptsz->has_tSZ_tSZ_tSZ_1halo = _FALSE_;
   ptsz->has_sz_te_y_y = _FALSE_;
   ptsz->has_sz_m_y_y_1h = _FALSE_;

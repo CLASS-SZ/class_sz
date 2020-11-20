@@ -684,6 +684,19 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
 
   int external_pressure_profile_init(struct tszspectrum * ptsz);
 
+  int evaluate_redshift_int_lensmag(double * pvectsz,
+                                    struct tszspectrum * ptsz);
+
+  int tabulate_redshift_int_lensmag(struct tszspectrum * ptsz,
+                                    struct background * pba);
+
+  int redshift_int_lensmag(
+                    struct tszspectrum * ptsz,
+                    struct background * pba,
+                    double * pvectsz, 
+                    double * result
+                  );
+
   int spectra_sigma_prime(struct background * pba,
                           struct primordial * ppm,
                           struct nonlinear * pnl,

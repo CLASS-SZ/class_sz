@@ -24,6 +24,7 @@
 #define _cov_Y_Y_ssc_ ((ptsz->has_sz_cov_Y_Y_ssc == _TRUE_) && (index_md == ptsz->index_md_cov_Y_Y_ssc))
 #define _cov_Y_N_next_order_ ((ptsz->has_sz_cov_Y_N_next_order == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N_next_order))
 #define _kSZ_kSZ_gal_1halo_ ((ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1halo))
+#define _kSZ_kSZ_lensmag_1halo_ ((ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lensmag_1halo))
 #define _gal_gal_1h_ ((ptsz->has_gal_gal_1h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_1h))
 #define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
 #define _gal_lens_2h_ ((ptsz->has_gal_lens_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_2h))
@@ -89,6 +90,7 @@ struct tszspectrum {
   double * cl_isw_tsz;
   double * cl_isw_auto;
   double * cl_kSZ_kSZ_gal_1h;
+  double * cl_kSZ_kSZ_lensmag_1h;
   double * b_tSZ_tSZ_tSZ_1halo;
   double * cl_te_y_y;
   double * m_y_y_1h;
@@ -182,6 +184,12 @@ struct tszspectrum {
   int index_md_kSZ_kSZ_gal_1halo;
   int index_integrand_id_kSZ_kSZ_gal_1halo_first;
   int index_integrand_id_kSZ_kSZ_gal_1halo_last;
+
+  int has_kSZ_kSZ_lensmag_1halo;
+  int index_md_kSZ_kSZ_lensmag_1halo;
+  int index_integrand_id_kSZ_kSZ_lensmag_1halo_first;
+  int index_integrand_id_kSZ_kSZ_lensmag_1halo_last;
+
 
   int has_tSZ_tSZ_tSZ_1halo;
   int index_md_tSZ_tSZ_tSZ_1halo;
@@ -404,6 +412,8 @@ struct tszspectrum {
   int index_multipole_for_cib_profile;
   int index_frequency_for_cib_profile;
   int index_cib_profile;
+
+  int index_W_lensmag;
   //////////////
 
   int index_integral;
@@ -508,6 +518,9 @@ struct tszspectrum {
 
   double M1SZ_dndlnM;
   double M2SZ_dndlnM;
+
+
+  int n_z_W_lensmag;
 
   /*Array size*/
   int n_arraySZ;//number of z in the interpolation
@@ -757,6 +770,9 @@ struct tszspectrum {
   double * array_m_dndlnM;
   double * array_z_dndlnM;
   double * array_dndlnM_at_z_and_M;
+
+  double * array_z_W_lensmag;
+  double * array_W_lensmag;
 
   double * array_redshift;
   double * array_radius;
