@@ -520,6 +520,16 @@ struct tszspectrum {
   double M2SZ_dndlnM;
 
 
+  double z1SZ_L_sat;
+  double z2SZ_L_sat;
+
+  double M1SZ_L_sat;
+  double M2SZ_L_sat;
+
+  double epsabs_L_sat;
+  double epsrel_L_sat;
+
+
   int n_z_W_lensmag;
 
   /*Array size*/
@@ -528,6 +538,9 @@ struct tszspectrum {
 
   int n_z_dndlnM;
   int n_m_dndlnM;
+
+  int n_z_L_sat;
+  int n_m_L_sat;
 
   int N_redshift_dndlnM;
   int N_mass_dndlnM;
@@ -770,6 +783,11 @@ struct tszspectrum {
   double * array_m_dndlnM;
   double * array_z_dndlnM;
   double * array_dndlnM_at_z_and_M;
+
+  double * array_m_L_sat;
+  double * array_z_L_sat;
+  double * array_L_sat_at_z_and_M_at_nu;
+  double * array_L_sat_at_z_and_M_at_nu_prime;
 
   double * array_z_W_lensmag;
   double * array_W_lensmag;
@@ -1045,6 +1063,7 @@ double evaluate_phi_cib(double z, struct tszspectrum * ptsz);
 double evaluate_sed_cib(double z, double nu, struct tszspectrum * ptsz);
 double evaluate_dust_temperature(double z, struct tszspectrum * ptsz);
 double evaluate_galaxy_luminosity(double z, double M, double nu, struct tszspectrum * ptsz);
+double subhalo_hmf_dndlnMs(double M_host,double M_sub);
 #ifdef __cplusplus
 }
 #endif

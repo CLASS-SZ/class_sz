@@ -82,6 +82,7 @@ int szpowerspectrum_init(
    tabulate_sigma_and_dsigma_from_pk(pba,pnl,ppm,ptsz);
 
 
+   tabulate_L_sat_at_nu_and_nu_prime(pba,ptsz);
 
    if (ptsz->has_sigma2_hsv)
    tabulate_sigma2_hsv_from_pk(pba,pnl,ppm,ptsz);
@@ -309,6 +310,15 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo){
   free(ptsz->array_z_W_lensmag);
 }
 
+if (ptsz->has_cib_cib_1h
+  ||ptsz->has_cib_cib_2h ){
+
+free(ptsz->array_m_L_sat);
+free(ptsz->array_z_L_sat);
+free(ptsz->array_L_sat_at_z_and_M_at_nu);
+free(ptsz->array_L_sat_at_z_and_M_at_nu_prime);
+
+  }
 
 if (ptsz->has_dndlnM
   // || ptsz->has_gal_gal_1h
@@ -1918,7 +1928,8 @@ int evaluate_tau_profile(double * pvecback,
 
 
   // rho0=mvir/(4d0*pi*rs**3d0*(dlog(1d0+cvir)-cvir/(1d0+cvir))) !Eq. (2.66) of Binney & Tremaine
-  double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+pvectsz[ptsz->index_cVIR])-pvectsz[ptsz->index_cVIR]/(1.+pvectsz[ptsz->index_cVIR])));
+  double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)
+                *(log(1.+pvectsz[ptsz->index_cVIR])-pvectsz[ptsz->index_cVIR]/(1.+pvectsz[ptsz->index_cVIR])));
 
 
 
@@ -5200,6 +5211,7 @@ int evaluate_cib_profile(double * pvecback,
 
 
 double M_halo = pvectsz[ptsz->index_mass_for_hmf]/pba->h; // convet to Msun
+//printf("%.3e %.3e\n",M_halo,pvectsz[ptsz->index_mVIR]);
 
 double frequency_for_cib_profile = pvectsz[ptsz->index_frequency_for_cib_profile]; // in GHz
 
@@ -5226,11 +5238,16 @@ if (_tSZ_cib_2h_
    ){
 nu = frequency_for_cib_profile;
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
-Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
+//Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
+Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,pba,ptsz);
+
+//double test = get_L_sat_at_z_and_M_at_nu(3.,exp(3.845e+01),pba,ptsz);
+//printf("%.3e \n",log(1.+test));
+//printf("%.3e %.3e %.3e\n",Ls_nu,z,M_halo);
 
 // eq. 13 of MM20
 ug_at_ell  = 1./(4.*_PI_)*(Lc_nu+Ls_nu*us);
-//printf(".3e\n",ug_at_ell);
+//printf("%.3e %.3e %.3e %.3e %.3e %.3e\n",z,M_halo,Lc_nu, Ls_nu, us, ug_at_ell);
 
 }
 else if(_tSZ_cib_1h_
@@ -5239,13 +5256,13 @@ else if(_tSZ_cib_1h_
 
 nu = ptsz->nu_cib_GHz;
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
-Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
-
+//Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
+Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,pba,ptsz);
 
 nu = ptsz->nu_prime_cib_GHz;
 Lc_nu_prime = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
-Ls_nu_prime = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
-
+//Ls_nu_prime = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
+Ls_nu_prime = get_L_sat_at_z_and_M_at_nu_prime(z,M_halo,pba,ptsz);
 // eq. 15 of MM20
 ug_at_ell  = 1./(4.*_PI_)*sqrt(Ls_nu*Ls_nu_prime*us*us+Lc_nu*Ls_nu_prime*us+Lc_nu_prime*Ls_nu*us);
 }
@@ -5275,7 +5292,7 @@ double Luminosity_of_satellite_galaxies(double z,
 double result = 0.;
 double lnMs_min = log(1e6);
 double lnMs_max = log(1e11);
-double dlnM = (lnMs_max - lnMs_min)/50.;
+double dlnM = (lnMs_max - lnMs_min)/10.;
 
 double L_sat = 0.;
 double L_gal;
@@ -5288,8 +5305,8 @@ M_sub = exp(lnMs);
 L_gal = evaluate_galaxy_luminosity(z, M_sub, nu, ptsz);
 //printf("Lgal = %.3e\n",L_gal);
 
-// Subhalo mass function: Equation 12 of https://iopscience.iop.org/article/10.1088/0004-637X/719/1/88/pdf
-dNdlnMs = 0.30*pow(M_sub/M_host,-0.7)*exp(-9.9*pow(M_sub/M_host,2.5));
+
+dNdlnMs = subhalo_hmf_dndlnMs(M_host,M_sub);
 L_sat += L_gal*dNdlnMs;
 lnMs += dlnM;
 }
@@ -5297,6 +5314,13 @@ result = L_sat;
 //printf("%.3e\n",result);
 return result;
                                       }
+
+
+double subhalo_hmf_dndlnMs(double M_host,double M_sub){
+// Subhalo mass function: Equation 12 of https://iopscience.iop.org/article/10.1088/0004-637X/719/1/88/pdf
+  return 0.30*pow(M_sub/M_host,-0.7)*exp(-9.9*pow(M_sub/M_host,2.5));
+}
+
 
 double evaluate_Sigma_cib(double M, struct tszspectrum * ptsz){
 // eq. 33 MM20
@@ -5459,7 +5483,7 @@ int index_md = (int) pvectsz[ptsz->index_md];
 
 if (_cib_cib_1h_ || _cib_cib_2h_){
   //printf("cib\n");
-  r_delta =1.17*pvectsz[ptsz->index_rs];
+  r_delta = pvectsz[ptsz->index_rs];
   c_delta = pvectsz[ptsz->index_cVIR];
 }
 

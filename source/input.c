@@ -4377,6 +4377,18 @@ int input_default_params(
   ptsz->n_m_dndlnM = 500;
 
 
+  ptsz->M1SZ_L_sat = 1.e11;
+  ptsz->M2SZ_L_sat = 7.e17;
+  ptsz->z1SZ_L_sat = 1.e-5;
+  ptsz->z2SZ_L_sat = 1.;
+  ptsz->n_z_L_sat = 500;
+  ptsz->n_m_L_sat = 500;
+  ptsz->epsabs_L_sat = 1e-10;
+  ptsz->epsrel_L_sat = 1e-3;
+
+
+
+
   ptsz->n_z_W_lensmag = 500;
 
   //Set pressure profile to P13

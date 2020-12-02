@@ -47690,6 +47690,238 @@ return _SUCCESS_;
     }
 
 
+struct Parameters_for_integrand_patterson_L_sat{
+  double nu;
+  double z;
+  double M_host;
+  struct tszspectrum * ptsz;
+};
+
+
+double integrand_patterson_L_sat(double lnM_sub, void *p){
+  struct Parameters_for_integrand_patterson_L_sat *V = ((struct Parameters_for_integrand_patterson_L_sat *) p);
+
+  double M_sub = exp(lnM_sub);
+  double nu = V->nu;
+  double z = V->z;
+  double M_host = V->M_host;
+
+  double L_gal_at_nu = evaluate_galaxy_luminosity(z, M_sub, nu, V->ptsz);
+  double dNdlnMs = subhalo_hmf_dndlnMs(M_host,M_sub);
+  double result = L_gal_at_nu*dNdlnMs;
+
+
+  return result;
+}
+
+
+// tabulate L_nu^sat as a function of M (M_host) and z at frequency nu
+
+int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
+                                      struct tszspectrum * ptsz){
+
+if (
+      ptsz->has_tSZ_cib_1h
+    + ptsz->has_tSZ_cib_2h
+    + ptsz->has_cib_cib_1h
+    + ptsz->has_cib_cib_2h
+    == _FALSE_
+    )
+return 0;
+
+  //Array of z
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_L_sat);
+  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_L_sat);
+  int index_z;
+
+  double tstart, tstop;
+  int index_l;
+
+  // double * pvecback;
+  // double * pvectsz;
+  int abort;
+
+  //Array of M in Msun
+  double logM_min = r8_min(log(ptsz->M1SZ/pba->h),log(ptsz->M1SZ_L_sat)); //in Msun
+  double logM_max = r8_max(log(ptsz->M2SZ/pba->h),log(ptsz->M2SZ_L_sat)); //in Msun
+  int index_M;
+
+  int index_z_M = 0;
+
+  double ** array_L_sat_at_z_and_M_at_nu;
+  double ** array_L_sat_at_z_and_M_at_nu_prime;
+
+  class_alloc(ptsz->array_z_L_sat,sizeof(double *)*ptsz->n_z_L_sat,ptsz->error_message);
+  class_alloc(ptsz->array_m_L_sat,sizeof(double *)*ptsz->n_m_L_sat,ptsz->error_message);
+
+
+class_alloc(ptsz->array_L_sat_at_z_and_M_at_nu,
+            sizeof(double *)*ptsz->n_z_L_sat*ptsz->n_m_L_sat,
+            ptsz->error_message);
+
+
+class_alloc(array_L_sat_at_z_and_M_at_nu,
+            ptsz->n_z_L_sat*sizeof(double *),
+            ptsz->error_message);
+
+class_alloc(ptsz->array_L_sat_at_z_and_M_at_nu_prime,
+            sizeof(double *)*ptsz->n_z_L_sat*ptsz->n_m_L_sat,
+            ptsz->error_message);
+
+
+class_alloc(array_L_sat_at_z_and_M_at_nu_prime,
+            ptsz->n_z_L_sat*sizeof(double *),
+            ptsz->error_message);
+
+
+for (index_l=0;
+     index_l<ptsz->n_z_L_sat;
+     index_l++)
+{
+  class_alloc(array_L_sat_at_z_and_M_at_nu[index_l],
+              ptsz->n_m_L_sat*sizeof(double),
+              ptsz->error_message);
+  class_alloc(array_L_sat_at_z_and_M_at_nu_prime[index_l],
+              ptsz->n_m_L_sat*sizeof(double),
+              ptsz->error_message);
+}
+
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,index_z_M,\
+pba,ptsz,z_min,z_max,logM_min,logM_max)\
+private(tstart, tstop,index_M,index_z) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+#pragma omp for schedule (dynamic)
+for (index_z=0; index_z<ptsz->n_z_L_sat; index_z++)
+{
+
+#pragma omp flush(abort)
+
+for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
+{
+      ptsz->array_z_L_sat[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_L_sat-1.); // log(1+z)
+
+      ptsz->array_m_L_sat[index_M] =
+                                    logM_min
+                                    +index_M*(logM_max-logM_min)
+                                    /(ptsz->n_m_L_sat-1.); //log(R)
+
+
+      double z =   exp(ptsz->array_z_L_sat[index_z])-1.;
+      double logM =   ptsz->array_m_L_sat[index_M];
+
+      double lnMs_min = log(1e10);
+      double lnMs_max = logM;//log(1e11);
+
+      double epsrel = ptsz->epsrel_L_sat;
+      double epsabs = ptsz->epsabs_L_sat;
+
+      struct Parameters_for_integrand_patterson_L_sat V;
+      V.nu = ptsz->nu_cib_GHz;
+      V.z = z;
+      V.ptsz = ptsz;
+      V.M_host = exp(logM);
+
+
+      void * params = &V;
+      params = &V;
+
+      double L_sat_at_nu = Integrate_using_Patterson_adaptive(lnMs_min, lnMs_max,
+                                                               epsrel, epsabs,
+                                                               integrand_patterson_L_sat,
+                                                               params,ptsz->patterson_show_neval);
+
+      V.nu = ptsz->nu_prime_cib_GHz;
+      params = &V;
+      double  L_sat_at_nu_prime = Integrate_using_Patterson_adaptive(lnMs_min, lnMs_max,
+                                                               epsrel, epsabs,
+                                                               integrand_patterson_L_sat,
+                                                               params,ptsz->patterson_show_neval);
+
+
+      // double dlnM = (lnMs_max - lnMs_min)/50.;
+      //
+      // double L_sat_at_nu = 0.;
+      // double L_sat_at_nu_prime = 0.;
+      // double L_gal_at_nu;
+      // double L_gal_at_nu_prime;
+      // double lnMs = lnMs_min;
+      // double M_sub;
+      // double M_host = exp(logM);
+      // double dNdlnMs;
+      //
+      // double nu  = ptsz->nu_cib_GHz;
+      // double nu_prime = ptsz->nu_prime_cib_GHz;
+      //
+      // while (lnMs<lnMs_max){
+      // M_sub = exp(lnMs);
+      // L_gal_at_nu = evaluate_galaxy_luminosity(z, M_sub, nu, ptsz);
+      // L_gal_at_nu_prime = evaluate_galaxy_luminosity(z, M_sub, nu_prime, ptsz);
+      // dNdlnMs = subhalo_hmf_dndlnMs(M_host,M_sub);
+      // L_sat_at_nu += L_gal_at_nu*dNdlnMs;
+      // L_sat_at_nu_prime += L_gal_at_nu_prime*dNdlnMs;
+      // lnMs += dlnM;
+      // }
+
+
+      array_L_sat_at_z_and_M_at_nu[index_z][index_M] = log(1.+L_sat_at_nu);
+      array_L_sat_at_z_and_M_at_nu_prime[index_z][index_M] = log(1.+L_sat_at_nu_prime);
+      //printf("%.3e %.3e %.3e %.3e %.3e %.3e\n",nu, nu_prime, z,logM,log(1.+L_sat_at_nu),log(1.+L_sat_at_nu_prime));
+
+      index_z_M += 1;
+    }
+  }
+#ifdef _OPENMP
+  tstop = omp_get_wtime();
+  if (ptsz->sz_verbose > 0)
+    printf("In %s: time spent in parallel region (L_sat) = %e s for thread %d\n",
+           __func__,tstop-tstart,omp_get_thread_num());
+#endif
+
+    }
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+
+index_z_M = 0;
+for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
+{
+  for (index_z=0; index_z<ptsz->n_z_L_sat; index_z++)
+  {
+    ptsz->array_L_sat_at_z_and_M_at_nu[index_z_M] = array_L_sat_at_z_and_M_at_nu[index_z][index_M];
+    ptsz->array_L_sat_at_z_and_M_at_nu_prime[index_z_M] = array_L_sat_at_z_and_M_at_nu_prime[index_z][index_M];
+    index_z_M += 1;
+  }
+}
+
+  free(array_L_sat_at_z_and_M_at_nu);
+  free(array_L_sat_at_z_and_M_at_nu_prime);
+
+return _SUCCESS_;
+
+                                      }
 
 
 
@@ -47882,8 +48114,8 @@ return _SUCCESS_;
 }
 
 
-///Tabulate redshift_int_lensmag
-//as functions of z
+// Tabulate redshift_int_lensmag
+// as functions of z
 int tabulate_redshift_int_lensmag(struct tszspectrum * ptsz,
                                   struct background * pba){
 
@@ -48207,6 +48439,39 @@ double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum 
                           &z,
                           &m));
 }
+
+double get_L_sat_at_z_and_M_at_nu(double z_asked,
+                                  double m_asked,
+                                  struct background * pba,
+                                  struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double m = log(m_asked);
+ return exp(pwl_interp_2d(ptsz->n_z_L_sat,
+                          ptsz->n_m_L_sat,
+                          ptsz->array_z_L_sat,
+                          ptsz->array_m_L_sat,
+                          ptsz->array_L_sat_at_z_and_M_at_nu,
+                          1,
+                          &z,
+                          &m))-1.;
+}
+
+double get_L_sat_at_z_and_M_at_nu_prime(double z_asked,
+                                  double m_asked,
+                                  struct background * pba,
+                                  struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double m = log(m_asked);
+ return exp(pwl_interp_2d(ptsz->n_z_L_sat,
+                          ptsz->n_m_L_sat,
+                          ptsz->array_z_L_sat,
+                          ptsz->array_m_L_sat,
+                          ptsz->array_L_sat_at_z_and_M_at_nu_prime,
+                          1,
+                          &z,
+                          &m))-1.;
+}
+
 
 int bispectrum_condition(double ell_1, double ell_2, double ell_3){
 int ell_1_min = abs(ell_2-ell_3);
