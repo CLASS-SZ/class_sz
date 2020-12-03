@@ -3457,6 +3457,33 @@ int write_redshift_dependent_quantities(struct background * pba,
 
  }
 
+ fclose(fp);
+
+ sprintf(Filepath,"%s%s%s",ptsz->root,"","cib.txt");
+ printf("-> Writing sed cib in %s\n",Filepath);
+ fp=fopen(Filepath, "w");
+
+ int index_nu;
+ int n_nu = 100;
+ double nu_min = 1e1;
+ double nu_max = 1e5;
+ for (index_nu=0;index_nu<n_nu;index_nu++){
+
+   double ln1pnu =  log(1.+nu_min)
+                   +index_nu*(log(1.+nu_max)-log(1.+nu_min))
+                   /(n_nu-1.); // log(1+z)
+
+   double nu = exp(ln1pnu)-1.;
+   double z = 0.;
+   double theta = evaluate_sed_cib(z,  nu, ptsz);
+
+   fprintf(fp,"%.5e \t %.5e\n",nu,theta);
+ }
+
+
+
+
+
   free(pvecback);
 
   fclose(fp);
@@ -5168,6 +5195,7 @@ double HOD_mean_number_of_central_galaxies(double z,
 
 int index_md = (int) pvectsz[ptsz->index_md];
 if (_cib_cib_1h_ || _cib_cib_2h_){
+  //printf("cib\n");
 if (M_halo>=M_min) result = 1.;
 else result = 0.;
 }
@@ -5239,7 +5267,7 @@ if (_tSZ_cib_2h_
 nu = frequency_for_cib_profile;
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
 //Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
-Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,pba,ptsz);
+Ls_nu = 0.;//get_L_sat_at_z_and_M_at_nu(z,M_halo,pba,ptsz);
 
 //double test = get_L_sat_at_z_and_M_at_nu(3.,exp(3.845e+01),pba,ptsz);
 //printf("%.3e \n",log(1.+test));
@@ -5257,15 +5285,19 @@ else if(_tSZ_cib_1h_
 nu = ptsz->nu_cib_GHz;
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
 //Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
-Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,pba,ptsz);
+Ls_nu = 0.;//get_L_sat_at_z_and_M_at_nu(z,M_halo,pba,ptsz);
 
 nu = ptsz->nu_prime_cib_GHz;
 Lc_nu_prime = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
 //Ls_nu_prime = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
-Ls_nu_prime = get_L_sat_at_z_and_M_at_nu_prime(z,M_halo,pba,ptsz);
+Ls_nu_prime = 0.;//get_L_sat_at_z_and_M_at_nu_prime(z,M_halo,pba,ptsz);
 // eq. 15 of MM20
 ug_at_ell  = 1./(4.*_PI_)*sqrt(Ls_nu*Ls_nu_prime*us*us+Lc_nu*Ls_nu_prime*us+Lc_nu_prime*Ls_nu*us);
 }
+
+// need to fix units:
+// from Mpc^2 to (Mpc/h)^2
+ug_at_ell *= pow(pba->h,2.);
 
 pvectsz[ptsz->index_cib_profile] = ug_at_ell;
 
@@ -5342,6 +5374,8 @@ double evaluate_sed_cib(double z, double nu, struct tszspectrum * ptsz){
 double result = 0.;
 double Td = evaluate_dust_temperature(z,ptsz);
 
+//nu = nu*(1.+z);
+
 double nu0;
 double x = -(3.+ptsz->beta_cib+ptsz->gamma_cib)*exp(-(3.+ptsz->beta_cib+ptsz->gamma_cib));
 double hplanck=6.62607004e-34; //#m2 kg / s
@@ -5383,7 +5417,7 @@ double result = 0.;
 
 double L0 = ptsz->L0_cib;
 double Phi = evaluate_phi_cib(z,ptsz);
-double Theta =  evaluate_sed_cib(z,nu,ptsz);
+double Theta =  evaluate_sed_cib(z,nu*(1.+z),ptsz);
 double Sigma = evaluate_Sigma_cib(M,ptsz);
 result = L0*Phi*Sigma*Theta;
 //printf("Phi =  %.3e, Theta = %.3e, Sigma = %.3e\n",Phi, Theta, Sigma);

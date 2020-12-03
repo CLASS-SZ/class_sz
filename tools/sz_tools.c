@@ -46635,11 +46635,24 @@ if  (((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_
    ||((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
     ){
   // multiply by radial kernel for galaxies (squared for gxg quantities)
+  //printf("galaxy kernel gal gal\n");
   double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
 
   result *= pow(Wg/V->pvectsz[V->ptsz->index_chi2],2.);
 }
 
+
+if  (((V->ptsz->has_cib_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_cib_cib_1h))
+   ||((V->ptsz->has_cib_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_cib_cib_2h))
+    ){
+  // multiply by radial kernel for galaxies (squared for gxg quantities)
+
+  //double H_in_Hz = V->pvecback[V->pba->index_bg_H]*_c_/1e5*1e2*1e3*_Mpc_over_m_;
+  //result *= pow(H_in_Hz/V->pvectsz[V->ptsz->index_chi2],2.);
+  double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
+  double H_in_Hz = 1./(1.+z);//H_over_c_in_h_over_Mpc*_c_*_Mpc_over_m_;
+  result *= 1./(1.+z)*1./(1.+z)*pow(1./V->pvectsz[V->ptsz->index_chi2],2.);//pow(H_in_Hz/V->pvectsz[V->ptsz->index_chi2],2.);
+}
 
 
 
@@ -48167,7 +48180,7 @@ printf("-> Tabulating Wz for lensing magnification\n");
                pba->error_message,
                pba->error_message);
 
-    // set chi at redshift z
+    // set chi at redshift z in Mpc/h
     pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
 
 

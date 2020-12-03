@@ -4377,14 +4377,14 @@ int input_default_params(
   ptsz->n_m_dndlnM = 500;
 
 
-  ptsz->M1SZ_L_sat = 1.e11;
-  ptsz->M2SZ_L_sat = 7.e17;
+  ptsz->M1SZ_L_sat = 1.e9;
+  ptsz->M2SZ_L_sat = 1.e17;
   ptsz->z1SZ_L_sat = 1.e-5;
   ptsz->z2SZ_L_sat = 1.;
   ptsz->n_z_L_sat = 500;
   ptsz->n_m_L_sat = 500;
-  ptsz->epsabs_L_sat = 1e-10;
-  ptsz->epsrel_L_sat = 1e-3;
+  ptsz->epsabs_L_sat = 1e-15;
+  ptsz->epsrel_L_sat = 1e-6;
 
 
 
@@ -4431,8 +4431,8 @@ int input_default_params(
   ptsz->beta_cib = 1.75; // emissivity index of sed
   ptsz->gamma_cib = 1.7; // Power law index of SED at high frequency
   ptsz->delta_cib = 3.6; // Redshift evolution of L − M normalisation
-  ptsz->m_eff_cib = pow(10.,12.6)*0.7; // Most efficient halo mass in Msun/h
-  ptsz->L0_cib = 6.4e-8; // Normalisation of L − M relation in [Jy MPc2/Msun/Hz]
+  ptsz->m_eff_cib = pow(10.,12.6); // Most efficient halo mass in Msun
+  ptsz->L0_cib = 6.4e-8; // Normalisation of L − M relation in [Jy MPc2/Msun]
   ptsz->sigma2_LM_cib = 0.5; // Size of of halo masses sourcing CIB emission
 
 
