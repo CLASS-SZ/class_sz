@@ -45704,6 +45704,129 @@ int load_unwise_filter(struct tszspectrum * ptsz)
 
 
 //This routine reads the tabulated
+//alpha(z) normalisation for Tinker et al 2010 HMF
+//and stores the tabulated values.
+
+int load_T10_alpha_norm(struct tszspectrum * ptsz)
+{
+
+
+  class_alloc(ptsz->T10_ln1pz,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->T10_lnalpha,sizeof(double *)*100,ptsz->error_message);
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+
+  /* Prepare the command */
+  /* If the command is just a "cat", no arguments need to be passed */
+  // if(strncmp("cat ", ptsz->command, 4) == 0)
+  // {
+  // sprintf(arguments, " ");
+  // }
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+    sprintf(Filepath,
+            "%s%s%s",
+            "cat ",
+            ptsz->path_to_class,
+            "/sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt");
+  process = popen(Filepath, "r");
+
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+    sscanf(line, "%lf %lf", &this_lnx, &this_lnI);
+    //printf("lnx = %e  lnI = %e \n",this_lnx,this_lnI);
+
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  status = pclose(process);
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->T10_lnalpha_size = n_data;
+  /** Make room */
+
+  class_realloc(ptsz->T10_ln1pz,
+                ptsz->T10_ln1pz,
+                ptsz->T10_lnalpha_size*sizeof(double),
+                ptsz->error_message);
+  class_realloc(ptsz->T10_lnalpha,
+                ptsz->T10_lnalpha,
+                ptsz->T10_lnalpha_size*sizeof(double),
+                ptsz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<ptsz->T10_lnalpha_size; index_x++) {
+    ptsz->T10_ln1pz[index_x] = log(1.+lnx[index_x]);
+    ptsz->T10_lnalpha[index_x] = log(lnI[index_x]);
+  };
+
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  return _SUCCESS_;
+}
+
+
+//This routine reads the tabulated
 //nfw profiles,
 //and stores the tabulated values.
 
@@ -46136,7 +46259,8 @@ int plc_gnfw(double * plc_gnfw_x,
 
 
 
-//HMF Tinker 2010
+// HMF Tinker 2010
+// https://wwwmpa.mpa-garching.mpg.de/~komatsu/CRL/clusters/szpowerspectrumdks/szfastdks/mf_tinker10.f90
 int MF_T10 (
             double * result,
             double * lognu ,
@@ -46149,6 +46273,7 @@ int MF_T10 (
   *result =
   0.5
   *ptsz->alphaSZ
+  //*get_T10_alpha_at_z(z,ptsz)
   *(1.+pow(pow(ptsz->beta0SZ*pow(1.+z,0.2),2.)
          *exp(*lognu),
          -ptsz->phi0SZ
@@ -46649,9 +46774,9 @@ if  (((V->ptsz->has_cib_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_cib_
 
   //double H_in_Hz = V->pvecback[V->pba->index_bg_H]*_c_/1e5*1e2*1e3*_Mpc_over_m_;
   //result *= pow(H_in_Hz/V->pvectsz[V->ptsz->index_chi2],2.);
-  double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
-  double H_in_Hz = 1./(1.+z);//H_over_c_in_h_over_Mpc*_c_*_Mpc_over_m_;
-  result *= 1./(1.+z)*1./(1.+z)*pow(1./V->pvectsz[V->ptsz->index_chi2],2.);//pow(H_in_Hz/V->pvectsz[V->ptsz->index_chi2],2.);
+  // double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
+  // double H_in_Hz = 1./(1.+z);//H_over_c_in_h_over_Mpc*_c_*_Mpc_over_m_;
+  result *= 1./(1.+z)*1./(1.+z)*pow(1./V->pvectsz[V->ptsz->index_chi2],2.);
 }
 
 
@@ -46983,6 +47108,34 @@ double integrand_patterson_test(double logM, void *p){
   r = r_m_1*r_m_2;
                                      }
 
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h ) && (pvectsz[ptsz->index_frequency_for_cib_profile] != pvectsz[ptsz->index_frequency_prime_for_cib_profile])){
+
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate for frequency nu
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate for frequency nu_prime
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+  r = r_m_1*r_m_2;
+                                     }
+
  // galaxy cases
   else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tSZ_gal_1h )
          || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_1h)
@@ -47170,7 +47323,7 @@ r = result_gsl;
 if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)
+ || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h) && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h))
 pvectsz[ptsz->index_integral_over_m] = r*r;
 else
@@ -47178,7 +47331,7 @@ pvectsz[ptsz->index_integral_over_m] = r;
 
 //}
 
-  return pvectsz[ptsz->index_integral_over_m];
+return pvectsz[ptsz->index_integral_over_m];
 
 }
 
@@ -47762,14 +47915,21 @@ return 0;
   int index_z_M = 0;
 
   double ** array_L_sat_at_z_and_M_at_nu;
-  double ** array_L_sat_at_z_and_M_at_nu_prime;
+  // double ** array_L_sat_at_z_and_M_at_nu_prime;
 
   class_alloc(ptsz->array_z_L_sat,sizeof(double *)*ptsz->n_z_L_sat,ptsz->error_message);
   class_alloc(ptsz->array_m_L_sat,sizeof(double *)*ptsz->n_m_L_sat,ptsz->error_message);
 
 
-class_alloc(ptsz->array_L_sat_at_z_and_M_at_nu,
-            sizeof(double *)*ptsz->n_z_L_sat*ptsz->n_m_L_sat,
+  class_alloc(ptsz->array_L_sat_at_z_and_M_at_nu,
+              ptsz->cib_frequency_list_num*sizeof(double *),
+              ptsz->error_message);
+
+int index_nu;
+for (index_nu=0;index_nu<ptsz->cib_frequency_list_num;index_nu++){
+
+class_alloc(ptsz->array_L_sat_at_z_and_M_at_nu[index_nu],
+            ptsz->n_z_L_sat*ptsz->n_m_L_sat*sizeof(double),
             ptsz->error_message);
 
 
@@ -47777,15 +47937,15 @@ class_alloc(array_L_sat_at_z_and_M_at_nu,
             ptsz->n_z_L_sat*sizeof(double *),
             ptsz->error_message);
 
-class_alloc(ptsz->array_L_sat_at_z_and_M_at_nu_prime,
-            sizeof(double *)*ptsz->n_z_L_sat*ptsz->n_m_L_sat,
-            ptsz->error_message);
-
-
-class_alloc(array_L_sat_at_z_and_M_at_nu_prime,
-            ptsz->n_z_L_sat*sizeof(double *),
-            ptsz->error_message);
-
+// class_alloc(ptsz->array_L_sat_at_z_and_M_at_nu_prime,
+//             sizeof(double *)*ptsz->n_z_L_sat*ptsz->n_m_L_sat,
+//             ptsz->error_message);
+//
+//
+// class_alloc(array_L_sat_at_z_and_M_at_nu_prime,
+//             ptsz->n_z_L_sat*sizeof(double *),
+//             ptsz->error_message);
+//
 
 for (index_l=0;
      index_l<ptsz->n_z_L_sat;
@@ -47794,9 +47954,9 @@ for (index_l=0;
   class_alloc(array_L_sat_at_z_and_M_at_nu[index_l],
               ptsz->n_m_L_sat*sizeof(double),
               ptsz->error_message);
-  class_alloc(array_L_sat_at_z_and_M_at_nu_prime[index_l],
-              ptsz->n_m_L_sat*sizeof(double),
-              ptsz->error_message);
+  // class_alloc(array_L_sat_at_z_and_M_at_nu_prime[index_l],
+  //             ptsz->n_m_L_sat*sizeof(double),
+  //             ptsz->error_message);
 }
 
 /* initialize error management flag */
@@ -47813,7 +47973,7 @@ int number_of_threads= 1;
 #endif
 
 #pragma omp parallel \
-shared(abort,index_z_M,\
+shared(abort,index_nu,index_z_M,\
 pba,ptsz,z_min,z_max,logM_min,logM_max)\
 private(tstart, tstop,index_M,index_z) \
 num_threads(number_of_threads)
@@ -47853,7 +48013,7 @@ for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
       double epsabs = ptsz->epsabs_L_sat;
 
       struct Parameters_for_integrand_patterson_L_sat V;
-      V.nu = ptsz->nu_cib_GHz;
+      V.nu = ptsz->cib_frequency_list[index_nu];
       V.z = z;
       V.ptsz = ptsz;
       V.M_host = exp(logM);
@@ -47867,12 +48027,12 @@ for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
                                                                integrand_patterson_L_sat,
                                                                params,ptsz->patterson_show_neval);
 
-      V.nu = ptsz->nu_prime_cib_GHz;
-      params = &V;
-      double  L_sat_at_nu_prime = Integrate_using_Patterson_adaptive(lnMs_min, lnMs_max,
-                                                               epsrel, epsabs,
-                                                               integrand_patterson_L_sat,
-                                                               params,ptsz->patterson_show_neval);
+      // V.nu = ptsz->nu_prime_cib_GHz;
+      // params = &V;
+      // double  L_sat_at_nu_prime = Integrate_using_Patterson_adaptive(lnMs_min, lnMs_max,
+      //                                                          epsrel, epsabs,
+      //                                                          integrand_patterson_L_sat,
+      //                                                          params,ptsz->patterson_show_neval);
 
 
       // double dlnM = (lnMs_max - lnMs_min)/50.;
@@ -47901,7 +48061,7 @@ for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
 
 
       array_L_sat_at_z_and_M_at_nu[index_z][index_M] = log(1.+L_sat_at_nu);
-      array_L_sat_at_z_and_M_at_nu_prime[index_z][index_M] = log(1.+L_sat_at_nu_prime);
+      //array_L_sat_at_z_and_M_at_nu_prime[index_z][index_M] = log(1.+L_sat_at_nu_prime);
       //printf("%.3e %.3e %.3e %.3e %.3e %.3e\n",nu, nu_prime, z,logM,log(1.+L_sat_at_nu),log(1.+L_sat_at_nu_prime));
 
       index_z_M += 1;
@@ -47910,8 +48070,8 @@ for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
 #ifdef _OPENMP
   tstop = omp_get_wtime();
   if (ptsz->sz_verbose > 0)
-    printf("In %s: time spent in parallel region (L_sat) = %e s for thread %d\n",
-           __func__,tstop-tstart,omp_get_thread_num());
+    printf("In %s: time spent in parallel region (L_sat) at %.3e GHz = %e s for thread %d\n",
+           __func__,ptsz->cib_frequency_list[index_nu],tstop-tstart,omp_get_thread_num());
 #endif
 
     }
@@ -47923,14 +48083,18 @@ for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
 {
   for (index_z=0; index_z<ptsz->n_z_L_sat; index_z++)
   {
-    ptsz->array_L_sat_at_z_and_M_at_nu[index_z_M] = array_L_sat_at_z_and_M_at_nu[index_z][index_M];
-    ptsz->array_L_sat_at_z_and_M_at_nu_prime[index_z_M] = array_L_sat_at_z_and_M_at_nu_prime[index_z][index_M];
+    ptsz->array_L_sat_at_z_and_M_at_nu[index_nu][index_z_M] = array_L_sat_at_z_and_M_at_nu[index_z][index_M];
+    //ptsz->array_L_sat_at_z_and_M_at_nu_prime[index_nu][index_z_M] = array_L_sat_at_z_and_M_at_nu_prime[index_z][index_M];
     index_z_M += 1;
   }
 }
 
   free(array_L_sat_at_z_and_M_at_nu);
-  free(array_L_sat_at_z_and_M_at_nu_prime);
+  //free(array_L_sat_at_z_and_M_at_nu_prime);
+
+}
+
+//exit(0);
 
 return _SUCCESS_;
 
@@ -48453,8 +48617,27 @@ double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum 
                           &m));
 }
 
+
+double get_T10_alpha_at_z(double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  if (z<ptsz->T10_ln1pz[0])
+   z = ptsz->T10_ln1pz[0];
+  else if (z>ptsz->T10_ln1pz[ptsz->T10_lnalpha_size-1])
+   z = ptsz->T10_ln1pz[ptsz->T10_lnalpha_size-1];
+
+double result = exp(pwl_value_1d(ptsz->T10_lnalpha_size,
+                          ptsz->T10_ln1pz,
+                          ptsz->T10_lnalpha,
+                          z));
+//printf("z = %.3e  alpha = %.3e\n",z_asked,result);
+return result;
+}
+
+
+
 double get_L_sat_at_z_and_M_at_nu(double z_asked,
                                   double m_asked,
+                                  int index_nu,
                                   struct background * pba,
                                   struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
@@ -48463,27 +48646,27 @@ double get_L_sat_at_z_and_M_at_nu(double z_asked,
                           ptsz->n_m_L_sat,
                           ptsz->array_z_L_sat,
                           ptsz->array_m_L_sat,
-                          ptsz->array_L_sat_at_z_and_M_at_nu,
+                          ptsz->array_L_sat_at_z_and_M_at_nu[index_nu],
                           1,
                           &z,
                           &m))-1.;
 }
 
-double get_L_sat_at_z_and_M_at_nu_prime(double z_asked,
-                                  double m_asked,
-                                  struct background * pba,
-                                  struct tszspectrum * ptsz){
-  double z = log(1.+z_asked);
-  double m = log(m_asked);
- return exp(pwl_interp_2d(ptsz->n_z_L_sat,
-                          ptsz->n_m_L_sat,
-                          ptsz->array_z_L_sat,
-                          ptsz->array_m_L_sat,
-                          ptsz->array_L_sat_at_z_and_M_at_nu_prime,
-                          1,
-                          &z,
-                          &m))-1.;
-}
+// double get_L_sat_at_z_and_M_at_nu_prime(double z_asked,
+//                                   double m_asked,
+//                                   struct background * pba,
+//                                   struct tszspectrum * ptsz){
+//   double z = log(1.+z_asked);
+//   double m = log(m_asked);
+//  return exp(pwl_interp_2d(ptsz->n_z_L_sat,
+//                           ptsz->n_m_L_sat,
+//                           ptsz->array_z_L_sat,
+//                           ptsz->array_m_L_sat,
+//                           ptsz->array_L_sat_at_z_and_M_at_nu_prime,
+//                           1,
+//                           &z,
+//                           &m))-1.;
+// }
 
 
 int bispectrum_condition(double ell_1, double ell_2, double ell_3){

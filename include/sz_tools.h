@@ -668,10 +668,11 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
   int read_Zhao_CM_init(struct tszspectrum * ptsz);
 
   int load_rho_nfw_profile(struct tszspectrum * ptsz);
+  int load_T10_alpha_norm(struct tszspectrum * ptsz);
   int load_normalized_dndz(struct tszspectrum * ptsz);
   int load_unbinned_nl_yy(struct tszspectrum * ptsz);
   int load_unwise_filter(struct tszspectrum * ptsz);
-
+  double get_T10_alpha_at_z(double z_asked, struct tszspectrum * ptsz);
   int CvirMvirZHAO(double * result,
                    double logM ,
                    double z,
@@ -900,15 +901,16 @@ double Delta_c_of_Omega_m(double Omega_m);
 
 double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
 
+
 double get_L_sat_at_z_and_M_at_nu(double z_asked,
                                   double m_asked,
+                                  int index_nu,
                                   struct background * pba,
                                   struct tszspectrum * ptsz);
-                                  
-double get_L_sat_at_z_and_M_at_nu_prime(double z_asked,
-                                  double m_asked,
-                                  struct background * pba,
-                                  struct tszspectrum * ptsz);
+// double get_L_sat_at_z_and_M_at_nu_prime(double z_asked,
+//                                   double m_asked,
+//                                   struct background * pba,
+//                                   struct tszspectrum * ptsz);
 
 int tabulate_dndlnM(struct background * pba,
                     struct nonlinear * pnl,

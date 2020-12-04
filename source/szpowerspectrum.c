@@ -91,6 +91,11 @@ int szpowerspectrum_init(
 
    initialise_and_allocate_memory(ptsz);
 
+   // load alpha(z) normalisation
+   // of Tinker et al 2010 HMF
+   if (ptsz->MF==1)
+   load_T10_alpha_norm(ptsz);
+
 
    if (ptsz->has_dndlnM
      // || ptsz->has_tSZ_gal_1h
@@ -233,6 +238,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 
 
    if (ptsz->write_sz>0 || ptsz->create_ref_trispectrum_for_cobaya){
+
    write_output_to_files_cl(pnl,pba,ptsz);
    write_output_to_files_ell_indep_ints(pnl,pba,ptsz);
    if (ptsz->sz_verbose>1) show_results(pba,pnl,ppm,ptsz);
@@ -316,7 +322,7 @@ if (ptsz->has_cib_cib_1h
 free(ptsz->array_m_L_sat);
 free(ptsz->array_z_L_sat);
 free(ptsz->array_L_sat_at_z_and_M_at_nu);
-free(ptsz->array_L_sat_at_z_and_M_at_nu_prime);
+//free(ptsz->array_L_sat_at_z_and_M_at_nu_prime);
 
   }
 
@@ -380,6 +386,10 @@ if (ptsz->include_noise_cov_y_y==1){
    free(ptsz->RNFW_lnI);
  }
 
+  if (ptsz->MF==1){
+    free(ptsz->T10_ln1pz);
+    free(ptsz->T10_lnalpha);
+  }
 
    free(ptsz->CM_redshift);
    free(ptsz->CM_logM);
@@ -579,13 +589,40 @@ int compute_sz(struct background * pba,
         }
       else if (index_integrand>=ptsz->index_integrand_id_cib_cib_1h_first && index_integrand <= ptsz->index_integrand_id_cib_cib_1h_last && ptsz->has_cib_cib_1h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_cib_cib_1h;
-         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_cib_cib_1h_first);
-         if (ptsz->sz_verbose > 0) printf("computing cl^cib-cib_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+         int index_multipole_cib1_cib2 = (int) (index_integrand - ptsz->index_integrand_id_cib_cib_1h_first);
+         int index_multipole = index_multipole_cib1_cib2 % ptsz->nlSZ;
+         int index_cib1_cib2 = index_multipole_cib1_cib2 / ptsz->nlSZ;
+         int n = (-1.+sqrt(1. + 4.*2.*index_cib1_cib2))/2.;
+         int index_cib1 = floor(n);
+         int index_cib2 = index_cib1_cib2 -index_cib1*(index_cib1+1)/2;
+         Pvectsz[ptsz->index_frequency_for_cib_profile] = (double) index_cib1;
+         Pvectsz[ptsz->index_frequency_prime_for_cib_profile] = (double) index_cib2;
+         //int index_multipole = (int) (index_integrand - ptsz->index_integrand_id_cib_cib_1h_first);
+         Pvectsz[ptsz->index_multipole] = (double) index_multipole;
+         if (ptsz->sz_verbose > 0) printf("computing cl^cib-cib_1h @ frequency_id = %.0f, frequency_prime_id = %.0f, ell_id = %.0f\n",
+                                          Pvectsz[ptsz->index_frequency_for_cib_profile],
+                                          Pvectsz[ptsz->index_frequency_prime_for_cib_profile],
+                                          Pvectsz[ptsz->index_multipole]);
        }
        else if (index_integrand>=ptsz->index_integrand_id_cib_cib_2h_first && index_integrand <= ptsz->index_integrand_id_cib_cib_2h_last && ptsz->has_cib_cib_2h){
-          Pvectsz[ptsz->index_md] = ptsz->index_md_cib_cib_2h;
-          Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_cib_cib_2h_first);
-          if (ptsz->sz_verbose > 0) printf("computing cl^cib-cib_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+          //Pvectsz[ptsz->index_md] = ptsz->index_md_cib_cib_2h;
+          //Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_cib_cib_2h_first);
+         Pvectsz[ptsz->index_md] = ptsz->index_md_cib_cib_2h;
+         int index_multipole_cib1_cib2 = (int) (index_integrand - ptsz->index_integrand_id_cib_cib_2h_first);
+         int index_multipole = index_multipole_cib1_cib2 % ptsz->nlSZ;
+         int index_cib1_cib2 = index_multipole_cib1_cib2 / ptsz->nlSZ;
+         int n = (-1.+sqrt(1. + 4.*2.*index_cib1_cib2))/2.;
+         int index_cib1 = floor(n);
+         int index_cib2 = index_cib1_cib2 -index_cib1*(index_cib1+1)/2;
+         Pvectsz[ptsz->index_frequency_for_cib_profile] = (double) index_cib1;
+         Pvectsz[ptsz->index_frequency_prime_for_cib_profile] = (double) index_cib2;
+         //int index_multipole = (int) (index_integrand - ptsz->index_integrand_id_cib_cib_1h_first);
+         Pvectsz[ptsz->index_multipole] = (double) index_multipole;
+         //  if (ptsz->sz_verbose > 0) printf("computing cl^cib-cib_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+         if (ptsz->sz_verbose > 0) printf("computing cl^cib-cib_2h @ frequency_id = %.0f, frequency_prime_id = %.0f, ell_id = %.0f\n",
+                                Pvectsz[ptsz->index_frequency_for_cib_profile],
+                                Pvectsz[ptsz->index_frequency_prime_for_cib_profile],
+                                Pvectsz[ptsz->index_multipole]);
         }
      else if (index_integrand>=ptsz->index_integrand_id_tSZ_gal_1h_first && index_integrand <= ptsz->index_integrand_id_tSZ_gal_1h_last && ptsz->has_tSZ_gal_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_tSZ_gal_1h;
@@ -640,6 +677,7 @@ int compute_sz(struct background * pba,
      return 0;
 }
 
+ //return 0;
 
  int index_md = (int) Pvectsz[ptsz->index_md];
 
@@ -1054,19 +1092,30 @@ ptsz->cl_tSZ_cib_2h[index_l] = Pvectsz[ptsz->index_integral]
 // [l(l+1)/2pi]*cl
 if (_cib_cib_1h_){
  int index_l = (int) Pvectsz[ptsz->index_multipole];
- ptsz->cl_cib_cib_1h[index_l] = Pvectsz[ptsz->index_integral]
-                                *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
-                                /(2*_PI_);
+ int index_cib1 = (int) Pvectsz[ptsz->index_frequency_for_cib_profile];
+ int index_cib2 = (int) Pvectsz[ptsz->index_frequency_prime_for_cib_profile];
+
+ ptsz->cl_cib_cib_1h[index_cib1][index_cib2][index_l] = Pvectsz[ptsz->index_integral]
+                                                        *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                                                        /(2*_PI_);
+
+ptsz->cl_cib_cib_1h[index_cib2][index_cib1][index_l] = ptsz->cl_cib_cib_1h[index_cib1][index_cib2][index_l];
+
  //printf("ell = %.3e and cl_yg = %.3e\n",ptsz->ell[index_l],ptsz->cl_tSZ_gal_1h[index_l]);
 
 }
 
 
 if (_cib_cib_2h_){
-int index_l = (int) Pvectsz[ptsz->index_multipole];
-ptsz->cl_cib_cib_2h[index_l] = Pvectsz[ptsz->index_integral]
-                               *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
-                               /(2*_PI_);
+ int index_l = (int) Pvectsz[ptsz->index_multipole];
+ int index_cib1 = (int) Pvectsz[ptsz->index_frequency_for_cib_profile];
+ int index_cib2 = (int) Pvectsz[ptsz->index_frequency_prime_for_cib_profile];
+
+ptsz->cl_cib_cib_2h[index_cib1][index_cib2][index_l] = Pvectsz[ptsz->index_integral]
+                                                       *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                                                       /(2*_PI_);
+
+ptsz->cl_cib_cib_2h[index_cib2][index_cib1][index_l] = ptsz->cl_cib_cib_2h[index_cib1][index_cib2][index_l];
 //printf("ell = %.3e and cl_cib_cib = %.3e\n",ptsz->ell[index_l],ptsz->cl_cib_cib_2h[index_l]);
 
 }
@@ -1589,13 +1638,11 @@ double integrand_at_m_and_z(double logM,
    }
 
    else if (_cib_cib_2h_){
-
-
              evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
              int index_l = (int) pvectsz[ptsz->index_multipole];
              pvectsz[ptsz->index_multipole_for_cib_profile] = ptsz->ell[index_l];
-             pvectsz[ptsz->index_frequency_for_cib_profile] = ptsz->nu_cib_GHz;
+             //pvectsz[ptsz->index_frequency_for_cib_profile] = ptsz->nu_cib_GHz;
              evaluate_cib_profile(pvecback,pvectsz,pba,ptsz);
 
              pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
@@ -2948,6 +2995,20 @@ if (ptsz->pressure_profile == 4){
                           ptsz),
                      ptsz->error_message,
                      ptsz->error_message);
+    // compute r200m:
+    pvectsz[ptsz->index_r200m]  = pow(3.*pvectsz[ptsz->index_m200m]
+                                      /(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]
+                                      *pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+
+   // Duffy et al 08
+   if (ptsz->concentration_parameter==0){
+    evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
+   }
+   else {
+     if (ptsz->sz_verbose>=1)
+     printf("c200m not implemented yet for this concentration mass relation\n");
+   }
+
 
    //dlnm200ddlnm;
    pvectsz[ptsz->index_dlnMdeltadlnM]= evaluate_dlnMdeltadlnM(log(pvectsz[ptsz->index_mVIR]),
@@ -3935,8 +3996,8 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
                     ptsz->cl_lens_lens_2h[index_l],
                     ptsz->cl_tSZ_cib_1h[index_l],
                     ptsz->cl_tSZ_cib_2h[index_l],
-                    ptsz->cl_cib_cib_1h[index_l],
-                    ptsz->cl_cib_cib_2h[index_l],
+                    ptsz->cl_cib_cib_1h[0][0][index_l],
+                    ptsz->cl_cib_cib_2h[0][0][index_l],
                     ptsz->cl_kSZ_kSZ_lensmag_1h[index_l]
                     );
 
@@ -4630,6 +4691,8 @@ int select_multipole_array(struct tszspectrum * ptsz)
    free(ptsz->ell_plc_no_low_ell);
    free(ptsz->ell_mock);
 
+   //free(ptsz->cib_frequency_list);
+
 
    return _SUCCESS_;
 
@@ -4638,6 +4701,7 @@ int select_multipole_array(struct tszspectrum * ptsz)
 
 
 int initialise_and_allocate_memory(struct tszspectrum * ptsz){
+   //printf("cib_dim = %d\n",1000);
 
 
    class_alloc(ptsz->ln_x_for_pp, ptsz->ln_x_size_for_pp*sizeof(double),ptsz->error_message);
@@ -4653,6 +4717,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       ptsz->x_for_pp[i] = ptsz->x_inSZ+i*(ptsz->x_outSZ-ptsz->x_inSZ)/(ptsz->x_size_for_pp-1.);
       //printf("M = %e \t i=%d\n",ptsz->M_bins[i],i);
    }
+
 
 
    class_alloc(ptsz->x_gauss, 6*sizeof(double),ptsz->error_message);
@@ -4706,6 +4771,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
                                   /(ptsz->N_redshift_dndlnM-1.);
  }
 
+
+
    class_alloc(ptsz->dndlnM_array_m,
               ptsz->N_mass_dndlnM*sizeof(double),
               ptsz->error_message);
@@ -4715,6 +4782,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
      else
       ptsz->dndlnM_array_m[i] =  exp(log(ptsz->M1SZ_dndlnM)+i*(log(ptsz->M2SZ_dndlnM)-log(ptsz->M1SZ_dndlnM))/(ptsz->N_mass_dndlnM-1.));
   }
+
 
 
 
@@ -4787,10 +4855,13 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_multipole_for_cib_profile = ptsz->index_galaxy_profile + 1;
    ptsz->index_cib_profile = ptsz->index_multipole_for_cib_profile + 1;
    ptsz->index_frequency_for_cib_profile = ptsz->index_cib_profile + 1;
-   ptsz->index_multipole_3 =  ptsz->index_frequency_for_cib_profile + 1;
+   ptsz->index_frequency_prime_for_cib_profile = ptsz->index_frequency_for_cib_profile + 1;
+   ptsz->index_multipole_3 =  ptsz->index_frequency_prime_for_cib_profile + 1;
    ptsz->index_W_lensmag = ptsz->index_multipole_3 + 1;
+   ptsz->index_c200m = ptsz->index_W_lensmag + 1;
+   ptsz->index_r200m = ptsz->index_c200m + 1;
    //quantities integrated over redshift
-   ptsz->index_integral = ptsz->index_W_lensmag + 1;
+   ptsz->index_integral = ptsz->index_r200m + 1;
    ptsz->index_integral_over_m = ptsz->index_integral+1;
 
 
@@ -4802,6 +4873,28 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    //final size of pvecsz vector
    ptsz->tsz_size  = ptsz->index_integrand + 1;
 
+
+//
+   //printf("cib_dim = %d\n",1000);
+
+   if (ptsz->has_cib_cib_1h + ptsz->has_cib_cib_2h != _FALSE_){
+   if (ptsz->sz_verbose>=1)
+   printf("-> [cib] number of cib frequencies = %d\n",ptsz->cib_frequency_list_num);
+   int index_cib_freq;
+   if (ptsz->sz_verbose>=1){
+   for (index_cib_freq = 0; index_cib_freq < ptsz->cib_frequency_list_num; index_cib_freq++)
+   {
+     printf("-> [cib] frequency %d = %.3e\n",index_cib_freq, ptsz->cib_frequency_list[index_cib_freq]);
+   }
+   }
+
+   ptsz->cib_dim = ptsz->cib_frequency_list_num*(ptsz->cib_frequency_list_num+1)/2*ptsz->nlSZ;
+   if (ptsz->sz_verbose>=1)
+   printf("-> [cib] cib_dim = %d\n",ptsz->cib_dim);
+   //exit(0);
+   }
+
+//exit(0);
 
 
    ptsz->hmf_int = 0.;
@@ -4816,8 +4909,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    class_alloc(ptsz->cl_tSZ_gal_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_tSZ_cib_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_tSZ_cib_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
-   class_alloc(ptsz->cl_cib_cib_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
-   class_alloc(ptsz->cl_cib_cib_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+
    class_alloc(ptsz->cl_gal_gal_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_gal_gal_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_gal_lens_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
@@ -4863,8 +4955,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       ptsz->cl_gal_gal_2h[index_l] = 0.;
       ptsz->cl_tSZ_cib_1h[index_l] = 0.;
       ptsz->cl_tSZ_cib_2h[index_l] = 0.;
-      ptsz->cl_cib_cib_1h[index_l] = 0.;
-      ptsz->cl_cib_cib_2h[index_l] = 0.;
+      //ptsz->cl_cib_cib_1h[index_l] = 0.;
+      //ptsz->cl_cib_cib_2h[index_l] = 0.;
       ptsz->cl_gal_lens_1h[index_l] = 0.;
       ptsz->cl_gal_lens_2h[index_l] = 0.;
       ptsz->cl_tSZ_gal_1h[index_l] = 0.;
@@ -4927,6 +5019,26 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       ptsz->cov_Y_Y_ssc[index_multipole_1][index_multipole_2] = 0.;
 
    }
+
+   class_alloc(ptsz->cl_cib_cib_1h,sizeof(double ***)*ptsz->cib_frequency_list_num,ptsz->error_message);
+   class_alloc(ptsz->cl_cib_cib_2h,sizeof(double ***)*ptsz->cib_frequency_list_num,ptsz->error_message);
+
+   int index_nu;
+   int index_nu_prime;
+   for (index_nu=0;index_nu<ptsz->cib_frequency_list_num;index_nu++){
+     class_alloc(ptsz->cl_cib_cib_1h[index_nu],sizeof(double **)*ptsz->cib_frequency_list_num,ptsz->error_message);
+     class_alloc(ptsz->cl_cib_cib_2h[index_nu],sizeof(double **)*ptsz->cib_frequency_list_num,ptsz->error_message);
+        for (index_nu_prime=0;index_nu_prime<ptsz->cib_frequency_list_num;index_nu_prime++){
+          class_alloc(ptsz->cl_cib_cib_1h[index_nu][index_nu_prime],sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+          class_alloc(ptsz->cl_cib_cib_2h[index_nu][index_nu_prime],sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+                  for (index_l=0;index_l<ptsz->cib_frequency_list_num;index_l++){
+     ptsz->cl_cib_cib_1h[index_nu][index_nu_prime][index_l] = 0.;
+     ptsz->cl_cib_cib_2h[index_nu][index_nu_prime][index_l] = 0.;
+   }
+   }
+   }
+
+
    ptsz->index_integrand_id_dndlnM_first  = 0;
    ptsz->index_integrand_id_dndlnM_last = ptsz->index_integrand_id_dndlnM_first + ptsz->N_redshift_dndlnM*ptsz->N_mass_dndlnM - 1;
    ptsz->index_integrand_id_hmf = ptsz->index_integrand_id_dndlnM_last + 1;
@@ -4970,11 +5082,11 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_integrand_id_gal_lens_1h_first = ptsz->index_integrand_id_gal_gal_2h_last + 1;
    ptsz->index_integrand_id_gal_lens_1h_last = ptsz->index_integrand_id_gal_lens_1h_first + ptsz->nlSZ - 1;
    ptsz->index_integrand_id_cib_cib_2h_first = ptsz->index_integrand_id_gal_lens_1h_last + 1;
-   ptsz->index_integrand_id_cib_cib_2h_last = ptsz->index_integrand_id_cib_cib_2h_first + ptsz->nlSZ - 1;
+   ptsz->index_integrand_id_cib_cib_2h_last = ptsz->index_integrand_id_cib_cib_2h_first + ptsz->cib_dim - 1;
    ptsz->index_integrand_id_tSZ_cib_1h_first = ptsz->index_integrand_id_cib_cib_2h_last + 1;
    ptsz->index_integrand_id_tSZ_cib_1h_last = ptsz->index_integrand_id_tSZ_cib_1h_first + ptsz->nlSZ - 1;
    ptsz->index_integrand_id_cib_cib_1h_first = ptsz->index_integrand_id_tSZ_cib_1h_last + 1;
-   ptsz->index_integrand_id_cib_cib_1h_last = ptsz->index_integrand_id_cib_cib_1h_first + ptsz->nlSZ - 1;
+   ptsz->index_integrand_id_cib_cib_1h_last = ptsz->index_integrand_id_cib_cib_1h_first + ptsz->cib_dim - 1;
    ptsz->index_integrand_id_tSZ_cib_2h_first = ptsz->index_integrand_id_cib_cib_1h_last + 1;
    ptsz->index_integrand_id_tSZ_cib_2h_last = ptsz->index_integrand_id_tSZ_cib_2h_first + ptsz->nlSZ - 1;
    ptsz->index_integrand_id_gal_lens_2h_first = ptsz->index_integrand_id_tSZ_cib_2h_last + 1;
@@ -5241,7 +5353,7 @@ int evaluate_cib_profile(double * pvecback,
 double M_halo = pvectsz[ptsz->index_mass_for_hmf]/pba->h; // convet to Msun
 //printf("%.3e %.3e\n",M_halo,pvectsz[ptsz->index_mVIR]);
 
-double frequency_for_cib_profile = pvectsz[ptsz->index_frequency_for_cib_profile]; // in GHz
+//double frequency_for_cib_profile = pvectsz[ptsz->index_frequency_for_cib_profile]; // in GHz
 
 
 double Lc_nu;
@@ -5256,18 +5368,46 @@ double us = evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz);
 
 double ug_at_ell;
 double nu;
+double nu_prime;
 
 int index_md = (int) pvectsz[ptsz->index_md];
+int index_nu = (int) pvectsz[ptsz->index_frequency_for_cib_profile];
+int index_nu_prime = (int) pvectsz[ptsz->index_frequency_prime_for_cib_profile];
+
+//printf("%.3e %.3e\n",ptsz->cib_frequency_list[index_nu],ptsz->cib_frequency_list[index_nu_prime]);
+
+// index_nu = 0;
+// index_nu_prime = 0;
 
 
 // 2-halo terms
 if (_tSZ_cib_2h_
   ||_cib_cib_2h_
    ){
-nu = frequency_for_cib_profile;
+
+if (index_nu != index_nu_prime){
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1){
+nu = ptsz->cib_frequency_list[index_nu];
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
+Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu,pba,ptsz);
+}
+else if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2){
+nu = ptsz->cib_frequency_list[index_nu_prime];
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
+Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu_prime,pba,ptsz);
+}
+}
+else{
+nu = ptsz->cib_frequency_list[index_nu];
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
+Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu,pba,ptsz);
+}
+
+
+
+
 //Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
-Ls_nu = 0.;//get_L_sat_at_z_and_M_at_nu(z,M_halo,pba,ptsz);
+
 
 //double test = get_L_sat_at_z_and_M_at_nu(3.,exp(3.845e+01),pba,ptsz);
 //printf("%.3e \n",log(1.+test));
@@ -5282,15 +5422,15 @@ else if(_tSZ_cib_1h_
      || _cib_cib_1h_
        ){
 
-nu = ptsz->nu_cib_GHz;
+nu = ptsz->cib_frequency_list[index_nu];
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
 //Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
-Ls_nu = 0.;//get_L_sat_at_z_and_M_at_nu(z,M_halo,pba,ptsz);
+Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu,pba,ptsz);
 
-nu = ptsz->nu_prime_cib_GHz;
-Lc_nu_prime = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
+nu_prime = ptsz->cib_frequency_list[index_nu_prime];
+Lc_nu_prime = Luminosity_of_central_galaxies(z,M_halo,nu_prime,pvectsz,ptsz);
 //Ls_nu_prime = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
-Ls_nu_prime = 0.;//get_L_sat_at_z_and_M_at_nu_prime(z,M_halo,pba,ptsz);
+Ls_nu_prime = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu_prime,pba,ptsz);
 // eq. 15 of MM20
 ug_at_ell  = 1./(4.*_PI_)*sqrt(Ls_nu*Ls_nu_prime*us*us+Lc_nu*Ls_nu_prime*us+Lc_nu_prime*Ls_nu*us);
 }
@@ -5388,10 +5528,10 @@ if (nu>=nu0){
 result = pow(nu/nu0,-ptsz->gamma_cib);
 }
 else{
-double B_nu_at_Td = (2.*hplanck/clight/clight)*pow(nu,3.)
-                    /(exp(hplanck*nu/kb/Td)-1.);
-double B_nu0_at_Td = (2.*hplanck/clight/clight)*pow(nu0,3.)
-                    /(exp(hplanck*nu0/kb/Td)-1.);
+double B_nu_at_Td = (2.*hplanck/clight/clight)*pow(nu*1e9,3.)
+                    /(exp(hplanck*nu*1e9/kb/Td)-1.);
+double B_nu0_at_Td = (2.*hplanck/clight/clight)*pow(nu0*1e9,3.)
+                    /(exp(hplanck*nu0*1e9/kb/Td)-1.);
 result = pow(nu/nu0,ptsz->beta_cib)*B_nu_at_Td/B_nu0_at_Td;
 }
 
@@ -5517,8 +5657,8 @@ int index_md = (int) pvectsz[ptsz->index_md];
 
 if (_cib_cib_1h_ || _cib_cib_2h_){
   //printf("cib\n");
-  r_delta = pvectsz[ptsz->index_rs];
-  c_delta = pvectsz[ptsz->index_cVIR];
+  r_delta = pvectsz[ptsz->index_r200m];
+  c_delta = pvectsz[ptsz->index_c200m];
 }
 
 double z = pvectsz[ptsz->index_z];
@@ -5538,6 +5678,24 @@ double numerator = cos(q)*(gsl_sf_Ci((1.+c_delta)*q)-gsl_sf_Ci(q))
 
 return numerator/denominator;
 }
+
+
+int evaluate_c200m_D08(double * pvecback,
+                        double * pvectsz,
+                        struct background * pba,
+                        struct tszspectrum * ptsz)
+{
+double M = pvectsz[ptsz->index_m200m]; // mass in  Msun/h
+double A = 10.14;
+double B = -0.081;
+double C = -1.01;
+double M_pivot = 2.e12; // pivot mass in Msun/h
+
+double z = pvectsz[ptsz->index_z];
+double c200m =A*pow(M/M_pivot,B)*pow(1.+z,C);
+pvectsz[ptsz->index_c200m] = c200m;
+}
+
 
 
 int evaluate_c500c_KA20(double * pvecback,

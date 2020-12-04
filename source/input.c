@@ -1730,6 +1730,9 @@ int input_read_parameters(
       class_read_double("redshift_epsrel",ptsz->redshift_epsrel);
       class_read_double("redshift_epsabs",ptsz->redshift_epsabs);
 
+      class_read_double("L_sat_epsabs",ptsz->epsabs_L_sat);
+      class_read_double("L_sat_epsrel",ptsz->epsrel_L_sat);
+
       class_read_double("max redshift for cluster counts",pcsz->z_max);
 
 
@@ -2225,6 +2228,14 @@ int input_read_parameters(
 
      class_read_double("Frequency nu for cib in GHz",ptsz->nu_cib_GHz);
      class_read_double("Frequency nu^prime for cib in GHz",ptsz->nu_prime_cib_GHz);
+
+
+
+    class_read_int("cib_frequency_list_num",ptsz->cib_frequency_list_num);
+    if (ptsz->has_cib_cib_1h + ptsz->has_cib_cib_2h != _FALSE_)
+    class_read_list_of_doubles("cib_frequency_list_in_GHz",ptsz->cib_frequency_list,ptsz->cib_frequency_list_num);
+
+
 
      // Table 1  of MM20
      class_read_double("Redshift evolution of dust temperature",ptsz->alpha_cib);  //redshift evolution of dust temperature
@@ -4425,6 +4436,7 @@ int input_default_params(
 
   ptsz->nu_cib_GHz = 217.;
   ptsz->nu_prime_cib_GHz = 217.;
+
   // Table 1  of MM20
   ptsz->alpha_cib = 0.36; //redshift evolution of dust temperature
   ptsz->T0_cib = 24.4; // dust temperature today in Kelvins
@@ -4434,6 +4446,10 @@ int input_default_params(
   ptsz->m_eff_cib = pow(10.,12.6); // Most efficient halo mass in Msun
   ptsz->L0_cib = 6.4e-8; // Normalisation of L − M relation in [Jy MPc2/Msun]
   ptsz->sigma2_LM_cib = 0.5; // Size of of halo masses sourcing CIB emission
+
+
+  ptsz->cib_frequency_list_num=1;
+  ptsz->cib_frequency_list=NULL;
 
 
   ptsz->HSEbias = 1.2;

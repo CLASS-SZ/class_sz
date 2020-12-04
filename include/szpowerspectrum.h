@@ -82,8 +82,8 @@ struct tszspectrum {
   double * cl_tSZ_gal_2h;
   double * cl_tSZ_cib_1h;
   double * cl_tSZ_cib_2h;
-  double * cl_cib_cib_1h;
-  double * cl_cib_cib_2h;
+  double *** cl_cib_cib_1h;
+  double *** cl_cib_cib_2h;
   double * cl_tSZ_lens_1h;
   double * cl_tSZ_lens_2h;
   double * cl_isw_lens;
@@ -343,6 +343,8 @@ struct tszspectrum {
   int  index_Delta_c;
   int  index_rVIR;
   int  index_cVIR;
+  int  index_c200m;
+  int  index_r200m;
   int  index_mVIR;
   int  index_m500;
   int  index_r500;
@@ -411,6 +413,7 @@ struct tszspectrum {
 
   int index_multipole_for_cib_profile;
   int index_frequency_for_cib_profile;
+  int index_frequency_prime_for_cib_profile;
   int index_cib_profile;
 
   int index_W_lensmag;
@@ -651,6 +654,10 @@ struct tszspectrum {
   double pressure_profile_epsrel;
   double nu_y_dist_GHz;
 
+  int cib_frequency_list_num;
+  int cib_dim;
+  double * cib_frequency_list;
+
   double nu_cib_GHz;
   double nu_prime_cib_GHz;
   // Table 1  of MM20
@@ -757,6 +764,11 @@ struct tszspectrum {
   int RNFW_lnx_size;
 
 
+  double * T10_ln1pz;
+  double * T10_lnalpha;
+  int T10_lnalpha_size;
+
+
   double * normalized_dndz_z;
   double * normalized_dndz_phig;
 
@@ -786,8 +798,8 @@ struct tszspectrum {
 
   double * array_m_L_sat;
   double * array_z_L_sat;
-  double * array_L_sat_at_z_and_M_at_nu;
-  double * array_L_sat_at_z_and_M_at_nu_prime;
+  double ** array_L_sat_at_z_and_M_at_nu;
+  //double * array_L_sat_at_z_and_M_at_nu_prime;
 
   double * array_z_W_lensmag;
   double * array_W_lensmag;
@@ -1013,6 +1025,13 @@ double evaluate_truncated_nfw_profile(double * pvecback,
                                    double * pvectsz,
                                    struct background * pba,
                                    struct tszspectrum * ptsz);
+
+
+
+int evaluate_c200m_D08(double * pvecback,
+                        double * pvectsz,
+                        struct background * pba,
+                        struct tszspectrum * ptsz);
 
 
 int evaluate_c500c_KA20(double * pvecback,
