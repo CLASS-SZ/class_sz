@@ -4114,13 +4114,13 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
                     ptsz->cl_tSZ_gal_2h[index_l],
                     ptsz->cl_lens_lens_1h[index_l],
                     ptsz->cl_lens_lens_2h[index_l],
-                    ptsz->cl_tSZ_cib_1h[0][index_l],
-                    ptsz->cl_tSZ_cib_2h[0][index_l],
-                    ptsz->cl_cib_cib_1h[0][0][index_l],
-                    ptsz->cl_cib_cib_2h[0][0][index_l],
+                    ptsz->cl_tSZ_cib_1h[ptsz->id_nu_cib_to_save][index_l],
+                    ptsz->cl_tSZ_cib_2h[ptsz->id_nu_cib_to_save][index_l],
+                    ptsz->cl_cib_cib_1h[ptsz->id_nu_cib_to_save][ptsz->id_nu_prime_cib_to_save][index_l],
+                    ptsz->cl_cib_cib_2h[ptsz->id_nu_cib_to_save][ptsz->id_nu_prime_cib_to_save][index_l],
                     ptsz->cl_kSZ_kSZ_lensmag_1h[index_l],
-                    ptsz->cl_lens_cib_1h[0][index_l],
-                    ptsz->cl_lens_cib_2h[0][index_l]
+                    ptsz->cl_lens_cib_1h[ptsz->id_nu_cib_to_save][index_l],
+                    ptsz->cl_lens_cib_2h[ptsz->id_nu_cib_to_save][index_l]
                     );
 
       }

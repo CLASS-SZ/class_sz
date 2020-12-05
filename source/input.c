@@ -2244,8 +2244,8 @@ int input_read_parameters(
      //class_call(parser_read_string(pfc,"Frequency for y-distortion",&string1,&flag1,errmsg),
      class_read_double("Frequency for y-distortion in GHz",ptsz->nu_y_dist_GHz);
 
-     class_read_double("Frequency nu for cib in GHz",ptsz->nu_cib_GHz);
-     class_read_double("Frequency nu^prime for cib in GHz",ptsz->nu_prime_cib_GHz);
+     class_read_int("Frequency_id nu for cib in GHz (to save in file)",ptsz->id_nu_cib_to_save);
+     class_read_int("Frequency_id nu^prime for cib in GHz (to save in file)",ptsz->id_nu_prime_cib_to_save);
 
 
 
@@ -4456,10 +4456,10 @@ int input_default_params(
 
   //units
   ptsz->nu_y_dist_GHz = 150.;
-  ptsz->exponent_unit = 2;
+  ptsz->exponent_unit = 2; // 2: dimensionless, 0:  'muK' (micro Kelvin)
 
-  ptsz->nu_cib_GHz = 217.;
-  ptsz->nu_prime_cib_GHz = 217.;
+  ptsz->id_nu_cib_to_save = 0;
+  ptsz->id_nu_prime_cib_to_save = 0;
 
   // Table 1  of MM20
   ptsz->alpha_cib = 0.36; //redshift evolution of dust temperature

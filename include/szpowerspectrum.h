@@ -671,8 +671,9 @@ struct tszspectrum {
   int cib_dim;
   double * cib_frequency_list;
 
-  double nu_cib_GHz;
-  double nu_prime_cib_GHz;
+  int id_nu_cib_to_save;
+  int id_nu_prime_cib_to_save;
+
   // Table 1  of MM20
   double alpha_cib; //redshift evolution of dust temperature
   double T0_cib; // dust temperature today
