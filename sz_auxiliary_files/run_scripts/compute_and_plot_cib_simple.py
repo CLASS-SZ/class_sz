@@ -8,6 +8,19 @@
 # Note the last option "-mode run" if you want to run class_sz, and "-mode plot" if you just want to plot
 # what was last computed.
 
+
+
+# set path to the class_sz code
+path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
+# set path to to the repository containing the folder 'cib_files' with your cib's in it
+path_to_class_external_data_and_scripts = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/'
+# set path to where to save the figures
+FIG_DIR = '/Users/boris/Desktop'
+
+# Parameters are set between L152 and L236 of this file
+
+
+
 import argparse
 import numpy as np
 import os
@@ -21,12 +34,6 @@ import ast
 import itertools
 
 
-# set path to the class_sz code
-path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
-# set path to to the repository containing the folder 'cib_files' with your cib's in it
-path_to_class_external_data_and_scripts = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/'
-# set path to where to save the figures
-FIG_DIR = '/Users/boris/Desktop'
 
 # usefule function for formatting numbers
 def scientific_notation(p_value,digit=2):
