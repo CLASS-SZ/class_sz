@@ -45840,6 +45840,8 @@ if (ptsz->has_gal_lens_2h != _TRUE_
   && ptsz->has_tSZ_lens_2h != _TRUE_
   && ptsz->has_lens_lens_1h != _TRUE_
   && ptsz->has_lens_lens_2h != _TRUE_
+  && ptsz->has_lens_cib_1h != _TRUE_
+  && ptsz->has_lens_cib_2h != _TRUE_
   && ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_
   && ptsz->has_kSZ_kSZ_gal_1halo != _TRUE_)
   return 0;
@@ -46272,8 +46274,8 @@ int MF_T10 (
 
   *result =
   0.5
-  *ptsz->alphaSZ
-  //*get_T10_alpha_at_z(z,ptsz)
+  //*ptsz->alphaSZ
+  *get_T10_alpha_at_z(z,ptsz)
   *(1.+pow(pow(ptsz->beta0SZ*pow(1.+z,0.2),2.)
          *exp(*lognu),
          -ptsz->phi0SZ
@@ -46691,6 +46693,8 @@ result = W_lens*W_lens;
 if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
  || ((V->ptsz->has_cib_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_cib_cib_2h))
+ || ((V->ptsz->has_tSZ_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_2h))
+ || ((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
  || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
  || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
  //||  ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_auto))
@@ -46778,6 +46782,16 @@ if  (((V->ptsz->has_cib_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_cib_
   // double H_in_Hz = 1./(1.+z);//H_over_c_in_h_over_Mpc*_c_*_Mpc_over_m_;
   result *= 1./(1.+z)*1./(1.+z)*pow(1./V->pvectsz[V->ptsz->index_chi2],2.);
 }
+
+if  (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_1h))
+    ||((V->ptsz->has_tSZ_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_2h))
+    ||((V->ptsz->has_lens_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_1h))
+    ||((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
+    ){
+
+  result *= 1./(1.+z)*pow(1./V->pvectsz[V->ptsz->index_chi2],1.);
+}
+
 
 
 
@@ -47108,6 +47122,62 @@ double integrand_patterson_test(double logM, void *p){
   r = r_m_1*r_m_2;
                                      }
 
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tSZ_cib_2h )){
+
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Y' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('cib' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+  r = r_m_1*r_m_2;
+                                     }
+
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_cib_2h )){
+
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Phi' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('cib' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+  r = r_m_1*r_m_2;
+                                     }
+
   else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h ) && (pvectsz[ptsz->index_frequency_for_cib_profile] != pvectsz[ptsz->index_frequency_prime_for_cib_profile])){
 
   double r_m_1; // first part of redshift integrand
@@ -47189,7 +47259,7 @@ else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_lens_2h){
   V.pvectsz = pvectsz;
   params = &V;
 
-  // integrate over the whole mass range ('Y' part)
+  // integrate over the whole mass range ('gal' part)
   r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                            epsrel, epsabs,
                                            integrand_patterson_test,
@@ -47891,6 +47961,8 @@ if (
     + ptsz->has_tSZ_cib_2h
     + ptsz->has_cib_cib_1h
     + ptsz->has_cib_cib_2h
+    + ptsz->has_lens_cib_1h
+    + ptsz->has_lens_cib_2h
     == _FALSE_
     )
 return 0;
