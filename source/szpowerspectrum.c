@@ -5035,8 +5035,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    class_alloc(ptsz->cl_isw_auto,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_tSZ_gal_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_tSZ_gal_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
-   class_alloc(ptsz->cl_tSZ_cib_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
-   class_alloc(ptsz->cl_tSZ_cib_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   //class_alloc(ptsz->cl_tSZ_cib_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   //class_alloc(ptsz->cl_tSZ_cib_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
 
    class_alloc(ptsz->cl_gal_gal_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_gal_gal_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);

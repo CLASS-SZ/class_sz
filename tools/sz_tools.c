@@ -46511,6 +46511,7 @@ double integrand_redshift(double ln1pz, void *p){
 
   if ((V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo)){
     // compute kernel for lensing magnification
+    // lensing of galaxies
 
     evaluate_redshift_int_lensmag(V->pvectsz,V->ptsz);
     double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_lensmag];
@@ -46520,6 +46521,7 @@ double integrand_redshift(double ln1pz, void *p){
 
   }
   else {
+    // CLB lensing
     V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = _c_/_Mpc_over_m_*_c_/_Mpc_over_m_*V->ptsz->chi_star*pow((1.+z),1.)
                                                    /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)*sqrt(V->pvectsz[V->ptsz->index_chi2])*(V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2])));
 
