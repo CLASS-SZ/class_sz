@@ -2990,9 +2990,9 @@ int evaluate_HMF(double logM,
    // TBD m200c, r200c
    else if (ptsz->concentration_parameter==3){
       class_call(C200M200SC14(&pvectsz[ptsz->index_cVIR],
-                                          log(pvectsz[ptsz->index_mVIR]),
-                                          z,
-                                          ptsz),
+                              log(pvectsz[ptsz->index_mVIR]),
+                              z,
+                              ptsz),
                       ptsz->error_message,
                       ptsz->error_message);
    }
@@ -5777,6 +5777,7 @@ ug_at_ell  = (1./ng_bar)*(nc+ns*us);
 // 1-halo terms
 else if(_gal_gal_1h_
      || _gal_lens_1h_
+     || _tSZ_gal_1h_
      || _tSZ_lens_1h_
      || _kSZ_kSZ_gal_1halo_) {
 
@@ -5812,13 +5813,17 @@ if (_cib_cib_1h_
   c_delta = pvectsz[ptsz->index_c200m];
 }
 else{
-// WIxSC KA20
-if (ptsz->galaxy_sample == 0) {
+// WIxSC KA20 with T08@M500c
+if (ptsz->galaxy_sample == 0 && ptsz->MF == 5) {
 evaluate_c500c_KA20(pvecback,pvectsz,pba,ptsz);
 c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
 r_delta = pvectsz[ptsz->index_r500c];
 // printf("c500c_KA20\n");
 // exit(0);
+}
+else if (ptsz->galaxy_sample == 0 && ptsz->MF == 1){
+  r_delta = pvectsz[ptsz->index_r200m];
+  c_delta = pvectsz[ptsz->index_c200m];
 }
 // unWISE
 else if (ptsz->galaxy_sample == 1) {

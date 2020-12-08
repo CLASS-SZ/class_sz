@@ -45480,10 +45480,10 @@ printf("-> Loading dndz unwise\n");
 
   else if (ptsz->galaxy_sample == 0)
   sprintf(Filepath,
-          "%s%s%s",
+          "%s%s",
           "cat ",
-          ptsz->path_to_class,
-          "/sz_auxiliary_files/WIxSC_galaxy_ditributions/normalised_dndz.txt");
+          //ptsz->path_to_class,
+          "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/WISC_bin3.txt");
 
 
   process = popen(Filepath, "r");
