@@ -3636,6 +3636,7 @@ int write_redshift_dependent_quantities(struct background * pba,
 
  fclose(fp);
 
+ if (ptsz->has_cib_cib_1h){
  sprintf(Filepath,"%s%s%s",ptsz->root,"","cib.txt");
  printf("-> Writing sed cib in %s\n",Filepath);
  fp=fopen(Filepath, "w");
@@ -3657,13 +3658,14 @@ int write_redshift_dependent_quantities(struct background * pba,
    fprintf(fp,"%.5e \t %.5e\n",nu,theta);
  }
 
-
+  fclose(fp);
+}
 
 
 
   free(pvecback);
 
-  fclose(fp);
+
                                         }
 
 int write_output_to_files_cl(struct nonlinear * pnl,

@@ -2356,7 +2356,7 @@ int input_read_parameters(
       class_read_double("sigma_lnM_HOD",ptsz->sigma_lnM_HOD);
       class_read_double("rho_y_gal",ptsz->rho_y_gal);
 
-      /* temperature mass relation SZ */
+      /* Noise for covmat (y,y)*/
       class_call(parser_read_string(pfc,"include noise curve in cov(y,y)",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
@@ -4394,7 +4394,7 @@ int input_default_params(
   ptsz->z2SZ = 4.;
 
   ptsz->z1SZ_dndlnM = 0.;
-  ptsz->z2SZ_dndlnM = 1.;
+  ptsz->z2SZ_dndlnM = 3.;
   ptsz->N_redshift_dndlnM = 11;
 
   ptsz->M1SZ_dndlnM = 1.e11;
