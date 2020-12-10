@@ -2352,9 +2352,20 @@ int input_read_parameters(
 
       class_read_double("M_min_HOD",ptsz->M_min_HOD);
       class_read_double("M1_prime_HOD",ptsz->M1_prime_HOD);
+      class_read_double("M1_prime_HOD_factor",ptsz->M1_prime_HOD_factor);
       class_read_double("alpha_s_HOD",ptsz->alpha_s_HOD);
       class_read_double("sigma_lnM_HOD",ptsz->sigma_lnM_HOD);
       class_read_double("rho_y_gal",ptsz->rho_y_gal);
+
+
+      class_read_double("M_min_HOD_mass_factor_unwise",ptsz->M_min_HOD_mass_factor_unwise);
+      class_read_double("M_min_HOD_satellite_mass_factor_unwise",ptsz->M_min_HOD_satellite_mass_factor_unwise);
+      class_read_double("x_out_truncated_nfw_profile",ptsz->x_out_truncated_nfw_profile);
+      class_read_double("cvir_tau_profile_factor",ptsz->cvir_tau_profile_factor);
+      class_read_double("x_out_nfw_profile",ptsz->x_out_nfw_profile);
+
+      class_read_int("T10_alpha_norm_at_all_z",ptsz->T10_alpha_norm_at_all_z);
+
 
       /* Noise for covmat (y,y)*/
       class_call(parser_read_string(pfc,"include noise curve in cov(y,y)",&string1,&flag1,errmsg),
@@ -4356,6 +4367,17 @@ int input_default_params(
   ptsz->write_sz = _FALSE_;
   ptsz->ell_sz = 1;
   ptsz->nlSZ = 18;
+
+  ptsz->M_min_HOD_mass_factor_unwise = 1.;
+  // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
+  // in the settings of KFSW20
+  ptsz->x_out_truncated_nfw_profile = 2.5;
+  ptsz->x_out_nfw_profile = 2.5;
+  ptsz->cvir_tau_profile_factor =  1.;
+  ptsz->M1_prime_HOD_factor = 15.;
+  ptsz->M_min_HOD_satellite_mass_factor_unwise = 0.1;
+
+  ptsz->T10_alpha_norm_at_all_z = 0;
 
   ptsz->N_kSZ2_gal_multipole_grid = 20;
 

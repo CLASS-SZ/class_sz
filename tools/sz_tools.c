@@ -44625,7 +44625,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
 
   // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
   // in the settings of KFSW20
-  double xout = 2.5*rvir/rs; //rvir/rs = cvir
+  double xout = ptsz->x_out_nfw_profile*rvir/rs; //rvir/rs = cvir
 
 // QAWO
 
@@ -44636,7 +44636,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 3000;
+  int size_w = 100;
   w = gsl_integration_workspace_alloc(size_w);
 
   //int index_l = (int) pvectsz[ptsz->index_multipole_for_nfw_profile];
@@ -46272,10 +46272,15 @@ int MF_T10 (
 {
   if(z>3.) z=3.;
 
+  double alpha;
+  if(ptsz->T10_alpha_norm_at_all_z==0)
+  alpha = ptsz->alphaSZ;
+  else
+  alpha = get_T10_alpha_at_z(z,ptsz);
+
   *result =
   0.5
-  //*ptsz->alphaSZ
-  *get_T10_alpha_at_z(z,ptsz)
+  *alpha
   *(1.+pow(pow(ptsz->beta0SZ*pow(1.+z,0.2),2.)
          *exp(*lognu),
          -ptsz->phi0SZ

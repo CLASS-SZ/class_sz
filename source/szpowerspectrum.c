@@ -768,7 +768,7 @@ int compute_sz(struct background * pba,
 
 
      for (index_ell_1=0;index_ell_1<ptsz->N_kSZ2_gal_multipole_grid;index_ell_1++){
-       for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
+       for (index_ell_2=0;index_ell_2<=index_ell_1;index_ell_2++){
 
          if (ptsz->sz_verbose > 0)
           printf("computing b_kSZ_kSZ_X_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n",
@@ -788,6 +788,8 @@ int compute_sz(struct background * pba,
           //Pvectsz[ptsz->index_integral] = 0.;
 
        b_l1_l2_l[index_ell_1][index_ell_2] = Pvectsz[ptsz->index_integral];
+       if (index_ell_1 != index_ell_2)
+       b_l1_l2_l[index_ell_2][index_ell_1] = Pvectsz[ptsz->index_integral];
        }
      }
 
@@ -2090,7 +2092,8 @@ int evaluate_tau_profile(double * pvecback,
 
   // rho0=mvir/(4d0*pi*rs**3d0*(dlog(1d0+cvir)-cvir/(1d0+cvir))) !Eq. (2.66) of Binney & Tremaine
   double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)
-                *(log(1.+pvectsz[ptsz->index_cVIR])-pvectsz[ptsz->index_cVIR]/(1.+pvectsz[ptsz->index_cVIR])));
+                *(log(1.+ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR])-ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR]
+                /(1.+ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR])));
 
 
 
@@ -3121,7 +3124,7 @@ if (ptsz->pressure_profile == 4){
     evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
    }
    else {
-     if (ptsz->sz_verbose>=1)
+     if (ptsz->sz_verbose>=3)
      printf("c200m not implemented yet for this concentration mass relation\n");
    }
 
@@ -4777,7 +4780,7 @@ int select_multipole_array(struct tszspectrum * ptsz)
 
   int index_l;
   for (index_l=0;index_l<ptsz->N_kSZ2_gal_multipole_grid;index_l++){
-  ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(ptsz->ell_max_mock)
+  ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(5.*ptsz->ell_max_mock)
                                                    - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
 
   }
@@ -5465,8 +5468,8 @@ double HOD_mean_number_of_central_galaxies(double z,
  }
  else {
  if (ptsz->galaxy_sample == 1){ // KFSW20
- M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id);
- result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/(sqrt(2.)*0.25))));
+ M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+ result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
  }
 
  else {
@@ -5490,12 +5493,12 @@ double HOD_mean_number_of_satellite_galaxies(double z,
 double result =  0.;
 
    if (ptsz->galaxy_sample == 1){ // KFSW20
-   M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id);
-   if (M_halo>M_min){
-   result = pow((M_halo-0.1*M_min)/(15.*M_min),0.8);
+   M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+   if (M_halo>ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min){
+   result = pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/(ptsz->M1_prime_HOD_factor*M_min),alpha_s);
     }
  else result = 0.;
-    }
+}// end KFSW20
    else {
   if (M_halo>M_min){
    result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
@@ -5838,7 +5841,7 @@ else if (ptsz->galaxy_sample == 1) {
 // https://github.com/bccp/simplehod
 // the factor 2.5 is to agree with the cutoff of the lensing profile
 
-  r_delta = 2.5*pvectsz[ptsz->index_rVIR];
+  r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_rVIR];
   c_delta = pvectsz[ptsz->index_cVIR];
   if (c_delta>1.) c_delta = 1.;
 }
@@ -5951,7 +5954,8 @@ pvectsz[ptsz->index_c500c_KA20] = c500;
 //     return mcut
 
 double evaluate_unwise_m_min_cut(double z,
-                                 int sample_id)
+                                 int sample_id,
+                                 struct tszspectrum * ptsz)
 {
 double m_cut;
 
@@ -6010,13 +6014,13 @@ m_cut = pow(10.,m_cut);
 
 
 // adjust the mass
-double mass_fac = 1.;
-if (sample_id == 0) // red
-  mass_fac = 1.7;
-else if (sample_id == 1) // green
-  mass_fac = 1.2;
-else if (sample_id == 3) // blue
-  mass_fac = 1.;
+double mass_fac = ptsz->M_min_HOD_mass_factor_unwise;
+// if (sample_id == 0) // red
+//   mass_fac = 1.7;
+// else if (sample_id == 1) // green
+//   mass_fac = 1.2;
+// else if (sample_id == 3) // blue
+//   mass_fac = 1.;
 
 return mass_fac*m_cut;
 }

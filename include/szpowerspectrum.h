@@ -482,6 +482,15 @@ struct tszspectrum {
   double M1_prime_HOD;
   double rho_y_gal;
 
+  double M_min_HOD_mass_factor_unwise;
+  double x_out_truncated_nfw_profile;
+  double x_out_nfw_profile;
+  double M_min_HOD_satellite_mass_factor_unwise;
+  double M1_prime_HOD_factor;
+  double cvir_tau_profile_factor;
+
+  int T10_alpha_norm_at_all_z;
+
 
   // noise curve for cov(y,y)
 
@@ -1072,7 +1081,8 @@ double evaluate_galaxy_number_counts( double * pvecback,
                                     struct tszspectrum * ptsz);
 
 double evaluate_unwise_m_min_cut(double z,
-                                 int sample_id);
+                                 int sample_id,
+                                 struct tszspectrum * ptsz);
 
 
 int evaluate_cib_profile(double * pvecback,
