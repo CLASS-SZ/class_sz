@@ -830,64 +830,93 @@ int compute_sz(struct background * pba,
 
    double dell_prime =  1.;
 
+
+
+  // adaptative integration
+   struct Parameters_for_integrand_kSZ2_X_at_theta V;
+
+   V.ptsz = ptsz;
+   V.ln_ell = ln_ell;
+   V.index_ell_3 = index_ell_3;
+   V.b_l1_l2_l_1d = b_l1_l2_l_1d;
+   void * params;
+
+   double r; //result of the integral
+   double epsrel= 1.e-2;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
+   double epsabs= 1.e-20;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
+   int show_neval = ptsz->patterson_show_neval;
+
    while(theta < 2.*_PI_){
 
-   //integrate over \ell^\prime
-   ell_prime = ell_min;
-   while (ell_prime <= ell_max){
+    V.theta = theta;
+    params = &V;
+     r=Integrate_using_Patterson_adaptive(ell_min, ell_max,
+                                          epsrel, epsabs,
+                                          integrand_kSZ2_X_at_theta,
+                                          params,show_neval);
+   //printf("integral result = %.3e\n",r);
 
-     int ell = (int) ptsz->ell[index_ell_3];
-     abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(theta));
-
-     int ell_1 = abs_ell_minus_ell_prime;
-     int ell_2 = ell_prime;
-     int ell_3 = ell;
-
-     // check bispectrum condition
-     int bispec_cd;
-     bispec_cd = bispectrum_condition(ell_1,ell_2,ell_3);
-
-     if (bispec_cd == 1){
-
-       double ln_ell1 = log(ell_1);
-       double ln_ell2 = log(ell_2);
-       double db =  exp(pwl_interp_2d(ptsz->N_kSZ2_gal_multipole_grid,
-                                      ptsz->N_kSZ2_gal_multipole_grid,
-                                      ln_ell,
-                                      ln_ell,
-                                      b_l1_l2_l_1d,
-                                      1,
-                                      &ln_ell1,
-                                      &ln_ell2));
-
-      double fl_prime = 1.;
-      if  (ell_prime <= ptsz->l_unwise_filter[0] || ell_prime >= ptsz->l_unwise_filter[ptsz->unwise_filter_size-1])
-        fl_prime = 0.;
-      else
-        fl_prime = pwl_value_1d(ptsz->unwise_filter_size,
-                                ptsz->l_unwise_filter,
-                                ptsz->f_unwise_filter,
-                                ell_prime);
-
-      double fl_minus_l_prime = 1.;
-      if  (abs_ell_minus_ell_prime <= ptsz->l_unwise_filter[0] || abs_ell_minus_ell_prime >= ptsz->l_unwise_filter[ptsz->unwise_filter_size-1])
-        fl_minus_l_prime = 0.;
-      else
-        fl_minus_l_prime = pwl_value_1d(ptsz->unwise_filter_size,
-                                        ptsz->l_unwise_filter,
-                                        ptsz->f_unwise_filter,
-                                        abs_ell_minus_ell_prime);
-
-
-
-       cl_kSZ2_gal += dtheta*dell_prime*fl_minus_l_prime*fl_prime*ell_prime*db/(2.*_PI_)/(2.*_PI_);
-     }
-
-
-     ell_prime += dell_prime;
-     }
+   // //integrate over \ell^\prime
+   // ell_prime = ell_min;
+   // while (ell_prime <= ell_max){
+   //
+   //   int ell = (int) ptsz->ell[index_ell_3];
+   //   abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(theta));
+   //
+   //   int ell_1 = abs_ell_minus_ell_prime;
+   //   int ell_2 = ell_prime;
+   //   int ell_3 = ell;
+   //
+   //   // check bispectrum condition
+   //   int bispec_cd;
+   //   bispec_cd = bispectrum_condition(ell_1,ell_2,ell_3);
+   //
+   //   if (bispec_cd == 1){
+   //
+   //     double ln_ell1 = log(ell_1);
+   //     double ln_ell2 = log(ell_2);
+   //     double db =  exp(pwl_interp_2d(ptsz->N_kSZ2_gal_multipole_grid,
+   //                                    ptsz->N_kSZ2_gal_multipole_grid,
+   //                                    ln_ell,
+   //                                    ln_ell,
+   //                                    b_l1_l2_l_1d,
+   //                                    1,
+   //                                    &ln_ell1,
+   //                                    &ln_ell2));
+   //
+   //    double fl_prime = 1.;
+   //    if  (ell_prime <= ptsz->l_unwise_filter[0] || ell_prime >= ptsz->l_unwise_filter[ptsz->unwise_filter_size-1])
+   //      fl_prime = 0.;
+   //    else
+   //      fl_prime = pwl_value_1d(ptsz->unwise_filter_size,
+   //                              ptsz->l_unwise_filter,
+   //                              ptsz->f_unwise_filter,
+   //                              ell_prime);
+   //
+   //    double fl_minus_l_prime = 1.;
+   //    if  (abs_ell_minus_ell_prime <= ptsz->l_unwise_filter[0] || abs_ell_minus_ell_prime >= ptsz->l_unwise_filter[ptsz->unwise_filter_size-1])
+   //      fl_minus_l_prime = 0.;
+   //    else
+   //      fl_minus_l_prime = pwl_value_1d(ptsz->unwise_filter_size,
+   //                                      ptsz->l_unwise_filter,
+   //                                      ptsz->f_unwise_filter,
+   //                                      abs_ell_minus_ell_prime);
+   //
+   //
+   //
+   //     cl_kSZ2_gal += dtheta*dell_prime*fl_minus_l_prime*fl_prime*ell_prime*db/(2.*_PI_)/(2.*_PI_);
+   //   }
+   //
+   //
+   //   ell_prime += dell_prime;
+   //   }
+     cl_kSZ2_gal += dtheta*r;
      theta += dtheta;
    }
+
+
+
+
 
    free(b_l1_l2_l_1d);
    free(ln_ell);
@@ -6023,4 +6052,67 @@ double mass_fac = ptsz->M_min_HOD_mass_factor_unwise;
 //   mass_fac = 1.;
 
 return mass_fac*m_cut;
+}
+
+
+
+
+
+
+double integrand_kSZ2_X_at_theta(double ell_prime, void *p){
+
+double integrand_cl_kSZ2_X_at_theta = 0.;
+struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_integrand_kSZ2_X_at_theta *) p);
+
+
+
+     int ell = (int) V->ptsz->ell[V->index_ell_3];
+     double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(V->theta));
+
+     int ell_1 = abs_ell_minus_ell_prime;
+     int ell_2 = ell_prime;
+     int ell_3 = ell;
+
+     // check bispectrum condition
+     int bispec_cd;
+     bispec_cd = bispectrum_condition(ell_1,ell_2,ell_3);
+
+     if (bispec_cd == 1){
+
+       double ln_ell1 = log(ell_1);
+       double ln_ell2 = log(ell_2);
+       double db =  exp(pwl_interp_2d(V->ptsz->N_kSZ2_gal_multipole_grid,
+                                      V->ptsz->N_kSZ2_gal_multipole_grid,
+                                      V->ln_ell,
+                                      V->ln_ell,
+                                      V->b_l1_l2_l_1d,
+                                      1,
+                                      &ln_ell1,
+                                      &ln_ell2));
+
+      double fl_prime = 1.;
+      if  (ell_prime <= V->ptsz->l_unwise_filter[0] || ell_prime >= V->ptsz->l_unwise_filter[V->ptsz->unwise_filter_size-1])
+        fl_prime = 0.;
+      else
+        fl_prime = pwl_value_1d(V->ptsz->unwise_filter_size,
+                                V->ptsz->l_unwise_filter,
+                                V->ptsz->f_unwise_filter,
+                                ell_prime);
+
+      double fl_minus_l_prime = 1.;
+      if  (abs_ell_minus_ell_prime <= V->ptsz->l_unwise_filter[0] || abs_ell_minus_ell_prime >= V->ptsz->l_unwise_filter[V->ptsz->unwise_filter_size-1])
+        fl_minus_l_prime = 0.;
+      else
+        fl_minus_l_prime = pwl_value_1d(V->ptsz->unwise_filter_size,
+                                        V->ptsz->l_unwise_filter,
+                                        V->ptsz->f_unwise_filter,
+                                        abs_ell_minus_ell_prime);
+
+
+
+       integrand_cl_kSZ2_X_at_theta = fl_minus_l_prime*fl_prime*ell_prime*db/(2.*_PI_)/(2.*_PI_);
+     }
+
+       return integrand_cl_kSZ2_X_at_theta;
+
 }

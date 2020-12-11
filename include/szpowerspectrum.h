@@ -1107,6 +1107,18 @@ double evaluate_sed_cib(double z, double nu, struct tszspectrum * ptsz);
 double evaluate_dust_temperature(double z, struct tszspectrum * ptsz);
 double evaluate_galaxy_luminosity(double z, double M, double nu, struct tszspectrum * ptsz);
 double subhalo_hmf_dndlnMs(double M_host,double M_sub);
+
+double integrand_kSZ2_X_at_theta(double ell_prime, void *p);
+
+
+struct Parameters_for_integrand_kSZ2_X_at_theta{
+  struct tszspectrum * ptsz;
+  double theta;
+  int index_ell_3;
+  double * b_l1_l2_l_1d;
+  double * ln_ell;
+};
+
 #ifdef __cplusplus
 }
 #endif
