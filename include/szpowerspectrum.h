@@ -10,6 +10,8 @@
 #include <gsl/gsl_sf_expint.h>
 #include <gsl/gsl_sf_lambert.h>
 
+#define _pk_at_z_1h_ ((ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_1h))
+#define _pk_at_z_2h_ ((ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_2h))
 #define _mean_y_ ((ptsz->has_mean_y == _TRUE_) && (index_md == ptsz->index_md_mean_y))
 #define _hmf_ ((ptsz->has_hmf == _TRUE_) && (index_md == ptsz->index_md_hmf))
 #define _tSZ_power_spectrum_ ((ptsz->has_sz_ps == _TRUE_) && (index_md == ptsz->index_md_sz_ps))
@@ -73,6 +75,8 @@ struct tszspectrum {
 
   double hmf_int;
   double y_monopole;
+  double * pk_at_z_1h;
+  double * pk_at_z_2h;
   double * cl_sz_1h;
   double * cl_gal_gal_1h;
   double * cl_gal_gal_2h;
@@ -154,6 +158,17 @@ struct tszspectrum {
   int has_hmf;
   int index_md_hmf;
   int index_integrand_id_hmf;
+
+  int has_pk_at_z_1h;
+  int index_md_pk_at_z_1h;
+  int index_integrand_id_pk_at_z_1h_first;
+  int index_integrand_id_pk_at_z_1h_last;
+
+  int has_pk_at_z_2h;
+  int index_md_pk_at_z_2h;
+  int index_integrand_id_pk_at_z_2h_first;
+  int index_integrand_id_pk_at_z_2h_last;
+
 
   int has_mean_y;
   int index_md_mean_y;
@@ -430,6 +445,10 @@ struct tszspectrum {
   int index_cib_profile;
 
   int index_W_lensmag;
+
+  int index_k_for_pk_hm;
+  int index_density_profile;
+
   //////////////
 
   int index_integral;
@@ -707,6 +726,13 @@ struct tszspectrum {
 
   //Foreground parameters
   double A_cib, A_rs, A_ir, A_cn;
+
+  double * k_for_pk_hm;
+  double dlnk_for_pk_hm;
+  double k_min_for_pk_hm;
+  double k_max_for_pk_hm;
+  int n_k_for_pk_hm;
+  double z_for_pk_hm;
 
   //Cl spectrum
   double * ell;
@@ -1110,6 +1136,10 @@ double subhalo_hmf_dndlnMs(double M_host,double M_sub);
 
 double integrand_kSZ2_X_at_theta(double ell_prime, void *p);
 
+int evaluate_density_profile(double * pvecback,
+                             double * pvectsz,
+                             struct background * pba,
+                             struct tszspectrum * ptsz);
 
 struct Parameters_for_integrand_kSZ2_X_at_theta{
   struct tszspectrum * ptsz;

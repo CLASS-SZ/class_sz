@@ -44598,9 +44598,9 @@ double integrand_patterson_test_pp(double x, void *p){
 }
 
 int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
-                                struct background * pba,
-                                double * pvectsz,
-                                double * result
+                          struct background * pba,
+                          double * pvectsz,
+                          double * result
                           ) {
 
   struct Parameters_for_integrand_nfw_profile V;
@@ -44641,10 +44641,23 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
 
   //int index_l = (int) pvectsz[ptsz->index_multipole_for_nfw_profile];
   double w0;
-  w0 = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
 
+  int index_md = (int) pvectsz[ptsz->index_md];
+  double y_eff;
+  if (_pk_at_z_1h_){
+    int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
+    double k = ptsz->k_for_pk_hm[index_k];
+    y_eff = k*pvectsz[ptsz->index_rs];
+  }
+  else{
+    y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
+             /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+  }
 
-  wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,10);
+  //w0 = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+  w0 = y_eff;
+
+  wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,30);
 
 
   int limit = size_w; //number of sub interval
@@ -44684,8 +44697,20 @@ int rho_nfw(double * rho_nfw_x,
             struct tszspectrum * ptsz)
 {
 
-  *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
-               /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
+ int index_md = (int) pvectsz[ptsz->index_md];
+ double y_eff;
+ if (_pk_at_z_1h_){
+   int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
+   double k = ptsz->k_for_pk_hm[index_k];
+   y_eff = k*pvectsz[ptsz->index_rs];
+ }
+ else{
+   y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
+            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+ }
+
+
+  *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*y_eff);
                //*sin(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
                ///pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
 }
@@ -46565,7 +46590,11 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   double result = 0.;
 
   // first deal with quantities that does not require mass integration:
-  if ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens)) {
+  if ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h)) {
+
+    result = 1.;
+  }
+  else if ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens)) {
 
   double delta_ell_lens =  delta_ell_lens_at_ell_and_z(V->pvecback,
                                                   V->pvectsz,
@@ -46622,7 +46651,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
     // galaxy_sample = 1 : unwise
     ((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
   ||((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
-){
+  ){
 
   if (index_md == V->ptsz->index_md_gal_lens_2h){
   evaluate_effective_galaxy_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -46635,14 +46664,14 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
                                                   V->ppm,
                                                   V->pnl,
                                                   V->ptsz);
-// this is needed only in  the approximate calculation
-// for the exact calculation in HOD, this comes out of Sigma_crit
-result *= W_lens;
-}
-else {
-  result = 0.;
-}
-}
+    // this is needed only in  the approximate calculation
+    // for the exact calculation in HOD, this comes out of Sigma_crit
+    result *= W_lens;
+    }
+    else {
+      result = 0.;
+    }
+  }
 // halofit approach
 else if (
   // galaxy_sample = 1 : unwise
@@ -46686,7 +46715,7 @@ result = W_lens*W_lens;
 
   // then quantities that require mass integration
   else {
-
+  //printf("integrating over mass\n");
   result = integrate_over_m_at_z(V->pvecback,
                                  V->pvectsz,
                                  V->pba,
@@ -46708,6 +46737,7 @@ if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo)
  ||  ((V->ptsz->has_lens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_2h))
  ||  ((V->ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lens_2h))
  ||  ((V->ptsz->has_sz_m_y_y_2h == _TRUE_) && (index_md == V->ptsz->index_md_m_y_y_2h))
+ ||  ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
  //||  ((V->ptsz->has_isw_tsz == _TRUE_) && (index_md == V->ptsz->index_md_isw_tsz))
  //||  ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens))
     ){
@@ -46800,9 +46830,21 @@ if  (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
 }
 
 
+if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_1h))
+ || ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))){
 
+    if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_1h))){
+      //result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*pow(1.+z,3.)*V->pvectsz[V->ptsz->index_Rho_crit],-2);
+      result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-2);
+      // proper to comoving volume?
+      result *= pow(1.+z,-2);
+      //result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-2);
+    }
 
+   return result;
+ }
 
+else{
 
   // finally multiply by volume element Chi^2 dChi
   result *= V->pvectsz[V->ptsz->index_chi2];
@@ -46845,6 +46887,7 @@ if  (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
   //                                 V->ptsz);
 
   return result;
+}
 
 }
 
@@ -46877,11 +46920,17 @@ int integrate_over_redshift(struct background * pba,
   double epsabs= ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
   int show_neval = ptsz->patterson_show_neval;
 
-
-    r=Integrate_using_Patterson_adaptive(log(1. + z_min), log(1. + z_max),
-                                         epsrel, epsabs,
-                                         integrand_redshift,
-                                         params,show_neval);
+  int index_md = (int) Pvectsz[ptsz->index_md];
+if(_pk_at_z_1h_ || _pk_at_z_2h_)
+{
+  r = integrand_redshift(log(1. + ptsz->z_for_pk_hm),params);
+}
+else{
+  r=Integrate_using_Patterson_adaptive(log(1. + z_min), log(1. + z_max),
+                                       epsrel, epsabs,
+                                       integrand_redshift,
+                                       params,show_neval);
+    }
 
 //   ///////
 // gsl_function F;

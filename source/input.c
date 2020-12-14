@@ -1722,6 +1722,12 @@ int input_read_parameters(
       class_read_double("dlogell",ptsz->dlogell);
 
 
+      class_read_double("k_min_for_pk_hm",ptsz->k_min_for_pk_hm);
+      class_read_double("k_max_for_pk_hm",ptsz->k_max_for_pk_hm);
+      class_read_double("dlnk_for_pk_hm",ptsz->dlnk_for_pk_hm);
+      class_read_double("z_for_pk_hm",ptsz->z_for_pk_hm);
+
+
 
       //Redshift limits for the integration
       class_read_double("z1SZ",ptsz->z1SZ);
@@ -1978,6 +1984,23 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
+      if ((strstr(string1,"pk_at_z_1h") != NULL) ) {
+        ptsz->has_pk_at_z_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"pk_at_z_2h") != NULL) ) {
+        ptsz->has_pk_at_z_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
 
       if ((strstr(string1,"kSZ_kSZ_lensmag_1h") != NULL) ) {
         ptsz->has_kSZ_kSZ_lensmag_1halo =_TRUE_;
@@ -4611,6 +4634,8 @@ int input_default_params(
   ptsz->has_lens_cib_2h = _FALSE_;
   ptsz->has_cib_cib_1h = _FALSE_;
   ptsz->has_cib_cib_2h = _FALSE_;
+  ptsz->has_pk_at_z_1h = _FALSE_;
+  ptsz->has_pk_at_z_2h = _FALSE_;
   ptsz->has_lens_lens_1h = _FALSE_;
   ptsz->has_lens_lens_2h = _FALSE_;
   ptsz->has_tSZ_lens_1h = _FALSE_;
@@ -4670,6 +4695,8 @@ int input_default_params(
   ptsz->index_md_cib_cib_2h = 32;
   ptsz->index_md_lens_cib_1h = 33;
   ptsz->index_md_lens_cib_2h = 34;
+  ptsz->index_md_pk_at_z_1h = 35;
+  ptsz->index_md_pk_at_z_2h = 36;
 
   ptsz->HMF_prescription_NCDM=2; //no-pres
 
