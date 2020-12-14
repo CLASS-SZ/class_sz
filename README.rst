@@ -5,8 +5,9 @@ CLASS_SZ
 
  With Thermal Sunyaev Zeldovich Power Spectrum Computation
 
+(And Other Halo Model Observables)
 
-**The SZ module is based on Eiichiro Komatsu’s fortran code SZFAST.**
+**The SZ module is initially based on Eiichiro Komatsu’s fortran code SZFAST.**
 
 (See http://wwwmpa.mpa-garching.mpg.de/~komatsu/CRL/clusters/szpowerspectrumks/)
 
@@ -16,6 +17,8 @@ and its dependencies.
 
 In addition to SZ power spectrum, class_sz can compute cross and auto power spectra for other tracers
 in the halo model (currently being developped: kSZ, galaxy, isw, lensing and cib).
+
+The code is currently in development, don't hesitate to reach out if anything is unclear due to lack of comments and indications. 
 
 **The code CLASS_SZ is an extension of the CLASS code.**
 
