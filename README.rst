@@ -16,9 +16,9 @@ The SZ module is included in the file **source/szpowerspectrum.c**
 and its dependencies.
 
 In addition to SZ power spectrum, class_sz can compute cross and auto power spectra for other tracers
-in the halo model (currently being developped: kSZ, galaxy, isw, lensing and cib).
+in the halo model (currently being developped: kSZ, galaxy, ISW, lensing and CIB).
 
-The code is currently in development, don't hesitate to reach out if anything is unclear due to lack of comments and indications. 
+The code is currently in development, don't hesitate to reach out if anything is unclear due to lack of comments and indications.
 
 **The code CLASS_SZ is an extension of the CLASS code.**
 

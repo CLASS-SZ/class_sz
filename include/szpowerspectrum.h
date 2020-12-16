@@ -663,6 +663,8 @@ struct tszspectrum {
   double b0;
   double c0;
 
+  int pk_nonlinear_for_vrms2;
+
   int MF;
   //1:Tinker 2010 (T10)
   //2:Bocquet 2015 (B15)

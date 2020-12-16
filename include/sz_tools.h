@@ -735,6 +735,7 @@ int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
                    struct background * pba,
                    struct primordial * ppm,
                    struct nonlinear *pnl,
+                   struct tszspectrum * ptsz,
                    double z,
                    double * vrms2
                  );

@@ -43748,6 +43748,7 @@ int spectra_vrms2(
                    struct background * pba,
                    struct primordial * ppm,
                    struct nonlinear *pnl,
+                   struct tszspectrum * ptsz,
                    double z,
                    double * vrms2
                    //double * sigma_prime
@@ -43818,11 +43819,19 @@ int spectra_vrms2(
 
     // //Input: wavenumber in 1/Mpc
     // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+  enum pk_outputs pk_for_vrms2;
+  if (ptsz->pk_nonlinear_for_vrms2 == 1){
+    pk_for_vrms2 = pk_nonlinear;
+  }
+  else {
+    pk_for_vrms2 = pk_linear;
+  }
+
    class_call(nonlinear_pk_at_k_and_z(
                                      pba,
                                      ppm,
                                      pnl,
-                                     pk_linear,
+                                     pk_for_vrms2,
                                      k,
                                      z,
                                      pnl->index_pk_cb,
@@ -43831,6 +43840,7 @@ int spectra_vrms2(
                                    ),
                                    pnl->error_message,
                                    pnl->error_message);
+
 
 
     array_for_sigma[i*index_num+index_k]=k;
@@ -47815,6 +47825,7 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
             spectra_vrms2(pba,
                           ppm,
                           pnl,
+                          ptsz,
                           exp(ptsz->array_redshift[index_z])-1.,
                           vrms2_var
                           );

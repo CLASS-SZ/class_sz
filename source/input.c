@@ -2387,6 +2387,8 @@ int input_read_parameters(
       class_read_double("cvir_tau_profile_factor",ptsz->cvir_tau_profile_factor);
       class_read_double("x_out_nfw_profile",ptsz->x_out_nfw_profile);
 
+      class_read_int("pk_nonlinear_for_vrms2",ptsz->pk_nonlinear_for_vrms2);
+
       class_read_int("T10_alpha_norm_at_all_z",ptsz->T10_alpha_norm_at_all_z);
 
 
@@ -4570,6 +4572,7 @@ int input_default_params(
   ptsz->b0 = 1.69;
   ptsz->c0 = 1.30;
 
+  ptsz->pk_nonlinear_for_vrms2 = 0;
 
   ptsz->MF = 2; //Bocquet 2015
 
