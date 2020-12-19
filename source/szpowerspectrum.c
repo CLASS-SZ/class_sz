@@ -2071,10 +2071,10 @@ int evaluate_tau_profile(double * pvecback,
    double tau_normalisation;
 
 
-   characteristic_radius = pvectsz[ptsz->index_rs];// in Mpc/h
-   characteristic_multipole = pvectsz[ptsz->index_ls];
+   characteristic_radius = pvectsz[ptsz->index_rs];///ptsz->cvir_tau_profile_factor;// in Mpc/h
+   characteristic_multipole = pvectsz[ptsz->index_ls];//*ptsz->cvir_tau_profile_factor;
    //printf("l1tau = %f\n", pvectsz[ptsz->index_multipole_for_tau_profile]);
-   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
+   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole*ptsz->cvir_tau_profile_factor;
    //printf("l1char = %f\n", pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
 
    pvectsz[ptsz->index_multipole_for_nfw_profile] = pvectsz[ptsz->index_multipole_for_tau_profile];
@@ -2113,7 +2113,10 @@ int evaluate_tau_profile(double * pvecback,
 
   double sigmaT_over_mpc2 = 8.30702e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
 
-
+  // adjust normalisation so that total mass is conserved
+  // within same limiting radius r_max = xout*r_vir
+  double cvir_prime = ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR];
+  double factor_norm = 1;
 
   // rho0=mvir/(4d0*pi*rs**3d0*(dlog(1d0+cvir)-cvir/(1d0+cvir))) !Eq. (2.66) of Binney & Tremaine
   double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)
@@ -3025,10 +3028,12 @@ int evaluate_HMF(double logM,
 
   // //convert from m500c to mVIR:
   class_call(mDEL_to_mVIR(pvectsz[ptsz->index_m500c],
-                         500.*(pvectsz[ptsz->index_Rho_crit]),
-                         &pvectsz[ptsz->index_mVIR],
-                         pvectsz,
-                         ptsz),
+                           500.*(pvectsz[ptsz->index_Rho_crit]),
+                           pvectsz[ptsz->index_Delta_c],
+                           pvectsz[ptsz->index_Rho_crit],
+                           z,
+                           &pvectsz[ptsz->index_mVIR],
+                           ptsz),
                   ptsz->error_message,
                   ptsz->error_message);
    // pvectsz[ptsz->index_mVIR] = 0.;
@@ -3039,71 +3044,13 @@ int evaluate_HMF(double logM,
    pvectsz[ptsz->index_mVIR] = exp(logM);
 }
 
-   pvectsz[ptsz->index_rVIR] = pow(3.*pvectsz[ptsz->index_mVIR]/(4*_PI_*pvectsz[ptsz->index_Delta_c]*pvectsz[ptsz->index_Rho_crit]),1./3.);
-
+   pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
    //compute concentration_parameter using mVIR
 
-   //For SC14 C-M relation
-   //we need r200crit in place of rVIR ---> TBD
-   if (ptsz->concentration_parameter==3)
-      pvectsz[ptsz->index_rVIR] = pow(3.*exp(logM)/(4*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
-
-   //D08 c-m relation
-   else if (ptsz->concentration_parameter==0){
-      pvectsz[ptsz->index_cVIR] =7.85*pow(pvectsz[ptsz->index_mVIR]/2.e12,-0.081)*pow(1.+z,-0.71);
-      //pvectsz[ptsz->index_cVIR] =5.72*pow(exp(logM)/1.e14,-0.081)*pow(1.+z,-0.71);
-    }
-
-   // Dutton and Maccio 2014 (https://arxiv.org/pdf/1402.7073.pdf)
-   else if (ptsz->concentration_parameter==5){
-     // here for virial mass in Msun/h:
-     // see ea. 7 of 1402.7073
-     double a =  0.537 + (1.025-0.537)*exp(-0.718*pow(z,1.08));
-     double b = -0.097 + 0.024*z;
-     double log10cvir = a + b*log10(pvectsz[ptsz->index_mVIR]/1.e12);
-      pvectsz[ptsz->index_cVIR] = pow(10.,log10cvir);
-   }
-
-   //S00 c-m relation
-   else if (ptsz->concentration_parameter==1){
-      pvectsz[ptsz->index_cVIR] =10.*pow(pvectsz[ptsz->index_mVIR]/3.42e12,-0.2)/(1.+z);
-   }
-
-   //K10 c-m relation
-   else if (ptsz->concentration_parameter==2){
-      class_call(CvirMvirKLYPIN(&pvectsz[ptsz->index_cVIR],
-                                             log(pvectsz[ptsz->index_mVIR]),
-                                             z,
-                                             ptsz),
-                      ptsz->error_message,
-                      ptsz->error_message);
-   }
-
-   //SC14 c-m relation
-   // TBD m200c, r200c
-   else if (ptsz->concentration_parameter==3){
-      class_call(C200M200SC14(&pvectsz[ptsz->index_cVIR],
-                              log(pvectsz[ptsz->index_mVIR]),
-                              z,
-                              ptsz),
-                      ptsz->error_message,
-                      ptsz->error_message);
-   }
-
-
-   //Z09 interpolated c-m relation
-   else if (ptsz->concentration_parameter==4){
-      class_call(CvirMvirZHAO(&pvectsz[ptsz->index_cVIR],
-                                          log(pvectsz[ptsz->index_mVIR]),
-                                          log(z),
-                                          ptsz),
-                      ptsz->error_message,
-                      ptsz->error_message);
-   }
-
+   pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
 
    //Scale radius:
-   //(note that rs is actually r200c/c200 for SC14 concentration-mass relation ---> TBD)
+   //(note that rs is actually r200c/c200 for SC14 concentration-mass relation ---> TBC)
    pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_rVIR]/pvectsz[ptsz->index_cVIR];
    pvectsz[ptsz->index_ls] = pvecback[pba->index_bg_ang_distance]*pba->h/pvectsz[ptsz->index_rs];
 
@@ -3113,12 +3060,12 @@ int evaluate_HMF(double logM,
    //(except when HMF is at m500c, i.e., T08@M500 and B16M500c)
    if (ptsz->MF!=5 && ptsz->MF!=7){
 
-      class_call(m_to_mDEL(pvectsz[ptsz->index_mVIR],
-                                     pvectsz[ptsz->index_rs],
-                                     pvectsz[ptsz->index_cVIR],
-                                     500.*(pvectsz[ptsz->index_Rho_crit]),
-                                     &pvectsz[ptsz->index_m500c],
-                                     ptsz),
+      class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+                           pvectsz[ptsz->index_rVIR],
+                           pvectsz[ptsz->index_cVIR],
+                           500.*(pvectsz[ptsz->index_Rho_crit]),
+                           &pvectsz[ptsz->index_m500c],
+                           ptsz),
                       ptsz->error_message,
                       ptsz->error_message);
 
@@ -3127,12 +3074,12 @@ int evaluate_HMF(double logM,
 
 if (ptsz->pressure_profile == 4){
    //compute m200c
-  class_call(m_to_mDEL(pvectsz[ptsz->index_mVIR],
-                                 pvectsz[ptsz->index_rs],
-                                 pvectsz[ptsz->index_cVIR],
-                                 200.*(pvectsz[ptsz->index_Rho_crit]),
-                                 &pvectsz[ptsz->index_m200c],
-                                 ptsz),
+  class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+                       pvectsz[ptsz->index_rVIR],
+                       pvectsz[ptsz->index_cVIR],
+                       200.*(pvectsz[ptsz->index_Rho_crit]),
+                       &pvectsz[ptsz->index_m200c],
+                       ptsz),
                   ptsz->error_message,
                   ptsz->error_message);
 
@@ -3162,13 +3109,13 @@ if (ptsz->pressure_profile == 4){
   //Jenkins et al 2001 @ m180-mean
   //Jenkins et al 2001
   if (ptsz->MF==3){
-     class_call(m_to_mDEL(pvectsz[ptsz->index_mVIR],
-                                    pvectsz[ptsz->index_rs],
-                                    pvectsz[ptsz->index_cVIR],
-                                    180.*( pvecback[pba->index_bg_Omega_m])
-                                    *pvectsz[ptsz->index_Rho_crit],
-                                    &pvectsz[ptsz->index_m180m],
-                                    ptsz),
+     class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+                          pvectsz[ptsz->index_rVIR],
+                          pvectsz[ptsz->index_cVIR],
+                          180.*( pvecback[pba->index_bg_Omega_m])
+                          *pvectsz[ptsz->index_Rho_crit],
+                          &pvectsz[ptsz->index_m180m],
+                          ptsz),
                      ptsz->error_message,
                      ptsz->error_message);}
 
@@ -3176,13 +3123,13 @@ if (ptsz->pressure_profile == 4){
   // compute m1600m
   //Tinker et al 2008 @ m1600-mean
   else if (ptsz->MF==6){
-   class_call(m_to_mDEL(pvectsz[ptsz->index_mVIR],
-                                  pvectsz[ptsz->index_rs],
-                                  pvectsz[ptsz->index_cVIR],
-                                  1600.*( pvecback[pba->index_bg_Omega_m])
-                                  *pvectsz[ptsz->index_Rho_crit],
-                                  &pvectsz[ptsz->index_m1600m],
-                                  ptsz),
+   class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+                        pvectsz[ptsz->index_rVIR],
+                        pvectsz[ptsz->index_cVIR],
+                        1600.*( pvecback[pba->index_bg_Omega_m])
+                        *pvectsz[ptsz->index_Rho_crit],
+                        &pvectsz[ptsz->index_m1600m],
+                        ptsz),
                    ptsz->error_message,
                    ptsz->error_message);}
 
@@ -3193,10 +3140,10 @@ if (ptsz->pressure_profile == 4){
   //Tinker et al 2010 @ m200-mean
   //Boquet et al 2015 @ m200-mean
   //convert mVIR to m200m
-  //used in all cases except T08@M500 and B15@M500
+  //used in all cases except T08@M500 [5] and B15@M500 [7]
   else if (ptsz->MF!=5 && ptsz->MF!=7) {
-     class_call(m_to_mDEL(pvectsz[ptsz->index_mVIR],
-                          pvectsz[ptsz->index_rs],
+     class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+                          pvectsz[ptsz->index_rVIR],
                           pvectsz[ptsz->index_cVIR],
                           200.*pvecback[pba->index_bg_Omega_m]
                           *pvectsz[ptsz->index_Rho_crit],
@@ -3601,8 +3548,12 @@ int write_redshift_dependent_quantities(struct background * pba,
   fprintf(fp,"# Column 6: velocity growth rate f = dlnD/dlna\n");
   fprintf(fp,"# Column 7: vrms2 [km/s]\n");
   fprintf(fp,"# Column 8: Delta Chi sigma2_hsv [Mpc/h,see Eq. 33 of Takada and Spergel 2013]\n");
-  fprintf(fp,"# Column 9: m200m/m200c @ m200m = 10^{13.5} Msun/h (typical <M>)\n");
+  fprintf(fp,"# Column 9: mvir  [Msun/h] (typical <M>)\n");
   fprintf(fp,"# Column 10: mean galaxy number density ng_bar\n");
+  fprintf(fp,"# Column 11: mdel\n");
+  fprintf(fp,"# Column 12: mdel_prime\n");
+  fprintf(fp,"# Column 13: delta_prime\n");
+  fprintf(fp,"# Column 14: delta_prime\n");
   int index_z;
   int n_z = 1e3;
   double z_min = ptsz->z1SZ;
@@ -3694,7 +3645,7 @@ int write_redshift_dependent_quantities(struct background * pba,
                           z_asked));
 
 
-  double m200m_over_m200d = 0.;
+  double mvir_over_m200d = 0.;
 
 
   double rhoc =  (3./(8.*_PI_*_G_*_M_sun_))
@@ -3706,29 +3657,76 @@ int write_redshift_dependent_quantities(struct background * pba,
   double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
   double delc = Delta_c_of_Omega_m(omega);
 
-  double mvir = pow(10.,13.5); //m200m for M=10^{13.5} Msun/h
-  double rvir = pow(3.*mvir/4./_PI_/delc/rhoc,1./3.);
-  double cvir = 5.72*pow(mvir/1e14,-0.081)/pow(1.+z_asked,0.71);
+  double mvir = pow(10.,14); //m200m for M=10^{13.5} Msun/h
+  double rvir = evaluate_rvir_of_mvir(mvir,delc,rhoc,ptsz);
+  double cvir = evaluate_cvir_of_mvir(mvir,z,ptsz);// 5.72*pow(mvir/1e14,-0.081)/pow(1.+z_asked,0.71);
   double mdel;
-  double rs = rvir/cvir;
+  ///double rs = rvir/cvir;
 
-  class_call(m_to_mDEL(mvir,
-                       rs,
-                       cvir,
-                       200.*omega*rhoc,
-                       &mdel,
-                       ptsz),
+  double delrho = 200.*omega*rhoc; // 200m
+  double delrho_prime = 500.*rhoc; //500c
+
+
+  class_call(mVIR_to_mDEL(mvir,
+                         rvir,
+                         cvir,
+                         delrho,
+                         &mdel,
+                         ptsz),
                   ptsz->error_message,
                   ptsz->error_message);
 
-  m200m_over_m200d = mvir/mdel;
+  mvir_over_m200d = mvir/mdel;
 
-  fprintf(fp,"%.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e\t %.5e\n",z,a,H_cosmo,H,sigma8,f,vrms2,sigma2_hsv,m200m_over_m200d,ng);
+  double mvir_recovered = 1.;
+  double mvir_over_mvir_recovered;
+
+
+
+  class_call(mDEL_to_mVIR(mdel,
+                         delrho,
+                         delc,
+                         rhoc,
+                         z,
+                         &mvir_recovered,
+                         ptsz),
+                  ptsz->error_message,
+                  ptsz->error_message);
+
+
+  double mdel_prime;
+  class_call(mDEL_to_mDELprime(mdel,
+                         delrho,
+                         delrho_prime,
+                         delc,
+                         rhoc,
+                         z,
+                         &mdel_prime,
+                         ptsz),
+                  ptsz->error_message,
+                  ptsz->error_message);
+  mvir_over_mvir_recovered = mvir/mvir_recovered;
+
+  double cvir_fac = 1.;
+  double cvir_prime = cvir_fac*cvir;
+
+  double delta= 2.5;
+  double delta_prime;
+
+  delta_prime = delta_to_delta_prime_nfw(delta,cvir,cvir_prime,ptsz);
+
+
+  printf("z = %.3e mvir = %.4e mdel = %.4e mvir_rec = %.4e mdel_prime = %.4e cvir = %.4e delta = %.4e delta_prime = %.4e\n",
+          z,mvir,mdel,mvir_recovered,mdel_prime, cvir,delta,delta_prime);
+
+
+  fprintf(fp,"%.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e\t %.5e\t %.5e\t %.5e\t %.5e\t %.5e\n",
+          z,a,H_cosmo,H,sigma8,f,vrms2,sigma2_hsv,mvir,ng,mdel,mdel_prime,delta,delta_prime);
 
  }
 
  fclose(fp);
-
+ //exit(0);
  if (ptsz->has_cib_cib_1h){
  sprintf(Filepath,"%s%s%s",ptsz->root,"","cib.txt");
  printf("-> Writing sed cib in %s\n",Filepath);
@@ -5436,20 +5434,20 @@ double z = pvectsz[ptsz->index_z];
 
   mvir1=exp(logM-tol);
   mvir2=exp(logM+tol);
-  rvir1=pow(3.*mvir1/4./_PI_/delc/rhoc,1./3.); //! virial radius, h^-1 Mpc
-  rvir2=pow(3.*mvir2/4./_PI_/delc/rhoc,1./3.); //! virial radius, h^-1 Mpc
+  rvir1=evaluate_rvir_of_mvir(mvir1,delc,rhoc,ptsz);//pow(3.*mvir1/4./_PI_/delc/rhoc,1./3.); //! virial radius, h^-1 Mpc
+  rvir2=evaluate_rvir_of_mvir(mvir2,delc,rhoc,ptsz);//pow(3.*mvir2/4./_PI_/delc/rhoc,1./3.); //! virial radius, h^-1 Mpc
 
   //! JCH edit: from personal communication with Battaglia: in their paper,
   //! they changed Duffy's M_pivot from 2d12 Msun/h to 1d14 Msun/h, so
   //! normalization becomes 5.72 instead of 7.85
   //! N.B.: this is the same as Eq. (D17) of Komatsu et al., arXiv:1001.4538
 
-  cvir1=5.72*pow(mvir1/1e14,-0.081)/pow(1.+z,0.71);
-  cvir2=5.72*pow(mvir2/1e14,-0.081)/pow(1.+z,0.71);
+  cvir1=evaluate_cvir_of_mvir(mvir1,z,ptsz);//5.72*pow(mvir1/1e14,-0.081)/pow(1.+z,0.71);
+  cvir2=evaluate_cvir_of_mvir(mvir2,z,ptsz);//5.72*pow(mvir2/1e14,-0.081)/pow(1.+z,0.71);
   rs1=rvir1/cvir1; //! NFW scale radius, h^-1 Mpc
   rs2=rvir2/cvir2; //! NFW scale radius, h^-1 Mpc
 
-  class_call(m_to_mDEL(mvir1,
+  class_call(mVIR_to_mDEL(mvir1,
                        rs1,
                        cvir1,
                        200.*omega*rhoc,
@@ -5457,7 +5455,7 @@ double z = pvectsz[ptsz->index_z];
                        ptsz),
                   ptsz->error_message,
                   ptsz->error_message);
-  class_call(m_to_mDEL(mvir2,
+  class_call(mVIR_to_mDEL(mvir2,
                        rs2,
                        cvir2,
                        200.*omega*rhoc,

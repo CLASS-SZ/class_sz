@@ -42089,6 +42089,297 @@ void timestamp ( )
 
 
 /////////////////////////////////SZ-TOOLS//////////
+
+int zbrent_sz_delta_to_delta_prime_nfw(double x1,
+                                        double x2,
+                                        double tol,
+                                        double cvir,
+                                        double cvir_prime,
+                                        double delta,
+                                        double fa,
+                                        double fb,
+                                        double * delta_prime,
+                                       struct tszspectrum * ptsz){
+  int iter;
+  int ITMAX = 100;
+
+  double a;
+  double b;
+  double c;
+  double d;
+  double e;
+  double min1;
+  double min2;
+  double fc;
+  double p;
+  double q;
+  double r;
+  double tol1;
+  double s;
+  double xm;
+  double EPS2;
+
+
+  EPS2=3.e-8;
+  a =x1;
+  b =x2;
+
+  class_call(
+               dtod_prime_nfw(
+                      a,
+                      delta,
+                      cvir,
+                      cvir_prime,
+                      &fa
+                      ),
+             ptsz->error_message,
+             ptsz->error_message);
+
+  class_call(
+               dtod_prime_nfw(
+                      b,
+                      delta,
+                      cvir,
+                      cvir_prime,
+                      &fb
+                      ),
+             ptsz->error_message,
+             ptsz->error_message);
+
+
+  if ((fb)*(fa) > 0.0)  {
+    printf("Root must be bracketed in ZBRENT\n");
+    return _FAILURE_;
+  }
+
+  fc=fb;
+
+  for (iter=1;iter<=ITMAX;iter++) {
+    if ((fb)*(fc) > 0.0) {
+      c=a;
+      fc=fa;
+      e=d=b-a;
+    }
+
+    if (fabs(fc) < fabs(fb)) {
+      a=b;
+      b=c;
+      c=a;
+      fa=fb;
+      fb=fc;
+      fc=fa;
+    }
+    tol1=2.0*(EPS2)*fabs(b)+0.5*tol;
+    xm=0.5*(c-b);
+    if (fabs(xm) <= tol1 || fb == 0.0)  {
+      *delta_prime = b;
+
+
+      return _SUCCESS_;
+    }
+
+    if (fabs(e) >= tol1 && fabs(fa) > fabs(fb)) {
+      s=fb/(fa);
+      if (a == c) {
+        p=2.0*(xm)*(s);
+        q=1.0-s;
+      }
+      else {
+        q=fa/(fc);
+        r=fb/(fc);
+        p=s*(2.0*(xm)*(q)*(q-r)-(b-a)*(r-1.0));
+        q=(q-1.0)*(r-1.0)*(s-1.0);
+      }
+      if (p > 0.0)  q = -q;
+      p=fabs(p);
+      min1=3.0*(xm)*(q)-fabs(tol1*(q));
+      min2=fabs(e*(q));
+      if (2.0*(p) < (min1 < min2 ? min1 : min2))
+      {
+        e=d;
+        d=p/(q);
+      }
+      else {
+        d=xm;
+        e=d;
+      }
+    }
+    else {
+      d=xm;
+      e=d;
+    }
+    a=b;
+    fa=fb;
+    if (fabs(d) > tol1)
+      b += d;
+    else
+      b += (xm > 0.0 ? fabs(tol1) : -fabs(tol1));
+    class_call(
+               dtod_prime_nfw(
+                      b,
+                      delta,
+                      cvir,
+                      cvir_prime,
+                      &fb
+                      ),
+               ptsz->error_message,
+               ptsz->error_message);
+  }
+
+  printf("Max. num. of ite. exceeded in ZBRENT\n");
+
+  return _FAILURE_;
+
+
+
+                                        }
+
+ int dtod_prime_nfw( double delta_prime,
+                     double delta,
+                     double cvir,
+                     double cvir_prime,
+                     double * dRES
+                   ){
+
+
+*dRES = m_nfw(delta_prime*cvir_prime)/m_nfw(cvir_prime) - m_nfw(delta*cvir)/m_nfw(cvir);
+
+return _SUCCESS_;
+                   }
+
+
+//Routine used for
+//the conversion between delta's
+double delta_to_delta_prime_nfw(
+  double delta,
+  double cvir,
+  double cvir_prime,
+  struct tszspectrum * ptsz
+              )
+{
+  double delta_prime;
+
+  double  var;
+
+  double  lTEST;
+
+  double  fa;
+  double  fb;
+  double  m1;
+  double  m2;
+  double  mLO;
+  double  mUP;
+  double  logMDEL;
+
+
+
+  int  i;
+  int iMAX = 50;
+
+  double * mTEST;
+  class_alloc(mTEST,
+              iMAX*sizeof( double ),
+              ptsz->error_message);
+
+
+
+  mTEST[0] = delta;
+
+
+  class_call(
+             dtod_prime_nfw(
+                    mTEST[0],
+                    delta,
+                    cvir,
+                    cvir_prime,
+                    &lTEST
+                    ),
+             ptsz->error_message,
+             ptsz->error_message
+             );
+//printf("lTEST = %.3e delta = %.3e\n", lTEST, delta);
+
+  if (lTEST <= 0.) {
+    for (i=1;i<iMAX;i++ ) {
+
+      mTEST[i] = 2.*mTEST[i-1];
+
+      class_call(
+        dtod_prime_nfw(
+                     mTEST[i],
+                     delta,
+                     cvir,
+                     cvir_prime,
+                     &lTEST
+                     ),
+                 ptsz->error_message,
+                 ptsz->error_message
+                 );
+
+      if (lTEST > 0.)
+      {
+        m1 = mTEST[i];
+        m2 = mTEST[i-1];
+        break;
+      }
+    }
+  }
+  else
+  {
+    for (i=1;i<iMAX;i++ )
+    {
+      mTEST[i] = mTEST[i-1]/2.;
+
+      class_call(
+        dtod_prime_nfw(
+               mTEST[i],
+               delta,
+               cvir,
+               cvir_prime,
+               &lTEST
+               ),
+                 ptsz->error_message,
+                 ptsz->error_message);
+
+    //printf("lTEST = %.3e i = %d\n", lTEST, i);
+
+      if(lTEST < 0.)
+      {
+        m1 = mTEST[i];
+        m2 = mTEST[i-1];
+        break;
+      }
+    }
+  }
+
+  mLO=MIN(m1,m2);
+  mUP=MAX(m1,m2);
+
+  //printf("mLO = %.3e mUP = %.3e\n", mLO,mUP);
+
+  class_call(zbrent_sz_delta_to_delta_prime_nfw(
+                       mLO,
+                       mUP,
+                       1.e-4,
+                       cvir,
+                       cvir_prime,
+                       delta,
+                       fa,
+                       fb,
+                       &delta_prime,
+                      ptsz),
+             ptsz->error_message,
+             ptsz->error_message);
+
+
+
+
+
+  free(mTEST);
+  return delta_prime;
+}
+
+
 //Root finding algorithm
 //for the virial mass mVIR to
 //overdensity mass mDEL (e.g. m200)
@@ -42100,8 +42391,8 @@ int zbrent_sz(
               double VAR2,
               double VAR3,
               double VAR4,
-              double * fa,
-              double * fb,
+              double fa,
+              double fb,
               double * logMDEL,
               struct tszspectrum * ptsz
               )
@@ -42109,51 +42400,35 @@ int zbrent_sz(
   int iter;
   int ITMAX = 100;
 
-  double * a;
-  double * b;
-  double * c;
-  double * d;
-  double * e;
-  double * min1;
-  double * min2;
-  double * fc;
-  double * p;
-  double * q;
-  double * r;
-  double * tol1;
-  double * s;
-  double * xm;
-  double * EPS2;
+  double a;
+  double b;
+  double c;
+  double d;
+  double e;
+  double min1;
+  double min2;
+  double fc;
+  double p;
+  double q;
+  double r;
+  double tol1;
+  double s;
+  double xm;
+  double EPS2;
 
 
-  class_alloc(a, 1*sizeof(double),ptsz->error_message);
-  class_alloc(b, 1*sizeof(double),ptsz->error_message);
-  class_alloc(c, 1*sizeof(double),ptsz->error_message);
-  class_alloc(d, 1*sizeof(double),ptsz->error_message);
-  class_alloc(e, 1*sizeof(double),ptsz->error_message);
-  class_alloc(min1, 1*sizeof(double),ptsz->error_message);
-  class_alloc(min2, 1*sizeof(double),ptsz->error_message);
-  class_alloc(fc, 1*sizeof(double),ptsz->error_message);
-  class_alloc(p, 1*sizeof(double),ptsz->error_message);
-  class_alloc(q, 1*sizeof(double),ptsz->error_message);
-  class_alloc(r, 1*sizeof(double),ptsz->error_message);
-  class_alloc(s, 1*sizeof(double),ptsz->error_message);
-  class_alloc(tol1, 1*sizeof(double),ptsz->error_message);
-  class_alloc(xm, 1*sizeof(double),ptsz->error_message);
-  class_alloc(EPS2, 1*sizeof(double),ptsz->error_message);
-
-  *EPS2=3.e-8;
-  *a =x1;
-  *b =x2;
+  EPS2=3.e-8;
+  a =x1;
+  b =x2;
 
   class_call(
              mVtomD(
-                    *a,
+                    a,
                     VAR1,
                     VAR2,
                     VAR3,
                     VAR4,
-                    fa,
+                    &fa,
                     ptsz
                     ),
              ptsz->error_message,
@@ -42161,108 +42436,93 @@ int zbrent_sz(
 
   class_call(
              mVtomD(
-                    *b,
+                    b,
                     VAR1,
                     VAR2,
                     VAR3,
                     VAR4,
-                    fb,
+                    &fb,
                     ptsz
                     ),
              ptsz->error_message,
              ptsz->error_message);
 
 
-  if ((*fb)*(*fa) > 0.0)  {
+  if ((fb)*(fa) > 0.0)  {
     printf("Root must be bracketed in ZBRENT\n");
     return _FAILURE_;
   }
 
-  *fc=*fb;
+  fc=fb;
 
   for (iter=1;iter<=ITMAX;iter++) {
-    if ((*fb)*(*fc) > 0.0) {
-      *c=*a;
-      *fc=*fa;
-      *e=*d=*b-*a;
+    if ((fb)*(fc) > 0.0) {
+      c=a;
+      fc=fa;
+      e=d=b-a;
     }
 
-    if (fabs(*fc) < fabs(*fb)) {
-      *a=*b;
-      *b=*c;
-      *c=*a;
-      *fa=*fb;
-      *fb=*fc;
-      *fc=*fa;
+    if (fabs(fc) < fabs(fb)) {
+      a=b;
+      b=c;
+      c=a;
+      fa=fb;
+      fb=fc;
+      fc=fa;
     }
-    *tol1=2.0*(*EPS2)*fabs(*b)+0.5*tol;
-    *xm=0.5*(*c-*b);
-    if (fabs(*xm) <= *tol1 || *fb == 0.0)  {
-      *logMDEL = *b;
+    tol1=2.0*(EPS2)*fabs(b)+0.5*tol;
+    xm=0.5*(c-b);
+    if (fabs(xm) <= tol1 || fb == 0.0)  {
+      *logMDEL = b;
 
-      free(a);
-      free(b);
-      free(c);
-      free(d);
-      free(e);
-      free(min1);
-      free(min2);
-      free(tol1);
-      free(p);
-      free(q);
-      free(r);
-      free(s);
-      free(xm);
-      free(fc);
-      free(EPS2);
 
       return _SUCCESS_;
     }
 
-    if (fabs(*e) >= *tol1 && fabs(*fa) > fabs(*fb)) {
-      *s=*fb/(*fa);
-      if (*a == *c) {
-        *p=2.0*(*xm)*(*s);
-        *q=1.0-*s;
+    if (fabs(e) >= tol1 && fabs(fa) > fabs(fb)) {
+      s=fb/(fa);
+      if (a == c) {
+        p=2.0*(xm)*(s);
+        q=1.0-s;
       }
       else {
-        *q=*fa/(*fc);
-        *r=*fb/(*fc);
-        *p=*s*(2.0*(*xm)*(*q)*(*q-*r)-(*b-*a)*(*r-1.0));
-        *q=(*q-1.0)*(*r-1.0)*(*s-1.0);
+        q=fa/(fc);
+        r=fb/(fc);
+        p=s*(2.0*(xm)*(q)*(q-r)-(b-a)*(r-1.0));
+        q=(q-1.0)*(r-1.0)*(s-1.0);
       }
-      if (*p > 0.0)  *q = -*q;
-      *p=fabs(*p);
-      *min1=3.0*(*xm)*(*q)-fabs(*tol1*(*q));
-      *min2=fabs(*e*(*q));
-      if (2.0*(*p) < (*min1 < *min2 ? *min1 : *min2))
+      if (p > 0.0)  q = -q;
+      p=fabs(p);
+      min1=3.0*(xm)*(q)-fabs(tol1*(q));
+      min2=fabs(e*(q));
+      if (2.0*(p) < (min1 < min2 ? min1 : min2))
       {
-        *e=*d;
-        *d=*p/(*q);
+        e=d;
+        d=p/(q);
       }
       else {
-        *d=*xm;
-        *e=*d;
+        d=xm;
+        e=d;
       }
     }
     else {
-      *d=*xm;
-      *e=*d;
+      d=xm;
+      e=d;
     }
-    *a=*b;
-    *fa=*fb;
-    if (fabs(*d) > *tol1)
-      *b += *d;
+    a=b;
+    fa=fb;
+    if (fabs(d) > tol1)
+      b += d;
     else
-      *b += (*xm > 0.0 ? fabs(*tol1) : -fabs(*tol1));
+      b += (xm > 0.0 ? fabs(tol1) : -fabs(tol1));
     class_call(
                mVtomD(
-                      *b,
+                      b,
                       VAR1,
                       VAR2,
                       VAR3,
                       VAR4,
-                      fb,
+                      &fb,
                       ptsz
                       ),
                ptsz->error_message,
@@ -42275,175 +42535,171 @@ int zbrent_sz(
 }
 
 //Root finding algorithm
-//for the virial mass mVIR to
-//overdensity mass mDEL (e.g. m200)
-int zbrent_V_to_D_sz(
+//for the virial mass mDEL to
+//overdensity mass mVIR (e.g. m200)
+int zbrent_D_to_V_sz(
               double x1,
               double x2,
               double tol,
-              double VAR1,
-              double VAR4,
-              double * fa,
-              double * fb,
-              double * logMDEL,
-              double * pvectsz,
+              double mDEL,
+              double delrho,
+              double fa,
+              double fb,
+              double z,
+              double delc,
+              double rhoc,
+              double * logMVIR,
               struct tszspectrum * ptsz
               )
 {
   int iter;
   int ITMAX = 100;
 
-  double * a;
-  double * b;
-  double * c;
-  double * d;
-  double * e;
-  double * min1;
-  double * min2;
-  double * fc;
-  double * p;
-  double * q;
-  double * r;
-  double * tol1;
-  double * s;
-  double * xm;
-  double * EPS2;
+  double a;
+  double b;
+  double c;
+  double d;
+  double e;
+  double min1;
+  double min2;
+  double fc;
+  double p;
+  double q;
+  double r;
+  double tol1;
+  double s;
+  double xm;
+  double EPS2;
+
+  double mvir_test;
+  double cvir_test;
+  double rvir_test;
 
 
-  class_alloc(a, 1*sizeof(double),ptsz->error_message);
-  class_alloc(b, 1*sizeof(double),ptsz->error_message);
-  class_alloc(c, 1*sizeof(double),ptsz->error_message);
-  class_alloc(d, 1*sizeof(double),ptsz->error_message);
-  class_alloc(e, 1*sizeof(double),ptsz->error_message);
-  class_alloc(min1, 1*sizeof(double),ptsz->error_message);
-  class_alloc(min2, 1*sizeof(double),ptsz->error_message);
-  class_alloc(fc, 1*sizeof(double),ptsz->error_message);
-  class_alloc(p, 1*sizeof(double),ptsz->error_message);
-  class_alloc(q, 1*sizeof(double),ptsz->error_message);
-  class_alloc(r, 1*sizeof(double),ptsz->error_message);
-  class_alloc(s, 1*sizeof(double),ptsz->error_message);
-  class_alloc(tol1, 1*sizeof(double),ptsz->error_message);
-  class_alloc(xm, 1*sizeof(double),ptsz->error_message);
-  class_alloc(EPS2, 1*sizeof(double),ptsz->error_message);
 
-  *EPS2=3.e-8;
-  *a =x1;
-  *b =x2;
+  EPS2=3.e-8;
+  a =x1;
+  b =x2;
+
+
+  mvir_test = exp(a);
+  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+  rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
+
+
 
   class_call(
              mDtomV(
-                    *a,
-                    VAR1,
-                    VAR4,
-                    fa,
-                    pvectsz,
+                    a,
+                    mDEL,
+                    rvir_test,
+                    cvir_test,
+                    delrho,
+                    &fa,
                     ptsz
                     ),
              ptsz->error_message,
              ptsz->error_message);
 
+  mvir_test = exp(b);
+  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+  rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
+
+
   class_call(
              mDtomV(
-                    *b,
-                    VAR1,
-                    VAR4,
-                    fb,
-                    pvectsz,
+                    b,
+                    mDEL,
+                    rvir_test,
+                    cvir_test,
+                    delrho,
+                    &fb,
                     ptsz
                     ),
              ptsz->error_message,
              ptsz->error_message);
 
 
-  if ((*fb)*(*fa) > 0.0)  {
+  if ((fb)*(fa) > 0.0)  {
     printf("Root must be bracketed in ZBRENT\n");
     return _FAILURE_;
   }
 
-  *fc=*fb;
+  fc=fb;
 
   for (iter=1;iter<=ITMAX;iter++) {
-    if ((*fb)*(*fc) > 0.0) {
-      *c=*a;
-      *fc=*fa;
-      *e=*d=*b-*a;
+    if ((fb)*(fc) > 0.0) {
+      c=a;
+      fc=fa;
+      e=d=b-a;
     }
 
-    if (fabs(*fc) < fabs(*fb)) {
-      *a=*b;
-      *b=*c;
-      *c=*a;
-      *fa=*fb;
-      *fb=*fc;
-      *fc=*fa;
+    if (fabs(fc) < fabs(fb)) {
+      a=b;
+      b=c;
+      c=a;
+      fa=fb;
+      fb=fc;
+      fc=fa;
     }
-    *tol1=2.0*(*EPS2)*fabs(*b)+0.5*tol;
-    *xm=0.5*(*c-*b);
-    if (fabs(*xm) <= *tol1 || *fb == 0.0)  {
-      *logMDEL = *b;
+    tol1=2.0*(EPS2)*fabs(b)+0.5*tol;
+    xm=0.5*(c-b);
+    if (fabs(xm) <= tol1 || fb == 0.0)  {
+      *logMVIR = b;
 
-      free(a);
-      free(b);
-      free(c);
-      free(d);
-      free(e);
-      free(min1);
-      free(min2);
-      free(tol1);
-      free(p);
-      free(q);
-      free(r);
-      free(s);
-      free(xm);
-      free(fc);
-      free(EPS2);
 
       return _SUCCESS_;
     }
 
-    if (fabs(*e) >= *tol1 && fabs(*fa) > fabs(*fb)) {
-      *s=*fb/(*fa);
-      if (*a == *c) {
-        *p=2.0*(*xm)*(*s);
-        *q=1.0-*s;
+    if (fabs(e) >= tol1 && fabs(fa) > fabs(fb)) {
+      s=fb/(fa);
+      if (a == c) {
+        p=2.0*(xm)*(s);
+        q=1.0-s;
       }
       else {
-        *q=*fa/(*fc);
-        *r=*fb/(*fc);
-        *p=*s*(2.0*(*xm)*(*q)*(*q-*r)-(*b-*a)*(*r-1.0));
-        *q=(*q-1.0)*(*r-1.0)*(*s-1.0);
+        q=fa/(fc);
+        r=fb/(fc);
+        p=s*(2.0*(xm)*(q)*(q-r)-(b-a)*(r-1.0));
+        q=(q-1.0)*(r-1.0)*(s-1.0);
       }
-      if (*p > 0.0)  *q = -*q;
-      *p=fabs(*p);
-      *min1=3.0*(*xm)*(*q)-fabs(*tol1*(*q));
-      *min2=fabs(*e*(*q));
-      if (2.0*(*p) < (*min1 < *min2 ? *min1 : *min2))
+      if (p > 0.0)  q = -q;
+      p=fabs(p);
+      min1=3.0*(xm)*(q)-fabs(tol1*(q));
+      min2=fabs(e*(q));
+      if (2.0*(p) < (min1 < min2 ? min1 : min2))
       {
-        *e=*d;
-        *d=*p/(*q);
+        e=d;
+        d=p/(q);
       }
       else {
-        *d=*xm;
-        *e=*d;
+        d=xm;
+        e=d;
       }
     }
     else {
-      *d=*xm;
-      *e=*d;
+      d=xm;
+      e=d;
     }
-    *a=*b;
-    *fa=*fb;
-    if (fabs(*d) > *tol1)
-      *b += *d;
+    a=b;
+    fa=fb;
+    if (fabs(d) > tol1)
+      b += d;
     else
-      *b += (*xm > 0.0 ? fabs(*tol1) : -fabs(*tol1));
+      b += (xm > 0.0 ? fabs(tol1) : -fabs(tol1));
+
+  mvir_test = exp(b);
+  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+  rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
+
     class_call(
                mDtomV(
-                      *b,
-                      VAR1,
-                      VAR4,
-                      fb,
-                      pvectsz,
+                      b,
+                      mDEL,
+                      rvir_test,
+                      cvir_test,
+                      delrho,
+                      &fb,
                       ptsz
                       ),
                ptsz->error_message,
@@ -42933,8 +43189,72 @@ int  CvirMvirKLYPIN (
 
 }
 
+double evaluate_rvir_of_mvir(double mvir,
+                            double delc,
+                            double rhoc,
+                            struct tszspectrum * ptsz){
+
+return pow(3.*mvir/(4*_PI_*delc*rhoc),1./3.);
+                            }
 
 
+double evaluate_cvir_of_mvir(double mvir,
+                            double z,
+                            struct tszspectrum * ptsz){
+double cvir;
+//D08 c-m relation
+if (ptsz->concentration_parameter==0){
+cvir = 7.85*pow(mvir/2.e12,-0.081)*pow(1.+z,-0.71);
+}
+
+//S00 c-m relation
+else if (ptsz->concentration_parameter==1){
+  cvir =10.*pow(mvir/3.42e12,-0.2)/(1.+z);
+}
+
+//K10 c-m relation
+else if (ptsz->concentration_parameter==2){
+   class_call(CvirMvirKLYPIN(&cvir,log(mvir),z,ptsz),
+                   ptsz->error_message,
+                   ptsz->error_message);
+}
+
+
+//SC14 c-m relation
+// TBD m200c, r200c
+else if (ptsz->concentration_parameter==3){
+  printf("Warning: implementation of this concentration needs check.\n");
+  exit(0);
+   class_call(C200M200SC14(&cvir,
+                           log(mvir),
+                           z,
+                           ptsz),
+                   ptsz->error_message,
+                   ptsz->error_message);
+}
+
+
+ //Z09 interpolated c-m relation
+ else if (ptsz->concentration_parameter==4){
+    printf("Warning: implementation of this concentration needs check.\n");
+    exit(0);
+    class_call(CvirMvirZHAO(&cvir,log(mvir),log(z),ptsz),
+                    ptsz->error_message,
+                    ptsz->error_message);
+ }
+
+// Dutton and Maccio 2014 (https://arxiv.org/pdf/1402.7073.pdf)
+else if (ptsz->concentration_parameter==5){
+  // here for virial mass in Msun/h:
+  // see ea. 7 of 1402.7073
+  double a =  0.537 + (1.025-0.537)*exp(-0.718*pow(z,1.08));
+  double b = -0.097 + 0.024*z;
+  double log10cvir = a + b*log10(mvir/1.e12);
+  cvir = pow(10.,log10cvir);
+}
+
+return cvir;
+                            }
 
 
 //Routine used for
@@ -42943,32 +43263,26 @@ int  CvirMvirKLYPIN (
 int mVtomD (
             double logMD ,
             double mVIR,
-            double rs,
+            double rvir,
             double c,
             double delrho,
             double * mRES,
             struct tszspectrum * ptsz
             )
 {
-  double  * C;
+  double  C;
+  double rs = rvir/c;
 
-  class_alloc(C,1*sizeof(double),ptsz->error_message);
-
-  *C =
-  pow(3.*exp(logMD)
-      /(4*_PI_*delrho)
-      ,1./3.
-      )
-  /rs;
+  // here C is r_delta/r_s
+  C = pow(3.*exp(logMD)/(4*_PI_*delrho),1./3.)/rs;
 
   *mRES =
   exp(logMD)/mVIR
-  -(log(1.+*C)
-    -*C/(1.+*C))
+  -(log(1.+C)
+    -C/(1.+C))
   /(log(1.+c)
     -c/(1.+c));
 
-  free(C);
 
   return _SUCCESS_;
 }
@@ -42982,97 +43296,110 @@ int mVtomD (
 int mDtomV (
             double logMVIR ,
             double mD,
+            double rvir,
+            double c,
             double delrho,
             double * mRES,
-            double * pvectsz,
             struct tszspectrum * ptsz
             )
 {
-  double  * C;
-  class_alloc(C,1*sizeof(double),ptsz->error_message);
+  double  C;
 
-  double z = pvectsz[ptsz->index_z];
   double mvir = exp(logMVIR);
-  double rs =  pow(3.*mvir/(4*_PI_*pvectsz[ptsz->index_Delta_c]*pvectsz[ptsz->index_Rho_crit]),1./3.);;
-  double c = 7.85*pow(mvir/2.e12,-0.081)*pow(1.+z,-0.71);
+  double rs = rvir/c;
 
-  *C =
-  pow(3.*mD
-      /(4*_PI_*delrho)
-      ,1./3.
-      )
-  /rs;
-
-  // *mRES =
-  // mD/exp(logMVIR)
-  // -(log(1.+*C)
-  //   -*C/(1.+*C))
-  // /(log(1.+c)
-  //   -c/(1.+c));
+  C = pow(3.*mD/(4*_PI_*delrho),1./3.)/rs;
 
 
     *mRES =
-    exp(logMVIR)/mD
-    -1./((log(1.+*C)
-      -*C/(1.+*C))
+    mvir/mD
+    -1./((log(1.+C)
+      -C/(1.+C))
     /(log(1.+c)
       -c/(1.+c)));
 
-  free(C);
+
 
   return _SUCCESS_;
 }
 
 
+ int mDEL_to_mDELprime(
+               double mDEL ,
+               double delrho,
+               double delrho_prime,
+               double delc,
+               double rhoc,
+               double z,
+               double * mDELprime,
+               struct tszspectrum * ptsz
+             ){
+
+double mvir;
+//first go from mDEL to mVIR:
+class_call(mDEL_to_mVIR(mDEL,
+                        delrho,
+                        delc,
+                        rhoc,
+                        z,
+                        &mvir,
+                        ptsz),
+                ptsz->error_message,
+                ptsz->error_message);
+
+//then go from mvir to mdel_prime
+double rvir = evaluate_rvir_of_mvir(mvir,delc,rhoc,ptsz);
+double cvir = evaluate_cvir_of_mvir(mvir,z,ptsz);
+
+class_call(mVIR_to_mDEL(mvir,
+                     rvir,
+                     cvir,
+                     delrho_prime,
+                     mDELprime,
+                     ptsz),
+                ptsz->error_message,
+                ptsz->error_message);
+
+return _SUCCESS_;
+             }
+
+
+
 //Routine used for
 //the conversion between masses
-int m_to_mDEL(
+int mVIR_to_mDEL(
               double mVIR ,
-              double rs ,
+              double rvir,
               double c ,
               double delrho,
               double * result,
               struct tszspectrum * ptsz
               )
 {
-  double  * mDEL;
-  double  * var;
-  double  * mTEST;
-  double  * lTEST;
+  double  mDEL;
+  double  var;
 
-  double  * fa;
-  double  * fb;
-  double  * m1;
-  double  * m2;
-  double  * mLO;
-  double  * mUP;
-  double  * logMDEL;
+  double  lTEST;
+
+  double  fa;
+  double  fb;
+  double  m1;
+  double  m2;
+  double  mLO;
+  double  mUP;
+  double  logMDEL;
+
+
 
   int  i;
   int iMAX = 50;
 
-
-
-  class_alloc(mDEL,1*sizeof(double),ptsz->error_message);
-  class_alloc(var,4*sizeof(double),ptsz->error_message);
+  double * mTEST;
   class_alloc(mTEST,
               iMAX*sizeof( double ),
               ptsz->error_message);
-  class_alloc(lTEST,1*sizeof(double),ptsz->error_message);
-  class_alloc(fa,1*sizeof(double),ptsz->error_message);
-  class_alloc(fb,1*sizeof(double),ptsz->error_message);
-  class_alloc(m1,1*sizeof(double),ptsz->error_message);
-  class_alloc(m2,1*sizeof(double),ptsz->error_message);
-  class_alloc(mLO,1*sizeof(double),ptsz->error_message);
-  class_alloc(mUP,1*sizeof(double),ptsz->error_message);
-  class_alloc(logMDEL,
-              1*sizeof(double),
-              ptsz->error_message);
 
-  var[0] = mVIR;
-  var[1] = rs;
-  var[2] = c;
-  var[3] = delrho;
+
 
   mTEST[0] = mVIR;
 
@@ -43080,18 +43407,18 @@ int m_to_mDEL(
   class_call(
              mVtomD(
                     log(mTEST[0]),
-                    var[0],
-                    var[1],
-                    var[2],
-                    var[3],
-                    lTEST,
+                    mVIR,
+                    rvir,
+                    c,
+                    delrho,
+                    &lTEST,
                     ptsz
                     ),
              ptsz->error_message,
              ptsz->error_message
              );
 
-  if (*lTEST <= 0.) {
+  if (lTEST <= 0.) {
     for (i=1;i<iMAX;i++ ) {
 
       mTEST[i] = 2.*mTEST[i-1];
@@ -43099,21 +43426,21 @@ int m_to_mDEL(
       class_call(
                  mVtomD(
                         log(mTEST[i]),
-                        var[0],
-                        var[1],
-                        var[2],
-                        var[3],
-                        lTEST,
+                        mVIR,
+                        rvir,
+                        c,
+                        delrho,
+                        &lTEST,
                         ptsz
                         ),
                  ptsz->error_message,
                  ptsz->error_message
                  );
 
-      if (*lTEST > 0.)
+      if (lTEST > 0.)
       {
-        *m1 = log(mTEST[i]);
-        *m2 = log(mTEST[i-1]);
+        m1 = log(mTEST[i]);
+        m2 = log(mTEST[i-1]);
         break;
       }
     }
@@ -43127,58 +43454,50 @@ int m_to_mDEL(
       class_call(
                  mVtomD(
                         log(mTEST[i]),
-                        var[0],
-                        var[1],
-                        var[2],
-                        var[3],
-                        lTEST,
+                        mVIR,
+                        rvir,
+                        c,
+                        delrho,
+                        &lTEST,
                         ptsz
                         ),
                  ptsz->error_message,
                  ptsz->error_message);
 
-      if(*lTEST < 0.)
+      if(lTEST < 0.)
       {
-        *m1 = log(mTEST[i]);
-        *m2 = log(mTEST[i-1]);
+        m1 = log(mTEST[i]);
+        m2 = log(mTEST[i-1]);
         break;
       }
     }
   }
 
-  *mLO=MIN(*m1,*m2);
-  *mUP=MAX(*m1,*m2);
+  mLO=MIN(m1,m2);
+  mUP=MAX(m1,m2);
 
   class_call(zbrent_sz(
-                       *mLO,
-                       *mUP,
+                       mLO,
+                       mUP,
                        1.e-4,
-                       var[0],
-                       var[1],
-                       var[2],
-                       var[3],
+                       mVIR,
+                       rvir,
+                       c,
+                       delrho,
                        fa,
                        fb,
-                       logMDEL,
+                       &logMDEL,
                        ptsz
                        ),
              ptsz->error_message,
              ptsz->error_message);
 
-  *mDEL = exp(*logMDEL);
-  *result = *mDEL;
+  mDEL = exp(logMDEL);
+  *result = mDEL;
 
-  free(mLO);
-  free(mUP);
-  free(m1);
-  free(m2);
-  free(logMDEL);
+
   free(mTEST);
-  free(var);
-  free(mDEL);
-  free(lTEST);
-  free(fa);
-  free(fb);
+
 
   return _SUCCESS_;
 }
@@ -43188,88 +43507,91 @@ int m_to_mDEL(
 int mDEL_to_mVIR(
               double mDEL ,
               double delrho,
+              double delc,
+              double rhoc,
+              double z,
               double * result,
-              double * pvectsz,
               struct tszspectrum * ptsz
               )
 {
-  double  * mVIR;
-  double  * var;
+  double  mVIR;
   double  * mTEST;
-  double  * lTEST;
+  double  lTEST;
 
-  double  * fa;
-  double  * fb;
-  double  * m1;
-  double  * m2;
-  double  * mLO;
-  double  * mUP;
-  double  * logMVIR;
+  double  fa;
+  double  fb;
+  double  m1;
+  double  m2;
+  double  mLO;
+  double  mUP;
+  double  logMVIR;
 
   int  i;
   int iMAX = 50;
 
 
-
-  class_alloc(mVIR,1*sizeof(double),ptsz->error_message);
-  class_alloc(var,2*sizeof(double),ptsz->error_message);
   class_alloc(mTEST,
               iMAX*sizeof( double ),
               ptsz->error_message);
-  class_alloc(lTEST,1*sizeof(double),ptsz->error_message);
-  class_alloc(fa,1*sizeof(double),ptsz->error_message);
-  class_alloc(fb,1*sizeof(double),ptsz->error_message);
-  class_alloc(m1,1*sizeof(double),ptsz->error_message);
-  class_alloc(m2,1*sizeof(double),ptsz->error_message);
-  class_alloc(mLO,1*sizeof(double),ptsz->error_message);
-  class_alloc(mUP,1*sizeof(double),ptsz->error_message);
-  class_alloc(logMVIR,
-              1*sizeof(double),
-              ptsz->error_message);
 
-  var[0] = mDEL;
-  // var[1] = rs;
-  // var[2] = c;
-  var[1] = delrho;
+
+  // var[0] = mDEL;
+  // // var[1] = rs;
+  // // var[2] = c;
+  // var[1] = delrho;
+  double mvir_test,cvir_test,rvir_test;
 
   mTEST[0] = mDEL;
+
+  mvir_test = mTEST[0];
+  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+  rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
+
+
 
 
   class_call(
              mDtomV(
                     log(mTEST[0]),
-                    var[0],
-                    var[1],
-                    lTEST,
-                    pvectsz,
+                    mDEL,
+                    rvir_test,
+                    cvir_test,
+                    delrho,
+                    &lTEST,
                     ptsz
                     ),
              ptsz->error_message,
              ptsz->error_message
              );
 
-  if (*lTEST <= 0.) {
+  if (lTEST <= 0.) {
     for (i=1;i<iMAX;i++ ) {
 
       mTEST[i] = 2.*mTEST[i-1];
 
+      mvir_test = mTEST[i];
+      cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+      rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
+
+
       class_call(
                  mDtomV(
                         log(mTEST[i]),
-                        var[0],
-                        var[1],
-                        lTEST,
-                        pvectsz,
+                        mDEL,
+                        rvir_test,
+                        cvir_test,
+                        delrho,
+                        &lTEST,
                         ptsz
                         ),
                  ptsz->error_message,
                  ptsz->error_message
                  );
 
-      if (*lTEST > 0.)
+      if (lTEST > 0.)
       {
-        *m1 = log(mTEST[i]);
-        *m2 = log(mTEST[i-1]);
+        m1 = log(mTEST[i]);
+        m2 = log(mTEST[i-1]);
         break;
       }
     }
@@ -43280,62 +43602,69 @@ int mDEL_to_mVIR(
     {
       mTEST[i] = mTEST[i-1]/2.;
 
+      mvir_test = mTEST[i];
+      cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+      rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
+
       class_call(
                  mDtomV(
                         log(mTEST[i]),
-                        var[0],
-                        var[1],
-                        lTEST,
-                        pvectsz,
+                        mDEL,
+                        rvir_test,
+                        cvir_test,
+                        delrho,
+                        &lTEST,
                         ptsz
                         ),
                  ptsz->error_message,
                  ptsz->error_message);
 
-      if(*lTEST < 0.)
+      if(lTEST < 0.)
       {
-        *m1 = log(mTEST[i]);
-        *m2 = log(mTEST[i-1]);
+        m1 = log(mTEST[i]);
+        m2 = log(mTEST[i-1]);
         break;
       }
     }
   }
 
-  *mLO=MIN(*m1,*m2);
-  *mUP=MAX(*m1,*m2);
+  mLO=MIN(m1,m2);
+  mUP=MAX(m1,m2);
 
-  class_call(zbrent_V_to_D_sz(
-                       *mLO,
-                       *mUP,
+  //printf("z= %.5e mLO = %.8e mUP = %.8e\n", z,mLO,mUP);
+
+  class_call(zbrent_D_to_V_sz(
+                       mLO,
+                       mUP,
                        1.e-4,
-                       var[0],
-                       var[1],
+                       mDEL,
+                       delrho,
                        fa,
                        fb,
-                       logMVIR,
-                       pvectsz,
+                       z,
+                       delc,
+                       rhoc,
+                       &logMVIR,
                        ptsz
                        ),
              ptsz->error_message,
              ptsz->error_message);
 
-  *mVIR = exp(*logMVIR);
-  *result = *mVIR;
+  mVIR = exp(logMVIR);
+  *result = mVIR;
 
-  free(mLO);
-  free(mUP);
-  free(m1);
-  free(m2);
-  free(logMVIR);
+
   free(mTEST);
-  free(var);
-  free(mVIR);
-  free(lTEST);
-  free(fa);
-  free(fb);
 
   return _SUCCESS_;
 }
+
+
+double m_nfw(double x){
+return log(1.+x)-x/(1.+x);
+}
+
+
 
 
 struct Parameters_for_integrand_sigma2_hsv{
@@ -44637,6 +44966,13 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   // in the settings of KFSW20
   double xout = ptsz->x_out_nfw_profile*rvir/rs; //rvir/rs = cvir
 
+  double cvir = pvectsz[ptsz->index_cVIR];
+  double cvir_prime = ptsz->cvir_tau_profile_factor*cvir;
+  double delta = ptsz->x_out_nfw_profile;
+  double delta_prime = delta_to_delta_prime_nfw(delta,cvir,cvir_prime,ptsz);
+  xout = delta_prime*ptsz->cvir_tau_profile_factor*rvir/rs; //delta_prime*cvir_prime
+
+
 // QAWO
 
 
@@ -44716,7 +45052,7 @@ int rho_nfw(double * rho_nfw_x,
  }
  else{
    y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
-            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];//*ptsz->cvir_tau_profile_factor;
  }
 
 

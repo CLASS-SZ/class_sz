@@ -637,28 +637,124 @@ double pwl_value_1d ( int nd, double xd[], double yd[], double xi);
                                struct primordial * ppm,
                                struct tszspectrum * ptsz);
 
+
+  int zbrent_sz_delta_to_delta_prime_nfw(double x1,
+                                          double x2,
+                                          double tol,
+                                          double cvir,
+                                          double cvir_prime,
+                                          double delta,
+                                          double fa,
+                                          double fb,
+                                          double * delta_prime,
+                                        struct tszspectrum * ptsz);
+
+
   int zbrent_sz(double x1,
                 double x2,
                 double tol,
-                double VAR1,
-                double VAR2,
-                double VAR3,
-                double VAR4,
-                double * fa,
-                double * fb,
+                double mVIR,
+                double rvir,
+                double c,
+                double delrho,
+                double fa,
+                double fb,
                 double * logMDEL,
                 struct tszspectrum * ptsz);
 
-  int zbrent_V_to_D_sz(double x1,
-                double x2,
-                double tol,
-                double VAR1,
-                double VAR4,
-                double * fa,
-                double * fb,
-                double * logMDEL,
-                double * pvectsz,
+  int zbrent_D_to_V_sz(double x1,
+                        double x2,
+                        double tol,
+                        double mDEL,
+                        double delrho,
+                        double fa,
+                        double fb,
+                        double z,
+                        double delc,
+                        double rhoc,
+                        double * logMVIR,
+                        struct tszspectrum * ptsz);
+
+
+
+
+
+
+  int mVIR_to_mDEL(double mVIR ,
+                double rvir ,
+                double c ,
+                double delrho,
+                double * result,
                 struct tszspectrum * ptsz);
+
+
+ int mDEL_to_mVIR(
+               double mDEL ,
+               double delrho,
+               double delc,
+               double rhoc,
+               double z,
+               double * result,
+               struct tszspectrum * ptsz
+             );
+
+double m_nfw(double x);
+
+double delta_to_delta_prime_nfw(
+  double delta,
+  double cvir,
+  double cvir_prime,
+  struct tszspectrum * ptsz
+);
+
+ int mDEL_to_mDELprime(
+               double mDEL ,
+               double delrho,
+               double delrho_prime,
+               double delc,
+               double rhoc,
+               double z,
+               double * mDELprime,
+               struct tszspectrum * ptsz
+             );
+
+ int mDtomV (
+             double logMVIR ,
+             double mD,
+             double rvir,
+             double c,
+             double delrho,
+             double * mRES,
+             struct tszspectrum * ptsz
+           );
+
+ int mVtomD (
+             double logMD ,
+             double mVIR,
+             double rvir,
+             double c,
+             double delrho,
+             double * mRES,
+             struct tszspectrum * ptsz
+           );
+
+ int dtod_prime_nfw( double delta_prime,
+                     double delta,
+                     double cvir,
+                     double cvir_prime,
+                     double * dRES
+                   );
+
+
+ double evaluate_cvir_of_mvir(double mvir,
+                             double z,
+                             struct tszspectrum * ptsz);
+
+ double evaluate_rvir_of_mvir(double mvir,
+                             double delc,
+                             double rhoc,
+                             struct tszspectrum * ptsz);
+
 
   int CvirMvirKLYPIN(double * result,
                      double logM ,
@@ -752,37 +848,6 @@ int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
              double x,
              double *y);
 
-  int m_to_mDEL(double mVIR ,
-                double rs ,
-                double c ,
-                double delrho,
-                double * result,
-                struct tszspectrum * ptsz);
-
-  int mVtomD(double logMD ,
-             double,
-             double,
-             double,
-             double,
-             double *,
-             struct tszspectrum * ptsz);
-
- int mDEL_to_mVIR(
-               double mDEL ,
-               double delrho,
-               double * result,
-               double * pvectsz,
-               struct tszspectrum * ptsz
-             );
-
- int mDtomV (
-             double logMVIR ,
-             double mD,
-             double delrho,
-             double * mRES,
-             double * pvectsz,
-             struct tszspectrum * ptsz
-           );
 
   int plc_gnfw (double * plc_gnfw_x,
                 double x ,
