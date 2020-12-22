@@ -2074,7 +2074,7 @@ int evaluate_tau_profile(double * pvecback,
    characteristic_radius = pvectsz[ptsz->index_rs];///ptsz->cvir_tau_profile_factor;// in Mpc/h
    characteristic_multipole = pvectsz[ptsz->index_ls];//*ptsz->cvir_tau_profile_factor;
    //printf("l1tau = %f\n", pvectsz[ptsz->index_multipole_for_tau_profile]);
-   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole*ptsz->cvir_tau_profile_factor;
+   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = ptsz->cvir_tau_profile_factor*characteristic_multipole;
    //printf("l1char = %f\n", pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
 
    pvectsz[ptsz->index_multipole_for_nfw_profile] = pvectsz[ptsz->index_multipole_for_tau_profile];
@@ -2095,9 +2095,14 @@ int evaluate_tau_profile(double * pvecback,
    //                              ptsz->RNFW_lnI,
    //                              lnx_asked);
    // result = exp(result);
+   double rs = pvectsz[ptsz->index_rs];
+   double rvir = pvectsz[ptsz->index_rVIR];
+   double cvir_prime = ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR];
+   double cvir = pvectsz[ptsz->index_cVIR];
+   double xout = ptsz->x_out_nfw_profile*cvir;
+   double xout_prime = ptsz->x_out_nfw_profile*cvir_prime;
 
-
-  //printf("nfw_result=%.4e\n", result);
+  //printf("nfw_result=%.4e m(xout)=%.4e\n", result,m_nfw(xout_prime));
   pvectsz[ptsz->index_tau_profile] = result;
 
   // JCH
@@ -2115,24 +2120,25 @@ int evaluate_tau_profile(double * pvecback,
 
   // adjust normalisation so that total mass is conserved
   // within same limiting radius r_max = xout*r_vir
-  double cvir_prime = ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR];
+
   double factor_norm = 1;
 
   // rho0=mvir/(4d0*pi*rs**3d0*(dlog(1d0+cvir)-cvir/(1d0+cvir))) !Eq. (2.66) of Binney & Tremaine
-  double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)
-                *(log(1.+ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR])-ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR]
-                /(1.+ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR])));
+  // double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)
+  //               *(log(1.+ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR])-ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR]
+  //               /(1.+ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR])));
 
+  double rho0 = pvectsz[ptsz->index_mVIR]/m_nfw(cvir_prime);
+   //rho0 = 1.;
 
-
+   rho0 *= m_nfw(xout)/m_nfw(xout_prime);
+   rho0 *= m_nfw(cvir_prime)/m_nfw(cvir);
 
    pvectsz[ptsz->index_tau_profile] =  sigmaT_over_mpc2
                                        *tau_normalisation
                                        *rho0 // in (Msun/h)/(Mpc/h)**3
                                        *pvectsz[ptsz->index_tau_profile]
-                                       *(4*_PI_)
-                                       *pow(characteristic_multipole,-2)
-                                       *characteristic_radius; //rs in Mpc/h
+                                       *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
 
 
    return _SUCCESS_;

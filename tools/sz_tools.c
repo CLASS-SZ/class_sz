@@ -44961,16 +44961,20 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   double xin = 1.e-5;
   double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
   double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
+  double cvir = pvectsz[ptsz->index_cVIR];
+  double cvir_prime = ptsz->cvir_tau_profile_factor*cvir;
 
   // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
   // in the settings of KFSW20
-  double xout = ptsz->x_out_nfw_profile*rvir/rs; //rvir/rs = cvir
+  double xout = ptsz->x_out_nfw_profile*cvir_prime; //rvir/rs = cvir
+  //double xout = ptsz->x_out_nfw_profile*cvir;
 
-  double cvir = pvectsz[ptsz->index_cVIR];
-  double cvir_prime = ptsz->cvir_tau_profile_factor*cvir;
+
   double delta = ptsz->x_out_nfw_profile;
   double delta_prime = delta_to_delta_prime_nfw(delta,cvir,cvir_prime,ptsz);
-  xout = delta_prime*ptsz->cvir_tau_profile_factor*rvir/rs; //delta_prime*cvir_prime
+  //xout = delta_prime*ptsz->cvir_tau_profile_factor*rvir/rs; //delta_prime*cvir_prime
+
+  //xout = 5.;
 
 
 // QAWO
@@ -44982,7 +44986,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 100;
+  int size_w = 500;
   w = gsl_integration_workspace_alloc(size_w);
 
   //int index_l = (int) pvectsz[ptsz->index_multipole_for_nfw_profile];
@@ -45001,7 +45005,9 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   }
 
   //w0 = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+  //y_eff = 1.e-10;
   w0 = y_eff;
+
 
   wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,30);
 
@@ -45055,7 +45061,7 @@ int rho_nfw(double * rho_nfw_x,
             /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];//*ptsz->cvir_tau_profile_factor;
  }
 
-
+  //y_eff = 1.e-10;
   *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*y_eff);
                //*sin(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
                ///pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
