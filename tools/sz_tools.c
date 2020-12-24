@@ -44971,7 +44971,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
 
 
   double delta = ptsz->x_out_nfw_profile;
-  double delta_prime = delta_to_delta_prime_nfw(delta,cvir,cvir_prime,ptsz);
+  //double delta_prime = delta_to_delta_prime_nfw(delta,cvir,cvir_prime,ptsz);
   //xout = delta_prime*ptsz->cvir_tau_profile_factor*rvir/rs; //delta_prime*cvir_prime
 
   //xout = 5.;
@@ -47011,11 +47011,11 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   result = V->pvectsz[V->ptsz->index_halo_bias];
 
   double W_lens =  radial_kernel_W_lensing_at_z(V->pvecback,
-                                                  V->pvectsz,
-                                                  V->pba,
-                                                  V->ppm,
-                                                  V->pnl,
-                                                  V->ptsz);
+                                                V->pvectsz,
+                                                V->pba,
+                                                V->ppm,
+                                                V->pnl,
+                                                V->ptsz);
     // this is needed only in  the approximate calculation
     // for the exact calculation in HOD, this comes out of Sigma_crit
     result *= W_lens;

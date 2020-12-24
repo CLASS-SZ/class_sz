@@ -839,10 +839,11 @@ int compute_sz(struct background * pba,
 
    // now we integrate the bispectrum to compute power spectrum
    double cl_kSZ2_gal = 0.;
-   int ell_prime;
+   //int ell_prime;
    int abs_ell_minus_ell_prime;
-   int ell_min = (int) ptsz->ell_kSZ2_gal_multipole_grid[0];
-   int ell_max = (int) ptsz->ell_kSZ2_gal_multipole_grid[ptsz->N_kSZ2_gal_multipole_grid-1];
+   double ell_min = ptsz->ell_kSZ2_gal_multipole_grid[0];
+   //double ell_max = ptsz->l_unwise_filter[ptsz->unwise_filter_size-1];//ptsz->ell_kSZ2_gal_multipole_grid[ptsz->N_kSZ2_gal_multipole_grid-1];
+   double ell_max = ptsz->ell_kSZ2_gal_multipole_grid[ptsz->N_kSZ2_gal_multipole_grid-1];
 
    //integrate over theta
    double theta = 0.;
@@ -862,19 +863,31 @@ int compute_sz(struct background * pba,
    void * params;
 
    double r; //result of the integral
-   double epsrel= 1.e-2;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
-   double epsabs= 1.e-20;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
-   int show_neval = ptsz->patterson_show_neval;
+   double epsrel= 1.e-4;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
+   double epsabs= 1.e-25;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
+   int show_neval = 0;//ptsz->patterson_show_neval;
 
    while(theta < 2.*_PI_){
 
     V.theta = theta;
     params = &V;
-     r=Integrate_using_Patterson_adaptive(ell_min, ell_max,
-                                          epsrel, epsabs,
-                                          integrand_kSZ2_X_at_theta,
-                                          params,show_neval);
+    //printf("ell_min = %.3e \t ell_max = %.3e\n", ell_min,ell_max);
+     // r=Integrate_using_Patterson_adaptive(log(ell_min), log(ell_max),
+     //                                      epsrel, epsabs,
+     //                                      integrand_kSZ2_X_at_theta,
+     //                                      params,show_neval);
    //printf("integral result = %.3e\n",r);
+
+    double lnell_prime = log(ell_min);
+    //double lnell_prime = ell_min;
+    double dlnell_prime =  .1;
+    double r=0.;
+     while (lnell_prime <= log(ell_max)){
+        //while (lnell_prime <= ell_max){
+      r += dlnell_prime*integrand_kSZ2_X_at_theta(lnell_prime,&V);
+      lnell_prime += dlnell_prime;
+     }
+
 
      cl_kSZ2_gal += dtheta*r;
      theta += dtheta;
@@ -3721,9 +3734,9 @@ int write_redshift_dependent_quantities(struct background * pba,
 
   delta_prime = delta_to_delta_prime_nfw(delta,cvir,cvir_prime,ptsz);
 
-
-  printf("z = %.3e mvir = %.4e mdel = %.4e mvir_rec = %.4e mdel_prime = %.4e cvir = %.4e delta = %.4e delta_prime = %.4e\n",
-          z,mvir,mdel,mvir_recovered,mdel_prime, cvir,delta,delta_prime);
+  //
+  // printf("z = %.3e mvir = %.4e mdel = %.4e mvir_rec = %.4e mdel_prime = %.4e cvir = %.4e delta = %.4e delta_prime = %.4e\n",
+  //         z,mvir,mdel,mvir_recovered,mdel_prime, cvir,delta,delta_prime);
 
 
   fprintf(fp,"%.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e\t %.5e\t %.5e\t %.5e\t %.5e\t %.5e\n",
@@ -4889,8 +4902,11 @@ int select_multipole_array(struct tszspectrum * ptsz)
 
   int index_l;
   for (index_l=0;index_l<ptsz->N_kSZ2_gal_multipole_grid;index_l++){
-  ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(5.*ptsz->ell_max_mock)
-                                                   - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
+  // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(5.*ptsz->ell_max_mock)
+  //                                                  - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
+
+   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(2e4)
+                                                    - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
 
   }
 
@@ -6171,19 +6187,21 @@ return mass_fac*m_cut;
 
 
 
-double integrand_kSZ2_X_at_theta(double ell_prime, void *p){
+double integrand_kSZ2_X_at_theta(double ln_ell_prime, void *p){
+  double ell_prime  = exp(ln_ell_prime);
+  //double ell_prime  = ln_ell_prime;
 
 double integrand_cl_kSZ2_X_at_theta = 0.;
 struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_integrand_kSZ2_X_at_theta *) p);
 
 
 
-     int ell = (int) V->ptsz->ell[V->index_ell_3];
+     double ell = (int) V->ptsz->ell[V->index_ell_3];
      double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(V->theta));
 
-     int ell_1 = abs_ell_minus_ell_prime;
-     int ell_2 = ell_prime;
-     int ell_3 = ell;
+     double ell_1 = abs_ell_minus_ell_prime;
+     double ell_2 = ell_prime;
+     double ell_3 = ell;
 
      // check bispectrum condition
      int bispec_cd;
@@ -6222,9 +6240,12 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
 
 
 
-       integrand_cl_kSZ2_X_at_theta = fl_minus_l_prime*fl_prime*ell_prime*db/(2.*_PI_)/(2.*_PI_);
-     }
+       integrand_cl_kSZ2_X_at_theta = fl_minus_l_prime*fl_prime*ell_prime*ell_prime*db/(2.*_PI_)/(2.*_PI_);
+       //integrand_cl_kSZ2_X_at_theta = fl_minus_l_prime*fl_prime*ell_prime*db/(2.*_PI_)/(2.*_PI_);
 
+
+     }
+      //printf("ell = %.3e ell_prime = %.3e theta = %.3e \t integrand = %.3e\n",ell,ell_prime,V->theta, integrand_cl_kSZ2_X_at_theta);
        return integrand_cl_kSZ2_X_at_theta;
 
 }
