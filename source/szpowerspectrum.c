@@ -842,8 +842,8 @@ int compute_sz(struct background * pba,
    //int ell_prime;
    int abs_ell_minus_ell_prime;
    double ell_min = ptsz->ell_kSZ2_gal_multipole_grid[0];
-   //double ell_max = ptsz->l_unwise_filter[ptsz->unwise_filter_size-1];//ptsz->ell_kSZ2_gal_multipole_grid[ptsz->N_kSZ2_gal_multipole_grid-1];
-   double ell_max = ptsz->ell_kSZ2_gal_multipole_grid[ptsz->N_kSZ2_gal_multipole_grid-1];
+   double ell_max = ptsz->l_unwise_filter[ptsz->unwise_filter_size-1];//ptsz->ell_kSZ2_gal_multipole_grid[ptsz->N_kSZ2_gal_multipole_grid-1];
+   //double ell_max = ptsz->ell_kSZ2_gal_multipole_grid[ptsz->N_kSZ2_gal_multipole_grid-1];
 
    //integrate over theta
    double theta = 0.;
@@ -864,7 +864,7 @@ int compute_sz(struct background * pba,
 
    double r; //result of the integral
    double epsrel= 1.e-4;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
-   double epsabs= 1.e-25;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
+   double epsabs= 1.e-30;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
    int show_neval = 0;//ptsz->patterson_show_neval;
 
    while(theta < 2.*_PI_){
@@ -872,21 +872,21 @@ int compute_sz(struct background * pba,
     V.theta = theta;
     params = &V;
     //printf("ell_min = %.3e \t ell_max = %.3e\n", ell_min,ell_max);
-     // r=Integrate_using_Patterson_adaptive(log(ell_min), log(ell_max),
-     //                                      epsrel, epsabs,
-     //                                      integrand_kSZ2_X_at_theta,
-     //                                      params,show_neval);
+     r=Integrate_using_Patterson_adaptive(log(ell_min), log(ell_max),
+                                          epsrel, epsabs,
+                                          integrand_kSZ2_X_at_theta,
+                                          params,show_neval);
    //printf("integral result = %.3e\n",r);
-
-    double lnell_prime = log(ell_min);
-    //double lnell_prime = ell_min;
-    double dlnell_prime =  .1;
-    double r=0.;
-     while (lnell_prime <= log(ell_max)){
-        //while (lnell_prime <= ell_max){
-      r += dlnell_prime*integrand_kSZ2_X_at_theta(lnell_prime,&V);
-      lnell_prime += dlnell_prime;
-     }
+    //
+    // double lnell_prime = log(ell_min);
+    // //double lnell_prime = ell_min;
+    // double dlnell_prime =  .1;
+    // double r=0.;
+    //  while (lnell_prime <= log(ell_max)){
+    //     //while (lnell_prime <= ell_max){
+    //   r += dlnell_prime*integrand_kSZ2_X_at_theta(lnell_prime,&V);
+    //   lnell_prime += dlnell_prime;
+    //  }
 
 
      cl_kSZ2_gal += dtheta*r;

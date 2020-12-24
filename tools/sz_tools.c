@@ -44966,6 +44966,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
 
   // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
   // in the settings of KFSW20
+  //if ()
   double xout = ptsz->x_out_nfw_profile*cvir_prime; //rvir/rs = cvir
   //double xout = ptsz->x_out_nfw_profile*cvir;
 
