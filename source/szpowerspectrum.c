@@ -864,7 +864,7 @@ int compute_sz(struct background * pba,
 
    double r; //result of the integral
    double epsrel= 1.e-4;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
-   double epsabs= 1.e-30;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
+   double epsabs= 1.e-35;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
    int show_neval = 0;//ptsz->patterson_show_neval;
 
    while(theta < 2.*_PI_){
@@ -4905,7 +4905,7 @@ int select_multipole_array(struct tszspectrum * ptsz)
   // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(5.*ptsz->ell_max_mock)
   //                                                  - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
 
-   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(2e4)
+   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(4e3)
                                                     - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
 
   }
