@@ -44939,7 +44939,8 @@ double integrand_patterson_test_pp(double x, void *p){
 int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
                           struct background * pba,
                           double * pvectsz,
-                          double * result
+                          double * result,
+                          int flag_matter_type
                           ) {
 
   struct Parameters_for_integrand_nfw_profile V;
@@ -44962,7 +44963,12 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
   double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
   double cvir = pvectsz[ptsz->index_cVIR];
-  double cvir_prime = ptsz->cvir_tau_profile_factor*cvir;
+
+  double cvir_prime;
+  if (flag_matter_type == 1)
+    cvir_prime = ptsz->cvir_tau_profile_factor*cvir;
+  else
+    cvir_prime = cvir;
 
   // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
   // in the settings of KFSW20

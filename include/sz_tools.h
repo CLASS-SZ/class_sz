@@ -958,7 +958,8 @@ int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
   int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
                               struct background * pba,
                               double * pvectsz,
-                              double * result) ;
+                              double * result,
+                              int flag_matter_type) ;
 
 double integrand_patterson_test(double logM, void *p);
 double integrand_sigma2_hsv(double lnk, void *p);

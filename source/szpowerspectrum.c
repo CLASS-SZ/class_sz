@@ -2092,7 +2092,7 @@ int evaluate_tau_profile(double * pvecback,
 
    pvectsz[ptsz->index_multipole_for_nfw_profile] = pvectsz[ptsz->index_multipole_for_tau_profile];
 
-   class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result),
+   class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,1),
                                      ptsz->error_message,
                                      ptsz->error_message);
 
@@ -2179,7 +2179,7 @@ int evaluate_density_profile(double * pvecback,
 
    characteristic_radius = pvectsz[ptsz->index_rs]; // in Mpc/h
 
-    class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result),
+    class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,0),
                                       ptsz->error_message,
                                       ptsz->error_message);
 
@@ -2236,7 +2236,7 @@ int evaluate_lensing_profile(double * pvecback,
    pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
    pvectsz[ptsz->index_multipole_for_nfw_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];
 
-    class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result),
+    class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,0),
                                       ptsz->error_message,
                                       ptsz->error_message);
 
@@ -2827,8 +2827,8 @@ else {
                                             pba,
                                             ppm,
                                             pnl,
-                                            //pk_nonlinear,
                                             pk_nonlinear,
+                                            //pk_linear,
                                             k*pba->h,
                                             z,
                                             pnl->index_pk_m,
