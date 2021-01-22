@@ -766,6 +766,8 @@ double delta_to_delta_prime_nfw(
   int load_rho_nfw_profile(struct tszspectrum * ptsz);
   int load_T10_alpha_norm(struct tszspectrum * ptsz);
   int load_normalized_dndz(struct tszspectrum * ptsz);
+  int load_normalized_fdndz(struct tszspectrum * ptsz);
+  int load_normalized_cosmos_dndz(struct tszspectrum * ptsz);
   int load_unbinned_nl_yy(struct tszspectrum * ptsz);
   int load_unwise_filter(struct tszspectrum * ptsz);
   double get_T10_alpha_at_z(double z_asked, struct tszspectrum * ptsz);

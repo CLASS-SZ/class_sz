@@ -44009,16 +44009,28 @@ double integrand_lensmag(double ln1pzs, void *p){
 /////////////////////////////////
   double z_asked  = zs;
   double phig = 0.;
-
-if(z_asked<V->ptsz->normalized_dndz_z[0])
+//unwise: use Cosmos cross-match dndz
+if (V->ptsz->galaxy_sample==1){
+if(z_asked<V->ptsz->normalized_cosmos_dndz_z[0])
    phig = 1e-100;
-else if (z_asked>V->ptsz->normalized_dndz_z[V->ptsz->normalized_dndz_size-1])
+else if (z_asked>V->ptsz->normalized_cosmos_dndz_z[V->ptsz->normalized_cosmos_dndz_size-1])
    phig = 1e-100;
-else  phig =  pwl_value_1d(V->ptsz->normalized_dndz_size,
-                             V->ptsz->normalized_dndz_z,
-                             V->ptsz->normalized_dndz_phig,
+else  phig =  pwl_value_1d(V->ptsz->normalized_cosmos_dndz_size,
+                             V->ptsz->normalized_cosmos_dndz_z,
+                             V->ptsz->normalized_cosmos_dndz_phig,
                              z_asked);
+}
+else{
+  if(z_asked<V->ptsz->normalized_dndz_z[0])
+     phig = 1e-100;
+  else if (z_asked>V->ptsz->normalized_dndz_z[V->ptsz->normalized_dndz_size-1])
+     phig = 1e-100;
+  else  phig =  pwl_value_1d(V->ptsz->normalized_dndz_size,
+                               V->ptsz->normalized_dndz_z,
+                               V->ptsz->normalized_dndz_phig,
+                               z_asked);
 
+}
  dndzs = phig;
 ////////////////////////////////
 
@@ -45813,6 +45825,12 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_gal_gal_1h != _TRUE_ )
     && (ptsz->has_gal_lens_1h != _TRUE_ )
     && (ptsz->has_gal_lens_2h != _TRUE_ )
+    && (ptsz->has_gal_lensmag_1h != _TRUE_ )
+    && (ptsz->has_gal_lensmag_2h != _TRUE_ )
+    && (ptsz->has_lensmag_lensmag_1h != _TRUE_ )
+    && (ptsz->has_lensmag_lensmag_2h != _TRUE_ )
+    && (ptsz->has_lens_lensmag_1h != _TRUE_ )
+    && (ptsz->has_lens_lensmag_2h != _TRUE_ )
     && (ptsz->has_gal_gal_2h != _TRUE_ ))
   return 0;
 
@@ -45823,6 +45841,7 @@ printf("-> Loading dndz unwise\n");
 
   class_alloc(ptsz->normalized_dndz_z,sizeof(double *)*100,ptsz->error_message);
   class_alloc(ptsz->normalized_dndz_phig,sizeof(double *)*100,ptsz->error_message);
+
   //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
 
   //char arguments[_ARGUMENT_LENGTH_MAX_];
@@ -45855,12 +45874,14 @@ printf("-> Loading dndz unwise\n");
   /* Launch the process */
   char Filepath[_ARGUMENT_LENGTH_MAX_];
 
-  if (ptsz->galaxy_sample == 1)
+  //unwise
+  if (ptsz->galaxy_sample == 1){
     sprintf(Filepath,
             "%s%s",
             "cat ",
             //ptsz->path_to_class,
             "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/UNWISE_galaxy_ditributions/normalised_dndz.txt");
+            }
 
   else if (ptsz->galaxy_sample == 0)
   sprintf(Filepath,
@@ -45958,6 +45979,338 @@ printf("-> Loading dndz unwise\n");
   for (index_x=0; index_x<ptsz->normalized_dndz_size; index_x++) {
     ptsz->normalized_dndz_z[index_x] = lnx[index_x];
     ptsz->normalized_dndz_phig[index_x] = lnI[index_x];
+    //print("z=%.3e phig=%.3e\n",ptsz->normalized_dndz_z[index_x])
+  };
+
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  return _SUCCESS_;
+}
+
+
+int load_normalized_fdndz(struct tszspectrum * ptsz)
+{
+
+// don't load the unwise  dndz  if none of the following are required:
+if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
+    && (ptsz->has_tSZ_gal_2h != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_1halo != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_ )
+    && (ptsz->has_gal_gal_1h != _TRUE_ )
+    && (ptsz->has_gal_lens_1h != _TRUE_ )
+    && (ptsz->has_gal_lens_2h != _TRUE_ )
+    && (ptsz->has_gal_lensmag_1h != _TRUE_ )
+    && (ptsz->has_gal_lensmag_2h != _TRUE_ )
+    && (ptsz->has_lensmag_lensmag_1h != _TRUE_ )
+    && (ptsz->has_lensmag_lensmag_2h != _TRUE_ )
+    && (ptsz->has_lens_lensmag_1h != _TRUE_ )
+    && (ptsz->has_lens_lensmag_2h != _TRUE_ )
+    && (ptsz->has_gal_gal_2h != _TRUE_ ))
+  return 0;
+
+if (ptsz->galaxy_sample == 0)
+  return 0;
+
+if (ptsz->galaxy_sample == 1)
+printf("-> Loading fdndz unwise\n");
+
+  class_alloc(ptsz->normalized_fdndz_z,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->normalized_fdndz_phig,sizeof(double *)*100,ptsz->error_message);
+
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI, this_lnJ, this_lnK;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+
+  /* Prepare the command */
+  /* If the command is just a "cat", no arguments need to be passed */
+  // if(strncmp("cat ", ptsz->command, 4) == 0)
+  // {
+  // sprintf(arguments, " ");
+  // }
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+  //unwise
+
+    sprintf(Filepath,
+            "%s%s",
+            "cat ",
+            //ptsz->path_to_class,
+            "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/UNWISE_galaxy_ditributions/normalised_fdndz.txt");
+
+
+
+  process = popen(Filepath, "r");
+
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+
+    // unWISE load and read column depending on the requested color
+
+    sscanf(line, "%lf %lf %lf %lf", &this_lnx, &this_lnI, &this_lnJ, &this_lnK);
+    //sscanf(line, "%lf %lf", &this_lnx, &this_lnI);
+
+    // red
+    if (ptsz->unwise_galaxy_sample_id == 0)
+    this_lnI = this_lnK;
+
+    // green
+    if (ptsz->unwise_galaxy_sample_id == 1 || ptsz->unwise_galaxy_sample_id == 2)
+    this_lnI = this_lnJ;
+
+    // blue
+    //if (ptsz->unwise_galaxy_sample_id == 3)
+    //this_lnI = this_lnI;
+
+    //printf("lnx = %e\n",this_lnx);
+
+
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  status = pclose(process);
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->normalized_fdndz_size = n_data;
+  /** Make room */
+
+  class_realloc(ptsz->normalized_fdndz_z,
+                ptsz->normalized_fdndz_z,
+                ptsz->normalized_fdndz_size*sizeof(double),
+                ptsz->error_message);
+  class_realloc(ptsz->normalized_fdndz_phig,
+                ptsz->normalized_fdndz_phig,
+                ptsz->normalized_fdndz_size*sizeof(double),
+                ptsz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<ptsz->normalized_fdndz_size; index_x++) {
+    ptsz->normalized_fdndz_z[index_x] = lnx[index_x];
+    ptsz->normalized_fdndz_phig[index_x] = lnI[index_x];
+    //print("z=%.3e phig=%.3e\n",ptsz->normalized_dndz_z[index_x])
+  };
+
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  return _SUCCESS_;
+}
+
+
+int load_normalized_cosmos_dndz(struct tszspectrum * ptsz)
+{
+
+// don't load the unwise  dndz  if none of the following are required:
+if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
+    && (ptsz->has_tSZ_gal_2h != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_1halo != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_ )
+    && (ptsz->has_gal_gal_1h != _TRUE_ )
+    && (ptsz->has_gal_lens_1h != _TRUE_ )
+    && (ptsz->has_gal_lens_2h != _TRUE_ )
+    && (ptsz->has_gal_lensmag_1h != _TRUE_ )
+    && (ptsz->has_gal_lensmag_2h != _TRUE_ )
+    && (ptsz->has_lensmag_lensmag_1h != _TRUE_ )
+    && (ptsz->has_lensmag_lensmag_2h != _TRUE_ )
+    && (ptsz->has_lens_lensmag_1h != _TRUE_ )
+    && (ptsz->has_lens_lensmag_2h != _TRUE_ )
+    && (ptsz->has_gal_gal_2h != _TRUE_ ))
+  return 0;
+
+if (ptsz->galaxy_sample == 0)
+  return 0;
+
+if (ptsz->galaxy_sample == 1)
+printf("-> Loading cosmos dndz unwise\n");
+
+  class_alloc(ptsz->normalized_cosmos_dndz_z,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->normalized_cosmos_dndz_phig,sizeof(double *)*100,ptsz->error_message);
+
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI, this_lnJ, this_lnK;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+
+  /* Prepare the command */
+  /* If the command is just a "cat", no arguments need to be passed */
+  // if(strncmp("cat ", ptsz->command, 4) == 0)
+  // {
+  // sprintf(arguments, " ");
+  // }
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+  //unwise
+
+    sprintf(Filepath,
+            "%s%s",
+            "cat ",
+            //ptsz->path_to_class,
+            "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/UNWISE_galaxy_ditributions/normalised_dndz_cosmos.txt");
+
+
+
+  process = popen(Filepath, "r");
+
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+
+    // unWISE load and read column depending on the requested color
+
+    sscanf(line, "%lf %lf %lf %lf", &this_lnx, &this_lnI, &this_lnJ, &this_lnK);
+    //sscanf(line, "%lf %lf", &this_lnx, &this_lnI);
+
+    // red
+    if (ptsz->unwise_galaxy_sample_id == 0)
+    this_lnI = this_lnK;
+
+    // green
+    if (ptsz->unwise_galaxy_sample_id == 1 || ptsz->unwise_galaxy_sample_id == 2)
+    this_lnI = this_lnJ;
+
+    // blue
+    //if (ptsz->unwise_galaxy_sample_id == 3)
+    //this_lnI = this_lnI;
+
+    //printf("lnx = %e\n",this_lnx);
+
+
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  status = pclose(process);
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->normalized_cosmos_dndz_size = n_data;
+  /** Make room */
+
+  class_realloc(ptsz->normalized_cosmos_dndz_z,
+                ptsz->normalized_cosmos_dndz_z,
+                ptsz->normalized_cosmos_dndz_size*sizeof(double),
+                ptsz->error_message);
+  class_realloc(ptsz->normalized_cosmos_dndz_phig,
+                ptsz->normalized_cosmos_dndz_phig,
+                ptsz->normalized_cosmos_dndz_size*sizeof(double),
+                ptsz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<ptsz->normalized_cosmos_dndz_size; index_x++) {
+    ptsz->normalized_cosmos_dndz_z[index_x] = lnx[index_x];
+    ptsz->normalized_cosmos_dndz_phig[index_x] = lnI[index_x];
     //print("z=%.3e phig=%.3e\n",ptsz->normalized_dndz_z[index_x])
   };
 
@@ -46220,13 +46573,17 @@ int load_rho_nfw_profile(struct tszspectrum * ptsz)
 // don't load the lensing profile if lensing/kSZ observables not required
 if (ptsz->has_gal_lens_2h != _TRUE_
   && ptsz->has_gal_lens_1h != _TRUE_
+  // && ptsz->has_gal_lensmag_2h != _TRUE_
+  // && ptsz->has_gal_lensmag_1h != _TRUE_
+  // && ptsz->has_lensmag_lensmag_2h != _TRUE_
+  // && ptsz->has_lensmag_lensmag_1h != _TRUE_
   && ptsz->has_tSZ_lens_1h != _TRUE_
   && ptsz->has_tSZ_lens_2h != _TRUE_
   && ptsz->has_lens_lens_1h != _TRUE_
   && ptsz->has_lens_lens_2h != _TRUE_
   && ptsz->has_lens_cib_1h != _TRUE_
   && ptsz->has_lens_cib_2h != _TRUE_
-  && ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_
+//  && ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_
   && ptsz->has_kSZ_kSZ_gal_1halo != _TRUE_)
   return 0;
 
@@ -46939,9 +47296,15 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
      || ((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
      || ((V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
      || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
-     || ((V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo))
+     || ((V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
+     || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
+     // || ((V->ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_1h))
+     // || ((V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
+     //|| ((V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo))
      || ((V->ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1halo)) ) {
+
  evaluate_mean_galaxy_number_density_at_z(V->pvectsz,V->ptsz);
+
  //printf("z = %.3e ng = %.3e\n",z,V->pvectsz[V->ptsz->index_mean_galaxy_number_density]);
 }
 
@@ -47031,6 +47394,103 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
       result = 0.;
     }
   }
+  // Halofit approach
+  else if (
+    // galaxy_sample = 1 : unwise
+    ((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
+  ||((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
+  ){
+
+  if (index_md == V->ptsz->index_md_gal_lensmag_2h){
+//printf("ok\n");
+
+  evaluate_effective_galaxy_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+
+  result = V->pvectsz[V->ptsz->index_halo_bias];
+
+  double W_lensmag =  radial_kernel_W_lensing_magnification_at_z(V->pvecback,
+                                                                V->pvectsz,
+                                                                V->pba,
+                                                                V->ppm,
+                                                                V->pnl,
+                                                                V->ptsz);
+
+    // this is needed only in  the approximate calculation
+    // for the exact calculation in HOD, this comes out of Sigma_crit
+    result *= W_lensmag;
+    }
+    else {
+      result = 0.;
+    }
+  }
+  // Halofit approach
+  else if (
+    // galaxy_sample = 1 : unwise
+    ((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
+  ||((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_1h))
+  ){
+
+  if (index_md == V->ptsz->index_md_lensmag_lensmag_2h){
+
+
+  // evaluate_effective_galaxy_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+  //
+  // result = V->pvectsz[V->ptsz->index_halo_bias];
+
+  double W_lensmag =  radial_kernel_W_lensing_magnification_at_z(V->pvecback,
+                                                                V->pvectsz,
+                                                                V->pba,
+                                                                V->ppm,
+                                                                V->pnl,
+                                                                V->ptsz);
+
+    // this is needed only in  the approximate calculation
+    // for the exact calculation in HOD, this comes out of Sigma_crit
+    result = W_lensmag;
+    result *= W_lensmag;
+    }
+    else {
+      result = 0.;
+    }
+  }
+  // Halofit approach
+  else if (
+    // galaxy_sample = 1 : unwise
+    ((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
+  ||((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_1h))
+  ){
+
+  if (index_md == V->ptsz->index_md_lens_lensmag_2h){
+
+
+  // evaluate_effective_galaxy_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+  //
+  // result = V->pvectsz[V->ptsz->index_halo_bias];
+
+  double W_lensmag =  radial_kernel_W_lensing_magnification_at_z(V->pvecback,
+                                                                V->pvectsz,
+                                                                V->pba,
+                                                                V->ppm,
+                                                                V->pnl,
+                                                                V->ptsz);
+  double W_lens =  radial_kernel_W_lensing_at_z(V->pvecback,
+                                                  V->pvectsz,
+                                                  V->pba,
+                                                  V->ppm,
+                                                  V->pnl,
+                                                  V->ptsz);
+
+    // this is needed only in  the approximate calculation
+    // for the exact calculation in HOD, this comes out of Sigma_crit
+    //printf("%.3e \t %.3e\n",W_lensmag,W_lens);
+    result = W_lensmag*W_lens;
+
+    }
+    else {
+      result = 0.;
+    }
+  }
+
 // halofit approach
 else if (
   // galaxy_sample = 1 : unwise
@@ -47092,6 +47552,9 @@ if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo)
  || ((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
  || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
  || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
+ || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
+ || ((V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
+ || ((V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
  //||  ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_auto))
  ||  ((V->ptsz->has_lens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_2h))
  ||  ((V->ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lens_2h))
@@ -47142,9 +47605,13 @@ if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
   || ((V->ptsz->has_kSZ_kSZ_gal_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1halo))
   || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
   || ((V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
+  || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
+  || ((V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
     ){
 // multiply by radial kernel for galaxies
+
 double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+
   result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 
 }
@@ -48784,8 +49251,18 @@ return _SUCCESS_;
 int tabulate_redshift_int_lensmag(struct tszspectrum * ptsz,
                                   struct background * pba){
 
-if (ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_)
-  return 0;
+if (ptsz->has_kSZ_kSZ_lensmag_1halo
+  + ptsz->has_gal_lensmag_1h
+  + ptsz->has_gal_lensmag_2h
+  + ptsz->has_lens_lensmag_1h
+  + ptsz->has_lens_lensmag_2h
+  + ptsz->has_lensmag_lensmag_1h
+  + ptsz->has_lensmag_lensmag_2h == _FALSE_){
+    if (ptsz->sz_verbose>=1)
+    printf("-> Not tabulating Wz for lensing magnification\n");
+    return 0;
+  }
+
 if (ptsz->sz_verbose>=1)
 printf("-> Tabulating Wz for lensing magnification\n");
   //Array of z

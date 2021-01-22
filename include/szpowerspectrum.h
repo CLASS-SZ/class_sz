@@ -31,6 +31,12 @@
 #define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
 #define _gal_lens_2h_ ((ptsz->has_gal_lens_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_2h))
 #define _gal_lens_1h_ ((ptsz->has_gal_lens_1h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_1h))
+#define _gal_lensmag_2h_ ((ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_2h))
+#define _gal_lensmag_1h_ ((ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_1h))
+#define _lensmag_lensmag_2h_ ((ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_lensmag_lensmag_2h))
+#define _lensmag_lensmag_1h_ ((ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_lensmag_lensmag_1h))
+#define _lens_lensmag_2h_ ((ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lensmag_2h))
+#define _lens_lensmag_1h_ ((ptsz->has_lens_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_lens_lensmag_1h))
 #define _lens_lens_1h_ ((ptsz->has_lens_lens_1h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_1h))
 #define _lens_lens_2h_ ((ptsz->has_lens_lens_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_2h))
 #define _tSZ_gal_1h_ ((ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_1h))
@@ -82,6 +88,12 @@ struct tszspectrum {
   double * cl_gal_gal_2h;
   double * cl_gal_lens_2h;
   double * cl_gal_lens_1h;
+  double * cl_gal_lensmag_2h;
+  double * cl_gal_lensmag_1h;
+  double * cl_lensmag_lensmag_2h;
+  double * cl_lensmag_lensmag_1h;
+  double * cl_lens_lensmag_2h;
+  double * cl_lens_lensmag_1h;
   double * cl_lens_lens_1h;
   double * cl_lens_lens_2h;
   double * cl_tSZ_gal_1h;
@@ -239,6 +251,38 @@ struct tszspectrum {
   int index_md_gal_lens_1h;
   int index_integrand_id_gal_lens_1h_first;
   int index_integrand_id_gal_lens_1h_last;
+
+  int has_gal_lensmag_2h;
+  int index_md_gal_lensmag_2h;
+  int index_integrand_id_gal_lensmag_2h_first;
+  int index_integrand_id_gal_lensmag_2h_last;
+
+  int has_gal_lensmag_1h;
+  int index_md_gal_lensmag_1h;
+  int index_integrand_id_gal_lensmag_1h_first;
+  int index_integrand_id_gal_lensmag_1h_last;
+
+
+  int has_lensmag_lensmag_2h;
+  int index_md_lensmag_lensmag_2h;
+  int index_integrand_id_lensmag_lensmag_2h_first;
+  int index_integrand_id_lensmag_lensmag_2h_last;
+
+  int has_lensmag_lensmag_1h;
+  int index_md_lensmag_lensmag_1h;
+  int index_integrand_id_lensmag_lensmag_1h_first;
+  int index_integrand_id_lensmag_lensmag_1h_last;
+
+
+  int has_lens_lensmag_2h;
+  int index_md_lens_lensmag_2h;
+  int index_integrand_id_lens_lensmag_2h_first;
+  int index_integrand_id_lens_lensmag_2h_last;
+
+  int has_lens_lensmag_1h;
+  int index_md_lens_lensmag_1h;
+  int index_integrand_id_lens_lensmag_1h_first;
+  int index_integrand_id_lens_lensmag_1h_last;
 
   int has_lens_lens_1h;
   int index_md_lens_lens_1h;
@@ -825,6 +869,16 @@ struct tszspectrum {
 
   int normalized_dndz_size;
 
+  double * normalized_fdndz_z;
+  double * normalized_fdndz_phig;
+
+  int normalized_fdndz_size;
+
+  double * normalized_cosmos_dndz_z;
+  double * normalized_cosmos_dndz_phig;
+
+  int normalized_cosmos_dndz_size;
+
   double * unbinned_nl_yy_ell;
   double * unbinned_nl_yy_n_ell;
   int nl_yy_is_binned;
@@ -1103,11 +1157,22 @@ double radial_kernel_W_lensing_at_z(double * pvecback,
                                     struct nonlinear * pnl,
                                     struct tszspectrum * ptsz);
 
+double radial_kernel_W_lensing_magnification_at_z(double * pvecback,
+                                                  double * pvectsz,
+                                                  struct background * pba,
+                                                  struct primordial * ppm,
+                                                  struct nonlinear * pnl,
+                                                  struct tszspectrum * ptsz);
+
 double evaluate_galaxy_number_counts( double * pvecback,
                                     double * pvectsz,
                                     struct background * pba,
                                     struct tszspectrum * ptsz);
 
+double evaluate_galaxy_number_counts_fdndz( double * pvecback,
+                                    double * pvectsz,
+                                    struct background * pba,
+                                    struct tszspectrum * ptsz);
 double evaluate_unwise_m_min_cut(double z,
                                  int sample_id,
                                  struct tszspectrum * ptsz);
