@@ -2626,6 +2626,8 @@ int input_read_parameters(
         ptsz->galaxy_sample=0;
       else  if ((strstr(string1,"unwise") != NULL))
         ptsz->galaxy_sample=1;
+      else  if ((strstr(string1,"other") != NULL))
+        ptsz->galaxy_sample=2;
       }
 
 

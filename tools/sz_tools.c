@@ -45838,6 +45838,8 @@ if (ptsz->galaxy_sample == 0)
 printf("-> Loading dndz WIxSC\n");
 if (ptsz->galaxy_sample == 1)
 printf("-> Loading dndz unwise\n");
+if (ptsz->galaxy_sample == 2)
+printf("-> Loading dndz file\n");
 
   class_alloc(ptsz->normalized_dndz_z,sizeof(double *)*100,ptsz->error_message);
   class_alloc(ptsz->normalized_dndz_phig,sizeof(double *)*100,ptsz->error_message);
@@ -45890,6 +45892,14 @@ printf("-> Loading dndz unwise\n");
           //ptsz->path_to_class,
           "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/WISC_bin3.txt");
 
+  else if (ptsz->galaxy_sample == 2)
+  sprintf(Filepath,
+          "%s%s",
+          "cat ",
+          //ptsz->path_to_class,
+          "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/unwise_red.txt");
+
+
 
   process = popen(Filepath, "r");
 
@@ -45916,8 +45926,8 @@ printf("-> Loading dndz unwise\n");
     //printf("lnx = %e\n",this_lnx);
                                     }
 
-  // WIxSC
-  else if (ptsz->galaxy_sample == 0){
+  // WIxSC and "other": just two column files
+  else if ((ptsz->galaxy_sample == 0) || (ptsz->galaxy_sample == 2)){
 
     sscanf(line, "%lf %lf ", &this_lnx, &this_lnI);
   }
@@ -46010,7 +46020,7 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_gal_gal_2h != _TRUE_ ))
   return 0;
 
-if (ptsz->galaxy_sample == 0)
+if ((ptsz->galaxy_sample == 0) || (ptsz->galaxy_sample == 2))
   return 0;
 
 if (ptsz->galaxy_sample == 1)
@@ -46176,7 +46186,7 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_gal_gal_2h != _TRUE_ ))
   return 0;
 
-if (ptsz->galaxy_sample == 0)
+if ((ptsz->galaxy_sample == 0) || (ptsz->galaxy_sample == 2))
   return 0;
 
 if (ptsz->galaxy_sample == 1)
@@ -47546,7 +47556,7 @@ result = W_lens*W_lens;
 
 
 if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
- || ((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
+ || ((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h)) //## BB debug
  || ((V->ptsz->has_cib_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_cib_cib_2h))
  || ((V->ptsz->has_tSZ_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_2h))
  || ((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
@@ -47555,13 +47565,10 @@ if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo)
  || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
  || ((V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
  || ((V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
- //||  ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_auto))
  ||  ((V->ptsz->has_lens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_2h))
  ||  ((V->ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lens_2h))
  ||  ((V->ptsz->has_sz_m_y_y_2h == _TRUE_) && (index_md == V->ptsz->index_md_m_y_y_2h))
  ||  ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
- //||  ((V->ptsz->has_isw_tsz == _TRUE_) && (index_md == V->ptsz->index_md_isw_tsz))
- //||  ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens))
     ){
 
 
@@ -47574,7 +47581,7 @@ if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo)
 }
 
 // // Halofit correction facto as in KAP20:
-// // [commented out for now
+// // [commented out for now: this was incorrect!!
 // if (((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h) && (V->ptsz->galaxy_sample==0)) // WIxSC
 //     || ((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h) && (V->ptsz->galaxy_sample==0)) // WIxSC
 //     )
@@ -48276,10 +48283,17 @@ if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
  || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h) && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h))
-pvectsz[ptsz->index_integral_over_m] = r*r;
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)){
+
+
+pvectsz[ptsz->index_integral_over_m] = r*r; //BB commented for debug
+//pvectsz[ptsz->index_integral_over_m] = r/r; // BB debug
+//printf("2halo_int = %.3e at z = %.3e\n",r,pvectsz[ptsz->index_z]); // BB debug
+ }
 else
 pvectsz[ptsz->index_integral_over_m] = r;
+
+
 
 //}
 
@@ -48678,9 +48692,8 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
     double z = V->z;
 
     double M_halo = exp(lnM_halo);
-    double nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->pvectsz,V->ptsz);
-    double ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD,V->ptsz);
-
+    double nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->pvectsz,V->ptsz,V->pba);
+    double ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD,V->ptsz,V->pba);
     // M_halo = 1e16;
     // z = .5;
     // nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->ptsz);

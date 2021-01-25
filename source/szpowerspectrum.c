@@ -1481,7 +1481,7 @@ double integrand_at_m_and_z(double logM,
 
          pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
                                            pvectsz[ptsz->index_hmf]
-                                           *pvectsz[ptsz->index_dlnMdeltadlnM]
+                                           //*pvectsz[ptsz->index_dlnMdeltadlnM]
                                            *pvectsz[ptsz->index_completeness]
                                            *pow(pressure_profile_at_ell,2.);
 
@@ -1513,7 +1513,7 @@ double integrand_at_m_and_z(double logM,
 
      //this integrand is squared afterward
      pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
-                                        *pvectsz[ptsz->index_dlnMdeltadlnM]
+                                        //*pvectsz[ptsz->index_dlnMdeltadlnM]
                                         *pvectsz[ptsz->index_halo_bias]
                                         *pvectsz[ptsz->index_completeness]
                                         *pow(pressure_profile_at_ell,1.);
@@ -1543,7 +1543,7 @@ double integrand_at_m_and_z(double logM,
            pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
                                              pvectsz[ptsz->index_mass_for_hmf]
                                              *pvectsz[ptsz->index_hmf]
-                                             *pvectsz[ptsz->index_dlnMdeltadlnM]
+                                             //*pvectsz[ptsz->index_dlnMdeltadlnM]
                                              *pvectsz[ptsz->index_completeness]
                                              *pow(pressure_profile_at_ell,2.);
         }
@@ -1555,7 +1555,7 @@ double integrand_at_m_and_z(double logM,
            //this integrand is squared afterward
            pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                               *pvectsz[ptsz->index_mass_for_hmf]
-                                              *pvectsz[ptsz->index_dlnMdeltadlnM]
+                                              //*pvectsz[ptsz->index_dlnMdeltadlnM]
                                               *pvectsz[ptsz->index_halo_bias]
                                               *pvectsz[ptsz->index_completeness]
                                               *pow(pressure_profile_at_ell,1.);
@@ -1800,9 +1800,13 @@ double integrand_at_m_and_z(double logM,
      evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
          pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
-                                           *pvectsz[ptsz->index_halo_bias]
+                                           //*pvectsz[ptsz->index_dlnMdeltadlnM]
+                                           //pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_hmf] // BB debug
+                                           //*pvectsz[ptsz->index_mass_for_hmf] // BB debug
+                                           *pvectsz[ptsz->index_halo_bias] // BB: commented for debug
+                                           //*galaxy_profile_at_ell_1 // BB debug
                                            *galaxy_profile_at_ell_1;
-
+    //printf("galaxy_profile = %.3e\n",galaxy_profile_at_ell_1); // BB debug
     }
 
    else if (_gal_lens_1h_){
@@ -3586,7 +3590,8 @@ if (ptsz->pressure_profile == 4){
 
   //Tinker et al 2010
   if (ptsz->MF==1)
-    m_for_hmf = pvectsz[ptsz->index_m200m];
+    //m_for_hmf = pvectsz[ptsz->index_m200m];
+    m_for_hmf = pvectsz[ptsz->index_mVIR]; // BB debug
 
   //Boquet et al 2015
   if (ptsz->MF==2)
@@ -3833,6 +3838,7 @@ int evaluate_mean_galaxy_number_density_at_z(
                                                           ptsz->array_redshift,
                                                           ptsz->array_mean_galaxy_number_density,
                                                           z_asked));
+   //pvectsz[ptsz->index_mean_galaxy_number_density] = 1.; // debug BB
 
 return _SUCCESS_;
 }
@@ -6037,6 +6043,7 @@ evaluate_galaxy_number_counts(pvecback,pvectsz,pba,ptsz);
 }
 //  normalized galaxy redshift distribution in the bin:
 double phi_galaxy_at_z = pvectsz[ptsz->index_phi_galaxy_counts];
+//double phi_galaxy_at_z = 1.; // BB debug
 // H_over_c_in_h_over_Mpc = dz/dChi
 // phi_galaxy_at_z = dng/dz normalized
 double result = H_over_c_in_h_over_Mpc*phi_galaxy_at_z;
@@ -6096,7 +6103,8 @@ double HOD_mean_number_of_central_galaxies(double z,
                                            double M_min,
                                            double sigma_lnM,
                                            double * pvectsz,
-                                           struct tszspectrum * ptsz){
+                                           struct tszspectrum * ptsz,
+                                           struct background * pba){
  double result = 0.;
 
  int index_md = (int) pvectsz[ptsz->index_md];
@@ -6112,17 +6120,23 @@ double HOD_mean_number_of_central_galaxies(double z,
  }
  else {
  if (ptsz->galaxy_sample == 1){ // KFSW20
+ // unwise HOD: M_halo in M_sun
  M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
- result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
+ result = 0.5*(1.+gsl_sf_erf((log10(M_halo/pba->h/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
  }
 
- else {
+ else if (ptsz->galaxy_sample == 0){ // WIxSC
  result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_lnM)));
+ }
+ else{
+   //M_min = 1e14*pba->h;//evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+   //M_min = pow(10.,12)*pba->h;
+   result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
  }
 
 }
 
-
+ //result = 1.; //BB debug
  return result;
 }
 
@@ -6133,23 +6147,69 @@ double HOD_mean_number_of_satellite_galaxies(double z,
                                              double M_min,
                                              double alpha_s,
                                              double M1_prime,
-                                             struct tszspectrum * ptsz){
-double result =  0.;
+                                             struct tszspectrum * ptsz,
+                                             struct background * pba){
 
+
+
+double result =  0.;
+//z =2.1; // BB debug
    if (ptsz->galaxy_sample == 1){ // KFSW20
    M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+   //M_min = 1e14;
+   // BB debug:
+   //M_min = 1e13; // BB debug
+   //M_halo = 1e15*pba->h; // BB debug
+   M_halo *= 1./pba->h;
    if (M_halo>ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min){
    result = pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/(ptsz->M1_prime_HOD_factor*M_min),alpha_s);
+   //printf("ns test: %.3e\n",result); // BB debug
+   //exit(0); // BB debug
     }
- else result = 0.;
-}// end KFSW20
-   else {
-  if (M_halo>M_min){
-   result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
- }
- else result = 0.;
-  }
+    else result = 0.;
+    }// end KFSW20
 
+  else if (ptsz->galaxy_sample == 1){
+  if (M_halo>M_min){
+
+   result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
+
+      }
+     else result = 0.;
+      }
+
+  else { // others
+  //M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+  //M_min = 1e14;
+  // BB debug:
+  //M_min = 1e13; // BB debug
+  //M_halo = 1e15*pba->h; // BB debug
+  //M_halo *= 1./pba->h;
+  // if (M_halo>ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min){
+  // result = pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/(ptsz->M1_prime_HOD_factor*M_min),alpha_s);
+  // //printf("ns test: %.3e\n",result); // BB debug
+  // //exit(0); // BB debug
+  //  }
+  //  else result = 0.;
+
+   //
+   if (M_halo>ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min){
+    result = Nc_mean*pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/M1_prime/ptsz->M1_prime_HOD_factor,alpha_s);
+       }
+      else result = 0.;
+
+
+  // if (M_halo>M_min){
+  //
+  //  result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
+  //
+  //     }
+  //  else result = 0.;
+
+
+   }// end KFSW20
+
+//result = 1.; //BB debug
 return result;
 }
 
@@ -6200,25 +6260,25 @@ if (_cib_cib_2h_){
 if (index_nu != index_nu_prime){
 if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1){
 nu = ptsz->cib_frequency_list[index_nu];
-Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu,pba,ptsz);
 }
 else if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2){
 nu = ptsz->cib_frequency_list[index_nu_prime];
-Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu_prime,pba,ptsz);
 }
 }
 else{
 nu = ptsz->cib_frequency_list[index_nu];
-Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu,pba,ptsz);
 }
 }
 // cross terms
 else {
 nu = ptsz->cib_frequency_list[index_nu];
-Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu,pba,ptsz);
 }
 
@@ -6234,12 +6294,12 @@ else if(_tSZ_cib_1h_
        ){
 if (_cib_cib_1h_){
 nu = ptsz->cib_frequency_list[index_nu];
-Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 //Ls_nu = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
 Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu,pba,ptsz);
 
 nu_prime = ptsz->cib_frequency_list[index_nu_prime];
-Lc_nu_prime = Luminosity_of_central_galaxies(z,M_halo,nu_prime,pvectsz,ptsz);
+Lc_nu_prime = Luminosity_of_central_galaxies(z,M_halo,nu_prime,pvectsz,ptsz,pba);
 //Ls_nu_prime = Luminosity_of_satellite_galaxies(z,M_halo,nu,ptsz);
 Ls_nu_prime = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu_prime,pba,ptsz);
 // eq. 15 of MM20
@@ -6248,7 +6308,7 @@ ug_at_ell  = 1./(4.*_PI_)*sqrt(Ls_nu*Ls_nu_prime*us*us+Lc_nu*Ls_nu_prime*us+Lc_n
 
 else {
   nu = ptsz->cib_frequency_list[index_nu];
-  Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz);
+  Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
   Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu,pba,ptsz);
   Ls_nu_prime = Ls_nu;
   // eq 28 of MM20
@@ -6274,18 +6334,20 @@ double Luminosity_of_central_galaxies(double z,
                                       double  M_halo,
                                       double nu,
                                       double * pvectsz,
-                                      struct tszspectrum * ptsz){
+                                      struct tszspectrum * ptsz,
+                                      struct background * pba){
 double result = 0.;
 
 double L_gal = evaluate_galaxy_luminosity(z, M_halo, nu, ptsz);
-double nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,pvectsz,ptsz);
+double nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,pvectsz,ptsz,pba);
 return result =  nc*L_gal;
                                       }
 
 double Luminosity_of_satellite_galaxies(double z,
                                         double M_halo,
                                         double nu,
-                                        struct tszspectrum * ptsz){
+                                        struct tszspectrum * ptsz,
+                                        struct background * pba){
 
 double result = 0.;
 double lnMs_min = log(1e6);
@@ -6404,8 +6466,8 @@ double ns;
 double us;
 double z = pvectsz[ptsz->index_z];
 
-nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,pvectsz,ptsz);
-ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,ptsz->M_min_HOD,ptsz->alpha_s_HOD,ptsz->M1_prime_HOD,ptsz);
+nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,pvectsz,ptsz,pba);
+ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,ptsz->M_min_HOD,ptsz->alpha_s_HOD,ptsz->M1_prime_HOD,ptsz,pba);
 us = evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz);
 
 double ug_at_ell;
@@ -6418,8 +6480,13 @@ if (_gal_gal_2h_
   || _gal_lens_2h_
   || _tSZ_gal_2h_
    ){
+//us = 1.; // BB: debug
+//ng_bar = 1.; // BB: debug
+//us=0.; //BB debug
 
-ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+ug_at_ell  = (1./ng_bar)*(nc+ns*us); // BB commented for debug
+//ug_at_ell  = (1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us); // BB debug
+//printf("ug^2=%.3e\n",ug_at_ell*ug_at_ell); // BB debug
 
 }
 
@@ -6429,8 +6496,12 @@ else if(_gal_gal_1h_
      || _tSZ_gal_1h_
      || _tSZ_lens_1h_
      || _kSZ_kSZ_gal_1halo_) {
-
-  ug_at_ell  =(1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us);
+  //us = 1.; // BB: debug
+  //ng_bar = 1.; // BB: debug
+  //ns = nc; // BB: debug
+  ug_at_ell  =(1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us); ///# commented for debug
+   //ug_at_ell  =(1./ng_bar)*(us*ns); // BB debug
+  //printf("ug^2=%.3e\n",ug_at_ell*ug_at_ell); // BB debug
   }
 
 pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
@@ -6481,11 +6552,18 @@ else if (ptsz->galaxy_sample == 1) {
 // https://github.com/bccp/simplehod
 // the factor 2.5 is to agree with the cutoff of the lensing profile
 
+  // BB debug commented for now
   r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_rVIR];
   c_delta = pvectsz[ptsz->index_cVIR];
-  if (c_delta>1.) c_delta = 1.;
+
+
+  // c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
+  // r_delta = pvectsz[ptsz->index_r500c];
+
+  //if (c_delta>1.) c_delta = 1.; // BB debug
 }
 
+// all other cases:
 else {
   // r_delta =1.17*pvectsz[ptsz->index_rs];
   // c_delta = pvectsz[ptsz->index_cVIR];
@@ -6515,6 +6593,7 @@ double numerator = cos(q)*(gsl_sf_Ci((1.+c_delta)*q)-gsl_sf_Ci(q))
 
 
 return numerator/denominator;
+//return 1.; // BB debug
 }
 
 
@@ -6557,7 +6636,7 @@ pvectsz[ptsz->index_c500c_KA20] = c500;
 // This functions returns an m_cut value depending on the sample (red, blue or gree)
 // We typically use it for M200m, but this is an arbitrary choice
 // We restrict the mass integral to go from m_cut to the max set in the param file ('M2SZ', typically 1e15Msun/h)
-
+//
 // def(mcut, zz, isamp, green_option='default'):
 //     '''Gives mcut for 5-param Zheng HOD for wise sample isamp at redshift zz.
 //     Satellite fractions 5-10% for red and green, and 25% for blue.
@@ -6597,6 +6676,7 @@ double evaluate_unwise_m_min_cut(double z,
                                  int sample_id,
                                  struct tszspectrum * ptsz)
 {
+//z = 2.1; // BB debug
 double m_cut;
 
 double zall_red[4] = {0.75,  1.00,  1.5,  2.0};
@@ -6616,7 +6696,7 @@ m_cut = 12.;
 else if (z>0.75 && z<=2.)
 m_cut = pwl_value_1d(4,zall_red,mcut_all_red,z);
 else if (z>=2.)
-m_cut = 13.6;
+ m_cut = 13.6;
 
 }
 
@@ -6650,11 +6730,13 @@ if (sample_id == 3){
 m_cut =  11.65 + z;
 }
 
-m_cut = pow(10.,m_cut);
-
-
 // adjust the mass
 double mass_fac = ptsz->M_min_HOD_mass_factor_unwise;
+
+m_cut = pow(10.,m_cut*mass_fac); // as in hmvec 'hod_A_log10mthresh'
+
+
+
 // if (sample_id == 0) // red
 //   mass_fac = 1.7;
 // else if (sample_id == 1) // green
@@ -6662,7 +6744,7 @@ double mass_fac = ptsz->M_min_HOD_mass_factor_unwise;
 // else if (sample_id == 3) // blue
 //   mass_fac = 1.;
 
-return mass_fac*m_cut;
+return m_cut;
 }
 
 

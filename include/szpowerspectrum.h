@@ -1111,7 +1111,8 @@ double HOD_mean_number_of_central_galaxies(double z,
                                            double M_min,
                                            double sigma_lnM,
                                            double * pvectsz,
-                                           struct tszspectrum * ptsz);
+                                           struct tszspectrum * ptsz,
+                                           struct background * pba);
 
 double HOD_mean_number_of_satellite_galaxies(double z,
                                              double M_halo,
@@ -1119,7 +1120,8 @@ double HOD_mean_number_of_satellite_galaxies(double z,
                                              double M_min,
                                              double alpha_s,
                                              double M1_prime,
-                                             struct tszspectrum * ptsz);
+                                             struct tszspectrum * ptsz,
+                                             struct background * pba);
 
 int evaluate_galaxy_profile(double * pvecback,
                             double * pvectsz,
@@ -1187,12 +1189,14 @@ double Luminosity_of_central_galaxies(double z,
                                       double  M_halo,
                                       double nu,
                                       double * pvectsz,
-                                      struct tszspectrum * ptsz);
+                                      struct tszspectrum * ptsz,
+                                      struct background * pba);
 
 double Luminosity_of_satellite_galaxies(double z,
                                         double  M_halo,
                                         double nu,
-                                        struct tszspectrum * ptsz);
+                                        struct tszspectrum * ptsz,
+                                        struct background * pba);
 
 double evaluate_Sigma_cib(double M, struct tszspectrum * ptsz);
 double evaluate_phi_cib(double z, struct tszspectrum * ptsz);
