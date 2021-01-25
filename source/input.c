@@ -1808,14 +1808,15 @@ int input_read_parameters(
             ptsz->which_ps_sz = 0;
             ptsz->has_completeness_for_ps_SZ = 0;
           }
+          else if ((strstr(string1,"unresolved") != NULL)){
+            ptsz->which_ps_sz = 2;
+            ptsz->has_completeness_for_ps_SZ = 1;
+          }
           else if ((strstr(string1,"resolved") != NULL)){
             ptsz->which_ps_sz = 1;
             ptsz->has_completeness_for_ps_SZ = 1;
           }
-          else if ((strstr(string1,"diffuse") != NULL)){
-            ptsz->which_ps_sz = 2;
-            ptsz->has_completeness_for_ps_SZ = 1;
-          }
+
         }
 
       class_read_double("signal-to-noise cut-off for ps completeness analysis",ptsz->sn_cutoff);

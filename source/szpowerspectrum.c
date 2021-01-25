@@ -2867,6 +2867,7 @@ int evaluate_completeness(double * pvecback,
 
 
     if (ptsz->has_completeness_for_ps_SZ == 1){
+
     comp_at_M_and_z = 0.;
 
     double mp_bias = pvectsz[ptsz->index_m500]; //biased mass = M/B
@@ -2901,6 +2902,7 @@ int evaluate_completeness(double * pvecback,
     y500_for_mp_at_zp *=   pow(Eh,beta) *pow(100.*d_A/(500.0*H0),-2.);
     double yp = y500_for_mp_at_zp;
     double sn_cutoff = ptsz->sn_cutoff;
+    //printf("with cutoff = %.3e\n",sn_cutoff); // BB debug
     double y;
     int l1,l2;
     double th1,th2;
@@ -2979,11 +2981,16 @@ int evaluate_completeness(double * pvecback,
 
    if (ptsz->which_ps_sz == 0)
       pvectsz[ptsz->index_completeness] = 1.;
-   else if (ptsz->which_ps_sz == 1) //ps resolved
-      pvectsz[ptsz->index_completeness] = comp_at_M_and_z;
-   else if (ptsz->which_ps_sz == 2) //ps unresolved
-      pvectsz[ptsz->index_completeness] = (1.-comp_at_M_and_z);
+   else if (ptsz->which_ps_sz == 1) {//ps resolved
+     //printf("completensess = %.3e\n",pvectsz[ptsz->index_completeness]); // BB debug
 
+      pvectsz[ptsz->index_completeness] = comp_at_M_and_z;
+       }
+   else if (ptsz->which_ps_sz == 2){ //ps unresolved
+
+      pvectsz[ptsz->index_completeness] = (1.-comp_at_M_and_z);
+      //printf("completensess = %.3e\n",pvectsz[ptsz->index_completeness]); // BB debug
+}
    return _SUCCESS_;
 }
 
@@ -5009,6 +5016,24 @@ int show_preamble_messages(struct background * pba,
          if (ptsz->MF==2) printf("->HMF: Bocquet et al 2015 @ M200m\n");
          if (ptsz->MF==7) printf("->HMF: Bocquet et al 2015 @ M500c\n\n");
 
+         if (ptsz->has_sz_ps
+           + ptsz->has_sz_2halo
+          != _FALSE_){
+          printf("->Computing Compton-y quantities\n");
+          if (ptsz->has_completeness_for_ps_SZ == 1){
+          char sz_cc_type[_ARGUMENT_LENGTH_MAX_];
+          if (ptsz->which_ps_sz == 0)
+             sprintf(sz_cc_type,"%s","total");
+          else if (ptsz->which_ps_sz == 1) //ps resolved
+            sprintf(sz_cc_type,"%s","resolved");
+          else if (ptsz->which_ps_sz == 2) //ps unresolved
+            sprintf(sz_cc_type,"%s","unresolved");
+
+          printf("->Using completeness formalism corresponding to: %s\n", sz_cc_type);
+          printf("  with signal-to-noise cut-off = %.3e\n",ptsz->sn_cutoff);
+          }
+
+          }
          //Pressure profile
          if (ptsz->pressure_profile == 0)
             printf("->Pressure Profile:  Planck 2013\n");
