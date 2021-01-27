@@ -49077,6 +49077,11 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct primordial * ppm,
                                       struct tszspectrum * ptsz){
 
+   // bounds array of radii for sigma computations:
+   ptsz->logR1SZ = pow(3.*0.1*ptsz->M1SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.);
+   ptsz->logR2SZ = pow(3.*10.*ptsz->M2SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.);
+
+
   //Array of z
   double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM)+1e-7;
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);

@@ -1743,12 +1743,14 @@ int input_read_parameters(
 
 
       //Array size
-      class_read_int("n_arraySZ",ptsz->n_arraySZ);//number of z in the interpolation for sigma
+      class_read_int("ndim_redshifts",ptsz->n_arraySZ);//number of z in the interpolation for sigma
       class_read_int("n_arraySZ_for_integral",ptsz->n_arraySZ_for_integral);//number of z in the integration
 
       //mass limits: h^-1 Msun
       class_read_double("M1SZ",ptsz->M1SZ);
       class_read_double("M2SZ",ptsz->M2SZ);
+
+
 
       //number of mass bins for cov_Y-N:
       class_read_double("number of mass bins for cov(Y,N)",ptsz->nbins_M);
@@ -1776,9 +1778,9 @@ int input_read_parameters(
       class_read_double("sigmaM",pcsz->sigmaM);
 
       //For the computation of sigma2
-      class_read_int("ndimSZ",ptsz->ndimSZ);
-      class_read_double("logR1SZ",ptsz->logR1SZ); // 0.0034Mpc/h, 1.8e4  solar mass
-      class_read_double("logR2SZ",ptsz->logR2SZ); // 54.9Mpc/h, 7.5e16 solar mass
+      class_read_int("ndim_masses",ptsz->ndimSZ);
+      //class_read_double("logR1SZ",ptsz->logR1SZ); // 0.0034Mpc/h, 1.8e4  solar mass
+      //class_read_double("logR2SZ",ptsz->logR2SZ); // 54.9Mpc/h, 7.5e16 solar mass
 
       class_read_double("delta_cSZ",ptsz->delta_cSZ);
 
@@ -1861,9 +1863,9 @@ int input_read_parameters(
       class_read_double("A_cn",ptsz->A_cn);
 
 
-      class_read_double("k_per_decade_for_tSZ",pnl->k_per_decade_for_tSZ);
-      class_read_double("k_min_for_pk_in_tSZ",pnl->k_min_for_pk_in_tSZ);
-      class_read_double("k_max_for_pk_in_tSZ",pnl->k_max_for_pk_in_tSZ);
+      class_read_double("k_per_decade_class_sz",pnl->k_per_decade_for_tSZ);
+      class_read_double("k_min_for_pk_class_sz",pnl->k_min_for_pk_in_tSZ);
+      class_read_double("k_max_for_pk_class_sz",pnl->k_max_for_pk_in_tSZ);
 
 
       //BB: read the quantities to be computed by class_sz
@@ -2635,7 +2637,7 @@ int input_read_parameters(
 
 
       /* unwise galaxy sample id */
-      class_call(parser_read_string(pfc,"unwise_galaxy_sample_id",&string1,&flag1,errmsg),
+      class_call(parser_read_string(pfc,"galaxy_sample_id",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
      if (flag1 == _TRUE_) {
@@ -4603,8 +4605,8 @@ int input_default_params(
   ptsz->n_arraySZ = 100;//number of z in the sigma Interpolation
 
   ptsz->ndimSZ = 100;
-  ptsz->logR1SZ = -5.684; // 0.0034Mpc/h, 1.8e4  solar mass
-  ptsz->logR2SZ = 4.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
+  ptsz->logR1SZ = -10; // 0.0034Mpc/h, 1.8e4  solar mass
+  ptsz->logR2SZ = 10.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
 
   ptsz->delta_cSZ = 1.6865;
 

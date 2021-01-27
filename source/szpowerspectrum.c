@@ -5397,6 +5397,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    //printf("cib_dim = %d\n",1000);
 
 
+
    class_alloc(ptsz->ln_x_for_pp, ptsz->ln_x_size_for_pp*sizeof(double),ptsz->error_message);
    int i;
    for (i=0;i<ptsz->ln_x_size_for_pp;i++){
