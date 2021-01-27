@@ -3597,8 +3597,8 @@ if (ptsz->pressure_profile == 4){
 
   //Tinker et al 2010
   if (ptsz->MF==1)
-    //m_for_hmf = pvectsz[ptsz->index_m200m];
-    m_for_hmf = pvectsz[ptsz->index_mVIR]; // BB debug
+    m_for_hmf = pvectsz[ptsz->index_m200m];
+    //m_for_hmf = pvectsz[ptsz->index_mVIR]; // BB debug
 
   //Boquet et al 2015
   if (ptsz->MF==2)
@@ -6154,9 +6154,9 @@ double HOD_mean_number_of_central_galaxies(double z,
  result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_lnM)));
  }
  else{
-   //M_min = 1e14*pba->h;//evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+   M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
    //M_min = pow(10.,12)*pba->h;
-   result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
+   result = 0.5*(1.+gsl_sf_erf((log10(M_halo/pba->h/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
  }
 
 }
@@ -6194,7 +6194,7 @@ double result =  0.;
     else result = 0.;
     }// end KFSW20
 
-  else if (ptsz->galaxy_sample == 1){
+  else if (ptsz->galaxy_sample == 0){
   if (M_halo>M_min){
 
    result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
@@ -6204,7 +6204,8 @@ double result =  0.;
       }
 
   else { // others
-  //M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+  M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+  M_halo *= 1./pba->h;
   //M_min = 1e14;
   // BB debug:
   //M_min = 1e13; // BB debug
@@ -6219,7 +6220,7 @@ double result =  0.;
 
    //
    if (M_halo>ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min){
-    result = Nc_mean*pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/M1_prime/ptsz->M1_prime_HOD_factor,alpha_s);
+    result = pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/M_min/ptsz->M1_prime_HOD_factor,alpha_s);
        }
       else result = 0.;
 
@@ -6593,9 +6594,16 @@ else {
   // r_delta =1.17*pvectsz[ptsz->index_rs];
   // c_delta = pvectsz[ptsz->index_cVIR];
   //default like KA20, needs to run with M500 and P13
-  evaluate_c500c_KA20(pvecback,pvectsz,pba,ptsz);
-  c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
-  r_delta = pvectsz[ptsz->index_r500c];
+
+  // evaluate_c500c_KA20(pvecback,pvectsz,pba,ptsz);
+  // c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
+  // r_delta = pvectsz[ptsz->index_r500c];
+
+  r_delta = pvectsz[ptsz->index_r200m];
+  c_delta = pvectsz[ptsz->index_c200m];
+  //
+  // r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_rVIR];
+  // c_delta = pvectsz[ptsz->index_cVIR];
 }
 }
 

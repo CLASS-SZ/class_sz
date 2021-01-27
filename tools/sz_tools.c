@@ -45896,8 +45896,8 @@ printf("-> Loading dndz file\n");
   sprintf(Filepath,
           "%s%s",
           "cat ",
-          //ptsz->path_to_class,
-          "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/unwise_red.txt");
+          ptsz->full_path_to_dndz_gal);
+          //"/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/unwise_red.txt");
 
 
 

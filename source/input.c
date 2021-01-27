@@ -2462,6 +2462,8 @@ int input_read_parameters(
 
       }
 
+      class_read_string("full path to dndz (normalized galaxy dist.)",ptsz->full_path_to_dndz_gal);
+
 
 
       /* temperature mass relation SZ */
