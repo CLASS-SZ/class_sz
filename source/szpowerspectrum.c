@@ -3096,41 +3096,15 @@ int evaluate_halo_bias(double * pvecback,
 
    pvectsz[ptsz->index_halo_bias] = 1.-ATT*(pow(nuTink,aTTT)/(pow(nuTink,aTTT)+pow(ptsz->delta_cSZ,aTTT)))
                                                       +BTT*pow(nuTink,bTTT)+CTT*pow(nuTink,cTTT);
-  //
-  //  int index_l = (int)  pvectsz[ptsz->index_multipole];
-  //  double z = pvectsz[ptsz->index_z];
-  //  //identical to sqrt(pvectsz[index_chi2])
-  //  double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
-  //
-  //  pvectsz[ptsz->index_k_value_for_halo_bias] = (ptsz->ell[index_l]+0.5)/d_A; //units h/Mpc
-  //
-  //
-  //  double k = pvectsz[ptsz->index_k_value_for_halo_bias]; //in h/Mpc
-  //
-  //  double pk;
-  //  double * pk_ic = NULL;
-  //
-  //
-  //
-  // //Input: wavenumber in 1/Mpc
-  // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-  //    class_call(nonlinear_pk_at_k_and_z(
-  //                                      pba,
-  //                                      ppm,
-  //                                      pnl,
-  //                                      pk_linear,
-  //                                      k*pba->h,
-  //                                      z,
-  //                                      pnl->index_pk_m,
-  //                                      &pk, // number *out_pk_l
-  //                                      pk_ic // array out_pk_ic_l[index_ic_ic]
-  //                                    ),
-  //                                    pnl->error_message,
-  //                                    pnl->error_message);
-  //
-  //
-  //  //now compute P(k) in units of h^-3 Mpc^3
-  //  pvectsz[ptsz->index_pk_for_halo_bias] = pk*pow(pba->h,3.); //in units Mpc^3/h^3
+
+
+  // // BB debug
+  // nuTink = 10.;
+  // double result = 1.-ATT*(pow(nuTink,aTTT)/(pow(nuTink,aTTT)+pow(ptsz->delta_cSZ,aTTT)))
+  //                                                    +BTT*pow(nuTink,bTTT)+CTT*pow(nuTink,cTTT);
+  // printf("tinker bias = %.3e\n",result);
+  // exit(0);
+
    return _SUCCESS_;
 }
 
@@ -3567,6 +3541,8 @@ if (ptsz->pressure_profile == 4){
                           ptsz),
                      ptsz->error_message,
                      ptsz->error_message);
+    // !! Careful: uncomment if you want to integrate with repect to m_delta
+    pvectsz[ptsz->index_m200m] = pvectsz[ptsz->index_mVIR]; // bb debug
     // compute r200m:
     pvectsz[ptsz->index_r200m]  = pow(3.*pvectsz[ptsz->index_m200m]
                                       /(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]
@@ -3956,7 +3932,8 @@ int write_redshift_dependent_quantities(struct background * pba,
   char Filepath[_ARGUMENT_LENGTH_MAX_];
   FILE *fp;
   sprintf(Filepath,"%s%s%s",ptsz->root,"","redshift_dependent_functions.txt");
-  printf("-> Writing redshift dependent functions in %s\n",Filepath);
+  if (ptsz->sz_verbose>=1)
+    printf("-> Writing redshift dependent functions in %s\n",Filepath);
   fp=fopen(Filepath, "w");
   fprintf(fp,"# Column 1: redshift\n");
   fprintf(fp,"# Column 2: scale factor\n");
@@ -4288,7 +4265,7 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 if (ptsz->create_ref_trispectrum_for_cobaya){
 
   if (ptsz->sz_verbose>=1)
-  printf("creating reference trispectrum for cobaya sz likelihood\n");
+    printf("creating reference trispectrum for cobaya sz likelihood\n");
 
   char Filepath[_ARGUMENT_LENGTH_MAX_];
   FILE *fp;
@@ -4659,7 +4636,8 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
                     );
 
       }
-      printf("->Output written in %s\n",Filepath);
+      if (ptsz->sz_verbose>=1)
+        printf("->Output written in %s\n",Filepath);
       fclose(fp);
 
 
@@ -6140,25 +6118,30 @@ double HOD_mean_number_of_central_galaxies(double z,
    || _tSZ_cib_2h_
    || _lens_cib_1h_
    || _lens_cib_2h_){
-   //printf("cib\n");
- if (M_halo>=M_min) result = 1.;
- else result = 0.;
- }
+       //printf("cib\n");
+     if (M_halo>=M_min) result = 1.;
+     else result = 0.;
+     }
  else {
- if (ptsz->galaxy_sample == 1){ // KFSW20
- // unwise HOD: M_halo in M_sun
- M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
- result = 0.5*(1.+gsl_sf_erf((log10(M_halo/pba->h/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
- }
+   if (ptsz->galaxy_sample == 1){ // KFSW20
+   // unwise HOD: M_halo in M_sun
+     M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+     result = 0.5*(1.+gsl_sf_erf((log10(M_halo/pba->h/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
+     }
 
- else if (ptsz->galaxy_sample == 0){ // WIxSC
- result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_lnM)));
- }
- else{
-   M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
-   //M_min = pow(10.,12)*pba->h;
-   result = 0.5*(1.+gsl_sf_erf((log10(M_halo/pba->h/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
- }
+   else if (ptsz->galaxy_sample == 0){ // WIxSC
+    result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_lnM)));
+    }
+   else{
+      //BB debug
+      // z = 0.5; // BB debug
+      // M_halo = 1e12; // BB debug
+      M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+       //M_min = pow(10.,12)*pba->h;
+      result = 0.5*(1.+gsl_sf_erf((log10(M_halo/pba->h/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
+      // printf("ns test: %.10e\n",result); // BB debug
+      // exit(0);
+      }
 
 }
 
@@ -6205,8 +6188,11 @@ double result =  0.;
       }
 
   else { // others
+
+  // z = 0.5; // BB debug
   M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
   M_halo *= 1./pba->h;
+  // M_halo = 1e13; // BB debug
   //M_min = 1e14;
   // BB debug:
   //M_min = 1e13; // BB debug
@@ -6220,10 +6206,13 @@ double result =  0.;
   //  else result = 0.;
 
    //
-   if (M_halo>ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min){
+  if (M_halo>ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min){
     result = pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/M_min/ptsz->M1_prime_HOD_factor,alpha_s);
        }
-      else result = 0.;
+  else result = 0.;
+  // printf("ns test: %.3e\n",result); // BB debug
+  // exit(0);
+
 
 
   // if (M_halo>M_min){
@@ -6599,6 +6588,7 @@ else {
   // evaluate_c500c_KA20(pvecback,pvectsz,pba,ptsz);
   // c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
   // r_delta = pvectsz[ptsz->index_r500c];
+  //printf("doing c200m\n");
 
   r_delta = pvectsz[ptsz->index_r200m];
   c_delta = pvectsz[ptsz->index_c200m];
@@ -6636,7 +6626,7 @@ int evaluate_c200m_D08(double * pvecback,
                         struct background * pba,
                         struct tszspectrum * ptsz)
 {
-double M = pvectsz[ptsz->index_m200m]; // mass in  Msun/h
+double M = pvectsz[ptsz->index_m200m];// mass in  Msun/h
 double A = 10.14;
 double B = -0.081;
 double C = -1.01;

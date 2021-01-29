@@ -45681,7 +45681,8 @@ int load_unbinned_nl_yy(struct tszspectrum * ptsz)
 
 // don't load  if none of the following are required:
 if ( (ptsz->include_noise_cov_y_y != 1 )){
-printf("-> noise curve for yxy covariance not requested\n");
+  if (ptsz->sz_verbose>=1)
+    printf("-> noise curve for yxy covariance not requested\n");
   return 0;
 }
 
@@ -45834,12 +45835,14 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_gal_gal_2h != _TRUE_ ))
   return 0;
 
-if (ptsz->galaxy_sample == 0)
-printf("-> Loading dndz WIxSC\n");
-if (ptsz->galaxy_sample == 1)
-printf("-> Loading dndz unwise\n");
-if (ptsz->galaxy_sample == 2)
-printf("-> Loading dndz file\n");
+if (ptsz->sz_verbose>=1){
+    if (ptsz->galaxy_sample == 0)
+    printf("-> Loading dndz WIxSC\n");
+    if (ptsz->galaxy_sample == 1)
+    printf("-> Loading dndz unwise\n");
+    if (ptsz->galaxy_sample == 2)
+    printf("-> Loading dndz file\n");
+    }
 
   class_alloc(ptsz->normalized_dndz_z,sizeof(double *)*100,ptsz->error_message);
   class_alloc(ptsz->normalized_dndz_phig,sizeof(double *)*100,ptsz->error_message);
@@ -46729,10 +46732,7 @@ int MF_T08_m500(
   double om0 = ptsz->Omega_m_0;
   double ol0 = 1.-ptsz->Omega_m_0;
   double delta_crit = 500.;
-  double Omega_m_z =
-  om0*pow(1.+z,3.)
-  /(om0*pow(1.+z,3.)
-    + ol0);
+  double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0);
   double  delta_mean =
   delta_crit/Omega_m_z;
 
@@ -46937,7 +46937,7 @@ int plc_gnfw(double * plc_gnfw_x,
   //Custom. GNFW pressure profile
   //int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
   int index_md = (int) pvectsz[ptsz->index_md];
-  *plc_gnfw_x = 0.;
+      *plc_gnfw_x = 0.;
 
   // Example Arnaud 2010
   // ptsz->P0GNFW = 8.130;
@@ -46957,7 +46957,7 @@ int plc_gnfw(double * plc_gnfw_x,
 
 
     if (_mean_y_)
-        *plc_gnfw_x = (1./(pow(ptsz->c500*x,ptsz->gammaGNFW)
+      *plc_gnfw_x = (1./(pow(ptsz->c500*x,ptsz->gammaGNFW)
                        *pow(1.+ pow(ptsz->c500*x,ptsz->alphaGNFW),
                            (ptsz->betaGNFW-ptsz->gammaGNFW)/ptsz->alphaGNFW)))
                       *pow(x,2);
@@ -47083,14 +47083,7 @@ int MF_T08_M1600m(
                   struct tszspectrum * ptsz
                   )
 {
-  double alphaT08 =
-  pow(
-      10.,
-      -pow(
-           0.75/log10(1600./75.),
-           1.2
-           )
-      );
+  double alphaT08 = pow(10.,-pow(0.75/log10(1600./75.),1.2));
   double   Ap=0.260*pow(1.+z,-0.14);
   double   a=2.30*pow(1.+z,-0.06);
   double   b=1.46*pow(1.+z,-alphaT08);
