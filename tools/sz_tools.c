@@ -44974,18 +44974,28 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   double xin = 1.e-5;
   double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
   double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
-  double cvir = pvectsz[ptsz->index_cVIR];
+  double c_nfw;
 
-  double cvir_prime;
+  // def at delta
+  if (ptsz->MF == 1){
+
+    c_nfw = pvectsz[ptsz->index_c200m];
+  }
+  else{
+    c_nfw = pvectsz[ptsz->index_cVIR];
+  }
+
+
+  double c_nfw_prime;
   if (flag_matter_type == 1)
-    cvir_prime = ptsz->cvir_tau_profile_factor*cvir;
+    c_nfw_prime = ptsz->cvir_tau_profile_factor*c_nfw;
   else
-    cvir_prime = cvir;
+    c_nfw_prime = c_nfw;
 
   // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
   // in the settings of KFSW20
   //if ()
-  double xout = ptsz->x_out_nfw_profile*cvir_prime; //rvir/rs = cvir
+  double xout = ptsz->x_out_nfw_profile*c_nfw_prime; //rvir/rs = cvir
   //double xout = ptsz->x_out_nfw_profile*cvir;
 
 
@@ -45016,7 +45026,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   if (_pk_at_z_1h_){
     int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
     double k = ptsz->k_for_pk_hm[index_k];
-    y_eff = k*pvectsz[ptsz->index_rs];
+    y_eff = k*rs;
   }
   else{
     y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
@@ -47266,13 +47276,17 @@ double integrand_redshift(double ln1pz, void *p){
     double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_lensmag];
     //printf("redshift_int_lensmag = %.3e at z = %.3e\n",redshift_int_lensmag,z);
     V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = _c_/_Mpc_over_m_*_c_/_Mpc_over_m_*pow((1.+z),1.)
-                                                   /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)*sqrt(V->pvectsz[V->ptsz->index_chi2])*redshift_int_lensmag);
+                                                   /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)
+                                                   *sqrt(V->pvectsz[V->ptsz->index_chi2])*redshift_int_lensmag);
 
   }
   else {
-    // CLB lensing
+    // CMB lensing
+    // Eq. 6 of https://arxiv.org/pdf/1312.4525.pdf
     V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = _c_/_Mpc_over_m_*_c_/_Mpc_over_m_*V->ptsz->chi_star*pow((1.+z),1.)
-                                                   /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)*sqrt(V->pvectsz[V->ptsz->index_chi2])*(V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2])));
+                                                   /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)
+                                                   *sqrt(V->pvectsz[V->ptsz->index_chi2])
+                                                   *(V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2])));
 
   }
 
@@ -47280,11 +47294,13 @@ double integrand_redshift(double ln1pz, void *p){
   // V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = 1.6625e18*V->ptsz->chi_star*pow((1.+z),1.) //there is an issue somewhere with (1+z)...
   //                                                 /(sqrt(V->pvectsz[V->ptsz->index_chi2])*(V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2])));
 
+  // critical density in (Msun/h)/(Mpc/h)^3
   V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
-                                  *pow(_Mpc_over_m_,1)
-                                  *pow(_c_,2)
-                                  *V->pvecback[V->pba->index_bg_rho_crit]
-                                  /pow(V->pba->h,2); // critical density in (Msun/h)/(Mpc/h)^3
+                                        *pow(_Mpc_over_m_,1)
+                                        *pow(_c_,2)
+                                        *V->pvecback[V->pba->index_bg_rho_crit]
+                                        /pow(V->pba->h,2);
+
   double Eh = V->pvecback[V->pba->index_bg_H]/V->ptsz->H0_in_class_units;
   double omega = V->pvecback[V->pba->index_bg_Omega_m];//pow(Eh,2.);
   V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
@@ -47376,6 +47392,8 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
     // galaxy_sample = 1 : unwise
     ((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
   ||((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
+  ||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
+  ||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
   ){
 
   if (index_md == V->ptsz->index_md_gal_lens_2h){
@@ -47402,6 +47420,8 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
     // galaxy_sample = 1 : unwise
     ((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
   ||((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
+  ||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
+  ||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
   ){
 
   if (index_md == V->ptsz->index_md_gal_lensmag_2h){
@@ -47431,6 +47451,8 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
     // galaxy_sample = 1 : unwise
     ((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
   ||((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_1h))
+  ||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
+  ||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_1h))
   ){
 
   if (index_md == V->ptsz->index_md_lensmag_lensmag_2h){
@@ -47461,6 +47483,8 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
     // galaxy_sample = 1 : unwise
     ((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
   ||((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_1h))
+  ||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
+  ||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_1h))
   ){
 
   if (index_md == V->ptsz->index_md_lens_lensmag_2h){
@@ -47499,6 +47523,8 @@ else if (
   // galaxy_sample = 1 : unwise
   ((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
 ||((V->ptsz->galaxy_sample==1 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h))
+||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
+||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h))
 ){
   if (index_md == V->ptsz->index_md_gal_gal_1h) {
     result = 0.;
@@ -47563,6 +47589,8 @@ if ( ((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo)
  ||  ((V->ptsz->has_sz_m_y_y_2h == _TRUE_) && (index_md == V->ptsz->index_md_m_y_y_2h))
  ||  ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
     ){
+
+
 
 
   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -48157,6 +48185,11 @@ else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_lens_2h){
                                            epsrel, epsabs,
                                            integrand_patterson_test,
                                            params,ptsz->patterson_show_neval);
+
+
+  r_m_2 = r_m_2+ptsz->Omega_m_0*ptsz->Rho_crit_0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)/pvectsz[ptsz->index_lensing_Sigma_crit];
+
+
   r = r_m_1*r_m_2;
 }
   //pvectsz[ptsz->index_part_id_cov_hsv] = 1;
@@ -48275,11 +48308,17 @@ r = result_gsl;
 if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
- || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h) && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
+ || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)
+      && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)){
 
 
-pvectsz[ptsz->index_integral_over_m] = r*r; //BB commented for debug
+ if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h){
+   //printf("ok\n");
+   r = r+ptsz->Omega_m_0*ptsz->Rho_crit_0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)/pvectsz[ptsz->index_lensing_Sigma_crit];
+ }
+
+ pvectsz[ptsz->index_integral_over_m] = r*r; //BB commented for debug
 //pvectsz[ptsz->index_integral_over_m] = r/r; // BB debug
 //printf("2halo_int = %.3e at z = %.3e\n",r,pvectsz[ptsz->index_z]); // BB debug
  }
@@ -48739,6 +48778,9 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
       // this  also works:
       //double hmf = get_dndlnM_at_z_and_M(z_asked,m_asked,V->ptsz);
 
+      // printf("hmf = %.3e\n",hmf);
+      // printf("ns = %.3e\n",ns);
+      // printf("nc = %.3e\n",nc);
 
 
       double result = hmf*(ns+nc);

@@ -2622,6 +2622,29 @@ int input_read_parameters(
         ptsz->use_hod=0;
       }
 
+    /* // Use analytical truncated nfw rather than numerical fourier transform */
+    class_call(parser_read_string(pfc,"use_analytical_truncated_nfw",&string1,&flag1,errmsg),
+               errmsg,
+               errmsg);
+   if (flag1 == _TRUE_) {
+      if ((strstr(string1,"yes") != NULL))
+        ptsz->use_analytical_truncated_nfw=1;
+      else  if ((strstr(string1,"no") != NULL))
+        ptsz->use_analytical_truncated_nfw=0;
+      }
+
+
+    // class_call(parser_read_string(pfc,"mass_def_hmf",&string1,&flag1,errmsg),
+    //              errmsg,
+    //              errmsg);
+    //  if (flag1 == _TRUE_) {
+    //     if ((strstr(string1,"matter") != NULL))
+    //       ptsz->mass_def_hmf=1;
+    //     else  if ((strstr(string1,"no") != NULL))
+    //       ptsz->mass_def_hmf=0;
+    //     }
+
+
     /* galaxy sample */
     class_call(parser_read_string(pfc,"galaxy_sample",&string1,&flag1,errmsg),
                errmsg,
@@ -4490,6 +4513,8 @@ int input_default_params(
 
   //default: total power spectrum (no completeness cut)
   ptsz->which_ps_sz = 0; //0: total, 1: resolved, 2: unresolved
+
+  ptsz->use_analytical_truncated_nfw = 1;
 
   ptsz->use_hod = 1;
   ptsz->galaxy_sample = 0; // WIxSC

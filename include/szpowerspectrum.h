@@ -67,6 +67,7 @@
 struct tszspectrum {
 
 
+  int use_analytical_truncated_nfw;
   int use_hod; // Eq. 15 or 16 of KA20
   int unwise_galaxy_sample_id;
   int galaxy_sample;

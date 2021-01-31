@@ -1835,6 +1835,9 @@ double integrand_at_m_and_z(double logM,
                                                *pvectsz[ptsz->index_lensing_profile]
                                                *pvectsz[ptsz->index_galaxy_profile];
                                                //*pvectsz[ptsz->index_halo_bias];
+            // printf("pvectsz[ptsz->index_galaxy_profile] = %.5e\n", pvectsz[ptsz->index_galaxy_profile]);
+            // printf("pvectsz[ptsz->index_lensing_profile] = %.5e\n", pvectsz[ptsz->index_lensing_profile]);
+            // printf("pvectsz[ptsz->index_hmf] = %.5e\n", pvectsz[ptsz->index_hmf]);
 
           }
    else if (_gal_lens_2h_){
@@ -2454,11 +2457,32 @@ int evaluate_tau_profile(double * pvecback,
 
    pvectsz[ptsz->index_multipole_for_nfw_profile] = pvectsz[ptsz->index_multipole_for_tau_profile];
 
+   double rho0;
+
+   double rs = pvectsz[ptsz->index_rs];
+   double rvir = pvectsz[ptsz->index_rVIR];
+   double cvir_prime = ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR];
+   double cvir = pvectsz[ptsz->index_cVIR];
+   double xout = ptsz->x_out_nfw_profile*cvir;
+   double xout_prime = ptsz->x_out_nfw_profile*cvir_prime;
+
+   if (ptsz->use_analytical_truncated_nfw == 0){
+   // set 1 for matter_type = tau
    class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,1),
                                      ptsz->error_message,
                                      ptsz->error_message);
+   rho0 = pvectsz[ptsz->index_mVIR]/m_nfw(cvir_prime);
+                                   }
+   else{
+
+   rho0 = pvectsz[ptsz->index_mVIR];
+   pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile];
+   result =  evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz);
+
+   }
 
 
+   pvectsz[ptsz->index_tau_profile] = result;
    // double lnx_asked = log((pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)/characteristic_multipole);
    //
    // if(lnx_asked<ptsz->RNFW_lnx[0])
@@ -2470,15 +2494,10 @@ int evaluate_tau_profile(double * pvecback,
    //                              ptsz->RNFW_lnI,
    //                              lnx_asked);
    // result = exp(result);
-   double rs = pvectsz[ptsz->index_rs];
-   double rvir = pvectsz[ptsz->index_rVIR];
-   double cvir_prime = ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR];
-   double cvir = pvectsz[ptsz->index_cVIR];
-   double xout = ptsz->x_out_nfw_profile*cvir;
-   double xout_prime = ptsz->x_out_nfw_profile*cvir_prime;
+
 
   //printf("nfw_result=%.4e m(xout)=%.4e\n", result,m_nfw(xout_prime));
-  pvectsz[ptsz->index_tau_profile] = result;
+
 
   // JCH
   // ls=da(z)/rs
@@ -2503,7 +2522,7 @@ int evaluate_tau_profile(double * pvecback,
   //               *(log(1.+ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR])-ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR]
   //               /(1.+ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR])));
 
-  double rho0 = pvectsz[ptsz->index_mVIR]/m_nfw(cvir_prime);
+
    //rho0 = 1.;
 
    rho0 *= m_nfw(xout)/m_nfw(xout_prime);
@@ -2598,11 +2617,15 @@ int evaluate_lensing_profile(double * pvecback,
    pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
    pvectsz[ptsz->index_multipole_for_nfw_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];
 
+    if (ptsz->use_analytical_truncated_nfw==0){
+    /// uncomment !!
+    //printf("using numerical nfw\n");
+    // no need to perform the fourier transform when using nfw
     class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,0),
                                       ptsz->error_message,
                                       ptsz->error_message);
-
-
+                                    }
+      //// Interpolate a pre-computed file
       // double lnx_asked = log((pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)/characteristic_multipole);
       //
       // if(lnx_asked<ptsz->RNFW_lnx[0])
@@ -2615,10 +2638,17 @@ int evaluate_lensing_profile(double * pvecback,
       //                              lnx_asked);
       // result = exp(result);
 
-   // this is the transform of the nfw, dimensionless
+   // this is the transform of the density profile, dimensionless
    // x**(-1d0)*(1d0+x)**(-2d0)*x**2d0*dsin(y*x)/(y*x)
-   pvectsz[ptsz->index_lensing_profile] = result;
 
+   /// uncomment !!
+   else {
+   pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];
+   result =  evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz);
+   }
+
+
+   pvectsz[ptsz->index_lensing_profile] = result;
 
   // lensing normalisation is dimensionless
   // we write down things in terms of phi here
@@ -2629,6 +2659,8 @@ int evaluate_lensing_profile(double * pvecback,
     || _gal_lens_1h_
     //|| _cib_lens_1h_
     //|| _cib_lens_1h_
+    || _tSZ_lens_1h_
+    || _tSZ_lens_2h_
     || _kSZ_kSZ_lensmag_1halo_
     || _lens_lens_1h_
     || _lens_lens_2h_)
@@ -2636,16 +2668,63 @@ int evaluate_lensing_profile(double * pvecback,
   else // phi
   lensing_normalisation = 2./(pvectsz[ptsz->index_multipole_for_lensing_profile]*(pvectsz[ptsz->index_multipole_for_lensing_profile]+1.));
 
+  // // when computing the fourier tranform numerically:
+  // // rho0=mvir/(4d0*pi*rs**3d0*(dlog(1d0+cvir)-cvir/(1d0+cvir))) !Eq. (2.66) of Binney & Tremaine
+  // double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+pvectsz[ptsz->index_cVIR])-pvectsz[ptsz->index_cVIR]/(1.+pvectsz[ptsz->index_cVIR])));
+  // // when computing the fourier tranform analytically with truncated profile:
+  // double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.);
 
-  // rho0=mvir/(4d0*pi*rs**3d0*(dlog(1d0+cvir)-cvir/(1d0+cvir))) !Eq. (2.66) of Binney & Tremaine
-  double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+pvectsz[ptsz->index_cVIR])-pvectsz[ptsz->index_cVIR]/(1.+pvectsz[ptsz->index_cVIR])));
+double mass_nfw;
+double concentration_nfw;
+if (ptsz->MF == 1){
+    mass_nfw = pvectsz[ptsz->index_m200m];
+    concentration_nfw = pvectsz[ptsz->index_c200m];
+  }
+else{
+    mass_nfw = pvectsz[ptsz->index_mVIR];
+    concentration_nfw = pvectsz[ptsz->index_cVIR];
+  }
+  // normalization:
+  double rho0;
 
+  //for use_analytical_truncated_nfw
+  if (ptsz->use_analytical_truncated_nfw==1){
+  //rho0 = pvectsz[ptsz->index_m200m]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+pvectsz[ptsz->index_c200m])-pvectsz[ptsz->index_c200m]/(1.+pvectsz[ptsz->index_c200m])));
+
+  rho0 = mass_nfw/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
+
+  }
+  // for def at mvir
+  else{
+  rho0 = mass_nfw/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+concentration_nfw)-concentration_nfw/(1.+concentration_nfw)));
+  }
   //
   // printf("lens rho0 = %.3e\n",rho0);
   // printf("lens norm = %.3e\n",lensing_normalisation);
   // printf("Sigma_crit = %.3e\n",pvectsz[ptsz->index_lensing_Sigma_crit]);
+  if (_gal_lens_2h_
+    ||_lens_lens_2h_
+    ||_tSZ_lens_2h_){
+if (ptsz->use_analytical_truncated_nfw==1){
+     pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
+                                             *(rho0*(pvectsz[ptsz->index_lensing_profile]-1.))
+                                             /pvectsz[ptsz->index_lensing_Sigma_crit]
+                                             *(4*_PI_)
+                                             *pow(characteristic_multipole,-2)
+                                             *characteristic_radius; //rs in Mpc/h
+                                           }
+else{
+  pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
+                                          *(rho0*(pvectsz[ptsz->index_lensing_profile]-m_nfw(concentration_nfw)))
+                                          /pvectsz[ptsz->index_lensing_Sigma_crit]
+                                          *(4*_PI_)
+                                          *pow(characteristic_multipole,-2)
+                                          *characteristic_radius; //rs in Mpc/h
 
+}
 
+    }
+  else{
    pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
                                            *rho0
                                            *pvectsz[ptsz->index_lensing_profile]
@@ -2653,6 +2732,7 @@ int evaluate_lensing_profile(double * pvecback,
                                            *(4*_PI_)
                                            *pow(characteristic_multipole,-2)
                                            *characteristic_radius; //rs in Mpc/h
+      }
 
   //printf("lens prof = %.3e\n",pvectsz[ptsz->index_lensing_profile]);
 
@@ -3439,10 +3519,8 @@ int evaluate_HMF(double logM,
 
    pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
 
-   //Scale radius:
+   //Scale radius for nfw profiles:
    //(note that rs is actually r200c/c200 for SC14 concentration-mass relation ---> TBC)
-   pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_rVIR]/pvectsz[ptsz->index_cVIR];
-   pvectsz[ptsz->index_ls] = pvecback[pba->index_bg_ang_distance]*pba->h/pvectsz[ptsz->index_rs];
 
 
    //Compute m500c
@@ -3475,7 +3553,7 @@ if (ptsz->pressure_profile == 4){
 
     //r200c for the pressure profile B12
     pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
-    pvectsz[ptsz->index_l200c] = pvecback[pba->index_bg_ang_distance]*pba->h/pvectsz[ptsz->index_r200c];
+    pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
 }
 
    // //if HMF=T08@m500c -> m200=m500=M
@@ -3490,7 +3568,7 @@ if (ptsz->pressure_profile == 4){
 
    //r500 X-ray for the pressure profiles A10 and P13
    pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
-   pvectsz[ptsz->index_l500] = pvecback[pba->index_bg_ang_distance]*pba->h/pvectsz[ptsz->index_r500];
+   pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
 
 
 
@@ -3557,6 +3635,19 @@ if (ptsz->pressure_profile == 4){
      printf("c200m not implemented yet for this concentration mass relation\n");
    }
 
+
+   // for definition at 200m
+   if (ptsz->MF == 1){
+       pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
+       pvectsz[ptsz->index_ls] =  sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
+     }
+    // for definitions at mvir
+    else{
+
+      pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_rVIR]/pvectsz[ptsz->index_cVIR];
+      pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
+
+    }
 
    //dlnm200ddlnm;
    pvectsz[ptsz->index_dlnMdeltadlnM]= evaluate_dlnMdeltadlnM(log(pvectsz[ptsz->index_mVIR]),
@@ -6171,10 +6262,10 @@ double result =  0.;
    //M_halo = 1e15*pba->h; // BB debug
    M_halo *= 1./pba->h;
    if (M_halo>ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min){
-   result = pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/(ptsz->M1_prime_HOD_factor*M_min),alpha_s);
-   //printf("ns test: %.3e\n",result); // BB debug
-   //exit(0); // BB debug
-    }
+     result = pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/(ptsz->M1_prime_HOD_factor*M_min),alpha_s);
+     //printf("ns test: %.3e\n",result); // BB debug
+     //exit(0); // BB debug
+      }
     else result = 0.;
     }// end KFSW20
 
@@ -6502,15 +6593,17 @@ if (_gal_gal_2h_
 
 ug_at_ell  = (1./ng_bar)*(nc+ns*us); // BB commented for debug
 //ug_at_ell  = (1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us); // BB debug
-//printf("ug^2=%.3e\n",ug_at_ell*ug_at_ell); // BB debug
-
+// printf("ug^2=%.3e\n",ug_at_ell*ug_at_ell); // BB debug
+// printf("ng_bar=%.3e\n",ng_bar); // BB debug
+// printf("nc=%.3e\n",nc); // BB debug
+// printf("ns=%.3e\n",ns); // BB debug
+// printf("us=%.3e\n",us); // BB debugH
 }
 
 // 1-halo terms
 else if(_gal_gal_1h_
      || _gal_lens_1h_
      || _tSZ_gal_1h_
-     || _tSZ_lens_1h_
      || _kSZ_kSZ_gal_1halo_) {
   //us = 1.; // BB: debug
   //ng_bar = 1.; // BB: debug
@@ -6538,67 +6631,86 @@ if (_cib_cib_1h_
   || _tSZ_cib_2h_
   || _lens_cib_1h_
   || _lens_cib_2h_
-){
-  //printf("cib\n");
-  r_delta = pvectsz[ptsz->index_r200m];
-  c_delta = pvectsz[ptsz->index_c200m];
-}
-else{
-// WIxSC KA20 with T08@M500c
-if (ptsz->galaxy_sample == 0 && ptsz->MF == 5) {
-evaluate_c500c_KA20(pvecback,pvectsz,pba,ptsz);
-c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
-r_delta = pvectsz[ptsz->index_r500c];
-// printf("c500c_KA20\n");
+  ){
+    //printf("cib\n");
+    r_delta = pvectsz[ptsz->index_r200m];
+    c_delta = pvectsz[ptsz->index_c200m];
+    }
+else if (_tSZ_gal_1h_
+      || _tSZ_gal_2h_
+      || _gal_gal_1h_
+      || _gal_gal_2h_
+      || _gal_lens_1h_
+      || _gal_lens_2h_
+      ){
+  // printf("computing rd, cd\n");
+  // WIxSC KA20 with T08@M500c
+  if (ptsz->galaxy_sample == 0 && ptsz->MF == 5) {
+    // printf("computing rd, cd 1\n");
+    evaluate_c500c_KA20(pvecback,pvectsz,pba,ptsz);
+    c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
+    r_delta = pvectsz[ptsz->index_r500c];
+    // printf("c500c_KA20\n");
+    // exit(0);
+    }
+  else if (ptsz->galaxy_sample == 0 && ptsz->MF == 1){
+    // printf("computing rd, cd 2\n");
+    r_delta = pvectsz[ptsz->index_r200m];
+    c_delta = pvectsz[ptsz->index_c200m];
+    //printf("doing c200m samp0 and MF!\n");
+    }
+  // unWISE
+  else if ((ptsz->galaxy_sample == 1) || (ptsz->galaxy_sample == 2 )) {
+
+  // mail from alex:
+  // The code that we use is here:
+  // https://github.com/bccp/simplehod/blob/master/simplehod/simplehod.pyx
+  // in particular, see the get_nfw_r function within the RNGAdapter class (line 499).  I believe this is NFW truncated at the virial radius.  If the concentration is > 1, it is set to 1 (I *think* this is what the linked code is doing in lines 507-515).
+   // The concentration is coming from the fitting formula of Dutton & Maccio 2014:
+  // https://nbodykit.readthedocs.io/en/latest/api/_autosummary/nbodykit.transform.html#nbodykit.transform.HaloConcentration
+  // In particular, concentration, virial radius and velocity dispersion are all generated from the mass as described in the README here:
+  // https://github.com/bccp/simplehod
+  // the factor 2.5 is to agree with the cutoff of the lensing profile
+
+    // BB debug commented for now
+    // r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_rVIR];
+    // c_delta = pvectsz[ptsz->index_cVIR];
+
+      // printf("doing c200m\n");
+
+      r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_r200m];
+      c_delta = pvectsz[ptsz->index_c200m];
+
+
+    // c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
+    // r_delta = pvectsz[ptsz->index_r500c];
+
+    //if (c_delta>1.) c_delta = 1.; // BB debug
+    }
+    // printf("doing c200m 3\n");
+  }
+
+  // all other cases:
+  else {
+    // r_delta =1.17*pvectsz[ptsz->index_rs];
+    // c_delta = pvectsz[ptsz->index_cVIR];
+    //default like KA20, needs to run with M500 and P13
+// printf("doing c200m 2\n");
+    // evaluate_c500c_KA20(pvecback,pvectsz,pba,ptsz);
+    // c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
+    // r_delta = pvectsz[ptsz->index_r500c];
+    // printf("doing c200m, other cases\n");
+
+    r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_r200m];
+    c_delta = pvectsz[ptsz->index_c200m];
+    //
+    // r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_rVIR];
+    // c_delta = pvectsz[ptsz->index_cVIR];
+    }
+
+
+// printf("rd = %.3e, cd = %.3e\n", r_delta,c_delta);
 // exit(0);
-}
-else if (ptsz->galaxy_sample == 0 && ptsz->MF == 1){
-  r_delta = pvectsz[ptsz->index_r200m];
-  c_delta = pvectsz[ptsz->index_c200m];
-}
-// unWISE
-else if (ptsz->galaxy_sample == 1) {
-// mail from alex:
-// The code that we use is here:
-// https://github.com/bccp/simplehod/blob/master/simplehod/simplehod.pyx
-// in particular, see the get_nfw_r function within the RNGAdapter class (line 499).  I believe this is NFW truncated at the virial radius.  If the concentration is > 1, it is set to 1 (I *think* this is what the linked code is doing in lines 507-515).
- // The concentration is coming from the fitting formula of Dutton & Maccio 2014:
-// https://nbodykit.readthedocs.io/en/latest/api/_autosummary/nbodykit.transform.html#nbodykit.transform.HaloConcentration
-// In particular, concentration, virial radius and velocity dispersion are all generated from the mass as described in the README here:
-// https://github.com/bccp/simplehod
-// the factor 2.5 is to agree with the cutoff of the lensing profile
-
-  // BB debug commented for now
-  r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_rVIR];
-  c_delta = pvectsz[ptsz->index_cVIR];
-
-
-  // c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
-  // r_delta = pvectsz[ptsz->index_r500c];
-
-  //if (c_delta>1.) c_delta = 1.; // BB debug
-}
-
-// all other cases:
-else {
-  // r_delta =1.17*pvectsz[ptsz->index_rs];
-  // c_delta = pvectsz[ptsz->index_cVIR];
-  //default like KA20, needs to run with M500 and P13
-
-  // evaluate_c500c_KA20(pvecback,pvectsz,pba,ptsz);
-  // c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
-  // r_delta = pvectsz[ptsz->index_r500c];
-  //printf("doing c200m\n");
-
-  r_delta = pvectsz[ptsz->index_r200m];
-  c_delta = pvectsz[ptsz->index_c200m];
-  //
-  // r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_rVIR];
-  // c_delta = pvectsz[ptsz->index_cVIR];
-}
-}
-
-
 
 
 double z = pvectsz[ptsz->index_z];
