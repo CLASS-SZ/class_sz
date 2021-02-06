@@ -130,6 +130,28 @@ There is two modifications:
 2) Line 12 of python/setup.py: replace 'gcc-10' with, e.g., 'gcc-XX'.
 
 
+Computing SZ and Halo model quantities via the Python wrapper classy
+------------------------------
+
+
+Once class_sz is installed. You can use classy just as you use it with the normal class code.
+
+First, make sure that you have compiled the python wrapper with:
+
+$ make clean
+
+$ make
+
+(Note that the second command must be 'make', and not 'make class' for the python wrappper to be compiled.)
+
+Then, the only extra-requirement compared to the standard class is that the following path needs to be set in the dictionary of parameters passed to classy.
+
+  path_to_class : '/path/to/class_sz'
+
+That's it!
+
+Have a look at the notebook cl_ST_sz.ipynb and try to run it. It should output the primary cmb and tsz power spectra.
+
 
 Computing and Plotting results
 ------------------------------

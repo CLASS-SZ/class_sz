@@ -2459,10 +2459,24 @@ int evaluate_tau_profile(double * pvecback,
 
    double rho0;
 
+   double mass_nfw;
+   double concentration_nfw;
+   double radius_nfw;
+   if (ptsz->MF == 1){
+       mass_nfw = pvectsz[ptsz->index_m200m];
+       concentration_nfw = pvectsz[ptsz->index_c200m];
+       radius_nfw =  pvectsz[ptsz->index_r200m];
+     }
+   else{
+       mass_nfw = pvectsz[ptsz->index_mVIR];
+       concentration_nfw = pvectsz[ptsz->index_cVIR];
+       radius_nfw =  pvectsz[ptsz->index_rVIR];
+     }
+
    double rs = pvectsz[ptsz->index_rs];
-   double rvir = pvectsz[ptsz->index_rVIR];
-   double cvir_prime = ptsz->cvir_tau_profile_factor*pvectsz[ptsz->index_cVIR];
-   double cvir = pvectsz[ptsz->index_cVIR];
+   double rvir = radius_nfw;
+   double cvir_prime = ptsz->cvir_tau_profile_factor*concentration_nfw ;
+   double cvir = concentration_nfw ;
    double xout = ptsz->x_out_nfw_profile*cvir;
    double xout_prime = ptsz->x_out_nfw_profile*cvir_prime;
 
@@ -2477,7 +2491,16 @@ int evaluate_tau_profile(double * pvecback,
 
    rho0 = pvectsz[ptsz->index_mVIR];
    pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile];
-   result =  evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz);
+   // set 1 for matter_type = tau
+   result =  evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz,1);
+
+   // double result_analytical = result;
+   //
+   // class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,1),
+   //                                   ptsz->error_message,
+   //                                   ptsz->error_message);
+   // double result_numerical = result/m_nfw(cvir_prime);
+   // printf("num = %.3e analytical = %.3e\n",result_numerical,result_analytical);
 
    }
 
@@ -2644,7 +2667,7 @@ int evaluate_lensing_profile(double * pvecback,
    /// uncomment !!
    else {
    pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];
-   result =  evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz);
+   result =  evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz,0);
    }
 
 
@@ -6157,15 +6180,24 @@ double evaluate_galaxy_number_counts( double * pvecback,
 
     double z_asked  = pvectsz[ptsz->index_z];
     double phig = 0.;
+  // 
+  // if(z_asked<ptsz->normalized_cosmos_dndz_z[0])
+  //    phig = 1e-100;
+  // else if (z_asked>ptsz->normalized_cosmos_dndz_z[ptsz->normalized_cosmos_dndz_size-1])
+  //    phig = 1e-100;
+  // else  phig =  pwl_value_1d(ptsz->normalized_cosmos_dndz_size,
+  //                              ptsz->normalized_cosmos_dndz_z,
+  //                              ptsz->normalized_cosmos_dndz_phig,
+  //                              z_asked);
 
   if(z_asked<ptsz->normalized_dndz_z[0])
      phig = 1e-100;
   else if (z_asked>ptsz->normalized_dndz_z[ptsz->normalized_dndz_size-1])
      phig = 1e-100;
-  else  phig =  pwl_value_1d(ptsz->normalized_dndz_size,
-                               ptsz->normalized_dndz_z,
-                               ptsz->normalized_dndz_phig,
-                               z_asked);
+else  phig =  pwl_value_1d(ptsz->normalized_dndz_size,
+                           ptsz->normalized_dndz_z,
+                           ptsz->normalized_dndz_phig,
+                           z_asked);
 
 pvectsz[ptsz->index_phi_galaxy_counts] = phig;
 
@@ -6341,7 +6373,7 @@ double Ls_nu_prime;
 double z = pvectsz[ptsz->index_z];
 
 pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_cib_profile];;
-double us = evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz);
+double us = evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz,0);
 
 double ug_at_ell;
 double nu;
@@ -6575,7 +6607,7 @@ double z = pvectsz[ptsz->index_z];
 
 nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,pvectsz,ptsz,pba);
 ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,ptsz->M_min_HOD,ptsz->alpha_s_HOD,ptsz->M1_prime_HOD,ptsz,pba);
-us = evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz);
+us = evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz,0);
 
 double ug_at_ell;
 
@@ -6620,7 +6652,8 @@ pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
 double evaluate_truncated_nfw_profile(double * pvecback,
                                       double * pvectsz,
                                       struct background * pba,
-                                      struct tszspectrum * ptsz)
+                                      struct tszspectrum * ptsz,
+                                      int flag_matter_type)
 {
 double c_delta, r_delta;
 int index_md = (int) pvectsz[ptsz->index_md];
@@ -6708,6 +6741,9 @@ else if (_tSZ_gal_1h_
     // c_delta = pvectsz[ptsz->index_cVIR];
     }
 
+
+if (flag_matter_type ==  1)
+  c_delta *= ptsz->cvir_tau_profile_factor;
 
 // printf("rd = %.3e, cd = %.3e\n", r_delta,c_delta);
 // exit(0);

@@ -1733,6 +1733,7 @@ int input_read_parameters(
       class_read_double("z1SZ",ptsz->z1SZ);
       class_read_double("z2SZ",ptsz->z2SZ);
 
+
       class_read_double("redshift_epsrel",ptsz->redshift_epsrel);
       class_read_double("redshift_epsabs",ptsz->redshift_epsabs);
 
@@ -3799,6 +3800,50 @@ int input_read_parameters(
     }
     psp->z_max_pk = ppt->z_max_pk;
   }
+
+    if (ptsz->has_sz_ps
+      + ptsz->has_hmf
+      + ptsz->has_pk_at_z_1h
+      + ptsz->has_pk_at_z_2h
+      + ptsz->has_mean_y
+      + ptsz->has_sz_2halo
+      + ptsz->has_sz_trispec
+      + ptsz->has_sz_m_y_y_1h
+      + ptsz->has_sz_m_y_y_2h
+      + ptsz->has_sz_te_y_y
+      + ptsz->has_sz_cov_N_N
+      + ptsz->has_tSZ_tSZ_tSZ_1halo
+      + ptsz->has_kSZ_kSZ_gal_1halo
+      + ptsz->has_kSZ_kSZ_lensmag_1halo
+      + ptsz->has_tSZ_gal_1h
+      + ptsz->has_tSZ_gal_2h
+      + ptsz->has_tSZ_cib_1h
+      + ptsz->has_tSZ_cib_2h
+      + ptsz->has_lens_cib_1h
+      + ptsz->has_lens_cib_2h
+      + ptsz->has_cib_cib_1h
+      + ptsz->has_cib_cib_2h
+      + ptsz->has_gal_gal_1h
+      + ptsz->has_gal_gal_2h
+      + ptsz->has_gal_lens_1h
+      + ptsz->has_gal_lens_2h
+      + ptsz->has_gal_lensmag_1h
+      + ptsz->has_gal_lensmag_2h
+      + ptsz->has_lensmag_lensmag_1h
+      + ptsz->has_lensmag_lensmag_2h
+      + ptsz->has_lens_lensmag_1h
+      + ptsz->has_lens_lensmag_2h
+      + ptsz->has_lens_lens_1h
+      + ptsz->has_lens_lens_2h
+      + ptsz->has_tSZ_lens_1h
+      + ptsz->has_tSZ_lens_2h
+      + ptsz->has_isw_lens
+      + ptsz->has_isw_tsz
+      + ptsz->has_isw_auto
+      + ptsz->has_dndlnM != _FALSE_){
+        ppt->z_max_pk = ptsz->z2SZ;
+        psp->z_max_pk = ppt->z_max_pk;
+      }
   /* end of z_max section */
 
   class_call(parser_read_string(pfc,"root",&string1,&flag1,errmsg),
@@ -4474,8 +4519,11 @@ int input_default_params(
 
   //BB: SZ parameters default values
   ptsz->write_sz = _FALSE_;
-  ptsz->ell_sz = 1;
-  ptsz->nlSZ = 18;
+  ptsz->ell_sz = 4;
+  ptsz->dlogell = .3;
+  ptsz->ell_max_mock = 4000.;
+  ptsz->ell_min_mock = 100.;
+  //ptsz->nlSZ = 18;
 
   ptsz->M_min_HOD_mass_factor_unwise = 1.;
   // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
@@ -4525,6 +4573,8 @@ int input_default_params(
   //Redshift limits for the integration
   ptsz->z1SZ = 1.e-5;
   ptsz->z2SZ = 4.;
+  ppt->z_max_pk = ptsz->z2SZ;
+  psp->z_max_pk = ppt->z_max_pk;
 
   ptsz->z1SZ_dndlnM = 0.;
   ptsz->z2SZ_dndlnM = 3.;
@@ -4801,8 +4851,6 @@ int input_default_params(
 
   ptsz->HMF_prescription_NCDM=2; //no-pres
 
-  //psp->z_max_pk = 10.;
-  ppt->z_max_pk = 10.;
 
   pcsz->size_logM = 100;
 

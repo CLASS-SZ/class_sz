@@ -1132,7 +1132,8 @@ int evaluate_galaxy_profile(double * pvecback,
 double evaluate_truncated_nfw_profile(double * pvecback,
                                    double * pvectsz,
                                    struct background * pba,
-                                   struct tszspectrum * ptsz);
+                                   struct tszspectrum * ptsz,
+                                   int flag_matter_type);
 
 
 
