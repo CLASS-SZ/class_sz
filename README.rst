@@ -94,7 +94,7 @@ GSL library
 ------------------------------
 
 
-New version of class_sz requires gsl (for the integration routines)
+New version of class_sz requires gsl (for the integration routines).
 One may need to edit the **Makefile** adding the include path for gsl libraries, e.g.,:
 
 
@@ -117,6 +117,19 @@ need to do:
 
     $ export LD_LIBRARY_PATH
 
+Note that these prescription are system dependent: you may not need them if your path and environment variables are such that gsl and its libraries are well linked.
+
+MacOS problem with OpenMP
+------------------------------
+
+To run the code in parallel, you may run into a problem on a mac. The solution is provided here:
+
+https://github.com/lesgourg/class_public/issues/208
+
+Essentially, you need to edit a line in python/setup.py such as the code knows about the mpi libraries to be used with your compiler (gcc-10 in the example below).
+In my case the modif looks like this:
+
+extra_link_args=['-lgomp','-lgsl','-lgslcblas',**'-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/'**]
 
 
 Compiler - GCC version
