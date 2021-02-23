@@ -1404,7 +1404,7 @@ cdef class Class:
         Return the sum of Omega0 for all non-relativistic components
         """
         return self.ba.Omega0_m
-        
+
 
     def cl_sz(self):
         """

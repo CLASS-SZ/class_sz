@@ -2299,9 +2299,9 @@ int input_read_parameters(
         else  if ((strstr(string1,"KS02") != NULL))
           ptsz->ell_sz=2;
         else  if ((strstr(string1,"low-ell") != NULL))
-            ptsz->ell_sz=3;
+          ptsz->ell_sz=3;
         else  if ((strstr(string1,"ell_mock") != NULL))
-            ptsz->ell_sz=4;
+          ptsz->ell_sz=4;
         else  if ((strstr(string1,"Pl15_no_low_ell") != NULL))
           ptsz->ell_sz=5;
      }

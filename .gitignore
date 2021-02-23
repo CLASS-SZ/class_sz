@@ -139,3 +139,6 @@ sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/FINALred_c_ell_kappa_g.txt
 sz_auxiliary_files/run_scripts/yxg/
 
 sz_auxiliary_files/run_scripts/unwise_filter.ipynb
+notebooks/cl_ST_sz-wip.ipynb
+notebooks/.ipynb_checkpoints/cl_ST_sz-wip-checkpoint.ipynb
+class-sz_simple_cb.ini

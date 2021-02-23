@@ -5457,8 +5457,10 @@ int select_multipole_array(struct tszspectrum * ptsz)
    {
       if (ptsz->ell_sz == 0)
          ptsz->ell[index_l] = pow(10.,1.+1.*index_l*0.2);
-      else if (ptsz->ell_sz == 1)
+      else if (ptsz->ell_sz == 1){
          ptsz->ell[index_l] = ptsz->ell_plc[index_l];
+         //ptsz->nlSZ = 18;
+       }
       else if (ptsz->ell_sz == 2)
          ptsz->ell[index_l] = ptsz->ell_trispectrum[index_l];
       else if (ptsz->ell_sz == 3)
@@ -6180,7 +6182,7 @@ double evaluate_galaxy_number_counts( double * pvecback,
 
     double z_asked  = pvectsz[ptsz->index_z];
     double phig = 0.;
-  // 
+  //
   // if(z_asked<ptsz->normalized_cosmos_dndz_z[0])
   //    phig = 1e-100;
   // else if (z_asked>ptsz->normalized_cosmos_dndz_z[ptsz->normalized_cosmos_dndz_size-1])
