@@ -4620,7 +4620,7 @@ int input_default_params(
   ptsz->n_z_W_lensmag = 500;
 
   //Set pressure profile to P13
-  ptsz->pressure_profile=0;
+  ptsz->pressure_profile=3;
 
   //Pressure profile is considered between x_in and x_out
   //See Komatsu
@@ -4638,11 +4638,19 @@ int input_default_params(
   ptsz->integration_method_pressure_profile = 1;
 
   //P13 UPP parameters
-  ptsz->P0GNFW = 6.41;
-  ptsz->c500 = 1.81;
-  ptsz->gammaGNFW = 0.31;
-  ptsz->alphaGNFW = 1.33;
-  ptsz->betaGNFW = 4.13;
+  // ptsz->P0GNFW = 6.41;
+  // ptsz->c500 = 1.81;
+  // ptsz->gammaGNFW = 0.31;
+  // ptsz->alphaGNFW = 1.33;
+  // ptsz->betaGNFW = 4.13;
+
+  //A10 UPP parameters
+  ptsz->P0GNFW = 8.130;
+  ptsz->c500 = 1.156;
+  ptsz->gammaGNFW = 0.3292;
+  ptsz->alphaGNFW = 1.0620;
+  ptsz->betaGNFW = 5.4807;
+
   ptsz->delta_alpha = 0.;
   ptsz->alpha_p = 0.12;
   //Hydrostatic Equilibrium Mass Bias, Piffaretti & Valdarnini [arXiv:0808.1111]
@@ -4735,8 +4743,8 @@ int input_default_params(
   ptsz->mass_epsrel = 1e-6;
   ptsz->mass_epsabs = 1e-40;
 
-  ptsz->pressure_profile_epsrel = 1e-9;
-  ptsz->pressure_profile_epsabs = 1e-10;
+  ptsz->pressure_profile_epsrel = 1e-2;
+  ptsz->pressure_profile_epsabs = 1e-4;
 
   ptsz->nfw_profile_epsrel = 1e-9;
   ptsz->nfw_profile_epsabs = 1e-10;

@@ -2986,16 +2986,16 @@ int evaluate_pressure_profile(double * pvecback,
                                *ptsz->P0GNFW
                                *pow(0.7/pba->h, 1.); // as found by dimensional analysis (sz data, see email with E. Komatsu and R. Makya)
 
-      // //Custom. GNFW
-      // else if (ptsz->pressure_profile == 3)
-      // pressure_normalisation = C_pressure
-      //                          *ptsz->P0GNFW
-      //                          *pow(0.7/pba->h, 1.5); // assuming X-ray data based pressure profile
-     //Custom. GNFW
-     else if (ptsz->pressure_profile == 3)
-     pressure_normalisation = C_pressure
-                              *ptsz->P0GNFW
-                              *pow(0.7/pba->h, 1.); // assuming SZ data based pressure profile
+      //Custom. GNFW
+      else if (ptsz->pressure_profile == 3)
+      pressure_normalisation = C_pressure
+                               *ptsz->P0GNFW
+                               *pow(0.7/pba->h, 1.5); // assuming X-ray data based pressure profile
+     // //Custom. GNFW
+     // else if (ptsz->pressure_profile == 3)
+     // pressure_normalisation = C_pressure
+     //                          *ptsz->P0GNFW
+     //                          *pow(0.7/pba->h, 1.); // assuming SZ data based pressure profile
 
 
       characteristic_radius = pvectsz[ptsz->index_r500]/pba->h; // in Mpc
