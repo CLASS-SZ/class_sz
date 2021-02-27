@@ -186,7 +186,7 @@ ifdef OMPFLAG
 else
 	grep -v "lgomp" python/setup.py > python/autosetup.py
 endif
-	cd python; export CC=$(CC); LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):/usr/lib/x86_64-linux-gnu/; export LD_LIBRARY_PATH; $(PYTHON) autosetup.py install || $(PYTHON) autosetup.py install --user
+	cd python; export CC=$(CC); LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):/usr/share/miniconda/envs/test/lib/; export LD_LIBRARY_PATH; $(PYTHON) autosetup.py install || $(PYTHON) autosetup.py install --user
 	rm python/autosetup.py
 
 clean: .base
