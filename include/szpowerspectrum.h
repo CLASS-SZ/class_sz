@@ -5,10 +5,10 @@
 
 #include "common.h"
 #include "lensing.h"
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_sf_erf.h>
-#include <gsl/gsl_sf_expint.h>
-#include <gsl/gsl_sf_lambert.h>
+#include "gsl/gsl_integration.h"
+#include "gsl/gsl_sf_erf.h"
+#include "gsl/gsl_sf_expint.h"
+#include "gsl/gsl_sf_lambert.h"
 
 #define _pk_at_z_1h_ ((ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_1h))
 #define _pk_at_z_2h_ ((ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_2h))

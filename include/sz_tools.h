@@ -4,8 +4,8 @@
 
 #include "common.h"
 #include <time.h>
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_sf_bessel.h>
+#include "gsl/gsl_integration.h"
+#include "gsl/gsl_sf_bessel.h"
 
 #define _M_sun_  1.989e30 /*solar mass in kg*/
 
