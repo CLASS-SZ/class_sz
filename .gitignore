@@ -141,3 +141,5 @@ sz_auxiliary_files/run_scripts/unwise_filter.ipynb
 notebooks/cl_ST_sz-wip.ipynb
 notebooks/.ipynb_checkpoints/cl_ST_sz-wip-checkpoint.ipynb
 class-sz_simple_cb.ini
+#Makefile
+#python/setup.py

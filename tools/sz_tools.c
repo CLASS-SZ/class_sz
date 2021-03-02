@@ -42743,14 +42743,17 @@ int read_Zhao_CM_init(
   n_data_guess = 100;
   lnx   = (double *)malloc(n_data_guess*sizeof(double));
 
-  char Filepath[_ARGUMENT_LENGTH_MAX_];
-  sprintf(Filepath,
-          "%s%s%s",
-          "cat ",
-          ptsz->path_to_class,
-          "/sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm-redshits.txt");
+  // char Filepath[_ARGUMENT_LENGTH_MAX_];
+  // sprintf(Filepath,
+  //         "%s%s",
+  //         // "%s%s%s",
+  //         "cat ",
+  //         // ptsz->path_to_class,
+  //         "/sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm-redshits.txt");
+  //
+  // process = popen(Filepath, "r");
 
-  process = popen(Filepath, "r");
+  class_open(process,"sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm-redshits.txt", "r",ptsz->error_message);
 
   while (fgets(line, sizeof(line)-1, process) != NULL) {
     sscanf(line, "%lf", &this_lnx);
@@ -42770,7 +42773,8 @@ int read_Zhao_CM_init(
     n_data++;
   }
 
-  status = pclose(process);
+  // status = pclose(process);
+  fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -42797,13 +42801,16 @@ int read_Zhao_CM_init(
   lnx   = (double *)malloc(n_data_guess*sizeof(double));
 
 
-  sprintf(Filepath,
-          "%s%s%s",
-          "cat ",
-          ptsz->path_to_class,
-          "/sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm-masses.txt");
+  // sprintf(Filepath,
+  //         "%s%s",
+  //         // "%s%s%s",
+  //         "cat ",
+  //         // ptsz->path_to_class,
+  //         "/sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm-masses.txt");
+  //
+  // process = popen(Filepath, "r");
 
-  process = popen(Filepath, "r");
+  class_open(process,"sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm-masses.txt", "r",ptsz->error_message);
 
 
 
@@ -42825,7 +42832,8 @@ int read_Zhao_CM_init(
     n_data++;
   }
 
-  status = pclose(process);
+  // status = pclose(process);
+  fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -42868,13 +42876,16 @@ int read_Zhao_CM_init(
                 ptsz->error_message);
   }
 
-  sprintf(Filepath,
-          "%s%s%s",
-          "cat ",
-          ptsz->path_to_class,
-          "/sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm.txt");
+  // sprintf(Filepath,
+  //         "%s%s",
+  //         // "%s%s%s",
+  //         "cat ",
+  //         // ptsz->path_to_class,
+  //         "/sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm.txt");
+  //
+  // process = popen(Filepath, "r");
 
-  process = popen(Filepath, "r");
+  class_open(process,"sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm.txt", "r",ptsz->error_message);
 
 
 
@@ -42908,7 +42919,8 @@ int read_Zhao_CM_init(
   //printf("index C-M = %d\n", index);
   // printf("index C-M = %d\n", ptsz->CM_redshift_size*ptsz->CM_logM_size);
 
-  status = pclose(process);
+  // status = pclose(process);
+  fclose(process);
 
 
   //for (index_redshift=0;
@@ -45582,24 +45594,32 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
   /** 2. Launch the command and retrieve the output */
   /* Launch the process */
   char Filepath[_ARGUMENT_LENGTH_MAX_];
-  if (ptsz->pressure_profile==0)
-    sprintf(Filepath,
-            "%s%s%s",
-            "cat ",
-            ptsz->path_to_class,
-            "/sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_P13.txt");
-  else if (ptsz->pressure_profile==2)
-    sprintf(Filepath,
-            "%s%s%s",
-            "cat ",
-            ptsz->path_to_class,
-            "/sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt");
-  process = popen(Filepath, "r");
+  if (ptsz->pressure_profile==0){
+    class_open(process,"sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_P13.txt.txt", "r",ptsz->error_message);
+  }
+  else if (ptsz->pressure_profile==2){
+    class_open(process,"sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt", "r",ptsz->error_message);
+  }
+
+    // sprintf(Filepath,
+    //         "%s%s",
+    //         // "%s%s%s",
+    //         "cat ",
+    //         // ptsz->path_to_class,
+    //         "/sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_P13.txt");
+  //   sprintf(Filepath,
+  //           "%s%s",
+  //           // "%s%s%s",
+  //           "cat ",
+  //           ptsz->path_to_class,
+  //           "/sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt");
+  // process = popen(Filepath, "r");
+
 
   /* Read output and store it */
   while (fgets(line, sizeof(line)-1, process) != NULL) {
     sscanf(line, "%lf %lf %lf", &this_lnx, &this_lnI, &this_d2lnI);
-    //printf("lnx = %e\n",this_lnx);
+    // printf("lnx = %e\n",this_lnx);
 
 
 
@@ -45640,7 +45660,8 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
   }
 
   /* Close the process */
-  status = pclose(process);
+  // status = pclose(process);
+  fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -45833,6 +45854,7 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_3h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_ )
     && (ptsz->has_gal_gal_1h != _TRUE_ )
     && (ptsz->has_gal_lens_1h != _TRUE_ )
@@ -46022,6 +46044,7 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_3h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_ )
     && (ptsz->has_gal_gal_1h != _TRUE_ )
     && (ptsz->has_gal_lens_1h != _TRUE_ )
@@ -46189,6 +46212,7 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_3h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_ )
     && (ptsz->has_gal_gal_1h != _TRUE_ )
     && (ptsz->has_gal_lens_1h != _TRUE_ )
@@ -46506,14 +46530,17 @@ int load_T10_alpha_norm(struct tszspectrum * ptsz)
 
   /** 2. Launch the command and retrieve the output */
   /* Launch the process */
-  char Filepath[_ARGUMENT_LENGTH_MAX_];
+  // char Filepath[_ARGUMENT_LENGTH_MAX_];
+  //
+  //   sprintf(Filepath,
+  //           "%s%s",
+  //           "cat ",
+  //           // ptsz->path_to_class,
+  //           "/sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt");
+  // process = popen(Filepath, "r");
 
-    sprintf(Filepath,
-            "%s%s%s",
-            "cat ",
-            ptsz->path_to_class,
-            "/sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt");
-  process = popen(Filepath, "r");
+  class_open(process,"sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt", "r",ptsz->error_message);
+
 
   /* Read output and store it */
   while (fgets(line, sizeof(line)-1, process) != NULL) {
@@ -46554,7 +46581,8 @@ int load_T10_alpha_norm(struct tszspectrum * ptsz)
   }
 
   /* Close the process */
-  status = pclose(process);
+  // status = pclose(process);
+  fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -46646,14 +46674,16 @@ if (ptsz->has_gal_lens_2h != _TRUE_
 
   /** 2. Launch the command and retrieve the output */
   /* Launch the process */
-  char Filepath[_ARGUMENT_LENGTH_MAX_];
+  // char Filepath[_ARGUMENT_LENGTH_MAX_];
+  //
+  //   sprintf(Filepath,
+  //           "%s%s%s",
+  //           "cat ",
+  //           ptsz->path_to_class,
+  //           "/sz_auxiliary_files/class_sz_lnInfw-vs-lnell-over-ells_xout_5.txt");
+  // process = popen(Filepath, "r");
 
-    sprintf(Filepath,
-            "%s%s%s",
-            "cat ",
-            ptsz->path_to_class,
-            "/sz_auxiliary_files/class_sz_lnInfw-vs-lnell-over-ells_xout_5.txt");
-  process = popen(Filepath, "r");
+  class_open(process,"sz_auxiliary_files/class_sz_lnInfw-vs-lnell-over-ells_xout_5.txt", "r",ptsz->error_message);
 
   /* Read output and store it */
   while (fgets(line, sizeof(line)-1, process) != NULL) {
@@ -46694,7 +46724,9 @@ if (ptsz->has_gal_lens_2h != _TRUE_
   }
 
   /* Close the process */
-  status = pclose(process);
+  // status = pclose(process);
+  fclose(process);
+
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -47325,6 +47357,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
      //|| ((V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo))
      || ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h))
      || ((V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h))
+     || ((V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h))
     ) {
 
  evaluate_mean_galaxy_number_density_at_z(V->pvectsz,V->ptsz);
@@ -47593,12 +47626,12 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lens_2h))
  || ((V->ptsz->has_sz_m_y_y_2h == _TRUE_) && (index_md == V->ptsz->index_md_m_y_y_2h))
  || ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
- || ((V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h))
+ // || ((V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h))
     ){
 
 
-
-
+  int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
+  V->pvectsz[V->ptsz->index_multipole_for_pk] = V->ptsz->ell[index_l];
   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
 
   // For all the above cases we multiply the linear matter power spectrum to the redshift integrand
@@ -47638,6 +47671,7 @@ if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
   || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
   || ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h))
   || ((V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h))
+  || ((V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h))
   || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
   || ((V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
   || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
@@ -47652,6 +47686,7 @@ result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 // multiply by velocity dispersion
 if ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h)
  || (V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h)
+ || (V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h)
  || (V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo)){
   evaluate_vrms2(V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
   result *= V->pvectsz[V->ptsz->index_vrms2]/3./pow(_c_*1e-3,2.);
@@ -48192,6 +48227,8 @@ double integrand_patterson_test(double logM, void *p){
   double r_m_21; // second part of redshift integrand
   double r_m_12; // first part of redshift integrand
   double r_m_22; // second part of redshift integrand
+  double r_m_13; // first part of redshift integrand
+  double r_m_23; // second part of redshift integrand
 
 
 
@@ -48229,9 +48266,128 @@ double integrand_patterson_test(double logM, void *p){
                                            integrand_patterson_test,
                                            params,ptsz->patterson_show_neval);
 
+  // r_m_13*r_m_23
+  pvectsz[ptsz->index_part_id_cov_hsv] = 5;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_12=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
 
-  r = r_m_11*r_m_21  +  r_m_12*r_m_22;
+  pvectsz[ptsz->index_part_id_cov_hsv] = 6;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_22=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+
+
+
+  int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
+  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  double pk1 = pvectsz[ptsz->index_pk_for_halo_bias];
+
+  int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  double pk2 = pvectsz[ptsz->index_pk_for_halo_bias];
+
+  int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell[index_l_3];
+  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
+
+
+  r = pk1*r_m_11*r_m_21  +  pk3*r_m_12*r_m_22  +  pk2*r_m_13*r_m_23;
   }
+
+
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_gal_3h){
+  double r_m_b1t1;
+  double r_m_b1t2;
+  double r_m_b1g3;
+  double r_m_b2g3;
+
+
+
+
+  // r_m_11*r_m_21
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b1t1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b1t2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+  // r_m_12*r_m_22
+  pvectsz[ptsz->index_part_id_cov_hsv] = 3;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b1g3=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 4;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b2g3=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+
+
+  int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
+  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  double pk1 = pvectsz[ptsz->index_pk_for_halo_bias];
+
+  int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  double pk2 = pvectsz[ptsz->index_pk_for_halo_bias];
+
+  int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell[index_l_3];
+  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
+
+
+  double z = pvectsz[ptsz->index_z];
+  double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z);
+  double k1 = (ptsz->ell_kSZ2_gal_multipole_grid[index_l_1] + 0.5)/d_A;
+  double k2 = (ptsz->ell_kSZ2_gal_multipole_grid[index_l_2] + 0.5)/d_A;
+  double k3 = (ptsz->ell[index_l_3] + 0.5)/d_A;
+  double Fk1k2 = bispectrum_f2_kernel(k1,k2);
+  double Fk1k3 = bispectrum_f2_kernel(k1,k3);
+  double Fk2k3 = bispectrum_f2_kernel(k2,k3);
+
+  double comb_pks = pk1*pk2+pk1*pk3+pk2*pk3;
+  double comb_pks_fks = 2.*pk1*pk2*Fk1k2+2.*pk1*pk3*Fk1k3+2.*pk2*pk3*Fk2k3;
+
+
+  r = r_m_b1t1*r_m_b1t2*r_m_b1g3*comb_pks_fks+r_m_b1t1*r_m_b1t2*r_m_b2g3*comb_pks;
+  }
+
+
+
+
+
+
   //pvectsz[ptsz->index_part_id_cov_hsv] = 1;
   //V.pvectsz = pvectsz;
   //params = &V;
@@ -48398,14 +48554,17 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   ptsz->thetas   = (double *)malloc(n_data_guess*sizeof(double));
 
   char Filepath[_ARGUMENT_LENGTH_MAX_];
-  //printf("%s\n",ptsz->path_to_class);
-  sprintf(Filepath,
-          "%s%s%s",
-          "cat ",
-          ptsz->path_to_class,
-          "/sz_auxiliary_files/SZ_thetas.txt");
+  // //printf("%s\n",ptsz->path_to_class);
+  // sprintf(Filepath,
+  //         // "%s%s%s",
+  //         "%s%s",
+  //         "cat ",
+  //         // ptsz->path_to_class,
+  //         "/sz_auxiliary_files/SZ_thetas.txt");
+  //
+  // process = popen(Filepath, "r");
+  class_open(process,"sz_auxiliary_files/SZ_thetas.txt", "r",ptsz->error_message);
 
-  process = popen(Filepath, "r");
 
   while (fgets(line, sizeof(line)-1, process) != NULL) {
     sscanf(line, "%lf", &this_lnx);
@@ -48425,7 +48584,8 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
     n_data++;
   }
 
-  status = pclose(process);
+  // status = pclose(process);
+  fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -48468,13 +48628,15 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   n_data_guess = 100;
   ptsz->skyfracs   = (double *)malloc(n_data_guess*sizeof(double));
 
-  sprintf(Filepath,
-          "%s%s%s",
-          "cat ",
-          ptsz->path_to_class,
-          "/sz_auxiliary_files/SZ_skyfracs.txt");
-
-  process = popen(Filepath, "r");
+  // sprintf(Filepath,
+  //         // "%s%s%s",
+  //         "%s%s",
+  //         "cat ",
+  //         // ptsz->path_to_class,
+  //         "/sz_auxiliary_files/SZ_skyfracs.txt");
+  //
+  // process = popen(Filepath, "r");
+  class_open(process,"sz_auxiliary_files/SZ_skyfracs.txt", "r",ptsz->error_message);
 
   while (fgets(line, sizeof(line)-1, process) != NULL) {
     sscanf(line, "%lf", &this_lnx);
@@ -48494,7 +48656,8 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
     n_data++;
   }
 
-  status = pclose(process);
+  // status = pclose(process);
+  fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -48525,13 +48688,15 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
                 ptsz->error_message);
   }
 
-  sprintf(Filepath,
-          "%s%s%s",
-          "cat ",
-          ptsz->path_to_class,
-          "/sz_auxiliary_files/SZ_ylims.txt");
-
-  process = popen(Filepath, "r");
+  // sprintf(Filepath,
+  //         "%s%s",
+  //         // "%s%s%s",
+  //         "cat ",
+  //         // ptsz->path_to_class,
+  //         "/sz_auxiliary_files/SZ_ylims.txt");
+  //
+  // process = popen(Filepath, "r");
+  class_open(process,"sz_auxiliary_files/SZ_ylims.txt", "r",ptsz->error_message);
 
   //printf("ok\n");
 
@@ -48548,7 +48713,8 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
 
   }
 
-  status = pclose(process);
+  // status = pclose(process);
+  fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -48593,14 +48759,16 @@ for (index_thetas = 0; index_thetas<ptsz->nthetas; index_thetas ++){
       ptsz->SO_Qfit   = (double *)malloc(n_data_guess*sizeof(double));
       ptsz->SO_thetas   = (double *)malloc(n_data_guess*sizeof(double));
 
-      char Filepath[_ARGUMENT_LENGTH_MAX_];
-      sprintf(Filepath,
-              "%s%s%s",
-              "cat ",
-              ptsz->path_to_class,
-              "/sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt");
-
-      process = popen(Filepath, "r");
+      // char Filepath[_ARGUMENT_LENGTH_MAX_];
+      // sprintf(Filepath,
+      //         "%s%s",
+      //         // "%s%s%s",
+      //         "cat ",
+      //         // ptsz->path_to_class,
+      //         "/sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt");
+      //
+      // process = popen(Filepath, "r");
+      class_open(process,"sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt", "r",ptsz->error_message);
 
       while (fgets(line, sizeof(line)-1, process) != NULL) {
         sscanf(line, "%lf %lf", &this_lnx, &this_lny);
@@ -48626,7 +48794,8 @@ for (index_thetas = 0; index_thetas<ptsz->nthetas; index_thetas ++){
         n_data++;
       }
 
-      status = pclose(process);
+      // status = pclose(process);
+      fclose(process);
       class_test(status != 0.,
                  ptsz->error_message,
                  "The attempt to launch the external command was unsuccessful. "
@@ -48656,14 +48825,16 @@ int read_SO_noise(struct tszspectrum * ptsz){
         ptsz->SO_RMS   = (double *)malloc(n_data_guess*sizeof(double));
         ptsz->SO_skyfrac   = (double *)malloc(n_data_guess*sizeof(double));
 
-        char Filepath[_ARGUMENT_LENGTH_MAX_];
-        sprintf(Filepath,
-                "%s%s%s",
-                "cat ",
-                ptsz->path_to_class,
-                "/sz_auxiliary_files/SO_files/SOSim_3freq_small_RMSTab_comp_test.txt");//MFMF_SOSim_3freq_small_RMSTab.txt");
-
-        process = popen(Filepath, "r");
+        // char Filepath[_ARGUMENT_LENGTH_MAX_];
+        // sprintf(Filepath,
+        //         "%s%s",
+        //         // "%s%s%s",
+        //         "cat ",
+        //         // ptsz->path_to_class,
+        //         "/sz_auxiliary_files/SO_files/SOSim_3freq_small_RMSTab_comp_test.txt");//MFMF_SOSim_3freq_small_RMSTab.txt");
+        //
+        // process = popen(Filepath, "r");
+        class_open(process,"sz_auxiliary_files/SO_files/SOSim_3freq_small_RMSTab_comp_test.txt", "r",ptsz->error_message);
 
         while (fgets(line, sizeof(line)-1, process) != NULL) {
           sscanf(line, "%lf %lf", &this_lnx, &this_lny);
@@ -48689,7 +48860,8 @@ int read_SO_noise(struct tszspectrum * ptsz){
           n_data++;
         }
 
-        status = pclose(process);
+        // status = pclose(process);
+        fclose(process);
         class_test(status != 0.,
                    ptsz->error_message,
                    "The attempt to launch the external command was unsuccessful. "

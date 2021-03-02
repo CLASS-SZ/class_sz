@@ -3,9 +3,9 @@ CLASS_SZ
 ==============================================
  Cosmic Linear Anisotropy Solving System
 
- With Thermal Sunyaev Zeldovich Power Spectrum Computation
+ with thermal Sunyaev Zeldovich power spectrum computation
 
-(And Other Halo Model Observables)
+ and other halo model observables
 
 **The SZ module is initially based on Eiichiro Komatsu’s fortran code SZFAST.**
 
@@ -23,9 +23,6 @@ The code is currently in development, don't hesitate to reach out if anything is
 **The code CLASS_SZ is an extension of the CLASS code.**
 
 For download and information on **class**, see http://class-code.net and https://github.com/lesgourg/class_public
-
-
-(README file adapted from the README_CLASS.rst file.)
 
 
 Downloading the code
@@ -84,10 +81,7 @@ Run the code with SZ power spectrum computation
 
 
 The explanatory files are reference input files, containing and
-explaning the use of all possible input parameters.
-
-The computation of the tSZ angular power spectrum is stable with masses up to 1e16 Msun/h.
-
+explaining the use of all possible input parameters.
 
 
 GSL library

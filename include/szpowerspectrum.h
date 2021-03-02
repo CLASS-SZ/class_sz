@@ -27,6 +27,7 @@
 #define _cov_Y_N_next_order_ ((ptsz->has_sz_cov_Y_N_next_order == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N_next_order))
 #define _kSZ_kSZ_gal_1h_ ((ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1h))
 #define _kSZ_kSZ_gal_2h_ ((ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_2h))
+#define _kSZ_kSZ_gal_3h_ ((ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_3h))
 #define _kSZ_kSZ_lensmag_1halo_ ((ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lensmag_1halo))
 #define _gal_gal_1h_ ((ptsz->has_gal_gal_1h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_1h))
 #define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
@@ -113,6 +114,7 @@ struct tszspectrum {
   double * cl_isw_auto;
   double * cl_kSZ_kSZ_gal_1h;
   double * cl_kSZ_kSZ_gal_2h;
+  double * cl_kSZ_kSZ_gal_3h;
   double * cl_kSZ_kSZ_lensmag_1h;
   double * b_tSZ_tSZ_tSZ_1halo;
   double * cl_te_y_y;
@@ -223,6 +225,11 @@ struct tszspectrum {
   int index_md_kSZ_kSZ_gal_2h;
   int index_integrand_id_kSZ_kSZ_gal_2h_first;
   int index_integrand_id_kSZ_kSZ_gal_2h_last;
+
+  int has_kSZ_kSZ_gal_3h;
+  int index_md_kSZ_kSZ_gal_3h;
+  int index_integrand_id_kSZ_kSZ_gal_3h_first;
+  int index_integrand_id_kSZ_kSZ_gal_3h_last;
 
 
   int has_kSZ_kSZ_lensmag_1halo;
@@ -484,6 +491,7 @@ struct tszspectrum {
   int index_sigma2_hsv;
 
   int  index_halo_bias;
+  int  index_halo_bias_b2;
   int  index_k_value_for_halo_bias;
 
   int index_phi_galaxy_counts;
@@ -501,6 +509,8 @@ struct tszspectrum {
 
   int index_k_for_pk_hm;
   int index_density_profile;
+
+  int index_multipole_for_pk;
 
   //////////////
 
@@ -1041,6 +1051,13 @@ int szpowerspectrum_init(struct background * pba,
                          struct nonlinear * pnl,
                          struct tszspectrum * ptsz);
 
+  int evaluate_halo_bias_b2(double * pvecback,
+                            double * pvectsz,
+                            struct background * pba,
+                            struct primordial * ppm,
+                            struct nonlinear * pnl,
+                            struct tszspectrum * ptsz);
+
  int evaluate_effective_galaxy_bias(double * pvecback,
                                     double * pvectsz,
                                     struct background * pba,
@@ -1221,6 +1238,9 @@ int evaluate_density_profile(double * pvecback,
                              double * pvectsz,
                              struct background * pba,
                              struct tszspectrum * ptsz);
+
+double bispectrum_f2_kernel(double k, double k_prime);
+
 
 struct Parameters_for_integrand_kSZ2_X_at_theta{
   struct tszspectrum * ptsz;
