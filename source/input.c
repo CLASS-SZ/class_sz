@@ -2409,6 +2409,29 @@ int input_read_parameters(
 
 
 
+      /* tau profile kSZ */
+      class_call(parser_read_string(pfc,"tau profile",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"nfw") != NULL))
+          ptsz->tau_profile=0;
+        else  if ((strstr(string1,"B16") != NULL))
+          ptsz->tau_profile=1;
+        }
+
+      /* tau profile mode kSZ */
+      class_call(parser_read_string(pfc,"tau profile mode",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"agn") != NULL))
+          ptsz->tau_profile_mode=0;
+        else  if ((strstr(string1,"shock") != NULL))
+          ptsz->tau_profile_mode=1;
+        }
+
+
 
 
 
@@ -2416,16 +2439,16 @@ int input_read_parameters(
       class_call(parser_read_string(pfc,"pressure profile",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
-     if (flag1 == _TRUE_) {
+      if (flag1 == _TRUE_) {
         if ((strstr(string1,"P13") != NULL))
           ptsz->pressure_profile=0;
         else  if ((strstr(string1,"A10") != NULL))
           ptsz->pressure_profile=2;
-       else  if ((strstr(string1,"Custom. GNFW") != NULL))
+        else  if ((strstr(string1,"Custom. GNFW") != NULL))
           ptsz->pressure_profile=3;
-       else  if ((strstr(string1,"B12") != NULL))
-         ptsz->pressure_profile=4;
-          }
+        else  if ((strstr(string1,"B12") != NULL))
+          ptsz->pressure_profile=4;
+        }
 
 
 
@@ -4629,8 +4652,12 @@ int input_default_params(
 
   ptsz->n_z_W_lensmag = 500;
 
-  //Set pressure profile to P13
-  ptsz->pressure_profile=3;
+  //Set pressure profile to A10
+  ptsz->pressure_profile=2;
+
+
+  ptsz->tau_profile = 0; // scaled nfw
+  ptsz->tau_profile_mode = 0; // agn feedback
 
   //Pressure profile is considered between x_in and x_out
   //See Komatsu
@@ -4738,7 +4765,7 @@ int input_default_params(
 
   ptsz->pk_nonlinear_for_vrms2 = 0;
 
-  ptsz->MF = 2; //Bocquet 2015
+  ptsz->MF = 5; //T08@M500
 
   //////////////////////////////////
   //Integration method and parameters (mass)

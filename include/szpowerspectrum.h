@@ -861,6 +861,9 @@ struct tszspectrum {
   //Arnaud et al 2010 (A10)
   //Custom. GNFW
 
+  int tau_profile;
+  int tau_profile_mode;
+
   int HMF_prescription_NCDM;
   int effective_temperature;
   int temperature_mass_relation;
@@ -954,7 +957,8 @@ int szpowerspectrum_init(struct background * pba,
                          struct thermo * pth,
                          struct nonlinear * pnl,
                          struct primordial * ppm,
-                         struct tszspectrum * ptsz);
+                         struct tszspectrum * ptsz,
+                         struct precision * ppr);
 
 
   int szpowerspectrum_free(struct tszspectrum *ptsz);
@@ -1239,8 +1243,29 @@ int evaluate_density_profile(double * pvecback,
                              struct background * pba,
                              struct tszspectrum * ptsz);
 
-double bispectrum_f2_kernel(double k, double k_prime);
+double bispectrum_f2_kernel(double k,
+                            double k_prime,
+                            double k_prime_prime);
 
+
+double get_second_order_bias_at_z_and_nu(double z,
+                                     double nu,
+                                     struct tszspectrum * ptsz);
+
+double get_first_order_bias_at_z_and_nu(double z,
+                                         double nu,
+                                         struct tszspectrum * ptsz);
+
+
+double get_sigma_at_z_and_m(double z,
+                            double m,
+                            struct tszspectrum * ptsz,
+                            struct background * pba);
+
+double get_nu_at_z_and_m(double z,
+                         double m,
+                         struct tszspectrum * ptsz,
+                         struct background * pba);
 
 struct Parameters_for_integrand_kSZ2_X_at_theta{
   struct tszspectrum * ptsz;

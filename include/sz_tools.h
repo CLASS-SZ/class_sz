@@ -781,7 +781,7 @@ double delta_to_delta_prime_nfw(
                     double z,
                     struct tszspectrum * ptsz);
 
-  int external_pressure_profile_init(struct tszspectrum * ptsz);
+  int external_pressure_profile_init(struct precision * ppr, struct tszspectrum * ptsz);
 
   int evaluate_redshift_int_lensmag(double * pvectsz,
                                     struct tszspectrum * ptsz);
@@ -858,6 +858,11 @@ int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
                 struct tszspectrum * ptsz);
 
   int rho_nfw (double * rho_nfw_x,
+                double x ,
+                double * pvectsz,
+                struct background * pba,
+                struct tszspectrum * ptsz);
+  int rho_gnfw (double * rho_nfw_x,
                 double x ,
                 double * pvectsz,
                 struct background * pba,

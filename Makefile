@@ -19,7 +19,7 @@ vpath .base build
 ########################################################
 
 # your C compiler:
-CC       = gcc
+CC       = gcc-10
 #CC       = gcc  -Wunused-variable
 #CC       = icc
 #CC       = pgcc
@@ -149,8 +149,8 @@ libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
 	$(AR)  $@ $(addprefix build/, $(TOOLS) $(SOURCE) $(EXTERNAL))
 
 class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
-	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm -L/home/runner/work/SOLikeT/SOLikeT/gsl-2.6/lib -lgsl -lgslcblas
-	# $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm -L/usr/local/lib -lgsl -lgslcblas
+	#$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm -L/home/runner/work/SOLikeT/SOLikeT/gsl-2.6/lib -lgsl -lgslcblas
+	 $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm -L/usr/local/lib -lgsl -lgslcblas
 
 test_loops: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(TEST_LOOPS)
 	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -o $@ $(addprefix build/,$(notdir $^)) -lm

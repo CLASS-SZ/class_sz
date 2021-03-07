@@ -44928,6 +44928,7 @@ struct Parameters_for_integrand_nfw_profile{
   struct tszspectrum * ptsz;
   struct background * pba;
   double * pvectsz;
+  int flag_matter_type;
 };
 
 
@@ -44936,7 +44937,13 @@ double integrand_nfw_profile(double x, void *p){
   struct Parameters_for_integrand_nfw_profile *V = ((struct Parameters_for_integrand_nfw_profile *) p);
 
     double nfw_profile_at_x = 0.;
+
+    if (V->flag_matter_type == 1 && V->ptsz->tau_profile == 1){
+    rho_gnfw(&nfw_profile_at_x,x,V->pvectsz,V->pba,V->ptsz);
+    }
+    else{
     rho_nfw(&nfw_profile_at_x,x,V->pvectsz,V->pba,V->ptsz);
+    }
 
     double result = nfw_profile_at_x;
 
@@ -44971,6 +44978,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   V.ptsz = ptsz;
   V.pba = pba;
   V.pvectsz = pvectsz;
+  V.flag_matter_type = flag_matter_type;
 
   void * params = &V;
 
@@ -44999,10 +45007,13 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
 
 
   double c_nfw_prime;
-  if (flag_matter_type == 1)
+  if (flag_matter_type == 1){
+    // for tau profile, option of rescaling concentration
     c_nfw_prime = ptsz->cvir_tau_profile_factor*c_nfw;
-  else
+  }
+  else{
     c_nfw_prime = c_nfw;
+  }
 
   // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
   // in the settings of KFSW20
@@ -45104,6 +45115,81 @@ int rho_nfw(double * rho_nfw_x,
 
   //y_eff = 1.e-10;
   *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*y_eff);
+               //*sin(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
+               ///pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
+}
+
+
+int rho_gnfw(double * rho_nfw_x,
+            double x ,
+            double * pvectsz,
+            struct background * pba,
+            struct tszspectrum * ptsz)
+{
+
+ int index_md = (int) pvectsz[ptsz->index_md];
+
+ double z = pvectsz[ptsz->index_z];
+
+ double y_eff;
+   y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
+            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];//*ptsz->cvir_tau_profile_factor;
+
+
+    double A_rho0;
+    double A_alpha;
+    double A_beta;
+
+    double alpha_m_rho0;
+    double alpha_m_alpha;
+    double alpha_m_beta;
+
+    double alpha_z_rho0;
+    double alpha_z_alpha;
+    double alpha_z_beta;
+
+  // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
+  // Table 2
+  if (ptsz->tau_profile_mode == 0){
+    // agn feedback
+    A_rho0 = 4.e3;
+    A_alpha = 0.88;
+    A_beta = 3.82;
+
+    alpha_m_rho0 = 0.29;
+    alpha_m_alpha = -0.03;
+    alpha_m_beta = 0.04;
+
+    alpha_z_rho0 = -0.66;
+    alpha_z_alpha = 0.19;
+    alpha_z_beta = -0.025;
+    }
+  else if (ptsz->tau_profile_mode == 1){
+    // shock heating
+    A_rho0 = 1.9e4;
+    A_alpha = 0.70;
+    A_beta = 4.43;
+
+    alpha_m_rho0 = 0.09;
+    alpha_m_alpha = -0.017;
+    alpha_m_beta = 0.005;
+
+    alpha_z_rho0 = -0.95;
+    alpha_z_alpha = 0.27;
+    alpha_z_beta = 0.037;
+  }
+
+  // Eq. A1 and A2:
+  double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
+
+  double rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z,alpha_z_rho0);
+  double alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
+  double beta = A_alpha*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
+
+  double gamma = -0.2;
+  double xc = 0.5;
+
+  *rho_nfw_x = pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)*pow(x,2)/(x*y_eff);
                //*sin(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
                ///pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
 }
@@ -45554,12 +45640,14 @@ int spectra_sigma_prime(
 //pressure profiles,
 //and stores the tabulated values.
 
-int external_pressure_profile_init(struct tszspectrum * ptsz)
+int external_pressure_profile_init(struct precision * ppr, struct tszspectrum * ptsz)
 {
 
 if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
   return 0;
 
+  if (ptsz->sz_verbose > 0)
+    printf("-> Using tabulated pressure profile transform\n");
 
   class_alloc(ptsz->PP_lnx,sizeof(double *)*100,ptsz->error_message);
   class_alloc(ptsz->PP_lnI,sizeof(double *)*100,ptsz->error_message);
@@ -45595,10 +45683,13 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
   /* Launch the process */
   char Filepath[_ARGUMENT_LENGTH_MAX_];
   if (ptsz->pressure_profile==0){
-    class_open(process,"sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_P13.txt.txt", "r",ptsz->error_message);
+    class_open(process,ppr->P13_file, "r",ptsz->error_message);
   }
   else if (ptsz->pressure_profile==2){
-    class_open(process,"sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt", "r",ptsz->error_message);
+    if (ptsz->sz_verbose > 0)
+      printf("-> Openning the pressure profile file for A10\n");
+    //class_open(process,"sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt", "r",ptsz->error_message);
+    class_open(process,ppr->A10_file, "r",ptsz->error_message);
   }
 
     // sprintf(Filepath,
@@ -45614,8 +45705,8 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
   //           ptsz->path_to_class,
   //           "/sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt");
   // process = popen(Filepath, "r");
-
-
+  if (ptsz->sz_verbose > 0)
+    printf("-> Scanning the pressure profile file\n");
   /* Read output and store it */
   while (fgets(line, sizeof(line)-1, process) != NULL) {
     sscanf(line, "%lf %lf %lf", &this_lnx, &this_lnI, &this_d2lnI);
@@ -48302,7 +48393,7 @@ double integrand_patterson_test(double logM, void *p){
   double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
 
 
-  r = pk1*r_m_11*r_m_21  +  pk3*r_m_12*r_m_22  +  pk2*r_m_13*r_m_23;
+  r = pk3*r_m_11*r_m_21  +  pk2*r_m_12*r_m_22  +  pk1*r_m_13*r_m_23;
   }
 
 
@@ -48372,15 +48463,16 @@ double integrand_patterson_test(double logM, void *p){
   double k1 = (ptsz->ell_kSZ2_gal_multipole_grid[index_l_1] + 0.5)/d_A;
   double k2 = (ptsz->ell_kSZ2_gal_multipole_grid[index_l_2] + 0.5)/d_A;
   double k3 = (ptsz->ell[index_l_3] + 0.5)/d_A;
-  double Fk1k2 = bispectrum_f2_kernel(k1,k2);
-  double Fk1k3 = bispectrum_f2_kernel(k1,k3);
-  double Fk2k3 = bispectrum_f2_kernel(k2,k3);
+  double Fk1k2 = bispectrum_f2_kernel(k1,k2,k3);
+  double Fk1k3 = bispectrum_f2_kernel(k3,k1,k2);
+  double Fk2k3 = bispectrum_f2_kernel(k2,k3,k1);
 
   double comb_pks = pk1*pk2+pk1*pk3+pk2*pk3;
   double comb_pks_fks = 2.*pk1*pk2*Fk1k2+2.*pk1*pk3*Fk1k3+2.*pk2*pk3*Fk2k3;
 
 
   r = r_m_b1t1*r_m_b1t2*r_m_b1g3*comb_pks_fks+r_m_b1t1*r_m_b1t2*r_m_b2g3*comb_pks;
+
   }
 
 

@@ -448,7 +448,7 @@ cdef class Class:
 
         if "szpowerspectrum" in level:
             if szpowerspectrum_init(&(self.ba), &(self.th),  &(self.nl), &(self.pm),
-            &(self.tsz)) == _FAILURE_:
+            &(self.tsz),&(self.pr)) == _FAILURE_:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.tsz.error_message)
             self.ncp.add("szpowerspectrum")
@@ -1508,6 +1508,23 @@ cdef class Class:
             redshift[index] = self.csz.redshift[index]
 
         return redshift
+
+    def get_dndlnM_at_z_and_M(self,z,m):
+        return get_dndlnM_at_z_and_M(z,m,&self.tsz)
+
+
+
+    def get_second_order_bias_at_z_and_nu(self,z,nu):
+        return get_second_order_bias_at_z_and_nu(z,nu,&self.tsz)
+
+    def get_first_order_bias_at_z_and_nu(self,z,nu):
+        return get_first_order_bias_at_z_and_nu(z,nu,&self.tsz)
+
+    def get_sigma_at_z_and_m(self,z,m):
+        return get_sigma_at_z_and_m(z,m,&self.tsz,&self.ba)
+
+    def get_nu_at_z_and_m(self,z,m):
+        return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)
 
 #    def dndz_count(self):
 #        """

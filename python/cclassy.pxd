@@ -383,7 +383,7 @@ cdef extern from "class.h":
     int transfer_init(void*,void*,void*,void*,void*,void*)
     int spectra_init(void*,void*,void*,void*,void*,void*,void*)
     int lensing_init(void*,void*,void*,void*,void*)
-    int szpowerspectrum_init(void*,void*,void*,void*,void*)
+    int szpowerspectrum_init(void*,void*,void*,void*,void*,void*)
     int szcount_init(void*,void*,void*,void*,void*)
 
     int background_tau_of_z(void* pba, double z,double* tau)
@@ -522,3 +522,27 @@ cdef extern from "class.h":
                   double * pk_tot_out,
                   double * pk_cb_tot_out,
                   int nonlinear)
+
+
+    double get_dndlnM_at_z_and_M(double z_asked,
+                                 double m_asked,
+                                 void * tsz)
+
+
+    double get_second_order_bias_at_z_and_nu(double z_asked,
+                                             double nu_asked,
+                                             void * tsz)
+                                             
+    double get_first_order_bias_at_z_and_nu(double z_asked,
+                                             double nu_asked,
+                                             void * tsz)
+
+    double get_sigma_at_z_and_m(double z_asked,
+                                double m_asked,
+                                void * tsz,
+                                void * pba)
+
+    double get_nu_at_z_and_m(double z_asked,
+                             double m_asked,
+                             void * tsz,
+                             void * pba)
