@@ -159,11 +159,13 @@ int szpowerspectrum_init(
     || ptsz->has_kSZ_kSZ_gal_2h
     || ptsz->has_kSZ_kSZ_gal_3h )
    load_unwise_filter(ptsz);
-   // tabulate density, only used when requested (e.g., kSZ)
-   tabulate_density_profile(pba,ptsz);
 
 
  }
+
+ // tabulate density, only used when requested (e.g., kSZ)
+ tabulate_density_profile(pba,ptsz);
+
 
 //exit(0);
 
@@ -929,6 +931,11 @@ int compute_sz(struct background * pba,
        b_l1_l2_l[index_ell_1][index_ell_2] = Pvectsz[ptsz->index_integral];
        if (index_ell_1 != index_ell_2)
        b_l1_l2_l[index_ell_2][index_ell_1] = Pvectsz[ptsz->index_integral];
+       // if (Pvectsz[ptsz->index_integral] <= 0.){
+       //   printf("negative value\n");
+       //   exit(0);
+       // }
+
        }
      }
 
@@ -949,6 +956,7 @@ int compute_sz(struct background * pba,
      ln_ell[index_ell_1] = log(ptsz->ell_kSZ2_gal_multipole_grid[index_ell_1]);
      for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
      b_l1_l2_l_1d[index_l1_l2] = log(b_l1_l2_l[index_ell_1][index_ell_2]);
+     //b_l1_l2_l_1d[index_l1_l2] = b_l1_l2_l[index_ell_1][index_ell_2];
      index_l1_l2 += 1;
      }
    }
@@ -995,7 +1003,7 @@ int compute_sz(struct background * pba,
                                           epsrel, epsabs,
                                           integrand_kSZ2_X_at_theta,
                                           params,show_neval);
-   //printf("integral result = %.3e\n",r);
+    //printf("integral result = %.3e\n",r);
     //
     // double lnell_prime = log(ell_min);
     // //double lnell_prime = ell_min;
@@ -1886,6 +1894,8 @@ double integrand_at_m_and_z(double logM,
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                       *pvectsz[ptsz->index_halo_bias]
                                       *tau_profile_at_ell_1;
+
+    // printf("b1t1 ell = %.3e tau = %.3e\n",pvectsz[ptsz->index_multipole_for_tau_profile],tau_profile_at_ell_1);
     }
 
     // b1t2
@@ -1893,7 +1903,7 @@ double integrand_at_m_and_z(double logM,
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
     int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
-    pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+    pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
     evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
     double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
 
@@ -1901,6 +1911,8 @@ double integrand_at_m_and_z(double logM,
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                       *pvectsz[ptsz->index_halo_bias]
                                       *tau_profile_at_ell_2;
+    // printf("b1t2 ell = %.3e tau = %.3e\n",pvectsz[ptsz->index_multipole_for_tau_profile],tau_profile_at_ell_2);
+
     }
 
     // b1g3
@@ -1915,6 +1927,9 @@ double integrand_at_m_and_z(double logM,
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                       *pvectsz[ptsz->index_halo_bias]
                                       *galaxy_profile_at_ell_3;
+
+    // printf("b1g3 ell = %.3e tau = %.3e\n",pvectsz[ptsz->index_multipole_for_galaxy_profile],galaxy_profile_at_ell_3);
+
     }
 
     // b2g3
@@ -1930,6 +1945,7 @@ double integrand_at_m_and_z(double logM,
                                       *pvectsz[ptsz->index_halo_bias_b2]
                                       *galaxy_profile_at_ell_3;
 
+    //printf("b2g3 ell = %.3e tau = %.3e\n",pvectsz[ptsz->index_multipole_for_galaxy_profile],galaxy_profile_at_ell_3);
 
       }
 
@@ -2760,8 +2776,38 @@ int evaluate_tau_profile(double * pvecback,
 
    //rho0 = 1.;
 
-   rho0 *= m_nfw(xout)/m_nfw(xout_prime);
-   rho0 *= m_nfw(cvir_prime)/m_nfw(cvir);
+  rho0 *= m_nfw(xout)/m_nfw(xout_prime);
+  rho0 *= m_nfw(cvir_prime)/m_nfw(cvir);
+
+  pvectsz[ptsz->index_tau_profile] = result;
+
+
+  tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h;// ; <!> extra h <!>
+  //tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free;
+
+  double sigmaT_over_mp = 8.30702e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
+  // conversions (in python):
+  // sigma_thomson_in_m2 = 6.6524587321e-29
+  // Mpc_over_m =  3.085677581282e22
+  // sigma_thomson_in_Mpc2 = sigma_thomson_in_m2*Mpc_over_m**-2
+  // mp_in_kg = 1.6726219e-27
+  // Msun_in_kg = 1.9884e30
+  // mp_in_msun = mp_in_kg*Msun_in_kg**-1
+  // sigmaT_over_mp = sigma_thomson_in_Mpc2/mp_in_msun
+  // print(sigmaT_over_mp)
+  // 8.305907197761162e-17
+  /// # Note: jch had 8.30702e-17
+
+
+   pvectsz[ptsz->index_tau_profile] =  sigmaT_over_mp
+                                       *tau_normalisation
+                                       *rho0 // in (Msun/h)
+                                       *pvectsz[ptsz->index_tau_profile]
+                                       *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
+
+
+
+
 
  }
    else if (ptsz->tau_profile == 1){
@@ -2773,27 +2819,67 @@ int evaluate_tau_profile(double * pvecback,
    //                                   ptsz->error_message,
    //                                   ptsz->error_message);
    double l_asked = pvectsz[ptsz->index_multipole_for_nfw_profile];
-   double m_asked = pvectsz[ptsz->index_m200c];
+   double m_asked = pvectsz[ptsz->index_m200c]; // in Msun/h
    double z_asked = pvectsz[ptsz->index_z];
    result = get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
 
-   rho0 = ptsz->Rho_crit_0*pow(pvectsz[ptsz->index_r200c],3);
-   }
+  // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
+  // Table 2
+  double A_rho0;
+  double alpha_m_rho0;
+  double alpha_z_rho0;
+  if (ptsz->tau_profile_mode == 0){
+    // agn feedback
+    A_rho0 = 4.e3;
+    alpha_m_rho0 = 0.29;
+    alpha_z_rho0 = -0.66;
+
+    }
+  else if (ptsz->tau_profile_mode == 1){
+    // shock heating
+    A_rho0 = 1.9e4;
+    alpha_m_rho0 = 0.09;
+    alpha_z_rho0 = -0.95;
+
+  }
+
+  double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // in Msun
+  //rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z_asked,alpha_z_rho0)*ptsz->Rho_crit_0; // in (Msun/h)/(Mpc/h)**3
+  rho0 = ptsz->Rho_crit_0; // in (Msun/h)/(Mpc/h)**3
+
 
   pvectsz[ptsz->index_tau_profile] = result;
 
 
-  tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h;
-
-  double sigmaT_over_mpc2 = 8.30702e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
+  tau_normalisation = 1.;//pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free;
 
 
+  double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
+  // conversions (in python):
+  // sigma_thomson_in_m2 = 6.6524587321e-29
+  // Mpc_over_m =  3.085677581282e22
+  // sigma_thomson_in_Mpc2 = sigma_thomson_in_m2*Mpc_over_m**-2
+  // mp_in_kg = 1.6726219e-27
+  // Msun_in_kg = 1.9884e30
+  // mp_in_msun = mp_in_kg*Msun_in_kg**-1
+  // sigmaT_over_mp = sigma_thomson_in_Mpc2/mp_in_msun
+  // print(sigmaT_over_mp)
+  // 8.305907197761162e-17
+  /// # Note: jch had 8.30702e-17
 
-   pvectsz[ptsz->index_tau_profile] =  sigmaT_over_mpc2
-                                       *tau_normalisation
+   pvectsz[ptsz->index_tau_profile] =  sigmaT_over_mp // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
+                                       *tau_normalisation // dimension less
                                        *rho0 // in (Msun/h)/(Mpc/h)**3
+                                       *pow(pvectsz[ptsz->index_r200c],3)
                                        *pvectsz[ptsz->index_tau_profile]
                                        *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
+
+
+
+
+
+
+   }
 
 
 
@@ -4021,7 +4107,7 @@ int evaluate_HMF(double logM,
    }
 
 
-if (ptsz->pressure_profile == 4 || ptsz->tau_profile == 1){
+if (ptsz->pressure_profile == 4){
    //compute m200c
   class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
                        pvectsz[ptsz->index_rVIR],
@@ -4058,15 +4144,15 @@ if (ptsz->pressure_profile == 4 || ptsz->tau_profile == 1){
   //Jenkins et al 2001 @ m180-mean
   //Jenkins et al 2001
   if (ptsz->MF==3){
-     class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
-                          pvectsz[ptsz->index_rVIR],
-                          pvectsz[ptsz->index_cVIR],
-                          180.*( pvecback[pba->index_bg_Omega_m])
-                          *pvectsz[ptsz->index_Rho_crit],
-                          &pvectsz[ptsz->index_m180m],
-                          ptsz),
-                     ptsz->error_message,
-                     ptsz->error_message);}
+   class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+                        pvectsz[ptsz->index_rVIR],
+                        pvectsz[ptsz->index_cVIR],
+                        180.*( pvecback[pba->index_bg_Omega_m])
+                        *pvectsz[ptsz->index_Rho_crit],
+                        &pvectsz[ptsz->index_m180m],
+                        ptsz),
+                   ptsz->error_message,
+                   ptsz->error_message);}
 
 
   // compute m1600m
@@ -4107,6 +4193,9 @@ if (ptsz->pressure_profile == 4 || ptsz->tau_profile == 1){
                                       /(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]
                                       *pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
 
+
+
+
    // Duffy et al 08
    if (ptsz->concentration_parameter==0){
     evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
@@ -4121,6 +4210,37 @@ if (ptsz->pressure_profile == 4 || ptsz->tau_profile == 1){
    if (ptsz->MF == 1){
        pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
        pvectsz[ptsz->index_ls] =  sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
+
+    // need m200c
+    if (ptsz->tau_profile == 1){
+       //compute m200c
+    double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
+    double delc = Delta_c_of_Omega_m(omega);
+    double rhoc = pvectsz[ptsz->index_Rho_crit];
+    double delrho = 200.*omega*rhoc; // 200m
+    double delrho_prime = 200.*rhoc; //500c
+    double mdel = pvectsz[ptsz->index_m200m];
+
+    double mdel_prime;
+    class_call(mDEL_to_mDELprime(mdel,
+                           delrho,
+                           delrho_prime,
+                           delc,
+                           rhoc,
+                           z,
+                           &mdel_prime,
+                           ptsz),
+                    ptsz->error_message,
+                    ptsz->error_message);
+
+    pvectsz[ptsz->index_m200c] = mdel_prime;
+        //r200c for the pressure profile B12
+    pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+    pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
+    }
+
+
+
      }
     // for definitions at mvir
     else{
@@ -4129,6 +4249,11 @@ if (ptsz->pressure_profile == 4 || ptsz->tau_profile == 1){
       pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
 
     }
+
+
+
+
+
 
    //dlnm200ddlnm;
    pvectsz[ptsz->index_dlnMdeltadlnM]= evaluate_dlnMdeltadlnM(log(pvectsz[ptsz->index_mVIR]),
@@ -7449,7 +7574,14 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
                                       1,
                                       &ln_ell1,
                                       &ln_ell2));
-
+       // double db =  pwl_interp_2d(V->ptsz->N_kSZ2_gal_multipole_grid,
+       //                                V->ptsz->N_kSZ2_gal_multipole_grid,
+       //                                V->ln_ell,
+       //                                V->ln_ell,
+       //                                V->b_l1_l2_l_1d,
+       //                                1,
+       //                                &ln_ell1,
+       //                                &ln_ell2);
       double fl_prime = 1.;
       if  (ell_prime <= V->ptsz->l_unwise_filter[0] || ell_prime >= V->ptsz->l_unwise_filter[V->ptsz->unwise_filter_size-1])
         fl_prime = 0.;

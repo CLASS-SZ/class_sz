@@ -1512,6 +1512,8 @@ cdef class Class:
     def get_dndlnM_at_z_and_M(self,z,m):
         return get_dndlnM_at_z_and_M(z,m,&self.tsz)
 
+    def get_density_profile_at_l_M_z(self,l_asked,m_asked,z_asked):
+        return get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,&self.tsz)
 
 
     def get_second_order_bias_at_z_and_nu(self,z,nu):

@@ -2445,11 +2445,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   double c_nfw_prime;
   if (flag_matter_type == 1){
     // for tau profile, option of rescaling concentration
-    if (ptsz->tau_profile == 1) // B16
-      c_nfw_prime = ptsz->cvir_tau_profile_factor;
-    else
-      c_nfw_prime = ptsz->cvir_tau_profile_factor*c_nfw;
-
+    c_nfw_prime = ptsz->cvir_tau_profile_factor*c_nfw;
   }
   else{
     c_nfw_prime = c_nfw;
@@ -2459,10 +2455,15 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   // in the settings of KFSW20
   //if ()
   double xout = ptsz->x_out_nfw_profile*c_nfw_prime; //rvir/rs = cvir
-  //double xout = ptsz->x_out_nfw_profile*cvir;
 
+  // Battaglia 16 case:
+  if (flag_matter_type == 1 && ptsz->tau_profile == 1){
+  double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
+  double r200c = pvectsz[ptsz->index_r200c]; //in Mpc/h
+  xout = 50.*rvir/r200c; // as in hmvec (default 20, but set to 50 in example file)
+}
 
-  double delta = ptsz->x_out_nfw_profile;
+  //double delta = ptsz->x_out_nfw_profile;
   //double delta_prime = delta_to_delta_prime_nfw(delta,cvir,cvir_prime,ptsz);
   //xout = delta_prime*ptsz->cvir_tau_profile_factor*rvir/rs; //delta_prime*cvir_prime
 
@@ -2685,8 +2686,8 @@ int tabulate_density_profile(struct background * pba,
 
 
  // array of multipoles:
- double ln_ell_min = log(2.);
- double ln_ell_max = log(1e4);
+ double ln_ell_min = log(0.5);
+ double ln_ell_max = log(5e4);
  int n_ell = 50;
  int n_m = 100;
  int n_z = 100;
@@ -2694,8 +2695,8 @@ int tabulate_density_profile(struct background * pba,
  class_alloc(ptsz->array_profile_ln_l,sizeof(double *)*n_ell,ptsz->error_message);
 
  // array of masses:
- double ln_m_min = log(1e9);
- double ln_m_max = log(1e17);
+ double ln_m_min = log(1e8);
+ double ln_m_max = log(1e18);
 
 
  class_alloc(ptsz->array_profile_ln_m,sizeof(double *)*n_m,ptsz->error_message);
@@ -2851,6 +2852,22 @@ for (index_z=0;
                                 *pvecback[pba->index_bg_rho_crit]
                                 /pow(pba->h,2);
   pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+  double omega = pvecback[pba->index_bg_Omega_m];
+  pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+  class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
+                                   200.*(pvectsz[ptsz->index_Rho_crit]),
+                                   pvectsz[ptsz->index_Delta_c],
+                                   pvectsz[ptsz->index_Rho_crit],
+                                   z,
+                                   &pvectsz[ptsz->index_mVIR],
+                                   ptsz),
+                  ptsz->error_message,
+                  ptsz->error_message);
+
+  pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+ //compute concentration_parameter using mVIR
+  //pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
+
   pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
   pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
@@ -2887,7 +2904,6 @@ if (abort == _TRUE_) return _FAILURE_;
 
 
                                       }
-
 
 
 
@@ -5631,7 +5647,7 @@ else{
 
   Pvectsz[ptsz->index_integral] = r;
   //int index_l = (int)  Pvectsz[ptsz->index_multipole];
-  //printf("result=%.4e z_min = %.3e z_max=%.3e ell = %f\n",r,log(1. + z_min),log(1. + z_max),ptsz->ell[index_l]);
+  //printf("result=%.4e z_min = %.3e z_max=%.3e\n",r,log(1. + z_min),log(1. + z_max));
   return _SUCCESS_;
 }
 
@@ -6167,6 +6183,8 @@ double integrand_patterson_test(double logM, void *p){
   double comb_pks = pk1*pk2+pk1*pk3+pk2*pk3;
   double comb_pks_fks = 2.*pk1*pk2*Fk1k2+2.*pk1*pk3*Fk1k3+2.*pk2*pk3*Fk2k3;
 
+  // printf("comb_pks = %.3e comb_pks_fks = %.3e\n",comb_pks,comb_pks_fks);
+  // printf("r_m_b1t1 = %.3e r_m_b1t2 = %.3e r_m_b1g3 = %.3e r_m_b2g3 = %.3e\n",r_m_b1t1,r_m_b1t2,r_m_b1g3,r_m_b2g3);
 
   r = r_m_b1t1*r_m_b1t2*r_m_b1g3*comb_pks_fks+r_m_b1t1*r_m_b1t2*r_m_b2g3*comb_pks;
 
