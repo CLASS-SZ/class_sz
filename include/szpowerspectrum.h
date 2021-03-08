@@ -916,6 +916,13 @@ struct tszspectrum {
   int CM_logM_size;
   double * CM_logC;
 
+
+  double ** array_profile_ln_rho_at_lnl_lnM_z;
+  double * array_profile_ln_l;
+  double * array_profile_ln_m;
+  double * array_profile_ln_1pz;
+
+
   double * dndlnM_array_z;
   double * dndlnM_array_m;
 
@@ -1132,6 +1139,8 @@ int evaluate_tau_profile(double * pvecback,
                         struct background * pba,
                         struct tszspectrum * ptsz);
 
+int tabulate_density_profile(struct background * pba,
+                             struct tszspectrum * ptsz);
 
 int evaluate_mean_galaxy_number_density_at_z(double * pvectsz,
                                              struct tszspectrum * ptsz);
@@ -1158,7 +1167,7 @@ int evaluate_galaxy_profile(double * pvecback,
                             struct background * pba,
                             struct tszspectrum * ptsz);
 
-double evaluate_truncated_nfw_profile(double * pvecback,
+double evaluate_truncated_nfw_profile(
                                    double * pvectsz,
                                    struct background * pba,
                                    struct tszspectrum * ptsz,
@@ -1172,7 +1181,7 @@ int evaluate_c200m_D08(double * pvecback,
                         struct tszspectrum * ptsz);
 
 
-int evaluate_c500c_KA20(double * pvecback,
+int evaluate_c500c_KA20(//double * pvecback,
                         double * pvectsz,
                         struct background * pba,
                         struct tszspectrum * ptsz);

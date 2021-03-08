@@ -6,6 +6,7 @@
 #include "common.h"
 #include "szpowerspectrum.h"
 #include "sz_tools.h"
+#include "r8lib.h"
 
 
 

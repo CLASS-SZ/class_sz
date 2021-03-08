@@ -10,6 +10,7 @@
 #include "szpowerspectrum.h"
 #include "sz_tools.h"
 #include "Patterson.h"
+#include "r8lib.h"
 
 
 
@@ -158,11 +159,13 @@ int szpowerspectrum_init(
     || ptsz->has_kSZ_kSZ_gal_2h
     || ptsz->has_kSZ_kSZ_gal_3h )
    load_unwise_filter(ptsz);
-
+   // tabulate density, only used when requested (e.g., kSZ)
+   tabulate_density_profile(pba,ptsz);
 
 
  }
 
+//exit(0);
 
 
   // tabulate lensing magnificaion integral, only used when requested
@@ -379,6 +382,14 @@ free(ptsz->array_L_sat_at_z_and_M_at_nu);
 //free(ptsz->array_L_sat_at_z_and_M_at_nu_prime);
 
   }
+
+if (ptsz->tau_profile == 1){
+   free(ptsz->array_profile_ln_l);
+   free(ptsz->array_profile_ln_m);
+   free(ptsz->array_profile_ln_1pz);
+   }
+
+
 
 if (ptsz->has_dndlnM){
    free(ptsz->array_m_dndlnM);
@@ -2698,7 +2709,7 @@ int evaluate_tau_profile(double * pvecback,
    rho0 = pvectsz[ptsz->index_mVIR];
    // pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile]; // Not sure what this was...??
    // set 1 for matter_type = tau
-   result =  evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz,1);
+   result =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,1);
 
    // double result_analytical = result;
    //
@@ -2755,12 +2766,16 @@ int evaluate_tau_profile(double * pvecback,
  }
    else if (ptsz->tau_profile == 1){
    // Battaglia 2016
-   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
+   // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
    // numerical transorm
    // set 1 for matter_type = tau
-   class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,1),
-                                     ptsz->error_message,
-                                     ptsz->error_message);
+   // class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,1),
+   //                                   ptsz->error_message,
+   //                                   ptsz->error_message);
+   double l_asked = pvectsz[ptsz->index_multipole_for_nfw_profile];
+   double m_asked = pvectsz[ptsz->index_m200c];
+   double z_asked = pvectsz[ptsz->index_z];
+   result = get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
 
    rho0 = ptsz->Rho_crit_0*pow(pvectsz[ptsz->index_r200c],3);
    }
@@ -2892,7 +2907,7 @@ int evaluate_lensing_profile(double * pvecback,
    /// uncomment !!
    else {
    pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];
-   result =  evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz,0);
+   result =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,0);
    }
 
 
@@ -6849,7 +6864,7 @@ double Ls_nu_prime;
 double z = pvectsz[ptsz->index_z];
 
 pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_cib_profile];;
-double us = evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz,0);
+double us = evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,0);
 
 double ug_at_ell;
 double nu;
@@ -7083,7 +7098,7 @@ double z = pvectsz[ptsz->index_z];
 
 nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,pvectsz,ptsz,pba);
 ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,ptsz->M_min_HOD,ptsz->alpha_s_HOD,ptsz->M1_prime_HOD,ptsz,pba);
-us = evaluate_truncated_nfw_profile(pvecback,pvectsz,pba,ptsz,0);
+us = evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,0);
 
 double ug_at_ell;
 
@@ -7127,7 +7142,7 @@ pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
 
 }
 
-double evaluate_truncated_nfw_profile(double * pvecback,
+double evaluate_truncated_nfw_profile(//double * pvecback,
                                       double * pvectsz,
                                       struct background * pba,
                                       struct tszspectrum * ptsz,
@@ -7158,7 +7173,7 @@ else if (_tSZ_gal_1h_
   // WIxSC KA20 with T08@M500c
   if (ptsz->galaxy_sample == 0 && ptsz->MF == 5) {
     // printf("computing rd, cd 1\n");
-    evaluate_c500c_KA20(pvecback,pvectsz,pba,ptsz);
+    evaluate_c500c_KA20(pvectsz,pba,ptsz);
     c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
     r_delta = pvectsz[ptsz->index_r500c];
     // printf("c500c_KA20\n");
@@ -7265,7 +7280,7 @@ pvectsz[ptsz->index_c200m] = c200m;
 
 
 
-int evaluate_c500c_KA20(double * pvecback,
+int evaluate_c500c_KA20(//double * pvecback,
                         double * pvectsz,
                         struct background * pba,
                         struct tszspectrum * ptsz)

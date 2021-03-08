@@ -2409,27 +2409,6 @@ int input_read_parameters(
 
 
 
-      /* tau profile kSZ */
-      class_call(parser_read_string(pfc,"tau profile",&string1,&flag1,errmsg),
-                 errmsg,
-                 errmsg);
-      if (flag1 == _TRUE_) {
-        if ((strstr(string1,"nfw") != NULL))
-          ptsz->tau_profile=0;
-        else  if ((strstr(string1,"B16") != NULL))
-          ptsz->tau_profile=1;
-        }
-
-      /* tau profile mode kSZ */
-      class_call(parser_read_string(pfc,"tau profile mode",&string1,&flag1,errmsg),
-                 errmsg,
-                 errmsg);
-      if (flag1 == _TRUE_) {
-        if ((strstr(string1,"agn") != NULL))
-          ptsz->tau_profile_mode=0;
-        else  if ((strstr(string1,"shock") != NULL))
-          ptsz->tau_profile_mode=1;
-        }
 
 
 
@@ -2674,6 +2653,32 @@ int input_read_parameters(
       else  if ((strstr(string1,"no") != NULL))
         ptsz->use_analytical_truncated_nfw=0;
       }
+
+      /* tau profile kSZ */
+      class_call(parser_read_string(pfc,"tau profile",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"nfw") != NULL))
+          ptsz->tau_profile=0;
+        else  if ((strstr(string1,"B16") != NULL)){
+          ptsz->tau_profile=1;
+          ptsz->use_analytical_truncated_nfw=0; // overwrite previous
+        }
+        }
+
+      /* tau profile mode kSZ */
+      class_call(parser_read_string(pfc,"tau profile mode",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"agn") != NULL))
+          ptsz->tau_profile_mode=0;
+        else  if ((strstr(string1,"shock") != NULL))
+          ptsz->tau_profile_mode=1;
+        }
+
+
 
 
     // class_call(parser_read_string(pfc,"mass_def_hmf",&string1,&flag1,errmsg),
