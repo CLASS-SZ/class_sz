@@ -454,6 +454,7 @@ struct tszspectrum {
   int  index_dndlogRh;
   int  index_logSigma2;
   int  index_z;
+  int  index_c200c;
   int  index_m200c;
   int  index_l200c;
   int  index_characteristic_multipole_for_nfw_profile;
@@ -1176,6 +1177,11 @@ double evaluate_truncated_nfw_profile(
 
 
 int evaluate_c200m_D08(double * pvecback,
+                        double * pvectsz,
+                        struct background * pba,
+                        struct tszspectrum * ptsz);
+
+int evaluate_c200c_D08(double * pvecback,
                         double * pvectsz,
                         struct background * pba,
                         struct tszspectrum * ptsz);
