@@ -148,3 +148,4 @@ notebooks/.ipynb_checkpoints
 notebooks/.ipynb_checkpoints/cl_ST_sz-checkpoint.ipynb
 *.txt
 minimal.ini
+sz_auxiliary_files/UNWISE_galaxy_distributions.zip
