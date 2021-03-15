@@ -18,7 +18,6 @@ SO_files
 tSZ_c_ell_ref.txt
 tSZ_params_ref.txt
 tSZ_trispectrum_ref.txt
-sz_auxiliary_files/*txt
 sz_auxiliary_files/run_scripts/*txt
 sz_auxiliary_files/chill_cltsz_data_P13.txt
 sz_auxiliary_files/chill_cltsz_data_B12.txt
@@ -136,6 +135,7 @@ sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/FINALblue_c_ell_kappa_g.tx
 sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/FINALgreen_c_ell_kappa_g.txt
 sz_auxiliary_files/run_scripts/kappa_x_delta_g_unWISE/FINALred_c_ell_kappa_g.txt
 sz_auxiliary_files/run_scripts/yxg/
+sz_auxiliary_files/UNWISE_galaxy_ditributions
 
 sz_auxiliary_files/run_scripts/unwise_filter.ipynb
 notebooks/cl_ST_sz-wip.ipynb
@@ -146,3 +146,5 @@ python/setup.py
 notebooks/.ipynb_checkpoints
 
 notebooks/.ipynb_checkpoints/cl_ST_sz-checkpoint.ipynb
+*.txt
+minimal.ini

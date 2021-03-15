@@ -228,6 +228,7 @@ extern "C" {
                             struct spectra *psp,
                             struct nonlinear *pnl,
                             struct lensing *ple,
+                            struct tszspectrum *ptsz,
                             struct output *pop,
                             ErrorMsg errmsg
                             );

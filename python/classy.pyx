@@ -1420,6 +1420,19 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_yg(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of yxg power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_tSZ_gal_1h[index])
+            cl['2h'].append(self.tsz.cl_tSZ_gal_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
 
     def get_params_sz(self):
         """
@@ -1512,8 +1525,14 @@ cdef class Class:
     def get_dndlnM_at_z_and_M(self,z,m):
         return get_dndlnM_at_z_and_M(z,m,&self.tsz)
 
-    def get_density_profile_at_l_M_z(self,l_asked,m_asked,z_asked):
-        return get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,&self.tsz)
+    def get_density_profile_at_l_M_z(self,l_asked,m_asked,z_asked, include_normalization = 'no'):
+        tau_normalization = 1.
+        #if (include_normalization == 'yes'):
+        #    if (self.tsz.tau_profile == 0): # nfw case
+        #        rho0 =  mvir
+        #        tau_normalization =  self.ba.Omega0_b/self.tsz.Omega_m_0/self.tsz.mu_e*self.tsz.f_free
+        #    elif (self.tsz.tau_profile == 1): # nfw case
+        return tau_normalization*get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,&self.tsz)
 
 
     def get_second_order_bias_at_z_and_nu(self,z,nu):

@@ -277,8 +277,9 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 
    write_output_to_files_cl(pnl,pba,ptsz);
    write_output_to_files_ell_indep_ints(pnl,pba,ptsz);
-   if (ptsz->sz_verbose>1) show_results(pba,pnl,ppm,ptsz);
+
  }
+ if (ptsz->sz_verbose>1) show_results(pba,pnl,ppm,ptsz);
    }
 
    return _SUCCESS_;
@@ -2844,27 +2845,46 @@ int evaluate_tau_profile(double * pvecback,
    result = get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
 
    pvectsz[ptsz->index_tau_profile] = result;
-   rho0 = pvectsz[ptsz->index_mVIR];
+   // rho0 = pvectsz[ptsz->index_mVIR]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
+   // rho0 = pvectsz[ptsz->index_m200m]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
 
-  tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h;
+  // tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> extra h <!>
+  // tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version <!>
 
 
   double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
 
 
    pvectsz[ptsz->index_tau_profile] =  sigmaT_over_mp
-                                       *tau_normalisation
-                                       *rho0 // in (Msun/h)
+                                       //*tau_normalisation
+                                       //*rho0 // in (Msun/h)
                                        *pvectsz[ptsz->index_tau_profile]
+                                       *4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)
                                        *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
+
+
+   // # For comparison with B16:
+   // tau_normalisation = 1.;
+   // rho0 = ptsz->Rho_crit_0;
+   // pvectsz[ptsz->index_tau_profile] =  sigmaT_over_mp // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
+   //                                     *tau_normalisation // dimension less
+   //                                     *rho0 // in (Msun/h)/(Mpc/h)**3
+   //                                     *(4*_PI_)
+   //                                     *pow(pvectsz[ptsz->index_r200c],3)
+   //                                     *pvectsz[ptsz->index_tau_profile]
+   //                                     *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
+   //
+
+
+
 
   }
 
    else if (ptsz->tau_profile == 1){
-   // Battaglia 2016
-   // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
-   // numerical transform
-   // set 1 for matter_type = tau
+  // Battaglia 2016
+  // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
+  // numerical transform
+  // set 1 for matter_type = tau
   //  class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,1),
   //                                    ptsz->error_message,
   //                                    ptsz->error_message);
@@ -2899,7 +2919,8 @@ int evaluate_tau_profile(double * pvecback,
 
   double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // in Msun
   // rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z_asked,alpha_z_rho0)*ptsz->Rho_crit_0; // in (Msun/h)/(Mpc/h)**3
-  rho0 = ptsz->Rho_crit_0; // in (Msun/h)/(Mpc/h)**3
+  //rho0 = ptsz->Rho_crit_0; // in (Msun/h)/(Mpc/h)**3 --> Needs to be rho_crit at z see formula A1 of  Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
+  rho0 = pvectsz[ptsz->index_Rho_crit]; // --> Needs to be rho_crit at z see formula A1 of  Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
 
 
   pvectsz[ptsz->index_tau_profile] = result;
@@ -2922,10 +2943,10 @@ int evaluate_tau_profile(double * pvecback,
   /// # Note: jch had 8.30702e-17
 
    pvectsz[ptsz->index_tau_profile] =  sigmaT_over_mp // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
-                                       *tau_normalisation // dimension less
-                                       *rho0 // in (Msun/h)/(Mpc/h)**3
+                                       //*tau_normalisation // dimension less
+                                       //*rho0 // in (Msun/h)/(Mpc/h)**3
                                        *(4*_PI_)
-                                       *pow(pvectsz[ptsz->index_r200c],3)
+                                       *pow(pvectsz[ptsz->index_rs],3)
                                        *pvectsz[ptsz->index_tau_profile]
                                        *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
 
@@ -4313,6 +4334,8 @@ if (ptsz->pressure_profile == 4){
                                                       pvectsz[ptsz->index_Delta_c],
                                                       pvectsz[ptsz->index_Rho_crit],
                                                       ptsz);
+     evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz);
+    pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c]/pvectsz[ptsz->index_c200c];
 
     }
 
@@ -5974,6 +5997,32 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 printf("ell = %e\t\t cl_kSZ_kSZ_gal_3h (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_kSZ_kSZ_gal_3h[index_l]);
 }
 }
+
+if (ptsz->has_tSZ_gal_1h){
+printf("\n\n");
+printf("########################################\n");
+printf("tSZ x galaxy power spectrum 1-halo term:\n");
+printf("########################################\n");
+printf("\n");
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_tSZ_gal (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_tSZ_gal_1h[index_l]);
+}
+}
+if (ptsz->has_tSZ_gal_2h){
+printf("\n\n");
+printf("########################################\n");
+printf("tSZ x galaxy power spectrum 2-halo term:\n");
+printf("########################################\n");
+printf("\n");
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_tSZ_gal (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_tSZ_gal_2h[index_l]);
+}
+}
+
 
    return _SUCCESS_;
 }

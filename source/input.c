@@ -248,6 +248,7 @@ int input_init(
                                    psp,
                                    pnl,
                                    ple,
+                                   ptsz,
                                    pop,
                                    errmsg),
              errmsg,
@@ -620,6 +621,7 @@ int input_read_precisions(
                           struct spectra *psp,
                           struct nonlinear * pnl,
                           struct lensing *ple,
+                          struct tszspectrum *ptsz,
                           struct output *pop,
                           ErrorMsg errmsg
                           ) {
@@ -631,6 +633,7 @@ int input_read_precisions(
   class_call(input_default_precision(ppr),
              errmsg,
              errmsg);
+
 
   int int1;
   int flag1;
@@ -644,6 +647,16 @@ int input_read_precisions(
 #define __PARSE_PRECISION_PARAMETER__
 #include "precisions.h"
 #undef __PARSE_PRECISION_PARAMETER__
+
+#define __ASSIGN_DEFAULT_TSZ__
+#include "class_sz_precisions.h"
+#undef __ASSIGN_DEFAULT_TSZ__
+
+
+#define __PARSE_TSZ_PARAMETER__
+#include "class_sz_precisions.h"
+#undef _PARSE_TSZ_PARAMETER__
+
 
   return _SUCCESS_;
 }
@@ -1711,6 +1724,8 @@ int input_read_parameters(
     }
 
       /** (sz) SZ parameters */
+
+
       //BB: read SZ parameters from ini file
       class_read_int("nlSZ",ptsz->nlSZ);
 
@@ -4566,6 +4581,10 @@ int input_default_params(
   pop->output_verbose = 0;
 
   //BB: SZ parameters default values
+
+
+
+
   ptsz->write_sz = _FALSE_;
   ptsz->ell_sz = 4;
   ptsz->dlogell = .3;
@@ -4969,7 +4988,8 @@ int input_default_precision ( struct precision * ppr ) {
 #include "precisions.h"
 #undef __ASSIGN_DEFAULT_PRECISION__
 
-  return _SUCCESS_;
+
+return _SUCCESS_;
 
 }
 
@@ -5154,6 +5174,7 @@ int input_try_unknown_parameters(double * unknown_parameter,
                                    &sp,
                                    &nl,
                                    &le,
+                                   &tsz,
                                    &op,
                                    errmsg),
              errmsg,
@@ -5398,7 +5419,7 @@ int input_get_guess(double *xguess,
                                    &sp,
                                    &nl,
                                    &le,
-                                   //&tsz, //BB: added for class_sz
+                                   &tsz, //BB: added for class_sz
                                    //&csz, //BB: added for class_sz
                                    &op,
                                    errmsg),

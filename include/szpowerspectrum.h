@@ -1,5 +1,4 @@
 /** @file szpowerspectrum.h Documented includes for sz module. */
-
 #ifndef __SZ__
 #define __SZ__
 
@@ -9,6 +8,7 @@
 #include "gsl/gsl_sf_erf.h"
 #include "gsl/gsl_sf_expint.h"
 #include "gsl/gsl_sf_lambert.h"
+
 
 #define _pk_at_z_1h_ ((ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_1h))
 #define _pk_at_z_2h_ ((ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_2h))
@@ -67,6 +67,13 @@
 
 
 struct tszspectrum {
+
+
+
+  #define __ALLOCATE_TSZ_PARAMETER__
+  #include "class_sz_precisions.h"
+  #undef __ALLOCATE_TSZ_PARAMETER__
+
 
 
   int use_analytical_truncated_nfw;
@@ -1289,6 +1296,12 @@ struct Parameters_for_integrand_kSZ2_X_at_theta{
   double * b_l1_l2_l_1d;
   double * ln_ell;
 };
+
+
+
+
+
+
 
 #ifdef __cplusplus
 }

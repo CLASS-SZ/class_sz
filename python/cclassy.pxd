@@ -274,6 +274,8 @@ cdef extern from "class.h":
         double * ell
         double * cl_sz_1h
         double * cl_sz_2h
+        double * cl_tSZ_gal_1h
+        double * cl_tSZ_gal_2h
         double ** tllprime_sz
         short has_tszspectrum
         short sz_verbose

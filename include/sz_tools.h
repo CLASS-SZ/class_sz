@@ -390,7 +390,7 @@ int tabulate_mean_galaxy_number_density(struct background * pba,
                                         struct tszspectrum * ptsz);
 
 double get_density_profile_at_l_M_z(double l_asked,
-                                    double m_asked, 
+                                    double m_asked,
                                     double z_asked,
                                     struct tszspectrum * ptsz);
 

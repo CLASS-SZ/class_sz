@@ -2463,8 +2463,9 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   // Battaglia 16 case:
   if (flag_matter_type == 1 && ptsz->tau_profile == 1){
   double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
-  double r200c = pvectsz[ptsz->index_r200c]; //in Mpc/h
-  xout = 50.*rvir/r200c; // as in hmvec (default 20, but set to 50 in example file)
+  // double r200c = pvectsz[ptsz->index_r200c]; //in Mpc/h
+  double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
+  xout = 50.*rvir/rs; // as in hmvec (default 20, but set to 50 in example file)
 }
 
   //double delta = ptsz->x_out_nfw_profile;
@@ -2696,7 +2697,8 @@ double get_density_profile_at_l_M_z(double l_asked, double m_asked, double z_ask
 int tabulate_density_profile(struct background * pba,
                              struct tszspectrum * ptsz){
 
-
+if (ptsz->has_kSZ_kSZ_gal_1h + ptsz->has_kSZ_kSZ_gal_2h + ptsz->has_kSZ_kSZ_gal_3h == _FALSE_)
+  return 0;
 
 
  // array of multipoles:
@@ -2889,18 +2891,26 @@ for (index_m=0;
                   ptsz->error_message,
                   ptsz->error_message);
 
+  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
   pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
  //compute concentration_parameter using mVIR
   //pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
 
   pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
   pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
-  pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
+  // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
+  evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz);
+  pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c]/pvectsz[ptsz->index_c200c];
+  pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
+  pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_ls];
+
+
   // matter type = 1 for electron profile
   class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,1),
                                      ptsz->error_message,
-                                     ptsz->error_message);}
-
+                                     ptsz->error_message);
+  result *= pvectsz[ptsz->index_Rho_crit];// normalisation here
+}
 else if (ptsz->tau_profile == 0){
     pvectsz[ptsz->index_m200m] = exp(lnM);
     class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200m],
@@ -2923,8 +2933,12 @@ else if (ptsz->tau_profile == 0){
    pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile]; // this is the multipole going into truncated nfw... TBD: needs to be renamed
    pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_1h; // make sure the mode is set up properly
    evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
+   pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
    // set 1 for matter_type = tau
    result =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,1);
+   double tau_normalisation = pvectsz[ptsz->index_m200m]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
+   tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free;
+   result *= tau_normalisation;
  }
 
   // ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = log(result);
@@ -3456,6 +3470,7 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
       printf("-> Openning the pressure profile file for A10\n");
     //class_open(process,"sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt", "r",ptsz->error_message);
     class_open(process,ppr->A10_file, "r",ptsz->error_message);
+    // printf("-> File Name: %s\n",ppr->A10_file);
   }
 
     // sprintf(Filepath,
@@ -3771,30 +3786,43 @@ if (ptsz->sz_verbose>=1){
 
   //unwise
   if (ptsz->galaxy_sample == 1){
-    sprintf(Filepath,
-            "%s%s",
-            "cat ",
-            //ptsz->path_to_class,
-            "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/UNWISE_galaxy_ditributions/normalised_dndz.txt");
+  class_open(process,ptsz->UNWISE_dndz_file, "r",ptsz->error_message);
+    // sprintf(Filepath,
+    //         "%s%s",
+    //         "cat ",
+    //         //ptsz->path_to_class,
+    //         "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/UNWISE_galaxy_ditributions/normalised_dndz.txt");
             }
 
-  else if (ptsz->galaxy_sample == 0)
-  sprintf(Filepath,
-          "%s%s",
-          "cat ",
-          //ptsz->path_to_class,
-          "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/WISC_bin3.txt");
+  else if (ptsz->galaxy_sample == 0){
+    if (ptsz->sz_verbose > 0){
+      printf("-> Openning the dndz file for WISC3 galaxies\n");
+      printf("-> File Name: %s\n",ptsz->WISC3_dndz_file);
+      // printf("-> File Name: %s\n",ptsz->UNWISE_fdndz_file);
+      // printf("-> File Name: %s\n",ptsz->A10_file);
+    }
+  class_open(process,ptsz->WISC3_dndz_file, "r",ptsz->error_message);
+    if (ptsz->sz_verbose > 0)
+      printf("-> File opened successfully\n");
+ //  sprintf(Filepath,
+ //          "%s%s",
+ //          "cat ",
+ //          //ptsz->path_to_class,
+ //          "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/WISC_bin3.txt");
+ // process = popen(Filepath, "r");
+        }
 
-  else if (ptsz->galaxy_sample == 2)
+  else if (ptsz->galaxy_sample == 2){
   sprintf(Filepath,
           "%s%s",
           "cat ",
           ptsz->full_path_to_dndz_gal);
           //"/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/unwise_red.txt");
-
-
-
   process = popen(Filepath, "r");
+        }
+
+
+  // process = popen(Filepath, "r");
 
   /* Read output and store it */
   while (fgets(line, sizeof(line)-1, process) != NULL) {
@@ -3823,6 +3851,7 @@ if (ptsz->sz_verbose>=1){
   else if ((ptsz->galaxy_sample == 0) || (ptsz->galaxy_sample == 2)){
 
     sscanf(line, "%lf %lf ", &this_lnx, &this_lnI);
+    // printf("lnx = %e\n",this_lnx);
   }
 
 
@@ -3857,7 +3886,15 @@ if (ptsz->sz_verbose>=1){
   }
 
   /* Close the process */
-  status = pclose(process);
+  if (ptsz->galaxy_sample == 2){
+  // if (ptsz->galaxy_sample == 2 || ptsz->galaxy_sample == 0 ){
+    status = pclose(process);
+  }
+  else{
+    status = fclose(process);
+  }
+  // status = pclose(process);
+
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
