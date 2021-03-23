@@ -4963,25 +4963,25 @@ int MF_T10 (
   if(z>3.) z=3.;
 
   double alpha;
-  if(ptsz->T10_alpha_norm_at_all_z==0)
+  if(ptsz->hm_consistency==0 || ptsz->hm_consistency==1)
   alpha = ptsz->alphaSZ;
-  else
+  else if (ptsz->hm_consistency==2)
   alpha = get_T10_alpha_at_z(z,ptsz);
 
-  *result =
-  0.5
-  *alpha
-  *(1.+pow(pow(ptsz->beta0SZ*pow(1.+z,0.2),2.)
-         *exp(*lognu),
-         -ptsz->phi0SZ
-         *pow(1.+z,-0.08)))*pow(
-          exp(*lognu),
-          ptsz->eta0SZ
-          *pow(1.+z,0.27))
-  *exp(-ptsz->gamma0SZ
-       *pow(1.+z,-0.01)
-       *exp(*lognu)/2.)
-  *sqrt(exp(*lognu));
+
+  *result = 0.5
+            *alpha
+            *(1.+pow(pow(ptsz->beta0SZ*pow(1.+z,0.2),2.)
+                   *exp(*lognu),
+                   -ptsz->phi0SZ
+                   *pow(1.+z,-0.08)))*pow(
+                    exp(*lognu),
+                    ptsz->eta0SZ
+                    *pow(1.+z,0.27))
+            *exp(-ptsz->gamma0SZ
+                 *pow(1.+z,-0.01)
+                 *exp(*lognu)/2.)
+            *sqrt(exp(*lognu));
 
   return _SUCCESS_;
 }
@@ -6074,7 +6074,7 @@ double integrand_patterson_test(double logM, void *p){
   params = &V;
 
 
-  // integrate over the whole mass range ('Phi' part)
+  // integrate over the whole mass range ('galaxy' part)
   r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                            epsrel, epsabs,
                                            integrand_patterson_test,
@@ -6966,6 +6966,498 @@ return _SUCCESS_;
     }
 
 
+struct Parameters_for_integrand_hmf_counter_terms_b1min{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+};
+
+double integrand_hmf_counter_terms_b1min(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_hmf_counter_terms_b1min *V = ((struct Parameters_for_integrand_hmf_counter_terms_b1min *) p);
+
+    //double x=exp(ln_x);
+    double z = V->z;
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+
+      evaluate_HMF(lnM_halo,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
+
+      double z_asked = z;
+      double  m_asked = M_halo;
+      // this  also works:
+      //double hmf = get_dndlnM_at_z_and_M(z_asked,m_asked,V->ptsz);
+
+      // printf("hmf = %.3e\n",hmf);
+      // printf("ns = %.3e\n",ns);
+      // printf("nc = %.3e\n",nc);
+      double rho_crit_at_z = V->ptsz->Rho_crit_0;// V->pvectsz[V->ptsz->index_Rho_crit];
+      double Omega_cb = (V->pba->Omega0_cdm + V->pba->Omega0_b);//*pow(1.+z,3.);
+      double rho_cb = rho_crit_at_z*Omega_cb;
+
+
+      double result = hmf*M_halo/rho_cb;
+
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      double b1 = V->pvectsz[V->ptsz->index_halo_bias];
+      result *= b1;
+      //double result = (ns+nc)/log(10.);
+
+
+
+  return result;
+
+}
+
+
+
+int tabulate_hmf_counter_terms_b1min(struct background * pba,
+                                    struct nonlinear * pnl,
+                                    struct primordial * ppm,
+                                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_hmf_counter_terms_b1min,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
+// class_alloc(ptsz->array_redshift_hmf_counter_terms,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
+
+int index_z;
+double r;
+double m_min,m_max;
+m_min = ptsz->M1SZ;
+m_max = ptsz->M2SZ;
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
+double * pvecback;
+double * pvectsz;
+
+
+
+
+ class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+
+
+for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
+        {
+
+          // ptsz->array_redshift_hmf_counter_terms[index_z] =
+          //                             log(1.+z_min)
+          //                             +index_z*(log(1.+z_max)-log(1.+z_min))
+          //                             /(ptsz->n_z_hmf_counter_terms-1.); // log(1+z)
+
+          double z = exp(ptsz->array_redshift_hmf_counter_terms[index_z])-1.;
+
+          // if using unwise we set a specific lower bound
+          // if (ptsz->galaxy_sample==1 &&  (ptsz->use_hod ==1)){
+          // m_min = evaluate_unwise_m_min_cut(pvectsz[ptsz->index_z],ptsz->unwise_galaxy_sample_id);
+          // if (m_min>=m_max)
+          // m_min=m_max;
+          //  }
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_hmf_counter_terms_b1min V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+
+          void * params = &V;
+          double epsrel=ptsz->mass_epsrel;
+          double epsabs=ptsz->mass_epsabs;
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_hmf_counter_terms_b1min,
+                                               params,ptsz->patterson_show_neval);
+
+          // here is (1-r) = n_min*m_min/rho_cb at z
+          double rho_crit_at_z = ptsz->Rho_crit_0;//pvectsz[ptsz->index_Rho_crit];
+          double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);//*pow(1.+z,3.);
+          double rho_cb = rho_crit_at_z*Omega_cb;
+          double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
+          double b1_min = (1.-r)*rho_cb/m_min/n_min;
+          ptsz->array_hmf_counter_terms_b1min[index_z] = b1_min;
+
+       }
+ free(pvecback);
+ free(pvectsz);
+
+return _SUCCESS_;
+    }
+
+///// b2 min
+
+
+struct Parameters_for_integrand_hmf_counter_terms_b2min{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+};
+
+double integrand_hmf_counter_terms_b2min(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_hmf_counter_terms_b2min *V = ((struct Parameters_for_integrand_hmf_counter_terms_b2min *) p);
+
+    //double x=exp(ln_x);
+    double z = V->z;
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+
+      evaluate_HMF(lnM_halo,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
+
+      double z_asked = z;
+      double  m_asked = M_halo;
+      // this  also works:
+      //double hmf = get_dndlnM_at_z_and_M(z_asked,m_asked,V->ptsz);
+
+      // printf("hmf = %.3e\n",hmf);
+      // printf("ns = %.3e\n",ns);
+      // printf("nc = %.3e\n",nc);
+      double rho_crit_at_z = V->ptsz->Rho_crit_0;// V->pvectsz[V->ptsz->index_Rho_crit];
+      double Omega_cb = (V->pba->Omega0_cdm + V->pba->Omega0_b);//*pow(1.+z,3.);
+      double rho_cb = rho_crit_at_z*Omega_cb;
+
+
+      double result = hmf*M_halo/rho_cb;
+
+      evaluate_halo_bias_b2(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      double b2 = V->pvectsz[V->ptsz->index_halo_bias_b2];
+      result *= b2;
+      //double result = (ns+nc)/log(10.);
+
+
+
+  return result;
+
+}
+
+
+
+int tabulate_hmf_counter_terms_b2min(struct background * pba,
+                                    struct nonlinear * pnl,
+                                    struct primordial * ppm,
+                                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_hmf_counter_terms_b2min,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
+// class_alloc(ptsz->array_redshift_hmf_counter_terms,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
+
+int index_z;
+double r;
+double m_min,m_max;
+m_min = ptsz->M1SZ;
+m_max = ptsz->M2SZ;
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
+double * pvecback;
+double * pvectsz;
+
+
+
+
+ class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+
+
+for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
+        {
+
+          // ptsz->array_redshift_hmf_counter_terms[index_z] =
+          //                             log(1.+z_min)
+          //                             +index_z*(log(1.+z_max)-log(1.+z_min))
+          //                             /(ptsz->n_z_hmf_counter_terms-1.); // log(1+z)
+
+          double z = exp(ptsz->array_redshift_hmf_counter_terms[index_z])-1.;
+
+          // if using unwise we set a specific lower bound
+          // if (ptsz->galaxy_sample==1 &&  (ptsz->use_hod ==1)){
+          // m_min = evaluate_unwise_m_min_cut(pvectsz[ptsz->index_z],ptsz->unwise_galaxy_sample_id);
+          // if (m_min>=m_max)
+          // m_min=m_max;
+          //  }
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_hmf_counter_terms_b2min V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+
+          void * params = &V;
+          double epsrel=ptsz->mass_epsrel;
+          double epsabs=ptsz->mass_epsabs;
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_hmf_counter_terms_b2min,
+                                               params,ptsz->patterson_show_neval);
+
+          // here is (1-r) = n_min*m_min/rho_cb at z
+          double rho_crit_at_z = ptsz->Rho_crit_0;//pvectsz[ptsz->index_Rho_crit];
+          double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);//*pow(1.+z,3.);
+          double rho_cb = rho_crit_at_z*Omega_cb;
+          double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
+          double b2_min = -r*rho_cb/m_min/n_min;
+          ptsz->array_hmf_counter_terms_b2min[index_z] = b2_min;
+
+       }
+ free(pvecback);
+ free(pvectsz);
+
+return _SUCCESS_;
+    }
+
+
+
+
+//// b2 min
+
+
+struct Parameters_for_integrand_hmf_counter_terms_nmin{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+};
+
+double integrand_hmf_counter_terms_nmin(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_hmf_counter_terms_nmin *V = ((struct Parameters_for_integrand_hmf_counter_terms_nmin *) p);
+
+    //double x=exp(ln_x);
+    double z = V->z;
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+
+      evaluate_HMF(lnM_halo,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
+
+      double z_asked = z;
+      double  m_asked = M_halo;
+      // this  also works:
+      //double hmf = get_dndlnM_at_z_and_M(z_asked,m_asked,V->ptsz);
+
+      // printf("hmf = %.3e\n",hmf);
+      // printf("ns = %.3e\n",ns);
+      // printf("nc = %.3e\n",nc);
+      double rho_crit_at_z = V->ptsz->Rho_crit_0;// V->pvectsz[V->ptsz->index_Rho_crit];
+      double Omega_cb = (V->pba->Omega0_cdm + V->pba->Omega0_b);//*pow(1.+z,3.);
+      double rho_cb = rho_crit_at_z*Omega_cb;
+
+
+      double result = hmf*M_halo/rho_cb;
+      //double result = (ns+nc)/log(10.);
+
+
+
+  return result;
+
+}
+
+
+int tabulate_hmf_counter_terms_nmin(struct background * pba,
+                                    struct nonlinear * pnl,
+                                    struct primordial * ppm,
+                                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_hmf_counter_terms_nmin,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
+class_alloc(ptsz->array_redshift_hmf_counter_terms,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
+
+int index_z;
+double r;
+double m_min,m_max;
+m_min = ptsz->M1SZ;
+m_max = ptsz->M2SZ;
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
+double * pvecback;
+double * pvectsz;
+
+
+
+
+ class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+
+
+for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
+        {
+
+          ptsz->array_redshift_hmf_counter_terms[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_hmf_counter_terms-1.); // log(1+z)
+
+          double z = exp(ptsz->array_redshift_hmf_counter_terms[index_z])-1.;
+
+          // if using unwise we set a specific lower bound
+          // if (ptsz->galaxy_sample==1 &&  (ptsz->use_hod ==1)){
+          // m_min = evaluate_unwise_m_min_cut(pvectsz[ptsz->index_z],ptsz->unwise_galaxy_sample_id);
+          // if (m_min>=m_max)
+          // m_min=m_max;
+          //  }
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_hmf_counter_terms_nmin V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+
+          void * params = &V;
+          double epsrel=ptsz->mass_epsrel;
+          double epsabs=ptsz->mass_epsabs;
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_hmf_counter_terms_nmin,
+                                               params,ptsz->patterson_show_neval);
+
+          // here is (1-r) = n_min*m_min/rho_cb at z
+          double rho_crit_at_z = ptsz->Rho_crit_0;//pvectsz[ptsz->index_Rho_crit];
+          double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);//*pow(1.+z,3.);
+          double rho_cb = rho_crit_at_z*Omega_cb;
+          double n_min = (1.-r)*rho_cb/m_min;
+          ptsz->array_hmf_counter_terms_nmin[index_z] = n_min;
+
+       }
+ free(pvecback);
+ free(pvectsz);
+
+return _SUCCESS_;
+    }
+
+
+
+
 struct Parameters_for_integrand_patterson_L_sat{
   double nu;
   double z;
@@ -7761,6 +8253,55 @@ double result = exp(pwl_value_1d(ptsz->T10_lnalpha_size,
 //printf("z = %.3e  alpha = %.3e\n",z_asked,result);
 return result;
 }
+
+double get_hmf_counter_term_nmin_at_z(double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  if (z<ptsz->array_redshift_hmf_counter_terms[0])
+   z = ptsz->array_redshift_hmf_counter_terms[0];
+  else if (z>ptsz->array_redshift_hmf_counter_terms[ptsz->n_z_hmf_counter_terms-1])
+   z = ptsz->array_redshift_hmf_counter_terms[ptsz->n_z_hmf_counter_terms-1];
+
+double result = pwl_value_1d( ptsz->n_z_hmf_counter_terms,
+                              ptsz->array_redshift_hmf_counter_terms,
+                              ptsz->array_hmf_counter_terms_nmin,
+                              z);
+//printf("z = %.3e  alpha = %.3e\n",z_asked,result);
+return result;
+}
+
+
+
+double get_hmf_counter_term_b1min_at_z(double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  if (z<ptsz->array_redshift_hmf_counter_terms[0])
+   z = ptsz->array_redshift_hmf_counter_terms[0];
+  else if (z>ptsz->array_redshift_hmf_counter_terms[ptsz->n_z_hmf_counter_terms-1])
+   z = ptsz->array_redshift_hmf_counter_terms[ptsz->n_z_hmf_counter_terms-1];
+
+double result = pwl_value_1d( ptsz->n_z_hmf_counter_terms,
+                              ptsz->array_redshift_hmf_counter_terms,
+                              ptsz->array_hmf_counter_terms_b1min,
+                              z);
+//printf("z = %.3e  alpha = %.3e\n",z_asked,result);
+return result;
+}
+
+
+double get_hmf_counter_term_b2min_at_z(double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  if (z<ptsz->array_redshift_hmf_counter_terms[0])
+   z = ptsz->array_redshift_hmf_counter_terms[0];
+  else if (z>ptsz->array_redshift_hmf_counter_terms[ptsz->n_z_hmf_counter_terms-1])
+   z = ptsz->array_redshift_hmf_counter_terms[ptsz->n_z_hmf_counter_terms-1];
+
+double result = pwl_value_1d( ptsz->n_z_hmf_counter_terms,
+                              ptsz->array_redshift_hmf_counter_terms,
+                              ptsz->array_hmf_counter_terms_b2min,
+                              z);
+//printf("z = %.3e  alpha = %.3e\n",z_asked,result);
+return result;
+}
+
 
 
 

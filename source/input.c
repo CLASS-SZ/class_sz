@@ -2482,7 +2482,7 @@ int input_read_parameters(
 
       class_read_int("pk_nonlinear_for_vrms2",ptsz->pk_nonlinear_for_vrms2);
 
-      class_read_int("T10_alpha_norm_at_all_z",ptsz->T10_alpha_norm_at_all_z);
+      class_read_int("hm_consistency",ptsz->hm_consistency);
 
 
       /* Noise for covmat (y,y)*/
@@ -4601,7 +4601,7 @@ int input_default_params(
   ptsz->M1_prime_HOD_factor = 15.;
   ptsz->M_min_HOD_satellite_mass_factor_unwise = 0.1;
 
-  ptsz->T10_alpha_norm_at_all_z = 0;
+  ptsz->hm_consistency = 0;
 
   ptsz->N_kSZ2_gal_multipole_grid = 20;
 

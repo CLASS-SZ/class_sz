@@ -162,6 +162,9 @@ double delta_to_delta_prime_nfw(
   int load_unbinned_nl_yy(struct tszspectrum * ptsz);
   int load_unwise_filter(struct tszspectrum * ptsz);
   double get_T10_alpha_at_z(double z_asked, struct tszspectrum * ptsz);
+  double get_hmf_counter_term_nmin_at_z(double z_asked, struct tszspectrum * ptsz);
+  double get_hmf_counter_term_b1min_at_z(double z_asked, struct tszspectrum * ptsz);
+  double get_hmf_counter_term_b2min_at_z(double z_asked, struct tszspectrum * ptsz);
   int CvirMvirZHAO(double * result,
                    double logM ,
                    double z,
@@ -393,6 +396,23 @@ double get_density_profile_at_l_M_z(double l_asked,
                                     double m_asked,
                                     double z_asked,
                                     struct tszspectrum * ptsz);
+
+
+int tabulate_hmf_counter_terms_nmin(struct background * pba,
+                                    struct nonlinear * pnl,
+                                    struct primordial * ppm,
+                                    struct tszspectrum * ptsz);
+int tabulate_hmf_counter_terms_b1min(struct background * pba,
+                                    struct nonlinear * pnl,
+                                    struct primordial * ppm,
+                                    struct tszspectrum * ptsz);
+
+
+int tabulate_hmf_counter_terms_b2min(struct background * pba,
+                                    struct nonlinear * pnl,
+                                    struct primordial * ppm,
+                                    struct tszspectrum * ptsz);
+
 
 #ifdef __cplusplus
 }

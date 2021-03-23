@@ -579,7 +579,7 @@ struct tszspectrum {
   double M1_prime_HOD_factor;
   double cvir_tau_profile_factor;
 
-  int T10_alpha_norm_at_all_z;
+  int hm_consistency;
 
 
   // noise curve for cov(y,y)
@@ -716,6 +716,8 @@ struct tszspectrum {
   double logR1SZ; // 0.0034Mpc/h, 1.8e4  solar mass
   double logR2SZ; // 54.9Mpc/h, 7.5e16 solar mass
   double delta_cSZ;
+
+
 
   /*Multplicity function Tinker 2010*/
 
@@ -956,6 +958,12 @@ struct tszspectrum {
 
   double * array_mean_galaxy_number_density;
 
+  // int n_z_hmf_counter_terms;
+  int hm_consistency_counter_terms_done;
+  double * array_redshift_hmf_counter_terms;
+  double * array_hmf_counter_terms_nmin;
+  double * array_hmf_counter_terms_b1min;
+  double * array_hmf_counter_terms_b2min;
   ErrorMsg error_message; /**< zone for writing error messages */
 
 

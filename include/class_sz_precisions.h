@@ -6,6 +6,10 @@ class_sz_string_parameter(UNWISE_fdndz_file,"/sz_auxiliary_files/UNWISE_galaxy_d
 class_sz_string_parameter(WISC3_dndz_file,"/sz_auxiliary_files/WISC_bin3.txt","WISC bin 3 file")
 class_sz_string_parameter(A10_file,"/sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt","A10 file")
 
+
+class_sz_ptsz_parameter(n_z_hmf_counter_terms,int,200)
+
+
 //printf("-> File Name pr: %s\n",ptsz->WISC3_dndz_file);
 
 #undef class_sz_ptsz_parameter

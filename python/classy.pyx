@@ -1465,6 +1465,13 @@ cdef class Class:
         """
         return self.tsz.HSEbias
 
+    def M1SZ(self):
+        """
+        (SZ) Return the lower mass bound
+        """
+        return self.tsz.M1SZ
+
+
     def ystar(self):
         """
         (SZ) Return ystar
@@ -1524,6 +1531,15 @@ cdef class Class:
 
     def get_dndlnM_at_z_and_M(self,z,m):
         return get_dndlnM_at_z_and_M(z,m,&self.tsz)
+
+    def get_hmf_counter_term_nmin_at_z(self,z):
+        return get_hmf_counter_term_nmin_at_z(z,&self.tsz)
+
+    def get_hmf_counter_term_b1min_at_z(self,z):
+        return get_hmf_counter_term_b1min_at_z(z,&self.tsz)
+
+    def get_hmf_counter_term_b2min_at_z(self,z):
+        return get_hmf_counter_term_b2min_at_z(z,&self.tsz)
 
     def get_density_profile_at_l_M_z(self,l_asked,m_asked,z_asked, include_normalization = 'no'):
         tau_normalization = 1.

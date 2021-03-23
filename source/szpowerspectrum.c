@@ -109,8 +109,31 @@ int szpowerspectrum_init(
    external_pressure_profile_init(ppr,ptsz);
    // load alpha(z) normalisation
    // of Tinker et al 2010 HMF
-   if (ptsz->MF==1)
+   if (ptsz->MF==1 && ptsz->hm_consistency==2)
    load_T10_alpha_norm(ptsz);
+
+   if (ptsz->hm_consistency==1){
+   ptsz->hm_consistency_counter_terms_done = 0;
+   tabulate_hmf_counter_terms_nmin(pba,pnl,ppm,ptsz);
+   tabulate_hmf_counter_terms_b1min(pba,pnl,ppm,ptsz);
+   tabulate_hmf_counter_terms_b2min(pba,pnl,ppm,ptsz);
+   ptsz->hm_consistency_counter_terms_done = 1;
+   if (ptsz->sz_verbose>10){
+   printf("counter terms\n");
+   int index_z;
+   for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++){
+   double z =  exp(ptsz->array_redshift_hmf_counter_terms[index_z])-1.;
+   double n_min = get_hmf_counter_term_nmin_at_z(z,ptsz);
+   double b1_min = get_hmf_counter_term_b1min_at_z(z,ptsz);
+   double b2_min = get_hmf_counter_term_b2min_at_z(z,ptsz);
+   printf("z = %.3e n_min = %.8e n_min_interp = %.8e b1_min = %.8e b1_min_interp = %.8e b2_min = %.8e b2_min_interp = %.8e\n",
+   z, ptsz->array_hmf_counter_terms_nmin[index_z],n_min,
+      ptsz->array_hmf_counter_terms_b1min[index_z],b1_min,
+      ptsz->array_hmf_counter_terms_b2min[index_z],b2_min);
+    }
+  }
+  }
+   // exit(0);
 
 
    if (ptsz->has_dndlnM
@@ -121,8 +144,16 @@ int szpowerspectrum_init(
      // || ptsz->has_gal_gal_2h
      // || ptsz->has_gal_lens_1h
      // || ptsz->has_gal_lens_2h
-   )
+   ){
    tabulate_dndlnM(pba,pnl,ppm,ptsz);
+
+   // for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++){
+   // double z =  exp(ptsz->array_redshift_hmf_counter_terms[index_z])-1.;
+   // double n_min = get_hmf_counter_term_nmin_at_z(z,ptsz);
+   // double hmf_m_min = get_dndlnM_at_z_and_M(z,ptsz->M1SZ,ptsz);
+   // printf("z = %.3e n_min = %.8e n_min_interp = %.8e hmf_m_min = %.8e\n",z, ptsz->array_hmf_counter_terms_nmin[index_z],n_min,hmf_m_min);
+   //  }
+  }
 
    if (ptsz->has_vrms2)
    tabulate_vrms2_from_pk(pba,pnl,ppm,ptsz);
@@ -401,6 +432,14 @@ if (ptsz->has_dndlnM){
    free(ptsz->array_dndlnM_at_z_and_M);
    }
 
+if (ptsz->hm_consistency == 1){
+   free(ptsz->array_redshift_hmf_counter_terms);
+   free(ptsz->array_hmf_counter_terms_nmin);
+   free(ptsz->array_hmf_counter_terms_b1min);
+   free(ptsz->array_hmf_counter_terms_b2min);
+ }
+
+
    free(ptsz->dndlnM_at_z_and_M);
    free(ptsz->dndlnM_array_z);
    free(ptsz->dndlnM_array_m);
@@ -481,7 +520,7 @@ free(ptsz->pk_at_z_2h);
    free(ptsz->RNFW_lnI);
  }
 
-  if (ptsz->MF==1){
+  if (ptsz->MF==1 && ptsz->hm_consistency==2){
     free(ptsz->T10_ln1pz);
     free(ptsz->T10_lnalpha);
   }
@@ -1058,6 +1097,10 @@ int compute_sz(struct background * pba,
                                       Pvectsz),
                    ptsz->error_message,
                    ptsz->error_message);
+ // Once the integration is done, the results of the integral
+ // is stored in:
+ // Pvectsz[ptsz->index_integral]
+ // We collect the results hereafter...
           }
 
  }
@@ -1488,6 +1531,18 @@ double integrand_at_m_and_z(double logM,
 
 
    evaluate_HMF(logM,pvecback,pvectsz,pba,pnl,ptsz);
+   if (ptsz->hm_consistency == 1){
+     // printf("using counter term nmin\n");
+     // printf("logM = %.5e logMmin = %.5e\n",logM,log(ptsz->M1SZ));
+     if ((logM <= log(ptsz->M1SZ) + 0.01*log(ptsz->M1SZ)) && (logM >= log(ptsz->M1SZ) - 0.01*log(ptsz->M1SZ))){
+     // printf("using counter term nmin\n");
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     pvectsz[ptsz->index_hmf] =  pvectsz[ptsz->index_hmf] + nmin;
+   }
+   }
+   // The HMF, i.e., dN/dM/dV is stored in:
+   // pvectsz[ptsz->index_hmf]
+
    // double z_asked = pvectsz[ptsz->index_z];
    // double m_asked = exp(logM);
    // // double calc_dn = get_dndlnM_at_z_and_M(z_asked,m_asked,ptsz);
@@ -2477,6 +2532,8 @@ double integrand_at_m_and_z(double logM,
     double galaxy_profile_at_ell_1 = pvectsz[ptsz->index_galaxy_profile];
     pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+    // the results of the above function call, is stored in:
+    // pvectsz[ptsz->index_pressure_profile] ("y_l")
     double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
 
         pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
@@ -3649,6 +3706,18 @@ int evaluate_halo_bias(double * pvecback,
                                                       +BTT*pow(nuTink,bTTT)+CTT*pow(nuTink,cTTT);
 
 
+  if (ptsz->hm_consistency==1 && ptsz->hm_consistency_counter_terms_done == 1) {
+    double logM = log(pvectsz[ptsz->index_mass_for_hmf]);
+    double z = pvectsz[ptsz->index_z];
+  if ((logM <= log(ptsz->M1SZ) + 0.01*log(ptsz->M1SZ)) && (logM >= log(ptsz->M1SZ) - 0.01*log(ptsz->M1SZ))){
+    // printf("doing counter terms b1\n");
+    double b1_min = get_hmf_counter_term_b1min_at_z(z,ptsz);
+    pvectsz[ptsz->index_halo_bias] = b1_min;
+
+  }
+
+  }
+
   // // BB debug
   // nuTink = 10.;
   // double result = 1.-ATT*(pow(nuTink,aTTT)/(pow(nuTink,aTTT)+pow(ptsz->delta_cSZ,aTTT)))
@@ -3762,6 +3831,19 @@ int evaluate_halo_bias_b2(double * pvecback,
    //
    // pvectsz[ptsz->index_halo_bias_b2] = t1_num/t1_den + t2_num/t2_den + t3_num/t3_den;
    pvectsz[ptsz->index_halo_bias_b2] = get_second_order_bias_at_z_and_nu(z,nu,ptsz);
+
+
+  if (ptsz->hm_consistency==1 && ptsz->hm_consistency_counter_terms_done == 1) {
+    double logM = log(pvectsz[ptsz->index_mass_for_hmf]);
+    double z = pvectsz[ptsz->index_z];
+  if ((logM <= log(ptsz->M1SZ) + 0.01*log(ptsz->M1SZ)) && (logM >= log(ptsz->M1SZ) - 0.01*log(ptsz->M1SZ))){
+    // printf("doing counter terms b1\n");
+    double b2_min = get_hmf_counter_term_b2min_at_z(z,ptsz);
+    pvectsz[ptsz->index_halo_bias_b2] = b2_min;
+
+  }
+
+  }
 
    return _SUCCESS_;
 }
@@ -5915,6 +5997,12 @@ int show_results(struct background * pba,
 
   //printf("-> SZ results:\n");
   if (ptsz->has_sz_ps){
+printf("\n\n");
+printf("########################################\n");
+printf("tSZ power spectrum 1-halo term:\n");
+printf("########################################\n");
+printf("\n");
+
    int index_l;
    for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
@@ -5964,9 +6052,24 @@ printf("\n");
         printf("\n");
 }
  }
+}
+
+ if (ptsz->has_sz_2halo){
 
 
-   }
+printf("\n\n");
+printf("########################################\n");
+printf("tSZ power spectrum 2-halo term:\n");
+printf("########################################\n");
+printf("\n");
+
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+ printf("ell = %e\t\t cl_tSZ (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_sz_2h[index_l]);
+}
+ }
+
+
 
  if (ptsz->has_mean_y)
    printf("mean_y =  %e \n",ptsz->y_monopole);
