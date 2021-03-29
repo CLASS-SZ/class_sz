@@ -1529,8 +1529,13 @@ double integrand_at_m_and_z(double logM,
                              struct tszspectrum * ptsz)
     {
 
-
+   // double m_asked = exp(logM);
    evaluate_HMF(logM,pvecback,pvectsz,pba,pnl,ptsz);
+   // printf("z = %.2e M = %.4e \t eHMF = %.4e Rh = %.3e \t mf = %.3e \t nu = %.3e \t sigma = %.3e\n",
+   // pvectsz[ptsz->index_z],m_asked,pvectsz[ptsz->index_hmf],pvectsz[ptsz->index_Rh],
+   // pvectsz[ptsz->index_mf],pvectsz[ptsz->index_dlognudlogRh],   pvectsz[ptsz->index_logSigma2]);
+   // exit(0);
+
    if (ptsz->hm_consistency == 1){
      // printf("using counter term nmin\n");
      // printf("logM = %.5e logMmin = %.5e\n",logM,log(ptsz->M1SZ));
@@ -1540,6 +1545,7 @@ double integrand_at_m_and_z(double logM,
      pvectsz[ptsz->index_hmf] =  pvectsz[ptsz->index_hmf] + nmin;
    }
    }
+   // pvectsz[ptsz->index_hmf] = 1.;
    // The HMF, i.e., dN/dM/dV is stored in:
    // pvectsz[ptsz->index_hmf]
 
@@ -4218,6 +4224,7 @@ int evaluate_HMF(double logM,
   //mass conversions
 
   // Tinker et al 2008 @ M500c : the mass integral runs over m500c -> logM = logM500c
+  // if (ptsz->MF==5 || (ptsz->MF==1 && ptsz->pressure_profile == 2)){
   if (ptsz->MF==5){
 
   pvectsz[ptsz->index_m500c] = exp(logM);
@@ -4358,7 +4365,7 @@ if (ptsz->pressure_profile == 4){
 
    // Duffy et al 08
    if (ptsz->concentration_parameter==0){
-     if (ptsz->tau_profile == 0)
+     // if (ptsz->tau_profile == 0)
       evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
      if (ptsz->tau_profile == 1)
       evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz);
@@ -6127,6 +6134,32 @@ printf("ell = %e\t\t cl_tSZ_gal (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_tSZ_ga
 }
 
 
+if (ptsz->has_gal_gal_1h){
+printf("\n\n");
+printf("########################################\n");
+printf("galaxy x galaxy power spectrum 1-halo term:\n");
+printf("########################################\n");
+printf("\n");
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_gal_gal (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_gal_gal_1h[index_l]);
+}
+}
+if (ptsz->has_gal_gal_2h){
+printf("\n\n");
+printf("########################################\n");
+printf("galaxy x galaxy power spectrum 2-halo term:\n");
+printf("########################################\n");
+printf("\n");
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_gal_gal (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_gal_gal_2h[index_l]);
+}
+}
+
+
    return _SUCCESS_;
 }
 
@@ -7103,10 +7136,10 @@ double HOD_mean_number_of_central_galaxies(double z,
     }
    else{
       //BB debug
-      // z = 0.5; // BB debug
-      // M_halo = 1e12; // BB debug
+      // z = 1.5; // BB debug
+      // M_halo = 1e13; // BB debug
       M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
-       //M_min = pow(10.,12)*pba->h;
+      // M_min = pow(10.,12)*pba->h;
       result = 0.5*(1.+gsl_sf_erf((log10(M_halo/pba->h/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
       // printf("ns test: %.10e\n",result); // BB debug
       // exit(0);
@@ -7194,7 +7227,7 @@ double result =  0.;
 
    }// end KFSW20
 
-//result = 1.; //BB debug
+// result = 0.; //BB debug
 return result;
 }
 
@@ -7490,8 +7523,8 @@ if (_gal_gal_2h_
 //us = 1.; // BB: debug
 //ng_bar = 1.; // BB: debug
 //us=0.; //BB debug
-
-ug_at_ell  = (1./ng_bar)*(nc+ns*us); // BB commented for debug
+ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+// ug_at_ell  = (1./ng_bar)*(nc+ns*us); // (correct one) BB commented for debug
 //ug_at_ell  = (1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us); // BB debug
 // printf("ug^2=%.3e\n",ug_at_ell*ug_at_ell); // BB debug
 // printf("ng_bar=%.3e\n",ng_bar); // BB debug
@@ -7510,12 +7543,15 @@ else if(_gal_gal_1h_
   //ns = nc; // BB: debug
   ug_at_ell  =(1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us); ///# commented for debug
    //ug_at_ell  =(1./ng_bar)*(us*ns); // BB debug
-  //printf("ug^2=%.3e\n",ug_at_ell*ug_at_ell); // BB debug
+  // printf("ug^2=%.3e us = %.3e ns = %.3e\n",ug_at_ell*ug_at_ell, us, ns); // BB debug
   }
 
 pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
 
 }
+
+
+
 
 double evaluate_truncated_nfw_profile(//double * pvecback,
                                       double * pvectsz,
@@ -7546,7 +7582,8 @@ else if (_tSZ_gal_1h_
       ){
   // printf("computing rd, cd\n");
   // WIxSC KA20 with T08@M500c
-  if (ptsz->galaxy_sample == 0 && ptsz->MF == 5) {
+  if (ptsz->MF == 5) {
+  // if (ptsz->galaxy_sample == 0 && ptsz->MF == 5) {
     // printf("computing rd, cd 1\n");
     evaluate_c500c_KA20(pvectsz,pba,ptsz);
     c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
@@ -7560,7 +7597,7 @@ else if (_tSZ_gal_1h_
     c_delta = pvectsz[ptsz->index_c200m];
     //printf("doing c200m samp0 and MF!\n");
     }
-  // unWISE
+  // unWISE and 'other'
   else if ((ptsz->galaxy_sample == 1) || (ptsz->galaxy_sample == 2 )) {
 
   // mail from alex:
@@ -7581,6 +7618,8 @@ else if (_tSZ_gal_1h_
 
       r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_r200m];
       c_delta = pvectsz[ptsz->index_c200m];
+
+      // printf("r = %.3e c = %.3e\n",r_delta,c_delta);
 
 
     // c_delta = pvectsz[ptsz->index_c500c_KA20]; //Eq. 27 of KA20
@@ -7660,6 +7699,7 @@ double M_pivot = 2.e12; // pivot mass in Msun/h
 
 double z = pvectsz[ptsz->index_z];
 double c200m =A*pow(M/M_pivot,B)*pow(1.+z,C);
+// printf("c200m D08 = %.3e\n",c200m);
 pvectsz[ptsz->index_c200m] = c200m;
 }
 

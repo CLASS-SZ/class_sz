@@ -3844,7 +3844,7 @@ if (ptsz->sz_verbose>=1){
     //if (ptsz->unwise_galaxy_sample_id == 3)
     //this_lnI = this_lnI;
 
-    //printf("lnx = %e\n",this_lnx);
+    // printf("lnx = %e\n",this_lnx);
                                     }
 
   // WIxSC and "other": just two column files
@@ -6829,12 +6829,9 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
 
   struct Parameters_for_integrand_mean_galaxy_number *V = ((struct Parameters_for_integrand_mean_galaxy_number *) p);
 
+    double M_halo = exp(lnM_halo);
     //double x=exp(ln_x);
     double z = V->z;
-
-    double M_halo = exp(lnM_halo);
-    double nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->pvectsz,V->ptsz,V->pba);
-    double ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD,V->ptsz,V->pba);
     // M_halo = 1e16;
     // z = .5;
     // nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->ptsz);
@@ -6890,6 +6887,10 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
       // printf("hmf = %.3e\n",hmf);
       // printf("ns = %.3e\n",ns);
       // printf("nc = %.3e\n",nc);
+
+      V->pvectsz[V->ptsz->index_md] = V->ptsz->index_md_gal_gal_1h;
+      double nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->pvectsz,V->ptsz,V->pba);
+      double ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD,V->ptsz,V->pba);
 
 
       double result = hmf*(ns+nc);
@@ -7714,8 +7715,12 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct tszspectrum * ptsz){
 
    // bounds array of radii for sigma computations:
-   ptsz->logR1SZ = pow(3.*0.1*ptsz->M1SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.);
-   ptsz->logR2SZ = pow(3.*10.*ptsz->M2SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.);
+   ptsz->logR1SZ = log(pow(3.*0.1*ptsz->M1SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
+   ptsz->logR2SZ = log(pow(3.*10.*ptsz->M2SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
+
+
+   // ptsz->logR1SZ = -5.684; // 0.0034Mpc/h, 1.8e4  solar mass
+   // ptsz->logR2SZ = 4.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
 
 
   //Array of z
