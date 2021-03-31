@@ -6912,8 +6912,8 @@ class_alloc(ptsz->array_mean_galaxy_number_density,sizeof(double *)*ptsz->n_arra
 int index_z;
 double r;
 double m_min,m_max;
-m_min = ptsz->M1SZ;
-m_max = ptsz->M2SZ;
+m_min = 1e6*pba->h;//ptsz->M1SZ;
+m_max = 1e17*pba->h;//ptsz->M2SZ;
 
 double * pvecback;
 double * pvectsz;
@@ -7715,12 +7715,12 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct tszspectrum * ptsz){
 
    // bounds array of radii for sigma computations:
-   ptsz->logR1SZ = log(pow(3.*0.1*ptsz->M1SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
-   ptsz->logR2SZ = log(pow(3.*10.*ptsz->M2SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
+   // ptsz->logR1SZ = log(pow(3.*0.1*ptsz->M1SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
+   // ptsz->logR2SZ = log(pow(3.*10.*ptsz->M2SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
 
 
-   // ptsz->logR1SZ = -5.684; // 0.0034Mpc/h, 1.8e4  solar mass
-   // ptsz->logR2SZ = 4.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
+   ptsz->logR1SZ = -5.684; // 0.0034Mpc/h, 1.8e4  solar mass
+   ptsz->logR2SZ = 4.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
 
 
   //Array of z

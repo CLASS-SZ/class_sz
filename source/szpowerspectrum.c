@@ -7114,7 +7114,7 @@ double HOD_mean_number_of_central_galaxies(double z,
  double result = 0.;
 
  int index_md = (int) pvectsz[ptsz->index_md];
- if (_cib_cib_1h_
+ if ( _cib_cib_1h_
    || _cib_cib_2h_
    || _tSZ_cib_1h_
    || _tSZ_cib_2h_
@@ -7147,7 +7147,7 @@ double HOD_mean_number_of_central_galaxies(double z,
 
 }
 
- //result = 1.; //BB debug
+ // result = 1.; //BB debug
  return result;
 }
 
@@ -7226,7 +7226,7 @@ double result =  0.;
 
 
    }// end KFSW20
-
+//
 // result = 0.; //BB debug
 return result;
 }
