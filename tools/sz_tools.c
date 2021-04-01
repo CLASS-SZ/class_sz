@@ -2975,6 +2975,157 @@ ptsz->has_kSZ_kSZ_gal_1h = has_ksz_bkp;
 
 
 
+
+// Tabulate 2D Fourier transform of density profile on a [ln_ell_over_ell_char] grid
+int tabulate_pressure_profile_gNFW(struct background * pba,
+                                   struct tszspectrum * ptsz){
+
+// if (ptsz->has_kSZ_kSZ_gal_1h + ptsz->has_kSZ_kSZ_gal_2h + ptsz->has_kSZ_kSZ_gal_3h == _FALSE_)
+//   return 0;
+
+
+ // array of multipoles:
+ // this is (l+0.5)/ls
+ double ln_ell_min = log(1e-2);
+ double ln_ell_max = log(50.);
+ int n_ell = ptsz->array_profile_ln_PgNFW_at_lnl_over_ls_size;
+
+
+ class_alloc(ptsz->array_profile_ln_l_over_ls,sizeof(double *)*n_ell,ptsz->error_message);
+
+ // // array of masses:
+ // double ln_m_min = log(1e8);
+ // double ln_m_max = log(1e18);
+
+ //
+ // class_alloc(ptsz->array_profile_ln_m,sizeof(double *)*n_m,ptsz->error_message);
+ //
+
+ // // array of redshifts:
+ // double ln_1pz_min = log(1.+ptsz->z1SZ);
+ // double ln_1pz_max = log(1.+ptsz->z2SZ);
+
+
+//  class_alloc(ptsz->array_profile_ln_1pz,sizeof(double *)*n_z,ptsz->error_message);
+// int index_m_z;
+
+int index_l;
+for (index_l=0;
+     index_l<n_ell;
+     index_l++)
+{
+  ptsz->array_profile_ln_l_over_ls[index_l] = ln_ell_min
+                                              +index_l*(ln_ell_max-ln_ell_min)
+                                              /(n_ell-1.);
+}
+
+
+class_alloc(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls,n_ell*sizeof(double *),ptsz->error_message);
+for (index_l=0;
+     index_l<n_ell;
+     index_l++)
+{
+
+  ptsz->array_profile_ln_PgNFW_at_lnl_over_ls[index_l] = 1e-100; // initialize with super small number
+
+}
+
+// int has_ksz_bkp = ptsz->has_kSZ_kSZ_gal_1h;
+// ptsz->has_kSZ_kSZ_gal_1h = _TRUE_; //pretend we need the tau_profile
+
+//Parallelization of profile computation
+/* initialize error management flag */
+
+
+int abort;
+double tstart, tstop;
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+ptsz,pba)\
+private(tstart, tstop,index_l) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+#pragma omp for schedule (dynamic)
+for (index_l=0;
+     index_l<n_ell;
+     index_l++)
+{
+#pragma omp flush(abort)
+double * pvectsz;
+double * pvecback;
+class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+int index_pvectsz;
+for (index_pvectsz=0;
+     index_pvectsz<ptsz->tsz_size;
+     index_pvectsz++){
+       pvectsz[index_pvectsz] = 0.; // set everything to 0.
+     }
+
+
+
+
+
+  pvectsz[ptsz->index_l500] = 1.;
+  pvectsz[ptsz->index_multipole_for_pressure_profile] = exp(ptsz->array_profile_ln_l_over_ls[index_l])-0.5;
+  double result;
+
+
+  class_call_parallel(two_dim_ft_pressure_profile(ptsz,pba,pvectsz,&result),
+                                     ptsz->error_message,
+                                     ptsz->error_message);
+
+
+
+  // ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = log(result);
+  ptsz->array_profile_ln_PgNFW_at_lnl_over_ls[index_l] = log(result);
+  // printf("ell/ells = %.3e ln_pgnfw = %.3e\n",exp(ptsz->array_profile_ln_l_over_ls[index_l]),log(result));
+  // printf("ell/ells = %.3e ln_pgnfw = %.3e\n",exp(ptsz->array_profile_ln_l_over_ls[index_l]),log(result));
+
+
+
+  // printf("freeing pp pvectsz, pvecback\n");
+  // free(pvectsz);
+  // free(pvecback);
+  // printf("freed\n");
+
+
+}
+
+#ifdef _OPENMP
+  tstop = omp_get_wtime();
+  if (ptsz->sz_verbose > 0)
+    printf("In %s: time spent in tab profile parallel region (loop over ell's) = %e s for thread %d\n",
+           __func__,tstop-tstart,omp_get_thread_num());
+#endif
+
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+
+return _SUCCESS_;
+
+                                      }
+
+
+
+
 /**
  * This routine computes 2d ft of pressure profile at ell/ell_characteristic
  *

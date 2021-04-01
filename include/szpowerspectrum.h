@@ -932,6 +932,9 @@ struct tszspectrum {
   double * array_profile_ln_m;
   double * array_profile_ln_1pz;
 
+  // int array_profile_ln_PgNFW_at_lnl_over_ls_size; defined in class_sz_precisions.h
+  double * array_profile_ln_l_over_ls;
+  double * array_profile_ln_PgNFW_at_lnl_over_ls;
 
   double * dndlnM_array_z;
   double * dndlnM_array_m;
@@ -1157,6 +1160,9 @@ int evaluate_tau_profile(double * pvecback,
 
 int tabulate_density_profile(struct background * pba,
                              struct tszspectrum * ptsz);
+
+int tabulate_pressure_profile_gNFW(struct background * pba,
+                                   struct tszspectrum * ptsz);
 
 int evaluate_mean_galaxy_number_density_at_z(double * pvectsz,
                                              struct tszspectrum * ptsz);

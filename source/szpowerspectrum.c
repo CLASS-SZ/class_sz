@@ -201,6 +201,10 @@ int szpowerspectrum_init(
  tabulate_density_profile(pba,ptsz);
 
 
+ // tabulate pressure profile for gnFW
+ if (ptsz->pressure_profile == 3)
+ tabulate_pressure_profile_gNFW(pba,ptsz);
+
 //exit(0);
 
 
@@ -424,6 +428,12 @@ if (ptsz->tau_profile == 1){
    free(ptsz->array_profile_ln_l);
    free(ptsz->array_profile_ln_m);
    free(ptsz->array_profile_ln_1pz);
+   }
+
+// printf("freeing pp\n");
+if (ptsz->pressure_profile == 3){
+   free(ptsz->array_profile_ln_l_over_ls);
+   free(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls);
    }
 
 
@@ -3268,12 +3278,31 @@ int evaluate_pressure_profile(double * pvecback,
    //int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
    //printf("ell pp=%e\n",ptsz->ell[index_l]);
 
-   //custom gNFW pressure profile or Battaglia et al 2012
-   if (ptsz->pressure_profile == 3 || ptsz->pressure_profile == 4 ){
+   //Battaglia et al 2012
+   if (ptsz->pressure_profile == 4 ){
 
       class_call(two_dim_ft_pressure_profile(ptsz,pba,pvectsz,&result),
                                               ptsz->error_message,
                                               ptsz->error_message);
+
+   }
+   //custom gNFW pressure profile
+   else if(ptsz->pressure_profile == 3){
+
+
+      lnx_asked = log((pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500]);
+
+      if(lnx_asked<ptsz->array_profile_ln_l_over_ls[0] || _mean_y_)
+         result = ptsz->array_profile_ln_PgNFW_at_lnl_over_ls[0];
+      else if (lnx_asked>ptsz->array_profile_ln_l_over_ls[ptsz->array_profile_ln_PgNFW_at_lnl_over_ls_size-1])
+         result = -100.;
+      else
+        result = pwl_value_1d(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls_size,
+                              ptsz->array_profile_ln_l_over_ls,
+                              ptsz->array_profile_ln_PgNFW_at_lnl_over_ls,
+                              lnx_asked);
+
+      result = exp(result);
 
    }
 
@@ -7581,7 +7610,7 @@ pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
 
 
 
-
+// analytical truncated NFW profile
 double evaluate_truncated_nfw_profile(//double * pvecback,
                                       double * pvectsz,
                                       struct background * pba,
