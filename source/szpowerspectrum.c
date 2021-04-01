@@ -112,10 +112,12 @@ int szpowerspectrum_init(
    if (ptsz->MF==1 && ptsz->hm_consistency==2)
    load_T10_alpha_norm(ptsz);
 
-   if (ptsz->hm_consistency==1){
-   ptsz->hm_consistency_counter_terms_done = 0;
    tabulate_hmf_counter_terms_nmin(pba,pnl,ppm,ptsz);
    tabulate_hmf_counter_terms_b1min(pba,pnl,ppm,ptsz);
+   if (ptsz->hm_consistency==1){
+   ptsz->hm_consistency_counter_terms_done = 0;
+   // tabulate_hmf_counter_terms_nmin(pba,pnl,ppm,ptsz);
+   // tabulate_hmf_counter_terms_b1min(pba,pnl,ppm,ptsz);
    tabulate_hmf_counter_terms_b2min(pba,pnl,ppm,ptsz);
    ptsz->hm_consistency_counter_terms_done = 1;
    if (ptsz->sz_verbose>10){
@@ -177,7 +179,7 @@ int szpowerspectrum_init(
        || ptsz->has_lens_lensmag_2h
      ){
    tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
-
+   // exit(0);
    // only performed if requested:
    load_normalized_dndz(ptsz);
    //unwise
@@ -432,10 +434,14 @@ if (ptsz->has_dndlnM){
    free(ptsz->array_dndlnM_at_z_and_M);
    }
 
+
+free(ptsz->array_hmf_counter_terms_nmin);
+free(ptsz->array_redshift_hmf_counter_terms);
+free(ptsz->array_hmf_counter_terms_b1min);
 if (ptsz->hm_consistency == 1){
-   free(ptsz->array_redshift_hmf_counter_terms);
-   free(ptsz->array_hmf_counter_terms_nmin);
-   free(ptsz->array_hmf_counter_terms_b1min);
+  // free(ptsz->array_hmf_counter_terms_nmin);
+  // free(ptsz->array_redshift_hmf_counter_terms);
+   // free(ptsz->array_hmf_counter_terms_b1min);
    free(ptsz->array_hmf_counter_terms_b2min);
  }
 
@@ -2538,6 +2544,7 @@ double integrand_at_m_and_z(double logM,
     double galaxy_profile_at_ell_1 = pvectsz[ptsz->index_galaxy_profile];
     pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+
     // the results of the above function call, is stored in:
     // pvectsz[ptsz->index_pressure_profile] ("y_l")
     double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
@@ -2545,6 +2552,14 @@ double integrand_at_m_and_z(double logM,
         pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                           *galaxy_profile_at_ell_1
                                           *pressure_profile_at_ell_2;
+    // printf("\n");
+    // printf("u_g = %.3e\n",galaxy_profile_at_ell_1);
+    // printf("u_p = %.3e\n",pressure_profile_at_ell_2);
+    // printf("hmf = %.3e\n",pvectsz[ptsz->index_hmf]);
+    // printf("\n");
+    // exit(0);
+
+
    }
 
    else if  (_tSZ_gal_2h_){
@@ -4225,7 +4240,11 @@ int evaluate_HMF(double logM,
 
   // Tinker et al 2008 @ M500c : the mass integral runs over m500c -> logM = logM500c
   // if (ptsz->MF==5 || (ptsz->MF==1 && ptsz->pressure_profile == 2)){
-  if (ptsz->MF==5){
+  if ( ptsz->MF==5
+    // || ptsz->pressure_profile == 2
+    // || ptsz->pressure_profile == 3
+    // || ptsz->pressure_profile == 0
+      ){
 
   pvectsz[ptsz->index_m500c] = exp(logM);
   pvectsz[ptsz->index_r500c] = pow(3.*pvectsz[ptsz->index_m500c]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
@@ -7494,6 +7513,7 @@ else {
 
 M_halo = pvectsz[ptsz->index_mass_for_hmf]; // Msun_over_h
 double ng_bar = pvectsz[ptsz->index_mean_galaxy_number_density];
+// double ng_bar = pow(pba->h,-3.);//pvectsz[ptsz->index_mean_galaxy_number_density];
 double nc;
 double ns;
 double us;
@@ -7527,10 +7547,13 @@ ug_at_ell  = (1./ng_bar)*(nc+ns*us);
 // ug_at_ell  = (1./ng_bar)*(nc+ns*us); // (correct one) BB commented for debug
 //ug_at_ell  = (1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us); // BB debug
 // printf("ug^2=%.3e\n",ug_at_ell*ug_at_ell); // BB debug
+// printf("\n");
 // printf("ng_bar=%.3e\n",ng_bar); // BB debug
 // printf("nc=%.3e\n",nc); // BB debug
 // printf("ns=%.3e\n",ns); // BB debug
 // printf("us=%.3e\n",us); // BB debugH
+// printf("\n");
+// exit(0);
 }
 
 // 1-halo terms
@@ -7544,6 +7567,12 @@ else if(_gal_gal_1h_
   ug_at_ell  =(1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us); ///# commented for debug
    //ug_at_ell  =(1./ng_bar)*(us*ns); // BB debug
   // printf("ug^2=%.3e us = %.3e ns = %.3e\n",ug_at_ell*ug_at_ell, us, ns); // BB debug
+
+  // printf("\n");
+  // printf("ng_bar=%.3e\n",ng_bar); // BB debug
+  // printf("ns=%.3e\n",ns); // BB debug
+  // printf("us=%.3e\n",us); // BB debugH
+  // printf("\n");
   }
 
 pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
@@ -7591,7 +7620,7 @@ else if (_tSZ_gal_1h_
     // printf("c500c_KA20\n");
     // exit(0);
     }
-  else if (ptsz->galaxy_sample == 0 && ptsz->MF == 1){
+  else if (ptsz->MF == 1){
     // printf("computing rd, cd 2\n");
     r_delta = pvectsz[ptsz->index_r200m];
     c_delta = pvectsz[ptsz->index_c200m];

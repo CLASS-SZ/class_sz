@@ -3955,7 +3955,7 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
 if ((ptsz->galaxy_sample == 0) || (ptsz->galaxy_sample == 2))
   return 0;
 
-if (ptsz->galaxy_sample == 1)
+if (ptsz->sz_verbose >= 1)
 printf("-> Loading fdndz unwise\n");
 
   class_alloc(ptsz->normalized_fdndz_z,sizeof(double *)*100,ptsz->error_message);
@@ -4123,7 +4123,7 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
 if ((ptsz->galaxy_sample == 0) || (ptsz->galaxy_sample == 2))
   return 0;
 
-if (ptsz->galaxy_sample == 1)
+if (ptsz->sz_verbose >= 1)
 printf("-> Loading cosmos dndz unwise\n");
 
   class_alloc(ptsz->normalized_cosmos_dndz_z,sizeof(double *)*100,ptsz->error_message);
@@ -5339,13 +5339,13 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
                                                 V->ppm,
                                                 V->pnl,
                                                 V->ptsz);
-    // this is needed only in  the approximate calculation
-    // for the exact calculation in HOD, this comes out of Sigma_crit
-    result *= W_lens;
-    }
-    else {
-      result = 0.;
-    }
+  // this is needed only in  the approximate calculation
+  // for the exact calculation in HOD, this comes out of Sigma_crit
+  result *= W_lens;
+  }
+  else {
+    result = 0.;
+  }
   }
   // Halofit approach
   else if (
@@ -6297,106 +6297,128 @@ double integrand_patterson_test(double logM, void *p){
   //
   //                                }
 
-  else
+  else {
   r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                        epsrel, epsabs,
                                        integrand_patterson_test,
                                        params,ptsz->patterson_show_neval);
 
+// evaluate low mass part:
+ double rho0 = (pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0;
+ double nmin;
+ if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
+ || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)
+      && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)){
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double bmin_umin = bmin*integrand_patterson_test(log(m_min),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r += bmin_umin;
+    }
+else {
+       double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+       double nmin_umin = nmin*integrand_patterson_test(log(m_min),params)/pvectsz[ptsz->index_hmf];
+       r += nmin_umin;
+       }
+                                     }
+
+
   }
 
 
-  //GSL QAGS
-  else if (ptsz->integration_method_mass==1){
-
-  gsl_function F;
-  F.function = &integrand_patterson_test;
-  F.params = params;
-
-  int n_subintervals_gsl = 30000;
-
-  // double epsrel=ptsz->mass_epsrel;
-  // double epsabs=ptsz->mass_epsabs;
-
-
-  gsl_integration_workspace * w = gsl_integration_workspace_alloc (n_subintervals_gsl);
-
-  double result_gsl, error;
-  gsl_integration_qags(&F,log(m_min),log(m_max),epsabs,epsrel,n_subintervals_gsl,w,&result_gsl,&error);
-  gsl_integration_workspace_free(w);
-
-  r = result_gsl;
-}
-
-
-
-  //GSL QAG
-  else if (ptsz->integration_method_mass==2){
-
-  gsl_function F;
-  F.function = &integrand_patterson_test;
-  F.params = params;
-
-  int n_subintervals_gsl = 300;
-
-  // double epsrel=ptsz->mass_epsrel;
-  // double epsabs=ptsz->mass_epsabs;
+//   //GSL QAGS
+//   else if (ptsz->integration_method_mass==1){
+//
+//   gsl_function F;
+//   F.function = &integrand_patterson_test;
+//   F.params = params;
+//
+//   int n_subintervals_gsl = 30000;
+//
+//   // double epsrel=ptsz->mass_epsrel;
+//   // double epsabs=ptsz->mass_epsabs;
+//
+//
+//   gsl_integration_workspace * w = gsl_integration_workspace_alloc (n_subintervals_gsl);
+//
+//   double result_gsl, error;
+//   gsl_integration_qags(&F,log(m_min),log(m_max),epsabs,epsrel,n_subintervals_gsl,w,&result_gsl,&error);
+//   gsl_integration_workspace_free(w);
+//
+//   r = result_gsl;
+// }
+//
 
 
-  gsl_integration_workspace * w = gsl_integration_workspace_alloc (n_subintervals_gsl);
+//   //GSL QAG
+//   else if (ptsz->integration_method_mass==2){
+//
+//   gsl_function F;
+//   F.function = &integrand_patterson_test;
+//   F.params = params;
+//
+//   int n_subintervals_gsl = 300;
+//
+//   // double epsrel=ptsz->mass_epsrel;
+//   // double epsabs=ptsz->mass_epsabs;
+//
+//
+//   gsl_integration_workspace * w = gsl_integration_workspace_alloc (n_subintervals_gsl);
+//
+//   double result_gsl, error;
+//   int key = 4;
+//   gsl_integration_qag(&F,log(m_min),log(m_max),epsabs,epsrel,n_subintervals_gsl,key,w,&result_gsl,&error);
+//   gsl_integration_workspace_free(w);
+//
+//   r = result_gsl;
+// }
 
-  double result_gsl, error;
-  int key = 4;
-  gsl_integration_qag(&F,log(m_min),log(m_max),epsabs,epsrel,n_subintervals_gsl,key,w,&result_gsl,&error);
-  gsl_integration_workspace_free(w);
 
-  r = result_gsl;
-}
+// //GSL romberg
+// else if (ptsz->integration_method_mass==3){
+//
+// printf("romberg method has been deactivated.\n");
+// exit(0);
+// // gsl_function F;
+// // F.function = &integrand_patterson_test;
+// // F.params = params;
+// //
+// // int n_subintervals_gsl = 30;
+// //
+// // // double epsrel=ptsz->mass_epsrel;
+// // // double epsabs=ptsz->mass_epsabs;
+// //
+// //
+// // gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
+// //
+// // double result_gsl;
+// // size_t neval;
+// // gsl_integration_romberg(&F,log(m_min),log(m_max),epsabs,epsrel,&result_gsl,&neval,w);
+// // gsl_integration_romberg_free(w);
+// //
+// // r = result_gsl;
+// }
 
-
-//GSL romberg
-else if (ptsz->integration_method_mass==3){
-
-printf("romberg method has been deactivated.\n");
-exit(0);
+// //GSL QNG (Gauss-Kronrod)
+// else if (ptsz->integration_method_mass==4){
+//
 // gsl_function F;
 // F.function = &integrand_patterson_test;
 // F.params = params;
 //
-// int n_subintervals_gsl = 30;
-//
+// //
 // // double epsrel=ptsz->mass_epsrel;
 // // double epsabs=ptsz->mass_epsabs;
 //
-//
-// gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
-//
 // double result_gsl;
 // size_t neval;
-// gsl_integration_romberg(&F,log(m_min),log(m_max),epsabs,epsrel,&result_gsl,&neval,w);
-// gsl_integration_romberg_free(w);
+// double abserr;
+// gsl_integration_qng(&F,log(m_min),log(m_max),epsabs,epsrel,&result_gsl,&abserr,&neval);
 //
 // r = result_gsl;
-}
-
-//GSL QNG (Gauss-Kronrod)
-else if (ptsz->integration_method_mass==4){
-
-gsl_function F;
-F.function = &integrand_patterson_test;
-F.params = params;
-
-//
-// double epsrel=ptsz->mass_epsrel;
-// double epsabs=ptsz->mass_epsabs;
-
-double result_gsl;
-size_t neval;
-double abserr;
-gsl_integration_qng(&F,log(m_min),log(m_max),epsabs,epsrel,&result_gsl,&abserr,&neval);
-
-r = result_gsl;
-}
+// }
 
 if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
@@ -6873,6 +6895,7 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
                                             /pow(V->pba->h,2);
 
       double omega = V->pvecback[V->pba->index_bg_Omega_m];
+
       V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
 
       evaluate_HMF(lnM_halo,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
@@ -6884,9 +6907,7 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
       // this  also works:
       //double hmf = get_dndlnM_at_z_and_M(z_asked,m_asked,V->ptsz);
 
-      // printf("hmf = %.3e\n",hmf);
-      // printf("ns = %.3e\n",ns);
-      // printf("nc = %.3e\n",nc);
+
 
       V->pvectsz[V->ptsz->index_md] = V->ptsz->index_md_gal_gal_1h;
       double nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->pvectsz,V->ptsz,V->pba);
@@ -6895,6 +6916,10 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
 
       double result = hmf*(ns+nc);
       //double result = (ns+nc)/log(10.);
+
+      // printf("hmf = %.3e\n",hmf);
+      // printf("ns = %.3e\n",ns);
+      // printf("nc = %.3e\n",nc);
 
   return result;
 
@@ -6912,9 +6937,10 @@ class_alloc(ptsz->array_mean_galaxy_number_density,sizeof(double *)*ptsz->n_arra
 int index_z;
 double r;
 double m_min,m_max;
-m_min = 1e6*pba->h;//ptsz->M1SZ;
-m_max = 1e17*pba->h;//ptsz->M2SZ;
-
+// m_min = 1e6*pba->h;//ptsz->M1SZ;
+// m_max = 1e17*pba->h;//ptsz->M2SZ;
+m_min = ptsz->M1SZ;
+m_max = ptsz->M2SZ;
 double * pvecback;
 double * pvectsz;
 
@@ -6957,6 +6983,9 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
                                                integrand_mean_galaxy_number,
                                                params,ptsz->patterson_show_neval);
 
+           double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+           double nmin_umin = nmin*integrand_mean_galaxy_number(log(m_min),params)/pvectsz[ptsz->index_hmf];
+           r += nmin_umin;
           ptsz->array_mean_galaxy_number_density[index_z] = log(r);
 
        }
@@ -7715,12 +7744,12 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct tszspectrum * ptsz){
 
    // bounds array of radii for sigma computations:
-   // ptsz->logR1SZ = log(pow(3.*0.1*ptsz->M1SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
-   // ptsz->logR2SZ = log(pow(3.*10.*ptsz->M2SZ/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
+   ptsz->logR1SZ = log(pow(3.*0.1*1e6/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
+   ptsz->logR2SZ = log(pow(3.*10.*1e17/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
 
 
-   ptsz->logR1SZ = -5.684; // 0.0034Mpc/h, 1.8e4  solar mass
-   ptsz->logR2SZ = 4.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
+   // ptsz->logR1SZ = -5.684; // 0.0034Mpc/h, 1.8e4  solar mass
+   // ptsz->logR2SZ = 4.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
 
 
   //Array of z
