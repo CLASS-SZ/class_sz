@@ -6225,6 +6225,7 @@ double integrand_patterson_test(double logM, void *p){
    double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
    double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
    r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_1\n");
 }
 
 
@@ -6244,6 +6245,7 @@ double integrand_patterson_test(double logM, void *p){
    double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
    double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
    r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
  }
 
 
@@ -6494,6 +6496,7 @@ else {
        r += nmin_umin;
        }
 
+       // printf("counter terms done\n");
                                    }
   }
 
@@ -7107,8 +7110,8 @@ class_alloc(ptsz->array_mean_galaxy_number_density,sizeof(double *)*ptsz->n_arra
 int index_z;
 double r;
 double m_min,m_max;
-m_min = 1e11;//ptsz->M1SZ;
-m_max = 1e17;//ptsz->M2SZ;
+m_min = ptsz->m_min_counter_terms;//ptsz->M1SZ;
+m_max = ptsz->m_max_counter_terms;//ptsz->M2SZ;
 // m_min = ptsz->M1SZ;
 // m_max = ptsz->M2SZ;
 double * pvecback;
