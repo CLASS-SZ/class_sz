@@ -183,10 +183,10 @@ int szpowerspectrum_init(
    // only performed if requested:
    load_normalized_dndz(ptsz);
    //unwise
-   if(ptsz->galaxy_sample==1){
-     load_normalized_fdndz(ptsz);
-     load_normalized_cosmos_dndz(ptsz);
-   }
+   // if(ptsz->galaxy_sample==1){
+   //   load_normalized_fdndz(ptsz);
+   //   load_normalized_cosmos_dndz(ptsz);
+   // }
 
    if (ptsz->has_kSZ_kSZ_gal_1h
     || ptsz->has_kSZ_kSZ_lensmag_1halo
@@ -488,13 +488,13 @@ if (ptsz->has_tSZ_gal_1h
    free(ptsz->normalized_dndz_z);
    free(ptsz->normalized_dndz_phig);
   // unwise
-  if (ptsz->galaxy_sample ==  1){
-    free(ptsz->normalized_fdndz_z);
-    free(ptsz->normalized_fdndz_phig);
-
-    free(ptsz->normalized_cosmos_dndz_z);
-    free(ptsz->normalized_cosmos_dndz_phig);
-   }
+  // if (ptsz->galaxy_sample ==  1){
+  //   free(ptsz->normalized_fdndz_z);
+  //   free(ptsz->normalized_fdndz_phig);
+  //
+  //   free(ptsz->normalized_cosmos_dndz_z);
+  //   free(ptsz->normalized_cosmos_dndz_phig);
+  //  }
   }
 
 if (ptsz->include_noise_cov_y_y==1){
@@ -1552,15 +1552,15 @@ double integrand_at_m_and_z(double logM,
    // pvectsz[ptsz->index_mf],pvectsz[ptsz->index_dlognudlogRh],   pvectsz[ptsz->index_logSigma2]);
    // exit(0);
 
-   if (ptsz->hm_consistency == 1){
-     // printf("using counter term nmin\n");
-     // printf("logM = %.5e logMmin = %.5e\n",logM,log(ptsz->M1SZ));
-     if ((logM <= log(ptsz->M1SZ) + 0.01*log(ptsz->M1SZ)) && (logM >= log(ptsz->M1SZ) - 0.01*log(ptsz->M1SZ))){
-     // printf("using counter term nmin\n");
-     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-     pvectsz[ptsz->index_hmf] =  pvectsz[ptsz->index_hmf] + nmin;
-   }
-   }
+   // if (ptsz->hm_consistency == 1){
+   //   // printf("using counter term nmin\n");
+   //   // printf("logM = %.5e logMmin = %.5e\n",logM,log(ptsz->M1SZ));
+   //   if ((logM <= log(ptsz->M1SZ) + 0.01*log(ptsz->M1SZ)) && (logM >= log(ptsz->M1SZ) - 0.01*log(ptsz->M1SZ))){
+   //   // printf("using counter term nmin\n");
+   //   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   //   pvectsz[ptsz->index_hmf] =  pvectsz[ptsz->index_hmf] + nmin;
+   // }
+   // }
    // pvectsz[ptsz->index_hmf] = 1.;
    // The HMF, i.e., dN/dM/dV is stored in:
    // pvectsz[ptsz->index_hmf]
@@ -3756,17 +3756,17 @@ int evaluate_halo_bias(double * pvecback,
                                                       +BTT*pow(nuTink,bTTT)+CTT*pow(nuTink,cTTT);
 
 
-  if (ptsz->hm_consistency==1 && ptsz->hm_consistency_counter_terms_done == 1) {
-    double logM = log(pvectsz[ptsz->index_mass_for_hmf]);
-    double z = pvectsz[ptsz->index_z];
-  if ((logM <= log(ptsz->M1SZ) + 0.01*log(ptsz->M1SZ)) && (logM >= log(ptsz->M1SZ) - 0.01*log(ptsz->M1SZ))){
-    // printf("doing counter terms b1\n");
-    double b1_min = get_hmf_counter_term_b1min_at_z(z,ptsz);
-    pvectsz[ptsz->index_halo_bias] = b1_min;
-
-  }
-
-  }
+  // if (ptsz->hm_consistency==1 && ptsz->hm_consistency_counter_terms_done == 1) {
+  //   double logM = log(pvectsz[ptsz->index_mass_for_hmf]);
+  //   double z = pvectsz[ptsz->index_z];
+  // if ((logM <= log(ptsz->M1SZ) + 0.01*log(ptsz->M1SZ)) && (logM >= log(ptsz->M1SZ) - 0.01*log(ptsz->M1SZ))){
+  //   // printf("doing counter terms b1\n");
+  //   double b1_min = get_hmf_counter_term_b1min_at_z(z,ptsz);
+  //   pvectsz[ptsz->index_halo_bias] = b1_min;
+  //
+  // }
+  //
+  // }
 
   // // BB debug
   // nuTink = 10.;

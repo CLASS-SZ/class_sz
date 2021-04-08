@@ -5986,8 +5986,8 @@ double integrand_patterson_test(double logM, void *p){
 
    // else {
 
-  //Patterson [Jens Chluba]
-  if (ptsz->integration_method_mass==0){
+  // //Patterson [Jens Chluba]
+  // if (ptsz->integration_method_mass==0){
 
 
   if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_Y_N_next_order )){
@@ -6220,6 +6220,14 @@ double integrand_patterson_test(double logM, void *p){
                                            integrand_patterson_test,
                                            params,ptsz->patterson_show_neval);
 
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+}
+
+
   pvectsz[ptsz->index_part_id_cov_hsv] = 2;
   V.pvectsz = pvectsz;
   params = &V;
@@ -6230,8 +6238,18 @@ double integrand_patterson_test(double logM, void *p){
                                            epsrel, epsabs,
                                            integrand_patterson_test,
                                            params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+ }
+
+
   r = r_m_1*r_m_2;
-  }
+    }
+
 
 
 
@@ -6455,27 +6473,28 @@ double integrand_patterson_test(double logM, void *p){
                                        params,ptsz->patterson_show_neval);
 
 // evaluate low mass part:
+  if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
  double rho0 = (pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0;
  double nmin;
  if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
- || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)
-      && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
+ || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)  && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)){
+
      double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
      double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
-     double bmin_umin = bmin*integrand_patterson_test(log(m_min),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
      r += bmin_umin;
     }
 else {
+       // printf("counter terms at low M\n");
        double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-       double nmin_umin = nmin*integrand_patterson_test(log(m_min),params)/pvectsz[ptsz->index_hmf];
+       double nmin_umin = nmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf];
        r += nmin_umin;
        }
-                                     }
 
-
+                                   }
   }
 
 
@@ -7088,10 +7107,10 @@ class_alloc(ptsz->array_mean_galaxy_number_density,sizeof(double *)*ptsz->n_arra
 int index_z;
 double r;
 double m_min,m_max;
-// m_min = 1e6*pba->h;//ptsz->M1SZ;
-// m_max = 1e17*pba->h;//ptsz->M2SZ;
-m_min = ptsz->M1SZ;
-m_max = ptsz->M2SZ;
+m_min = 1e11;//ptsz->M1SZ;
+m_max = 1e17;//ptsz->M2SZ;
+// m_min = ptsz->M1SZ;
+// m_max = ptsz->M2SZ;
 double * pvecback;
 double * pvectsz;
 
@@ -7239,8 +7258,10 @@ class_alloc(ptsz->array_hmf_counter_terms_b1min,sizeof(double *)*ptsz->n_z_hmf_c
 int index_z;
 double r;
 double m_min,m_max;
-m_min = ptsz->M1SZ;
-m_max = ptsz->M2SZ;
+// m_min = ptsz->M1SZ;
+// m_max = ptsz->M2SZ;
+m_min = ptsz->m_min_counter_terms;
+m_max = ptsz->m_max_counter_terms;
 double z_min = ptsz->z1SZ;
 double z_max = ptsz->z2SZ;
 
@@ -7404,8 +7425,8 @@ class_alloc(ptsz->array_hmf_counter_terms_b2min,sizeof(double *)*ptsz->n_z_hmf_c
 int index_z;
 double r;
 double m_min,m_max;
-m_min = ptsz->M1SZ;
-m_max = ptsz->M2SZ;
+m_min = ptsz->m_min_counter_terms;
+m_max = ptsz->m_max_counter_terms;
 double z_min = ptsz->z1SZ;
 double z_max = ptsz->z2SZ;
 
@@ -7567,8 +7588,8 @@ class_alloc(ptsz->array_redshift_hmf_counter_terms,sizeof(double *)*ptsz->n_z_hm
 int index_z;
 double r;
 double m_min,m_max;
-m_min = ptsz->M1SZ;
-m_max = ptsz->M2SZ;
+m_min = ptsz->m_min_counter_terms;
+m_max = ptsz->m_max_counter_terms;
 double z_min = ptsz->z1SZ;
 double z_max = ptsz->z2SZ;
 
