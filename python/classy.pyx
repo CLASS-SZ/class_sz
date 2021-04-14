@@ -1434,6 +1434,21 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_ym(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of yxmu power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_tSZ_lensmag_1h[index])
+            cl['2h'].append(self.tsz.cl_tSZ_lensmag_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+
     def cl_gg(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of gxg power spectrum
@@ -1448,6 +1463,20 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+
+    def cl_kg(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of kappaxgalaxy power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_gal_lens_1h[index])
+            cl['2h'].append(self.tsz.cl_gal_lens_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
 
 
     def get_params_sz(self):

@@ -276,8 +276,12 @@ cdef extern from "class.h":
         double * cl_sz_2h
         double * cl_tSZ_gal_1h
         double * cl_tSZ_gal_2h
+        double * cl_tSZ_lensmag_1h
+        double * cl_tSZ_lensmag_2h
         double * cl_gal_gal_1h
         double * cl_gal_gal_2h
+        double * cl_gal_lens_1h
+        double * cl_gal_lens_2h
         double ** tllprime_sz
         short has_tszspectrum
         short sz_verbose
