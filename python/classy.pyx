@@ -1422,7 +1422,7 @@ cdef class Class:
 
     def cl_yg(self):
         """
-        (class_sz) Return the 1-halo and 2-halo terms of yxg power spectrum
+        (class_sz) Return the 1-halo and 2-halo terms of y x g power spectrum
         """
         cl = {}
         cl['ell'] = []
@@ -1436,7 +1436,7 @@ cdef class Class:
 
     def cl_ym(self):
         """
-        (class_sz) Return the 1-halo and 2-halo terms of yxmu power spectrum
+        (class_sz) Return the 1-halo and 2-halo terms of y x mu (lensing magnification) power spectrum
         """
         cl = {}
         cl['ell'] = []
@@ -1466,7 +1466,7 @@ cdef class Class:
 
     def cl_kg(self):
         """
-        (class_sz) Return the 1-halo and 2-halo terms of kappaxgalaxy power spectrum
+        (class_sz) Return the 1-halo and 2-halo terms of kappa (lensing) x galaxy power spectrum
         """
         cl = {}
         cl['ell'] = []
@@ -1475,6 +1475,62 @@ cdef class Class:
         for index in range(self.tsz.nlSZ):
             cl['1h'].append(self.tsz.cl_gal_lens_1h[index])
             cl['2h'].append(self.tsz.cl_gal_lens_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+    def cl_kk(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of kappa x kappa (lensing) power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_lens_lens_1h[index])
+            cl['2h'].append(self.tsz.cl_lens_lens_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+    def cl_km(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of kappa (lensing) x mu (lensing magnification) power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_lens_lensmag_1h[index])
+            cl['2h'].append(self.tsz.cl_lens_lensmag_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+    def cl_mm(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of mu x mu (lensing magnification) power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_lensmag_lensmag_1h[index])
+            cl['2h'].append(self.tsz.cl_lensmag_lensmag_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+    def cl_gm(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of galaxy x mu (lensing magnification) power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_gal_lensmag_1h[index])
+            cl['2h'].append(self.tsz.cl_gal_lensmag_2h[index])
             cl['ell'].append(self.tsz.ell[index])
         return cl
 

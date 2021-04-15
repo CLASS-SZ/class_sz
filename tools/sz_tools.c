@@ -5386,7 +5386,10 @@ double integrand_redshift(double ln1pz, void *p){
   if (((V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo))
     ||((V->ptsz->has_tSZ_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lensmag_1h))
     ||((V->ptsz->has_tSZ_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lensmag_2h))
-
+    ||((V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
+    ||((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
+    ||((V->ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_1h))
+    ||((V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
 ){
     // compute kernel for lensing magnification
     // lensing of galaxies
@@ -5401,6 +5404,19 @@ double integrand_redshift(double ln1pz, void *p){
   // printf("analytical nfw z = %.3e lm = %.3e\n",z,redshift_int_lensmag);
 
 
+  }
+  else if (
+      ((V->ptsz->has_lens_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_1h))
+    ||((V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
+  )
+  {
+    evaluate_redshift_int_lensmag(V->pvectsz,V->ptsz);
+    double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_lensmag];
+    V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = _c_/_Mpc_over_m_*_c_/_Mpc_over_m_*V->ptsz->chi_star*pow((1.+z),1.)
+                                                   /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)
+                                                   *sqrt(V->pvectsz[V->ptsz->index_chi2])
+                                                   *sqrt((V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2]))*redshift_int_lensmag)
+                                                 );
   }
   else {
     // CMB lensing
@@ -5439,8 +5455,10 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
      || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
      || ((V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
      || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
-     // || ((V->ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_1h))
-     // || ((V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
+     || ((V->ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_1h))
+     || ((V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
+     || ((V->ptsz->has_lens_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_1h))
+     || ((V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
      //|| ((V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo))
      || ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h))
      || ((V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h))
@@ -5781,7 +5799,7 @@ if ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kS
 }
 
 // gxg needs Wg^2:
-if (((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h))
+if ( ((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h))
    ||((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
   ){
 // multiply by radial kernel for galaxies (squared for gxg quantities)
@@ -6344,6 +6362,37 @@ double integrand_patterson_test(double logM, void *p){
 
 
 
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_lensmag_2h){
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('gal' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('Phi' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+  // corrected to match Mat M. consistency treatment in hmvec
+  r_m_2 = r_m_2+ptsz->Omega_m_0*ptsz->Rho_crit_0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)/pvectsz[ptsz->index_lensing_Sigma_crit];
+
+
+  r = r_m_1*r_m_2;
+  }
 
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_lens_2h){
   double r_m_1; // first part of redshift integrand
@@ -6590,102 +6639,11 @@ else {
                                    }
   }
 
-
-//   //GSL QAGS
-//   else if (ptsz->integration_method_mass==1){
-//
-//   gsl_function F;
-//   F.function = &integrand_patterson_test;
-//   F.params = params;
-//
-//   int n_subintervals_gsl = 30000;
-//
-//   // double epsrel=ptsz->mass_epsrel;
-//   // double epsabs=ptsz->mass_epsabs;
-//
-//
-//   gsl_integration_workspace * w = gsl_integration_workspace_alloc (n_subintervals_gsl);
-//
-//   double result_gsl, error;
-//   gsl_integration_qags(&F,log(m_min),log(m_max),epsabs,epsrel,n_subintervals_gsl,w,&result_gsl,&error);
-//   gsl_integration_workspace_free(w);
-//
-//   r = result_gsl;
-// }
-//
-
-
-//   //GSL QAG
-//   else if (ptsz->integration_method_mass==2){
-//
-//   gsl_function F;
-//   F.function = &integrand_patterson_test;
-//   F.params = params;
-//
-//   int n_subintervals_gsl = 300;
-//
-//   // double epsrel=ptsz->mass_epsrel;
-//   // double epsabs=ptsz->mass_epsabs;
-//
-//
-//   gsl_integration_workspace * w = gsl_integration_workspace_alloc (n_subintervals_gsl);
-//
-//   double result_gsl, error;
-//   int key = 4;
-//   gsl_integration_qag(&F,log(m_min),log(m_max),epsabs,epsrel,n_subintervals_gsl,key,w,&result_gsl,&error);
-//   gsl_integration_workspace_free(w);
-//
-//   r = result_gsl;
-// }
-
-
-// //GSL romberg
-// else if (ptsz->integration_method_mass==3){
-//
-// printf("romberg method has been deactivated.\n");
-// exit(0);
-// // gsl_function F;
-// // F.function = &integrand_patterson_test;
-// // F.params = params;
-// //
-// // int n_subintervals_gsl = 30;
-// //
-// // // double epsrel=ptsz->mass_epsrel;
-// // // double epsabs=ptsz->mass_epsabs;
-// //
-// //
-// // gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
-// //
-// // double result_gsl;
-// // size_t neval;
-// // gsl_integration_romberg(&F,log(m_min),log(m_max),epsabs,epsrel,&result_gsl,&neval,w);
-// // gsl_integration_romberg_free(w);
-// //
-// // r = result_gsl;
-// }
-
-// //GSL QNG (Gauss-Kronrod)
-// else if (ptsz->integration_method_mass==4){
-//
-// gsl_function F;
-// F.function = &integrand_patterson_test;
-// F.params = params;
-//
-// //
-// // double epsrel=ptsz->mass_epsrel;
-// // double epsabs=ptsz->mass_epsabs;
-//
-// double result_gsl;
-// size_t neval;
-// double abserr;
-// gsl_integration_qng(&F,log(m_min),log(m_max),epsabs,epsrel,&result_gsl,&abserr,&neval);
-//
-// r = result_gsl;
-// }
-
 if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
  || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)
       && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)){
