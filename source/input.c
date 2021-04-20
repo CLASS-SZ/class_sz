@@ -4622,7 +4622,7 @@ int input_default_params(
   ptsz->M1_prime_HOD_factor = 15.;
   ptsz->M_min_HOD_satellite_mass_factor_unwise = 0.1;
 
-  ptsz->hm_consistency = 0;
+  ptsz->hm_consistency = 0; //0: nothing 1: counter terms 2: alpha(z)
 
   ptsz->N_kSZ2_gal_multipole_grid = 20;
 

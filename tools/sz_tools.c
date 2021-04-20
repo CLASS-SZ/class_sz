@@ -6649,10 +6649,10 @@ if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)){
 
 
- if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h){
-   //printf("ok\n");
-   r = r+ptsz->Omega_m_0*ptsz->Rho_crit_0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)/pvectsz[ptsz->index_lensing_Sigma_crit];
- }
+ // if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h){
+ //   //printf("ok\n");
+ //   r = r+ptsz->Omega_m_0*ptsz->Rho_crit_0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)/pvectsz[ptsz->index_lensing_Sigma_crit];
+ // }
 
  pvectsz[ptsz->index_integral_over_m] = r*r; //BB commented for debug
 //pvectsz[ptsz->index_integral_over_m] = r/r; // BB debug

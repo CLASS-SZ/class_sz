@@ -3282,45 +3282,48 @@ else{
   // normalization:
   double rho0;
 
-  //for use_analytical_truncated_nfw
-  if (ptsz->use_analytical_truncated_nfw==1){
-  //rho0 = pvectsz[ptsz->index_m200m]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+pvectsz[ptsz->index_c200m])-pvectsz[ptsz->index_c200m]/(1.+pvectsz[ptsz->index_c200m])));
+  // //for use_analytical_truncated_nfw
+  // if (ptsz->use_analytical_truncated_nfw==1){
+  // //rho0 = pvectsz[ptsz->index_m200m]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+pvectsz[ptsz->index_c200m])-pvectsz[ptsz->index_c200m]/(1.+pvectsz[ptsz->index_c200m])));
 
   rho0 = mass_nfw/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
 
-  }
-  // for def at mvir
-  else{
-  rho0 = mass_nfw/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+concentration_nfw)-concentration_nfw/(1.+concentration_nfw)));
-  }
+  // }
+  // // for def at mvir
+  // else{
+  // rho0 = mass_nfw/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+concentration_nfw)-concentration_nfw/(1.+concentration_nfw)));
+  // }
   //
   // printf("lens rho0 = %.3e\n",rho0);
   // printf("lens norm = %.3e\n",lensing_normalisation);
   // printf("Sigma_crit = %.3e\n",pvectsz[ptsz->index_lensing_Sigma_crit]);
   if (_gal_lens_2h_
     ||_lens_lens_2h_
+    ||_lens_lensmag_2h_
     ||_gal_lensmag_2h_
     ||_lensmag_lensmag_2h_
     ||_tSZ_lens_2h_
     ||_tSZ_lensmag_2h_){
-if (ptsz->use_analytical_truncated_nfw==1){
+// if (ptsz->use_analytical_truncated_nfw==1){
 
      pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
-                                             *(rho0*(pvectsz[ptsz->index_lensing_profile]-1.)) //consistency relation
+                                             // *(rho0*(pvectsz[ptsz->index_lensing_profile]-1.)) //consistency relation
+                                             *(rho0*(pvectsz[ptsz->index_lensing_profile])) //consistency relation
                                              /pvectsz[ptsz->index_lensing_Sigma_crit]
                                              *(4*_PI_)
                                              *pow(characteristic_multipole,-2)
                                              *characteristic_radius; //rs in Mpc/h
-                                           }
-else{
-  pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
-                                          *(rho0*(pvectsz[ptsz->index_lensing_profile]-m_nfw(concentration_nfw))) //consistency relation
-                                          /pvectsz[ptsz->index_lensing_Sigma_crit]
-                                          *(4*_PI_)
-                                          *pow(characteristic_multipole,-2)
-                                          *characteristic_radius; //rs in Mpc/h
-
-}
+//                                            }
+// else{
+//   pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
+//                                           *(rho0*(pvectsz[ptsz->index_lensing_profile]-m_nfw(concentration_nfw))) //consistency relation
+//                                           /pvectsz[ptsz->index_lensing_Sigma_crit]
+//                                           *(4*_PI_)
+//                                           *pow(characteristic_multipole,-2)
+//                                           *characteristic_radius; //rs in Mpc/h
+//
+//
+// }
 
 
     }
@@ -3976,17 +3979,17 @@ int evaluate_halo_bias_b2(double * pvecback,
    pvectsz[ptsz->index_halo_bias_b2] = get_second_order_bias_at_z_and_nu(z,nu,ptsz);
 
 
-  if (ptsz->hm_consistency==1 && ptsz->hm_consistency_counter_terms_done == 1) {
-    double logM = log(pvectsz[ptsz->index_mass_for_hmf]);
-    double z = pvectsz[ptsz->index_z];
-  if ((logM <= log(ptsz->M1SZ) + 0.01*log(ptsz->M1SZ)) && (logM >= log(ptsz->M1SZ) - 0.01*log(ptsz->M1SZ))){
-    // printf("doing counter terms b1\n");
-    double b2_min = get_hmf_counter_term_b2min_at_z(z,ptsz);
-    pvectsz[ptsz->index_halo_bias_b2] = b2_min;
-
-  }
-
-  }
+  // if (ptsz->hm_consistency==1 && ptsz->hm_consistency_counter_terms_done == 1) {
+  //   double logM = log(pvectsz[ptsz->index_mass_for_hmf]);
+  //   double z = pvectsz[ptsz->index_z];
+  // if ((logM <= log(ptsz->M1SZ) + 0.01*log(ptsz->M1SZ)) && (logM >= log(ptsz->M1SZ) - 0.01*log(ptsz->M1SZ))){
+  //   // printf("doing counter terms b1\n");
+  //   double b2_min = get_hmf_counter_term_b2min_at_z(z,ptsz);
+  //   pvectsz[ptsz->index_halo_bias_b2] = b2_min;
+  //
+  // }
+  //
+  // }
 
    return _SUCCESS_;
 }
