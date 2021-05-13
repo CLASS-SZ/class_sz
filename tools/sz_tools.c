@@ -3593,6 +3593,28 @@ int external_pressure_profile_init(struct precision * ppr, struct tszspectrum * 
 
 if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
   return 0;
+  if (ptsz->has_tSZ_gal_1h
+     +ptsz->has_tSZ_gal_2h
+     +ptsz->has_sz_te_y_y
+     +ptsz->has_sz_trispec
+     +ptsz->has_sz_m_y_y_1h
+     +ptsz->has_sz_m_y_y_2h
+     +ptsz->has_sz_cov_Y_N
+     +ptsz->has_sz_cov_Y_Y_ssc
+     +ptsz->has_sz_cov_Y_N_next_order
+     +ptsz->has_tSZ_lensmag_2h
+     +ptsz->has_tSZ_lensmag_1h
+     +ptsz->has_tSZ_gal_1h
+     +ptsz->has_tSZ_gal_2h
+     +ptsz->has_tSZ_cib_1h
+     +ptsz->has_tSZ_cib_2h
+     +ptsz->has_tSZ_lens_1h
+     +ptsz->has_tSZ_lens_2h
+     +ptsz->has_tSZ_tSZ_tSZ_1halo
+     +ptsz->has_sz_2halo
+     +ptsz->has_sz_ps
+     == 0)
+     return 0;
 
   if (ptsz->sz_verbose > 0)
     printf("-> Using tabulated pressure profile transform\n");
@@ -3638,7 +3660,7 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
       printf("-> Openning the pressure profile file for A10\n");
     //class_open(process,"sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt", "r",ptsz->error_message);
     class_open(process,ppr->A10_file, "r",ptsz->error_message);
-    // printf("-> File Name: %s\n",ppr->A10_file);
+    printf("-> File Name: %s\n",ppr->A10_file);
   }
 
     // sprintf(Filepath,
@@ -3700,8 +3722,12 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
   }
 
   /* Close the process */
-  // status = pclose(process);
-  fclose(process);
+  // printf("ptsz->PP_lnI[index_x] = %e\n",lnI[0]);
+
+  status = fclose(process);
+  // printf("ptsz->PP_lnI[index_x] = %e\n",lnI[0]);
+
+  // fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -3710,6 +3736,7 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
   /** 3. Store the read results into CLASS structures */
   ptsz->PP_lnx_size = n_data;
   /** Make room */
+  // printf("ptsz->PP_lnI[index_x] = %d\n",n_data);
 
   class_realloc(ptsz->PP_lnx,
                 ptsz->PP_lnx,
@@ -3730,6 +3757,8 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
     ptsz->PP_lnx[index_x] = lnx[index_x];
     ptsz->PP_lnI[index_x] = lnI[index_x];
     ptsz->PP_d2lnI[index_x] = d2lnI[index_x];
+    // printf("ptsz->PP_lnI[index_x] = %e\n",ptsz->PP_lnI[index_x]);
+
   };
 
   /** Release the memory used locally */

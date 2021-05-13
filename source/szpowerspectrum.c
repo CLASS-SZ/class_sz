@@ -299,7 +299,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 #ifdef _OPENMP
       tstop = omp_get_wtime();
       if (ptsz->sz_verbose > 0)
-         printf("In %s: time spent in parallel region (loop over X's) = %e s for thread %d\n",
+         printf("In %s: time spent in parallel region (loop over the halo model integrals) = %e s for thread %d\n",
                    __func__,tstop-tstart,omp_get_thread_num());
 
 
@@ -516,10 +516,33 @@ if (ptsz->include_noise_cov_y_y==1){
 
    free(ptsz->array_sigma2_hsv_at_z);
 
-
-   free(ptsz->PP_lnx);
+   if (ptsz->has_tSZ_gal_1h
+      +ptsz->has_tSZ_gal_2h
+      +ptsz->has_sz_te_y_y
+      +ptsz->has_sz_trispec
+      +ptsz->has_sz_m_y_y_1h
+      +ptsz->has_sz_m_y_y_2h
+      +ptsz->has_sz_cov_Y_N
+      +ptsz->has_sz_cov_Y_Y_ssc
+      +ptsz->has_sz_cov_Y_N_next_order
+      +ptsz->has_tSZ_lensmag_2h
+      +ptsz->has_tSZ_lensmag_1h
+      +ptsz->has_tSZ_gal_1h
+      +ptsz->has_tSZ_gal_2h
+      +ptsz->has_tSZ_cib_1h
+      +ptsz->has_tSZ_cib_2h
+      +ptsz->has_tSZ_lens_1h
+      +ptsz->has_tSZ_lens_2h
+      +ptsz->has_tSZ_tSZ_tSZ_1halo
+      +ptsz->has_sz_ps
+      +ptsz->has_sz_2halo
+      != 0){
+if (ptsz->pressure_profile == 0 || ptsz->pressure_profile == 2 )
+{  free(ptsz->PP_lnx);
    free(ptsz->PP_lnI);
-   free(ptsz->PP_d2lnI);
+   free(ptsz->PP_d2lnI);}
+
+ }
 
 if(ptsz->has_pk_at_z_1h + ptsz->has_pk_at_z_2h >= _TRUE_){
 
@@ -3406,7 +3429,7 @@ int evaluate_pressure_profile(double * pvecback,
       //printf("ell pp=%e\n",result);
 
       lnx_asked = log((pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500]);
-
+  // printf("PP_lnx[0] = %e ptsz->PP_lnx_size =%d\n",ptsz->PP_lnx[0] ,ptsz->PP_lnx_size);
       if(lnx_asked<ptsz->PP_lnx[0] || _mean_y_)
          result = ptsz->PP_lnI[0];
       else if (lnx_asked>ptsz->PP_lnx[ptsz->PP_lnx_size-1])
@@ -3419,6 +3442,9 @@ int evaluate_pressure_profile(double * pvecback,
                   &result);
 
       result = exp(result);
+
+      // printf("lnx_asked = %e pp=%e\n",lnx_asked ,result);
+        // exit(0);
 
 
    }
@@ -5454,8 +5480,10 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
        //Pressure profile
        if (ptsz->pressure_profile == 0)
           fprintf(fp,"# Pressure Profile:  Planck 2013\n");
-       if (ptsz->pressure_profile == 2)
+       if (ptsz->pressure_profile == 2) {
           fprintf(fp,"# Pressure Profile:  Arnaud et al 2010\n");
+       }
+
        if (ptsz->pressure_profile == 3){
           fprintf(fp,"# Pressure Profile:  Custom. GNFW\n");
           fprintf(fp,"# P0GNFW = %e\n",ptsz->P0GNFW);
