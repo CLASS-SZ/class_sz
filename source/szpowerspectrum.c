@@ -3330,8 +3330,8 @@ else{
 // if (ptsz->use_analytical_truncated_nfw==1){
 
      pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
-                                             // *(rho0*(pvectsz[ptsz->index_lensing_profile]-1.)) //consistency relation
-                                             *(rho0*(pvectsz[ptsz->index_lensing_profile])) //consistency relation
+                                            // *(rho0*(pvectsz[ptsz->index_lensing_profile]-1.)) //consistency relation
+                                            *(rho0*(pvectsz[ptsz->index_lensing_profile])) //consistency relation
                                              /pvectsz[ptsz->index_lensing_Sigma_crit]
                                              *(4*_PI_)
                                              *pow(characteristic_multipole,-2)

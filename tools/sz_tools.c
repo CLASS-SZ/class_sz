@@ -6417,6 +6417,9 @@ double integrand_patterson_test(double logM, void *p){
                                            params,ptsz->patterson_show_neval);
 
   // corrected to match Mat M. consistency treatment in hmvec
+  // in hmvec :
+  // (integral+b1-consistency1)
+  // with integral = r_m_2, b1 = 1, consistency1 = low mass part
   r_m_2 = r_m_2+ptsz->Omega_m_0*ptsz->Rho_crit_0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)/pvectsz[ptsz->index_lensing_Sigma_crit];
 
 
@@ -6437,6 +6440,16 @@ double integrand_patterson_test(double logM, void *p){
                                            integrand_patterson_test,
                                            params,ptsz->patterson_show_neval);
 
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_1 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+
   pvectsz[ptsz->index_part_id_cov_hsv] = 2;
   V.pvectsz = pvectsz;
   params = &V;
@@ -6448,8 +6461,17 @@ double integrand_patterson_test(double logM, void *p){
                                            integrand_patterson_test,
                                            params,ptsz->patterson_show_neval);
 
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
   // corrected to match Mat M. consistency treatment in hmvec
-  r_m_2 = r_m_2+ptsz->Omega_m_0*ptsz->Rho_crit_0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)/pvectsz[ptsz->index_lensing_Sigma_crit];
+  // r_m_2 = r_m_2 + ptsz->Omega_m_0*ptsz->Rho_crit_0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)/pvectsz[ptsz->index_lensing_Sigma_crit];
 
 
   r = r_m_1*r_m_2;
@@ -6655,13 +6677,13 @@ double integrand_patterson_test(double logM, void *p){
      double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
      double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
      double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-     r += bmin_umin;
+     r += bmin_umin; // uncomment this to match hmvec
     }
 else {
        // printf("counter terms at low M\n");
        double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
        double nmin_umin = nmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf];
-       r += nmin_umin;
+       r += nmin_umin; // comment this to match hmvec
        }
 
        // printf("counter terms done\n");
