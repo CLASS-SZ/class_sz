@@ -4173,6 +4173,18 @@ int input_read_parameters(
   if (ple->has_lensed_cls == _TRUE_)
     ppt->l_scalar_max+=ppr->delta_l_max;
 
+
+  // class_call(parser_read_string(pfc,"sBBN_file",&string1,&flag1,errmsg),
+  //            errmsg,
+  //            errmsg);
+  // class_read_string("sBBN_file",ppr->sBBN_file);
+  class_read_string("ksz_filter_file",ptsz->ksz_filter_file);
+  // printf("-> File Name: %s\n",ptsz->ksz_filter_file);
+  // exit(0);
+  class_read_string("A10_file",ptsz->A10_file);
+  class_read_string("P13_file",ptsz->P13_file);
+  // ppr->sBBN_file = string1;
+
   /** - (i.1.) shall we write background quantities in a file? */
 
   class_call(parser_read_string(pfc,"write background",&string1,&flag1,errmsg),

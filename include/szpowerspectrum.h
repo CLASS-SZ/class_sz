@@ -1289,7 +1289,7 @@ double subhalo_hmf_dndlnMs(double M_host,double M_sub);
 
 double integrand_kSZ2_X_at_theta(double ell_prime, void *p);
 
-int evaluate_density_profile(double * pvecback,
+int evaluate_matter_density_profile(double * pvecback,
                              double * pvectsz,
                              struct background * pba,
                              struct tszspectrum * ptsz);

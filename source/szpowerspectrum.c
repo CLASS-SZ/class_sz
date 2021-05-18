@@ -203,7 +203,8 @@ int szpowerspectrum_init(
 
  // tabulate density, only used when requested (e.g., kSZ)
  tabulate_density_profile(pba,ptsz);
-
+//  printf("exiting\n");
+// exit(0);
 
  // tabulate pressure profile for gnFW
  if (ptsz->pressure_profile == 3)
@@ -2242,16 +2243,23 @@ double integrand_at_m_and_z(double logM,
 
   else if (_pk_at_z_1h_){
 
-    evaluate_density_profile(pvecback,pvectsz,pba,ptsz);
+    evaluate_matter_density_profile(pvecback,pvectsz,pba,ptsz);
     double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
 
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                       *pvectsz[ptsz->index_mass_for_hmf]
                                       *pvectsz[ptsz->index_mass_for_hmf]
-                                      //
-                                      //*pvectsz[ptsz->index_mVIR]
-                                      //*pvectsz[ptsz->index_mVIR]
                                       *density_profile_at_k_1
+                                      *density_profile_at_k_1;
+   }
+
+  else if (_pk_at_z_2h_){
+
+    evaluate_matter_density_profile(pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_mass_for_hmf]
                                       *density_profile_at_k_1;
    }
 
@@ -3130,7 +3138,7 @@ int evaluate_tau_profile(double * pvecback,
    return _SUCCESS_;
 }
 
-int evaluate_density_profile(double * pvecback,
+int evaluate_matter_density_profile(double * pvecback,
                              double * pvectsz,
                              struct background * pba,
                              struct tszspectrum * ptsz)
@@ -3150,22 +3158,28 @@ int evaluate_density_profile(double * pvecback,
    double density_normalisation;
 
 
-   characteristic_radius = pvectsz[ptsz->index_rs]; // in Mpc/h
+   //characteristic_radius = pvectsz[ptsz->index_rs]; // in Mpc/h
 
   class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,0),
                                     ptsz->error_message,
                                     ptsz->error_message);
 
+  double result_trunc =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,0);
+
+  double r_diff = 100.*result/m_nfw(pvectsz[ptsz->index_c200m])/result_trunc;
+  if (fabs(r_diff -100.)>1.)
+    printf("int = %.3e trunc = %.3e\n",result_trunc,100.*result/m_nfw(pvectsz[ptsz->index_c200m])/result_trunc);
 
 
-   pvectsz[ptsz->index_density_profile] = result;
+   pvectsz[ptsz->index_density_profile] = result/m_nfw(pvectsz[ptsz->index_c200m]);//result_trunc;
+   pvectsz[ptsz->index_density_profile] = result_trunc;//result_trunc;
 
 
 
   density_normalisation = 1.;
 
   // rho0=mvir/(4d0*pi*rs**3d0*(dlog(1d0+cvir)-cvir/(1d0+cvir))) !Eq. (2.66) of Binney & Tremaine
-  double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)*(log(1.+pvectsz[ptsz->index_cVIR])-pvectsz[ptsz->index_cVIR]/(1.+pvectsz[ptsz->index_cVIR])));
+  double rho0 = 1.;//*(log(1.+pvectsz[ptsz->index_cVIR])-pvectsz[ptsz->index_cVIR]/(1.+pvectsz[ptsz->index_cVIR])));
 
   //
   // printf("lens rho0 = %.3e\n",rho0);
@@ -3175,10 +3189,7 @@ int evaluate_density_profile(double * pvecback,
 
    pvectsz[ptsz->index_density_profile] =  density_normalisation
                                            *rho0
-                                           *pvectsz[ptsz->index_density_profile]
-                                           /pvectsz[ptsz->index_mVIR]
-                                           *(4*_PI_)
-                                           *pow(characteristic_radius,3.); //rs in Mpc/h
+                                           *pvectsz[ptsz->index_density_profile]; //rs in Mpc/h
 
   //printf("lens prof = %.3e\n",pvectsz[ptsz->index_lensing_profile]);
 
@@ -4093,6 +4104,7 @@ else {
 
        //Input: wavenumber in 1/Mpc
        //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+       // printf("z=%.3e\n",z);
           class_call(nonlinear_pk_at_k_and_z(
                                             pba,
                                             ppm,
@@ -4257,7 +4269,7 @@ double evaluate_pk_halofit_over_pk_linear_at_ell_plus_one_half_over_chi(double *
                                             pk_nonlinear,
                                             k*pba->h,
                                             z,
-                                            pnl->index_pk_m,
+                                            pnl->index_pk_cb,
                                             &pk, // number *out_pk_l
                                             pk_ic // array out_pk_ic_l[index_ic_ic]
                                           ),
@@ -4277,7 +4289,7 @@ double evaluate_pk_halofit_over_pk_linear_at_ell_plus_one_half_over_chi(double *
                                             pk_linear,
                                             k*pba->h,
                                             z,
-                                            pnl->index_pk_m,
+                                            pnl->index_pk_cb,
                                             &pk, // number *out_pk_l
                                             pk_ic // array out_pk_ic_l[index_ic_ic]
                                           ),
@@ -6363,7 +6375,30 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 printf("ell = %e\t\t cl_tSZ_lensmag (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_tSZ_lensmag_2h[index_l]);
 }
 }
+if (ptsz->has_gal_lens_1h){
+printf("\n\n");
+printf("##########################################################\n");
+printf("galaxy x lensing power spectrum 1-halo term:\n");
+printf("##########################################################\n");
+printf("\n");
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
+printf("ell = %e\t\t cl_gal_lens (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_gal_lens_1h[index_l]);
+}
+}
+if (ptsz->has_gal_lens_2h){
+printf("\n\n");
+printf("##########################################################\n");
+printf("galaxy x lensing power spectrum 2-halo term:\n");
+printf("##########################################################\n");
+printf("\n");
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_gal_lens (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_gal_lens_2h[index_l]);
+}
+}
 
 if (ptsz->has_gal_lensmag_1h){
 printf("\n\n");
@@ -6609,7 +6644,7 @@ int select_multipole_array(struct tszspectrum * ptsz)
   // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(5.*ptsz->ell_max_mock)
   //                                                  - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
 
-   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(4e3)
+   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(1e4)
                                                     - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
 
   }
@@ -7996,9 +8031,12 @@ double z = pvectsz[ptsz->index_z];
 double ell = pvectsz[ptsz->index_multipole_for_galaxy_profile];
 double chi = sqrt(pvectsz[ptsz->index_chi2]);
 double k = (ell+0.5)/chi;
+if (_pk_at_z_1h_ || _pk_at_z_2h_){
+  int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
+  k = ptsz->k_for_pk_hm[index_k];}
 
 double q = k*r_delta/c_delta*(1.+z);//TBC: (1+z) needs to be there to match KA20,  but is it consistent?
-double denominator = (log(1.+c_delta)-c_delta/(1.+c_delta));
+double denominator = m_nfw(c_delta);
 
 
 double numerator = cos(q)*(gsl_sf_Ci((1.+c_delta)*q)-gsl_sf_Ci(q))
