@@ -4681,8 +4681,8 @@ int input_default_params(
   ptsz->z2SZ_dndlnM = 3.;
   ptsz->N_redshift_dndlnM = 11;
 
-  ptsz->M1SZ_dndlnM = 1.e11;
-  ptsz->M2SZ_dndlnM = 5.e16;
+  ptsz->M1SZ_dndlnM = 1.e8;
+  ptsz->M2SZ_dndlnM = 1.e17;
   ptsz->N_mass_dndlnM = 200;
 
 

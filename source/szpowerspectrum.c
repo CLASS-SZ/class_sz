@@ -31,6 +31,9 @@ int szpowerspectrum_init(
       + ptsz->has_hmf
       + ptsz->has_pk_at_z_1h
       + ptsz->has_pk_at_z_2h
+      // + ptsz->has_bk_at_z_1h
+      // + ptsz->has_bk_at_z_2h
+      // + ptsz->has_bk_at_z_3h
       + ptsz->has_mean_y
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
@@ -551,6 +554,14 @@ free(ptsz->k_for_pk_hm);
 free(ptsz->pk_at_z_1h);
 free(ptsz->pk_at_z_2h);
 }
+//
+// if(ptsz->has_bk_at_z_1h + ptsz->has_bk_at_z_2h + ptsz->has_bk_at_z_3h >= _TRUE_){
+//
+// free(ptsz->k_for_pk_hm);
+// free(ptsz->bk_at_z_1h);
+// free(ptsz->bk_at_z_2h);
+// free(ptsz->bk_at_z_3h);
+// }
 
 
  if (ptsz->has_tSZ_lens_1h
@@ -763,6 +774,21 @@ int compute_sz(struct background * pba,
          Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_at_z_2h_first);
          if (ptsz->sz_verbose > 0) printf("computing pk^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
        }
+     // else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_1h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_1h_last && ptsz->has_bk_at_z_1h){
+     //    Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_1h;
+     //    Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_1h_first);
+     //    if (ptsz->sz_verbose > 0) printf("computing bk^1h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
+     //  }
+     //  else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_2h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_2h_last && ptsz->has_bk_at_z_2h){
+     //     Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_2h;
+     //     Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_2h_first);
+     //     if (ptsz->sz_verbose > 0) printf("computing bk^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
+     //   }
+     //  else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_3h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_3h_last && ptsz->has_bk_at_z_3h){
+     //     Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_3h;
+     //     Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_3h_first);
+     //     if (ptsz->sz_verbose > 0) printf("computing bk^3h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
+     //   }
      else if (index_integrand>=ptsz->index_integrand_id_gal_gal_1h_first && index_integrand <= ptsz->index_integrand_id_gal_gal_1h_last && ptsz->has_gal_gal_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_gal_gal_1h;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_gal_gal_1h_first);
@@ -1291,6 +1317,24 @@ if (_pk_at_z_2h_){
  ptsz->pk_at_z_2h[index_k] = Pvectsz[ptsz->index_integral];
 
 }
+
+//  if (_bk_at_z_1h_){
+//   int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
+//   ptsz->bk_at_z_1h[index_k] = Pvectsz[ptsz->index_integral];
+//
+// }
+//
+// if (_bk_at_z_2h_){
+//  int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
+//  ptsz->bk_at_z_2h[index_k] = Pvectsz[ptsz->index_integral];
+//
+// }
+//
+// if (_bk_at_z_3h_){
+//  int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
+//  ptsz->bk_at_z_3h[index_k] = Pvectsz[ptsz->index_integral];
+//
+// }
 
 
 
@@ -2262,6 +2306,40 @@ double integrand_at_m_and_z(double logM,
                                       *pvectsz[ptsz->index_mass_for_hmf]
                                       *density_profile_at_k_1;
    }
+
+  // else if (_bk_at_z_1h_){
+  //
+  //   evaluate_matter_density_profile(pvecback,pvectsz,pba,ptsz);
+  //   double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+  //
+  //   pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+  //                                     *pvectsz[ptsz->index_mass_for_hmf]
+  //                                     *pvectsz[ptsz->index_mass_for_hmf]
+  //                                     *pvectsz[ptsz->index_mass_for_hmf]
+  //                                     *density_profile_at_k_1
+  //                                     *density_profile_at_k_1
+  //                                     *density_profile_at_k_1;
+  //  }
+  //
+  // else if (_bk_at_z_2h_){
+  //
+  //   evaluate_matter_density_profile(pvecback,pvectsz,pba,ptsz);
+  //   double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+  //
+  //   pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+  //                                     *pvectsz[ptsz->index_mass_for_hmf]
+  //                                     *density_profile_at_k_1;
+  //  }
+  //
+  // else if (_bk_at_z_3h_){
+  //
+  //   evaluate_matter_density_profile(pvecback,pvectsz,pba,ptsz);
+  //   double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+  //
+  //   pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+  //                                     *pvectsz[ptsz->index_mass_for_hmf]
+  //                                     *density_profile_at_k_1;
+  //  }
 
 
 
