@@ -5367,7 +5367,7 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
              "%s%s%s%s",
              ptsz->path_to_ref_trispectrum_for_cobaya,
              "/tSZ_trispectrum_ref_",
-             ptsz->append_name_cobaya_ref,
+             ptsz->append_name_trispectrum_ref,
              ".txt");
 
      fp=fopen(Filepath, "w");
@@ -5392,7 +5392,7 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
              "%s%s%s%s",
              ptsz->path_to_ref_trispectrum_for_cobaya,
              "/tSZ_c_ell_ref_",
-             ptsz->append_name_cobaya_ref,
+             ptsz->append_name_trispectrum_ref,
              ".txt");
 
      fp=fopen(Filepath, "w");

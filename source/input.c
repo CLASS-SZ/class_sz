@@ -560,7 +560,7 @@ int input_init(
     sprintf(param_output_name,"%s%s%s%s",
             ptsz->path_to_ref_trispectrum_for_cobaya,
             "/tSZ_params_ref_",
-            ptsz->append_name_cobaya_ref,
+            ptsz->append_name_trispectrum_ref,
             ".txt");
 
     class_open(param_output,param_output_name,"w",errmsg);
@@ -2647,7 +2647,7 @@ int input_read_parameters(
      }
 
       class_read_string("path_to_class",ptsz->path_to_class);
-      class_read_string("append_name_trispectrum_ref",ptsz->append_name_cobaya_ref);
+      class_read_string("append_name_trispectrum_ref",ptsz->append_name_trispectrum_ref);
       class_read_string("path to reference trispectrum for likelihood code",ptsz->path_to_ref_trispectrum_for_cobaya);
       class_read_string("root",ptsz->root);
       class_read_string("root",pcsz->root);
@@ -4179,6 +4179,7 @@ int input_read_parameters(
   //            errmsg);
   // class_read_string("sBBN_file",ppr->sBBN_file);
   class_read_string("ksz_filter_file",ptsz->ksz_filter_file);
+  class_read_string("full_path_to_dndz_gal",ptsz->full_path_to_dndz_gal);
   // printf("-> File Name: %s\n",ptsz->ksz_filter_file);
   // exit(0);
   class_read_string("A10_file",ptsz->A10_file);
@@ -4642,9 +4643,9 @@ int input_default_params(
   //ptsz->hod_model=-1;
   ptsz->effective_temperature=0;
   ptsz->create_ref_trispectrum_for_cobaya=0;
-  sprintf(ptsz->path_to_ref_trispectrum_for_cobaya,"output/");
-  sprintf(ptsz->append_name_cobaya_ref,"for_cobaya");
-  sprintf(ptsz->full_path_to_noise_curve_for_y_y,"sz_auxiliary_files/my_noise_curve_yxy.txt");
+  // sprintf(ptsz->path_to_ref_trispectrum_for_cobaya,"output/");
+  // sprintf(ptsz->append_name_cobaya_ref,"for_cobaya");
+  // sprintf(ptsz->full_path_to_noise_curve_for_y_y,"sz_auxiliary_files/my_noise_curve_yxy.txt");
 
   ptsz->nl_yy_is_binned = 0;
 

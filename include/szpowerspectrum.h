@@ -437,12 +437,12 @@ struct tszspectrum {
 
   //double  pk;
 
-  FileName root; /**< root for all file names */
-  FileName path_to_class; /**< root for all file names */
-  FileName append_name_cobaya_ref;
-  FileName path_to_ref_trispectrum_for_cobaya;
-  FileName full_path_to_noise_curve_for_y_y;
-  FileName full_path_to_dndz_gal;
+  // FileName root; /**< root for all file names */
+  // FileName path_to_class; /**< root for all file names */
+  // FileName append_name_cobaya_ref;
+  // FileName path_to_ref_trispectrum_for_cobaya;
+  // FileName full_path_to_noise_curve_for_y_y;
+  //FileName full_path_to_dndz_gal;
 
  /* vector of all SZ quantities function of redshift*/
 

@@ -3994,7 +3994,15 @@ if (ptsz->sz_verbose>=1){
 
   //unwise
   if (ptsz->galaxy_sample == 1){
+    if (ptsz->sz_verbose > 0){
+      printf("-> Openning the dndz file for unWISE galaxies\n");
+      printf("-> File Name: %s\n",ptsz->UNWISE_dndz_file);
+      // printf("-> File Name: %s\n",ptsz->UNWISE_fdndz_file);
+      // printf("-> File Name: %s\n",ptsz->A10_file);
+    }
   class_open(process,ptsz->UNWISE_dndz_file, "r",ptsz->error_message);
+  if (ptsz->sz_verbose > 0)
+    printf("-> File opened successfully\n");
     // sprintf(Filepath,
     //         "%s%s",
     //         "cat ",
@@ -4021,12 +4029,21 @@ if (ptsz->sz_verbose>=1){
         }
 
   else if (ptsz->galaxy_sample == 2){
-  sprintf(Filepath,
-          "%s%s",
-          "cat ",
-          ptsz->full_path_to_dndz_gal);
-          //"/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/unwise_red.txt");
-  process = popen(Filepath, "r");
+    if (ptsz->sz_verbose > 0){
+      printf("-> Openning the dndz file for unWISE galaxies\n");
+      printf("-> File Name: %s\n",ptsz->full_path_to_dndz_gal);
+      // printf("-> File Name: %s\n",ptsz->UNWISE_fdndz_file);
+      // printf("-> File Name: %s\n",ptsz->A10_file);
+    }
+  class_open(process,ptsz->full_path_to_dndz_gal, "r",ptsz->error_message);
+  if (ptsz->sz_verbose > 0)
+    printf("-> File opened successfully\n");
+  // sprintf(Filepath,
+  //         "%s%s",
+  //         "cat ",
+  //         ptsz->full_path_to_dndz_gal);
+  //         //"/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/unwise_red.txt");
+  // process = popen(Filepath, "r");
         }
 
 
@@ -4094,13 +4111,13 @@ if (ptsz->sz_verbose>=1){
   }
 
   /* Close the process */
-  if (ptsz->galaxy_sample == 2){
-  // if (ptsz->galaxy_sample == 2 || ptsz->galaxy_sample == 0 ){
-    status = pclose(process);
-  }
-  else{
+  // if (ptsz->galaxy_sample == 2){
+  // // if (ptsz->galaxy_sample == 2 || ptsz->galaxy_sample == 0 ){
+  //   status = pclose(process);
+  // }
+  // else{
     status = fclose(process);
-  }
+  //}
   // status = pclose(process);
 
   class_test(status != 0.,
