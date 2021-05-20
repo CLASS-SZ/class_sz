@@ -12,6 +12,9 @@
 
 #define _pk_at_z_1h_ ((ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_1h))
 #define _pk_at_z_2h_ ((ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_2h))
+#define _bk_at_z_1h_ ((ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_1h))
+#define _bk_at_z_2h_ ((ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_2h))
+#define _bk_at_z_3h_ ((ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_3h))
 #define _mean_y_ ((ptsz->has_mean_y == _TRUE_) && (index_md == ptsz->index_md_mean_y))
 #define _hmf_ ((ptsz->has_hmf == _TRUE_) && (index_md == ptsz->index_md_hmf))
 #define _tSZ_power_spectrum_ ((ptsz->has_sz_ps == _TRUE_) && (index_md == ptsz->index_md_sz_ps))
@@ -95,6 +98,9 @@ struct tszspectrum {
   double y_monopole;
   double * pk_at_z_1h;
   double * pk_at_z_2h;
+  double * bk_at_z_1h;
+  double * bk_at_z_2h;
+  double * bk_at_z_3h;
   double * cl_sz_1h;
   double * cl_gal_gal_1h;
   double * cl_gal_gal_2h;
@@ -196,6 +202,21 @@ struct tszspectrum {
   int index_md_pk_at_z_2h;
   int index_integrand_id_pk_at_z_2h_first;
   int index_integrand_id_pk_at_z_2h_last;
+
+  int has_bk_at_z_1h;
+  int index_md_bk_at_z_1h;
+  int index_integrand_id_bk_at_z_1h_first;
+  int index_integrand_id_bk_at_z_1h_last;
+
+  int has_bk_at_z_2h;
+  int index_md_bk_at_z_2h;
+  int index_integrand_id_bk_at_z_2h_first;
+  int index_integrand_id_bk_at_z_2h_last;
+
+  int has_bk_at_z_3h;
+  int index_md_bk_at_z_3h;
+  int index_integrand_id_bk_at_z_3h_first;
+  int index_integrand_id_bk_at_z_3h_last;
 
 
   int has_mean_y;

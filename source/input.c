@@ -2021,6 +2021,33 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
       }
 
+      if ((strstr(string1,"bk_at_z_1h") != NULL) ) {
+        ptsz->has_bk_at_z_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"bk_at_z_2h") != NULL) ) {
+        ptsz->has_bk_at_z_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
+      if ((strstr(string1,"bk_at_z_3h") != NULL) ) {
+        ptsz->has_bk_at_z_3h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
       if ((strstr(string1,"kSZ_kSZ_lensmag_1h") != NULL) ) {
         ptsz->has_kSZ_kSZ_lensmag_1halo =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -3885,6 +3912,9 @@ int input_read_parameters(
       + ptsz->has_hmf
       + ptsz->has_pk_at_z_1h
       + ptsz->has_pk_at_z_2h
+      + ptsz->has_bk_at_z_1h
+      + ptsz->has_bk_at_z_2h
+      + ptsz->has_bk_at_z_3h
       + ptsz->has_mean_y
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
@@ -4896,6 +4926,9 @@ int input_default_params(
   ptsz->has_cib_cib_2h = _FALSE_;
   ptsz->has_pk_at_z_1h = _FALSE_;
   ptsz->has_pk_at_z_2h = _FALSE_;
+  ptsz->has_bk_at_z_1h = _FALSE_;
+  ptsz->has_bk_at_z_2h = _FALSE_;
+  ptsz->has_bk_at_z_3h = _FALSE_;
   ptsz->has_lens_lens_1h = _FALSE_;
   ptsz->has_lens_lens_2h = _FALSE_;
   ptsz->has_tSZ_lens_1h = _FALSE_;
@@ -4969,6 +5002,11 @@ int input_default_params(
   ptsz->index_md_kSZ_kSZ_gal_3h = 44;
   ptsz->index_md_tSZ_lensmag_2h = 45;
   ptsz->index_md_tSZ_lensmag_1h = 46;
+  ptsz->index_md_bk_at_z_1h = 47;
+  ptsz->index_md_bk_at_z_2h = 48;
+  ptsz->index_md_bk_at_z_3h = 49;
+
+
   ptsz->HMF_prescription_NCDM=2; //no-pres
 
 

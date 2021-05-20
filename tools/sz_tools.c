@@ -2554,7 +2554,11 @@ int rho_nfw(double * rho_nfw_x,
 
  int index_md = (int) pvectsz[ptsz->index_md];
  double y_eff;
- if (_pk_at_z_1h_ || _pk_at_z_2h_){
+ if (_pk_at_z_1h_
+  || _pk_at_z_2h_
+  || _bk_at_z_1h_
+  || _bk_at_z_2h_
+  || _bk_at_z_3h_){
    int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
    double k = ptsz->k_for_pk_hm[index_k];
    double z = pvectsz[ptsz->index_z];
@@ -5812,6 +5816,29 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
 
 }
 
+if ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h)){
+  // printf("result 2h = %.3e\n",result);
+  evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+  result *= 3.*V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+  // printf("result 2h = %.3e\n",result);
+}
+
+if ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h)){
+  double bh;
+  double pk;
+  double b0;
+  double f2;
+  int index_k = (int) V->pvectsz[V->ptsz->index_k_for_pk_hm];
+  double k = V->ptsz->k_for_pk_hm[index_k];
+  // printf("result 3h = %.3e\n",result);
+  evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+  pk = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+  f2 = bispectrum_f2_kernel(k,k,k);
+  b0 = 3.*(2.*pk*pk*f2);
+  bh = (b0 + 3.*pk);
+  result *= bh;
+}
+
 // // Halofit correction facto as in KAP20:
 // // [commented out for now: this was incorrect!!
 // if (((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h) && (V->ptsz->galaxy_sample==0)) // WIxSC
@@ -5912,27 +5939,14 @@ if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at
 
    return result;
  }// end P(k)
-// else if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_1h))
-//       || ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))){
-//
-//     // if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_1h))
-//     //  || ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h)) ){
-//       //result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*pow(1.+z,3.)*V->pvectsz[V->ptsz->index_Rho_crit],-2);
-//       result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-2);
-//       // proper to comoving volume?
-//       // result *= pow(1.+z,0.);
-//
-//
-//       //result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-2);
-//     // }
-//   //   if( ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))){
-//   //   result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-2);
-//   //   result *= pow(1.+z,-2);
-//   // }
-//
-//
-//    return result;
-//  }// end P(k)
+else if( ((V->ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_1h))
+      || ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h))
+      || ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h))){
+      result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-3);
+
+
+   return result;
+ }// end b(k,k,k)
 
 else{
 
@@ -6006,45 +6020,28 @@ int integrate_over_redshift(struct background * pba,
   void * params = &V;
   double r; //result of the integral
 
-  double epsrel= ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
-  double epsabs= ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
+  double epsrel= ptsz->redshift_epsrel;
+  double epsabs= ptsz->redshift_epsabs;
   int show_neval = ptsz->patterson_show_neval;
 
   int index_md = (int) Pvectsz[ptsz->index_md];
-if(_pk_at_z_1h_ || _pk_at_z_2h_)
+if(_pk_at_z_1h_
+|| _pk_at_z_2h_
+|| _bk_at_z_1h_
+|| _bk_at_z_2h_
+|| _bk_at_z_3h_)
 {
   r = integrand_redshift(log(1. + ptsz->z_for_pk_hm),params);
 }
 else{
-  r=Integrate_using_Patterson_adaptive(log(1. + z_min), log(1. + z_max),
-                                       epsrel, epsabs,
-                                       integrand_redshift,
-                                       params,show_neval);
+  r = Integrate_using_Patterson_adaptive(log(1. + z_min), log(1. + z_max),
+                                         epsrel, epsabs,
+                                         integrand_redshift,
+                                         params,show_neval);
     }
 
-//   ///////
-// gsl_function F;
-// F.function = &integrand_redshift;
-// F.params = params;
-//
-// int n_subintervals_gsl = 30;
-//
-//
-// gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
-//
-// double result_gsl;
-// size_t neval;
-// gsl_integration_romberg(&F,log(1. + z_min), log(1. + z_max),epsabs,epsrel,&result_gsl,&neval,w);
-// gsl_integration_romberg_free(w);
-//
-// r = result_gsl;
-//
-//
-//   /////////
-
   Pvectsz[ptsz->index_integral] = r;
-  //int index_l = (int)  Pvectsz[ptsz->index_multipole];
-  //printf("result=%.4e z_min = %.3e z_max=%.3e\n",r,log(1. + z_min),log(1. + z_max));
+
   return _SUCCESS_;
 }
 
@@ -6130,22 +6127,6 @@ double integrand_patterson_test(double logM, void *p){
 
   double r; //store result of mass integral
 
-//   if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_isw_lens ){
-//
-//   double logM = 1.;
-//   r = integrand_patterson_test(logM, params);
-//
-//     pvectsz[ptsz->index_integral_over_m] = r;
-//
-// }
-
-
-   // else {
-
-  // //Patterson [Jens Chluba]
-  // if (ptsz->integration_method_mass==0){
-
-  // printf("starting block\n");
 
   if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_Y_N_next_order )){
 
@@ -6686,9 +6667,6 @@ double integrand_patterson_test(double logM, void *p){
   double r_m_b1g3;
   double r_m_b2g3;
 
-
-
-
   // r_m_11*r_m_21
   pvectsz[ptsz->index_part_id_cov_hsv] = 1;
   V.pvectsz = pvectsz;
@@ -6799,21 +6777,94 @@ double integrand_patterson_test(double logM, void *p){
   }
 
 
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_bk_at_z_2h){
+  double r_m_b1t1;
+  double r_m_b1t2;
+
+
+  // r_m_11*r_m_21
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b1t1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_b1t1 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
 
 
 
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b1t2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
 
-  //pvectsz[ptsz->index_part_id_cov_hsv] = 1;
-  //V.pvectsz = pvectsz;
-  //params = &V;
-  // else {
-  //   // integrate over the mass range
-  //   r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
-  //                                            epsrel, epsabs,
-  //                                            integrand_patterson_test,
-  //                                            params,ptsz->patterson_show_neval);}
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_b1t2 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+  r = r_m_b1t1*r_m_b1t2;
+
+  }
+
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_bk_at_z_3h){
+  double r_m_b1t1;
+  // double r_m_b1t2;
+
+
+  // r_m_11*r_m_21
+  // pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b1t1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = nmin;//get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf];///pvectsz[ptsz->index_halo_bias];
+     r_m_b1t1 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+
   //
-  //                                }
+  // pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  // V.pvectsz = pvectsz;
+  // params = &V;
+  // r_m_b1t2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+  //                                          epsrel, epsabs,
+  //                                          integrand_patterson_test,
+  //                                          params,ptsz->patterson_show_neval);
+  //
+  //  if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+  //    double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+  //    double bmin = nmin;//get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+  //    double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf];///pvectsz[ptsz->index_halo_bias];
+  //    r_m_b1t2 += bmin_umin;
+  //    // printf("counter terms done r_m_1\n");
+  // }
+
+  r = r_m_b1t1*r_m_b1t1*r_m_b1t1;
+
+  }
+
 
   else {
   r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),

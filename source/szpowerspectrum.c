@@ -31,9 +31,9 @@ int szpowerspectrum_init(
       + ptsz->has_hmf
       + ptsz->has_pk_at_z_1h
       + ptsz->has_pk_at_z_2h
-      // + ptsz->has_bk_at_z_1h
-      // + ptsz->has_bk_at_z_2h
-      // + ptsz->has_bk_at_z_3h
+      + ptsz->has_bk_at_z_1h
+      + ptsz->has_bk_at_z_2h
+      + ptsz->has_bk_at_z_3h
       + ptsz->has_mean_y
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
@@ -548,20 +548,21 @@ if (ptsz->pressure_profile == 0 || ptsz->pressure_profile == 2 )
 
  }
 
-if(ptsz->has_pk_at_z_1h + ptsz->has_pk_at_z_2h >= _TRUE_){
+if( ptsz->has_pk_at_z_1h
+   + ptsz->has_pk_at_z_2h
+   + ptsz->has_bk_at_z_1h
+   + ptsz->has_bk_at_z_2h
+   + ptsz->has_bk_at_z_3h  >= _TRUE_){
 
 free(ptsz->k_for_pk_hm);
 free(ptsz->pk_at_z_1h);
 free(ptsz->pk_at_z_2h);
+free(ptsz->bk_at_z_1h);
+free(ptsz->bk_at_z_2h);
+free(ptsz->bk_at_z_3h);
 }
 //
-// if(ptsz->has_bk_at_z_1h + ptsz->has_bk_at_z_2h + ptsz->has_bk_at_z_3h >= _TRUE_){
-//
-// free(ptsz->k_for_pk_hm);
-// free(ptsz->bk_at_z_1h);
-// free(ptsz->bk_at_z_2h);
-// free(ptsz->bk_at_z_3h);
-// }
+
 
 
  if (ptsz->has_tSZ_lens_1h
@@ -774,21 +775,21 @@ int compute_sz(struct background * pba,
          Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_at_z_2h_first);
          if (ptsz->sz_verbose > 0) printf("computing pk^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
        }
-     // else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_1h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_1h_last && ptsz->has_bk_at_z_1h){
-     //    Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_1h;
-     //    Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_1h_first);
-     //    if (ptsz->sz_verbose > 0) printf("computing bk^1h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
-     //  }
-     //  else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_2h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_2h_last && ptsz->has_bk_at_z_2h){
-     //     Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_2h;
-     //     Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_2h_first);
-     //     if (ptsz->sz_verbose > 0) printf("computing bk^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
-     //   }
-     //  else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_3h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_3h_last && ptsz->has_bk_at_z_3h){
-     //     Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_3h;
-     //     Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_3h_first);
-     //     if (ptsz->sz_verbose > 0) printf("computing bk^3h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
-     //   }
+     else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_1h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_1h_last && ptsz->has_bk_at_z_1h){
+        Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_1h;
+        Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_1h_first);
+        if (ptsz->sz_verbose > 0) printf("computing bk^1h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
+      }
+      else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_2h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_2h_last && ptsz->has_bk_at_z_2h){
+         Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_2h;
+         Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_2h_first);
+         if (ptsz->sz_verbose > 0) printf("computing bk^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
+       }
+      else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_3h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_3h_last && ptsz->has_bk_at_z_3h){
+         Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_3h;
+         Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_3h_first);
+         if (ptsz->sz_verbose > 0) printf("computing bk^3h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
+       }
      else if (index_integrand>=ptsz->index_integrand_id_gal_gal_1h_first && index_integrand <= ptsz->index_integrand_id_gal_gal_1h_last && ptsz->has_gal_gal_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_gal_gal_1h;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_gal_gal_1h_first);
@@ -1318,23 +1319,23 @@ if (_pk_at_z_2h_){
 
 }
 
-//  if (_bk_at_z_1h_){
-//   int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
-//   ptsz->bk_at_z_1h[index_k] = Pvectsz[ptsz->index_integral];
-//
-// }
-//
-// if (_bk_at_z_2h_){
-//  int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
-//  ptsz->bk_at_z_2h[index_k] = Pvectsz[ptsz->index_integral];
-//
-// }
-//
-// if (_bk_at_z_3h_){
-//  int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
-//  ptsz->bk_at_z_3h[index_k] = Pvectsz[ptsz->index_integral];
-//
-// }
+ if (_bk_at_z_1h_){
+  int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
+  ptsz->bk_at_z_1h[index_k] = Pvectsz[ptsz->index_integral];
+
+}
+
+if (_bk_at_z_2h_){
+ int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
+ ptsz->bk_at_z_2h[index_k] = Pvectsz[ptsz->index_integral];
+
+}
+
+if (_bk_at_z_3h_){
+ int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
+ ptsz->bk_at_z_3h[index_k] = Pvectsz[ptsz->index_integral];
+
+}
 
 
 
@@ -2307,39 +2308,52 @@ double integrand_at_m_and_z(double logM,
                                       *density_profile_at_k_1;
    }
 
-  // else if (_bk_at_z_1h_){
-  //
-  //   evaluate_matter_density_profile(pvecback,pvectsz,pba,ptsz);
-  //   double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
-  //
-  //   pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
-  //                                     *pvectsz[ptsz->index_mass_for_hmf]
-  //                                     *pvectsz[ptsz->index_mass_for_hmf]
-  //                                     *pvectsz[ptsz->index_mass_for_hmf]
-  //                                     *density_profile_at_k_1
-  //                                     *density_profile_at_k_1
-  //                                     *density_profile_at_k_1;
-  //  }
-  //
-  // else if (_bk_at_z_2h_){
-  //
-  //   evaluate_matter_density_profile(pvecback,pvectsz,pba,ptsz);
-  //   double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
-  //
-  //   pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
-  //                                     *pvectsz[ptsz->index_mass_for_hmf]
-  //                                     *density_profile_at_k_1;
-  //  }
-  //
-  // else if (_bk_at_z_3h_){
-  //
-  //   evaluate_matter_density_profile(pvecback,pvectsz,pba,ptsz);
-  //   double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
-  //
-  //   pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
-  //                                     *pvectsz[ptsz->index_mass_for_hmf]
-  //                                     *density_profile_at_k_1;
-  //  }
+  else if (_bk_at_z_1h_){
+
+    evaluate_matter_density_profile(pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_mass_for_hmf]
+                                      *pvectsz[ptsz->index_mass_for_hmf]
+                                      *pvectsz[ptsz->index_mass_for_hmf]
+                                      *density_profile_at_k_1
+                                      *density_profile_at_k_1
+                                      *density_profile_at_k_1;
+   }
+
+  else if (_bk_at_z_2h_){
+
+    evaluate_matter_density_profile(pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *pvectsz[ptsz->index_mass_for_hmf]
+                                      *density_profile_at_k_1;
+                                    }
+
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *pvectsz[ptsz->index_mass_for_hmf]
+                                      *density_profile_at_k_1
+                                      *pvectsz[ptsz->index_mass_for_hmf]
+                                      *density_profile_at_k_1;
+                                    }
+   }
+
+  else if (_bk_at_z_3h_){
+
+    evaluate_matter_density_profile(pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_mass_for_hmf]
+                                      *density_profile_at_k_1;
+   }
 
 
 
@@ -3238,18 +3252,18 @@ int evaluate_matter_density_profile(double * pvecback,
 
    //characteristic_radius = pvectsz[ptsz->index_rs]; // in Mpc/h
 
-  class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,0),
-                                    ptsz->error_message,
-                                    ptsz->error_message);
+  // class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,0),
+  //                                   ptsz->error_message,
+  //                                   ptsz->error_message);
 
   double result_trunc =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,0);
 
-  double r_diff = 100.*result/m_nfw(pvectsz[ptsz->index_c200m])/result_trunc;
-  if (fabs(r_diff -100.)>1.)
-    printf("int = %.3e trunc = %.3e\n",result_trunc,100.*result/m_nfw(pvectsz[ptsz->index_c200m])/result_trunc);
+  // double r_diff = 100.*result/m_nfw(pvectsz[ptsz->index_c200m])/result_trunc;
+  // if (fabs(r_diff -100.)>1.)
+  //   printf("int = %.3e trunc = %.3e\n",result_trunc,100.*result/m_nfw(pvectsz[ptsz->index_c200m])/result_trunc);
 
 
-   pvectsz[ptsz->index_density_profile] = result/m_nfw(pvectsz[ptsz->index_c200m]);//result_trunc;
+   // pvectsz[ptsz->index_density_profile] = result/m_nfw(pvectsz[ptsz->index_c200m]);//result_trunc;
    pvectsz[ptsz->index_density_profile] = result_trunc;//result_trunc;
 
 
@@ -4091,7 +4105,7 @@ int evaluate_halo_bias_b2(double * pvecback,
    //
    //
    // pvectsz[ptsz->index_halo_bias_b2] = t1_num/t1_den + t2_num/t2_den + t3_num/t3_den;
-   pvectsz[ptsz->index_halo_bias_b2] = get_second_order_bias_at_z_and_nu(z,nu,ptsz);
+   pvectsz[ptsz->index_halo_bias_b2] = 1.;//get_second_order_bias_at_z_and_nu(z,nu,ptsz);
 
 
   // if (ptsz->hm_consistency==1 && ptsz->hm_consistency_counter_terms_done == 1) {
@@ -4125,7 +4139,7 @@ int evaluate_pk_at_ell_plus_one_half_over_chi(double * pvecback,
   double z = pvectsz[ptsz->index_z];
 
 
-if (_pk_at_z_2h_){
+if (_pk_at_z_2h_ || _bk_at_z_2h_ || _bk_at_z_3h_){
   int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
   k = ptsz->k_for_pk_hm[index_k];
 
@@ -5851,6 +5865,27 @@ if ((ptsz->has_pk_at_z_1h + ptsz->has_pk_at_z_2h >= _TRUE_) && ptsz->write_sz>0)
   }
 
 
+if ((ptsz->has_bk_at_z_1h + ptsz->has_bk_at_z_2h + ptsz->has_bk_at_z_3h >= _TRUE_) && ptsz->write_sz>0){
+      sprintf(Filepath,
+                  "%s%s%s",
+                  ptsz->root,
+                  "halo_model_bk_at_z_k_bk1h_bk2h_bk3h",
+                  ".txt");
+
+      fp=fopen(Filepath, "w");
+
+      int index_k;
+      for (index_k=0;index_k<ptsz->n_k_for_pk_hm;index_k++){
+      fprintf(fp,"%.4e\t%.4e\t%.4e\t%.4e\n",ptsz->k_for_pk_hm[index_k],
+                                            ptsz->bk_at_z_1h[index_k],
+                                            ptsz->bk_at_z_2h[index_k],
+                                            ptsz->bk_at_z_3h[index_k]);
+    }
+      fclose(fp);
+  }
+
+
+
 
 
 if (ptsz->has_sz_cov_Y_N && ptsz->write_sz>0){
@@ -6978,7 +7013,11 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    }
 
 
-   if (ptsz->has_pk_at_z_1h + ptsz->has_pk_at_z_2h >= _TRUE_){
+   if (ptsz->has_pk_at_z_1h
+     + ptsz->has_pk_at_z_2h
+     + ptsz->has_bk_at_z_1h
+     + ptsz->has_bk_at_z_2h
+     + ptsz->has_bk_at_z_3h >= _TRUE_){
      class_alloc(ptsz->k_for_pk_hm,
                        10*sizeof(double),
                        ptsz->error_message);
@@ -6996,6 +7035,17 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
     ptsz->k_for_pk_hm[i] = exp(log(ptsz->k_min_for_pk_hm)+i*ptsz->dlnk_for_pk_hm);
     ptsz->pk_at_z_1h[i] = 0.;
     ptsz->pk_at_z_2h[i] = 0.;
+   }
+
+   class_alloc(ptsz->bk_at_z_1h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
+   class_alloc(ptsz->bk_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
+   class_alloc(ptsz->bk_at_z_3h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
+
+   for (i=0;i<ptsz->n_k_for_pk_hm;i++){
+    ptsz->k_for_pk_hm[i] = exp(log(ptsz->k_min_for_pk_hm)+i*ptsz->dlnk_for_pk_hm);
+    ptsz->bk_at_z_1h[i] = 0.;
+    ptsz->bk_at_z_2h[i] = 0.;
+    ptsz->bk_at_z_3h[i] = 0.;
    }
 
    }
@@ -7237,7 +7287,15 @@ for (index_l=0;index_l<ptsz->cib_frequency_list_num;index_l++){
    ptsz->index_integrand_id_pk_at_z_2h_last = ptsz->index_integrand_id_pk_at_z_2h_first + ptsz->n_k_for_pk_hm - 1;
    last_index_integrand_id =  ptsz->index_integrand_id_pk_at_z_2h_last;
  }
-
+   if(ptsz->has_bk_at_z_1h+ptsz->has_bk_at_z_2h +ptsz->has_bk_at_z_3h >= _TRUE_){
+   ptsz->index_integrand_id_bk_at_z_1h_first = last_index_integrand_id + 1;
+   ptsz->index_integrand_id_bk_at_z_1h_last = ptsz->index_integrand_id_bk_at_z_1h_first + ptsz->n_k_for_pk_hm - 1;
+   ptsz->index_integrand_id_bk_at_z_2h_first = ptsz->index_integrand_id_bk_at_z_1h_last + 1;
+   ptsz->index_integrand_id_bk_at_z_2h_last = ptsz->index_integrand_id_bk_at_z_2h_first + ptsz->n_k_for_pk_hm - 1;
+   ptsz->index_integrand_id_bk_at_z_3h_first = ptsz->index_integrand_id_bk_at_z_2h_last + 1;
+   ptsz->index_integrand_id_bk_at_z_3h_last = ptsz->index_integrand_id_bk_at_z_3h_first + ptsz->n_k_for_pk_hm - 1;
+   last_index_integrand_id =  ptsz->index_integrand_id_bk_at_z_3h_last;
+ }
    ptsz->index_integrand_id_gal_gal_1h_first = last_index_integrand_id + 1;
    ptsz->index_integrand_id_gal_gal_1h_last = ptsz->index_integrand_id_gal_gal_1h_first + ptsz->nlSZ - 1;
    ptsz->index_integrand_id_gal_gal_2h_first = ptsz->index_integrand_id_gal_gal_1h_last + 1;
@@ -8109,9 +8167,15 @@ double z = pvectsz[ptsz->index_z];
 double ell = pvectsz[ptsz->index_multipole_for_galaxy_profile];
 double chi = sqrt(pvectsz[ptsz->index_chi2]);
 double k = (ell+0.5)/chi;
-if (_pk_at_z_1h_ || _pk_at_z_2h_){
-  int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
-  k = ptsz->k_for_pk_hm[index_k];}
+
+if ( _pk_at_z_1h_
+  || _pk_at_z_2h_
+  || _bk_at_z_1h_
+  || _bk_at_z_2h_
+  || _bk_at_z_3h_){
+    int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
+    k = ptsz->k_for_pk_hm[index_k];
+  }
 
 double q = k*r_delta*ptsz->x_out_truncated_nfw_profile/c_delta*(1.+z);//TBC: (1+z) needs to be there to match KA20,  but is it consistent?
 double denominator = m_nfw(c_delta);
