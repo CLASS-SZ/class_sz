@@ -8054,7 +8054,7 @@ else if (_tSZ_gal_1h_
 
       // printf("doing c200m\n");
 
-      r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_r200m];
+      r_delta = pvectsz[ptsz->index_r200m];
       c_delta = pvectsz[ptsz->index_c200m];
 
       // printf("r = %.3e c = %.3e\n",r_delta,c_delta);
@@ -8073,7 +8073,7 @@ else if (_tSZ_gal_1h_
            && ptsz->tau_profile == 1 // if tau_profile == 0 do everything wrt m200m
          ){
 // in these cases use 200crit as mass definition for consistency with Battaglia profile fitting formula
-    r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_r200c];
+    r_delta = pvectsz[ptsz->index_r200c];
     c_delta = pvectsz[ptsz->index_c200c];
     // printf("using 200c\n");
     // exit(0);
@@ -8089,7 +8089,7 @@ else if (_tSZ_gal_1h_
     // r_delta = pvectsz[ptsz->index_r500c];
     // printf("doing c200m, other cases\n");
 
-    r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_r200m];
+    r_delta = pvectsz[ptsz->index_r200m];
     c_delta = pvectsz[ptsz->index_c200m];
     //
     // r_delta = ptsz->x_out_truncated_nfw_profile*pvectsz[ptsz->index_rVIR];
@@ -8113,7 +8113,7 @@ if (_pk_at_z_1h_ || _pk_at_z_2h_){
   int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
   k = ptsz->k_for_pk_hm[index_k];}
 
-double q = k*r_delta/c_delta*(1.+z);//TBC: (1+z) needs to be there to match KA20,  but is it consistent?
+double q = k*r_delta*ptsz->x_out_truncated_nfw_profile/c_delta*(1.+z);//TBC: (1+z) needs to be there to match KA20,  but is it consistent?
 double denominator = m_nfw(c_delta);
 
 
