@@ -4767,147 +4767,147 @@ int load_T10_alpha_norm(struct tszspectrum * ptsz)
 //This routine reads the tabulated
 //nfw profiles,
 //and stores the tabulated values.
-
-int load_rho_nfw_profile(struct tszspectrum * ptsz)
-{
-
-// don't load the lensing profile if lensing/kSZ observables not required
-if (ptsz->has_gal_lens_2h != _TRUE_
-  && ptsz->has_gal_lens_1h != _TRUE_
-  // && ptsz->has_gal_lensmag_2h != _TRUE_
-  // && ptsz->has_gal_lensmag_1h != _TRUE_
-  // && ptsz->has_lensmag_lensmag_2h != _TRUE_
-  // && ptsz->has_lensmag_lensmag_1h != _TRUE_
-  && ptsz->has_tSZ_lens_1h != _TRUE_
-  && ptsz->has_tSZ_lens_2h != _TRUE_
-  && ptsz->has_lens_lens_1h != _TRUE_
-  && ptsz->has_lens_lens_2h != _TRUE_
-  && ptsz->has_lens_cib_1h != _TRUE_
-  && ptsz->has_lens_cib_2h != _TRUE_
-//  && ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_
-  && ptsz->has_kSZ_kSZ_gal_1h != _TRUE_)
-  return 0;
-
-
-  class_alloc(ptsz->RNFW_lnx,sizeof(double *)*100,ptsz->error_message);
-  class_alloc(ptsz->RNFW_lnI,sizeof(double *)*100,ptsz->error_message);
-  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
-
-  //char arguments[_ARGUMENT_LENGTH_MAX_];
-  char line[_LINE_LENGTH_MAX_];
-  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
-  FILE *process;
-  int n_data_guess, n_data = 0;
-  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
-  double this_lnx, this_lnI;
-  int status;
-  int index_x;
-
-
-  /** 1. Initialization */
-  /* Prepare the data (with some initial size) */
-  n_data_guess = 100;
-  lnx   = (double *)malloc(n_data_guess*sizeof(double));
-  lnI = (double *)malloc(n_data_guess*sizeof(double));
-
-
-
-  /* Prepare the command */
-  /* If the command is just a "cat", no arguments need to be passed */
-  // if(strncmp("cat ", ptsz->command, 4) == 0)
-  // {
-  // sprintf(arguments, " ");
-  // }
-
-  /** 2. Launch the command and retrieve the output */
-  /* Launch the process */
-  // char Filepath[_ARGUMENT_LENGTH_MAX_];
-  //
-  //   sprintf(Filepath,
-  //           "%s%s%s",
-  //           "cat ",
-  //           ptsz->path_to_class,
-  //           "/sz_auxiliary_files/class_sz_lnInfw-vs-lnell-over-ells_xout_5.txt");
-  // process = popen(Filepath, "r");
-
-  class_open(process,"sz_auxiliary_files/class_sz_lnInfw-vs-lnell-over-ells_xout_5.txt", "r",ptsz->error_message);
-
-  /* Read output and store it */
-  while (fgets(line, sizeof(line)-1, process) != NULL) {
-    sscanf(line, "%lf %lf", &this_lnx, &this_lnI);
-    //printf("lnx = %e\n",this_lnx);
-
-
-
-
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
-    /* (it is faster and safer that reallocating every new line) */
-    if((n_data+1) > n_data_guess) {
-      n_data_guess *= 2;
-      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
-      class_test(tmp == NULL,
-                 ptsz->error_message,
-                 "Error allocating memory to read the pressure profile.\n");
-      lnx = tmp;
-      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
-      class_test(tmp == NULL,
-                 ptsz->error_message,
-                 "Error allocating memory to read the pressure profile.\n");
-      lnI = tmp;
-    };
-    /* Store */
-    lnx[n_data]   = this_lnx;
-    lnI[n_data]   = this_lnI;
-
-    n_data++;
-    /* Check ascending order of the k's */
-    if(n_data>1) {
-      class_test(lnx[n_data-1] <= lnx[n_data-2],
-                 ptsz->error_message,
-                 "The ell/ells's are not strictly sorted in ascending order, "
-                 "as it is required for the calculation of the splines.\n");
-    }
-  }
-
-  /* Close the process */
-  // status = pclose(process);
-  fclose(process);
-
-  class_test(status != 0.,
-             ptsz->error_message,
-             "The attempt to launch the external command was unsuccessful. "
-             "Try doing it by hand to check for errors.");
-
-  /** 3. Store the read results into CLASS structures */
-  ptsz->RNFW_lnx_size = n_data;
-  /** Make room */
-
-  class_realloc(ptsz->RNFW_lnx,
-                ptsz->RNFW_lnx,
-                ptsz->RNFW_lnx_size*sizeof(double),
-                ptsz->error_message);
-  class_realloc(ptsz->RNFW_lnI,
-                ptsz->RNFW_lnI,
-                ptsz->RNFW_lnx_size*sizeof(double),
-                ptsz->error_message);
-
-
-
-  /** Store them */
-  for (index_x=0; index_x<ptsz->RNFW_lnx_size; index_x++) {
-    ptsz->RNFW_lnx[index_x] = lnx[index_x];
-    ptsz->RNFW_lnI[index_x] = lnI[index_x];
-  };
-
-  /** Release the memory used locally */
-  free(lnx);
-  free(lnI);
-
-  return _SUCCESS_;
-}
-
-
+//
+// int load_rho_nfw_profile(struct tszspectrum * ptsz)
+// {
+//
+// // don't load the lensing profile if lensing/kSZ observables not required
+// if (ptsz->has_gal_lens_2h != _TRUE_
+//   && ptsz->has_gal_lens_1h != _TRUE_
+//   // && ptsz->has_gal_lensmag_2h != _TRUE_
+//   // && ptsz->has_gal_lensmag_1h != _TRUE_
+//   // && ptsz->has_lensmag_lensmag_2h != _TRUE_
+//   // && ptsz->has_lensmag_lensmag_1h != _TRUE_
+//   && ptsz->has_tSZ_lens_1h != _TRUE_
+//   && ptsz->has_tSZ_lens_2h != _TRUE_
+//   && ptsz->has_lens_lens_1h != _TRUE_
+//   && ptsz->has_lens_lens_2h != _TRUE_
+//   && ptsz->has_lens_cib_1h != _TRUE_
+//   && ptsz->has_lens_cib_2h != _TRUE_
+// //  && ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_
+//   && ptsz->has_kSZ_kSZ_gal_1h != _TRUE_)
+//   return 0;
+//
+//
+//   class_alloc(ptsz->RNFW_lnx,sizeof(double *)*100,ptsz->error_message);
+//   class_alloc(ptsz->RNFW_lnI,sizeof(double *)*100,ptsz->error_message);
+//   //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+//
+//   //char arguments[_ARGUMENT_LENGTH_MAX_];
+//   char line[_LINE_LENGTH_MAX_];
+//   //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+//   FILE *process;
+//   int n_data_guess, n_data = 0;
+//   double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+//   double this_lnx, this_lnI;
+//   int status;
+//   int index_x;
+//
+//
+//   /** 1. Initialization */
+//   /* Prepare the data (with some initial size) */
+//   n_data_guess = 100;
+//   lnx   = (double *)malloc(n_data_guess*sizeof(double));
+//   lnI = (double *)malloc(n_data_guess*sizeof(double));
+//
+//
+//
+//   /* Prepare the command */
+//   /* If the command is just a "cat", no arguments need to be passed */
+//   // if(strncmp("cat ", ptsz->command, 4) == 0)
+//   // {
+//   // sprintf(arguments, " ");
+//   // }
+//
+//   /** 2. Launch the command and retrieve the output */
+//   /* Launch the process */
+//   // char Filepath[_ARGUMENT_LENGTH_MAX_];
+//   //
+//   //   sprintf(Filepath,
+//   //           "%s%s%s",
+//   //           "cat ",
+//   //           ptsz->path_to_class,
+//   //           "/sz_auxiliary_files/class_sz_lnInfw-vs-lnell-over-ells_xout_5.txt");
+//   // process = popen(Filepath, "r");
+//
+//   class_open(process,"sz_auxiliary_files/class_sz_lnInfw-vs-lnell-over-ells_xout_5.txt", "r",ptsz->error_message);
+//
+//   /* Read output and store it */
+//   while (fgets(line, sizeof(line)-1, process) != NULL) {
+//     sscanf(line, "%lf %lf", &this_lnx, &this_lnI);
+//     //printf("lnx = %e\n",this_lnx);
+//
+//
+//
+//
+//     /* Standard technique in C:
+//      /*if too many data, double the size of the vectors */
+//     /* (it is faster and safer that reallocating every new line) */
+//     if((n_data+1) > n_data_guess) {
+//       n_data_guess *= 2;
+//       tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+//       class_test(tmp == NULL,
+//                  ptsz->error_message,
+//                  "Error allocating memory to read the pressure profile.\n");
+//       lnx = tmp;
+//       tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+//       class_test(tmp == NULL,
+//                  ptsz->error_message,
+//                  "Error allocating memory to read the pressure profile.\n");
+//       lnI = tmp;
+//     };
+//     /* Store */
+//     lnx[n_data]   = this_lnx;
+//     lnI[n_data]   = this_lnI;
+//
+//     n_data++;
+//     /* Check ascending order of the k's */
+//     if(n_data>1) {
+//       class_test(lnx[n_data-1] <= lnx[n_data-2],
+//                  ptsz->error_message,
+//                  "The ell/ells's are not strictly sorted in ascending order, "
+//                  "as it is required for the calculation of the splines.\n");
+//     }
+//   }
+//
+//   /* Close the process */
+//   // status = pclose(process);
+//   fclose(process);
+//
+//   class_test(status != 0.,
+//              ptsz->error_message,
+//              "The attempt to launch the external command was unsuccessful. "
+//              "Try doing it by hand to check for errors.");
+//
+//   /** 3. Store the read results into CLASS structures */
+//   ptsz->RNFW_lnx_size = n_data;
+//   /** Make room */
+//
+//   class_realloc(ptsz->RNFW_lnx,
+//                 ptsz->RNFW_lnx,
+//                 ptsz->RNFW_lnx_size*sizeof(double),
+//                 ptsz->error_message);
+//   class_realloc(ptsz->RNFW_lnI,
+//                 ptsz->RNFW_lnI,
+//                 ptsz->RNFW_lnx_size*sizeof(double),
+//                 ptsz->error_message);
+//
+//
+//
+//   /** Store them */
+//   for (index_x=0; index_x<ptsz->RNFW_lnx_size; index_x++) {
+//     ptsz->RNFW_lnx[index_x] = lnx[index_x];
+//     ptsz->RNFW_lnI[index_x] = lnI[index_x];
+//   };
+//
+//   /** Release the memory used locally */
+//   free(lnx);
+//   free(lnI);
+//
+//   return _SUCCESS_;
+// }
+//
+//
 
 
 //HMF Tinker et al 2008
@@ -8713,6 +8713,191 @@ return _SUCCESS_;
 }
 
 
+///Tabulate m200m_to_m500c conversion
+//as functions of z and M
+int tabulate_m200m_to_m500c(struct background * pba,
+                            struct tszspectrum * ptsz){
+
+  //Array of z
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  int index_z;
+
+  double tstart, tstop;
+  int index_l;
+
+  double * pvecback;
+  double * pvectsz;
+  int abort;
+
+  //Array of M in Msun/h
+  double logM_min = log(ptsz->M1SZ_dndlnM); //in Msun/h
+  double logM_max = log(ptsz->M2SZ_dndlnM); //in Msun/h
+  int index_M;
+
+  int index_z_M = 0;
+
+  double ** array_m200m_to_m500c_at_z_and_M;
+
+  class_alloc(ptsz->array_ln_1pz_m200m_to_m500c,sizeof(double *)*ptsz->n_z_dndlnM,ptsz->error_message);
+  class_alloc(ptsz->array_m_m200m_to_m500c,sizeof(double *)*ptsz->n_m_dndlnM,ptsz->error_message);
+
+
+class_alloc(ptsz->array_m200m_to_m500c_at_z_and_M,
+            sizeof(double *)*ptsz->n_z_dndlnM*ptsz->n_m_dndlnM,
+            ptsz->error_message);
+
+
+class_alloc(array_m200m_to_m500c_at_z_and_M,
+            ptsz->n_z_dndlnM*sizeof(double *),
+            ptsz->error_message);
+
+
+for (index_l=0;
+     index_l<ptsz->n_z_dndlnM;
+     index_l++)
+{
+  class_alloc(array_m200m_to_m500c_at_z_and_M[index_l],
+              ptsz->n_m_dndlnM*sizeof(double),
+              ptsz->error_message);
+}
+
+
+//Parallelization of Sigma2(R,z) computation
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,index_z_M,\
+pba,ptsz,z_min,z_max,logM_min,logM_max)\
+private(tstart, tstop,index_M,index_z,pvecback,pvectsz) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+  class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+
+  class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+#pragma omp for schedule (dynamic)
+for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++)
+{
+
+#pragma omp flush(abort)
+
+for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
+{
+      ptsz->array_ln_1pz_m200m_to_m500c[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_dndlnM-1.); // log(1+z)
+
+      ptsz->array_m_m200m_to_m500c[index_M] =
+                                    logM_min
+                                    +index_M*(logM_max-logM_min)
+                                    /(ptsz->n_m_dndlnM-1.); //log(R)
+
+      //background quantities @ z:
+      double z =   exp(ptsz->array_ln_1pz_m200m_to_m500c[index_z])-1.;
+      double logM =   ptsz->array_m_m200m_to_m500c[index_M];
+      pvectsz[ptsz->index_m200m] = exp(logM);
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call_parallel(background_tau_of_z(pba,z,&tau),
+                 pba->error_message,
+                 pba->error_message);
+
+      class_call_parallel(background_at_tau(pba,
+                                   tau,
+                                   pba->long_info,
+                                   pba->inter_normal,
+                                   &first_index_back,
+                                   pvecback),
+                 pba->error_message,
+                 pba->error_message);
+
+
+
+
+      pvectsz[ptsz->index_z] = z;
+      pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                      *pow(_Mpc_over_m_,1)
+                                      *pow(_c_,2)
+                                      *pvecback[pba->index_bg_rho_crit]
+                                      /pow(pba->h,2);
+
+
+
+    double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
+    double delc = Delta_c_of_Omega_m(omega);
+    double rhoc = pvectsz[ptsz->index_Rho_crit];
+    double delrho = 200.*omega*rhoc; // 200m
+    double delrho_prime = 500.*rhoc; //500c
+    double mdel = pvectsz[ptsz->index_m200m];
+
+    double mdel_prime;
+    class_call_parallel(mDEL_to_mDELprime(mdel,
+                           delrho,
+                           delrho_prime,
+                           delc,
+                           rhoc,
+                           z,
+                           &mdel_prime,
+                           ptsz),
+                    ptsz->error_message,
+                    ptsz->error_message);
+    pvectsz[ptsz->index_m500c] = mdel_prime;
+
+    array_m200m_to_m500c_at_z_and_M[index_z][index_M] = log(pvectsz[ptsz->index_m500c]);
+    // printf("m = %.3e\n",array_m200m_to_m500c_at_z_and_M[index_z][index_M]);
+
+    index_z_M += 1;
+    }
+  }
+#ifdef _OPENMP
+  tstop = omp_get_wtime();
+  if (ptsz->sz_verbose > 0)
+    printf("In %s: time spent in parallel region (loop over z's) = %e s for thread %d\n",
+           __func__,tstop-tstart,omp_get_thread_num());
+#endif
+
+    free(pvecback);
+    free(pvectsz);
+    }
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+
+index_z_M = 0;
+for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
+{
+  for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++)
+  {
+    ptsz->array_m200m_to_m500c_at_z_and_M[index_z_M] = array_m200m_to_m500c_at_z_and_M[index_z][index_M];
+    index_z_M += 1;
+  }
+}
+
+  free(array_m200m_to_m500c_at_z_and_M);
+
+return _SUCCESS_;
+}
+
+
 
 //Tabulate vrms2 as functions of redshift
 int tabulate_sigma2_hsv_from_pk(struct background * pba,
@@ -8760,6 +8945,19 @@ double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum 
                           ptsz->array_z_dndlnM,
                           ptsz->array_m_dndlnM,
                           ptsz->array_dndlnM_at_z_and_M,
+                          1,
+                          &z,
+                          &m));
+}
+
+double get_m200m_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double m = log(m_asked);
+ return exp(pwl_interp_2d(ptsz->n_z_dndlnM,
+                          ptsz->n_m_dndlnM,
+                          ptsz->array_ln_1pz_m200m_to_m500c,
+                          ptsz->array_m_m200m_to_m500c,
+                          ptsz->array_m200m_to_m500c_at_z_and_M,
                           1,
                           &z,
                           &m));

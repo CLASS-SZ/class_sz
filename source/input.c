@@ -1758,6 +1758,17 @@ int input_read_parameters(
       class_read_double("max redshift for cluster counts",pcsz->z_max);
 
 
+      class_read_int("integrate_wrt_mvir",ptsz->integrate_wrt_mvir);
+      class_read_int("integrate_wrt_m500c",ptsz->integrate_wrt_m500c);
+      class_read_int("integrate_wrt_m200m",ptsz->integrate_wrt_m200m);
+
+      // if (ptsz->integrate_wrt_mvir == 1) {
+      //   ptsz->integrate_wrt_m500c = 0;
+      //   ptsz->integrate_wrt_m200m = 0;
+      // }
+
+
+
       //Array size
       class_read_int("ndim_redshifts",ptsz->n_arraySZ);//number of z in the interpolation for sigma
       class_read_int("n_arraySZ_for_integral",ptsz->n_arraySZ_for_integral);//number of z in the integration
@@ -4708,8 +4719,8 @@ int input_default_params(
   psp->z_max_pk = ppt->z_max_pk;
 
   ptsz->z1SZ_dndlnM = 0.;
-  ptsz->z2SZ_dndlnM = 3.;
-  ptsz->N_redshift_dndlnM = 11;
+  ptsz->z2SZ_dndlnM = 4.;
+  ptsz->N_redshift_dndlnM = 50;
 
   ptsz->M1SZ_dndlnM = 1.e8;
   ptsz->M2SZ_dndlnM = 1.e17;
@@ -4717,6 +4728,11 @@ int input_default_params(
 
 
   ptsz->n_arraySZ_for_integral = 30; //used in redshift integral
+
+
+
+
+
 
   //mass limits: h^-1 Msun
   ptsz->M1SZ = 5.e11;
@@ -5005,6 +5021,25 @@ int input_default_params(
   ptsz->index_md_bk_at_z_1h = 47;
   ptsz->index_md_bk_at_z_2h = 48;
   ptsz->index_md_bk_at_z_3h = 49;
+
+  ptsz->integrate_wrt_mvir = 0;
+  ptsz->integrate_wrt_m500c = 0;
+  ptsz->integrate_wrt_m200m = 0;
+
+  ptsz->need_m200m_to_m500c = 0;
+
+  ptsz->has_electron_pressure = 0;
+  ptsz->has_electron_density = 0;
+  ptsz->has_galaxy = 0;
+  ptsz->has_matter_density = 0;
+  ptsz->has_lensing = 0;
+  ptsz->has_cib = 0;
+  ptsz->has_isw = 0;
+
+  ptsz->has_vir = 0;
+  ptsz->has_500c = 0;
+  ptsz->has_200m = 0;
+  ptsz->has_200c = 0;
 
 
   ptsz->HMF_prescription_NCDM=2; //no-pres

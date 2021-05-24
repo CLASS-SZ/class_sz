@@ -165,6 +165,8 @@ double delta_to_delta_prime_nfw(
   double get_hmf_counter_term_nmin_at_z(double z_asked, struct tszspectrum * ptsz);
   double get_hmf_counter_term_b1min_at_z(double z_asked, struct tszspectrum * ptsz);
   double get_hmf_counter_term_b2min_at_z(double z_asked, struct tszspectrum * ptsz);
+  double get_m200m_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
+
   int CvirMvirZHAO(double * result,
                    double logM ,
                    double z,
@@ -186,6 +188,8 @@ double delta_to_delta_prime_nfw(
 int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
                                       struct tszspectrum * ptsz);
 
+int tabulate_m200m_to_m500c(struct background * pba,
+                            struct tszspectrum * ptsz);
   int redshift_int_lensmag(
                     struct tszspectrum * ptsz,
                     struct background * pba,

@@ -94,7 +94,7 @@ int szpowerspectrum_init(
 
 
    // rho_nfw loaded only if lens/kSZ requested, see func. def.
-   load_rho_nfw_profile(ptsz);
+   // load_rho_nfw_profile(ptsz);
 
    if (ptsz->concentration_parameter == 4)
       read_Zhao_CM_init(ptsz);
@@ -110,6 +110,10 @@ int szpowerspectrum_init(
 
 
    initialise_and_allocate_memory(ptsz);
+   if (ptsz->need_m200m_to_m500c == 1)
+      tabulate_m200m_to_m500c(pba,ptsz);
+
+   //exit(0);
 
    external_pressure_profile_init(ppr,ptsz);
    // load alpha(z) normalisation
@@ -213,7 +217,7 @@ int szpowerspectrum_init(
  if (ptsz->pressure_profile == 3)
  tabulate_pressure_profile_gNFW(pba,ptsz);
 
-//exit(0);
+// exit(0);
 
 
   // tabulate lensing magnificaion integral, only used when requested
@@ -458,6 +462,13 @@ if (ptsz->has_dndlnM){
    free(ptsz->array_dndlnM_at_z_and_M);
    }
 
+if (ptsz->need_m200m_to_m500c){
+   free(ptsz->array_m_m200m_to_m500c);
+   free(ptsz->array_ln_1pz_m200m_to_m500c);
+   free(ptsz->array_m200m_to_m500c_at_z_and_M);
+   }
+
+
 
 free(ptsz->array_hmf_counter_terms_nmin);
 free(ptsz->array_redshift_hmf_counter_terms);
@@ -564,25 +575,25 @@ free(ptsz->bk_at_z_3h);
 //
 
 
-
- if (ptsz->has_tSZ_lens_1h
-  || ptsz->has_tSZ_lens_2h
-  || ptsz->has_lens_lens_1h
-  || ptsz->has_lens_lens_2h
-  || ptsz->has_gal_lens_1h
-  || ptsz->has_gal_lens_2h
-  // || ptsz->has_gal_lensmag_1h
-  // || ptsz->has_gal_lensmag_2h
-  // || ptsz->has_lensmag_lensmag_1h
-  // || ptsz->has_lensmag_lensmag_2h
-  // || ptsz->has_lens_lensmag_1h
-  // || ptsz->has_lens_lensmag_2h
-  || ptsz->has_lens_cib_1h
-  || ptsz->has_lens_cib_2h
-  || ptsz->has_kSZ_kSZ_gal_1h){
-   free(ptsz->RNFW_lnx);
-   free(ptsz->RNFW_lnI);
- }
+ //
+ // if (ptsz->has_tSZ_lens_1h
+ //  || ptsz->has_tSZ_lens_2h
+ //  || ptsz->has_lens_lens_1h
+ //  || ptsz->has_lens_lens_2h
+ //  || ptsz->has_gal_lens_1h
+ //  || ptsz->has_gal_lens_2h
+ //  // || ptsz->has_gal_lensmag_1h
+ //  // || ptsz->has_gal_lensmag_2h
+ //  // || ptsz->has_lensmag_lensmag_1h
+ //  // || ptsz->has_lensmag_lensmag_2h
+ //  // || ptsz->has_lens_lensmag_1h
+ //  // || ptsz->has_lens_lensmag_2h
+ //  || ptsz->has_lens_cib_1h
+ //  || ptsz->has_lens_cib_2h
+ //  || ptsz->has_kSZ_kSZ_gal_1h){
+ //   free(ptsz->RNFW_lnx);
+ //   free(ptsz->RNFW_lnI);
+ // }
 
   if (ptsz->MF==1 && ptsz->hm_consistency==2){
     free(ptsz->T10_ln1pz);
@@ -639,11 +650,13 @@ int compute_sz(struct background * pba,
    }
    else if (index_integrand == ptsz->index_integrand_id_mean_y && ptsz->has_mean_y) {
       Pvectsz[ptsz->index_md] = ptsz->index_md_mean_y;
+      Pvectsz[ptsz->index_has_electron_pressure] = 1;
       if (ptsz->sz_verbose > 0) printf("computing mean y\n");
    }
    else if (index_integrand>=ptsz->index_integrand_id_sz_ps_first && index_integrand <= ptsz->index_integrand_id_sz_ps_last && ptsz->has_sz_ps){
       Pvectsz[ptsz->index_md] = ptsz->index_md_sz_ps;
       Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_sz_ps_first);
+      Pvectsz[ptsz->index_has_electron_pressure] = 1;
       if (ptsz->sz_verbose == 1 && index_integrand ==ptsz->index_integrand_id_sz_ps_first ) printf("computing cl^yy @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       if (ptsz->sz_verbose == 1 && index_integrand ==ptsz->index_integrand_id_sz_ps_last ) printf("computing cl^yy @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       if (ptsz->sz_verbose >1) printf("computing cl^yy @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
@@ -657,6 +670,7 @@ int compute_sz(struct background * pba,
        int index_ell_prime = index_ell_ell_prime -index_ell*(index_ell+1)/2;
        Pvectsz[ptsz->index_multipole] = (double) (index_ell);
        Pvectsz[ptsz->index_multipole_prime] = (double) (index_ell_prime);
+       Pvectsz[ptsz->index_has_electron_pressure] = 1;
        if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_trispectrum_first) printf("computing trispectrum @ ell_id = %.0f, ell_id_prime = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_multipole_prime]);
        if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_trispectrum_last) printf("computing trispectrum @ ell_id = %.0f, ell_id_prime = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_multipole_prime]);
        if (ptsz->sz_verbose > 1) printf("computing trispectrum @ ell_id = %.0f, ell_id_prime = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_multipole_prime]);
@@ -664,6 +678,7 @@ int compute_sz(struct background * pba,
    else if (index_integrand>=ptsz->index_integrand_id_sz_ps_2halo_first && index_integrand <= ptsz->index_integrand_id_sz_ps_2halo_last && ptsz->has_sz_2halo){
       Pvectsz[ptsz->index_md] = ptsz->index_md_2halo;
       Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_sz_ps_2halo_first);
+      Pvectsz[ptsz->index_has_electron_pressure] = 1;
       if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_sz_ps_2halo_first) printf("computing cl^yy 2-halo term @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_sz_ps_2halo_last) printf("computing cl^yy 2-halo term @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       if (ptsz->sz_verbose > 1) printf("computing cl^yy 2-halo term @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
@@ -673,17 +688,20 @@ int compute_sz(struct background * pba,
    else if (index_integrand>=ptsz->index_integrand_id_sz_ps_te_y_y_first && index_integrand <= ptsz->index_integrand_id_sz_ps_te_y_y_last && ptsz->has_sz_te_y_y){
       Pvectsz[ptsz->index_md] = ptsz->index_md_te_y_y;
       Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_sz_ps_te_y_y_first);
+      Pvectsz[ptsz->index_has_electron_pressure] = 1;
       if (ptsz->sz_verbose > 0) printf("computing cl^Teyy @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
     }
 
     else if (index_integrand>=ptsz->index_integrand_id_sz_ps_m_y_y_1h_first && index_integrand <= ptsz->index_integrand_id_sz_ps_m_y_y_1h_last && ptsz->has_sz_m_y_y_1h){
        Pvectsz[ptsz->index_md] = ptsz->index_md_m_y_y_1h;
        Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_sz_ps_m_y_y_1h_first);
+       Pvectsz[ptsz->index_has_electron_pressure] = 1;
        if (ptsz->sz_verbose > 0) printf("computing m_y_y_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
      }
      else if (index_integrand>=ptsz->index_integrand_id_sz_ps_m_y_y_2h_first && index_integrand <= ptsz->index_integrand_id_sz_ps_m_y_y_2h_last && ptsz->has_sz_m_y_y_2h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_m_y_y_2h;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_sz_ps_m_y_y_2h_first);
+        Pvectsz[ptsz->index_has_electron_pressure] = 1;
         if (ptsz->sz_verbose > 0) printf("computing m_y_y_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
     else if (index_integrand>=ptsz->index_integrand_id_cov_Y_N_first && index_integrand <= ptsz->index_integrand_id_cov_Y_N_last && ptsz->has_sz_cov_Y_N){
@@ -693,6 +711,7 @@ int compute_sz(struct background * pba,
        int index_mass = index_ell_mass % ptsz->nbins_M;
        Pvectsz[ptsz->index_multipole] = (double) (index_ell);
        Pvectsz[ptsz->index_mass_bin_1] = (double) (index_mass);
+       Pvectsz[ptsz->index_has_electron_pressure] = 1;
        if (ptsz->sz_verbose > 0 && index_integrand==ptsz->index_integrand_id_cov_Y_N_first) printf("computing cov(Y,N) @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_mass_bin_1]);
        if (ptsz->sz_verbose > 0 && index_integrand==ptsz->index_integrand_id_cov_Y_N_last) printf("computing cov(Y,N) @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_mass_bin_1]);
      }
@@ -723,6 +742,7 @@ int compute_sz(struct background * pba,
         int index_mass = index_ell_mass % ptsz->nbins_M;
         Pvectsz[ptsz->index_multipole] = (double) (index_ell);
         Pvectsz[ptsz->index_mass_bin_1] = (double) (index_mass);
+        Pvectsz[ptsz->index_has_electron_pressure] = 1;
         if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_cov_Y_N_next_order_first) printf("computing cov(Y,N) [ssc] @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_mass_bin_1]);
         if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_cov_Y_N_next_order_last) printf("computing cov(Y,N) [ssc] @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_mass_bin_1]);
         if (ptsz->sz_verbose > 1) printf("computing cov(Y,N) [hsv] @ ell_id = %.0f, mass_bin_id = %.0f\n",Pvectsz[ptsz->index_multipole],Pvectsz[ptsz->index_mass_bin_1]);
@@ -735,6 +755,7 @@ int compute_sz(struct background * pba,
          int index_multipole_2 = index_multipole_1_multipole_2 -index_multipole_1*(index_multipole_1+1)/2;
          Pvectsz[ptsz->index_multipole_1] = (double) (index_multipole_1);
          Pvectsz[ptsz->index_multipole_2] = (double) (index_multipole_2);
+         Pvectsz[ptsz->index_has_electron_pressure] = 1;
          if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_cov_Y_Y_ssc_first) printf("computing cov(Y,Y) [ssc] @ ell_id = %.0f, ell_id = %.0f\n",Pvectsz[ptsz->index_multipole_1],Pvectsz[ptsz->index_multipole_2]);
          if (ptsz->sz_verbose == 1 && index_integrand==ptsz->index_integrand_id_cov_Y_Y_ssc_last) printf("computing cov(Y,Y) [ssc] @ ell_id = %.0f, ell_id = %.0f\n",Pvectsz[ptsz->index_multipole_1],Pvectsz[ptsz->index_multipole_2]);
          if (ptsz->sz_verbose > 1) printf("computing cov(Y,Y) [ssc] @ ell_id = %.0f, ell_id = %.0f\n",Pvectsz[ptsz->index_multipole_1],Pvectsz[ptsz->index_multipole_2]);
@@ -743,100 +764,130 @@ int compute_sz(struct background * pba,
     else if (index_integrand>=ptsz->index_integrand_id_kSZ_kSZ_gal_1h_first && index_integrand <= ptsz->index_integrand_id_kSZ_kSZ_gal_1h_last && ptsz->has_kSZ_kSZ_gal_1h){
        Pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_1h;
        Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_kSZ_kSZ_gal_1h_first);
+       Pvectsz[ptsz->index_has_electron_density] = 1;
+       Pvectsz[ptsz->index_has_galaxy] = 1;
        if (ptsz->sz_verbose > 0) printf("computing cl^kSZ-kSZ-gal (1h) @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
      }
      else if (index_integrand>=ptsz->index_integrand_id_kSZ_kSZ_gal_2h_first && index_integrand <= ptsz->index_integrand_id_kSZ_kSZ_gal_2h_last && ptsz->has_kSZ_kSZ_gal_2h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_2h;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_kSZ_kSZ_gal_2h_first);
+        Pvectsz[ptsz->index_has_electron_density] = 1;
+        Pvectsz[ptsz->index_has_galaxy] = 1;
         if (ptsz->sz_verbose > 0) printf("computing cl^kSZ-kSZ-gal (2h) @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
       else if (index_integrand>=ptsz->index_integrand_id_kSZ_kSZ_gal_3h_first && index_integrand <= ptsz->index_integrand_id_kSZ_kSZ_gal_3h_last && ptsz->has_kSZ_kSZ_gal_3h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_3h;
+         Pvectsz[ptsz->index_has_electron_density] = 1;
+         Pvectsz[ptsz->index_has_galaxy] = 1;
          Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_kSZ_kSZ_gal_3h_first);
          if (ptsz->sz_verbose > 0) printf("computing cl^kSZ-kSZ-gal (3h) @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
        }
      else if (index_integrand>=ptsz->index_integrand_id_kSZ_kSZ_lensmag_1halo_first && index_integrand <= ptsz->index_integrand_id_kSZ_kSZ_lensmag_1halo_last && ptsz->has_kSZ_kSZ_lensmag_1halo){
         Pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_lensmag_1halo;
+        Pvectsz[ptsz->index_has_electron_density] = 1;
+        Pvectsz[ptsz->index_has_lensing] = 1;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_kSZ_kSZ_lensmag_1halo_first);
         if (ptsz->sz_verbose > 0) printf("computing cl^kSZ-kSZ-lensmag @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
     else if (index_integrand>=ptsz->index_integrand_id_tSZ_tSZ_tSZ_1halo_first && index_integrand <= ptsz->index_integrand_id_tSZ_tSZ_tSZ_1halo_last && ptsz->has_tSZ_tSZ_tSZ_1halo){
        Pvectsz[ptsz->index_md] = ptsz->index_md_tSZ_tSZ_tSZ_1halo;
+       Pvectsz[ptsz->index_has_electron_pressure] = 1;
        Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_tSZ_tSZ_tSZ_1halo_first);
        if (ptsz->sz_verbose > 0) printf("computing b^y-y-y @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
      }
      else if (index_integrand>=ptsz->index_integrand_id_pk_at_z_1h_first && index_integrand <= ptsz->index_integrand_id_pk_at_z_1h_last && ptsz->has_pk_at_z_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_pk_at_z_1h;
+        Pvectsz[ptsz->index_has_matter_density] = 1;
         Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_at_z_1h_first);
         if (ptsz->sz_verbose > 0) printf("computing pk^1h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
       }
       else if (index_integrand>=ptsz->index_integrand_id_pk_at_z_2h_first && index_integrand <= ptsz->index_integrand_id_pk_at_z_2h_last && ptsz->has_pk_at_z_2h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_pk_at_z_2h;
+         Pvectsz[ptsz->index_has_matter_density] = 1;
          Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_at_z_2h_first);
          if (ptsz->sz_verbose > 0) printf("computing pk^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
        }
      else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_1h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_1h_last && ptsz->has_bk_at_z_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_1h;
+        Pvectsz[ptsz->index_has_matter_density] = 1;
         Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_1h_first);
         if (ptsz->sz_verbose > 0) printf("computing bk^1h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
       }
       else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_2h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_2h_last && ptsz->has_bk_at_z_2h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_2h;
+        Pvectsz[ptsz->index_has_matter_density] = 1;
          Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_2h_first);
          if (ptsz->sz_verbose > 0) printf("computing bk^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
        }
       else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_3h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_3h_last && ptsz->has_bk_at_z_3h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_3h;
+         Pvectsz[ptsz->index_has_matter_density] = 1;
          Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_bk_at_z_3h_first);
          if (ptsz->sz_verbose > 0) printf("computing bk^3h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
        }
      else if (index_integrand>=ptsz->index_integrand_id_gal_gal_1h_first && index_integrand <= ptsz->index_integrand_id_gal_gal_1h_last && ptsz->has_gal_gal_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_gal_gal_1h;
+        Pvectsz[ptsz->index_has_galaxy] = 1;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_gal_gal_1h_first);
         if (ptsz->sz_verbose > 0) printf("computing cl^gal-gal_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
      else if (index_integrand>=ptsz->index_integrand_id_gal_gal_2h_first && index_integrand <= ptsz->index_integrand_id_gal_gal_2h_last && ptsz->has_gal_gal_2h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_gal_gal_2h;
+        Pvectsz[ptsz->index_has_galaxy] = 1;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_gal_gal_2h_first);
         if (ptsz->sz_verbose > 0) printf("computing cl^gal-gal_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
       else if (index_integrand>=ptsz->index_integrand_id_gal_lens_1h_first && index_integrand <= ptsz->index_integrand_id_gal_lens_1h_last && ptsz->has_gal_lens_1h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_gal_lens_1h;
+         Pvectsz[ptsz->index_has_galaxy] = 1;
+         Pvectsz[ptsz->index_has_lensing] = 1;
          Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_gal_lens_1h_first);
          if (ptsz->sz_verbose > 0) printf("computing cl^gal-lens_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
        }
        else if (index_integrand>=ptsz->index_integrand_id_gal_lens_2h_first && index_integrand <= ptsz->index_integrand_id_gal_lens_2h_last && ptsz->has_gal_lens_2h){
           Pvectsz[ptsz->index_md] = ptsz->index_md_gal_lens_2h;
+          Pvectsz[ptsz->index_has_galaxy] = 1;
+          Pvectsz[ptsz->index_has_lensing] = 1;
           Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_gal_lens_2h_first);
           if (ptsz->sz_verbose > 0) printf("computing cl^gal-lens_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
         }
       else if (index_integrand>=ptsz->index_integrand_id_gal_lensmag_1h_first && index_integrand <= ptsz->index_integrand_id_gal_lensmag_1h_last && ptsz->has_gal_lensmag_1h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_gal_lensmag_1h;
+         Pvectsz[ptsz->index_has_galaxy] = 1;
+         Pvectsz[ptsz->index_has_lensing] = 1;
          Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_gal_lensmag_1h_first);
          if (ptsz->sz_verbose > 0) printf("computing cl^gal-lensmag_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
        }
        else if (index_integrand>=ptsz->index_integrand_id_gal_lensmag_2h_first && index_integrand <= ptsz->index_integrand_id_gal_lensmag_2h_last && ptsz->has_gal_lensmag_2h){
           Pvectsz[ptsz->index_md] = ptsz->index_md_gal_lensmag_2h;
+          Pvectsz[ptsz->index_has_galaxy] = 1;
+          Pvectsz[ptsz->index_has_lensing] = 1;
           Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_gal_lensmag_2h_first);
           if (ptsz->sz_verbose > 0) printf("computing cl^gal-lensmag_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
         }
       else if (index_integrand>=ptsz->index_integrand_id_lensmag_lensmag_1h_first && index_integrand <= ptsz->index_integrand_id_lensmag_lensmag_1h_last && ptsz->has_lensmag_lensmag_1h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_lensmag_lensmag_1h;
+         Pvectsz[ptsz->index_has_galaxy] = 1;
+         Pvectsz[ptsz->index_has_lensing] = 1;
          Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_lensmag_lensmag_1h_first);
          if (ptsz->sz_verbose > 0) printf("computing cl^lensmag-lensmag_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
        }
        else if (index_integrand>=ptsz->index_integrand_id_lensmag_lensmag_2h_first && index_integrand <= ptsz->index_integrand_id_lensmag_lensmag_2h_last && ptsz->has_lensmag_lensmag_2h){
           Pvectsz[ptsz->index_md] = ptsz->index_md_lensmag_lensmag_2h;
+          Pvectsz[ptsz->index_has_galaxy] = 1;
+          Pvectsz[ptsz->index_has_lensing] = 1;
           Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_lensmag_lensmag_2h_first);
           if (ptsz->sz_verbose > 0) printf("computing cl^lensmag-lensmag_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
         }
         else if (index_integrand>=ptsz->index_integrand_id_lens_lensmag_1h_first && index_integrand <= ptsz->index_integrand_id_lens_lensmag_1h_last && ptsz->has_lens_lensmag_1h){
            Pvectsz[ptsz->index_md] = ptsz->index_md_lens_lensmag_1h;
+           Pvectsz[ptsz->index_has_lensing] = 1;
            Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_lens_lensmag_1h_first);
            if (ptsz->sz_verbose > 0) printf("computing cl^lens-lensmag_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
          }
          else if (index_integrand>=ptsz->index_integrand_id_lens_lensmag_2h_first && index_integrand <= ptsz->index_integrand_id_lens_lensmag_2h_last && ptsz->has_lens_lensmag_2h){
             Pvectsz[ptsz->index_md] = ptsz->index_md_lens_lensmag_2h;
+            Pvectsz[ptsz->index_has_lensing] = 1;
             Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_lens_lensmag_2h_first);
             if (ptsz->sz_verbose > 0) printf("computing cl^lens-lensmag_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
           }
@@ -846,7 +897,8 @@ int compute_sz(struct background * pba,
         int index_cib1 = index_multipole_cib1 / ptsz->nlSZ;
         int index_multipole = index_multipole_cib1 % ptsz->nlSZ;
         Pvectsz[ptsz->index_multipole] = (double) index_multipole ;
-         Pvectsz[ptsz->index_frequency_for_cib_profile] = (double) index_cib1;
+        Pvectsz[ptsz->index_frequency_for_cib_profile] = (double) index_cib1;
+        Pvectsz[ptsz->index_has_cib] = 1;
         if (ptsz->sz_verbose > 0) printf("computing cl^y-cib_1h @ frequency_id = %.0f, ell_id = %.0f\n",
                                          Pvectsz[ptsz->index_frequency_for_cib_profile],
                                          Pvectsz[ptsz->index_multipole]);
@@ -857,7 +909,9 @@ int compute_sz(struct background * pba,
           int index_cib1 = index_multipole_cib1 / ptsz->nlSZ;
           int index_multipole = index_multipole_cib1 % ptsz->nlSZ;
           Pvectsz[ptsz->index_multipole] = (double) index_multipole ;
-           Pvectsz[ptsz->index_frequency_for_cib_profile] = (double) index_cib1;
+          Pvectsz[ptsz->index_frequency_for_cib_profile] = (double) index_cib1;
+          Pvectsz[ptsz->index_has_cib] = 1;
+          Pvectsz[ptsz->index_has_electron_pressure] = 1;
           if (ptsz->sz_verbose > 0) printf("computing cl^y-cib_2h @ frequency_id = %.0f, ell_id = %.0f\n",
                                            Pvectsz[ptsz->index_frequency_for_cib_profile],
                                            Pvectsz[ptsz->index_multipole]);
@@ -869,6 +923,8 @@ int compute_sz(struct background * pba,
         int index_multipole = index_multipole_cib1 % ptsz->nlSZ;
         Pvectsz[ptsz->index_multipole] = (double) index_multipole ;
         Pvectsz[ptsz->index_frequency_for_cib_profile] = (double) index_cib1;
+        Pvectsz[ptsz->index_has_cib] = 1;
+        Pvectsz[ptsz->index_has_lensing] = 1;
         if (ptsz->sz_verbose > 0) printf("computing cl^lens-cib_1h @ frequency_id = %.0f, ell_id = %.0f\n",
                                          Pvectsz[ptsz->index_frequency_for_cib_profile],
                                          Pvectsz[ptsz->index_multipole]);
@@ -880,6 +936,8 @@ int compute_sz(struct background * pba,
           int index_multipole = index_multipole_cib1 % ptsz->nlSZ;
           Pvectsz[ptsz->index_multipole] = (double) index_multipole ;
           Pvectsz[ptsz->index_frequency_for_cib_profile] = (double) index_cib1;
+          Pvectsz[ptsz->index_has_cib] = 1;
+          Pvectsz[ptsz->index_has_lensing] = 1;
           if (ptsz->sz_verbose > 0) printf("computing cl^lens-cib_2h @ frequency_id = %.0f, ell_id = %.0f\n",
                                            Pvectsz[ptsz->index_frequency_for_cib_profile],
                                            Pvectsz[ptsz->index_multipole]);
@@ -896,6 +954,7 @@ int compute_sz(struct background * pba,
          Pvectsz[ptsz->index_frequency_prime_for_cib_profile] = (double) index_cib2;
          //int index_multipole = (int) (index_integrand - ptsz->index_integrand_id_cib_cib_1h_first);
          Pvectsz[ptsz->index_multipole] = (double) index_multipole;
+         Pvectsz[ptsz->index_has_cib] = 1;
          if (ptsz->sz_verbose > 0) printf("computing cl^cib-cib_1h @ frequency_id = %.0f, frequency_prime_id = %.0f, ell_id = %.0f\n",
                                           Pvectsz[ptsz->index_frequency_for_cib_profile],
                                           Pvectsz[ptsz->index_frequency_prime_for_cib_profile],
@@ -915,6 +974,7 @@ int compute_sz(struct background * pba,
          Pvectsz[ptsz->index_frequency_prime_for_cib_profile] = (double) index_cib2;
          //int index_multipole = (int) (index_integrand - ptsz->index_integrand_id_cib_cib_1h_first);
          Pvectsz[ptsz->index_multipole] = (double) index_multipole;
+         Pvectsz[ptsz->index_has_cib] = 1;
          //  if (ptsz->sz_verbose > 0) printf("computing cl^cib-cib_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
          if (ptsz->sz_verbose > 0) printf("computing cl^cib-cib_2h @ frequency_id = %.0f, frequency_prime_id = %.0f, ell_id = %.0f\n",
                                 Pvectsz[ptsz->index_frequency_for_cib_profile],
@@ -923,57 +983,76 @@ int compute_sz(struct background * pba,
         }
      else if (index_integrand>=ptsz->index_integrand_id_tSZ_gal_1h_first && index_integrand <= ptsz->index_integrand_id_tSZ_gal_1h_last && ptsz->has_tSZ_gal_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_tSZ_gal_1h;
+        Pvectsz[ptsz->index_has_electron_pressure] = 1;
+        Pvectsz[ptsz->index_has_galaxy] = 1;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_tSZ_gal_1h_first);
         if (ptsz->sz_verbose > 0) printf("computing cl^y-gal_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
       else if (index_integrand>=ptsz->index_integrand_id_tSZ_gal_2h_first && index_integrand <= ptsz->index_integrand_id_tSZ_gal_2h_last && ptsz->has_tSZ_gal_2h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_tSZ_gal_2h;
+         Pvectsz[ptsz->index_has_electron_pressure] = 1;
+         Pvectsz[ptsz->index_has_galaxy] = 1;
          Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_tSZ_gal_2h_first);
          if (ptsz->sz_verbose > 0) printf("computing cl^y-gal_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
        }
 
       else if (index_integrand>=ptsz->index_integrand_id_tSZ_lensmag_1h_first && index_integrand <= ptsz->index_integrand_id_tSZ_lensmag_1h_last && ptsz->has_tSZ_lensmag_1h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_tSZ_lensmag_1h;
+         Pvectsz[ptsz->index_has_electron_pressure] = 1;
+         Pvectsz[ptsz->index_has_lensing] = 1;
          Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_tSZ_lensmag_1h_first);
          if (ptsz->sz_verbose > 0) printf("computing cl^tSZ-lensmag_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
        }
        else if (index_integrand>=ptsz->index_integrand_id_tSZ_lensmag_2h_first && index_integrand <= ptsz->index_integrand_id_tSZ_lensmag_2h_last && ptsz->has_tSZ_lensmag_2h){
           Pvectsz[ptsz->index_md] = ptsz->index_md_tSZ_lensmag_2h;
+          Pvectsz[ptsz->index_has_electron_pressure] = 1;
+          Pvectsz[ptsz->index_has_lensing] = 1;
           Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_tSZ_lensmag_2h_first);
           if (ptsz->sz_verbose > 0) printf("computing cl^tSZ-lensmag_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
         }
      else if (index_integrand>=ptsz->index_integrand_id_lens_lens_1h_first && index_integrand <= ptsz->index_integrand_id_lens_lens_1h_last && ptsz->has_lens_lens_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_lens_lens_1h;
+        Pvectsz[ptsz->index_has_lensing] = 1;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_lens_lens_1h_first);
         if (ptsz->sz_verbose > 0) printf("computing cl^lens-lens_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
       else if (index_integrand>=ptsz->index_integrand_id_lens_lens_2h_first && index_integrand <= ptsz->index_integrand_id_lens_lens_2h_last && ptsz->has_lens_lens_2h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_lens_lens_2h;
+         Pvectsz[ptsz->index_has_lensing] = 1;
          Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_lens_lens_2h_first);
          if (ptsz->sz_verbose > 0) printf("computing cl^lens-lens_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
        }
      else if (index_integrand>=ptsz->index_integrand_id_tSZ_lens_1h_first && index_integrand <= ptsz->index_integrand_id_tSZ_lens_1h_last && ptsz->has_tSZ_lens_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_tSZ_lens_1h;
+        Pvectsz[ptsz->index_has_lensing] = 1;
+        Pvectsz[ptsz->index_has_electron_pressure] = 1;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_tSZ_lens_1h_first);
         if (ptsz->sz_verbose > 0) printf("computing cl^y-phi_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
      else if (index_integrand>=ptsz->index_integrand_id_tSZ_lens_2h_first && index_integrand <= ptsz->index_integrand_id_tSZ_lens_2h_last && ptsz->has_tSZ_lens_2h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_tSZ_lens_2h;
+        Pvectsz[ptsz->index_has_lensing] = 1;
+        Pvectsz[ptsz->index_has_electron_pressure] = 1;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_tSZ_lens_2h_first);
         if (ptsz->sz_verbose > 0) printf("computing cl^y-phi_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
       else if (index_integrand>=ptsz->index_integrand_id_isw_lens_first && index_integrand <= ptsz->index_integrand_id_isw_lens_last && ptsz->has_isw_lens){
          Pvectsz[ptsz->index_md] = ptsz->index_md_isw_lens;
+         Pvectsz[ptsz->index_has_lensing] = 1;
+         Pvectsz[ptsz->index_has_isw] = 1;
          Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_isw_lens_first);
          if (ptsz->sz_verbose > 0) printf("computing cl^isw-phi @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
        }
      else if (index_integrand>=ptsz->index_integrand_id_isw_tsz_first && index_integrand <= ptsz->index_integrand_id_isw_tsz_last && ptsz->has_isw_tsz){
         Pvectsz[ptsz->index_md] = ptsz->index_md_isw_tsz;
+        Pvectsz[ptsz->index_has_isw] = 1;
+        Pvectsz[ptsz->index_has_electron_pressure] = 1;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_isw_tsz_first);
         if (ptsz->sz_verbose > 0) printf("computing cl^isw-y @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
      else if (index_integrand>=ptsz->index_integrand_id_isw_auto_first && index_integrand <= ptsz->index_integrand_id_isw_auto_last && ptsz->has_isw_auto){
         Pvectsz[ptsz->index_md] = ptsz->index_md_isw_auto;
+        Pvectsz[ptsz->index_has_isw] = 1;
         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_isw_auto_first);
         if (ptsz->sz_verbose > 0) printf("computing cl^isw-isw @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
       }
@@ -984,6 +1063,40 @@ int compute_sz(struct background * pba,
        //printf("id not found. index_integrand = %d \n",index_integrand);
      return 0;
 }
+
+if (Pvectsz[ptsz->index_has_electron_pressure] == 1){
+        // if battaglia pressure profile need 200c
+      if (ptsz->pressure_profile == 4){
+        Pvectsz[ptsz->index_has_200c] = 1;
+        Pvectsz[ptsz->index_has_vir] = 1;
+      }
+      else if (ptsz->pressure_profile == 0){ // Planck 2013
+        Pvectsz[ptsz->index_has_500c] = 1;
+      }
+      else if (ptsz->pressure_profile == 2){ // Arnaud et al 2010
+        Pvectsz[ptsz->index_has_500c] = 1;
+      }
+      else if (ptsz->pressure_profile == 3){ // custom
+        Pvectsz[ptsz->index_has_500c] = 1;
+      }
+}
+
+if (Pvectsz[ptsz->index_has_electron_density] == 1){
+  if (ptsz->tau_profile == 1){ // battaglia tau profile, need m200c
+  Pvectsz[ptsz->index_has_200c] = 1;
+  }
+}
+
+if (ptsz->MF == 1) {
+  // printf("needs 200m\n");
+  Pvectsz[ptsz->index_has_200m] = 1;
+}
+//Tinker et al 2008 @ m500
+//Boquet et al 2015
+else if (ptsz->MF==5 || ptsz->MF==7){
+  Pvectsz[ptsz->index_has_500c] = 1;
+}
+
 
  //return 0;
 
@@ -1733,6 +1846,7 @@ double integrand_at_m_and_z(double logM,
                                            //*pvectsz[ptsz->index_dlnMdeltadlnM]
                                            *pvectsz[ptsz->index_completeness]
                                            *pow(pressure_profile_at_ell,2.);
+      // printf("dn = %.3e, u = %.3e\n",pvectsz[ptsz->index_hmf],pressure_profile_at_ell);
 
     }
 
@@ -3231,9 +3345,9 @@ int evaluate_tau_profile(double * pvecback,
 }
 
 int evaluate_matter_density_profile(double * pvecback,
-                             double * pvectsz,
-                             struct background * pba,
-                             struct tszspectrum * ptsz)
+                                    double * pvectsz,
+                                    struct background * pba,
+                                    struct tszspectrum * ptsz)
 {
 
   int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
@@ -3296,6 +3410,21 @@ int evaluate_lensing_profile(double * pvecback,
                              struct tszspectrum * ptsz)
 {
 
+  double mass_nfw;
+  if (ptsz->MF == 1){
+      mass_nfw = pvectsz[ptsz->index_m200m];
+      pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
+      pvectsz[ptsz->index_ls] =  sqrt(pvectsz[ptsz->index_chi2])/(1.+pvectsz[ptsz->index_z])/pvectsz[ptsz->index_rs];
+
+      // concentration_nfw = pvectsz[ptsz->index_c200m];
+    }
+  else{
+      mass_nfw = pvectsz[ptsz->index_mVIR];
+      pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_rVIR]/pvectsz[ptsz->index_cVIR];
+      pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+pvectsz[ptsz->index_z])/pvectsz[ptsz->index_rs];
+
+      // concentration_nfw = pvectsz[ptsz->index_cVIR];
+    }
    //int index_md = (int) pvectsz[ptsz->index_md];
 
    //int index_l = (int) pvectsz[ptsz->index_multipole_for_tau_profile];
@@ -3334,15 +3463,7 @@ int evaluate_lensing_profile(double * pvecback,
       //                              ptsz->RNFW_lnI,
       //                              lnx_asked);
       // result = exp(result);
-double mass_nfw;
-if (ptsz->MF == 1){
-    mass_nfw = pvectsz[ptsz->index_m200m];
-    // concentration_nfw = pvectsz[ptsz->index_c200m];
-  }
-else{
-    mass_nfw = pvectsz[ptsz->index_mVIR];
-    // concentration_nfw = pvectsz[ptsz->index_cVIR];
-  }
+
 
   // printf("getting mu\n");
 
@@ -3396,15 +3517,15 @@ else{
   // double rho0 = pvectsz[ptsz->index_mVIR]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.);
 
 // double mass_nfw;
-double concentration_nfw;
-if (ptsz->MF == 1){
-    // mass_nfw = pvectsz[ptsz->index_m200m];
-    concentration_nfw = pvectsz[ptsz->index_c200m];
-  }
-else{
-    // mass_nfw = pvectsz[ptsz->index_mVIR];
-    concentration_nfw = pvectsz[ptsz->index_cVIR];
-  }
+// double concentration_nfw;
+// if (ptsz->MF == 1){
+//     // mass_nfw = pvectsz[ptsz->index_m200m];
+//     concentration_nfw = pvectsz[ptsz->index_c200m];
+//   }
+// else{
+//     // mass_nfw = pvectsz[ptsz->index_mVIR];
+//     concentration_nfw = pvectsz[ptsz->index_cVIR];
+//   }
   // normalization:
   double rho0;
 
@@ -3525,6 +3646,7 @@ int evaluate_pressure_profile(double * pvecback,
                               lnx_asked);
 
       result = exp(result);
+      // printf("lnx_asked = %.3e pp=%.3e\n",lnx_asked ,result);
 
    }
 
@@ -4491,64 +4613,55 @@ int evaluate_HMF(double logM,
    double z = pvectsz[ptsz->index_z];
    pvectsz[ptsz->index_dlnMdeltadlnM] = 1.;
 
-  //mass conversions
+   if (pvectsz[ptsz->index_has_electron_pressure]+
+       pvectsz[ptsz->index_has_electron_pressure] +
+       pvectsz[ptsz->index_has_electron_density] +
+       pvectsz[ptsz->index_has_galaxy] +
+       pvectsz[ptsz->index_has_matter_density] +
+       pvectsz[ptsz->index_has_lensing] +
+       pvectsz[ptsz->index_has_cib] +
+       pvectsz[ptsz->index_has_isw] == 0){
+       pvectsz[ptsz->index_mass_for_hmf] = exp(logM);
+   }
+   else
+   {
+   // deal with mass definitions
+   if (ptsz->integrate_wrt_mvir == 1){
 
-  // Tinker et al 2008 @ M500c : the mass integral runs over m500c -> logM = logM500c
-  // if (ptsz->MF==5 || (ptsz->MF==1 && ptsz->pressure_profile == 2)){
-  if ( ptsz->MF==5
-    // || ptsz->pressure_profile == 2
-    // || ptsz->pressure_profile == 3
-    // || ptsz->pressure_profile == 0
-      ){
+    pvectsz[ptsz->index_mVIR] = exp(logM);
+    pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+    pvectsz[ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
 
-  pvectsz[ptsz->index_m500c] = exp(logM);
-  pvectsz[ptsz->index_r500c] = pow(3.*pvectsz[ptsz->index_m500c]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
-
-  // //convert from m500c to mVIR:
-  class_call(mDEL_to_mVIR(pvectsz[ptsz->index_m500c],
-                           500.*(pvectsz[ptsz->index_Rho_crit]),
-                           pvectsz[ptsz->index_Delta_c],
-                           pvectsz[ptsz->index_Rho_crit],
-                           z,
-                           &pvectsz[ptsz->index_mVIR],
-                           ptsz),
+    if (pvectsz[ptsz->index_has_500c] == 1){
+  class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+                       pvectsz[ptsz->index_rVIR],
+                       pvectsz[ptsz->index_cVIR],
+                       500.*(pvectsz[ptsz->index_Rho_crit]),
+                       &pvectsz[ptsz->index_m500c],
+                       ptsz),
                   ptsz->error_message,
                   ptsz->error_message);
-   // pvectsz[ptsz->index_mVIR] = 0.;
-  }
-  // for the other HMF the mass integral runs over mVIR
-  else {
-   //beginning of mass function
-   pvectsz[ptsz->index_mVIR] = exp(logM);
-}
-
-   pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
-   //compute concentration_parameter using mVIR
-
-   pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
-
-   //Scale radius for nfw profiles:
-   //(note that rs is actually r200c/c200 for SC14 concentration-mass relation ---> TBC)
+  pvectsz[ptsz->index_r500c] = pow(3.*pvectsz[ptsz->index_m500c]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+  evaluate_c500c_KA20(pvectsz,pba,ptsz);
 
 
-   //Compute m500c
-   //for the pressure profile
-   //(except when HMF is at m500c, i.e., T08@M500 and B16M500c)
-   if (ptsz->MF!=5 && ptsz->MF!=7){
+    if (pvectsz[ptsz->index_has_electron_pressure] == 1){
+   if (ptsz->mass_dependent_bias == 1)
+      ptsz->HSEbias = 1./(0.8/(1.+ ptsz->Ap*pow(pvectsz[ptsz->index_m500]/3.e14,ptsz->alpha_b)));
 
-      class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
-                           pvectsz[ptsz->index_rVIR],
-                           pvectsz[ptsz->index_cVIR],
-                           500.*(pvectsz[ptsz->index_Rho_crit]),
-                           &pvectsz[ptsz->index_m500c],
-                           ptsz),
-                      ptsz->error_message,
-                      ptsz->error_message);
 
+  //m500 X-ray for the pressure profiles A10 and P13
+   pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m500c]/ptsz->HSEbias;
+
+   //r500 X-ray for the pressure profiles A10 and P13
+   pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+   pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
    }
 
+    }
 
-if (ptsz->pressure_profile == 4){
+    if (pvectsz[ptsz->index_has_200c] == 1){
+
    //compute m200c
   class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
                        pvectsz[ptsz->index_rVIR],
@@ -4562,102 +4675,169 @@ if (ptsz->pressure_profile == 4){
     //r200c for the pressure profile B12
     pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
     pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
-}
+    evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz);
 
-   // //if HMF=T08@m500c -> m200=m500=M
-   // else pvectsz[ptsz->index_m500] = exp(logM);
 
+    }
+
+    if (pvectsz[ptsz->index_has_200m] == 1){
+  class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+                      pvectsz[ptsz->index_rVIR],
+                      pvectsz[ptsz->index_cVIR],
+                      200.*pvecback[pba->index_bg_Omega_m]
+                      *pvectsz[ptsz->index_Rho_crit],
+                      &pvectsz[ptsz->index_m200m],
+                      ptsz),
+                 ptsz->error_message,
+                 ptsz->error_message);
+  pvectsz[ptsz->index_r200m]  = pow(3.*pvectsz[ptsz->index_m200m]
+                                    /(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]
+                                    *pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+
+  evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
+
+    }
+
+  }
+   else if (ptsz->integrate_wrt_m500c == 1){
+
+    // printf("entering m500c\n");
+    pvectsz[ptsz->index_m500c] = exp(logM);
+    // printf("m500c = %.3e\n",pvectsz[ptsz->index_m500c]);
+    pvectsz[ptsz->index_r500c] = pow(3.*pvectsz[ptsz->index_m500c]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+    // printf("r500c = %.3e\n",pvectsz[ptsz->index_r500c]);
+
+    evaluate_c500c_KA20(pvectsz,pba,ptsz);
+
+   if (pvectsz[ptsz->index_has_electron_pressure] == 1){
    if (ptsz->mass_dependent_bias == 1)
       ptsz->HSEbias = 1./(0.8/(1.+ ptsz->Ap*pow(pvectsz[ptsz->index_m500]/3.e14,ptsz->alpha_b)));
 
 
   //m500 X-ray for the pressure profiles A10 and P13
    pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m500c]/ptsz->HSEbias;
+   // printf("m500 = %.3e\n",pvectsz[ptsz->index_m500]);
 
    //r500 X-ray for the pressure profiles A10 and P13
    pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+   // printf("r500 = %.3e\n",pvectsz[ptsz->index_r500]);
+
    pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
+   }
 
 
+    if (pvectsz[ptsz->index_has_vir] == 1){
+
+    // //convert from m500c to mVIR:
+    class_call(mDEL_to_mVIR(pvectsz[ptsz->index_m500c],
+                             500.*(pvectsz[ptsz->index_Rho_crit]),
+                             pvectsz[ptsz->index_Delta_c],
+                             pvectsz[ptsz->index_Rho_crit],
+                             z,
+                             &pvectsz[ptsz->index_mVIR],
+                             ptsz),
+                    ptsz->error_message,
+                    ptsz->error_message);
+    // printf("mvir = %.3e\n",pvectsz[ptsz->index_mVIR]);
+
+    pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+    pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
+
+    }
+
+    if (pvectsz[ptsz->index_has_200c] == 1){
+    //  exit(0);
+    double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
+    double delc = Delta_c_of_Omega_m(omega);
+    double rhoc = pvectsz[ptsz->index_Rho_crit];
+    double delrho = 500.*rhoc; // 200m
+    double delrho_prime = 200.*rhoc; //500c
+    double mdel = pvectsz[ptsz->index_m500c];
+
+    double mdel_prime;
+    class_call(mDEL_to_mDELprime(mdel,
+                           delrho,
+                           delrho_prime,
+                           delc,
+                           rhoc,
+                           z,
+                           &mdel_prime,
+                           ptsz),
+                    ptsz->error_message,
+                    ptsz->error_message);
+    pvectsz[ptsz->index_m200c] = mdel_prime;
+        //r200c for the pressure profile B12
+    pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+    pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
+    evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz);
+
+    }
+
+    if (pvectsz[ptsz->index_has_200m] == 1){
+      //exit(0);
+    double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
+    double delc = Delta_c_of_Omega_m(omega);
+    double rhoc = pvectsz[ptsz->index_Rho_crit];
+    double delrho = 500.*rhoc; // 200m
+    double delrho_prime = 200.*omega*rhoc; //500c
+    double mdel = pvectsz[ptsz->index_m500c];
+
+    double mdel_prime;
+    class_call(mDEL_to_mDELprime(mdel,
+                           delrho,
+                           delrho_prime,
+                           delc,
+                           rhoc,
+                           z,
+                           &mdel_prime,
+                           ptsz),
+                    ptsz->error_message,
+                    ptsz->error_message);
+    pvectsz[ptsz->index_m200m] = mdel_prime;
+
+    // printf("m200m = %.3e\n",pvectsz[ptsz->index_m200m]);
+
+        //r200c for the pressure profile B12
+    pvectsz[ptsz->index_r200m]  = pow(3.*pvectsz[ptsz->index_m200m]
+                                      /(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]
+                                      *pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+    // printf("r200m = %.3e\n",pvectsz[ptsz->index_r200m]);
+
+    evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
+
+    }
 
 
-  // compute m180m
-  //Jenkins et al 2001 @ m180-mean
-  //Jenkins et al 2001
-  if (ptsz->MF==3){
-   class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
-                        pvectsz[ptsz->index_rVIR],
-                        pvectsz[ptsz->index_cVIR],
-                        180.*( pvecback[pba->index_bg_Omega_m])
-                        *pvectsz[ptsz->index_Rho_crit],
-                        &pvectsz[ptsz->index_m180m],
-                        ptsz),
-                   ptsz->error_message,
-                   ptsz->error_message);}
+  }
+   else if (ptsz->integrate_wrt_m200m == 1){
 
-
-  // compute m1600m
-  //Tinker et al 2008 @ m1600-mean
-  else if (ptsz->MF==6){
-   class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
-                        pvectsz[ptsz->index_rVIR],
-                        pvectsz[ptsz->index_cVIR],
-                        1600.*( pvecback[pba->index_bg_Omega_m])
-                        *pvectsz[ptsz->index_Rho_crit],
-                        &pvectsz[ptsz->index_m1600m],
-                        ptsz),
-                   ptsz->error_message,
-                   ptsz->error_message);}
-
-
-
-  //compute m200m
-  //Tinker et al 2008 @ m200-mean
-  //Tinker et al 2010 @ m200-mean
-  //Boquet et al 2015 @ m200-mean
-  //convert mVIR to m200m
-  //used in all cases except T08@M500 [5] and B15@M500 [7]
-  else if (ptsz->MF!=5 && ptsz->MF!=7) {
-     class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
-                          pvectsz[ptsz->index_rVIR],
-                          pvectsz[ptsz->index_cVIR],
-                          200.*pvecback[pba->index_bg_Omega_m]
-                          *pvectsz[ptsz->index_Rho_crit],
-                          &pvectsz[ptsz->index_m200m],
-                          ptsz),
-                     ptsz->error_message,
-                     ptsz->error_message);
-    // !! Careful: uncomment if you want to integrate with repect to m_delta
-    pvectsz[ptsz->index_m200m] = pvectsz[ptsz->index_mVIR]; // bb debug
-    // compute r200m:
+    pvectsz[ptsz->index_m200m] = exp(logM);
     pvectsz[ptsz->index_r200m]  = pow(3.*pvectsz[ptsz->index_m200m]
                                       /(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]
                                       *pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
 
+    evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
 
+    if (pvectsz[ptsz->index_has_vir] == 1){
+    class_call(mDEL_to_mVIR(pvectsz[ptsz->index_m200m],
+                             200.*pvecback[pba->index_bg_Omega_m]*(pvectsz[ptsz->index_Rho_crit]),
+                             pvectsz[ptsz->index_Delta_c],
+                             pvectsz[ptsz->index_Rho_crit],
+                             z,
+                             &pvectsz[ptsz->index_mVIR],
+                             ptsz),
+                    ptsz->error_message,
+                    ptsz->error_message);
 
+    pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],
+                                                      pvectsz[ptsz->index_Delta_c],
+                                                      pvectsz[ptsz->index_Rho_crit],
+                                                      ptsz);
+    pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
 
-   // Duffy et al 08
-   if (ptsz->concentration_parameter==0){
-     // if (ptsz->tau_profile == 0)
-      evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
-     if (ptsz->tau_profile == 1)
-      evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz);
-   }
-   else {
-     if (ptsz->sz_verbose>=3)
-    printf("c200m not implemented yet for this concentration mass relation\n");
-   }
+    }
 
-
-   // for definition at 200m
-   if (ptsz->MF == 1){
-       pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
-       pvectsz[ptsz->index_ls] =  sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
-
-    // need m200c
-    if (ptsz->tau_profile == 1){
-       //compute m200c
+    if (pvectsz[ptsz->index_has_200c] == 1){
     double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
     double delc = Delta_c_of_Omega_m(omega);
     double rhoc = pvectsz[ptsz->index_Rho_crit];
@@ -4681,38 +4861,270 @@ if (ptsz->pressure_profile == 4){
         //r200c for the pressure profile B12
     pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
     pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
+    evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz);
 
-    //pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(pvecback[pba->index_bg_Omega_m]);
-    class_call(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
-                                     200.*(pvectsz[ptsz->index_Rho_crit]),
-                                     pvectsz[ptsz->index_Delta_c],
-                                     pvectsz[ptsz->index_Rho_crit],
-                                     z,
-                                     &pvectsz[ptsz->index_mVIR],
-                                     ptsz),
-                    ptsz->error_message,
-                    ptsz->error_message);
+    }
+    if (pvectsz[ptsz->index_has_500c] == 1){
+ //    double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
+ //    double delc = Delta_c_of_Omega_m(omega);
+ //    double rhoc = pvectsz[ptsz->index_Rho_crit];
+ //    double delrho = 200.*omega*rhoc; // 200m
+ //    double delrho_prime = 500.*rhoc; //500c
+ //    double mdel = pvectsz[ptsz->index_m200m];
+ //
+ //    double mdel_prime;
+ //    class_call(mDEL_to_mDELprime(mdel,
+ //                           delrho,
+ //                           delrho_prime,
+ //                           delc,
+ //                           rhoc,
+ //                           z,
+ //                           &mdel_prime,
+ //                           ptsz),
+ //                    ptsz->error_message,
+ //                    ptsz->error_message);
+ //  pvectsz[ptsz->index_m500c] = mdel_prime;
+ //
+ // printf("m_e = %.3e m_t = %.3e\n",mdel_prime,get_m200m_to_m500c_at_z_and_M(z,pvectsz[ptsz->index_m200m],ptsz));
 
-    pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],
-                                                      pvectsz[ptsz->index_Delta_c],
-                                                      pvectsz[ptsz->index_Rho_crit],
-                                                      ptsz);
-     evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz);
-    pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c]/pvectsz[ptsz->index_c200c];
+  pvectsz[ptsz->index_m500c] = get_m200m_to_m500c_at_z_and_M(z,pvectsz[ptsz->index_m200m],ptsz);
+  pvectsz[ptsz->index_r500c] = pow(3.*pvectsz[ptsz->index_m500c]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+  evaluate_c500c_KA20(pvectsz,pba,ptsz);
+
+
+    if (pvectsz[ptsz->index_has_electron_pressure] == 1){
+   if (ptsz->mass_dependent_bias == 1)
+      ptsz->HSEbias = 1./(0.8/(1.+ ptsz->Ap*pow(pvectsz[ptsz->index_m500]/3.e14,ptsz->alpha_b)));
+
+
+  //m500 X-ray for the pressure profiles A10 and P13
+   pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m500c]/ptsz->HSEbias;
+
+   //r500 X-ray for the pressure profiles A10 and P13
+   pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+   pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
+   }
 
     }
 
+  }
+
+  //mass conversions
+
+//   // Tinker et al 2008 @ M500c : the mass integral runs over m500c -> logM = logM500c
+//   // if (ptsz->MF==5 || (ptsz->MF==1 && ptsz->pressure_profile == 2)){
+//   if ( ptsz->MF==5
+//     // || ptsz->pressure_profile == 2
+//     // || ptsz->pressure_profile == 3
+//     // || ptsz->pressure_profile == 0
+//       ){
+//
+//   //pvectsz[ptsz->index_m500c] = exp(logM);
+//   pvectsz[ptsz->index_r500c] = pow(3.*pvectsz[ptsz->index_m500c]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+//
+//   // //convert from m500c to mVIR:
+//   class_call(mDEL_to_mVIR(pvectsz[ptsz->index_m500c],
+//                            500.*(pvectsz[ptsz->index_Rho_crit]),
+//                            pvectsz[ptsz->index_Delta_c],
+//                            pvectsz[ptsz->index_Rho_crit],
+//                            z,
+//                            &pvectsz[ptsz->index_mVIR],
+//                            ptsz),
+//                   ptsz->error_message,
+//                   ptsz->error_message);
+//    // pvectsz[ptsz->index_mVIR] = 0.;
+//   }
+//   // for the other HMF the mass integral runs over mVIR
+//   else {
+//    //beginning of mass function
+//    pvectsz[ptsz->index_mVIR] = exp(logM);
+// }
+//
+//    pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+//    //compute concentration_parameter using mVIR
+//
+//    pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
+//
+//    //Scale radius for nfw profiles:
+//    //(note that rs is actually r200c/c200 for SC14 concentration-mass relation ---> TBC)
+//
+
+   // //Compute m500c
+   // //for the pressure profile
+   // //(except when HMF is at m500c, i.e., T08@M500 and B16M500c)
+   // if (ptsz->MF!=5 && ptsz->MF!=7){
+   //
+   //    class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+   //                         pvectsz[ptsz->index_rVIR],
+   //                         pvectsz[ptsz->index_cVIR],
+   //                         500.*(pvectsz[ptsz->index_Rho_crit]),
+   //                         &pvectsz[ptsz->index_m500c],
+   //                         ptsz),
+   //                    ptsz->error_message,
+   //                    ptsz->error_message);
+   //
+   // }
 
 
-     }
-    // for definitions at mvir
-    else{
+// if (ptsz->has_electron_pressure == 1 && ptsz->pressure_profile == 4){
+//    //compute m200c
+//   class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+//                        pvectsz[ptsz->index_rVIR],
+//                        pvectsz[ptsz->index_cVIR],
+//                        200.*(pvectsz[ptsz->index_Rho_crit]),
+//                        &pvectsz[ptsz->index_m200c],
+//                        ptsz),
+//                   ptsz->error_message,
+//                   ptsz->error_message);
+//
+//     //r200c for the pressure profile B12
+//     pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+//     pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
+// }
 
-      // printf("computing scale radius\n");
-      pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_rVIR]/pvectsz[ptsz->index_cVIR];
-      pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
+   // //if HMF=T08@m500c -> m200=m500=M
+   // else pvectsz[ptsz->index_m500] = exp(logM);
 
-    }
+
+
+
+
+  // // compute m180m
+  // //Jenkins et al 2001 @ m180-mean
+  // //Jenkins et al 2001
+  // if (ptsz->MF==3){
+  //  class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+  //                       pvectsz[ptsz->index_rVIR],
+  //                       pvectsz[ptsz->index_cVIR],
+  //                       180.*( pvecback[pba->index_bg_Omega_m])
+  //                       *pvectsz[ptsz->index_Rho_crit],
+  //                       &pvectsz[ptsz->index_m180m],
+  //                       ptsz),
+  //                  ptsz->error_message,
+  //                  ptsz->error_message);}
+
+
+  // compute m1600m
+  // //Tinker et al 2008 @ m1600-mean
+  // else if (ptsz->MF==6){
+  //  class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+  //                       pvectsz[ptsz->index_rVIR],
+  //                       pvectsz[ptsz->index_cVIR],
+  //                       1600.*( pvecback[pba->index_bg_Omega_m])
+  //                       *pvectsz[ptsz->index_Rho_crit],
+  //                       &pvectsz[ptsz->index_m1600m],
+  //                       ptsz),
+  //                  ptsz->error_message,
+  //                  ptsz->error_message);}
+
+
+
+  // //compute m200m
+  // //Tinker et al 2008 @ m200-mean
+  // //Tinker et al 2010 @ m200-mean
+  // //Boquet et al 2015 @ m200-mean
+  // //convert mVIR to m200m
+  // //used in all cases except T08@M500 [5] and B15@M500 [7]
+  // else if (ptsz->MF!=5 && ptsz->MF!=7) {
+  //   if (ptsz->integrate_wrt_mvir == 1){
+  //    class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
+  //                         pvectsz[ptsz->index_rVIR],
+  //                         pvectsz[ptsz->index_cVIR],
+  //                         200.*pvecback[pba->index_bg_Omega_m]
+  //                         *pvectsz[ptsz->index_Rho_crit],
+  //                         &pvectsz[ptsz->index_m200m],
+  //                         ptsz),
+  //                    ptsz->error_message,
+  //                    ptsz->error_message);
+  //                  }
+  //    else{
+  //   // !! Careful: uncomment if you want to integrate with repect to m_delt
+  //   pvectsz[ptsz->index_m200m] = pvectsz[ptsz->index_mVIR]; // bb debug
+  // }
+  //   // compute r200m:
+  //   pvectsz[ptsz->index_r200m]  = pow(3.*pvectsz[ptsz->index_m200m]
+  //                                     /(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]
+  //                                     *pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+  //
+  //
+
+
+   // // Duffy et al 08
+   // if (ptsz->concentration_parameter==0){
+   //   // if (ptsz->tau_profile == 0)
+   //    evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
+   //   if (ptsz->tau_profile == 1)
+   //    evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz);
+   // }
+   // else {
+   //   if (ptsz->sz_verbose>=3)
+   //  printf("c200m not implemented yet for this concentration mass relation\n");
+   // }
+
+
+   // // for definition at 200m
+   // if (ptsz->MF == 1){
+   //     pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
+   //     pvectsz[ptsz->index_ls] =  sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
+
+    // // need m200c
+    // if (ptsz->tau_profile == 1){
+    //    //compute m200c
+    // double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
+    // double delc = Delta_c_of_Omega_m(omega);
+    // double rhoc = pvectsz[ptsz->index_Rho_crit];
+    // double delrho = 200.*omega*rhoc; // 200m
+    // double delrho_prime = 200.*rhoc; //500c
+    // double mdel = pvectsz[ptsz->index_m200m];
+    //
+    // double mdel_prime;
+    // class_call(mDEL_to_mDELprime(mdel,
+    //                        delrho,
+    //                        delrho_prime,
+    //                        delc,
+    //                        rhoc,
+    //                        z,
+    //                        &mdel_prime,
+    //                        ptsz),
+    //                 ptsz->error_message,
+    //                 ptsz->error_message);
+    //
+    // pvectsz[ptsz->index_m200c] = mdel_prime;
+    //     //r200c for the pressure profile B12
+    // pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+    // pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
+    //
+    // //pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(pvecback[pba->index_bg_Omega_m]);
+    // class_call(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
+    //                                  200.*(pvectsz[ptsz->index_Rho_crit]),
+    //                                  pvectsz[ptsz->index_Delta_c],
+    //                                  pvectsz[ptsz->index_Rho_crit],
+    //                                  z,
+    //                                  &pvectsz[ptsz->index_mVIR],
+    //                                  ptsz),
+    //                 ptsz->error_message,
+    //                 ptsz->error_message);
+    //
+    // pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],
+    //                                                   pvectsz[ptsz->index_Delta_c],
+    //                                                   pvectsz[ptsz->index_Rho_crit],
+    //                                                   ptsz);
+    //  evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz);
+    // pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c]/pvectsz[ptsz->index_c200c];
+    //
+    // }
+    //
+
+
+     // }
+    // // for definitions at mvir
+    // else{
+    //
+    //   // printf("computing scale radius\n");
+    //   pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_rVIR]/pvectsz[ptsz->index_cVIR];
+    //   pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
+    //
+    // }
 
 
 
@@ -4720,19 +5132,19 @@ if (ptsz->pressure_profile == 4){
 
 
    //dlnm200ddlnm;
-   pvectsz[ptsz->index_dlnMdeltadlnM]= evaluate_dlnMdeltadlnM(log(pvectsz[ptsz->index_mVIR]),
-                                                              pvecback,
-                                                              pvectsz,
-                                                              pba,
-                                                              pnl,
-                                                              ptsz);
-                                                            }
+   pvectsz[ptsz->index_dlnMdeltadlnM]= 1.;//evaluate_dlnMdeltadlnM(log(pvectsz[ptsz->index_mVIR]),
+   //                                                            pvecback,
+   //                                                            pvectsz,
+   //                                                            pba,
+   //                                                            pnl,
+   //                                                            ptsz);
+   //                                                        //  }
 
-else{
-  pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_rVIR]/pvectsz[ptsz->index_cVIR];
-  pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
-
-}
+// else{
+//   pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_rVIR]/pvectsz[ptsz->index_cVIR];
+//   pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
+//
+// }
 
   double m_for_hmf;
 
@@ -4767,6 +5179,7 @@ else{
 
 
   pvectsz[ptsz->index_mass_for_hmf] = m_for_hmf;
+}
 
   if (ptsz->HMF_prescription_NCDM == 0) //Matter
     pvectsz[ptsz->index_Rh] = pow(3.*pvectsz[ptsz->index_mass_for_hmf]/(4*_PI_*(pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0),1./3.);
@@ -4937,6 +5350,7 @@ else{
    //Return the HMF - dn/dlogM in units of h^3 Mpc^-3
    pvectsz[ptsz->index_hmf] = pvectsz[ptsz->index_dndlogRh]/3.;
 
+// printf("hmf = %.3e\n",pvectsz[ptsz->index_hmf]);
 return _SUCCESS_;
 }
 
@@ -6809,6 +7223,76 @@ int select_multipole_array(struct tszspectrum * ptsz)
 int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    //printf("cib_dim = %d\n",1000);
 
+   if (ptsz->has_sz_ps
+      +ptsz->has_sz_2halo
+      +ptsz->has_sz_te_y_y
+      +ptsz->has_sz_cov_N_Cl
+      +ptsz->has_sz_cov_Y_N
+      +ptsz->has_sz_cov_Y_N_next_order
+      +ptsz->has_sz_cov_Y_Y_ssc
+      +ptsz->has_mean_y
+      +ptsz->has_sz_m_y_y_1h
+      +ptsz->has_sz_m_y_y_2h
+      +ptsz->has_tSZ_tSZ_tSZ_1halo
+      +ptsz->has_tSZ_lens_1h
+      +ptsz->has_tSZ_lens_2h
+      +ptsz->has_tSZ_lensmag_2h
+      +ptsz->has_tSZ_lensmag_1h
+      +ptsz->has_tSZ_gal_1h
+      +ptsz->has_tSZ_gal_2h
+      +ptsz->has_tSZ_cib_1h
+      +ptsz->has_tSZ_cib_2h
+      +ptsz->has_sz_trispec != _FALSE_){
+      ptsz->has_electron_pressure = 1;
+
+      // if battaglia pressure profile need 200c
+      if (ptsz->pressure_profile == 4){
+        ptsz->has_200c = 1;
+      }
+      else if (ptsz->pressure_profile == 0){ // Planck 2013
+        ptsz->has_500c = 1;
+      }
+      else if (ptsz->pressure_profile == 2){ // Arnaud et al 2010
+        ptsz->has_500c = 1;
+      }
+      else if (ptsz->pressure_profile == 3){ // Custom. GNFW
+        ptsz->has_500c = 1;
+      }
+    }
+
+   if (ptsz->has_kSZ_kSZ_gal_1h
+      +ptsz->has_kSZ_kSZ_gal_2h
+      +ptsz->has_kSZ_kSZ_gal_3h
+      +ptsz->has_kSZ_kSZ_lensmag_1halo != _FALSE_){
+      ptsz->has_electron_density = 1;
+      if (ptsz->tau_profile == 1){ // battaglia tau profile, need m200c
+      ptsz->has_200c = 1;
+      }
+    }
+
+   if (ptsz->has_tSZ_gal_1h
+      +ptsz->has_tSZ_gal_2h
+      +ptsz->has_kSZ_kSZ_gal_1h
+      +ptsz->has_kSZ_kSZ_gal_2h
+      +ptsz->has_kSZ_kSZ_gal_3h
+      +ptsz->has_kSZ_kSZ_lensmag_1halo
+      +ptsz->has_gal_gal_1h
+      +ptsz->has_gal_lens_1h
+      +ptsz->has_gal_lens_2h
+      +ptsz->has_gal_lensmag_1h
+      +ptsz->has_gal_lensmag_2h
+      +ptsz->has_tSZ_lensmag_1h
+      +ptsz->has_tSZ_lensmag_2h
+      +ptsz->has_lensmag_lensmag_1h
+      +ptsz->has_lensmag_lensmag_2h
+      +ptsz->has_lens_lensmag_1h
+      +ptsz->has_lens_lensmag_2h
+      +ptsz->has_gal_gal_2h != _FALSE_)
+      ptsz->has_galaxy = 1;
+
+  if (ptsz->integrate_wrt_m200m == 1 && ptsz->has_500c == 1)
+    ptsz->need_m200m_to_m500c = 1;
+
 
 
    class_alloc(ptsz->ln_x_for_pp, ptsz->ln_x_size_for_pp*sizeof(double),ptsz->error_message);
@@ -6972,15 +7456,35 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_r200m = ptsz->index_c200m + 1;
    ptsz->index_k_for_pk_hm = ptsz->index_r200m + 1;
    ptsz->index_density_profile =  ptsz->index_k_for_pk_hm + 1;
+
+   ptsz->index_integrate_wrt_mvir = ptsz->index_density_profile + 1;
+   ptsz->index_integrate_wrt_m500c = ptsz->index_integrate_wrt_mvir + 1;
+   ptsz->index_integrate_wrt_m200m = ptsz->index_integrate_wrt_m500c + 1;
+
+   ptsz->index_has_electron_pressure = ptsz->index_integrate_wrt_m200m + 1;
+   ptsz->index_has_electron_density = ptsz->index_has_electron_pressure + 1;
+   ptsz->index_has_galaxy = ptsz->index_has_electron_density + 1;
+   ptsz->index_has_matter_density = ptsz->index_has_galaxy + 1;
+   ptsz->index_has_lensing = ptsz->index_has_matter_density + 1;
+   ptsz->index_has_cib = ptsz->index_has_lensing + 1;
+   ptsz->index_has_isw = ptsz->index_has_cib + 1;
+
+   ptsz->index_has_vir = ptsz->index_has_isw + 1;
+   ptsz->index_has_500c = ptsz->index_has_vir + 1;
+   ptsz->index_has_200m = ptsz->index_has_500c + 1;
+   ptsz->index_has_200c = ptsz->index_has_200m + 1;
+
+
    //quantities integrated over redshift
-   ptsz->index_integral =  ptsz->index_density_profile + 1;
+   ptsz->index_integral =  ptsz->index_has_200c + 1;
+
    ptsz->index_integral_over_m = ptsz->index_integral+1;
 
 
 
 
    //integrands at m and z
-   ptsz->index_integrand =  ptsz->index_integral + 1;
+   ptsz->index_integrand =  ptsz->index_integral_over_m + 1;
 
    //final size of pvecsz vector
    ptsz->tsz_size  = ptsz->index_integrand + 1;
@@ -7348,6 +7852,10 @@ for (index_l=0;index_l<ptsz->cib_frequency_list_num;index_l++){
    ptsz->index_integrand_id_isw_auto_last = ptsz->index_integrand_id_isw_auto_first + ptsz->nlSZ - 1;
 
    ptsz->number_of_integrands =  ptsz->index_integrand_id_isw_auto_last + 1;
+
+
+
+
 
 }
 

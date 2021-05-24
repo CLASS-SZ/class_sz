@@ -153,6 +153,45 @@ struct tszspectrum {
   double * cov_cl_cl;
   double * sig_cl_squared_binned;
 
+
+  int need_m200m_to_m500c;
+
+
+  int integrate_wrt_mvir;
+  int integrate_wrt_m500c;
+  int integrate_wrt_m200m;
+
+  int has_electron_pressure;
+  int has_electron_density;
+  int has_galaxy;
+  int has_matter_density;
+  int has_lensing;
+  int has_cib;
+  int has_isw;
+
+  int has_vir;
+  int has_500c;
+  int has_200m;
+  int has_200c;
+
+
+  int index_integrate_wrt_mvir;
+  int index_integrate_wrt_m500c;
+  int index_integrate_wrt_m200m;
+
+  int index_has_electron_pressure;
+  int index_has_electron_density;
+  int index_has_galaxy;
+  int index_has_matter_density;
+  int index_has_lensing;
+  int index_has_cib;
+  int index_has_isw;
+
+  int index_has_vir;
+  int index_has_500c;
+  int index_has_200m;
+  int index_has_200c;
+
   int index_md;
 
   int has_sz_counts;
@@ -961,6 +1000,12 @@ struct tszspectrum {
   int CM_redshift_size;
   int CM_logM_size;
   double * CM_logC;
+
+
+  double * array_m_m200m_to_m500c;
+  double * array_ln_1pz_m200m_to_m500c;
+  double * array_m200m_to_m500c_at_z_and_M;
+
 
 
   double ** array_profile_ln_rho_at_lnl_lnM_z;
