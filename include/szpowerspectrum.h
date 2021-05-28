@@ -31,6 +31,7 @@
 #define _kSZ_kSZ_gal_1h_ ((ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1h))
 #define _kSZ_kSZ_gal_2h_ ((ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_2h))
 #define _kSZ_kSZ_gal_3h_ ((ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_3h))
+#define _kSZ_kSZ_gal_hf_ ((ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_hf))
 #define _kSZ_kSZ_lensmag_1halo_ ((ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lensmag_1halo))
 #define _gal_gal_1h_ ((ptsz->has_gal_gal_1h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_1h))
 #define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
@@ -132,6 +133,7 @@ struct tszspectrum {
   double * cl_kSZ_kSZ_gal_1h;
   double * cl_kSZ_kSZ_gal_2h;
   double * cl_kSZ_kSZ_gal_3h;
+  double * cl_kSZ_kSZ_gal_hf;
   double * cl_kSZ_kSZ_lensmag_1h;
   double * b_tSZ_tSZ_tSZ_1halo;
   double * cl_te_y_y;
@@ -301,6 +303,11 @@ struct tszspectrum {
   int index_md_kSZ_kSZ_gal_3h;
   int index_integrand_id_kSZ_kSZ_gal_3h_first;
   int index_integrand_id_kSZ_kSZ_gal_3h_last;
+
+  int has_kSZ_kSZ_gal_hf;
+  int index_md_kSZ_kSZ_gal_hf;
+  int index_integrand_id_kSZ_kSZ_gal_hf_first;
+  int index_integrand_id_kSZ_kSZ_gal_hf_last;
 
 
   int has_kSZ_kSZ_lensmag_1halo;
@@ -726,6 +733,7 @@ struct tszspectrum {
   int n_arraySZ;//number of z in the interpolation
   int n_arraySZ_for_integral;//number of z in the integration
 
+  int n_k;
   int n_z_dndlnM;
   int n_m_dndlnM;
 
@@ -918,6 +926,8 @@ struct tszspectrum {
   double Sigma8OmegaM_SZ;
   double sigma8_Pcb;
 
+  short has_knl;
+  short has_nl_index;
   short has_vrms2;
   short has_sigma2_hsv;
 
@@ -1034,9 +1044,12 @@ struct tszspectrum {
 
   double * array_redshift;
   double * array_radius;
+  // double * array_k;
+  double * array_nl_index_at_z_and_k;
   double * array_sigma_at_z_and_R;
   double * array_dsigma2dR_at_z_and_R;
 
+  double * array_knl_at_z;
   double * array_vrms2_at_z;
   double * array_sigma2_hsv_at_z;
 
@@ -1363,6 +1376,20 @@ int evaluate_matter_density_profile(double * pvecback,
 double bispectrum_f2_kernel(double k,
                             double k_prime,
                             double k_prime_prime);
+
+double bispectrum_f2_kernel_eff(double k1,
+                            double k2,
+                            double k3,
+                            double n1,
+                            double n2,
+                            double sig8_at_z,
+                            double knl);
+
+double bispectrum_f2_kernel_eff_a(double k1,double n1,double sig8_at_z,double knl);
+double bispectrum_f2_kernel_eff_b(double k1,double n1,double knl);
+double bispectrum_f2_kernel_eff_c(double k1,double n1,double knl);
+double bispectrum_f2_kernel_eff_Q3(double n1);
+
 
 
 double get_second_order_bias_at_z_and_nu(double z,

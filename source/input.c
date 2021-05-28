@@ -2061,6 +2061,7 @@ int input_read_parameters(
 
       if ((strstr(string1,"kSZ_kSZ_lensmag_1h") != NULL) ) {
         ptsz->has_kSZ_kSZ_lensmag_1halo =_TRUE_;
+        ptsz->has_vrms2 = _TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
@@ -2071,6 +2072,7 @@ int input_read_parameters(
 
       if ((strstr(string1,"kSZ_kSZ_gal_1h") != NULL) ) {
         ptsz->has_kSZ_kSZ_gal_1h =_TRUE_;
+        ptsz->has_vrms2 = _TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
@@ -2080,6 +2082,7 @@ int input_read_parameters(
 
       if ((strstr(string1,"kSZ_kSZ_gal_2h") != NULL) ) {
         ptsz->has_kSZ_kSZ_gal_2h =_TRUE_;
+        ptsz->has_vrms2 = _TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
@@ -2089,12 +2092,27 @@ int input_read_parameters(
 
       if ((strstr(string1,"kSZ_kSZ_gal_3h") != NULL) ) {
         ptsz->has_kSZ_kSZ_gal_3h =_TRUE_;
+        ptsz->has_vrms2 = _TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
       }
+
+      if ((strstr(string1,"kSZ_kSZ_gal_hf") != NULL) ) {
+        ptsz->has_kSZ_kSZ_gal_hf =_TRUE_;
+        ptsz->has_vrms2 = _TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->has_knl = _TRUE_;
+        ptsz->has_nl_index = _TRUE_;
+
+      }
+
 
       if ((strstr(string1,"tSZ_tSZ_tSZ_1h") != NULL) ) {
         ptsz->has_tSZ_tSZ_tSZ_1halo =_TRUE_;
@@ -3937,6 +3955,7 @@ int input_read_parameters(
       + ptsz->has_kSZ_kSZ_gal_1h
       + ptsz->has_kSZ_kSZ_gal_2h
       + ptsz->has_kSZ_kSZ_gal_3h
+      + ptsz->has_kSZ_kSZ_gal_hf
       + ptsz->has_kSZ_kSZ_lensmag_1halo
       + ptsz->has_tSZ_gal_1h
       + ptsz->has_tSZ_gal_2h
@@ -4500,7 +4519,7 @@ int input_default_params(
   ppt->l_vector_max=500;
   ppt->l_tensor_max=500;
   ppt->l_lss_max=300;
-  ppt->k_max_for_pk=10.; //BB: changed in class_sz; was set to 1 in original class version, now 10. [TBC]
+  ppt->k_max_for_pk=60.; //BB: changed in class_sz; was set to 1 in original class version, now 10. [TBC]
 
   ppt->gauge=synchronous;
 
@@ -4846,8 +4865,8 @@ int input_default_params(
 
 
   pnl->k_per_decade_for_tSZ = 20.; //#default 40
-  pnl->k_min_for_pk_in_tSZ = 1.e-5; //#default 1.e-3
-  pnl->k_max_for_pk_in_tSZ = 5.; //#default 5
+  pnl->k_min_for_pk_in_tSZ = 1.e-4; //#default 1.e-3
+  pnl->k_max_for_pk_in_tSZ = 5.e1; //#default 5
 
 
 
@@ -4952,6 +4971,7 @@ int input_default_params(
   ptsz->has_kSZ_kSZ_gal_1h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_2h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_3h = _FALSE_;
+  ptsz->has_kSZ_kSZ_gal_hf = _FALSE_;
   ptsz->has_kSZ_kSZ_lensmag_1halo = _FALSE_;
   ptsz->has_tSZ_tSZ_tSZ_1halo = _FALSE_;
   ptsz->has_sz_te_y_y = _FALSE_;
@@ -4968,7 +4988,9 @@ int input_default_params(
   ptsz->has_sz_cov_N_N = _FALSE_;
   ptsz->has_sz_cov_N_N_hsv = _FALSE_;
 
-  ptsz->has_vrms2 = _TRUE_;
+  ptsz->has_vrms2 = _FALSE_;
+  ptsz->has_knl = _FALSE_;
+  ptsz->has_nl_index = _FALSE_;
   ptsz->has_sigma2_hsv = _TRUE_;
 
   ptsz->index_md_hmf = 0;
@@ -5021,6 +5043,7 @@ int input_default_params(
   ptsz->index_md_bk_at_z_1h = 47;
   ptsz->index_md_bk_at_z_2h = 48;
   ptsz->index_md_bk_at_z_3h = 49;
+  ptsz->index_md_kSZ_kSZ_gal_hf = 50;
 
   ptsz->integrate_wrt_mvir = 0;
   ptsz->integrate_wrt_m500c = 0;

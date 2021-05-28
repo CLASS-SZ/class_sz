@@ -162,10 +162,12 @@ double delta_to_delta_prime_nfw(
   int load_unbinned_nl_yy(struct tszspectrum * ptsz);
   int load_unwise_filter(struct tszspectrum * ptsz);
   double get_T10_alpha_at_z(double z_asked, struct tszspectrum * ptsz);
+  double get_knl_at_z(double z_asked, struct tszspectrum * ptsz);
   double get_hmf_counter_term_nmin_at_z(double z_asked, struct tszspectrum * ptsz);
   double get_hmf_counter_term_b1min_at_z(double z_asked, struct tszspectrum * ptsz);
   double get_hmf_counter_term_b2min_at_z(double z_asked, struct tszspectrum * ptsz);
   double get_m200m_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
+  double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl);
 
   int CvirMvirZHAO(double * result,
                    double logM ,
@@ -241,12 +243,59 @@ int tabulate_m200m_to_m500c(struct background * pba,
                             struct nonlinear * pnl,
                             struct primordial * ppm,
                             struct tszspectrum * ptsz);
+
+ int tabulate_knl(struct background * pba,
+                  struct nonlinear * pnl,
+                  struct primordial * ppm,
+                  struct tszspectrum * ptsz);
+
+ int tabulate_nl_index(struct background * pba,
+                       struct nonlinear * pnl,
+                       struct primordial * ppm,
+                       struct tszspectrum * ptsz);
+
+
   int splint(double xa[],
              double ya[],
              double y2a[],
              int npoints,
              double x,
              double *y);
+
+
+int solve_pkl_to_knl(
+              double * result,
+              double z,
+              struct tszspectrum * ptsz,
+              struct background * pba,
+              struct nonlinear * pnl,
+              struct primordial * ppm
+            );
+
+int zbrent_pkl_to_knl(
+              double x1,
+              double x2,
+              double tol,
+              double fa,
+              double fb,
+              double * knl,
+              double z,
+              struct tszspectrum * ptsz,
+              struct background * pba,
+              struct nonlinear * pnl,
+              struct primordial * ppm
+            );
+
+int pkl_to_knl (
+            double knl,
+            double * mRES,
+            double z,
+            struct tszspectrum * ptsz,
+            struct background * pba,
+            struct nonlinear * pnl,
+            struct primordial * ppm
+          );
+
 
 
   int plc_gnfw (double * plc_gnfw_x,
