@@ -865,6 +865,22 @@ struct tszspectrum {
   int id_nu_cib_to_save;
   int id_nu_prime_cib_to_save;
 
+  double ystar_ym;
+  double alpha_ym;
+  double sigmaM_ym;
+  double beta_ym;
+  double A_ym;
+  double B_ym;
+  double alpha_theta;
+  int y_m_relation;
+  double thetastar;
+
+int nsteps_m;
+int nsteps_z;
+
+double * steps_z;
+double * steps_m;
+
   // Table 1  of MM20
   double alpha_cib; //redshift evolution of dust temperature
   double T0_cib; // dust temperature today

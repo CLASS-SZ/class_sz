@@ -7,7 +7,6 @@
  */
 
 #include "szclustercount.h"
-#include "Patterson.h"
 
 int szcount_init(struct background * pba,
                  struct nonlinear * pnl,
@@ -97,6 +96,11 @@ int compute_count_sz(struct background * pba,
   int index_m, index_z, index_y;
 
 
+
+
+  //clock_t end = clock();
+  //double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+  //printf("time spent in allocating = %e\n",time_spent);
   if (pcsz->sz_verbose > 0)
     printf("->SZ_counts starting grid computation.\n");
   ///PARALLEL
@@ -150,6 +154,140 @@ private(tstart, tstop,pvecsz)
   }
   if (abort == _TRUE_) return _FAILURE_;
 
+
+ //
+ //  double H0_class_units =  pba->H0;
+ //  int first_index_back = 0;
+ //  double tau;
+ //  double * pvecback;
+ //  class_alloc(pvecback,
+ //              pba->bg_size*sizeof(double),
+ //              ptsz->error_message);
+ //
+ //
+ // for (index_y=0;index_y <(pcsz->Nbins_y+1);index_y++){
+ //    for (index_z=0;index_z<pcsz->Nbins_z;index_z++){
+ //      double z_bin_min = pcsz->z_center[index_z]-0.5*pcsz->dz;
+ //      double z_bin_max = pcsz->z_center[index_z]+0.5*pcsz->dz;
+ //
+ //
+ //      int j1=0;
+ //      int j2=0;
+ //
+ //      int c;
+ //
+ //      double dif_test;
+ //
+ //      dif_test = fabs(pcsz->steps_z[0]-z_bin_min);
+ //      for (c = 1; c < pcsz->nsteps_z; c++)
+ //      {
+ //        if (fabs(pcsz->steps_z[c] -z_bin_min)< dif_test)
+ //        {
+ //          dif_test = fabs(pcsz->steps_z[c]-z_bin_min);
+ //          j1 = c;
+ //        }
+ //      }
+ //
+ //
+ //      dif_test = fabs(pcsz->steps_z[0]-z_bin_max);
+ //      for (c = 1; c < pcsz->nsteps_z; c++)
+ //      {
+ //        if (fabs(pcsz->steps_z[c] -z_bin_max)< dif_test)
+ //        {
+ //          dif_test = fabs(pcsz->steps_z[c]-z_bin_max);
+ //          j2 = c;
+ //        }
+ //      }
+ //
+ //      //printf("index_y=%d\t,index_z=%d\tj1=%d\tj2=%d\n",index_y,index_z,j1,j2);
+ //
+ //      //Here we compute the number counts per SNR and redshift bin:
+ //      int grid_index_z,grid_index_m;
+ //      double SUM2 = 0.;
+ //
+ //
+ //      for (grid_index_z=j1;grid_index_z<j2;grid_index_z++){
+ //        for (grid_index_m=0;grid_index_m<pcsz->nsteps_m;grid_index_m++){
+ //          double z1 = pcsz->steps_z[grid_index_z];
+ //          double z2 = pcsz->steps_z[grid_index_z+1];
+ //
+ //
+ //
+ //          double m_asked =  exp(pcsz->steps_m[grid_index_m]);
+ //          double z_asked,Eh,d_A,rz,volume;
+ //          //hmf 1
+ //          z_asked = z1;
+ //
+ //          class_call(background_tau_of_z(pba,
+ //                                         z_asked,
+ //                                         &tau),
+ //                     ptsz->error_message,
+ //                     ptsz->error_message);
+ //
+ //          class_call(background_at_tau(pba,
+ //                                       tau,
+ //                                       pba->long_info,
+ //                                       pba->inter_normal,
+ //                                       &first_index_back,
+ //                                       pvecback),
+ //                     ptsz->error_message,
+ //                     ptsz->error_message);
+ //
+ //          Eh = pvecback[pba->index_bg_H]/H0_class_units;
+ //          d_A = pvecback[pba->index_bg_ang_distance]*pba->h; //class dA multiply by h to get it in units Mpc/h
+ //          rz = d_A*(1.+z_asked);
+ //          volume = 3.0e8/1.0e5*rz*rz/Eh;
+ //
+ //          double f1 = volume*get_dndlnM_at_z_and_M(z_asked,m_asked,ptsz);// = grid[grid_index_m][grid_index_z+1];
+ //
+ //          //hmf 2
+ //          z_asked = z2;
+ //
+ //          class_call(background_tau_of_z(pba,
+ //                                         z_asked,
+ //                                         &tau),
+ //                     ptsz->error_message,
+ //                     ptsz->error_message);
+ //
+ //          class_call(background_at_tau(pba,
+ //                                       tau,
+ //                                       pba->long_info,
+ //                                       pba->inter_normal,
+ //                                       &first_index_back,
+ //                                       pvecback),
+ //                     ptsz->error_message,
+ //                     ptsz->error_message);
+ //
+ //          Eh = pvecback[pba->index_bg_H]/H0_class_units;
+ //          d_A = pvecback[pba->index_bg_ang_distance]*pba->h; //class dA multiply by h to get it in units Mpc/h
+ //          rz = d_A*(1.+z_asked);
+ //          volume = 3.0e8/1.0e5*rz*rz/Eh;
+ //
+ //          double f2 = volume*get_dndlnM_at_z_and_M(z_asked,m_asked,ptsz);// = grid[grid_index_m][grid_index_z+1];
+ //
+ //
+ //          double c1 = completeness_2d[grid_index_m][grid_index_z][index_y];
+ //          double c2 = completeness_2d[grid_index_m][grid_index_z+1][index_y];
+ //
+ //
+ //
+ //          if (pcsz->has_completeness == 0){
+ //            c1 = 1.;
+ //            c2 = 1.;
+ //          }
+ //
+ //          SUM2 = SUM2 +0.5*(f1*c1+f2*c2)*(z2-z1)*pcsz->dlnM;
+ //        } // integrate over full mass range
+ //      } // integrate over redshift inside each bin
+ //
+ //      //survey area
+ //      double deg2= 3.046174198e-4; // conversion deg2 to steradian
+ //      deg2 *= 41253.0; //Planck full-sky (4 x pi x 57.3^2=41253 square degrees where 57.3  = 360 / (2 x pi))
+ //
+ //      pcsz->dNdzdy_theoretical[index_z][index_y]=deg2*SUM2;
+ //
+ //    }//end loop z bins for lkl
+ //  }//end loop y bins for lkl
 
   //end bin in mass
   if (pcsz->sz_verbose > 0)
@@ -205,28 +343,21 @@ int grid_C_2d(
   int l_array[3];
   double theta_array[3];
 
-  double * completeness_2d_to_1d = NULL;
-  class_alloc(completeness_2d_to_1d,pcsz->nsteps_m*pcsz->nsteps_z*sizeof(double *),pcsz->error_message);
-
   int index_z, index_m, index_y;
 
-  // const int dim_mass = pcsz->nsteps_m;
-  // const int dim_redshift = pcsz->nsteps_z;
+  const int dim_mass = pcsz->nsteps_m;
+  const int dim_redshift = pcsz->nsteps_z;
+
+  double ** completeness_2d = NULL;
+  class_alloc(completeness_2d,dim_mass*sizeof(double *),pcsz->error_message);
 
 
-  // double ** completeness_2d = NULL;
-  // class_alloc(completeness_2d,dim_mass*sizeof(double *),pcsz->error_message);
-
-int index_m_z = 0;
-  for (index_m=0;index_m<pcsz->nsteps_m;index_m++)
+  for (index_m=0;index_m<dim_mass;index_m++)
   {
-    // class_alloc(completeness_2d[index_m],dim_redshift*sizeof(double*),pcsz->error_message);
+    class_alloc(completeness_2d[index_m],dim_redshift*sizeof(double*),pcsz->error_message);
 
-    for (index_z=0;index_z<pcsz->nsteps_z;index_z++){
-      // completeness_2d[index_m][index_z]=0.;
-
-      completeness_2d_to_1d[index_m_z]=1e-100;
-      index_m_z += 1;
+    for (index_z=0;index_z<dim_redshift;index_z++){
+      completeness_2d[index_m][index_z]=0.;
 
     }
   }
@@ -246,7 +377,6 @@ int index_m_z = 0;
 
 
   if (pcsz->sigmaM == 0.){
-    int index_m_z = 0;
     for (index_z=0;index_z<pcsz->nsteps_z;index_z++){
       double zp = pcsz->steps_z[index_z];
 
@@ -292,12 +422,9 @@ int index_m_z = 0;
 
           }
 
-          // completeness_2d[index_m][index_z] += c2*ptsz->skyfracs[index_patches];
-          completeness_2d_to_1d[index_m_z] += c2*ptsz->skyfracs[index_patches];
-
+          completeness_2d[index_m][index_z] += c2*ptsz->skyfracs[index_patches];
         } // end loop patches
-        completeness_2d_to_1d[index_m_z] = log(completeness_2d_to_1d[index_m_z]);
-        index_m_z += 1;
+
       }//end m loop
     }//end z loop
   }//end if sigmaM=0
@@ -346,8 +473,6 @@ int index_m_z = 0;
     // integrate erfs wrt y at all (z,M) to get completeness in a z,m grid
   if (pcsz->sz_verbose > 3)
       printf("->SZ_counts grid_C_2d debug 2.\n");
-
-    int index_m_z = 0;
     for (index_z=0;index_z<pcsz->nsteps_z;index_z++){
 
       double zp = pcsz->steps_z[index_z];
@@ -376,7 +501,7 @@ int index_m_z = 0;
         double mu = log(y);
 
 
-        double int_comp =1.e-100;
+        double int_comp =0.;
         double lny=pcsz->lnymin;
         int k;
 
@@ -407,19 +532,15 @@ int index_m_z = 0;
           // printf("k = %d int_comp15 = %e\n",k,int_comp);
         }
         if (int_comp > fsky) int_comp=fsky;
-        if (int_comp <= 0. || isinf(int_comp) || isnan(int_comp)) int_comp=1.e-100;
+        if (int_comp < 0.) int_comp=0.;
 
 
-        // completeness_2d[index_m][index_z] =int_comp;
-        completeness_2d_to_1d[index_m_z] = log(int_comp);
-        // printf("c = %.4e %.4e\n",completeness_2d_to_1d[index_m_z],int_comp);
-        index_m_z += 1;
+        completeness_2d[index_m][index_z] =int_comp;
 
       }//end m loop
 
     }//end z loop
 
-// exit(0);
       // end tabulate completeness as a function of z and m
   //  exit(0);
       if (pcsz->sz_verbose > 3)
@@ -433,37 +554,73 @@ int index_m_z = 0;
       double z_bin_min = pcsz->z_center[index_z]-0.5*pcsz->dz;
       double z_bin_max = pcsz->z_center[index_z]+0.5*pcsz->dz;
 
-struct Parameters_for_integrand_cluster_counts_redshift V;
-  V.ptsz = ptsz;
-  V.pba = pba;
-  V.completeness_2d_to_1d = completeness_2d_to_1d;
 
-  void * params = &V;
-  double r; //result of the integral
+      int j1=0;
+      int j2=0;
 
-  double epsrel = 1e-3;
-  double epsabs = 1e-30;
-  //int show_neval = ptsz->patterson_show_neval;
+      int c;
 
-  double z_min = z_bin_min;
-  double z_max = z_bin_max;
+      double dif_test;
 
-
-  r=Integrate_using_Patterson_adaptive(z_min,
-                                       z_max,
-                                       epsrel, epsabs,
-                                       integrand_cluster_counts_redshift,
-                                       params,0);
+      dif_test = fabs(pcsz->steps_z[0]-z_bin_min);
+      for (c = 1; c < pcsz->nsteps_z; c++)
+      {
+        if (fabs(pcsz->steps_z[c] -z_bin_min)< dif_test)
+        {
+          dif_test = fabs(pcsz->steps_z[c]-z_bin_min);
+          j1 = c;
+        }
+      }
 
 
+      dif_test = fabs(pcsz->steps_z[0]-z_bin_max);
+      for (c = 1; c < pcsz->nsteps_z; c++)
+      {
+        if (fabs(pcsz->steps_z[c] -z_bin_max)< dif_test)
+        {
+          dif_test = fabs(pcsz->steps_z[c]-z_bin_max);
+          j2 = c;
+        }
+      }
 
-      // pcsz->dNdzdy_theoretical[index_z][index_y]=4.*_PI_*SUM2;
-      pcsz->dNdzdy_theoretical[index_z][index_y]=4.*_PI_*r;
-    //
-     }//end loop z bins for lkl
+      //printf("index_y=%d\t,index_z=%d\tj1=%d\tj2=%d\n",index_y,index_z,j1,j2);
 
-  // free(completeness_2d);
-  free(completeness_2d_to_1d);
+      //Here we compute the number counts per SNR and redshift bin:
+      int grid_index_z,grid_index_m;
+      double SUM2 = 0.;
+
+
+      for (grid_index_z=j1;grid_index_z<j2;grid_index_z++){
+        for (grid_index_m=0;grid_index_m<pcsz->nsteps_m;grid_index_m++){
+          double z1 = pcsz->steps_z[grid_index_z];
+          double z2 = pcsz->steps_z[grid_index_z+1];
+
+
+
+          double m_asked =  exp(pcsz->steps_m[grid_index_m]);
+
+          double f1 = get_volume_at_z(z1,pba)*get_dndlnM_at_z_and_M(z1,m_asked,ptsz);// = grid[grid_index_m][grid_index_z+1];
+          double f2 = get_volume_at_z(z2,pba)*get_dndlnM_at_z_and_M(z2,m_asked,ptsz);// = grid[grid_index_m][grid_index_z+1];
+
+          double c1 = completeness_2d[grid_index_m][grid_index_z];
+          double c2 = completeness_2d[grid_index_m][grid_index_z+1];
+
+
+
+          if (pcsz->has_completeness == 0){
+            c1 = 1.;
+            c2 = 1.;
+          }
+
+          SUM2 = SUM2 +0.5*(f1*c1+f2*c2)*(z2-z1)*pcsz->dlnM;
+        } // integrate over full mass range
+      } // integrate over redshift inside each redshift bin
+
+      pcsz->dNdzdy_theoretical[index_z][index_y]=4.*_PI_*SUM2;
+
+    }//end loop z bins for lkl
+
+  free(completeness_2d);
 
 
 
@@ -471,57 +628,6 @@ struct Parameters_for_integrand_cluster_counts_redshift V;
 }
 
 
-
-double integrand_cluster_counts_mass(double lnm, void *p){
-  double result = 0.;
-  struct Parameters_for_integrand_cluster_counts_mass *V = ((struct Parameters_for_integrand_cluster_counts_mass *) p);
-
-          double m_asked = exp(lnm);
-          double f1 = get_volume_at_z(V->z,V->pba)*get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz);
-          double c1 = get_completeness_at_z_and_M(V->z,m_asked,V->completeness_2d_to_1d,V->ptsz);
-          // if (pcsz->has_completeness == 0){
-          //   c1 = 1.;
-          // }
-  result = f1*c1;
-  return result;
-}
-
-
-
-
-
-double integrand_cluster_counts_redshift(double z, void *p){
-  double result = 0.;
-  struct Parameters_for_integrand_cluster_counts_redshift *W = ((struct Parameters_for_integrand_cluster_counts_redshift *) p);
-
-struct Parameters_for_integrand_cluster_counts_mass V;
-  V.ptsz = W->ptsz;
-  V.pba = W->pba;
-  V.z = z;
-  V.completeness_2d_to_1d = W->completeness_2d_to_1d;
-
-  void * params = &V;
-  double r; //result of the integral
-
-  double epsrel = 1e-3;
-  double epsabs = 1e-30;
-  //int show_neval = ptsz->patterson_show_neval;
-  //
-  // double m_min = ptsz->M1SZ;
-  // double m_max = ptsz->M2SZ;
-
-  double m_min = exp(W->ptsz->steps_m[0]);
-  double m_max = exp(W->ptsz->steps_m[W->ptsz->nsteps_m-1]);
-
-  r=Integrate_using_Patterson_adaptive(log(m_min),
-                                       log(m_max),
-                                       epsrel, epsabs,
-                                       integrand_cluster_counts_mass,
-                                       params,0);
-
-  result = r;
-  return result;
-}
 
 
 
@@ -655,7 +761,6 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
 
 
   pcsz->nsteps_m = floor((pcsz->lnM_max - pcsz->lnM_min) /pcsz->dlnM);
-  ptsz->nsteps_m = pcsz->nsteps_m;
 
   double lnM = pcsz->lnM_min;
   int index_m;
@@ -671,15 +776,6 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
     lnM += pcsz->dlnM;
   }
 
-  class_alloc(
-              ptsz->steps_m,
-              ptsz->nsteps_m*sizeof(double),
-              ptsz->error_message
-              );
-
-  for (index_m=0; index_m<ptsz->nsteps_m; index_m++){
-    ptsz->steps_m[index_m] = pcsz->steps_m[index_m];
-  }
 
   //grid for redshift
   //# Redshift bin parameters
@@ -717,17 +813,11 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
     pcsz->nsteps_z += 1;
   }
 
-  ptsz->nsteps_z = pcsz->nsteps_z;
-// printf("nsteps_z=%d\n",pcsz->nsteps_z);
-// exit(0);
+//printf("nsteps_z=%d\n",pcsz->nsteps_z);
 
   class_alloc(pcsz->steps_z,
               pcsz->nsteps_z*sizeof(double),
               pcsz->error_message);
-
-    class_alloc(ptsz->steps_z,
-              ptsz->nsteps_z*sizeof(double),
-              ptsz->error_message);
 
   z_i = pcsz->z_0;
 
@@ -738,8 +828,7 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
 
   if (pcsz->steps_z[0]==0) pcsz->steps_z[0] = 1.e-5;
 
-for(index_z = 0; index_z<pcsz->nsteps_z; index_z++)
-   ptsz->steps_z[index_z] = pcsz->steps_z[index_z];
+
   //grid for s/n
 
   //grid for y

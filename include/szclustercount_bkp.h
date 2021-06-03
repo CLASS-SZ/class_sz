@@ -118,22 +118,6 @@ int compute_count_sz(struct background * pba,
   int write_output_cluster_counts(struct szcount * pcsz);
   int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount * pcsz);
   int find_theta_bin(struct tszspectrum * ptsz, double thp, int * l_array, double * theta_array);
-double integrand_cluster_counts_redshift(double z, void *p);
-double integrand_cluster_counts_mass(double lnm, void *p);
-
-struct Parameters_for_integrand_cluster_counts_redshift{
-  struct tszspectrum * ptsz;
-  struct background * pba;
-  double * completeness_2d_to_1d;
-};
-
-struct Parameters_for_integrand_cluster_counts_mass{
-  struct tszspectrum * ptsz;
-  struct background * pba;
-  double * completeness_2d_to_1d;
-  double z;
-};
-
 
 
 #ifdef __cplusplus

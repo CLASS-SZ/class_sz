@@ -1802,9 +1802,24 @@ int input_read_parameters(
 
       class_read_int("has_completeness_for_cc",pcsz->has_completeness);
       class_read_int("mass_range",pcsz->mass_range);
+
+
+      class_read_int("y_m_relation",ptsz->y_m_relation);
       class_read_double("ystar",pcsz->ystar);
       class_read_double("alpha",pcsz->alpha);
       class_read_double("sigmaM",pcsz->sigmaM);
+      pcsz->ystar = pow(10.,pcsz->ystar)/pow(2., pcsz->alpha)*0.00472724; ////8.9138435358806980e-004;
+
+      class_read_double("ystar_ym",ptsz->ystar_ym);
+      class_read_double("alpha_ym",ptsz->alpha_ym);
+      ptsz->ystar_ym = pow(10.,ptsz->ystar_ym)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
+      class_read_double("beta_ym",ptsz->beta_ym);
+      class_read_double("sigmaM_ym",ptsz->sigmaM_ym);
+
+      class_read_double("alpha_thm",ptsz->alpha_theta);
+
+      class_read_double("A_ym",ptsz->A_ym);
+      class_read_double("B_ym",ptsz->B_ym);
 
       //For the computation of sigma2
       class_read_int("ndim_masses",ptsz->ndimSZ);
@@ -1850,7 +1865,8 @@ int input_read_parameters(
 
         }
 
-      class_read_double("signal-to-noise cut-off for ps completeness analysis",ptsz->sn_cutoff);
+      class_read_double("signal-to-noise cut-off for survey cluster completeness",ptsz->sn_cutoff);
+      class_read_double("signal-to-noise cut-off for survey cluster completeness",pcsz->sn_cutoff);
 
       //Integration scheme for the mass integral:
       class_call(parser_read_string(pfc,"integration method (mass)",&string1,&flag1,errmsg),
@@ -4733,7 +4749,8 @@ int input_default_params(
   ptsz->unwise_galaxy_sample_id = 0; // red
   //ptsz->unwise_m_min_cut = 1e10; // Msun/h
 
-  ptsz->sn_cutoff;
+  ptsz->sn_cutoff = 5.;
+  pcsz->sn_cutoff = 5.;
   //Redshift limits for the integration
   ptsz->z1SZ = 1.e-5;
   ptsz->z2SZ = 4.;
@@ -4849,9 +4866,27 @@ int input_default_params(
   pcsz->mass_range = 1;//szcount masses
   ptsz->experiment = 0; //planck
 
+  ptsz->y_m_relation = 1; //0: planck, 1: act/so
+
+
   pcsz->ystar = -0.186; //-0.186 ref. value in SZ_plus_priors.ini (cosmomc)
   pcsz->alpha = 1.789; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
+  pcsz->ystar = pow(10.,pcsz->ystar)/pow(2., pcsz->alpha)*0.00472724; ////8.9138435358806980e-004;
   pcsz->sigmaM = 0.075; //in log10 see tab 1 of planck cc 2015 paper
+  pcsz->beta = 0.66;
+  pcsz->thetastar = 6.997;
+  pcsz->alpha_theta = 1./3.;
+
+  ptsz->ystar_ym = -0.186; //-0.186 ref. value in SZ_plus_priors.ini (cosmomc)
+  ptsz->alpha_ym = 1.789; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
+  ptsz->ystar_ym = pow(10.,ptsz->ystar_ym)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
+  ptsz->sigmaM_ym = 0.075; //in log10 see tab 1 of planck cc 2015 paper
+  ptsz->beta_ym = 0.66;
+  ptsz->thetastar = 6.997;
+  ptsz->alpha_theta = 1./3.;
+
+  ptsz->B_ym = 0.;// or 0.08;
+  ptsz->A_ym = 2.65e-5;//or  4.95e-5;
 
   ptsz->temperature_mass_relation=0;
 

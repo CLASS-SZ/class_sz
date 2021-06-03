@@ -9852,6 +9852,32 @@ double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct tszspectru
 }
 
 
+double get_completeness_at_z_and_M(double z_asked, double m_asked, double * completeness_2d_to_1d, struct tszspectrum * ptsz){
+  double z = z_asked;
+
+  double m = log(m_asked);
+  // printf("z = %.3e m = %.3e logm = %.4e mmin = %.4e mmax = %,4e\n",z_asked,m_asked,m,ptsz->steps_m[0],ptsz->steps_m[ptsz->nsteps_m-1]);
+  if (m < ptsz->steps_m[0])
+    m = ptsz->steps_m[0];
+  if (m > ptsz->steps_m[ptsz->nsteps_m-1])
+    m = ptsz->steps_m[ptsz->nsteps_m-1];
+  if (z < ptsz->steps_z[0])
+    z = ptsz->steps_z[0];
+  if (z > ptsz->steps_z[ptsz->nsteps_z-1])
+    z = ptsz->steps_z[ptsz->nsteps_z-1];
+ return exp(pwl_interp_2d(ptsz->nsteps_m,
+                          ptsz->nsteps_z,
+                          ptsz->steps_m,
+                          ptsz->steps_z,
+                          completeness_2d_to_1d,
+                          1,
+                          &m,
+                          &z));
+}
+
+
+
+
 double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
@@ -9943,6 +9969,126 @@ return result;
 }
 
 
+double get_theta_at_m_and_z(double m, double z, struct tszspectrum * ptsz, struct background * pba){
+
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+              pba->bg_size*sizeof(double),
+              ptsz->error_message);
+
+  class_call(background_tau_of_z(pba,z,&tau),
+             ptsz->error_message,
+             ptsz->error_message);
+
+  class_call(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             ptsz->error_message,
+             ptsz->error_message);
+
+
+double H0 = pba->h*100.;
+double Eh = pvecback[pba->index_bg_H]/pba->H0;
+double d_A = pvecback[pba->index_bg_ang_distance]*pba->h;
+double mp_bias = m/ptsz->HSEbias;
+double thetastar2 = ptsz->thetastar * pow(H0/70.,-2./3.);
+double theta500_for_mp_at_zp =  thetastar2 * pow(mp_bias/3.e14* (100./H0),ptsz->alpha_theta);
+theta500_for_mp_at_zp *=    pow(Eh,-2./3) *pow(100.*d_A/(500.0*H0),-1.);
+double thp = theta500_for_mp_at_zp;
+free(pvecback);
+
+return thp;
+}
+
+
+double get_volume_at_z(double z, struct background * pba){
+
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+              pba->bg_size*sizeof(double),
+              pba->error_message);
+
+  class_call(background_tau_of_z(pba,z,&tau),
+             pba->error_message,
+             pba->error_message);
+
+  class_call(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             pba->error_message,
+             pba->error_message);
+
+
+double H0 = pba->h*100.;
+double Eh = pvecback[pba->index_bg_H]/pba->H0;
+double d_A = pvecback[pba->index_bg_ang_distance]*pba->h;
+double rz = d_A*(1.+z);
+double volume = 3.0e8/1.0e5*rz*rz/Eh;
+free(pvecback);
+
+return volume;
+}
+
+
+
+double get_y_at_m_and_z(double m, double z, struct tszspectrum * ptsz, struct background * pba){
+
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+              pba->bg_size*sizeof(double),
+              ptsz->error_message);
+
+  class_call(background_tau_of_z(pba,z,&tau),
+             ptsz->error_message,
+             ptsz->error_message);
+
+  class_call(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             ptsz->error_message,
+             ptsz->error_message);
+
+
+double H0 = pba->h*100.;
+double Eh = pvecback[pba->index_bg_H]/pba->H0;
+double d_A = pvecback[pba->index_bg_ang_distance]*pba->h;
+double mp_bias = m/ptsz->HSEbias;
+double yp;
+
+if (ptsz->y_m_relation == 1){
+        double A = ptsz->A_ym;
+        double B = ptsz->B_ym;
+        double t = -0.00848*pow(mp_bias/(3.e14*70./(pba->h*100.))*Eh,-0.585);
+        double f_rel = 1. + 3.79*t -28.2*t*t;
+        yp = A*pow(Eh,2.)*pow(mp_bias/(3.e14*70./(pba->h*100.)),1.+B)*f_rel;
+      }
+else if (ptsz->y_m_relation == 0){
+        double ystar2 = ptsz->ystar_ym;
+        ystar2 *=  pow(H0/70.,-2.+ptsz->alpha_ym);
+        double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/3.e14* (100./H0),ptsz->alpha_ym);
+        y500_for_mp_at_zp *=   pow(Eh,ptsz->beta_ym) *pow(100.*d_A/(500.0*H0),-2.);
+        yp = y500_for_mp_at_zp;
+}
+
+free(pvecback);
+
+return yp;
+}
 
 
 double get_L_sat_at_z_and_M_at_nu(double z_asked,

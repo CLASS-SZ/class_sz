@@ -649,6 +649,10 @@ free(ptsz->bk_at_z_3h);
    free(ptsz->ln_x_for_pp);
    free(ptsz->x_for_pp);
 
+if (ptsz->has_sz_counts  == 1){
+  free(ptsz->steps_z);
+  free(ptsz->steps_m);
+}
 
 return _SUCCESS_;
 }
