@@ -157,6 +157,7 @@ struct tszspectrum {
 
 
   int need_m200m_to_m500c;
+  int need_hmf;
 
 
   int integrate_wrt_mvir;
@@ -602,6 +603,10 @@ struct tszspectrum {
 
   int index_multipole_for_pk;
 
+  int index_ell_1;
+  int index_ell_2;
+  int index_ell_3;
+
   //////////////
 
   int index_integral;
@@ -906,8 +911,12 @@ struct tszspectrum {
   int N_kSZ2_gal_multipole_grid;
 
 
+  double * theta_kSZ2_gal_theta_grid;
+  int N_kSZ2_gal_theta_grid;
+
 
   double dlogell;
+  double dell;
   double ell_min_mock;
   double ell_max_mock;
 
@@ -1367,6 +1376,8 @@ double evaluate_galaxy_luminosity(double z, double M, double nu, struct tszspect
 double subhalo_hmf_dndlnMs(double M_host,double M_sub);
 
 double integrand_kSZ2_X_at_theta(double ell_prime, void *p);
+double integrand_kSZ2_X(double theta, void *p);
+
 
 int evaluate_matter_density_profile(double * pvecback,
                              double * pvectsz,
@@ -1412,13 +1423,31 @@ double get_nu_at_z_and_m(double z,
                          struct background * pba);
 
 struct Parameters_for_integrand_kSZ2_X_at_theta{
-  struct tszspectrum * ptsz;
-  double theta;
-  int index_ell_3;
-  double * b_l1_l2_l_1d;
-  double * ln_ell;
+struct nonlinear * pnl;
+struct primordial * ppm;
+struct tszspectrum * ptsz;
+struct background * pba;
+double * Pvecback;
+double * Pvectsz;
+double theta;
+int index_ell_3;
+double * b_l1_l2_l_1d;
+double * ln_ell;
 };
 
+
+
+struct Parameters_for_integrand_kSZ2_X{
+struct nonlinear * pnl;
+struct primordial * ppm;
+struct tszspectrum * ptsz;
+struct background * pba;
+double * Pvecback;
+double * Pvectsz;
+int index_ell_3;
+double * b_l1_l2_l_1d;
+double * ln_ell;
+};
 
 
 

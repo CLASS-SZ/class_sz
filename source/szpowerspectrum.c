@@ -25,9 +25,7 @@ int szpowerspectrum_init(
                           struct precision * ppr
 			                    )
 {
-
-   // Skip the module if no SZ/halo-model computations are requested:
-    if (ptsz->has_sz_ps
+  int all_comps = ptsz->has_sz_ps
       + ptsz->has_hmf
       + ptsz->has_pk_at_z_1h
       + ptsz->has_pk_at_z_2h
@@ -74,7 +72,15 @@ int szpowerspectrum_init(
       + ptsz->has_isw_lens
       + ptsz->has_isw_tsz
       + ptsz->has_isw_auto
-      + ptsz->has_dndlnM == _FALSE_)
+      + ptsz->has_dndlnM;
+
+  int all_comps_hf =  ptsz->has_kSZ_kSZ_gal_hf;
+
+  if (all_comps_hf == all_comps)
+      ptsz->need_hmf = 0;
+
+   // Skip the module if no SZ/halo-model computations are requested:
+    if (all_comps == _FALSE_)
    {
       if (ptsz->sz_verbose > 0)
          printf("->No SZ-y or N quantities requested. SZ ps module skipped.\n");
@@ -83,13 +89,18 @@ int szpowerspectrum_init(
    else
    {
 
+   if ((ptsz->has_completeness_for_ps_SZ == 1)  || (ptsz->has_sz_counts  == 1))
+      read_Planck_noise_map(ptsz);
+      //SO data and Functions
+// exit(0);
+    // if (ptsz->experiment == 1){
+    //    read_SO_Qfit(ptsz);
+    //    read_SO_noise(ptsz);}
+
 
    select_multipole_array(ptsz);
    show_preamble_messages(pba,pth,pnl,ppm,ptsz);
 
-   if ((ptsz->experiment == 0 && ptsz->has_completeness_for_ps_SZ == 1)
-    || (ptsz->experiment == 0 && ptsz->has_sz_counts  == 1))
-      read_Planck_noise_map(ptsz);
 
 
 
@@ -99,6 +110,7 @@ int szpowerspectrum_init(
 
    if (ptsz->concentration_parameter == 4)
       read_Zhao_CM_init(ptsz);
+
 
    tabulate_sigma_and_dsigma_from_pk(pba,pnl,ppm,ptsz);
 
@@ -243,11 +255,7 @@ int szpowerspectrum_init(
    if (ptsz->write_sz>0)
    write_redshift_dependent_quantities(pba,ptsz);
 
-   //SO data and Functions
 
-   if (ptsz->experiment == 1){
-      read_SO_Qfit(ptsz);
-      read_SO_noise(ptsz);}
 
 
 
@@ -400,19 +408,22 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->r_cl_clp);
    free(ptsz->trispectrum_ref);
 
+
+   if ((ptsz->has_completeness_for_ps_SZ == 1)  || (ptsz->has_sz_counts  == 1)){
    free(ptsz->thetas);
    free(ptsz->skyfracs);
    free(ptsz->ylims);
    free(ptsz->sky_averaged_ylims);
+ }
 
 
 
-if (ptsz->experiment == 1){
-    free(ptsz->SO_Qfit);
-    free(ptsz->SO_thetas);
-    free(ptsz->SO_RMS);
-    free(ptsz->SO_skyfrac);
-}
+// if (ptsz->experiment == 1){
+//     free(ptsz->SO_Qfit);
+//     free(ptsz->SO_thetas);
+//     free(ptsz->SO_RMS);
+//     free(ptsz->SO_skyfrac);
+// }
    free(ptsz->w_gauss);
    free(ptsz->x_gauss);
 
@@ -421,6 +432,7 @@ if(ptsz->has_kSZ_kSZ_gal_1h
 || ptsz->has_kSZ_kSZ_gal_2h
 || ptsz->has_kSZ_kSZ_gal_3h){
   free(ptsz->ell_kSZ2_gal_multipole_grid);
+  free(ptsz->theta_kSZ2_gal_theta_grid);
   free(ptsz->l_unwise_filter);
   free(ptsz->f_unwise_filter);
   free(ptsz->array_profile_ln_l);
@@ -430,6 +442,7 @@ if(ptsz->has_kSZ_kSZ_gal_1h
 
 if(ptsz->has_kSZ_kSZ_gal_hf){
   free(ptsz->ell_kSZ2_gal_multipole_grid);
+  free(ptsz->theta_kSZ2_gal_theta_grid);
   free(ptsz->l_unwise_filter);
   free(ptsz->f_unwise_filter);
 }
@@ -1159,42 +1172,73 @@ else if (ptsz->MF==5 || ptsz->MF==7){
     || _kSZ_kSZ_gal_hf_){
      // loop over l1,l2 for each ell
      int index_ell_1;
+     int index_theta_1;
      int index_ell_2;
      int index_ell_3 = (int) Pvectsz[ptsz->index_multipole]; // ell_3 of the bispectrum is always ell of the power spectrum
 
 
     double **b_l1_l2_l;
+    // class_alloc(b_l1_l2_l,
+    //             ptsz->N_kSZ2_gal_multipole_grid*sizeof(double *),
+    //             ptsz->error_message);
     class_alloc(b_l1_l2_l,
-                ptsz->N_kSZ2_gal_multipole_grid*sizeof(double *),
+                ptsz->N_kSZ2_gal_theta_grid*sizeof(double *),
                 ptsz->error_message);
 
-                for (index_ell_1=0;
-                     index_ell_1<ptsz->N_kSZ2_gal_multipole_grid;
-                     index_ell_1++)
+                // for (index_ell_1=0;
+                //      index_ell_1<ptsz->N_kSZ2_gal_multipole_grid;
+                //      index_ell_1++)
+                // {
+                //   class_alloc(b_l1_l2_l[index_ell_1],
+                //               ptsz->N_kSZ2_gal_multipole_grid*sizeof(double),
+                //               ptsz->error_message);
+                // }
+
+
+                for (index_theta_1=0;
+                     index_theta_1<ptsz->N_kSZ2_gal_theta_grid;
+                     index_theta_1++)
                 {
-                  class_alloc(b_l1_l2_l[index_ell_1],
+                  class_alloc(b_l1_l2_l[index_theta_1],
                               ptsz->N_kSZ2_gal_multipole_grid*sizeof(double),
                               ptsz->error_message);
                 }
 
 
 
-     for (index_ell_1=0;index_ell_1<ptsz->N_kSZ2_gal_multipole_grid;index_ell_1++){
-       for (index_ell_2=0;index_ell_2<=index_ell_1;index_ell_2++){
+
+     // for (index_ell_1=0;index_ell_1<ptsz->N_kSZ2_gal_multipole_grid;index_ell_1++){
+     //   for (index_ell_2=0;index_ell_2<=index_ell_1;index_ell_2++){
+
+     for (index_theta_1=0;index_theta_1<ptsz->N_kSZ2_gal_theta_grid;index_theta_1++){
+       for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
 
          if (ptsz->sz_verbose > 0){
+         // if (_kSZ_kSZ_gal_1h_)
+         //  printf("computing b_kSZ_kSZ_g_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_ell_1, index_ell_2);
+         // if (_kSZ_kSZ_gal_2h_)
+         //  printf("computing b_kSZ_kSZ_g_2h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_ell_1, index_ell_2);
+         // if (_kSZ_kSZ_gal_3h_)
+         //  printf("computing b_kSZ_kSZ_g_3h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_ell_1, index_ell_2);
+         // if (_kSZ_kSZ_gal_hf_)
+         //  printf("computing b_kSZ_kSZ_g_hf @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_ell_1, index_ell_2);
+         // if (_kSZ_kSZ_lensmag_1halo_)
+         //  printf("computing b_kSZ_kSZ_mu_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_ell_1, index_ell_2);
+
          if (_kSZ_kSZ_gal_1h_)
-          printf("computing b_kSZ_kSZ_g_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_ell_1, index_ell_2);
+          printf("computing b_kSZ_kSZ_g_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
          if (_kSZ_kSZ_gal_2h_)
-          printf("computing b_kSZ_kSZ_g_2h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_ell_1, index_ell_2);
+          printf("computing b_kSZ_kSZ_g_2h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
          if (_kSZ_kSZ_gal_3h_)
-          printf("computing b_kSZ_kSZ_g_3h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_ell_1, index_ell_2);
+          printf("computing b_kSZ_kSZ_g_3h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
          if (_kSZ_kSZ_gal_hf_)
-          printf("computing b_kSZ_kSZ_g_hf @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_ell_1, index_ell_2);
+          printf("computing b_kSZ_kSZ_g_hf @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
          if (_kSZ_kSZ_lensmag_1halo_)
-          printf("computing b_kSZ_kSZ_mu_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_ell_1, index_ell_2);
+          printf("computing b_kSZ_kSZ_mu_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+
         }
-          Pvectsz[ptsz->index_multipole_1] = index_ell_1;
+          //Pvectsz[ptsz->index_multipole_1] = index_ell_1;
+          Pvectsz[ptsz->index_multipole_1] = index_theta_1;
           Pvectsz[ptsz->index_multipole_2] = index_ell_2;
           Pvectsz[ptsz->index_multipole_3] = index_ell_3;
 
@@ -1206,11 +1250,16 @@ else if (ptsz->MF==5 || ptsz->MF==7){
                                              Pvectsz),
                           ptsz->error_message,
                           ptsz->error_message);
-          //Pvectsz[ptsz->index_integral] = 0.;
+          // Pvectsz[ptsz->index_integral] = 0.;
 
-       b_l1_l2_l[index_ell_1][index_ell_2] = Pvectsz[ptsz->index_integral];
-       if (index_ell_1 != index_ell_2)
-       b_l1_l2_l[index_ell_2][index_ell_1] = Pvectsz[ptsz->index_integral];
+
+       b_l1_l2_l[index_theta_1][index_ell_2] = Pvectsz[ptsz->index_integral];
+       // if (index_ell_1 != index_ell_2)
+       // b_l1_l2_l[index_ell_2][index_ell_1] = Pvectsz[ptsz->index_integral];
+
+       // b_l1_l2_l[index_ell_1][index_ell_2] = Pvectsz[ptsz->index_integral];
+       // if (index_ell_1 != index_ell_2)
+       // b_l1_l2_l[index_ell_2][index_ell_1] = Pvectsz[ptsz->index_integral];
        // if (Pvectsz[ptsz->index_integral] <= 0.){
        //   printf("negative value\n");
        //   exit(0);
@@ -1221,22 +1270,49 @@ else if (ptsz->MF==5 || ptsz->MF==7){
 
 
 
+   // // put bispectrum in 1d format for 2d interpolation
+   // double * b_l1_l2_l_1d;
+   // double * ln_ell;
+   // class_alloc(b_l1_l2_l_1d,
+   //             sizeof(double *)*ptsz->N_kSZ2_gal_multipole_grid*ptsz->N_kSZ2_gal_multipole_grid,
+   //             ptsz->error_message);
+   // class_alloc(ln_ell,
+   //             sizeof(double *)*ptsz->N_kSZ2_gal_multipole_grid,
+   //             ptsz->error_message);
+   //
+   // int index_l1_l2 = 0;
+   // for (index_ell_1=0;index_ell_1<ptsz->N_kSZ2_gal_multipole_grid;index_ell_1++){
+   //   ln_ell[index_ell_1] = log(ptsz->ell_kSZ2_gal_multipole_grid[index_ell_1]);
+   //   for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
+   //   // b_l1_l2_l_1d[index_l1_l2] = log(b_l1_l2_l[index_ell_1][index_ell_2]);
+   //   b_l1_l2_l_1d[index_l1_l2] = b_l1_l2_l[index_ell_1][index_ell_2];
+   //   index_l1_l2 += 1;
+   //   }
+   // }
+
+
+
    // put bispectrum in 1d format for 2d interpolation
    double * b_l1_l2_l_1d;
    double * ln_ell;
    class_alloc(b_l1_l2_l_1d,
-               sizeof(double *)*ptsz->N_kSZ2_gal_multipole_grid*ptsz->N_kSZ2_gal_multipole_grid,
+               sizeof(double *)*ptsz->N_kSZ2_gal_theta_grid*ptsz->N_kSZ2_gal_multipole_grid,
                ptsz->error_message);
    class_alloc(ln_ell,
                sizeof(double *)*ptsz->N_kSZ2_gal_multipole_grid,
                ptsz->error_message);
-
    int index_l1_l2 = 0;
-   for (index_ell_1=0;index_ell_1<ptsz->N_kSZ2_gal_multipole_grid;index_ell_1++){
-     ln_ell[index_ell_1] = log(ptsz->ell_kSZ2_gal_multipole_grid[index_ell_1]);
-     for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
+   for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
+            //if (index_theta_1==0){
+       ln_ell[index_ell_2] = log(ptsz->ell_kSZ2_gal_multipole_grid[index_ell_2]);
+     //}
+   for (index_theta_1=0;index_theta_1<ptsz->N_kSZ2_gal_theta_grid;index_theta_1++){
+
+
+
+
      // b_l1_l2_l_1d[index_l1_l2] = log(b_l1_l2_l[index_ell_1][index_ell_2]);
-     b_l1_l2_l_1d[index_l1_l2] = b_l1_l2_l[index_ell_1][index_ell_2];
+     b_l1_l2_l_1d[index_l1_l2] = b_l1_l2_l[index_theta_1][index_ell_2];
      index_l1_l2 += 1;
      }
    }
@@ -1246,60 +1322,60 @@ else if (ptsz->MF==5 || ptsz->MF==7){
 
    // now we integrate the bispectrum to compute power spectrum
    double cl_kSZ2_gal = 0.;
-   //int ell_prime;
-   int abs_ell_minus_ell_prime;
-   double ell_min = ptsz->ell_kSZ2_gal_multipole_grid[0];
-   double ell_max = ptsz->l_unwise_filter[ptsz->unwise_filter_size-1];//ptsz->ell_kSZ2_gal_multipole_grid[ptsz->N_kSZ2_gal_multipole_grid-1];
-   //double ell_max = ptsz->ell_kSZ2_gal_multipole_grid[ptsz->N_kSZ2_gal_multipole_grid-1];
 
-   //integrate over theta
-   double theta = 0.;
-   double dtheta = 0.01;
-
-   double dell_prime =  1.;
-
-
-
-  // adaptative integration
-   struct Parameters_for_integrand_kSZ2_X_at_theta V;
-
+   struct Parameters_for_integrand_kSZ2_X V;
+   V.pnl= pnl;
+   V.ppm= ppm;
    V.ptsz = ptsz;
+   V.pba = pba;
+   V.Pvecback = Pvecback;
+   V.Pvectsz = Pvectsz;
    V.ln_ell = ln_ell;
    V.index_ell_3 = index_ell_3;
    V.b_l1_l2_l_1d = b_l1_l2_l_1d;
    void * params;
 
    double r; //result of the integral
-   double epsrel= 1.e-4;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
-   double epsabs= 1.e-35;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
+   double epsrel= 1.e-6;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
+   double epsabs= 1.e-50;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
    int show_neval = 0;//ptsz->patterson_show_neval;
 
-   while(theta < 2.*_PI_){
-
-    V.theta = theta;
     params = &V;
-    //printf("ell_min = %.3e \t ell_max = %.3e\n", ell_min,ell_max);
-     r=Integrate_using_Patterson_adaptive(log(ell_min), log(ell_max),
-                                          epsrel, epsabs,
-                                          integrand_kSZ2_X_at_theta,
-                                          params,show_neval);
-    //printf("integral result = %.3e\n",r);
-    //
-    // double lnell_prime = log(ell_min);
-    // //double lnell_prime = ell_min;
-    // double dlnell_prime =  .1;
-    // double r=0.;
-    //  while (lnell_prime <= log(ell_max)){
-    //     //while (lnell_prime <= ell_max){
-    //   r += dlnell_prime*integrand_kSZ2_X_at_theta(lnell_prime,&V);
-    //   lnell_prime += dlnell_prime;
-    //  }
+
+    r=Integrate_using_Patterson_adaptive(0., _PI_,
+                                        epsrel, epsabs,
+                                        integrand_kSZ2_X,
+                                        params,show_neval);
 
 
-     cl_kSZ2_gal += dtheta*r;
-     theta += dtheta;
-   }
+// // ROMBERG
+//
+//     gsl_integration_romberg_workspace * w
+//     = gsl_integration_romberg_alloc (10);
+//
+//     double result_gsl, error;
+//
+//
+//     // struct Parameters_for_integrand_redshift V;
+//     // V.theta = theta;
+//     // params = &V;
+//
+//     // void * params = &V;
+//
+//     gsl_function F;
+//     F.function = &integrand_kSZ2_X_at_theta;
+//     F.params = params;
+//
+//     size_t neval;
+//     gsl_integration_romberg (&F, log(ell_min), log(ell_max), epsabs, epsrel, &result_gsl,&neval,
+//                           w);
+//
+//     gsl_integration_romberg_free (w);
+//
+//     r = result_gsl;
+// // END ROMBERG
 
+ cl_kSZ2_gal = r;
 
 
 
@@ -3122,6 +3198,23 @@ int evaluate_tau_profile(double * pvecback,
       m_asked = pvectsz[ptsz->index_m200m];
       pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
       // pvectsz[ptsz->index_ls] =  sqrt(pvectsz[ptsz->index_chi2])/(1.+pvectsz[ptsz->index_z])/pvectsz[ptsz->index_rs];
+
+  if (ptsz->tau_profile == 1){
+  // Battaglia 2016
+  // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
+  // numerical transform
+  // set 1 for matter_type = tau
+  //  class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,1),
+  //                                    ptsz->error_message,
+  //                                    ptsz->error_message);
+  // double result_ft = result;
+  // printf("result ft = %.3e\n",result);
+
+   // double l_asked = pvectsz[ptsz->index_multipole_for_nfw_profile];
+   m_asked = pvectsz[ptsz->index_m200c]; // in Msun/h
+   pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200c]/pvectsz[ptsz->index_c200c];
+   // double z_asked = pvectsz[ptsz->index_z];
+ }
     }
   else{
       m_asked = pvectsz[ptsz->index_mVIR];
@@ -3138,7 +3231,7 @@ int evaluate_tau_profile(double * pvecback,
 
    double rho0;
 
-  if (ptsz->tau_profile == 0){
+//  if (ptsz->tau_profile == 0){
 
    double l_asked = pvectsz[ptsz->index_multipole_for_nfw_profile];
    // double m_asked = pvectsz[ptsz->index_m200m]; // in Msun/h
@@ -3160,8 +3253,12 @@ int evaluate_tau_profile(double * pvecback,
                                        //*tau_normalisation
                                        //*rho0 // in (Msun/h)
                                        *pvectsz[ptsz->index_tau_profile]
-                                       *4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)
+                                       //*4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)
                                        *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
+
+  // note that tau_profile has a normalisation proportional to:
+  // double tau_normalisation = pvectsz[ptsz->index_m200m]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
+  // so that the 4*pi*rs^3 simplifies
 
 
    // # For comparison with B16:
@@ -3177,92 +3274,94 @@ int evaluate_tau_profile(double * pvecback,
    //
 
 
-
-
-  }
-
-   else if (ptsz->tau_profile == 1){
-  // Battaglia 2016
-  // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
-  // numerical transform
-  // set 1 for matter_type = tau
-  //  class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,1),
-  //                                    ptsz->error_message,
-  //                                    ptsz->error_message);
-  // double result_ft = result;
-  // printf("result ft = %.3e\n",result);
-
-   double l_asked = pvectsz[ptsz->index_multipole_for_nfw_profile];
-   double m_asked = pvectsz[ptsz->index_m200c]; // in Msun/h
-   double z_asked = pvectsz[ptsz->index_z];
-   result = get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
-  // printf("result ft = %.3e interpolated = %.3e\n",result_ft,result);
-
-  // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
-  // Table 2
-  double A_rho0;
-  double alpha_m_rho0;
-  double alpha_z_rho0;
-  if (ptsz->tau_profile_mode == 0){
-    // agn feedback
-    A_rho0 = 4.e3;
-    alpha_m_rho0 = 0.29;
-    alpha_z_rho0 = -0.66;
-
-    }
-  else if (ptsz->tau_profile_mode == 1){
-    // shock heating
-    A_rho0 = 1.9e4;
-    alpha_m_rho0 = 0.09;
-    alpha_z_rho0 = -0.95;
-
-  }
-
-  double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // in Msun
-  // rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z_asked,alpha_z_rho0)*ptsz->Rho_crit_0; // in (Msun/h)/(Mpc/h)**3
-  //rho0 = ptsz->Rho_crit_0; // in (Msun/h)/(Mpc/h)**3 --> Needs to be rho_crit at z see formula A1 of  Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
-  rho0 = pvectsz[ptsz->index_Rho_crit]; // --> Needs to be rho_crit at z see formula A1 of  Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
-
-
-  pvectsz[ptsz->index_tau_profile] = result;
-
-
-  tau_normalisation = 1.;//pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free;
-
-
-  double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
-  // conversions (in python):
-  // sigma_thomson_in_m2 = 6.6524587321e-29
-  // Mpc_over_m =  3.085677581282e22
-  // sigma_thomson_in_Mpc2 = sigma_thomson_in_m2*Mpc_over_m**-2
-  // mp_in_kg = 1.6726219e-27
-  // Msun_in_kg = 1.9884e30
-  // mp_in_msun = mp_in_kg*Msun_in_kg**-1
-  // sigmaT_over_mp = sigma_thomson_in_Mpc2/mp_in_msun
-  // print(sigmaT_over_mp)
-  // 8.305907197761162e-17
-  /// # Note: jch had 8.30702e-17
-
-   pvectsz[ptsz->index_tau_profile] =  sigmaT_over_mp // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
-                                       //*tau_normalisation // dimension less
-                                       //*rho0 // in (Msun/h)/(Mpc/h)**3
-                                       *(4*_PI_)
-                                       *pow(pvectsz[ptsz->index_rs],3)
-                                       *pvectsz[ptsz->index_tau_profile]
-                                       *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
-
-
-
-
-
-
-   }
-
-
-
-
    return _SUCCESS_;
-}
+
+
+  }
+
+   // else if (ptsz->tau_profile == 1){
+ //  // Battaglia 2016
+ //  // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
+ //  // numerical transform
+ //  // set 1 for matter_type = tau
+ //  //  class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,1),
+ //  //                                    ptsz->error_message,
+ //  //                                    ptsz->error_message);
+ //  // double result_ft = result;
+ //  // printf("result ft = %.3e\n",result);
+ //
+ //   double l_asked = pvectsz[ptsz->index_multipole_for_nfw_profile];
+ //   double m_asked = pvectsz[ptsz->index_m200c]; // in Msun/h
+ //   double z_asked = pvectsz[ptsz->index_z];
+ // }
+ //   result = get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
+  // printf("result ft = %.3e interpolated = %.3e\n",result_ft,result);
+  //
+  // // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
+  // // Table 2
+  // double A_rho0;
+  // double alpha_m_rho0;
+  // double alpha_z_rho0;
+  // if (ptsz->tau_profile_mode == 0){
+  //   // agn feedback
+  //   A_rho0 = 4.e3;
+  //   alpha_m_rho0 = 0.29;
+  //   alpha_z_rho0 = -0.66;
+  //
+  //   }
+  // else if (ptsz->tau_profile_mode == 1){
+  //   // shock heating
+  //   A_rho0 = 1.9e4;
+  //   alpha_m_rho0 = 0.09;
+  //   alpha_z_rho0 = -0.95;
+  //
+  // }
+  //
+  // double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // in Msun
+  // // rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z_asked,alpha_z_rho0)*ptsz->Rho_crit_0; // in (Msun/h)/(Mpc/h)**3
+  // //rho0 = ptsz->Rho_crit_0; // in (Msun/h)/(Mpc/h)**3 --> Needs to be rho_crit at z see formula A1 of  Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
+  // rho0 = pvectsz[ptsz->index_Rho_crit]; // --> Needs to be rho_crit at z see formula A1 of  Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
+  //
+  //
+  // pvectsz[ptsz->index_tau_profile] = result;
+  //
+  //
+  // tau_normalisation = 1.;//pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free;
+  //
+  //
+  // double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
+  // // conversions (in python):
+  // // sigma_thomson_in_m2 = 6.6524587321e-29
+  // // Mpc_over_m =  3.085677581282e22
+  // // sigma_thomson_in_Mpc2 = sigma_thomson_in_m2*Mpc_over_m**-2
+  // // mp_in_kg = 1.6726219e-27
+  // // Msun_in_kg = 1.9884e30
+  // // mp_in_msun = mp_in_kg*Msun_in_kg**-1
+  // // sigmaT_over_mp = sigma_thomson_in_Mpc2/mp_in_msun
+  // // print(sigmaT_over_mp)
+  // // 8.305907197761162e-17
+  // /// # Note: jch had 8.30702e-17
+  //
+  //  pvectsz[ptsz->index_tau_profile] =  sigmaT_over_mp // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
+  //                                      //*tau_normalisation // dimension less
+  //                                      //*rho0 // in (Msun/h)/(Mpc/h)**3
+  //                                      *(4*_PI_)
+  //                                      *pow(pvectsz[ptsz->index_rs],3)
+  //                                      *pvectsz[ptsz->index_tau_profile]
+  //                                      *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
+  //
+  //
+  //
+  //
+  //
+  //
+  //  }
+
+
+
+
+//    return _SUCCESS_;
+// }
 
 int evaluate_matter_density_profile(double * pvecback,
                                     double * pvectsz,
@@ -7086,6 +7185,7 @@ int select_multipole_array(struct tszspectrum * ptsz)
 
 
    if(ptsz->ell_sz==4){
+    if (ptsz->dell == 0.){
       ptsz->nlSZ = (int)((log(ptsz->ell_max_mock) - log(ptsz->ell_min_mock))/ptsz->dlogell) + 1;
       class_realloc(ptsz->ell_mock,
                     ptsz->ell_mock,
@@ -7095,6 +7195,17 @@ int select_multipole_array(struct tszspectrum * ptsz)
       int i;
       for (i=0;i<ptsz->nlSZ;i++)
        ptsz->ell_mock[i] = exp(log(ptsz->ell_min_mock)+i*ptsz->dlogell);
+     }
+     else{
+       ptsz->nlSZ = (int)(ptsz->ell_max_mock -ptsz->ell_min_mock)/ptsz->dell + 1;
+       class_realloc(ptsz->ell_mock,
+                     ptsz->ell_mock,
+                     ptsz->nlSZ*sizeof(double),
+                     ptsz->error_message);
+     int i;
+     for (i=0;i<ptsz->nlSZ;i++)
+      ptsz->ell_mock[i] = ptsz->ell_min_mock+i*ptsz->dell;
+     }
    }
 
   if (ptsz->has_kSZ_kSZ_gal_1h
@@ -7105,16 +7216,41 @@ int select_multipole_array(struct tszspectrum * ptsz)
   class_alloc(ptsz->ell_kSZ2_gal_multipole_grid,
               ptsz->N_kSZ2_gal_multipole_grid*sizeof(double),
               ptsz->error_message);
+  class_alloc(ptsz->theta_kSZ2_gal_theta_grid,
+              ptsz->N_kSZ2_gal_theta_grid*sizeof(double),
+              ptsz->error_message);
 
   int index_l;
   for (index_l=0;index_l<ptsz->N_kSZ2_gal_multipole_grid;index_l++){
   // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(5.*ptsz->ell_max_mock)
   //                                                  - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
 
-   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(1e4)
-                                                    - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
+   // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(1e4)
+   //                                                  - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
+
+
+   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = 2. + index_l*(1e4
+                                                    - 2.)/(ptsz->N_kSZ2_gal_multipole_grid-1.);
+
 
   }
+
+  double theta_min = 0.;
+  double theta_max = _PI_;
+
+  for (index_l=0;index_l<ptsz->N_kSZ2_gal_theta_grid;index_l++){
+  // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(5.*ptsz->ell_max_mock)
+  //                                                  - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
+
+   ptsz->theta_kSZ2_gal_theta_grid[index_l] = theta_min + index_l*(theta_max
+                                                    - theta_min)/(ptsz->N_kSZ2_gal_theta_grid-1.);
+
+
+
+   // ptsz->theta_kSZ2_gal_theta_grid[index_l] = -1 + index_l*2./(ptsz->N_kSZ2_gal_theta_grid-1.);
+
+  }
+
 
   }
 
@@ -7415,9 +7551,12 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_has_200m = ptsz->index_has_500c + 1;
    ptsz->index_has_200c = ptsz->index_has_200m + 1;
 
+   ptsz->index_ell_1 = ptsz->index_has_200c + 1;
+   ptsz->index_ell_2 = ptsz->index_ell_1 + 1;
+   ptsz->index_ell_3 = ptsz->index_ell_2 + 1;
 
    //quantities integrated over redshift
-   ptsz->index_integral =  ptsz->index_has_200c + 1;
+   ptsz->index_integral =  ptsz->index_ell_3 + 1;
 
    ptsz->index_integral_over_m = ptsz->index_integral+1;
 
@@ -8788,7 +8927,7 @@ return m_cut;
 
 
 double integrand_kSZ2_X_at_theta(double ln_ell_prime, void *p){
-  double ell_prime  = exp(ln_ell_prime);
+double ell_prime  = exp(ln_ell_prime);
   //double ell_prime  = ln_ell_prime;
 
 double integrand_cl_kSZ2_X_at_theta = 0.;
@@ -8796,7 +8935,7 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
 
 
 
-     double ell = (int) V->ptsz->ell[V->index_ell_3];
+     double ell = V->ptsz->ell[V->index_ell_3];
      double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(V->theta));
 
      double ell_1 = abs_ell_minus_ell_prime;
@@ -8805,28 +8944,67 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
 
      // check bispectrum condition
      int bispec_cd;
-     bispec_cd = bispectrum_condition(ell_1,ell_2,ell_3);
-
+     bispec_cd = 1.;//bispectrum_condition(ell_1,ell_2,ell_3);
+//
      if (bispec_cd == 1){
-
-       double ln_ell1 = log(ell_1);
+//        //
+//        // double ln_ell1 = log(ell_1);
+//        // double ln_ell2 = log(ell_2);
+//        // // double db =  exp(pwl_interp_2d(V->ptsz->N_kSZ2_gal_multipole_grid,
+//        // //                                V->ptsz->N_kSZ2_gal_multipole_grid,
+//        // //                                V->ln_ell,
+//        // //                                V->ln_ell,
+//        // //                                V->b_l1_l2_l_1d,
+//        // //                                1,
+//        // //                                &ln_ell1,
+//        // //                                &ln_ell2));
+//        // double db =  pwl_interp_2d(V->ptsz->N_kSZ2_gal_multipole_grid,
+//        //                                V->ptsz->N_kSZ2_gal_multipole_grid,
+//        //                                V->ln_ell,
+//        //                                V->ln_ell,
+//        //                                V->b_l1_l2_l_1d,
+//        //                                1,
+//        //                                &ln_ell1,
+//        //                                &ln_ell2);
+//
+       //double theta_1 = cos(V->theta);
+       double theta_1 = V->theta;
        double ln_ell2 = log(ell_2);
-       // double db =  exp(pwl_interp_2d(V->ptsz->N_kSZ2_gal_multipole_grid,
-       //                                V->ptsz->N_kSZ2_gal_multipole_grid,
-       //                                V->ln_ell,
-       //                                V->ln_ell,
-       //                                V->b_l1_l2_l_1d,
-       //                                1,
-       //                                &ln_ell1,
-       //                                &ln_ell2));
-       double db =  pwl_interp_2d(V->ptsz->N_kSZ2_gal_multipole_grid,
-                                      V->ptsz->N_kSZ2_gal_multipole_grid,
-                                      V->ln_ell,
-                                      V->ln_ell,
-                                      V->b_l1_l2_l_1d,
-                                      1,
-                                      &ln_ell1,
-                                      &ln_ell2);
+       // printf("interpolating\n");
+       double db =  pwl_interp_2d(V->ptsz->N_kSZ2_gal_theta_grid,
+                                  V->ptsz->N_kSZ2_gal_multipole_grid,
+                                  V->ptsz->theta_kSZ2_gal_theta_grid,
+                                  V->ln_ell,
+                                  V->b_l1_l2_l_1d,
+                                  1,
+                                  &theta_1,
+                                  &ln_ell2);
+      if (isnan(db)){
+  printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",theta_1,ln_ell2,ell_3);
+  printf("\n\n");
+  exit(0);
+}
+       // printf("end interpolation db = %.3e\n",db);
+      // Alternatively, compute the bispectrum here instaead of interpolation:
+      //
+      //     V->Pvectsz[V->ptsz->index_ell_1] = ell_1;
+      //     V->Pvectsz[V->ptsz->index_ell_2] = ell_2;
+      //     V->Pvectsz[V->ptsz->index_ell_3] = ell_3;
+      //     V->Pvectsz[V->ptsz->index_md] = V->ptsz->index_md_kSZ_kSZ_gal_hf;
+      //
+      //     class_call(integrate_over_redshift(V->pba,
+      //                                        V->pnl,
+      //                                        V->ppm,
+      //                                        V->ptsz,
+      //                                        V->Pvecback,
+      //                                        V->Pvectsz),
+      //                     V->ptsz->error_message,
+      //                     V->ptsz->error_message);
+      // //
+      //  double db = V->Pvectsz[V->ptsz->index_integral];
+      // printf("db = %.3e\n",db);
+      /////////////
+
       double fl_prime = 1.;
       if  (ell_prime <= V->ptsz->l_unwise_filter[0] || ell_prime >= V->ptsz->l_unwise_filter[V->ptsz->unwise_filter_size-1])
         fl_prime = 0.;
@@ -8856,6 +9034,60 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
        return integrand_cl_kSZ2_X_at_theta;
 
 }
+
+
+
+
+double integrand_kSZ2_X(double theta, void *p){
+// double ell_prime  = exp(ln_ell_prime);
+  //double ell_prime  = ln_ell_prime;
+
+double integrand_cl_kSZ2_X = 0.;
+struct Parameters_for_integrand_kSZ2_X *W = ((struct Parameters_for_integrand_kSZ2_X *) p);
+
+
+  // adaptative integration
+   struct Parameters_for_integrand_kSZ2_X_at_theta V;
+   V.pnl = W->pnl;
+   V.ppm = W->ppm;
+   V.ptsz = W->ptsz;
+   V.pba = W->pba;
+   V.Pvecback = W->Pvecback;
+   V.Pvectsz = W->Pvectsz;
+   V.ln_ell = W->ln_ell;
+   V.index_ell_3 = W->index_ell_3;
+   V.b_l1_l2_l_1d = W->b_l1_l2_l_1d;
+
+   //printf("index l3 = %d\n",V.index_ell_3);
+
+   void * params;
+
+   double r; //result of the integral
+   double epsrel= 1.e-6;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
+   double epsabs= 1.e-50;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
+   int show_neval = 0;//ptsz->patterson_show_neval;
+
+  // while(theta < 2.*_PI_){
+
+    V.theta = theta;
+    params = &V;
+
+    double ell_min = V.ptsz->ell_kSZ2_gal_multipole_grid[0];
+    double ell_max = V.ptsz->l_unwise_filter[V.ptsz->unwise_filter_size-1];
+
+    //printf("ell_min = %.3e \t ell_max = %.3e\n", ell_min,ell_max);
+    r=Integrate_using_Patterson_adaptive(log(ell_min), log(ell_max),
+                                        epsrel, epsabs,
+                                        integrand_kSZ2_X_at_theta,
+                                        params,show_neval);
+
+
+    integrand_cl_kSZ2_X = r;
+
+    return integrand_cl_kSZ2_X;
+
+}
+
 
 // eq. 16 of https://arxiv.org/pdf/1510.04075.pdf
 double bispectrum_f2_kernel(double k1, double k2, double k3){

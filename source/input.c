@@ -1730,11 +1730,13 @@ int input_read_parameters(
       class_read_int("nlSZ",ptsz->nlSZ);
 
       class_read_int("N_kSZ2_gal_multipole_grid",ptsz->N_kSZ2_gal_multipole_grid);
+      class_read_int("N_kSZ2_gal_theta_grid",ptsz->N_kSZ2_gal_theta_grid);
 
 
       class_read_double("ell_max_mock",ptsz->ell_max_mock);
       class_read_double("ell_min_mock",ptsz->ell_min_mock);
       class_read_double("dlogell",ptsz->dlogell);
+      class_read_double("dell",ptsz->dell);
 
 
       class_read_double("k_min_for_pk_hm",ptsz->k_min_for_pk_hm);
@@ -4682,6 +4684,7 @@ int input_default_params(
   ptsz->write_sz = _FALSE_;
   ptsz->ell_sz = 4;
   ptsz->dlogell = .3;
+  ptsz->dell = 0.;
   ptsz->ell_max_mock = 4000.;
   ptsz->ell_min_mock = 100.;
   //ptsz->nlSZ = 18;
@@ -5050,6 +5053,7 @@ int input_default_params(
   ptsz->integrate_wrt_m200m = 0;
 
   ptsz->need_m200m_to_m500c = 0;
+  ptsz->need_hmf = 1;
 
   ptsz->has_electron_pressure = 0;
   ptsz->has_electron_density = 0;

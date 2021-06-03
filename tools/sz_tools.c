@@ -859,7 +859,7 @@ int read_Zhao_CM_init(
   }
 
   // status = pclose(process);
-  fclose(process);
+  status = fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -918,7 +918,7 @@ int read_Zhao_CM_init(
   }
 
   // status = pclose(process);
-  fclose(process);
+  status = fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -1005,7 +1005,7 @@ int read_Zhao_CM_init(
   // printf("index C-M = %d\n", ptsz->CM_redshift_size*ptsz->CM_logM_size);
 
   // status = pclose(process);
-  fclose(process);
+  status = fclose(process);
 
 
   //for (index_redshift=0;
@@ -3319,7 +3319,10 @@ for (index_m=0;
   class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,1),
                                      ptsz->error_message,
                                      ptsz->error_message);
-  result *= pvectsz[ptsz->index_Rho_crit];// normalisation here
+
+   double tau_normalisation = pvectsz[ptsz->index_m200c];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
+   tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
+   result *= tau_normalisation;// normalisation here
   // exit(0);
 
 }
@@ -3349,7 +3352,7 @@ else if (ptsz->tau_profile == 0){
    pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
    // set 1 for matter_type = tau
    result =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,1);
-   double tau_normalisation = pvectsz[ptsz->index_m200m]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
+   double tau_normalisation = pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
    tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
    result *= tau_normalisation;
  }
@@ -5118,7 +5121,7 @@ int load_T10_alpha_norm(struct tszspectrum * ptsz)
 
   /* Close the process */
   // status = pclose(process);
-  fclose(process);
+  status = fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -5794,6 +5797,7 @@ struct Parameters_for_integrand_redshift{
   struct background * pba;
   double * pvecback;
   double * pvectsz;
+  //double * llprime_grid;
 };
 
 double integrand_redshift(double ln1pz, void *p){
@@ -5939,16 +5943,31 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   // }
   // else
   if ((V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf)) {
+  //
+  // int index_l_1 = (int) V->pvectsz[V->ptsz->index_multipole_1];
+  // int index_l_2 = (int) V->pvectsz[V->ptsz->index_multipole_2];
+  // int index_l_3 = (int) V->pvectsz[V->ptsz->index_multipole_3];
 
-  int index_l_1 = (int) V->pvectsz[V->ptsz->index_multipole_1];
+  int index_theta_1 = (int) V->pvectsz[V->ptsz->index_multipole_1];
   int index_l_2 = (int) V->pvectsz[V->ptsz->index_multipole_2];
   int index_l_3 = (int) V->pvectsz[V->ptsz->index_multipole_3];
 
   // printf("index_l_1 = %d index_l_2 = %d index_l_3 = %d\n",index_l_1,index_l_2,index_l_3);
 
-  double l1 = V->ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+
   double l2 = V->ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
   double l3 = V->ptsz->ell[index_l_3];
+  double ell = l3;
+  double ell_prime = l2;
+  double theta_1 = V->ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+  double l1 = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(theta_1));
+  // double l1 = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*theta_1);
+
+
+  //
+  // double l1 = V->pvectsz[V->ptsz->index_ell_1];
+  // double l2 = V->pvectsz[V->ptsz->index_ell_2];
+  // double l3 = V->pvectsz[V->ptsz->index_ell_3];
 
   // printf("l1 = %.3e l2 = %.3e l3 = %3.e\n",l1,l2,l3);
 
@@ -5997,21 +6016,24 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
 
   // printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",n1,n2,n3);
 
-  double f2_eff_12 = bispectrum_f2_kernel_eff(k1,k2,k3,n1,n2,sigma8_at_z,knl);
-  double f2_eff_23 = bispectrum_f2_kernel_eff(k2,k3,k1,n2,n3,sigma8_at_z,knl);
-  double f2_eff_31 = bispectrum_f2_kernel_eff(k3,k1,k2,n3,n1,sigma8_at_z,knl);
+  double f2_eff_12 =  bispectrum_f2_kernel_eff(k1,k2,k3,n1,n2,sigma8_at_z,knl);
+  double f2_eff_23 =  bispectrum_f2_kernel_eff(k2,k3,k1,n2,n3,sigma8_at_z,knl);
+  double f2_eff_31 =  bispectrum_f2_kernel_eff(k3,k1,k2,n3,n1,sigma8_at_z,knl);
+
+  // printf("f1 = %.3e \t f2 = %.3e \t f3 = %.3e\n",f2_eff_12,f2_eff_23,f2_eff_31);
 
   double b123 = 2.*pk1*pk2*f2_eff_12 + 2.*pk2*pk3*f2_eff_23 + 2.*pk3*pk1*f2_eff_31;
 
   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
   double galaxy_normalisation = H_over_c_in_h_over_Mpc; // here is normally also the bias but we take it out and multiply afterward
-
+  galaxy_normalisation *= pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.);
   double sigmaT_over_mp = 8.305907197761162e-17 * pow(V->pba->h,2)/V->pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
-  double tau_fac = V->pba->Omega0_b/V->ptsz->Omega_m_0/V->ptsz->mu_e*V->ptsz->f_free;///V->pba->h; // <!> correct version no h<!>
+  double tau_fac = V->pba->Omega0_b/V->ptsz->Omega_m_0/V->ptsz->mu_e*V->ptsz->f_free;///V->pba->h;///V->pba->h; // <!> correct version no h<!>
 // printf("fb = %.4e\n",V->pba->Omega0_b/V->ptsz->Omega_m_0);
   double tau_normalisation = tau_fac
                             *sigmaT_over_mp
-                            *pow(V->pvecback[V->pba->index_bg_ang_distance]*V->pba->h,-3.)
+                            //*pow(H_over_c_in_h_over_Mpc,3.)
+                            *pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.)
                             *V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
 
   result = tau_normalisation*tau_normalisation*galaxy_normalisation*b123;
@@ -6504,6 +6526,7 @@ int integrate_over_redshift(struct background * pba,
   V.pba = pba;
   V.pvectsz = Pvectsz;
   V.pvecback = Pvecback;
+
   void * params = &V;
   double r; //result of the integral
 
@@ -6521,6 +6544,46 @@ if(_pk_at_z_1h_
   r = integrand_redshift(log(1. + ptsz->z_for_pk_hm),params);
 }
 else{
+
+  // // ROMBERG
+  //
+  // gsl_integration_romberg_workspace * w
+  //   = gsl_integration_romberg_alloc (12);
+  //
+  //   double result_gsl, error;
+  //
+  //
+  //   struct Parameters_for_integrand_redshift V;
+  //   V.pnl = pnl;
+  //   V.ppm = ppm;
+  //   V.ptsz = ptsz;
+  //   V.pba = pba;
+  //   V.pvectsz = Pvectsz;
+  //   V.pvecback = Pvecback;
+  //
+  //   void * params = &V;
+  //
+  //   gsl_function F;
+  //   F.function = &integrand_redshift;
+  //   F.params = params;
+  //
+  //   // int id_max = ptsz->x_size_for_pp-1;
+  //
+  //   // double eps_abs = 1e-8;
+  //   // double eps_rel = 1e-10;
+  //
+  //   size_t neval;
+  //   gsl_integration_romberg (&F, log(1. + z_min), log(1. + z_max), epsabs, epsrel, &result_gsl,&neval,
+  //                         w);
+  //
+  //   gsl_integration_romberg_free (w);
+  //
+  //   //*result = result_gsl;
+  //
+  // r = result_gsl;
+  // // END ROMBERG
+
+  // // printf("er = %.4e ea = %.4e\n",epsrel,epsabs);
   r = Integrate_using_Patterson_adaptive(log(1. + z_min), log(1. + z_max),
                                          epsrel, epsabs,
                                          integrand_redshift,
@@ -7432,6 +7495,9 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
 {
   ///read theta file for completeness
   /////////////////////////////start read theta file
+  if (ptsz->sz_verbose >= 3){
+    printf("Loading theta file\n");
+  }
 
   //read the thetas
   char line[_LINE_LENGTH_MAX_];
@@ -7456,11 +7522,22 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   //         "/sz_auxiliary_files/SZ_thetas.txt");
   //
   // process = popen(Filepath, "r");
-  class_open(process,"sz_auxiliary_files/SZ_thetas.txt", "r",ptsz->error_message);
+  if (ptsz->experiment == 0){
+  // class_open(process,"sz_auxiliary_files/SZ_thetas.txt", "r",ptsz->error_message);
+  class_open(process,ptsz->Planck_thetas_file, "r",ptsz->error_message);
 
+}
+  else if (ptsz->experiment == 1){
+  // class_open(process,"sz_auxiliary_files/so_3freqs_020621_thetas.txt", "r",ptsz->error_message);
+  class_open(process,ptsz->SO_thetas_file, "r",ptsz->error_message);
+
+}
 
   while (fgets(line, sizeof(line)-1, process) != NULL) {
     sscanf(line, "%lf", &this_lnx);
+
+  if (ptsz->sz_verbose >= 3)
+    printf("%lf\n", this_lnx);
 
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -7478,11 +7555,13 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   }
 
   // status = pclose(process);
-  fclose(process);
+  status = fclose(process);
+    printf("Loading theta file 2\n");
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
              "Try doing it by hand to check for errors.");
+    printf("Loading theta file 3\n");
 
   ptsz->nthetas = n_data;
 
@@ -7505,8 +7584,8 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
       //location = c+1;
     }
   }
-  //printf("theta_bin_max:=%e\n",theta_bin_max);
-  //printf("theta_bin_min:=%e\n",theta_bin_min);
+  printf("theta_bin_max:=%e\n",ptsz->theta_bin_max);
+  printf("theta_bin_min:=%e\n",ptsz->theta_bin_min);
 
   ///////////////////////////end read theta file
 
@@ -7516,6 +7595,10 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
 
   //double *skyfracs = NULL;
 
+  if (ptsz->sz_verbose >= 3){
+    printf("theta file loaded with ntheta = %d\n",ptsz->nthetas);
+  }
+  printf("Loading theta file 2\n");
 
   n_data = 0;
   n_data_guess = 100;
@@ -7529,7 +7612,23 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   //         "/sz_auxiliary_files/SZ_skyfracs.txt");
   //
   // process = popen(Filepath, "r");
-  class_open(process,"sz_auxiliary_files/SZ_skyfracs.txt", "r",ptsz->error_message);
+  if (ptsz->sz_verbose >= 3){
+    printf("Loading skyfrac file\n");
+  }
+  //class_open(process,"sz_auxiliary_files/SZ_skyfracs.txt", "r",ptsz->error_message);
+
+  if (ptsz->experiment == 0){
+  // class_open(process,"sz_auxiliary_files/SZ_skyfracs.txt", "r",ptsz->error_message);
+  class_open(process,ptsz->Planck_skyfracs_file, "r",ptsz->error_message);
+
+}
+  else if (ptsz->experiment == 1){
+  // class_open(process,"sz_auxiliary_files/so_3freqs_020621_skyfracs.txt", "r",ptsz->error_message);
+  class_open(process,ptsz->SO_skyfracs_file, "r",ptsz->error_message);
+
+}
+
+
 
   while (fgets(line, sizeof(line)-1, process) != NULL) {
     sscanf(line, "%lf", &this_lnx);
@@ -7550,18 +7649,22 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   }
 
   // status = pclose(process);
-  fclose(process);
+  status = fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
              "Try doing it by hand to check for errors.");
 
   ptsz->nskyfracs = n_data;
-
+  if (ptsz->sz_verbose >= 3){
+    printf("sky frac file loaded with nskyfracs = %d\n",ptsz->nskyfracs);
+  }
 
   //end read skyfracs
 
-
+  if (ptsz->sz_verbose >= 3){
+    printf("Loading noise map\n");
+  }
   ////////////////////////read the ylims
   int index_patches;
   //double ** ylims = NULL;
@@ -7589,25 +7692,50 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   //         "/sz_auxiliary_files/SZ_ylims.txt");
   //
   // process = popen(Filepath, "r");
-  class_open(process,"sz_auxiliary_files/SZ_ylims.txt", "r",ptsz->error_message);
 
-  //printf("ok\n");
 
-  index_patches=0;
-  int index_thetas = 0;
-  while (fgets(line, sizeof(line)-1, process) != NULL) {
-    sscanf(line, "%lf", &this_lnx);
-    ptsz->ylims[index_patches][index_thetas]=this_lnx;
-    index_patches+=1;
-    if (index_patches >= ptsz->nskyfracs){
-      index_patches=0;
-      index_thetas+=1;
-    }
+  if (ptsz->experiment == 0){
+    // class_open(process,"sz_auxiliary_files/SZ_ylims.txt", "r",ptsz->error_message);
+    class_open(process,ptsz->Planck_ylims_file, "r",ptsz->error_message);
+
+  }
+  else if (ptsz->experiment == 1){
+    // class_open(process,"sz_auxiliary_files/so_3freqs_020621_ylims.txt", "r",ptsz->error_message);
+    class_open(process,ptsz->SO_ylims_file, "r",ptsz->error_message);
 
   }
 
+  //printf("ok\n");
+  // printf("noise map loaded 0\n");
+  int id_patches=0;
+  int index_thetas = 0;
+
+  // while (fgets(line, sizeof(line)-1, process) != NULL) {
+  //   sscanf(line, "%lf", &this_lnx);
+  //   // printf("%.3e id_p = %d id_t = %d n_p = %d n_t = %d\n",this_lnx,index_patches,index_thetas,ptsz->nskyfracs,ptsz->nthetas);
+  //   ptsz->ylims[id_patches][index_thetas]=this_lnx;
+  //   id_patches+=1;
+  //   // printf("%.3e id_pp1 = %d id_t = %d n_p = %d n_t = %d\n",this_lnx,index_patches,index_thetas,ptsz->nskyfracs,ptsz->nthetas);
+  //
+  //   if (id_patches == ptsz->nskyfracs){
+  //     //printf("changing patch\n");
+  //     id_patches=0;
+  //     index_thetas+=1;
+  //   }
+  //
+  // }
+  for (index_thetas =0;index_thetas<ptsz->nthetas;index_thetas++){
+    for (id_patches =0;id_patches<ptsz->nskyfracs;id_patches++){
+    fgets(line, sizeof(line)-1, process);
+    sscanf(line, "%lf", &this_lnx);
+    // printf("%.3e id_p = %d id_t = %d n_p = %d n_t = %d\n",this_lnx,index_patches,index_thetas,ptsz->nskyfracs,ptsz->nthetas);
+    ptsz->ylims[id_patches][index_thetas]=this_lnx;
+    }
+  }
+  // printf("noise map loaded 1\n");
+
   // status = pclose(process);
-  fclose(process);
+  status = fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -7633,6 +7761,10 @@ for (index_thetas = 0; index_thetas<ptsz->nthetas; index_thetas ++){
   {
     ptsz->sky_averaged_ylims[index_thetas] += ptsz->skyfracs[index_patches]*ptsz->ylims[index_patches][index_thetas]/sum_skyfracs;
   }
+}
+
+if (ptsz->sz_verbose >= 3){
+  printf("noise map loaded\n");
 }
   return  _SUCCESS_;
 }
@@ -7688,7 +7820,7 @@ for (index_thetas = 0; index_thetas<ptsz->nthetas; index_thetas ++){
       }
 
       // status = pclose(process);
-      fclose(process);
+      status = fclose(process);
       class_test(status != 0.,
                  ptsz->error_message,
                  "The attempt to launch the external command was unsuccessful. "
@@ -7754,7 +7886,7 @@ int read_SO_noise(struct tszspectrum * ptsz){
         }
 
         // status = pclose(process);
-        fclose(process);
+        status = fclose(process);
         class_test(status != 0.,
                    ptsz->error_message,
                    "The attempt to launch the external command was unsuccessful. "
@@ -8834,7 +8966,7 @@ num_threads(number_of_threads)
                                       /(ptsz->n_arraySZ-1.); // log(1+z)
 
 
-
+  if (ptsz->need_hmf == 1){
       if (ptsz->HMF_prescription_NCDM == 2) //No-pres
         spectra_sigma_for_tSZ( pba,
                               ppm,
@@ -8853,6 +8985,7 @@ num_threads(number_of_threads)
                            exp(ptsz->array_redshift[index_z])-1.,
                            sigma_var//&sigma_at_z_and_R
                            );
+
 
 
       //ptsz->array_sigma_at_z_and_R[index_z_R] = log(*sigma_var);//sigma_at_z_and_R); //log(sigma)
@@ -8879,6 +9012,11 @@ num_threads(number_of_threads)
 
       array_dsigma2dR_at_z_and_R[index_z][index_R] = *dsigma_var;
 
+                         }
+      else {
+        array_sigma_at_z_and_R[index_z][index_R] = 0.;
+        array_dsigma2dR_at_z_and_R[index_z][index_R] =  0.;
+      }
       index_z_R += 1;
     }
   }

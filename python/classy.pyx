@@ -1693,13 +1693,29 @@ cdef class Class:
         """
         (SZ) Return the dndzdy theoretical
         """
-        dndzdy =  defaultdict(list)
+
+        dndzdy =  []
+        z_center =  []
+        z_edges =  []
+        log10y_center =  []
+        log10y_edges =  []
         cdef int index_y,index_z
 
         for index_z in range(self.csz.Nbins_z):
+            z_center.append(self.csz.z_center[index_z])
+            z_edges.append(self.csz.z_center[index_z]-0.5*self.csz.dz)
+            dndzdy_index_z = []
             for index_y in range(self.csz.Nbins_y +1):
-                dndzdy[index_z].append(self.csz.dNdzdy_theoretical[index_z][index_y])
-        return dndzdy
+                dndzdy_index_z.append(self.csz.dNdzdy_theoretical[index_z][index_y])
+            dndzdy.append(dndzdy_index_z)
+
+        z_edges.append(self.csz.z_center[self.csz.Nbins_z-1]+0.5*self.csz.dz)
+
+        for index_y in range(self.csz.Nbins_y +1):
+            log10y_center.append(self.csz.logy[index_y])
+            log10y_edges.append(self.csz.logy[index_y]-0.5*self.csz.dlogy)
+        log10y_edges.append(self.csz.logy[self.csz.Nbins_y]+0.5*self.csz.dlogy)
+        return {'dndzdy':dndzdy,'z_center':z_center,'z_edges':z_edges,'log10y_center':log10y_center,'log10y_edges':log10y_edges}
 
 
 

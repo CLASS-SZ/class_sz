@@ -152,3 +152,4 @@ sz_auxiliary_files/UNWISE_galaxy_distributions.zip
 Makefile_stampede2
 python/setup_stampede2.py
 source/szpowerspectrum_bkp.c
+notebooks/SO_cluster_counts.ipynb

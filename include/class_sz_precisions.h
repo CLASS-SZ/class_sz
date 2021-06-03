@@ -15,11 +15,21 @@ class_sz_string_parameter(P13_file,"/sz_auxiliary_files/class_sz_lnIgnfw-and-d2l
 class_sz_string_parameter(ksz_filter_file,"/sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt","ksz filter file")
 
 
+class_sz_string_parameter(Planck_thetas_file,"/sz_auxiliary_files/SZ_thetas.txt","Planck_thetas_file")
+class_sz_string_parameter(SO_thetas_file,"/sz_auxiliary_files/so_3freqs_020621_thetas.txt","SO_thetas_file")
+class_sz_string_parameter(Planck_skyfracs_file,"/sz_auxiliary_files/SZ_skyfracs.txt","Planck_skyfracs_file")
+class_sz_string_parameter(SO_skyfracs_file,"/sz_auxiliary_files/so_3freqs_020621_skyfracs.txt","SO_skyfracs_file")
+class_sz_string_parameter(Planck_ylims_file,"/sz_auxiliary_files/SZ_ylims.txt","Planck_ylims_file")
+class_sz_string_parameter(SO_ylims_file,"/sz_auxiliary_files/so_3freqs_020621_ylims.txt","SO_ylims_file")
+
+
 class_sz_ptsz_parameter(n_z_hmf_counter_terms,int,200)
 class_sz_ptsz_parameter(array_profile_ln_PgNFW_at_lnl_over_ls_size,int,200)
 class_sz_ptsz_parameter(m_min_counter_terms,double,1e11)
 class_sz_ptsz_parameter(m_max_counter_terms,double,1e17)
 //printf("-> File Name pr: %s\n",ptsz->WISC3_dndz_file);
+
+
 
 #undef class_sz_ptsz_parameter
 #undef class_sz_string_parameter

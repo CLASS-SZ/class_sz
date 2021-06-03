@@ -23,8 +23,15 @@ int szcount_init(struct background * pba,
 
   else
   {
+
     if (pcsz->sz_verbose > 0)
       printf("->Computing SZ cluster counts.\n");
+
+   // // if ((ptsz->experiment == 0 && ptsz->has_completeness_for_ps_SZ == 1)
+   // //  || (ptsz->experiment == 0 && ptsz->has_sz_counts  == 1))
+   //    read_Planck_noise_map(ptsz);
+
+
     double * Pvecback;
     double * Pvectsz;
 
@@ -292,16 +299,19 @@ private(tstart, tstop,pvecsz)
     {
       if (i==0) log_Y[j]=pcsz->logM_at_z[j]*log(10.);
 
-      class_call(integrand_at_m_and_z(pcsz->logM_at_z[j]*log(10.),
-                                      Pvecback,
-                                      Pvectsz,
-                                      pba,
-                                      ppm,
-                                      pnl,
-                                      ptsz),
-                 pcsz->error_message,
-                 pcsz->error_message);
+      // class_call(integrand_at_m_and_z(pcsz->logM_at_z[j]*log(10.),
+      //                                 Pvecback,
+      //                                 Pvectsz,
+      //                                 pba,
+      //                                 ppm,
+      //                                 pnl,
+      //                                 ptsz),
+      //            pcsz->error_message,
+      //            pcsz->error_message);
 
+      double z_asked = Pvectsz[ptsz->index_z];
+      double m_asked =  exp(pcsz->logM_at_z[j]*log(10.));
+      Pvectsz[ptsz->index_hmf] = get_dndlnM_at_z_and_M(z_asked,m_asked,ptsz);
       // dn/dlogM in units of h^3 Mpc^-3
       pcsz->dndlnM[j][i] = Pvectsz[ptsz->index_hmf];
 
@@ -400,8 +410,8 @@ private(tstart, tstop,pvecsz)
 
     //survey area
     double deg2= 3.046174198e-4; // conversion deg2 to steradian
-    if (ptsz->experiment == 0) deg2 *= 41253.0; //Planck full-sky (4 x pi x 57.3^2=41253 square degrees where 57.3  = 360 / (2 x pi))
-    if (ptsz->experiment == 1) deg2 *= 599.353; //SO
+    deg2 *= 41253.0; //Planck full-sky (4 x pi x 57.3^2=41253 square degrees where 57.3  = 360 / (2 x pi))
+    // if (ptsz->experiment == 1) deg2 *= 599.353; //SO
 
     double HMF;
 
@@ -689,8 +699,7 @@ int grid_C_2d(
               ){
   //int i;
 
-  if (pcsz->sz_verbose > 3)
-    printf("->SZ_counts grid_C_2d.\n");
+
 
   int l_array[3];
   double theta_array[3];
@@ -702,7 +711,11 @@ int grid_C_2d(
   double y_min = pow(10., pcsz->logy[index_y] - pcsz->dlogy/2.);
   double y_max = pow(10., pcsz->logy[index_y] + pcsz->dlogy/2.);
 
-
+  if (pcsz->sz_verbose > 3){
+    printf("->SZ_counts grid_C_2d.\n");
+    printf("->In signal-to-noise bin:\n");
+    printf("->bin id = %d y_min = %.3e y_max = %.3e\n",index_y,y_min,y_max);
+    }
 
   double tau;
   int first_index_back = 0;
@@ -747,7 +760,7 @@ int grid_C_2d(
       double Eh = pvecback[pba->index_bg_H]/H0_class_units;
       double d_A = pvecback[pba->index_bg_ang_distance]*pba->h;
 
-
+      double yp;
       for (index_m=0;index_m<pcsz->nsteps_m;index_m++){
 
         //compute_theta_and_y_at_z_and_m
@@ -759,15 +772,26 @@ int grid_C_2d(
         theta500_for_mp_at_zp *=    pow(Eh,-2./3) *pow(100.*d_A/(500.0*H0),-1.);
         double thp = theta500_for_mp_at_zp;
 
+  if(ptsz->experiment == 0){
         double ystar2 = pcsz->ystar;
         ystar2 *=  pow(H0/70.,-2.+pcsz->alpha);
         double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/3.e14* (100./H0),pcsz->alpha);
         y500_for_mp_at_zp *=   pow(Eh,pcsz->beta) *pow(100.*d_A/(500.0*H0),-2.);
-        double yp = y500_for_mp_at_zp;
-
-
+        yp = y500_for_mp_at_zp;
+        }
+  else if (ptsz->experiment == 1){
+        // double A = 4.95e-5;
+        double A = 2.65e-5;
+        // double B = 0.08;
+        double B = 0.;
+        double t = -0.00848*pow(mp/(3.e14*70./(pba->h*100.))*Eh,-0.585);
+        double f_rel = 1. + 3.79*t -28.2*t*t;
+        yp = A*pow(Eh,2.)*pow(mp_bias/(3.e14*70./(pba->h*100.)),1.+B)*f_rel;
+    //     //y0_SO = A_a*(Eh(z)**2.)*((m2/(3.e14*msun*70./cosmopar%H0))**(1. + B_a))*Qfunc_SO(m*msun, z, theta, Q0)*relfn(m*msun, z)
+    //
+  }
         //Planck
-        if(ptsz->experiment == 0){
+
 
         find_theta_bin(ptsz,thp,l_array,theta_array);
         int l1 = l_array[1];
@@ -822,80 +846,80 @@ int grid_C_2d(
           completeness_2d[index_m][index_z][index_y] += c2*ptsz->skyfracs[index_patches];
           d_completeness_2d_dq[index_m][index_z][index_y] += d_c2_dq*ptsz->skyfracs[index_patches];
         } // end loop patches
-      }//end ptsz->experiment = Planck
+    //  }//end ptsz->experiment = Planck
 
-      //The Simons Observatory
-      if(ptsz->experiment == 1){
-
-        double total_area = 0.;
-        //SO scaling relations
-        double Qp = pwl_value_1d ( ptsz->SO_Q_size, ptsz->SO_thetas, ptsz->SO_Qfit, thp );
-        //printf("Qp = %e\n", Qp);
-        double A = 4.95e-5;
-        double B = 0.08;
-        double t = -0.00848*pow(mp/(3.e14*70./(pba->h*100.))*Eh,-0.585);
-        double f_rel = 1. + 3.79*t -28.2*t*t;
-        double yp = A*pow(Eh,2.)*pow(mp/(3.e14*70./(pba->h*100.)),1.+B)*Qp*f_rel;
-        //y0_SO = A_a*(Eh(z)**2.)*((m2/(3.e14*msun*70./cosmopar%H0))**(1. + B_a))*Qfunc_SO(m*msun, z, theta, Q0)*relfn(m*msun, z)
-
-
-      int index_patches;
-      for (index_patches =0;index_patches<ptsz->SO_RMS_size;index_patches++){
-
-        double y = ptsz->SO_RMS[index_patches];
-
-        double c2 = erf_compl(yp,y,pcsz->sn_cutoff);
-        c2 *= erf_compl(yp,y,y_min);
-        c2 *= (1.-erf_compl(yp,y,y_max));
-
-        double d_c2_dq =  d_erf_compl_dq(yp,y,pcsz->sn_cutoff)
-                          *erf_compl(yp,y,y_min)
-                          *(1.-erf_compl(yp,y,y_max))
-                          +erf_compl(yp,y,pcsz->sn_cutoff)
-                          *d_erf_compl_dq(yp,y,y_min)
-                          *(1.-erf_compl(yp,y,y_max))
-                          +erf_compl(yp,y,pcsz->sn_cutoff)
-                          *erf_compl(yp,y,y_min)
-                          *(-d_erf_compl_dq(yp,y,y_max));
-
-        if (index_y == 0){
-          c2 = erf_compl(yp,y,pcsz->sn_cutoff);
-          c2 *= (1.-erf_compl(yp,y,y_max));
-
-          d_c2_dq = d_erf_compl_dq(yp,y,pcsz->sn_cutoff)
-                    *(1.-erf_compl(yp,y,y_max))
-                    +erf_compl(yp,y,pcsz->sn_cutoff)
-                    *(-d_erf_compl_dq(yp,y,y_max));
-
-        }
-
-        if (index_y == pcsz->Nbins_y){
-          c2 = erf_compl(yp,y,pcsz->sn_cutoff) ;
-          c2 *= erf_compl(yp,y,y_min);
-
-          d_c2_dq = d_erf_compl_dq(yp,y,pcsz->sn_cutoff)
-                    *erf_compl(yp,y,y_min)
-                    +erf_compl(yp,y,pcsz->sn_cutoff)
-                    *d_erf_compl_dq(yp,y,y_min);
-
-        }
-        //test 1d
-        y_min = 5.;
-        y_max = 1e4;
-        c2 = erf_compl(yp,y,pcsz->sn_cutoff) ;
-        //c2 *= erf_compl(yp,y,y_min);
-
-
-        //c2 =1.; //no selfn
-        completeness_2d[index_m][index_z][index_y] += c2*ptsz->SO_skyfrac[index_patches];
-        total_area += ptsz->SO_skyfrac[index_patches];
-        d_completeness_2d_dq[index_m][index_z][index_y] += d_c2_dq*ptsz->SO_skyfrac[index_patches];
-      } // end loop patches
-
-      //printf("total_area = %e\n",total_area);
-      completeness_2d[index_m][index_z][index_y] = completeness_2d[index_m][index_z][index_y]/total_area;
-    }//end ptsz->experiment = SO
-
+    //   //The Simons Observatory
+    //   if(ptsz->experiment == 1){
+    //
+    //     double total_area = 0.;
+    //     //SO scaling relations
+    //     double Qp = pwl_value_1d ( ptsz->SO_Q_size, ptsz->SO_thetas, ptsz->SO_Qfit, thp );
+    //     printf("Qp = %e\n", Qp);
+    //     double A = 4.95e-5;
+    //     double B = 0.08;
+    //     double t = -0.00848*pow(mp/(3.e14*70./(pba->h*100.))*Eh,-0.585);
+    //     double f_rel = 1. + 3.79*t -28.2*t*t;
+    //     double yp = A*pow(Eh,2.)*pow(mp/(3.e14*70./(pba->h*100.)),1.+B)*Qp*f_rel;
+    //     //y0_SO = A_a*(Eh(z)**2.)*((m2/(3.e14*msun*70./cosmopar%H0))**(1. + B_a))*Qfunc_SO(m*msun, z, theta, Q0)*relfn(m*msun, z)
+    //
+    //
+    //   int index_patches;
+    //   for (index_patches =0;index_patches<ptsz->SO_RMS_size;index_patches++){
+    //
+    //     double y = ptsz->SO_RMS[index_patches];
+    //
+    //     double c2 = erf_compl(yp,y,pcsz->sn_cutoff);
+    //     c2 *= erf_compl(yp,y,y_min);
+    //     c2 *= (1.-erf_compl(yp,y,y_max));
+    //
+    //     double d_c2_dq =  d_erf_compl_dq(yp,y,pcsz->sn_cutoff)
+    //                       *erf_compl(yp,y,y_min)
+    //                       *(1.-erf_compl(yp,y,y_max))
+    //                       +erf_compl(yp,y,pcsz->sn_cutoff)
+    //                       *d_erf_compl_dq(yp,y,y_min)
+    //                       *(1.-erf_compl(yp,y,y_max))
+    //                       +erf_compl(yp,y,pcsz->sn_cutoff)
+    //                       *erf_compl(yp,y,y_min)
+    //                       *(-d_erf_compl_dq(yp,y,y_max));
+    //
+    //     if (index_y == 0){
+    //       c2 = erf_compl(yp,y,pcsz->sn_cutoff);
+    //       c2 *= (1.-erf_compl(yp,y,y_max));
+    //
+    //       d_c2_dq = d_erf_compl_dq(yp,y,pcsz->sn_cutoff)
+    //                 *(1.-erf_compl(yp,y,y_max))
+    //                 +erf_compl(yp,y,pcsz->sn_cutoff)
+    //                 *(-d_erf_compl_dq(yp,y,y_max));
+    //
+    //     }
+    //
+    //     if (index_y == pcsz->Nbins_y){
+    //       c2 = erf_compl(yp,y,pcsz->sn_cutoff) ;
+    //       c2 *= erf_compl(yp,y,y_min);
+    //
+    //       d_c2_dq = d_erf_compl_dq(yp,y,pcsz->sn_cutoff)
+    //                 *erf_compl(yp,y,y_min)
+    //                 +erf_compl(yp,y,pcsz->sn_cutoff)
+    //                 *d_erf_compl_dq(yp,y,y_min);
+    //
+    //     }
+    //     //test 1d
+    //     y_min = 5.;
+    //     y_max = 1e4;
+    //     c2 = erf_compl(yp,y,pcsz->sn_cutoff) ;
+    //     //c2 *= erf_compl(yp,y,y_min);
+    //
+    //
+    //     //c2 =1.; //no selfn
+    //     completeness_2d[index_m][index_z][index_y] += c2*ptsz->SO_skyfrac[index_patches];
+    //     total_area += ptsz->SO_skyfrac[index_patches];
+    //     d_completeness_2d_dq[index_m][index_z][index_y] += d_c2_dq*ptsz->SO_skyfrac[index_patches];
+    //   } // end loop patches
+    //
+    //   //printf("total_area = %e\n",total_area);
+    //   completeness_2d[index_m][index_z][index_y] = completeness_2d[index_m][index_z][index_y]/total_area;
+    // }//end ptsz->experiment = SO
+    //
 
 
       }//end m loop
@@ -985,11 +1009,33 @@ int grid_C_2d(
         double theta500_for_mp_at_zp =  thetastar2 * pow(mp_bias/3.e14* (100./H0),pcsz->alpha_theta);
         theta500_for_mp_at_zp *=    pow(Eh,-2./3) *pow(100.*d_A/(500.0*H0),-1.);
         double thp = theta500_for_mp_at_zp;
+        // double ystar2 = pcsz->ystar;
+        // ystar2 *=  pow(H0/70.,-2.+pcsz->alpha);
+        // double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/3.e14* (100./H0),pcsz->alpha);
+        // y500_for_mp_at_zp *=   pow(Eh,pcsz->beta) *pow(100.*d_A/(500.0*H0),-2.);
+        // double yp = y500_for_mp_at_zp;
+        double yp;
+  if(ptsz->experiment == 0){
         double ystar2 = pcsz->ystar;
         ystar2 *=  pow(H0/70.,-2.+pcsz->alpha);
         double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/3.e14* (100./H0),pcsz->alpha);
         y500_for_mp_at_zp *=   pow(Eh,pcsz->beta) *pow(100.*d_A/(500.0*H0),-2.);
-        double yp = y500_for_mp_at_zp;
+        yp = y500_for_mp_at_zp;
+        }
+  else if (ptsz->experiment == 1){
+        // double A = 4.95e-5;
+        double A = 2.65e-5;
+        // double B = 0.08;
+        double B = 0.;
+        double t = -0.00848*pow(mp/(3.e14*70./(pba->h*100.))*Eh,-0.585);
+        double f_rel = 1. + 3.79*t -28.2*t*t;
+        yp = A*pow(Eh,2.)*pow(mp/(3.e14*70./(pba->h*100.)),1.+B)*f_rel;
+    //     //y0_SO = A_a*(Eh(z)**2.)*((m2/(3.e14*msun*70./cosmopar%H0))**(1. + B_a))*Qfunc_SO(m*msun, z, theta, Q0)*relfn(m*msun, z)
+    //
+  }
+
+
+
 
 
 
@@ -999,6 +1045,8 @@ int grid_C_2d(
           printf("->SZ_counts grid_C_2d debug 4, z = %.4e.\n",zp);
         int l1 = l_array[1];
         int l2 = l_array[2];
+        // printf("l1 = %d, l2 = %d\n",l1,l2);
+        // exit(0);
 
         double th1 = theta_array[1];
         double th2 = theta_array[2];
@@ -1016,13 +1064,17 @@ int grid_C_2d(
           printf("->SZ_counts grid_C_2d debug 5, z = %.4e.\n",zp);
 
         for (k=0;k<pcsz->Ny-1;k++){
+          // printf("k = %d int_comp1 = %e\n",k,int_comp);
           double y0=exp(lny);
+          // printf("k = %d int_comp2 = %e\n",k,int_comp);
           y=exp(lny+pcsz->dlny);
+          // printf("k = %d int_comp3 = %e\n",k,int_comp);
           double dy=y-y0;
+          // printf("k = %d int_comp4 = %e\n",k,int_comp);
           double arg0=((lny-mu)/(sqrt(2.)*pcsz->sigmaM));
+
           double win0=erfs[k][l1][index_y]+(erfs[k][l2][index_y]-erfs[k][l1][index_y])/(th2-th1)*(thp-th1);
           double win=erfs[k+1][l1][index_y]+(erfs[k+1][l2][index_y]-erfs[k+1][l1][index_y])/(th2-th1)*(thp-th1);
-
           double d_win0_dq=d_erfs_dq[k][l1][index_y]+(d_erfs_dq[k][l2][index_y]-d_erfs_dq[k][l1][index_y])/(th2-th1)*(thp-th1);
           double d_win_dq=d_erfs_dq[k+1][l1][index_y]+(d_erfs_dq[k+1][l2][index_y]-d_erfs_dq[k+1][l1][index_y])/(th2-th1)*(thp-th1);
           lny=lny+pcsz->dlny;
@@ -1032,12 +1084,13 @@ int grid_C_2d(
 
           double d_py_dq=(d_win0_dq*fac/y0*exp(-arg0*arg0)+d_win_dq*fac/y*exp(-arg*arg))*0.5;
           d_int_comp_dq=d_int_comp_dq+d_py_dq*dy;
+          // printf("k = %d int_comp15 = %e\n",k,int_comp);
         }
         if (int_comp > fsky) int_comp=fsky;
         if (int_comp < 0.) int_comp=0.;
         if (d_int_comp_dq > fsky) d_int_comp_dq=fsky; //TBC
         if (d_int_comp_dq < 0.) d_int_comp_dq=0.;
-        //printf("int_comp = %e\n",int_comp);
+        // printf("k = %d int_comp16 = %e\n",k,int_comp);
 
         completeness_2d[index_m][index_z][index_y] =int_comp;
         d_completeness_2d_dq[index_m][index_z][index_y] =d_int_comp_dq;
@@ -1076,8 +1129,16 @@ if (pcsz->sz_verbose > 0)
 
   double total_counts = 0.;
   for (j=0;j<pcsz->Nbins_z;j++){
+    if (j== 0) {
+        printf("snr (mid)\t");
+        for (i=0;i<pcsz->Nbins_y+1;i++){
+          printf("y=%.3e\t",pow(10,pcsz->logy[i]));
+        }
+        printf(" ------ \n");
+    }
       printf("z=%.3e\t",pcsz->z_center[j]);
     for (i=0;i<pcsz->Nbins_y+1;i++){
+
       total_counts += pcsz->dNdzdy_theoretical[j][i];
       printf("%e\t",pcsz->dNdzdy_theoretical[j][i]);
     }
@@ -1177,9 +1238,9 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
 
 //Planck cut_off = 6.;
 //SO cut_off = 5.;
-if(ptsz->experiment == 0) pcsz->sn_cutoff = 6.;
-if(ptsz->experiment == 1) pcsz->sn_cutoff = 5.;
-
+// if(ptsz->experiment == 0) pcsz->sn_cutoff = 6.;
+// if(ptsz->experiment == 1) pcsz->sn_cutoff = 5.;
+  pcsz->sn_cutoff = 5.;
   pcsz->alpha;
   pcsz->ystar = pow(10.,pcsz->ystar)/pow(2., pcsz->alpha)*0.00472724;//8.9138435358806980e-004;
   pcsz->beta = 0.66;
@@ -1223,10 +1284,18 @@ if(ptsz->experiment == 1) pcsz->sn_cutoff = 5.;
   //# Redshift bin parameters
   pcsz->z_0 = 0.;
   //pcsz->z_max : 1. for the Planck lkl (default), ste in param file.
+  if (ptsz->experiment == 0){
+    pcsz->z_max = 1.;
+  }
+  else if (ptsz->experiment == 1){
+    pcsz->z_max = 2.8;
+  }
   pcsz->dz = 0.1;
 
   pcsz->Nbins_z =floor((pcsz->z_max - pcsz->z_0)/pcsz->dz) + 1;
 
+// printf("%d\n",pcsz->Nbins_z);
+// exit(0);
   class_alloc(pcsz->z_center,pcsz->Nbins_z*sizeof(double),pcsz->error_message);
   int index_z;
   for (index_z = 0; index_z<pcsz->Nbins_z; index_z ++){
@@ -1267,12 +1336,21 @@ if(ptsz->experiment == 1) pcsz->sn_cutoff = 5.;
 
   //grid for y
   //# y bin parameters
-  //# Logymin corresponds to S/N = 6
-  //# Logymax corresponds to S/N = 32 (but the s/n is higher in the next to last bin)
+  //# Logymin corresponds to log10 of S/N_min (5 or 6)
+  //# Logymax corresponds to log10 of S/N_max  (~32 for planck) (but the s/n is higher in the next to last bin)
+  if (ptsz->experiment==0){
   pcsz->logy_min = 0.7;
   pcsz->logy_max = 1.5;
   pcsz->dlogy = 0.25;
+}
+else if (ptsz->experiment==1){
+  pcsz->logy_min = 0.6989700043360189;
+  pcsz->logy_max = 1.8124259665302023;
+  pcsz->dlogy = 0.1;
+}
   pcsz->Nbins_y = floor((pcsz->logy_max - pcsz->logy_min)/pcsz->dlogy)+1;
+  printf("%d\n",pcsz->Nbins_y);
+  //exit(0);
   class_alloc(pcsz->logy,(pcsz->Nbins_y+1)*sizeof(double),pcsz->error_message);
   int index_y;
   double y_i = pcsz->logy_min + pcsz->dlogy/2.;
@@ -1283,7 +1361,7 @@ if(ptsz->experiment == 1) pcsz->sn_cutoff = 5.;
   }
 
 
-  //noise??
+  //y_500 grid
   pcsz->lnymin = -11.5;
   pcsz->lnymax = 10.;
   pcsz->dlny = 0.05;

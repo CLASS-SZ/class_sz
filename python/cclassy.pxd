@@ -313,6 +313,11 @@ cdef extern from "class.h":
         int Nbins_z
         int Nbins_y
         double rho_m_at_z
+        double dlogy
+        double dz
+        double * z_center
+        double * logy
+
 
     cdef struct lensing:
         int has_tt
