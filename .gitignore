@@ -153,3 +153,6 @@ Makefile_stampede2
 python/setup_stampede2.py
 source/szpowerspectrum_bkp.c
 notebooks/SO_cluster_counts.ipynb
+minimal2.ini
+minimal2.ini
+minimal3.ini

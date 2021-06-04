@@ -98,12 +98,7 @@ struct nonlinear {
   double * ln_k;   /**< ln_k[index_k] = list of log(k) values */
 
 
-  //BB: added for class_sz
-  int ln_k_size_for_tSZ;
-  double k_per_decade_for_tSZ;
-  double k_min_for_pk_in_tSZ;
-  double k_max_for_pk_in_tSZ;
-  double * ln_k_for_tSZ;    
+ 
 
 
 

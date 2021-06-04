@@ -295,15 +295,7 @@ cdef extern from "class.h":
         short sz_verbose
 
     cdef struct szcount:
-        double * redshift
-        double * dndz
-        double ** dndmdz
         double ** dNdzdy_theoretical
-        double ** temp_0_theoretical
-        double ** temp_1_theoretical
-        double * dvdz
-        double * dndm_at_z
-        double * logM_at_z
         double ystar
         double alpha
         double sigmaM
@@ -388,7 +380,7 @@ cdef extern from "class.h":
     void background_free(void*)
     void nonlinear_free(void*)
     void szpowerspectrum_free(void*)
-    void szcount_free(void*)
+    void szcount_free(void*,void*)
 
     cdef int _FAILURE_
     cdef int _FALSE_

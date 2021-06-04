@@ -685,6 +685,10 @@ struct tszspectrum {
   double *skyfracs;
   int nskyfracs;
 
+  int Ny;
+  int Nth;
+  double * erfs_2d_to_1d_th_array;
+  double * erfs_2d_to_1d_y_array;
 
   double ** ylims;
   double * sky_averaged_ylims;
@@ -875,6 +879,14 @@ struct tszspectrum {
   int y_m_relation;
   double thetastar;
 
+  //BB: added for class_sz
+  int ln_k_size_for_tSZ;
+  double k_per_decade_for_tSZ;
+  double k_min_for_pk_in_tSZ;
+  double k_max_for_pk_in_tSZ;
+  double * ln_k_for_tSZ;
+
+
 int nsteps_m;
 int nsteps_z;
 
@@ -960,9 +972,17 @@ double * steps_m;
   short sz_verbose; /**< flag regulating the amount of information sent to standard output (none if set to zero) */
   short write_sz;  //do we need SZ quatitiies vs redshift? */
 
+  double bin_z_min_cluster_counts;
+  double bin_z_max_cluster_counts;
+  double bin_dz_cluster_counts;
+
+  double bin_dlog10_snr;
+
   short has_completeness_for_ps_SZ;
+  short has_completeness;
   short which_ps_sz;
   double H0_in_class_units;
+  double sky_area_deg2;
   int ell_sz;
   // Figure 7 of KS02 -> KS02
   // Planck 2015 effective multipoles -> P15

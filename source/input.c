@@ -1745,6 +1745,7 @@ int input_read_parameters(
       class_read_double("z_for_pk_hm",ptsz->z_for_pk_hm);
 
 
+      class_read_int("n_m_dndlnM",ptsz->n_m_dndlnM);
 
       //Redshift limits for the integration
       class_read_double("z1SZ",ptsz->z1SZ);
@@ -1778,7 +1779,17 @@ int input_read_parameters(
       //mass limits: h^-1 Msun
       class_read_double("M1SZ",ptsz->M1SZ);
       class_read_double("M2SZ",ptsz->M2SZ);
+      ptsz->M1SZ_dndlnM = ptsz->M1SZ;
+      ptsz->M2SZ_dndlnM = ptsz->M2SZ;
+      ptsz->z1SZ_dndlnM = ptsz->z1SZ;
+      ptsz->z2SZ_dndlnM = ptsz->z2SZ;
 
+      //mass limits: h^-1 Msun
+      class_read_double("M1SZ_dndlnM",ptsz->M1SZ_dndlnM);
+      class_read_double("M2SZ_dndlnM",ptsz->M2SZ_dndlnM);
+
+      class_read_double("z1SZ_dndlnM",ptsz->z1SZ_dndlnM);
+      class_read_double("z2SZ_dndlnM",ptsz->z2SZ_dndlnM);
 
 
       //number of mass bins for cov_Y-N:
@@ -1799,8 +1810,13 @@ int input_read_parameters(
       class_read_int("mass_dependent_bias",ptsz->mass_dependent_bias);
 
       class_read_int("experiment",ptsz->experiment);
+      class_read_double("bin_z_min_cluster_counts",ptsz->bin_z_min_cluster_counts);
+      class_read_double("bin_z_max_cluster_counts",ptsz->bin_z_max_cluster_counts);
+      class_read_double("bin_dz_cluster_counts",ptsz->bin_dz_cluster_counts);
+      class_read_double("bin_dlog10_snr",ptsz->bin_dlog10_snr);
+      class_read_double("sky area in deg2",ptsz->sky_area_deg2);
 
-      class_read_int("has_completeness_for_cc",pcsz->has_completeness);
+      class_read_int("has_selection_function",pcsz->has_completeness);
       class_read_int("mass_range",pcsz->mass_range);
 
 
@@ -1808,11 +1824,10 @@ int input_read_parameters(
       class_read_double("ystar",pcsz->ystar);
       class_read_double("alpha",pcsz->alpha);
       class_read_double("sigmaM",pcsz->sigmaM);
-      pcsz->ystar = pow(10.,pcsz->ystar)/pow(2., pcsz->alpha)*0.00472724; ////8.9138435358806980e-004;
+      //pcsz->ystar = pow(10.,pcsz->ystar)/pow(2., pcsz->alpha)*0.00472724; ////8.9138435358806980e-004;
 
       class_read_double("ystar_ym",ptsz->ystar_ym);
       class_read_double("alpha_ym",ptsz->alpha_ym);
-      ptsz->ystar_ym = pow(10.,ptsz->ystar_ym)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
       class_read_double("beta_ym",ptsz->beta_ym);
       class_read_double("sigmaM_ym",ptsz->sigmaM_ym);
 
@@ -1908,9 +1923,9 @@ int input_read_parameters(
       class_read_double("A_cn",ptsz->A_cn);
 
 
-      class_read_double("k_per_decade_class_sz",pnl->k_per_decade_for_tSZ);
-      class_read_double("k_min_for_pk_class_sz",pnl->k_min_for_pk_in_tSZ);
-      class_read_double("k_max_for_pk_class_sz",pnl->k_max_for_pk_in_tSZ);
+      class_read_double("k_per_decade_class_sz",ptsz->k_per_decade_for_tSZ);
+      class_read_double("k_min_for_pk_class_sz",ptsz->k_min_for_pk_in_tSZ);
+      class_read_double("k_max_for_pk_class_sz",ptsz->k_max_for_pk_in_tSZ);
 
 
       //BB: read the quantities to be computed by class_sz
@@ -2382,16 +2397,8 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
       }
-      if ((strstr(string1,"dndlnM") != NULL) ) {
-        ptsz->has_dndlnM =_TRUE_;
-        ppt->has_density_transfers=_TRUE_;
-        ppt->has_pk_matter = _TRUE_;
-        ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
-      }
-      if ((strstr(string1,"SZ_counts") != NULL) ) {
-        pcsz->has_sz_counts =_TRUE_;
+      if ((strstr(string1,"sz_cluster_counts") != NULL) ) {
+        // printf("counts\n");
         ptsz->has_sz_counts =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
@@ -2399,6 +2406,16 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
 
+      }
+
+      if ((strstr(string1,"dndlnM") != NULL) ) {
+        ptsz->has_dndlnM =_TRUE_;
+        //ptsz->has_sz_counts =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
       }
 
 
@@ -3956,6 +3973,7 @@ int input_read_parameters(
   }
 
     if (ptsz->has_sz_ps
+      + ptsz->has_sz_counts
       + ptsz->has_hmf
       + ptsz->has_pk_at_z_1h
       + ptsz->has_pk_at_z_2h
@@ -4757,7 +4775,7 @@ int input_default_params(
   ppt->z_max_pk = ptsz->z2SZ;
   psp->z_max_pk = ppt->z_max_pk;
 
-  ptsz->z1SZ_dndlnM = 0.;
+  ptsz->z1SZ_dndlnM = 1.e-5;
   ptsz->z2SZ_dndlnM = 4.;
   ptsz->N_redshift_dndlnM = 50;
 
@@ -4857,14 +4875,21 @@ int input_default_params(
   ptsz->cib_frequency_list=NULL;
 
 
-  ptsz->HSEbias = 1.2;
+  ptsz->HSEbias = 1.;
   ptsz->Ap = 0.1;
   ptsz->alpha_b = 0.7;
   ptsz->mass_dependent_bias = 0;
 
+  ptsz->bin_z_min_cluster_counts = 0.;
+  ptsz->bin_z_max_cluster_counts = 1.;
+  ptsz->bin_dz_cluster_counts = 0.1;
+
+  ptsz->bin_dlog10_snr = 0.25;
+
   pcsz->has_completeness = 0;
   pcsz->mass_range = 1;//szcount masses
   ptsz->experiment = 0; //planck
+  ptsz->sky_area_deg2 = 599.;
 
   ptsz->y_m_relation = 1; //0: planck, 1: act/so
 
@@ -4878,8 +4903,8 @@ int input_default_params(
   pcsz->alpha_theta = 1./3.;
 
   ptsz->ystar_ym = -0.186; //-0.186 ref. value in SZ_plus_priors.ini (cosmomc)
-  ptsz->alpha_ym = 1.789; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
-  ptsz->ystar_ym = pow(10.,ptsz->ystar_ym)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
+  ptsz->alpha_ym = 1.78; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
+  // ptsz->ystar_ym = pow(10.,-0.19)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
   ptsz->sigmaM_ym = 0.075; //in log10 see tab 1 of planck cc 2015 paper
   ptsz->beta_ym = 0.66;
   ptsz->thetastar = 6.997;
@@ -4902,9 +4927,9 @@ int input_default_params(
   ptsz->delta_cSZ = 1.6865;
 
 
-  pnl->k_per_decade_for_tSZ = 20.; //#default 40
-  pnl->k_min_for_pk_in_tSZ = 1.e-4; //#default 1.e-3
-  pnl->k_max_for_pk_in_tSZ = 5.e1; //#default 5
+  ptsz->k_per_decade_for_tSZ = 20.; //#default 40
+  ptsz->k_min_for_pk_in_tSZ = 1.e-4; //#default 1.e-3
+  ptsz->k_max_for_pk_in_tSZ = 5.e1; //#default 5
 
 
 
@@ -4971,7 +4996,6 @@ int input_default_params(
   ptsz->A_cn = 1.0;
 
   //ptsz->has_tszspectrum = _FALSE_;
-  pcsz->has_sz_counts = _FALSE_;
   ptsz->has_sz_counts = _FALSE_;
   ptsz->has_isw_lens = _FALSE_;
   ptsz->has_isw_tsz = _FALSE_;

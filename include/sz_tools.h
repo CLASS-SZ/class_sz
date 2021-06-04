@@ -170,6 +170,7 @@ double delta_to_delta_prime_nfw(
   double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl);
 
   double get_completeness_at_z_and_M(double z_asked, double m_asked, double * completeness_2d_to_1d, struct tszspectrum * ptsz);
+  double get_detection_proba_at_y_and_theta(double y_asked, double th_asked, double * erfs_2d_to_1d, struct tszspectrum * ptsz);
 
   double get_y_at_m_and_z(double m, double z, struct tszspectrum * ptsz, struct background * pba);
   double get_theta_at_m_and_z(double m, double z, struct tszspectrum * ptsz, struct background * pba);
@@ -208,6 +209,7 @@ int tabulate_m200m_to_m500c(struct background * pba,
   int spectra_sigma_prime(struct background * pba,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
+                          struct tszspectrum * ptsz,
                           double R,
                           double z,
                           double * sigma_prime);
@@ -216,6 +218,7 @@ int tabulate_m200m_to_m500c(struct background * pba,
                             struct background * pba,
                             struct primordial * ppm,
                             struct nonlinear * pnl,
+                            struct tszspectrum * ptsz,
                             double R,
                             double z,
                             double *sigma
@@ -224,6 +227,7 @@ int tabulate_m200m_to_m500c(struct background * pba,
   int spectra_sigma_ncdm(struct background * pba,
                          struct primordial * ppm,
                          struct nonlinear * pnl,
+                         struct tszspectrum * ptsz,
                          double R,
                          double z,
                          double *sigma);
@@ -231,6 +235,7 @@ int tabulate_m200m_to_m500c(struct background * pba,
   int spectra_sigma_ncdm_prime(struct background * pba,
                                struct primordial * ppm,
                                struct nonlinear * pnl,
+                               struct tszspectrum * ptsz,
                                double R,
                                double z,
                                double *sigma);

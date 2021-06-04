@@ -1013,7 +1013,11 @@ int read_Zhao_CM_init(
   // index_redshift++)
   // printf("C-M = %e\n",ptsz->CM_logC[index_redshift]);
   ///printf("C-M = %e\n", logC[ptsz->CM_redshift_size-1][ptsz->CM_logM_size-1]);
-
+  for (index_redshift=0;
+       index_redshift<ptsz->CM_redshift_size;
+       index_redshift++){
+         free(logC[index_redshift]);
+       }
   free(logC);
 
   return _SUCCESS_;
@@ -2303,7 +2307,7 @@ int spectra_vrms2(
   index_num=i;
 
   class_alloc(array_for_sigma,
-              pnl->ln_k_size_for_tSZ*index_num*sizeof(double),
+              ptsz->ln_k_size_for_tSZ*index_num*sizeof(double),
               pnl->error_message);
 
     //background quantities @ z:
@@ -2338,9 +2342,9 @@ int spectra_vrms2(
 
 
 
-      for (i=0;i<pnl->ln_k_size_for_tSZ;i++) {
-        k=exp(pnl->ln_k_for_tSZ[i]);
-        if (i == (pnl->ln_k_size_for_tSZ-1)) k *= 0.9999999;
+      for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
+        k=exp(ptsz->ln_k_for_tSZ[i]);
+        if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999;
 
     // //Input: wavenumber in 1/Mpc
     // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
@@ -2375,7 +2379,7 @@ int spectra_vrms2(
 //printf("ok z = %e\n",W);
   class_call(array_spline(array_for_sigma,
                           index_num,
-                          pnl->ln_k_size_for_tSZ,
+                          ptsz->ln_k_size_for_tSZ,
                           index_k,
                           index_y,
                           index_ddy,
@@ -2386,7 +2390,7 @@ int spectra_vrms2(
 //printf("ok z = %e\n",W);
   class_call(array_integrate_all_spline(array_for_sigma,
                                         index_num,
-                                        pnl->ln_k_size_for_tSZ,
+                                        ptsz->ln_k_size_for_tSZ,
                                         index_k,
                                         index_y,
                                         index_ddy,
@@ -2419,10 +2423,13 @@ int spectra_sigma_ncdm(
                        struct background * pba,
                        struct primordial * ppm,
                        struct nonlinear *pnl,
+                       struct tszspectrum * ptsz,
                        double R,
                        double z,
                        double * sigma
                        ) {
+
+    // printf("entering \n");
 
   double pk;
   double * pk_ic = NULL;
@@ -2452,19 +2459,19 @@ int spectra_sigma_ncdm(
   index_num=i;
 
   class_alloc(array_for_sigma,
-              pnl->ln_k_size_for_tSZ*index_num*sizeof(double),
+              ptsz->ln_k_size_for_tSZ*index_num*sizeof(double),
               pnl->error_message);
 
 
+  // printf("entering2 \n");
 
-
-  for (i=0;i<pnl->ln_k_size_for_tSZ;i++) {
-    k=exp(pnl->ln_k_for_tSZ[i]);
-    if (i == (pnl->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
+  for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
+    k=exp(ptsz->ln_k_for_tSZ[i]);
+    if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
     x=k*R;
     W=3./x/x/x*(sin(x)-x*cos(x));
 
-
+  // printf("entering4 %.3e \n",R);
 
    class_call(nonlinear_pk_at_k_and_z(
                                      pba,
@@ -2479,8 +2486,10 @@ int spectra_sigma_ncdm(
                                    ),
                                    pnl->error_message,
                                    pnl->error_message);
-
-    printf("pk sig =%.3e\n",pk);
+  // printf("entering5 jsjsjsjs %d \n",i);
+  //
+  //   printf("pk sig =%.3e\n",pk);
+  //   exit(0);
 
     array_for_sigma[i*index_num+index_k]=k;
     array_for_sigma[i*index_num+index_y]=k*k*pk*W*W;
@@ -2488,7 +2497,7 @@ int spectra_sigma_ncdm(
 
   class_call(array_spline(array_for_sigma,
                           index_num,
-                          pnl->ln_k_size_for_tSZ,
+                          ptsz->ln_k_size_for_tSZ,
                           index_k,
                           index_y,
                           index_ddy,
@@ -2499,7 +2508,7 @@ int spectra_sigma_ncdm(
 
   class_call(array_integrate_all_spline(array_for_sigma,
                                         index_num,
-                                        pnl->ln_k_size_for_tSZ,
+                                        ptsz->ln_k_size_for_tSZ,
                                         index_k,
                                         index_y,
                                         index_ddy,
@@ -2526,7 +2535,7 @@ int spectra_sigma_ncdm_prime(
                              struct background * pba,
                              struct primordial * ppm,
                              struct nonlinear *pnl,
-                             //struct tszspectrum * ptsz,
+                             struct tszspectrum * ptsz,
                              double R,
                              double z,
                              double * sigma_prime
@@ -2559,12 +2568,12 @@ int spectra_sigma_ncdm_prime(
   index_num=i;
 
   class_alloc(array_for_sigma,
-              pnl->ln_k_size_for_tSZ*index_num*sizeof(double),
+              ptsz->ln_k_size_for_tSZ*index_num*sizeof(double),
               pnl->error_message);
 
-  for (i=0;i<pnl->ln_k_size_for_tSZ;i++) {
-    k=exp(pnl->ln_k_for_tSZ[i]);
-    if (i == (pnl->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
+  for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
+    k=exp(ptsz->ln_k_for_tSZ[i]);
+    if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
     x=k*R;
     W=3./x/x/x*(sin(x)-x*cos(x));
     W_prime=3./x/x*sin(x)-9./x/x/x/x*(sin(x)-x*cos(x));
@@ -2592,7 +2601,7 @@ class_call(nonlinear_pk_at_k_and_z(
 
   class_call(array_spline(array_for_sigma,
                           index_num,
-                          pnl->ln_k_size_for_tSZ,
+                          ptsz->ln_k_size_for_tSZ,
                           index_k,
                           index_y,
                           index_ddy,
@@ -2603,7 +2612,7 @@ class_call(nonlinear_pk_at_k_and_z(
 
   class_call(array_integrate_all_spline(array_for_sigma,
                                         index_num,
-                                        pnl->ln_k_size_for_tSZ,
+                                        ptsz->ln_k_size_for_tSZ,
                                         index_k,
                                         index_y,
                                         index_ddy,
@@ -3097,14 +3106,6 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 + ptsz->has_kSZ_kSZ_gal_1h
 + ptsz->has_kSZ_kSZ_gal_2h
 + ptsz->has_kSZ_kSZ_gal_3h
-// + ptsz->has_lensmag_lensmag_1h
-// + ptsz->has_lensmag_lensmag_2h
-// + ptsz->has_lens_lensmag_1h
-// + ptsz->has_lens_lensmag_2h
-// + ptsz->has_gal_lensmag_1h
-// + ptsz->has_gal_lensmag_2h
-// + ptsz->has_tSZ_lensmag_1h
-// + ptsz->has_tSZ_lensmag_2h
 == _FALSE_
 )
   return 0;
@@ -3166,7 +3167,7 @@ for (index_z=0;
 }
 
 
-class_alloc(ptsz->array_profile_ln_rho_at_lnl_lnM_z,n_ell*sizeof(double **),ptsz->error_message);
+class_alloc(ptsz->array_profile_ln_rho_at_lnl_lnM_z,n_ell*sizeof(double *),ptsz->error_message);
 for (index_l=0;
      index_l<n_ell;
      index_l++)
@@ -3784,6 +3785,7 @@ int spectra_sigma_for_tSZ(
                           struct background * pba,
                           struct primordial * ppm,
                           struct nonlinear *pnl,
+                          struct tszspectrum * ptsz,
                           double R,
                           double z,
                           double * sigma
@@ -3812,12 +3814,12 @@ int spectra_sigma_for_tSZ(
   index_num=i;
 
   class_alloc(array_for_sigma,
-              pnl->ln_k_size_for_tSZ*index_num*sizeof(double),
+              ptsz->ln_k_size_for_tSZ*index_num*sizeof(double),
               pnl->error_message);
 
-  for (i=0;i<pnl->ln_k_size_for_tSZ;i++) {
-    k=exp(pnl->ln_k_for_tSZ[i]);
-    if (i == (pnl->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
+  for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
+    k=exp(ptsz->ln_k_for_tSZ[i]);
+    if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
     x=k*R;
     W=3./x/x/x*(sin(x)-x*cos(x));
 
@@ -3850,7 +3852,7 @@ int spectra_sigma_for_tSZ(
 
   class_call(array_spline(array_for_sigma,
                           index_num,
-                          pnl->ln_k_size_for_tSZ,
+                          ptsz->ln_k_size_for_tSZ,
                           index_k,
                           index_y,
                           index_ddy,
@@ -3861,7 +3863,7 @@ int spectra_sigma_for_tSZ(
 
   class_call(array_integrate_all_spline(array_for_sigma,
                                         index_num,
-                                        pnl->ln_k_size_for_tSZ,
+                                        ptsz->ln_k_size_for_tSZ,
                                         index_k,
                                         index_y,
                                         index_ddy,
@@ -3887,6 +3889,7 @@ int spectra_sigma_prime(
                         struct background * pba,
                         struct primordial * ppm,
                         struct nonlinear *pnl,
+                        struct tszspectrum * ptsz,
                         double R,
                         double z,
                         double * sigma_prime
@@ -3916,12 +3919,12 @@ int spectra_sigma_prime(
   index_num=i;
 
   class_alloc(array_for_sigma,
-              pnl->ln_k_size_for_tSZ*index_num*sizeof(double),
+              ptsz->ln_k_size_for_tSZ*index_num*sizeof(double),
               pnl->error_message);
 
-  for (i=0;i<pnl->ln_k_size_for_tSZ;i++) {
-    k=exp(pnl->ln_k_for_tSZ[i]);
-    if (i == (pnl->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
+  for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
+    k=exp(ptsz->ln_k_for_tSZ[i]);
+    if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
     x=k*R;
     W=3./x/x/x*(sin(x)-x*cos(x));
     W_prime=3./x/x*sin(x)-9./x/x/x/x*(sin(x)-x*cos(x));
@@ -3951,7 +3954,7 @@ int spectra_sigma_prime(
 
   class_call(array_spline(array_for_sigma,
                           index_num,
-                          pnl->ln_k_size_for_tSZ,
+                          ptsz->ln_k_size_for_tSZ,
                           index_k,
                           index_y,
                           index_ddy,
@@ -3962,7 +3965,7 @@ int spectra_sigma_prime(
 
   class_call(array_integrate_all_spline(array_for_sigma,
                                         index_num,
-                                        pnl->ln_k_size_for_tSZ,
+                                        ptsz->ln_k_size_for_tSZ,
                                         index_k,
                                         index_y,
                                         index_ddy,
@@ -4182,8 +4185,8 @@ int load_unbinned_nl_yy(struct tszspectrum * ptsz)
 
 // don't load  if none of the following are required:
 if ( (ptsz->include_noise_cov_y_y != 1 )){
-  if (ptsz->sz_verbose>=1)
-    printf("-> noise curve for yxy covariance not requested\n");
+  // if (ptsz->sz_verbose>=1)
+  //   printf("-> noise curve for yxy covariance not requested\n");
   return 0;
 }
 
@@ -5899,7 +5902,7 @@ double integrand_redshift(double ln1pz, void *p){
                                         *V->pvecback[V->pba->index_bg_rho_crit]
                                         /pow(V->pba->h,2);
 
-  double Eh = V->pvecback[V->pba->index_bg_H]/V->ptsz->H0_in_class_units;
+  double Eh = V->pvecback[V->pba->index_bg_H]/V->pba->H0;
   double omega = V->pvecback[V->pba->index_bg_Omega_m];//pow(Eh,2.);
   V->pvectsz[V->ptsz->index_Delta_c] = Delta_c_of_Omega_m(omega);
 
@@ -7556,12 +7559,12 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
 
   // status = pclose(process);
   status = fclose(process);
-    printf("Loading theta file 2\n");
+    // printf("Loading theta file 2\n");
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
              "Try doing it by hand to check for errors.");
-    printf("Loading theta file 3\n");
+    // printf("Loading theta file 3\n");
 
   ptsz->nthetas = n_data;
 
@@ -7584,8 +7587,17 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
       //location = c+1;
     }
   }
-  printf("theta_bin_max:=%e\n",ptsz->theta_bin_max);
-  printf("theta_bin_min:=%e\n",ptsz->theta_bin_min);
+  // printf("theta_bin_max:=%e\n",ptsz->theta_bin_max);
+  // printf("theta_bin_min:=%e\n",ptsz->theta_bin_min);
+
+  ptsz->Nth = ptsz->nthetas;
+  class_alloc(ptsz->erfs_2d_to_1d_th_array,ptsz->Nth*sizeof(double *),ptsz->error_message);
+
+
+  for (c = 0; c < ptsz->Nth; c++){
+    ptsz->erfs_2d_to_1d_th_array[c] = log(ptsz->thetas[c]);
+
+  }
 
   ///////////////////////////end read theta file
 
@@ -7598,7 +7610,7 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   if (ptsz->sz_verbose >= 3){
     printf("theta file loaded with ntheta = %d\n",ptsz->nthetas);
   }
-  printf("Loading theta file 2\n");
+  // printf("Loading theta file 2\n");
 
   n_data = 0;
   n_data_guess = 100;
@@ -8831,6 +8843,9 @@ for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
   }
 }
 
+for (index_nu=0;index_nu<ptsz->cib_frequency_list_num;index_nu++){
+  free(array_L_sat_at_z_and_M_at_nu[index_nu]);
+}
   free(array_L_sat_at_z_and_M_at_nu);
   //free(array_L_sat_at_z_and_M_at_nu_prime);
 
@@ -8851,6 +8866,10 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct primordial * ppm,
                                       struct tszspectrum * ptsz){
 
+if (ptsz->need_hmf == 0)
+  return 0;
+
+// printf("need_hmf2 = %d\n",ptsz->need_hmf);
    // bounds array of radii for sigma computations:
    ptsz->logR1SZ = log(pow(3.*0.1*1e6/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
    ptsz->logR2SZ = log(pow(3.*10.*1e17/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
@@ -8867,8 +8886,8 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
 
   double tstart, tstop;
   int index_l;
-  double * sigma_var;
-  double * dsigma_var;
+  // double * sigma_var;
+  // double * dsigma_var;
   int abort;
 
   //Array of R in Mpc
@@ -8931,7 +8950,7 @@ int number_of_threads= 1;
 #pragma omp parallel \
 shared(abort,index_z_R,\
 pba,ptsz,ppm,pnl,z_min,z_max,logR_min,logR_max)\
-private(tstart, tstop,index_R,index_z,sigma_var,dsigma_var) \
+private(tstart, tstop,index_R,index_z) \
 num_threads(number_of_threads)
 {
 
@@ -8939,13 +8958,13 @@ num_threads(number_of_threads)
   tstart = omp_get_wtime();
 #endif
 
-  class_alloc_parallel(sigma_var,
-                       sizeof(double *),
-                       ptsz->error_message);
-
-  class_alloc_parallel(dsigma_var,
-                       sizeof(double *),
-                       ptsz->error_message);
+  // class_alloc_parallel(sigma_var,
+  //                      sizeof(double *),
+  //                      ptsz->error_message);
+  //
+  // class_alloc_parallel(dsigma_var,
+  //                      sizeof(double *),
+  //                      ptsz->error_message);
 
 
 #pragma omp for schedule (dynamic)
@@ -8953,6 +8972,7 @@ num_threads(number_of_threads)
   {
 #pragma omp flush(abort)
 
+    double sigma_var,dsigma_var;
     ptsz->array_radius[index_R] =
                                 logR_min
                                 +index_R*(logR_max-logR_min)
@@ -8968,50 +8988,62 @@ num_threads(number_of_threads)
 
   if (ptsz->need_hmf == 1){
       if (ptsz->HMF_prescription_NCDM == 2) //No-pres
-        spectra_sigma_for_tSZ( pba,
+        spectra_sigma_for_tSZ(pba,
                               ppm,
                               pnl,
+                              ptsz,
                               exp(ptsz->array_radius[index_R]),
                               exp(ptsz->array_redshift[index_z])-1.,
-                              sigma_var//&sigma_at_z_and_R
+                              &sigma_var//&sigma_at_z_and_R
                               );
       else
         spectra_sigma_ncdm( pba,
                            // spectra_sigma_ncdm( pba,
                            ppm,
                            pnl,
-                           //ptsz,
+                           ptsz,
                            exp(ptsz->array_radius[index_R]),
                            exp(ptsz->array_redshift[index_z])-1.,
-                           sigma_var//&sigma_at_z_and_R
+                           &sigma_var//&sigma_at_z_and_R
                            );
 
+// printf("need_hmf2 = %.4e\n",ptsz->need_hmf);
 
 
       //ptsz->array_sigma_at_z_and_R[index_z_R] = log(*sigma_var);//sigma_at_z_and_R); //log(sigma)
-      array_sigma_at_z_and_R[index_z][index_R] = log(*sigma_var);//sigma_at_z_and_R); //log(sigma)
+      array_sigma_at_z_and_R[index_z][index_R] = log(sigma_var);//sigma_at_z_and_R); //log(sigma)
+      // printf("s=%.6e r=%.6e z=%.6e\n",
+      // array_sigma_at_z_and_R[index_z][index_R],
+      // exp(ptsz->array_radius[index_R]),
+      // exp(ptsz->array_redshift[index_z])-1.);
+      // exit(0);
+
 
       if (ptsz->HMF_prescription_NCDM == 2) //No-pres
         spectra_sigma_prime( pba,
                             ppm,
                             pnl,
+                            ptsz,
                             exp(ptsz->array_radius[index_R]),
                             exp(ptsz->array_redshift[index_z])-1.,
-                            dsigma_var//&dsigma2dR_at_z_and_R
+                            &dsigma_var//&dsigma2dR_at_z_and_R
                             );
       else
         spectra_sigma_ncdm_prime( pba,
                                  ppm,
                                  pnl,
+                                 ptsz,
                                  exp(ptsz->array_radius[index_R]),
                                  exp(ptsz->array_redshift[index_z])-1.,
-                                 dsigma_var
+                                 &dsigma_var
                                  );
 
-      // printf("dsigma2dR=%.3e\n",*dsigma_var);
+      // printf("dsigma2dR=%.3e\n",dsigma_var);
 
-      array_dsigma2dR_at_z_and_R[index_z][index_R] = *dsigma_var;
+      array_dsigma2dR_at_z_and_R[index_z][index_R] = dsigma_var;
 
+      // array_sigma_at_z_and_R[index_z][index_R] = 0.;
+      // array_dsigma2dR_at_z_and_R[index_z][index_R] =  0.;
                          }
       else {
         array_sigma_at_z_and_R[index_z][index_R] = 0.;
@@ -9027,8 +9059,8 @@ num_threads(number_of_threads)
            __func__,tstop-tstart,omp_get_thread_num());
 #endif
 
-    free(sigma_var);
-    free(dsigma_var);
+    // free(sigma_var);
+    // free(dsigma_var);
     }
 if (abort == _TRUE_) return _FAILURE_;
 //end of parallel region
@@ -9043,6 +9075,18 @@ for (index_R=0; index_R<ptsz->ndimSZ; index_R++)
     index_z_R += 1;
   }
 }
+
+
+
+// freeing memory
+for (index_l=0;
+     index_l<ptsz->n_arraySZ;
+     index_l++)
+{
+  free(array_sigma_at_z_and_R[index_l]);
+  free(array_dsigma2dR_at_z_and_R[index_l]);
+}
+
 
   free(array_sigma_at_z_and_R);
   free(array_dsigma2dR_at_z_and_R);
@@ -9065,8 +9109,8 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
   + ptsz->has_tSZ_lensmag_2h
   + ptsz->has_lensmag_lensmag_1h
   + ptsz->has_lensmag_lensmag_2h == _FALSE_){
-    if (ptsz->sz_verbose>=1)
-    printf("-> Not tabulating Wz for lensing magnification\n");
+    // if (ptsz->sz_verbose>=1)
+    // printf("-> Not tabulating Wz for lensing magnification\n");
     return 0;
   }
 
@@ -9102,6 +9146,7 @@ printf("-> start tabulating Wz for lensing magnification\n");
     int first_index_back = 0;
     double tau;
 
+    // printf("-> start tabulating Wz for lensing magnification\n");
 
     class_call(background_tau_of_z(pba,z,&tau),
                pba->error_message,
@@ -9121,7 +9166,7 @@ printf("-> start tabulating Wz for lensing magnification\n");
 
     // printf("-> doing tabulating Wz for lensing magnification\n");
 
-    //printf("-> Computing integral at z=%.3e\n",z);
+    // printf("-> Computing integral at z=%.3e\n",z);
     double result;
     redshift_int_lensmag(ptsz,pba,pvectsz,&result);
       // printf("-> 2 doing tabulating Wz for lensing magnification\n");
@@ -9132,7 +9177,8 @@ printf("-> start tabulating Wz for lensing magnification\n");
     // printf("-> integral z = %.3e W = =%.3e\n",z,exp(ptsz->array_W_lensmag[index_z]));
 }
 
-// printf("-> end tabulating Wz for lensing magnification\n");
+if (ptsz->sz_verbose>=1)
+printf("-> end tabulating Wz for lensing magnification\n");
  free(pvectsz);
  free(pvecback);
 }
@@ -9333,7 +9379,12 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
   }
 }
 
-  free(array_dndlnM_at_z_and_M);
+
+// freeing memory:
+for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++){
+  free(array_dndlnM_at_z_and_M[index_z]);
+}
+free(array_dndlnM_at_z_and_M);
 
 return _SUCCESS_;
 }
@@ -9518,7 +9569,12 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
   }
 }
 
-  free(array_m200m_to_m500c_at_z_and_M);
+// freeing memory
+for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++)
+{
+free(array_m200m_to_m500c_at_z_and_M[index_z]);
+}
+free(array_m200m_to_m500c_at_z_and_M);
 
 return _SUCCESS_;
 }
@@ -9541,8 +9597,8 @@ return _SUCCESS_;
   int abort;
 
   //Array of M in Msun/h
-  double logk_min = pnl->ln_k_for_tSZ[0]; //in Msun/h
-  double logk_max = pnl->ln_k_for_tSZ[pnl->ln_k_size_for_tSZ-1]; //in Msun/h
+  double logk_min = ptsz->ln_k_for_tSZ[0]; //in Msun/h
+  double logk_max = ptsz->ln_k_for_tSZ[ptsz->ln_k_size_for_tSZ-1]; //in Msun/h
   int index_k;
 
   int index_z_k = 0;
@@ -9552,7 +9608,7 @@ return _SUCCESS_;
 
 
 class_alloc(ptsz->array_nl_index_at_z_and_k,
-            sizeof(double *)*ptsz->n_arraySZ*pnl->ln_k_size_for_tSZ,
+            sizeof(double *)*ptsz->n_arraySZ*ptsz->ln_k_size_for_tSZ,
             ptsz->error_message);
 
 
@@ -9566,7 +9622,7 @@ for (index_l=0;
      index_l++)
 {
   class_alloc(array_nl_index_at_z_and_k[index_l],
-              pnl->ln_k_size_for_tSZ*sizeof(double),
+              ptsz->ln_k_size_for_tSZ*sizeof(double),
               ptsz->error_message);
 }
 
@@ -9606,12 +9662,12 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
 
 #pragma omp flush(abort)
 
-for (index_k=0; index_k<pnl->ln_k_size_for_tSZ; index_k++)
+for (index_k=0; index_k<ptsz->ln_k_size_for_tSZ; index_k++)
 {
 
       //background quantities @ z:
       double z =   exp(ptsz->array_redshift[index_z])-1.;
-      double logk =   pnl->ln_k_for_tSZ[index_k];
+      double logk =   ptsz->ln_k_for_tSZ[index_k];
 
 
       // double tau;
@@ -9724,7 +9780,7 @@ if (abort == _TRUE_) return _FAILURE_;
 //end of parallel region
 
 index_z_k = 0;
-for (index_k=0; index_k<pnl->ln_k_size_for_tSZ; index_k++)
+for (index_k=0; index_k<ptsz->ln_k_size_for_tSZ; index_k++)
 {
   for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
   {
@@ -9733,6 +9789,9 @@ for (index_k=0; index_k<pnl->ln_k_size_for_tSZ; index_k++)
   }
 }
 
+for (index_z=0; index_z<ptsz->n_arraySZ; index_z++){
+free(array_nl_index_at_z_and_k[index_z]);
+}
   free(array_nl_index_at_z_and_k);
 
 return _SUCCESS_;
@@ -9836,15 +9895,15 @@ double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct tszspectru
  if (z_asked>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
     z =  ptsz->array_redshift[ptsz->n_arraySZ-1];
 
- if (k_asked<exp(pnl->ln_k_for_tSZ[0]))
-    k =  pnl->ln_k_for_tSZ[0];
- if (k_asked>exp(pnl->ln_k_for_tSZ[pnl->ln_k_size_for_tSZ-1]))
-    k =  pnl->ln_k_for_tSZ[pnl->ln_k_size_for_tSZ-1];
+ if (k_asked<exp(ptsz->ln_k_for_tSZ[0]))
+    k =  ptsz->ln_k_for_tSZ[0];
+ if (k_asked>exp(ptsz->ln_k_for_tSZ[ptsz->ln_k_size_for_tSZ-1]))
+    k =  ptsz->ln_k_for_tSZ[ptsz->ln_k_size_for_tSZ-1];
 
  return pwl_interp_2d(ptsz->n_arraySZ,
-                      pnl->ln_k_size_for_tSZ,
+                      ptsz->ln_k_size_for_tSZ,
                       ptsz->array_redshift,
-                      pnl->ln_k_for_tSZ,
+                      ptsz->ln_k_for_tSZ,
                       ptsz->array_nl_index_at_z_and_k,
                       1,
                       &z,
@@ -9853,6 +9912,11 @@ double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct tszspectru
 
 
 double get_completeness_at_z_and_M(double z_asked, double m_asked, double * completeness_2d_to_1d, struct tszspectrum * ptsz){
+  if (ptsz->has_completeness == 0){
+    return 1.;
+  }
+  else{
+
   double z = z_asked;
 
   double m = log(m_asked);
@@ -9873,9 +9937,87 @@ double get_completeness_at_z_and_M(double z_asked, double m_asked, double * comp
                           1,
                           &m,
                           &z));
+
+  }
 }
 
 
+
+double get_detection_proba_at_y_and_theta(double y_asked, double th_asked, double * erfs_2d_to_1d, struct tszspectrum * ptsz){
+  double y = log(y_asked);
+  double th = log(th_asked);
+  double r = 0.;
+  // printf("z = %.3e m = %.3e logm = %.4e mmin = %.4e mmax = %,4e\n",z_asked,m_asked,m,ptsz->steps_m[0],ptsz->steps_m[ptsz->nsteps_m-1]);
+  if (y < ptsz->erfs_2d_to_1d_y_array[0]){
+    r = 0.;}
+  else if (y > ptsz->erfs_2d_to_1d_y_array[ptsz->Ny-1]){
+    r = 0.;}
+
+  else if (th < ptsz->erfs_2d_to_1d_th_array[0]){
+    double th1 = ptsz->erfs_2d_to_1d_th_array[0];
+    double th2 = ptsz->erfs_2d_to_1d_th_array[1];
+    double r1 = exp(pwl_interp_2d( ptsz->Ny,
+                          ptsz->Nth,
+                          ptsz->erfs_2d_to_1d_y_array,
+                          ptsz->erfs_2d_to_1d_th_array,
+                          erfs_2d_to_1d,
+                          1,
+                          &y,
+                          &th1));
+    double r2 = exp(pwl_interp_2d( ptsz->Ny,
+                          ptsz->nthetas,
+                          ptsz->erfs_2d_to_1d_y_array,
+                          ptsz->erfs_2d_to_1d_th_array,
+                          erfs_2d_to_1d,
+                          1,
+                          &y,
+                          &th2));
+    r = r1 + (r2 - r1)/(exp(th2)-exp(th1))*(exp(th)-exp(th1));
+
+  }
+  else if (th > ptsz->erfs_2d_to_1d_th_array[ptsz->Nth-1]){
+    double th1 = ptsz->erfs_2d_to_1d_th_array[ptsz->Nth-1];
+    double th2 = ptsz->erfs_2d_to_1d_th_array[ptsz->Nth-2];
+    double r1 = exp(pwl_interp_2d( ptsz->Ny,
+                          ptsz->Nth,
+                          ptsz->erfs_2d_to_1d_y_array,
+                          ptsz->erfs_2d_to_1d_th_array,
+                          erfs_2d_to_1d,
+                          1,
+                          &y,
+                          &th1));
+    double r2 = exp(pwl_interp_2d( ptsz->Ny,
+                          ptsz->Nth,
+                          ptsz->erfs_2d_to_1d_y_array,
+                          ptsz->erfs_2d_to_1d_th_array,
+                          erfs_2d_to_1d,
+                          1,
+                          &y,
+                          &th2));
+    r = r1 + (r2 - r1)/(exp(th2)-exp(th1))*(exp(th)-exp(th1));
+
+}
+
+  else{
+  // r = exp(pwl_interp_2d(ptsz->nthetas,
+  //                         ptsz->Ny,
+  //                         ptsz->thetas,
+  //                         ptsz->erfs_2d_to_1d_y_array,
+  //                         erfs_2d_to_1d,
+  //                         1,
+  //                         &th,
+  //                         &y));
+  r = exp(pwl_interp_2d( ptsz->Ny,
+                          ptsz->Nth,
+                          ptsz->erfs_2d_to_1d_y_array,
+                          ptsz->erfs_2d_to_1d_th_array,
+                          erfs_2d_to_1d,
+                          1,
+                          &y,
+                          &th));
+                        }
+  return r;
+}
 
 
 double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){
@@ -10078,11 +10220,18 @@ if (ptsz->y_m_relation == 1){
         yp = A*pow(Eh,2.)*pow(mp_bias/(3.e14*70./(pba->h*100.)),1.+B)*f_rel;
       }
 else if (ptsz->y_m_relation == 0){
-        double ystar2 = ptsz->ystar_ym;
+
+        double ystar2 = pow(10.,ptsz->ystar_ym)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
+
         ystar2 *=  pow(H0/70.,-2.+ptsz->alpha_ym);
         double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/3.e14* (100./H0),ptsz->alpha_ym);
         y500_for_mp_at_zp *=   pow(Eh,ptsz->beta_ym) *pow(100.*d_A/(500.0*H0),-2.);
+
+
         yp = y500_for_mp_at_zp;
+
+
+
 }
 
 free(pvecback);

@@ -19,27 +19,19 @@ struct szcount {
 
   int nzSZ;
   //double * dndz;
-  double ** dndlnM;
 
-  double ** dNdzdy_theoretical;
-  double ** dNdzdm_theoretical;
-
-  double ** temp_0_theoretical;
-  double ** temp_1_theoretical;
-
-  double * dvdz;
   double * redshift;
   double * z_center;
   double * steps_m;
   double * steps_z;
   double * logy;
+  double ** dNdzdy_theoretical;
   int nsteps_m;
   int Nbins_z;
   int Nbins_y;
   int Ny;
-  short sz_verbose;
+
   double redshift_for_dndm;
-  double * logM_at_z;
 
   double ystar;
   double alpha;
@@ -52,7 +44,6 @@ struct szcount {
   int size_logM;
 
   double rho_m_at_z;
-  int has_sz_counts;
   int has_completeness;
   int mass_range;
 
@@ -97,16 +88,14 @@ extern "C" {
                    struct szcount * pcsz);
 
 
-int szcount_free(struct szcount * pcsz);
+int szcount_free(struct szcount * pcsz,struct tszspectrum * ptsz);
 
 
 int compute_count_sz(struct background * pba,
                      struct nonlinear * pnl,
                      struct primordial * ppm,
                      struct tszspectrum * ptsz,
-                     struct szcount * pcsz,
-                     double * pvecback,
-                     double * Pvectsz);
+                     struct szcount * pcsz);
 
   int grid_C_2d(double * pvecsz,
                 struct background *pba,
@@ -115,12 +104,12 @@ int compute_count_sz(struct background * pba,
                 struct tszspectrum * ptsz,
                 struct szcount * pcsz);
 
-  int write_output_cluster_counts(struct szcount * pcsz);
+  int write_output_cluster_counts(struct szcount * pcsz, struct tszspectrum * ptsz);
   int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount * pcsz);
   int find_theta_bin(struct tszspectrum * ptsz, double thp, int * l_array, double * theta_array);
 double integrand_cluster_counts_redshift(double z, void *p);
 double integrand_cluster_counts_mass(double lnm, void *p);
-
+double integrand_cluster_counts_completeness(double lny, void *p);
 struct Parameters_for_integrand_cluster_counts_redshift{
   struct tszspectrum * ptsz;
   struct background * pba;
@@ -132,6 +121,15 @@ struct Parameters_for_integrand_cluster_counts_mass{
   struct background * pba;
   double * completeness_2d_to_1d;
   double z;
+};
+
+struct Parameters_for_integrand_cluster_counts_completeness{
+  struct tszspectrum * ptsz;
+  double * erfs_2d_to_1d;
+  double theta;
+  double theta1;
+  double theta2;
+  double y;
 };
 
 

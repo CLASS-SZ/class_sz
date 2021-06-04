@@ -210,7 +210,7 @@ cdef class Class:
         if(self.allocated != True):
           return
         if "szcount" in self.ncp: #BB: added for class_sz
-            szcount_free(&self.csz)
+            szcount_free(&self.csz,&self.tsz)
         if "szpowerspectrum" in self.ncp:  #BB: added for class_sz
             szpowerspectrum_free(&self.tsz)
         if "lensing" in self.ncp:
@@ -456,11 +456,10 @@ cdef class Class:
 
         if "szcount" in level:
             if szcount_init(&(self.ba), &(self.nl), &(self.pm),
-            &(self.tsz), &(self.csz)) == _FAILURE_:
+            &(self.tsz),&(self.csz)) == _FAILURE_:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.tsz.error_message)
             self.ncp.add("szcount")
-
 
 
         self.computed = True
@@ -1618,18 +1617,6 @@ cdef class Class:
 
 
 
-    def redshift_count(self):
-        """
-        (SZ) Return the redshift table
-
-        """
-        redshift = {}
-
-        for index in range(self.csz.nzSZ):
-            redshift[index] = self.csz.redshift[index]
-
-        return redshift
-
     def get_dndlnM_at_z_and_M(self,z,m):
         return get_dndlnM_at_z_and_M(z,m,&self.tsz)
 
@@ -1664,29 +1651,6 @@ cdef class Class:
     def get_nu_at_z_and_m(self,z,m):
         return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)
 
-#    def dndz_count(self):
-#        """
-#        (SZ) Return the dndz
-#        """
-#        dndz = {}
-#
-#        for index in range(self.csz.nzSZ):
-#            dndz[index] = self.csz.dndz[index]
-#
-#        return dndz
-
-
-#    def dndmdz_count(self):
-#        """
-#        (SZ) Return the dndmdz
-#        """
-#        dndmdz =  defaultdict(list)
-#        cdef int index_m,index_z
-#
-#        for index_z in range(self.csz.nzSZ):
-#             for index_m in range(self.csz.size_logM):
-#                dndmdz[index_m].append(self.csz.dndmdz[index_m][index_z])
-#        return dndmdz
 
 
     def dndzdy_theoretical(self):
@@ -1717,62 +1681,6 @@ cdef class Class:
         log10y_edges.append(self.csz.logy[self.csz.Nbins_y]+0.5*self.csz.dlogy)
         return {'dndzdy':dndzdy,'z_center':z_center,'z_edges':z_edges,'log10y_center':log10y_center,'log10y_edges':log10y_edges}
 
-
-
-    def temp_0_theoretical(self):
-        """
-        (SZ) Return the temp_0 theoretical
-        """
-        dndzdy =  defaultdict(list)
-        cdef int index_y,index_z
-
-        for index_z in range(self.csz.Nbins_z):
-            for index_y in range(self.csz.Nbins_y +1):
-                dndzdy[index_z].append(self.csz.temp_0_theoretical[index_z][index_y])
-        return dndzdy
-
-
-    def temp_1_theoretical(self):
-        """
-        (SZ) Return the temp_1 theoretical
-        """
-        dndzdy =  defaultdict(list)
-        cdef int index_y,index_z
-
-        for index_z in range(self.csz.Nbins_z):
-            for index_y in range(self.csz.Nbins_y +1):
-                dndzdy[index_z].append(self.csz.temp_1_theoretical[index_z][index_y])
-        return dndzdy
-
-
-
-    def dvdz_count(self):
-        """
-        (SZ) Return the dvdz
-        """
-        dvdz = {}
-
-        for index in range(self.csz.nzSZ):
-            dvdz[index] = self.csz.dvdz[index]
-
-        return dvdz
-
-    def logM_at_z_count(self):
-        """
-        (SZ) Return dndlnM for a given redshift
-        """
-        logM_at_z = {}
-
-        for index in range(self.csz.size_logM):
-            logM_at_z[index] = self.csz.logM_at_z[index]
-
-        return logM_at_z
-
-    def rho_m_at_z_count(self):
-        """
-        (SZ) Return mean density at the given redshift
-        """
-        return self.csz.rho_m_at_z
 
     def get_background(self):
         """
