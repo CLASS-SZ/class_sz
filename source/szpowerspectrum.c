@@ -127,6 +127,7 @@ int szpowerspectrum_init(
 
 
 
+
    // rho_nfw loaded only if lens/kSZ requested, see func. def.
    // load_rho_nfw_profile(ptsz);
 
@@ -137,9 +138,9 @@ int szpowerspectrum_init(
 
    tabulate_L_sat_at_nu_and_nu_prime(pba,ptsz);
 
+  // printf("tabulating dndlnM quantities %d\n",ptsz->has_sigma2_hsv);
    if (ptsz->has_sigma2_hsv)
    tabulate_sigma2_hsv_from_pk(pba,pnl,ppm,ptsz);
-
 
 
 
@@ -153,6 +154,7 @@ int szpowerspectrum_init(
    // of Tinker et al 2010 HMF
    if (ptsz->MF==1 && ptsz->hm_consistency==2)
    load_T10_alpha_norm(ptsz);
+   // printf("tabulating dndlnM quantities 0\n");
 
    tabulate_hmf_counter_terms_nmin(pba,pnl,ppm,ptsz);
    tabulate_hmf_counter_terms_b1min(pba,pnl,ppm,ptsz);
@@ -161,6 +163,8 @@ int szpowerspectrum_init(
    // tabulate_hmf_counter_terms_nmin(pba,pnl,ppm,ptsz);
    // tabulate_hmf_counter_terms_b1min(pba,pnl,ppm,ptsz);
    tabulate_hmf_counter_terms_b2min(pba,pnl,ppm,ptsz);
+   // printf("tabulating dndlnM quantities -1\n");
+
    ptsz->hm_consistency_counter_terms_done = 1;
    if (ptsz->sz_verbose>10){
    printf("counter terms\n");
@@ -178,10 +182,13 @@ int szpowerspectrum_init(
   }
   }
    // exit(0);
+   // printf("tabulating dndlnM quantities 1\n");
 
 
    if (ptsz->has_dndlnM == 1 || ptsz->has_sz_counts){
+
    tabulate_dndlnM(pba,pnl,ppm,ptsz);
+   // printf("tabulating dndlnM quantities\n");
 
    // for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++){
    // double z =  exp(ptsz->array_redshift_hmf_counter_terms[index_z])-1.;
@@ -194,7 +201,6 @@ int szpowerspectrum_init(
    if (ptsz->has_vrms2)
    tabulate_vrms2_from_pk(pba,pnl,ppm,ptsz);
 
-   // printf("tabulating nl quantities\n");
 
    if (ptsz->has_knl)
    tabulate_knl(pba,pnl,ppm,ptsz);
@@ -505,6 +511,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
 
    free(ptsz->sky_averaged_ylims);
    free(ptsz->erfs_2d_to_1d_th_array);
+   // free(ptsz->erfs_2d_to_1d_y_array);
 
  }
 
@@ -7448,6 +7455,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
                    10*sizeof(double),
                    ptsz->error_message);
      class_alloc(ptsz->erfs_2d_to_1d_th_array,10*sizeof(double *),ptsz->error_message);
+     class_alloc(ptsz->erfs_2d_to_1d_y_array,10*sizeof(double *),ptsz->error_message);
 
    }
 

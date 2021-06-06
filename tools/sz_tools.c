@@ -3322,7 +3322,8 @@ for (index_m=0;
                                      ptsz->error_message);
 
    double tau_normalisation = pvectsz[ptsz->index_m200c];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
-   tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
+   // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
+   tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version no h<!>
    result *= tau_normalisation;// normalisation here
   // exit(0);
 
@@ -3354,7 +3355,8 @@ else if (ptsz->tau_profile == 0){
    // set 1 for matter_type = tau
    result =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,1);
    double tau_normalisation = pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
-   tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
+   // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
+   tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version no h<!>
    result *= tau_normalisation;
  }
 
@@ -5752,17 +5754,17 @@ double erf_compl_ps(double y,
   return erf_compl;
 }
 
-double next_z(double z_i, double dz){
+double next_z(double z_i, double dz, struct tszspectrum * ptsz){
   // Compute redshift bins where bins are defined with higher resolution for z<0.2
   double dz_i;
-  double highres_z_cutoff = 0.2;
+  double highres_z_cutoff = ptsz->cluster_count_completeness_grid_z_cutoff_low;
   if (z_i < highres_z_cutoff)
-    dz_i = 1.e-3;
+    dz_i = ptsz->dz_cluster_count_completeness_grid_low_z;
   //else if ((z_i >= highres_z_cutoff) && (z_i <= 1.))
-  else if ((z_i >= highres_z_cutoff) && (z_i <= 1.))
-    dz_i = 1.e-2;
+  else if ((z_i >= highres_z_cutoff) && (z_i <= ptsz->cluster_count_completeness_grid_z_cutoff_mid))
+    dz_i = ptsz->dz_cluster_count_completeness_grid_mid_z;
   else
-    dz_i = dz;
+    dz_i = ptsz->dz_cluster_count_completeness_grid_high_z;;
 
   double next_z = z_i + dz_i;
   return next_z;

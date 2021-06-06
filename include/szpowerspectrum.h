@@ -735,6 +735,23 @@ struct tszspectrum {
   double epsabs_L_sat;
   double epsrel_L_sat;
 
+  double mass_epsrel_cluster_counts;
+  double mass_epsabs_cluster_counts;
+
+  double redshift_epsrel_cluster_counts;
+  double redshift_epsabs_cluster_counts;
+
+  double dlnM_cluster_count_completeness_grid;
+  double dz_cluster_count_completeness_grid_low_z;
+  double dz_cluster_count_completeness_grid_mid_z;
+  double dz_cluster_count_completeness_grid_high_z;
+
+  double lnymin;
+  double lnymax;
+  double dlny;
+
+  double cluster_count_completeness_grid_z_cutoff_low;
+  double cluster_count_completeness_grid_z_cutoff_mid;
 
   int n_z_W_lensmag;
 
@@ -977,6 +994,7 @@ double * steps_m;
   double bin_dz_cluster_counts;
 
   double bin_dlog10_snr;
+  double bin_dlog10_snr_last_bin;
 
   short has_completeness_for_ps_SZ;
   short has_completeness;

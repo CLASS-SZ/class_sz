@@ -376,7 +376,7 @@ int pkl_to_knl (
                         double sn,
                         double q);
 
-  double next_z(double z_i, double dz);
+  double next_z(double z_i, double dz, struct tszspectrum * ptsz);
 
   int integrate_over_redshift(struct background * pba,
                               struct nonlinear * pnl,

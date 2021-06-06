@@ -293,6 +293,7 @@ cdef extern from "class.h":
         double ** tllprime_sz
         short has_tszspectrum
         short sz_verbose
+        double bin_dlog10_snr_last_bin
 
     cdef struct szcount:
         double ** dNdzdy_theoretical

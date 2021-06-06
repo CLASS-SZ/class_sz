@@ -1746,6 +1746,7 @@ int input_read_parameters(
 
 
       class_read_int("n_m_dndlnM",ptsz->n_m_dndlnM);
+      class_read_int("n_z_dndlnM",ptsz->n_z_dndlnM);
 
       //Redshift limits for the integration
       class_read_double("z1SZ",ptsz->z1SZ);
@@ -1814,6 +1815,27 @@ int input_read_parameters(
       class_read_double("bin_z_max_cluster_counts",ptsz->bin_z_max_cluster_counts);
       class_read_double("bin_dz_cluster_counts",ptsz->bin_dz_cluster_counts);
       class_read_double("bin_dlog10_snr",ptsz->bin_dlog10_snr);
+
+      class_read_double("lnymin",ptsz->lnymin);
+      class_read_double("lnymax",ptsz->lnymax);
+      class_read_double("dlny",ptsz->dlny);
+
+      class_read_double("dlnM_cluster_count_completeness_grid",ptsz->dlnM_cluster_count_completeness_grid);
+
+      class_read_double("dz_cluster_count_completeness_grid_low_z",ptsz->dz_cluster_count_completeness_grid_low_z);
+      class_read_double("dz_cluster_count_completeness_grid_mid_z",ptsz->dz_cluster_count_completeness_grid_mid_z);
+      class_read_double("dz_cluster_count_completeness_grid_high_z",ptsz->dz_cluster_count_completeness_grid_high_z);
+
+      class_read_double("cluster_count_completeness_grid_z_cutoff_low",ptsz->cluster_count_completeness_grid_z_cutoff_low);
+      class_read_double("cluster_count_completeness_grid_z_cutoff_mid",ptsz->cluster_count_completeness_grid_z_cutoff_mid);
+
+      class_read_double("mass_epsrel_cluster_counts",ptsz->mass_epsrel_cluster_counts);
+      class_read_double("mass_epsabs_cluster_counts",ptsz->mass_epsabs_cluster_counts);
+      class_read_double("redshift_epsrel_cluster_counts",ptsz->redshift_epsrel_cluster_counts);
+      class_read_double("redshift_epsabs_cluster_counts",ptsz->redshift_epsabs_cluster_counts);
+
+
+
       class_read_double("sky area in deg2",ptsz->sky_area_deg2);
 
       class_read_int("has_selection_function",pcsz->has_completeness);
@@ -4884,8 +4906,14 @@ int input_default_params(
   ptsz->bin_z_max_cluster_counts = 1.;
   ptsz->bin_dz_cluster_counts = 0.1;
 
+
+
   ptsz->bin_dlog10_snr = 0.25;
 
+
+  ptsz->lnymin = -11.5;// -11.5 in planck
+  ptsz->lnymax = 10.; // 10 in planck
+  ptsz->dlny = 0.05; // 0.05 in planck
   pcsz->has_completeness = 0;
   pcsz->mass_range = 1;//szcount masses
   ptsz->experiment = 0; //planck
@@ -4962,6 +4990,23 @@ int input_default_params(
 
   ptsz->redshift_epsrel = 1e-6;
   ptsz->redshift_epsabs = 1e-40;
+
+  ptsz->mass_epsrel_cluster_counts = 1e-5;
+  ptsz->mass_epsabs_cluster_counts = 1e-40;
+
+  ptsz->redshift_epsrel_cluster_counts = 1e-5;
+  ptsz->redshift_epsabs_cluster_counts = 1e-40;
+
+
+  ptsz->dlnM_cluster_count_completeness_grid = 0.05;
+  ptsz->dz_cluster_count_completeness_grid_low_z = 1.e-3;
+  ptsz->dz_cluster_count_completeness_grid_mid_z = 1.e-2;
+  ptsz->dz_cluster_count_completeness_grid_high_z = 1.e-1;
+
+  ptsz->cluster_count_completeness_grid_z_cutoff_low = 0.2;
+  ptsz->cluster_count_completeness_grid_z_cutoff_mid = 1.;
+
+
 
   ptsz->mass_epsrel = 1e-6;
   ptsz->mass_epsabs = 1e-40;
@@ -5053,7 +5098,7 @@ int input_default_params(
   ptsz->has_vrms2 = _FALSE_;
   ptsz->has_knl = _FALSE_;
   ptsz->has_nl_index = _FALSE_;
-  ptsz->has_sigma2_hsv = _TRUE_;
+  ptsz->has_sigma2_hsv = _FALSE_;
 
   ptsz->index_md_hmf = 0;
   ptsz->index_md_mean_y = 1;
