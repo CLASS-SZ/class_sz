@@ -7469,17 +7469,17 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
 
 
    //printf("cib_dim = %d\n",1000);
-   if (ptsz->has_sz_counts){
-     class_alloc(ptsz->steps_z,
-                   10*sizeof(double *),
-                   ptsz->error_message);
-     class_alloc(ptsz->steps_m,
-                   10*sizeof(double *),
-                   ptsz->error_message);
-     //class_alloc(ptsz->erfs_2d_to_1d_th_array,10*sizeof(double *),ptsz->error_message); //unfree
-     class_alloc(ptsz->erfs_2d_to_1d_y_array,10*sizeof(double *),ptsz->error_message);
-
-   }
+   // if (ptsz->has_sz_counts){
+   //   class_alloc(ptsz->steps_z,
+   //                 10*sizeof(double *),
+   //                 ptsz->error_message);
+   //   class_alloc(ptsz->steps_m,
+   //                 10*sizeof(double *),
+   //                 ptsz->error_message);
+   //   //class_alloc(ptsz->erfs_2d_to_1d_th_array,10*sizeof(double *),ptsz->error_message); //unfree
+   //   class_alloc(ptsz->erfs_2d_to_1d_y_array,10*sizeof(double *),ptsz->error_message);
+   //
+   // }
 
    if (ptsz->has_sz_ps
       +ptsz->has_sz_2halo

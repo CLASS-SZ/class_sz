@@ -807,8 +807,8 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
     lnM += pcsz->dlnM;
   }
 
-  class_realloc(ptsz->steps_m,
-                ptsz->steps_m,
+  class_alloc(ptsz->steps_m,
+                //ptsz->steps_m,
                 ptsz->nsteps_m*sizeof(double *),
                 ptsz->error_message
                 );
@@ -852,12 +852,12 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
 // exit(0);
 
   class_alloc(pcsz->steps_z,
-              pcsz->nsteps_z*sizeof(double),
+              pcsz->nsteps_z*sizeof(double *),
               pcsz->error_message);
 
-  class_realloc(ptsz->steps_z,
-              ptsz->steps_z,
-              ptsz->nsteps_z*sizeof(double),
+  class_alloc(ptsz->steps_z,
+              //ptsz->steps_z,
+              ptsz->nsteps_z*sizeof(double *),
               ptsz->error_message);
 
   z_i = pcsz->z_0;
@@ -927,8 +927,8 @@ free(logy);
 
   ptsz->Ny = floor((pcsz->lnymax-pcsz->lnymin)/pcsz->dlny);
 
-  class_realloc(ptsz->erfs_2d_to_1d_y_array,
-              ptsz->erfs_2d_to_1d_y_array,
+  class_alloc(ptsz->erfs_2d_to_1d_y_array,
+              //ptsz->erfs_2d_to_1d_y_array,
               ptsz->Ny*sizeof(double *),
               ptsz->error_message);
 
