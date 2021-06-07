@@ -1710,6 +1710,7 @@ int nonlinear_free(
   }
 
   // free(pnl->ln_k_for_tSZ); //BB: added for class_sz
+  free(pnl->is_non_zero);
 
   return _SUCCESS_;
 }
