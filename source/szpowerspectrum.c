@@ -448,6 +448,20 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->cl_lens_lensmag_2h);
    free(ptsz->cl_tSZ_gal_1h);
    free(ptsz->cl_tSZ_gal_2h);
+   int index_nu;
+   int index_nu_prime;
+   for (index_nu=0;index_nu<ptsz->cib_frequency_list_num;index_nu++){
+       for (index_nu_prime=0;index_nu_prime<ptsz->cib_frequency_list_num;index_nu_prime++){
+         free(ptsz->cl_cib_cib_1h[index_nu][index_nu_prime]);
+         free(ptsz->cl_cib_cib_2h[index_nu][index_nu_prime]);
+       }
+     free(ptsz->cl_cib_cib_1h[index_nu]);
+     free(ptsz->cl_cib_cib_2h[index_nu]);
+     free(ptsz->cl_tSZ_cib_1h[index_nu]);
+     free(ptsz->cl_tSZ_cib_2h[index_nu]);
+     free(ptsz->cl_lens_cib_1h[index_nu]);
+     free(ptsz->cl_lens_cib_2h[index_nu]);
+   }
    free(ptsz->cl_tSZ_cib_1h);
    free(ptsz->cl_tSZ_cib_2h);
    free(ptsz->cl_lens_cib_1h);
@@ -487,8 +501,16 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->tllprime_sz);
    free(ptsz->cov_Y_N);
    free(ptsz->cov_Y_N_next_order);
+   int index_multipole_1;
+   for (index_multipole_1 = 0; index_multipole_1<ptsz->nlSZ; index_multipole_1 ++){
+      free(ptsz->cov_Y_Y_ssc[index_multipole_1]);
+}
    free(ptsz->cov_Y_Y_ssc);
    free(ptsz->cov_N_N);
+   int index_M_bins_1;
+   for (index_M_bins_1 = 0; index_M_bins_1<ptsz->nbins_M; index_M_bins_1 ++){
+     free(ptsz->cov_N_N_hsv[index_M_bins_1]);
+   }
    free(ptsz->cov_N_N_hsv);
    free(ptsz->r_Y_N);
    free(ptsz->r_cl_clp);
@@ -511,7 +533,6 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
 
    free(ptsz->sky_averaged_ylims);
    free(ptsz->erfs_2d_to_1d_th_array);
-   // free(ptsz->erfs_2d_to_1d_y_array);
 
  }
 
@@ -6881,6 +6902,7 @@ if   (ptsz->has_sz_ps
 
 
     ptsz->Omega_survey = 4.*_PI_*ptsz->f_sky;
+    free(pvecback);
 return _SUCCESS_;
 }
 
@@ -7449,12 +7471,12 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    //printf("cib_dim = %d\n",1000);
    if (ptsz->has_sz_counts){
      class_alloc(ptsz->steps_z,
-                   10*sizeof(double),
+                   10*sizeof(double *),
                    ptsz->error_message);
      class_alloc(ptsz->steps_m,
-                   10*sizeof(double),
+                   10*sizeof(double *),
                    ptsz->error_message);
-     class_alloc(ptsz->erfs_2d_to_1d_th_array,10*sizeof(double *),ptsz->error_message);
+     //class_alloc(ptsz->erfs_2d_to_1d_th_array,10*sizeof(double *),ptsz->error_message); //unfree
      class_alloc(ptsz->erfs_2d_to_1d_y_array,10*sizeof(double *),ptsz->error_message);
 
    }

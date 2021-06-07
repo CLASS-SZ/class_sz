@@ -794,7 +794,7 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
   int index_m;
 
   class_alloc(pcsz->steps_m,
-              pcsz->nsteps_m*sizeof(double),
+              pcsz->nsteps_m*sizeof(double *),
               pcsz->error_message
               );
 
@@ -805,7 +805,7 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
 
   class_realloc(ptsz->steps_m,
                 ptsz->steps_m,
-                ptsz->nsteps_m*sizeof(double),
+                ptsz->nsteps_m*sizeof(double *),
                 ptsz->error_message
                 );
 
@@ -851,7 +851,8 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
               pcsz->nsteps_z*sizeof(double),
               pcsz->error_message);
 
-  class_alloc(ptsz->steps_z,
+  class_realloc(ptsz->steps_z,
+              ptsz->steps_z,
               ptsz->nsteps_z*sizeof(double),
               ptsz->error_message);
 
