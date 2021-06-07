@@ -19,7 +19,7 @@ struct szcount {
 
   int nzSZ;
   //double * dndz;
-
+  int has_sz_counts;
   double * redshift;
   double * z_center;
   double * steps_m;
@@ -61,7 +61,7 @@ struct szcount {
   double logy_min;
   double logy_max;
   double dlogy;
-  
+
 
   double lnymin;
   double lnymax;
@@ -82,14 +82,14 @@ struct szcount {
 extern "C" {
 #endif
 
-  int szcount_init(struct background * pba,
+int szcount_init(struct background * pba,
                    struct nonlinear * pnl,
                    struct primordial * ppm,
                    struct tszspectrum * ptsz,
                    struct szcount * pcsz);
 
 
-int szcount_free(struct szcount * pcsz,struct tszspectrum * ptsz);
+int szcount_free(struct szcount * pcsz);
 
 
 int compute_count_sz(struct background * pba,

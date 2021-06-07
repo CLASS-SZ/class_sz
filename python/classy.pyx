@@ -210,7 +210,7 @@ cdef class Class:
         if(self.allocated != True):
           return
         if "szcount" in self.ncp: #BB: added for class_sz
-            szcount_free(&self.csz,&self.tsz)
+            szcount_free(&self.csz)
         if "szpowerspectrum" in self.ncp:  #BB: added for class_sz
             szpowerspectrum_free(&self.tsz)
         if "lensing" in self.ncp:

@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
   /****** all calculations done, now free the structures ******/
 
   // //BB: free sz cluster count module
-  if (szcount_free(&csz,&tsz) == _FAILURE_) {
+  if (szcount_free(&csz) == _FAILURE_) {
     printf("\n\nError in szcounts_free\n");
     return _FAILURE_;
   }

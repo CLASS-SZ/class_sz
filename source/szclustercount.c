@@ -18,9 +18,9 @@ int szcount_init(struct background * pba,
                  struct tszspectrum * ptsz,
                  struct szcount * pcsz)
 {
-  ptsz->sz_verbose = ptsz->sz_verbose;
+  // ptsz->sz_verbose = ptsz->sz_verbose;
   // ptsz->has_sz_counts = _FALSE_;
-  // pcsz->has_sz_counts = ptsz->has_sz_counts;
+  pcsz->has_sz_counts = ptsz->has_sz_counts;
   if (ptsz->has_sz_counts == _FALSE_)
   {
     if (ptsz->sz_verbose > 0)
@@ -55,9 +55,9 @@ int szcount_init(struct background * pba,
 }
 
 
-int szcount_free(struct szcount * pcsz,struct tszspectrum * ptsz)
+int szcount_free(struct szcount * pcsz)
 {
-  if (ptsz->has_sz_counts == _TRUE_){
+  if (pcsz->has_sz_counts == _TRUE_){
   free(pcsz->redshift);
   int index_z;
   for (index_z=0;index_z<pcsz->Nbins_z;index_z++){
@@ -656,25 +656,8 @@ struct Parameters_for_integrand_cluster_counts_mass V;
 
 
 int write_output_cluster_counts(struct szcount * pcsz, struct tszspectrum * ptsz){
-
-  char Filepath[_ARGUMENT_LENGTH_MAX_];
-  int i,index_m,index_z;
-
-if (ptsz->sz_verbose > 0)
-{
-  FILE *fp;
-  sprintf(Filepath,"%s%s%s",pcsz->root,"dndzdy",".txt");
-  fp=fopen(Filepath, "w");
-
-  if(fp == NULL)
-    exit(-1);
-    int j;
-  for (j=0;j<pcsz->Nbins_y+1;j++){
-    for (i=0;i<pcsz->Nbins_z;i++){
-
-      fprintf(fp,"%e\n",pcsz->dNdzdy_theoretical[i][j]);
-    }}
-
+int i,j;
+if (ptsz->sz_verbose > 0){
   double total_counts = 0.;
   for (j=0;j<pcsz->Nbins_z;j++){
     if (j== 0) {
@@ -696,6 +679,27 @@ if (ptsz->sz_verbose > 0)
     total_counts = total_counts/(pcsz->Nbins_y+1.);
 
     printf("total counts = %e\n", total_counts);
+
+  }
+
+if (ptsz->write_sz > 0)
+{
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+  int i,index_m,index_z;
+  FILE *fp;
+  sprintf(Filepath,"%s%s%s",pcsz->root,"dndzdy",".txt");
+  fp=fopen(Filepath, "w");
+
+  if(fp == NULL)
+    exit(-1);
+    int j;
+  for (j=0;j<pcsz->Nbins_y+1;j++){
+    for (i=0;i<pcsz->Nbins_z;i++){
+
+      fprintf(fp,"%e\n",pcsz->dNdzdy_theoretical[i][j]);
+    }}
+
+
 
 
   sprintf(Filepath,"%s%s%s",pcsz->root,"dndzdy_bins_z_center",".txt");

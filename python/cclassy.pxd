@@ -381,7 +381,7 @@ cdef extern from "class.h":
     void background_free(void*)
     void nonlinear_free(void*)
     void szpowerspectrum_free(void*)
-    void szcount_free(void*,void*)
+    void szcount_free(void*)
 
     cdef int _FAILURE_
     cdef int _FALSE_
