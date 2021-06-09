@@ -3704,6 +3704,8 @@ int evaluate_lensing_profile(double * pvecback,
     || _gal_lensmag_2h_
     || _lensmag_lensmag_1h_
     || _lensmag_lensmag_2h_
+    || _lens_lensmag_1h_
+    || _lens_lensmag_2h_
     //|| _cib_lens_1h_
     //|| _cib_lens_1h_
     || _tSZ_lens_1h_

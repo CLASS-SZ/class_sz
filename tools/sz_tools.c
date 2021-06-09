@@ -5864,10 +5864,9 @@ double integrand_redshift(double ln1pz, void *p){
 
     evaluate_redshift_int_lensmag(V->pvectsz,V->ptsz);
     double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_lensmag];
+    double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
     //printf("redshift_int_lensmag = %.3e at z = %.3e\n",redshift_int_lensmag,z);
-    V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = _c_/_Mpc_over_m_*_c_/_Mpc_over_m_*pow((1.+z),1.)
-                                                   /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)
-                                                   *sqrt(V->pvectsz[V->ptsz->index_chi2])*redshift_int_lensmag);
+    V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_lensmag);
 
   // printf("analytical nfw z = %.3e lm = %.3e\n",z,redshift_int_lensmag);
 
@@ -5878,27 +5877,32 @@ double integrand_redshift(double ln1pz, void *p){
     ||((V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
   )
   {
-    evaluate_redshift_int_lensmag(V->pvectsz,V->ptsz);
-    double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_lensmag];
-    V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = _c_/_Mpc_over_m_*_c_/_Mpc_over_m_*V->ptsz->chi_star*pow((1.+z),1.)
-                                                   /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)
-                                                   *sqrt(V->pvectsz[V->ptsz->index_chi2])
-                                                   *sqrt((V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2]))*redshift_int_lensmag)
-                                                 );
+
+double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+double chi_star =  V->ptsz->chi_star;  // in Mpc/h
+// sigma_crit_lensmag:
+evaluate_redshift_int_lensmag(V->pvectsz,V->ptsz);
+double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_lensmag];
+
+double sigma_crit_lensmag = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_lensmag);
+// sigma crit kappa:
+double sigma_crit_kappa =  pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)*chi_star/chi/(chi_star-chi);
+
+V->pvectsz[V->ptsz->index_lensing_Sigma_crit] =  sqrt(sigma_crit_lensmag*sigma_crit_kappa);
+
   }
   else {
-    // CMB lensing
-    // Eq. 6 of https://arxiv.org/pdf/1312.4525.pdf
-    V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = _c_/_Mpc_over_m_*_c_/_Mpc_over_m_*V->ptsz->chi_star*pow((1.+z),1.)
-                                                   /(4.*_PI_*_G_*_M_sun_/pow(_Mpc_over_m_,3.)
-                                                   *sqrt(V->pvectsz[V->ptsz->index_chi2])
-                                                   *(V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2])));
+
+// CMB lensing
+// Eq. 6 of https://arxiv.org/pdf/1312.4525.pdf
+
+double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+double chi_star =  V->ptsz->chi_star;  // in Mpc/h
+double sigma_crit_kappa =  pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)*chi_star/chi/(chi_star-chi);
+V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = sigma_crit_kappa;
+
 
   }
-
-
-  // V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = 1.6625e18*V->ptsz->chi_star*pow((1.+z),1.) //there is an issue somewhere with (1+z)...
-  //                                                 /(sqrt(V->pvectsz[V->ptsz->index_chi2])*(V->ptsz->chi_star-sqrt(V->pvectsz[V->ptsz->index_chi2])));
 
   // critical density in (Msun/h)/(Mpc/h)^3
   V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
@@ -6288,7 +6292,7 @@ result = W_lens*W_lens;
 
   // then quantities that require mass integration
   else {
-  printf("integrating over mass\n");
+  // printf("integrating over mass\n");
   result = integrate_over_m_at_z(V->pvecback,
                                  V->pvectsz,
                                  V->pba,
