@@ -24,7 +24,7 @@ https://github.com/borisbolliet/class_sz/blob/master/notebooks/cl_ST_sz.ipynb
 
 The code is currently in development, don't hesitate to reach out if anything is unclear due to lack of comments and indications, or if it crashes unexpectedly.
 
-**The code CLASS_SZ is an extension of the CLASS code.**
+**The code CLASS_SZ is an extension of Julien Lesgourgues's CLASS code.**
 
 For download and information on **class**, see http://class-code.net and https://github.com/lesgourg/class_public
 
