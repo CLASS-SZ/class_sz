@@ -28,6 +28,21 @@ The code is currently in development, don't hesitate to reach out if anything is
 
 For download and information on **class**, see http://class-code.net and https://github.com/lesgourg/class_public
 
+CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such as:
+
+- `hmvec
+<https://github.com/simonsobs/hmvec/tree/master/hmvec>`_.
+
+- `ccl
+<https://github.com/LSSTDESC/CCL>`_.
+
+- `HaloGen
+<https://github.com/EmmanuelSchaan/HaloGen/tree/master>`_.
+
+- `yxg
+<https://github.com/nikfilippas/yxg>`_.
+
+
 
 Downloading the code
 --------------
@@ -89,11 +104,12 @@ explaining the use of all possible input parameters.
 
 
 
-Computing SZ and Halo model quantities via the Python wrapper classy
+Computing SZ and Halo model quantities via the Python wrapper classy_sz
 ------------------------------
 
 
-Once class_sz is installed. You can use classy just as you use it with the normal class code.
+Once class_sz is installed. You can use classy_sz just as you use classy with the normal class code.
+You can compute everything classy computes, as well as all the halo model quantities implemented in class_sz.
 
 First, make sure that you have compiled the python wrapper with:
 
@@ -174,4 +190,4 @@ To get support on the SZ module, feel free to contact me via slack/email (boris.
 Acknowledgment
 -------
 
-Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas, Fiona McCarthy for help, suggestions and/or running tests with **class_sz**.
+Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas, Fiona McCarthy, Eunseong Lee, Ola Kusiak for help, suggestions and/or running tests with **class_sz**.
