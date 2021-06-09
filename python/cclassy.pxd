@@ -537,6 +537,8 @@ cdef extern from "class.h":
                   double * pk_cb_tot_out,
                   int nonlinear)
 
+    double get_vrms2_at_z(double z,
+                          void * ptsz)
 
     double get_hmf_counter_term_nmin_at_z(double z_asked,
                                           void * tsz)

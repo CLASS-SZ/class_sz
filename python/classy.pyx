@@ -1618,7 +1618,13 @@ cdef class Class:
 
 
     def get_dndlnM_at_z_and_M(self,z,m):
-        return get_dndlnM_at_z_and_M(z,m,&self.tsz)
+        #try:
+        r = get_dndlnM_at_z_and_M(z,m,&self.tsz)
+        #except:
+        #print("You are asking for a quantity that hasn't been computed properly.")
+        #print("Check your settings and try again?")
+        #r = 0.
+        return r
 
     def get_hmf_counter_term_nmin_at_z(self,z):
         return get_hmf_counter_term_nmin_at_z(z,&self.tsz)
@@ -1650,6 +1656,9 @@ cdef class Class:
 
     def get_nu_at_z_and_m(self,z,m):
         return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)
+
+    def get_vrms2_at_z(self,z):
+        return get_vrms2_at_z(z,&self.tsz)
 
 
 

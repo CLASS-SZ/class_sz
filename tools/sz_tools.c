@@ -2336,7 +2336,7 @@ int spectra_vrms2(
     aH *= _c_/1e5*1e2; //in km/s/Mpc
 
     W = f*aH ;
-    //printf("ok z = %e\n",W);
+    // printf("ok z = %e\n",W);
 
     free(pvecback);
 
@@ -2345,7 +2345,7 @@ int spectra_vrms2(
       for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
         k=exp(ptsz->ln_k_for_tSZ[i]);
         if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999;
-
+// printf("ok k = %e I = %e\n",k,pk*W*W);
     // //Input: wavenumber in 1/Mpc
     // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
   enum pk_outputs pk_for_vrms2;
@@ -2355,6 +2355,7 @@ int spectra_vrms2(
   else {
     pk_for_vrms2 = pk_linear;
   }
+  // printf("ok k2 = %e I = %e\n",k,pk*W*W);
 
    class_call(nonlinear_pk_at_k_and_z(
                                      pba,
@@ -2370,13 +2371,14 @@ int spectra_vrms2(
                                    pnl->error_message,
                                    pnl->error_message);
 
+  // printf("ok k3 = %e I = %e\n",k,pk*W*W);
 
 
     array_for_sigma[i*index_num+index_k]=k;
     array_for_sigma[i*index_num+index_y]=pk*W*W;
-    //printf("ok k = %e I = %e\n",k,pk*W*W);
+    // printf("ok k = %e I = %e\n",k,pk*W*W);
   }
-//printf("ok z = %e\n",W);
+// printf("ok z = %e\n",W);
   class_call(array_spline(array_for_sigma,
                           index_num,
                           ptsz->ln_k_size_for_tSZ,
@@ -2401,7 +2403,7 @@ int spectra_vrms2(
 //printf("ok z = %e\n",W);
   free(array_for_sigma);
   *vrms2 = *vrms2/(2.*_PI_*_PI_);
-//printf("ok z = %e\n",W);
+// printf("ok z = %e\n",*vrms2);
   return _SUCCESS_;
 
 }
@@ -4618,19 +4620,19 @@ printf("-> Loading fdndz unwise\n");
 
   /** 2. Launch the command and retrieve the output */
   /* Launch the process */
-  char Filepath[_ARGUMENT_LENGTH_MAX_];
+  // char Filepath[_ARGUMENT_LENGTH_MAX_];
+  //
+  // //unwise
+  //
+  //   sprintf(Filepath,
+  //           "%s%s",
+  //           "cat ",
+  //           //ptsz->path_to_class,
+  //           "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/UNWISE_galaxy_ditributions/normalised_fdndz.txt");
 
-  //unwise
+  class_open(process,ptsz->UNWISE_fdndz_file, "r",ptsz->error_message);
 
-    sprintf(Filepath,
-            "%s%s",
-            "cat ",
-            //ptsz->path_to_class,
-            "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/UNWISE_galaxy_ditributions/normalised_fdndz.txt");
-
-
-
-  process = popen(Filepath, "r");
+  // process = popen(Filepath, "r");
 
   /* Read output and store it */
   while (fgets(line, sizeof(line)-1, process) != NULL) {
@@ -4689,7 +4691,8 @@ printf("-> Loading fdndz unwise\n");
   }
 
   /* Close the process */
-  status = pclose(process);
+  // status = pclose(process);
+  status = fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -5957,7 +5960,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   int index_l_2 = (int) V->pvectsz[V->ptsz->index_multipole_2];
   int index_l_3 = (int) V->pvectsz[V->ptsz->index_multipole_3];
 
-  // printf("index_l_1 = %d index_l_2 = %d index_l_3 = %d\n",index_l_1,index_l_2,index_l_3);
+  // printf("index_l_1 = %d index_l_2 = %d index_l_3 = %d\n",index_theta_1,index_l_2,index_l_3);
 
 
   double l2 = V->ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
@@ -6031,7 +6034,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
 
   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
   double galaxy_normalisation = H_over_c_in_h_over_Mpc; // here is normally also the bias but we take it out and multiply afterward
-  galaxy_normalisation *= pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.);
+  galaxy_normalisation *= pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.)/(1.+z);
   double sigmaT_over_mp = 8.305907197761162e-17 * pow(V->pba->h,2)/V->pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
   double tau_fac = V->pba->Omega0_b/V->ptsz->Omega_m_0/V->ptsz->mu_e*V->ptsz->f_free;///V->pba->h;///V->pba->h; // <!> correct version no h<!>
 // printf("fb = %.4e\n",V->pba->Omega0_b/V->ptsz->Omega_m_0);
@@ -6042,6 +6045,8 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
                             *V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
 
   result = tau_normalisation*tau_normalisation*galaxy_normalisation*b123;
+  // printf("l1 = %.3e l2 = %.3e l3 = %.3e hxhxhxh\n",l1,l2,result);
+
   if (isnan(b123)){
   printf("z = %.3e b123 = %.3e\n",z,b123);
   printf("k1 = %.3e k2 = %.3e k3 = %.3e\n",k1,k2,k3);
@@ -6141,6 +6146,8 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   ||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
   ||((V->ptsz->galaxy_sample==2 && V->ptsz->use_hod == 0) && (V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
   ){
+
+
 
   if (index_md == V->ptsz->index_md_gal_lensmag_2h){
 //printf("ok\n");
@@ -6281,7 +6288,7 @@ result = W_lens*W_lens;
 
   // then quantities that require mass integration
   else {
-  // printf("integrating over mass\n");
+  printf("integrating over mass\n");
   result = integrate_over_m_at_z(V->pvecback,
                                  V->pvectsz,
                                  V->pba,
@@ -6291,8 +6298,9 @@ result = W_lens*W_lens;
   // exit(0);
   }
 
+// printf("continuing\n");
 
-
+// printf("continuing\n");
 if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h)) //## BB debug
  || ((V->ptsz->has_cib_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_cib_cib_2h))
@@ -6390,16 +6398,21 @@ result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 }
 
 if ((V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf)){
-evaluate_galaxy_number_counts(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+  // printf("evaluating gal counts\n");
+// evaluate_galaxy_number_counts(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+evaluate_galaxy_number_counts_fdndz(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+
+// printf("evaluating vrms2\n");
 result *= V->pvectsz[V->ptsz->index_phi_galaxy_counts];
 }
-
+// printf("evaluating vrms2\n");
 // multiply by velocity dispersion
 if ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h)
  || (V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h)
  || (V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h)
  || (V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf)
  || (V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo)){
+  // printf("evaluating vrms2\n");
   evaluate_vrms2(V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
   result *= V->pvectsz[V->ptsz->index_vrms2]/3./pow(_c_*1e-3,2.);
 }
@@ -6588,7 +6601,7 @@ else{
   // r = result_gsl;
   // // END ROMBERG
 
-  // // printf("er = %.4e ea = %.4e\n",epsrel,epsabs);
+  // printf("er = %.4e ea = %.4e\n",epsrel,epsabs);
   r = Integrate_using_Patterson_adaptive(log(1. + z_min), log(1. + z_max),
                                          epsrel, epsabs,
                                          integrand_redshift,
@@ -7921,6 +7934,14 @@ int read_SO_noise(struct tszspectrum * ptsz){
                             struct primordial * ppm,
                             struct tszspectrum * ptsz){
 
+double z_min,z_max;
+if (ptsz->need_hmf==0 && ptsz->has_kSZ_kSZ_gal_hf == 0){
+  class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+  z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM)+1e-7;
+  z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+}
+
+
 
 double * vrms2_var;
 class_alloc(vrms2_var,
@@ -7932,8 +7953,16 @@ class_alloc(ptsz->array_vrms2_at_z,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_
 
 int index_z;
 
-for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
-        {
+
+
+    for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
+    {
+      if (ptsz->need_hmf==0 && ptsz->has_kSZ_kSZ_gal_hf == 0){
+      ptsz->array_redshift[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_arraySZ-1.); // log(1+z)
+                                    }
 
             spectra_vrms2(pba,
                           ppm,
@@ -7943,6 +7972,7 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
                           vrms2_var
                           );
           ptsz->array_vrms2_at_z[index_z] = log(*vrms2_var);
+          // printf("z = %.3e vrms2 = %.3e\n",ptsz->array_redshift[index_z],ptsz->array_vrms2_at_z[index_z]);
 
        }
 
@@ -8072,11 +8102,12 @@ double * pvectsz;
  class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
 
 
-
+ // printf("tabulating dndlnM quantities0\n");
 
 for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
         {
           double z = exp(ptsz->array_redshift[index_z])-1.;
+           // printf("tabulating dndlnM quantitie10\n");
 
           // if using unwise we set a specific lower bound
           // if (ptsz->galaxy_sample==1 &&  (ptsz->use_hod ==1)){
@@ -8500,8 +8531,9 @@ double integrand_hmf_counter_terms_nmin(double lnM_halo, void *p){
       double omega = V->pvecback[V->pba->index_bg_Omega_m];
       V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
 
+// printf("hmf = %.3e\n",0.);
       evaluate_HMF(lnM_halo,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
-
+// printf("hmf = %.3e\n",1.);
       double hmf = V->pvectsz[V->ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
 
       double z_asked = z;
@@ -8509,7 +8541,7 @@ double integrand_hmf_counter_terms_nmin(double lnM_halo, void *p){
       // this  also works:
       //double hmf = get_dndlnM_at_z_and_M(z_asked,m_asked,V->ptsz);
 
-      // printf("hmf = %.3e\n",hmf);
+
       // printf("ns = %.3e\n",ns);
       // printf("nc = %.3e\n",nc);
       double rho_crit_at_z = V->ptsz->Rho_crit_0;// V->pvectsz[V->ptsz->index_Rho_crit];
@@ -8868,7 +8900,7 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct primordial * ppm,
                                       struct tszspectrum * ptsz){
 
-if (ptsz->need_hmf == 0)
+if (ptsz->need_hmf == 0 && ptsz->has_kSZ_kSZ_gal_hf == 0)
   return 0;
 
 // printf("need_hmf2 = %d\n",ptsz->need_hmf);

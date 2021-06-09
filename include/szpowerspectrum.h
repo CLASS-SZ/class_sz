@@ -1465,6 +1465,8 @@ double get_first_order_bias_at_z_and_nu(double z,
                                          double nu,
                                          struct tszspectrum * ptsz);
 
+double get_vrms2_at_z(double z,
+                      struct tszspectrum * ptsz);
 
 double get_sigma_at_z_and_m(double z,
                             double m,
