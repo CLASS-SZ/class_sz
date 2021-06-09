@@ -2682,6 +2682,7 @@ int input_read_parameters(
       class_read_double("M_min_HOD_mass_factor_unwise",ptsz->M_min_HOD_mass_factor_unwise);
       class_read_double("M_min_HOD_satellite_mass_factor_unwise",ptsz->M_min_HOD_satellite_mass_factor_unwise);
       class_read_double("x_out_truncated_nfw_profile",ptsz->x_out_truncated_nfw_profile);
+      class_read_double("x_out_truncated_nfw_profile_satellite_galaxies",ptsz->x_out_truncated_nfw_profile_satellite_galaxies);
       class_read_double("cvir_tau_profile_factor",ptsz->cvir_tau_profile_factor);
       class_read_double("x_out_nfw_profile",ptsz->x_out_nfw_profile);
 
@@ -4824,6 +4825,7 @@ int input_default_params(
   // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
   // in the settings of KFSW20
   ptsz->x_out_truncated_nfw_profile = 2.5;
+  ptsz->x_out_truncated_nfw_profile_satellite_galaxies = 2.5;
   ptsz->x_out_nfw_profile = 2.5;
   ptsz->cvir_tau_profile_factor =  1.;
   ptsz->M1_prime_HOD_factor = 15.;

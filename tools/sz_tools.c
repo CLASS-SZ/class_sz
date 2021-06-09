@@ -3355,7 +3355,8 @@ else if (ptsz->tau_profile == 0){
    evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
    pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
    // set 1 for matter_type = tau
-   result =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,1);
+   double xout = ptsz->x_out_truncated_nfw_profile;
+   result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,1);
    double tau_normalisation = pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
    // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
    tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version no h<!>

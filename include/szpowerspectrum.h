@@ -998,6 +998,8 @@ double * steps_m;
   double bin_dlog10_snr;
   double bin_dlog10_snr_last_bin;
 
+  double x_out_truncated_nfw_profile_satellite_galaxies;
+
   short has_completeness_for_ps_SZ;
   short has_completeness;
   short which_ps_sz;
@@ -1349,6 +1351,7 @@ int evaluate_galaxy_profile(double * pvecback,
                             struct tszspectrum * ptsz);
 
 double evaluate_truncated_nfw_profile(
+                                   double xout,
                                    double * pvectsz,
                                    struct background * pba,
                                    struct tszspectrum * ptsz,

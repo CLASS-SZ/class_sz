@@ -3580,8 +3580,8 @@ int evaluate_matter_density_profile(double * pvecback,
   // class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,0),
   //                                   ptsz->error_message,
   //                                   ptsz->error_message);
-
-  double result_trunc =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,0);
+  double xout = ptsz->x_out_truncated_nfw_profile;
+  double result_trunc =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
 
   // double r_diff = 100.*result/m_nfw(pvectsz[ptsz->index_c200m])/result_trunc;
   // if (fabs(r_diff -100.)>1.)
@@ -3687,7 +3687,8 @@ int evaluate_lensing_profile(double * pvecback,
    /// uncomment !!
    // else {
    pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];  // multipole going into truncated nfw, unfortunate name
-   result =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,0);
+   double xout = ptsz->x_out_truncated_nfw_profile;
+   result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
    // }
 
 
@@ -3752,38 +3753,38 @@ int evaluate_lensing_profile(double * pvecback,
   //
   // printf("lens rho0 = %.3e\n",rho0);
   // printf("lens norm = %.3e\n",lensing_normalisation);
-  // printf("Sigma_crit = %.3e\n",pvectsz[ptsz->index_lensing_Sigma_crit]);
-  if (_gal_lens_2h_
-    ||_lens_lens_2h_
-    ||_lens_lensmag_2h_
-    ||_gal_lensmag_2h_
-    ||_lensmag_lensmag_2h_
-    ||_tSZ_lens_2h_
-    ||_tSZ_lensmag_2h_){
-// if (ptsz->use_analytical_truncated_nfw==1){
-
-     pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
-                                            // *(rho0*(pvectsz[ptsz->index_lensing_profile]-1.)) //consistency relation
-                                            *(rho0*(pvectsz[ptsz->index_lensing_profile])) //consistency relation
-                                             /pvectsz[ptsz->index_lensing_Sigma_crit]
-                                             *(4*_PI_)
-                                             *pow(characteristic_multipole,-2)
-                                             *characteristic_radius; //rs in Mpc/h
-//                                            }
-// else{
-//   pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
-//                                           *(rho0*(pvectsz[ptsz->index_lensing_profile]-m_nfw(concentration_nfw))) //consistency relation
-//                                           /pvectsz[ptsz->index_lensing_Sigma_crit]
-//                                           *(4*_PI_)
-//                                           *pow(characteristic_multipole,-2)
-//                                           *characteristic_radius; //rs in Mpc/h
+//   // printf("Sigma_crit = %.3e\n",pvectsz[ptsz->index_lensing_Sigma_crit]);
+//   if (_gal_lens_2h_
+//     ||_lens_lens_2h_
+//     ||_lens_lensmag_2h_
+//     ||_gal_lensmag_2h_
+//     ||_lensmag_lensmag_2h_
+//     ||_tSZ_lens_2h_
+//     ||_tSZ_lensmag_2h_){
+// // if (ptsz->use_analytical_truncated_nfw==1){
+//
+//      pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
+//                                             // *(rho0*(pvectsz[ptsz->index_lensing_profile]-1.)) //consistency relation
+//                                             *(rho0*(pvectsz[ptsz->index_lensing_profile])) //consistency relation
+//                                              /pvectsz[ptsz->index_lensing_Sigma_crit]
+//                                              *(4*_PI_)
+//                                              *pow(characteristic_multipole,-2)
+//                                              *characteristic_radius; //rs in Mpc/h
+// //                                            }
+// // else{
+// //   pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
+// //                                           *(rho0*(pvectsz[ptsz->index_lensing_profile]-m_nfw(concentration_nfw))) //consistency relation
+// //                                           /pvectsz[ptsz->index_lensing_Sigma_crit]
+// //                                           *(4*_PI_)
+// //                                           *pow(characteristic_multipole,-2)
+// //                                           *characteristic_radius; //rs in Mpc/h
+// //
+// //
+// // }
 //
 //
-// }
-
-
-    }
-  else{
+//     }
+//   else{
    pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
                                            *rho0
                                            *pvectsz[ptsz->index_lensing_profile]
@@ -3797,7 +3798,7 @@ int evaluate_lensing_profile(double * pvecback,
   // printf("analytical nfw norm ll = %.3e\n",characteristic_multipole);
   // printf("analytical nfw norm lcr = %.3e\n",characteristic_radius);
 
-      }
+      // }
 
   //printf("lens prof = %.3e\n",pvectsz[ptsz->index_lensing_profile]);
 
@@ -8725,8 +8726,9 @@ double Ls_nu_prime;
 
 double z = pvectsz[ptsz->index_z];
 
-pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_cib_profile];;
-double us = evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,0);
+pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_cib_profile];
+double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
+double us = evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
 
 double ug_at_ell;
 double nu;
@@ -8976,7 +8978,8 @@ double z = pvectsz[ptsz->index_z];
 
 nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,pvectsz,ptsz,pba);
 ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,ptsz->M_min_HOD,ptsz->alpha_s_HOD,ptsz->M1_prime_HOD,ptsz,pba);
-us = evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,0);
+double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
+us = evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
 
    // double l_asked = pvectsz[ptsz->index_multipole_for_galaxy_profile];
    // double m_asked = pvectsz[ptsz->index_m200c]; // in Msun/h
@@ -9040,6 +9043,7 @@ pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
 
 // analytical truncated NFW profile
 double evaluate_truncated_nfw_profile(//double * pvecback,
+                                      double xout,
                                       double * pvectsz,
                                       struct background * pba,
                                       struct tszspectrum * ptsz,
@@ -9136,7 +9140,7 @@ if ( _pk_at_z_1h_
     k = ptsz->k_for_pk_hm[index_k];
   }
 
-double q = k*r_delta*ptsz->x_out_truncated_nfw_profile/c_delta*(1.+z);//TBC: (1+z) needs to be there to match KA20,  but is it consistent?
+double q = k*r_delta*xout/c_delta*(1.+z);//TBC: (1+z) needs to be there to match KA20,  but is it consistent?
 double denominator = m_nfw(c_delta);
 
 
