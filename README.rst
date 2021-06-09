@@ -7,26 +7,27 @@ CLASS_SZ
 
  and other halo model observables
 
-**The SZ module is initially based on Eiichiro Komatsu’s fortran code SZFAST.**
 
-(See http://wwwmpa.mpa-garching.mpg.de/~komatsu/CRL/clusters/szpowerspectrumks/)
-
-
-The SZ module is included in the file **source/szpowerspectrum.c**
-and its dependencies.
 
 In addition to SZ power spectrum, class_sz can compute cross and auto power spectra for other tracers
 in the halo model (currently being developped: kSZ, galaxy, ISW, lensing and CIB).
 
-Take a look at the notebook to see what class_sz can do:
+**Take a look at the notebook to see what class_sz can do:**
 
 https://github.com/borisbolliet/class_sz/blob/master/notebooks/cl_ST_sz.ipynb
 
 The code is currently in development, don't hesitate to reach out if anything is unclear due to lack of comments and indications, or if it crashes unexpectedly.
 
-**The code CLASS_SZ is an extension of Julien Lesgourgues's CLASS code.**
+CLASS_SZ is an extension of Julien Lesgourgues's CLASS code.
 
 For download and information on **class**, see http://class-code.net and https://github.com/lesgourg/class_public
+
+CLASS_SZ is initially based on Eiichiro Komatsu’s fortran code SZFAST.
+
+(See http://wwwmpa.mpa-garching.mpg.de/~komatsu/CRL/clusters/szpowerspectrumks/)
+
+CLASS_SZ modules are located in the files **source/szpowerspectrum.c** and **source/szclustercount.c**.
+
 
 CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such as:
 
@@ -151,7 +152,7 @@ need to do:
 
     $ export LD_LIBRARY_PATH
 
-Note that these prescription are system dependent: you may not need them if your path and environment variables are such that gsl and its libraries are well linked.
+Note that these prescriptions are system dependent: you may not need them if your path and environment variables are such that gsl and its libraries are well linked.
 
 MacOS problem with OpenMP
 ------------------------------
