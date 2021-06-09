@@ -15,6 +15,7 @@
 #define _bk_at_z_1h_ ((ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_1h))
 #define _bk_at_z_2h_ ((ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_2h))
 #define _bk_at_z_3h_ ((ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_3h))
+//#define _bk_at_z_hf_ ((ptsz->has_bk_at_z_hf == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_hf))
 #define _mean_y_ ((ptsz->has_mean_y == _TRUE_) && (index_md == ptsz->index_md_mean_y))
 #define _hmf_ ((ptsz->has_hmf == _TRUE_) && (index_md == ptsz->index_md_hmf))
 #define _tSZ_power_spectrum_ ((ptsz->has_sz_ps == _TRUE_) && (index_md == ptsz->index_md_sz_ps))
@@ -260,6 +261,7 @@ struct tszspectrum {
   int index_integrand_id_bk_at_z_3h_first;
   int index_integrand_id_bk_at_z_3h_last;
 
+  int has_bk_at_z_hf;
 
   int has_mean_y;
   int index_md_mean_y;
@@ -1437,6 +1439,16 @@ int evaluate_matter_density_profile(double * pvecback,
                              double * pvectsz,
                              struct background * pba,
                              struct tszspectrum * ptsz);
+
+double get_matter_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
+                                                     double k2_in_h_over_Mpc,
+                                                     double k3_in_h_over_Mpc,
+                                                     double z,
+                                                     struct tszspectrum * ptsz,
+                                                     struct background * pba,
+                                                     struct nonlinear * pnl,
+                                                     struct primordial * ppm);
+
 
 double bispectrum_f2_kernel(double k,
                             double k_prime,

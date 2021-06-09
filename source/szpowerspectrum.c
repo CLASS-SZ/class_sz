@@ -35,6 +35,7 @@ int szpowerspectrum_init(
       + ptsz->has_bk_at_z_1h
       + ptsz->has_bk_at_z_2h
       + ptsz->has_bk_at_z_3h
+      + ptsz->has_bk_at_z_hf
       + ptsz->has_mean_y
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
@@ -675,12 +676,17 @@ if (ptsz->need_m200m_to_m500c){
 
 // if (ptsz->need_hmf + ptsz->has_vrms2 >= 1)
 
-if (ptsz->need_hmf == 1 || ptsz->has_kSZ_kSZ_gal_hf || ptsz->has_vrms2){
+if (ptsz->need_hmf == 1
+ || ptsz->has_kSZ_kSZ_gal_hf
+ || ptsz->has_bk_at_z_hf
+ || ptsz->has_vrms2){
    free(ptsz->array_redshift);
 
  }
 
-if (ptsz->need_hmf == 1 || ptsz->has_kSZ_kSZ_gal_hf ){
+if (ptsz->need_hmf == 1
+|| ptsz->has_kSZ_kSZ_gal_hf
+|| ptsz->has_bk_at_z_hf ){
    //free(ptsz->array_redshift);
    free(ptsz->array_radius);
 
@@ -5591,6 +5597,129 @@ int evaluate_vrms2(double * pvecback,
 
 return _SUCCESS_;
 }
+
+
+double get_matter_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
+                                                     double k2_in_h_over_Mpc,
+                                                     double k3_in_h_over_Mpc,
+                                                     double z,
+                                                     struct tszspectrum * ptsz,
+                                                     struct background * pba,
+                                                     struct nonlinear * pnl,
+                                                     struct primordial * ppm){
+
+// // get background quantities at z:
+//   double tau;
+//   int first_index_back = 0;
+//   double * pvecback;
+//   class_alloc(pvecback,
+//               pba->bg_size*sizeof(double),
+//               pba->error_message);
+//
+//   class_call(background_tau_of_z(V->pba,z,&tau),
+//              V->ptsz->error_message,
+//              V->ptsz->error_message);
+//
+//   class_call(background_at_tau(V->pba,
+//                                tau,
+//                                V->pba->long_info,
+//                                V->pba->inter_normal,
+//                                &first_index_back,
+//                                V->pvecback),
+//              V->ptsz->error_message,
+//              V->ptsz->error_message);
+//   free(pvecback);
+
+double * pk_ic = NULL;
+double pk1;
+//Input: wavenumber in 1/Mpc
+//Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+// printf("z=%.3e\n",z);
+class_call(nonlinear_pk_at_k_and_z(
+                                    pba,
+                                    ppm,
+                                    pnl,
+                                    pk_linear,
+                                    k1_in_h_over_Mpc*pba->h,
+                                    z,
+                                    pnl->index_pk_m,
+                                    &pk1, // number *out_pk_l
+                                    pk_ic // array out_pk_ic_l[index_ic_ic]
+                                  ),
+                                  pnl->error_message,
+                                  pnl->error_message);
+//now compute P(k) in units of h^-3 Mpc^3
+pk1 *= pow(pba->h,3.);
+double pk2;
+//Input: wavenumber in 1/Mpc
+//Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+// printf("z=%.3e\n",z);
+class_call(nonlinear_pk_at_k_and_z(
+                                    pba,
+                                    ppm,
+                                    pnl,
+                                    pk_linear,
+                                    k1_in_h_over_Mpc*pba->h,
+                                    z,
+                                    pnl->index_pk_m,
+                                    &pk2, // number *out_pk_l
+                                    pk_ic // array out_pk_ic_l[index_ic_ic]
+                                  ),
+                                  pnl->error_message,
+                                  pnl->error_message);
+//now compute P(k) in units of h^-3 Mpc^3
+pk2 *= pow(pba->h,3.);
+double pk3;
+//Input: wavenumber in 1/Mpc
+//Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+// printf("z=%.3e\n",z);
+class_call(nonlinear_pk_at_k_and_z(
+                                    pba,
+                                    ppm,
+                                    pnl,
+                                    pk_linear,
+                                    k1_in_h_over_Mpc*pba->h,
+                                    z,
+                                    pnl->index_pk_m,
+                                    &pk3, // number *out_pk_l
+                                    pk_ic // array out_pk_ic_l[index_ic_ic]
+                                  ),
+                                  pnl->error_message,
+                                  pnl->error_message);
+//now compute P(k) in units of h^-3 Mpc^3
+pk3 *= pow(pba->h,3.);
+
+
+  double z_asked = log(1.+z);
+  double R_asked = log(8./pba->h); //log(R) in Mpc
+  double sigma8_at_z =  exp(pwl_interp_2d(ptsz->n_arraySZ,
+                             ptsz->ndimSZ,
+                             ptsz->array_redshift,
+                             ptsz->array_radius,
+                             ptsz->array_sigma_at_z_and_R,
+                             1,
+                             &z_asked,
+                             &R_asked));
+
+  double knl = get_knl_at_z(z,ptsz);
+
+  double n1 = get_nl_index_at_z_and_k(z,k1_in_h_over_Mpc,ptsz,pnl);
+  double n2 = get_nl_index_at_z_and_k(z,k2_in_h_over_Mpc,ptsz,pnl);
+  double n3 = get_nl_index_at_z_and_k(z,k3_in_h_over_Mpc,ptsz,pnl);
+
+  // printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",n1,n2,n3);
+
+  double f2_eff_12 =  bispectrum_f2_kernel_eff(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,n1,n2,sigma8_at_z,knl);
+  double f2_eff_23 =  bispectrum_f2_kernel_eff(k2_in_h_over_Mpc,k3_in_h_over_Mpc,k1_in_h_over_Mpc,n2,n3,sigma8_at_z,knl);
+  double f2_eff_31 =  bispectrum_f2_kernel_eff(k3_in_h_over_Mpc,k1_in_h_over_Mpc,k2_in_h_over_Mpc,n3,n1,sigma8_at_z,knl);
+
+  // printf("f1 = %.3e \t f2 = %.3e \t f3 = %.3e\n",f2_eff_12,f2_eff_23,f2_eff_31);
+
+  double b123 = 2.*pk1*pk2*f2_eff_12 + 2.*pk2*pk3*f2_eff_23 + 2.*pk3*pk1*f2_eff_31;
+  return b123;
+
+}
+
 
 double get_vrms2_at_z(double z,
                       struct tszspectrum * ptsz)

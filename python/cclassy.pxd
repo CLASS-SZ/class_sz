@@ -573,6 +573,16 @@ cdef extern from "class.h":
                                 void * tsz,
                                 void * pba)
 
+    double get_matter_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
+                                                         double k2_in_h_over_Mpc,
+                                                         double k3_in_h_over_Mpc,
+                                                         double z,
+                                                         void * ptsz,
+                                                         void * pba,
+                                                         void * pnl,
+                                                         void * ppm)
+
+
     double get_nu_at_z_and_m(double z_asked,
                              double m_asked,
                              void * tsz,

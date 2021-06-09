@@ -1657,6 +1657,9 @@ cdef class Class:
     def get_nu_at_z_and_m(self,z,m):
         return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)
 
+    def get_matter_bispectrum_at_z_effective_approach(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
+        return get_matter_bispectrum_at_z_effective_approach(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
+
     def get_vrms2_at_z(self,z):
         return get_vrms2_at_z(z,&self.tsz)
 

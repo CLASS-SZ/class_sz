@@ -7935,7 +7935,9 @@ int read_SO_noise(struct tszspectrum * ptsz){
                             struct tszspectrum * ptsz){
 
 double z_min,z_max;
-if (ptsz->need_hmf==0 && ptsz->has_kSZ_kSZ_gal_hf == 0){
+if (ptsz->need_hmf==0
+ && ptsz->has_kSZ_kSZ_gal_hf == 0
+ && ptsz->has_bk_at_z_hf == 0){
   class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
   z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM)+1e-7;
   z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
@@ -8900,7 +8902,9 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct primordial * ppm,
                                       struct tszspectrum * ptsz){
 
-if (ptsz->need_hmf == 0 && ptsz->has_kSZ_kSZ_gal_hf == 0)
+if (ptsz->need_hmf == 0
+ && ptsz->has_kSZ_kSZ_gal_hf == 0
+ && ptsz->has_bk_at_z_hf == 0)
   return 0;
 
 // printf("need_hmf2 = %d\n",ptsz->need_hmf);
