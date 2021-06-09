@@ -30,11 +30,11 @@ For download and information on **class**, see http://class-code.net and https:/
 
 CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such as:
 
-- `hmvec <https://github.com/simonsobs/hmvec/tree/master/hmvec>`_.
+- `hmvec <https://github.com/simonsobs/hmvec/tree/master/hmvec>`_,
 
-- `ccl <https://github.com/LSSTDESC/CCL>`_.
+- `ccl <https://github.com/LSSTDESC/CCL>`_,
 
-- `HaloGen <https://github.com/EmmanuelSchaan/HaloGen/tree/master>`_.
+- `HaloGen <https://github.com/EmmanuelSchaan/HaloGen/tree/master>`_,
 
 - `yxg <https://github.com/nikfilippas/yxg>`_.
 
