@@ -20,7 +20,7 @@ The code is currently in development, don't hesitate to reach out if anything is
 
 CLASS_SZ is an extension of Julien Lesgourgues's CLASS code.
 
-For download and information on **class**, see http://class-code.net and https://github.com/lesgourg/class_public
+For download and information on CLASS, see http://class-code.net and https://github.com/lesgourg/class_public
 
 CLASS_SZ is initially based on Eiichiro Komatsu’s fortran code SZFAST.
 
