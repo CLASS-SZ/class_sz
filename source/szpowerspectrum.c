@@ -1613,6 +1613,7 @@ else if (ptsz->MF==5 || ptsz->MF==7){
 
  }
 
+
    if (_hmf_){
 
       ptsz->hmf_int = Pvectsz[ptsz->index_integral];
@@ -2110,13 +2111,27 @@ double integrand_at_m_and_z(double logM,
    // pvectsz[ptsz->index_hmf] = get_dndlnM_at_z_and_M(z_asked,m_asked,ptsz);
 
    evaluate_completeness(pvecback,pvectsz,pba,ptsz);
+
+   int index_md = (int) pvectsz[ptsz->index_md];
+
    int index_l = (int) pvectsz[ptsz->index_multipole];
 
+   double z = pvectsz[ptsz->index_z];
+   double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+   double kl;
+   if (_pk_at_z_1h_ || _bk_at_z_1h_){
+     int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
+     kl = ptsz->k_for_pk_hm[index_k];
+      }
+   else{
+     kl = (ptsz->ell[index_l]+0.5)/d_A;
+    }
+   double damping_1h_term = (1.-exp(-pow(kl*pba->h/ptsz->kstar_damping_1h_term_Mpc,2.)));
 
 
 
 
-      int index_md = (int) pvectsz[ptsz->index_md];
+
 
    if (_hmf_){
 
@@ -2150,7 +2165,8 @@ double integrand_at_m_and_z(double logM,
                                            pvectsz[ptsz->index_hmf]
                                            //*pvectsz[ptsz->index_dlnMdeltadlnM]
                                            *pvectsz[ptsz->index_completeness]
-                                           *pow(pressure_profile_at_ell,2.);
+                                           *pow(pressure_profile_at_ell,2.)
+                                           *damping_1h_term;
       // printf("dn = %.3e, u = %.3e\n",pvectsz[ptsz->index_hmf],pressure_profile_at_ell);
 
     }
@@ -2221,7 +2237,8 @@ double integrand_at_m_and_z(double logM,
                                              *pvectsz[ptsz->index_hmf]
                                              //*pvectsz[ptsz->index_dlnMdeltadlnM]
                                              *pvectsz[ptsz->index_completeness]
-                                             *pow(pressure_profile_at_ell,2.);
+                                             *pow(pressure_profile_at_ell,2.)
+                                             *damping_1h_term;
         }
  else if  (_m_y_y_2h_){
          pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
@@ -2645,7 +2662,8 @@ double integrand_at_m_and_z(double logM,
 
        pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                          *pressure_profile_at_ell_1
-                                         *lensing_profile_at_ell_2;
+                                         *lensing_profile_at_ell_2
+                                         *damping_1h_term;
    // printf("intg = %.3e\n",pvectsz[ptsz->index_integrand]);
    // printf("hmf = %.3e\n",pvectsz[ptsz->index_hmf]);
    // printf("tau1 = %.3e\n",pressure_profile_at_ell_1);
@@ -2716,7 +2734,8 @@ double integrand_at_m_and_z(double logM,
                                       *pvectsz[ptsz->index_mass_for_hmf]
                                       *pvectsz[ptsz->index_mass_for_hmf]
                                       *density_profile_at_k_1
-                                      *density_profile_at_k_1;
+                                      *density_profile_at_k_1
+                                      *damping_1h_term;
    }
 
   else if (_pk_at_z_2h_){
@@ -2740,7 +2759,8 @@ double integrand_at_m_and_z(double logM,
                                       *pvectsz[ptsz->index_mass_for_hmf]
                                       *density_profile_at_k_1
                                       *density_profile_at_k_1
-                                      *density_profile_at_k_1;
+                                      *density_profile_at_k_1
+                                      *damping_1h_term;
    }
 
   else if (_bk_at_z_2h_){
@@ -2787,7 +2807,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
         pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                           *galaxy_profile_at_ell_1
-                                          *galaxy_profile_at_ell_1;
+                                          *galaxy_profile_at_ell_1
+                                          *damping_1h_term;
    }
 
    else if (_gal_gal_2h_){
@@ -2833,7 +2854,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
                                                //*pvectsz[ptsz->index_dlnMdeltadlnM]
                                                //*pvectsz[ptsz->index_completeness]
                                                *pvectsz[ptsz->index_lensing_profile]
-                                               *pvectsz[ptsz->index_galaxy_profile];
+                                               *pvectsz[ptsz->index_galaxy_profile]
+                                               *damping_1h_term;
                                                //*pvectsz[ptsz->index_halo_bias];
             // printf("pvectsz[ptsz->index_galaxy_profile] = %.5e\n", pvectsz[ptsz->index_galaxy_profile]);
             // printf("pvectsz[ptsz->index_lensing_profile] = %.5e\n", pvectsz[ptsz->index_lensing_profile]);
@@ -2896,7 +2918,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
                  pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                                    *galaxy_profile_at_ell_1
-                                                   *lensing_profile_at_ell_2;
+                                                   *lensing_profile_at_ell_2
+                                                   *damping_1h_term;
 
                   }
            else if (_gal_lensmag_2h_){
@@ -2963,7 +2986,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
                  pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                                    *lensing_profile_at_ell_1
-                                                   *lensing_profile_at_ell_2;
+                                                   *lensing_profile_at_ell_2
+                                                   *damping_1h_term;
 
                   }
            else if (_lensmag_lensmag_2h_){
@@ -3002,7 +3026,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
                  pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                                    *lensing_profile_at_ell_1
-                                                   *lensing_profile_at_ell_2;
+                                                   *lensing_profile_at_ell_2
+                                                   *damping_1h_term;
 
 
                   }
@@ -3036,7 +3061,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
         pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                           *cib_profile_at_ell_1
-                                          *cib_profile_at_ell_1;
+                                          *cib_profile_at_ell_1
+                                          *damping_1h_term;
    }
 
    else if (_cib_cib_2h_){
@@ -3065,7 +3091,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                       *cib_profile_at_ell_1
-                                      *pressure_profile_at_ell_2;
+                                      *pressure_profile_at_ell_2
+                                      *damping_1h_term;
    }
    else if  (_tSZ_cib_2h_){
 
@@ -3111,7 +3138,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                       *cib_profile_at_ell_1
-                                      *lensing_profile_at_ell_2;
+                                      *lensing_profile_at_ell_2
+                                      *damping_1h_term;
    }
    else if  (_lens_cib_2h_){
 
@@ -3161,7 +3189,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
         pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                           *galaxy_profile_at_ell_1
-                                          *pressure_profile_at_ell_2;
+                                          *pressure_profile_at_ell_2
+                                          *damping_1h_term;
     // printf("\n");
     // printf("u_g = %.3e\n",galaxy_profile_at_ell_1);
     // printf("u_p = %.3e\n",pressure_profile_at_ell_2);
@@ -3230,7 +3259,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
                                           *pvectsz[ptsz->index_dlnMdeltadlnM]
                                           *pvectsz[ptsz->index_completeness]
                                           *lensing_profile_at_ell_1
-                                          *lensing_profile_at_ell_1;
+                                          *lensing_profile_at_ell_1
+                                          *damping_1h_term;
    }
 
    else if (_lens_lens_2h_){
@@ -3266,7 +3296,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
                                           *pvectsz[ptsz->index_dlnMdeltadlnM]
                                           *pvectsz[ptsz->index_completeness]
                                           *lensing_profile_at_ell_1
-                                          *pressure_profile_at_ell_2;
+                                          *pressure_profile_at_ell_2
+                                          *damping_1h_term;
    }
 
    else if  (_tSZ_lens_2h_){

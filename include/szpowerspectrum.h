@@ -715,7 +715,7 @@ struct tszspectrum {
   int unwise_filter_size;
 
 
-
+  double kstar_damping_1h_term_Mpc; // inverse Mpc
 
   /*Redshift limits for the integration*/
   double z1SZ;

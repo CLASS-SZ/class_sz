@@ -6701,6 +6701,8 @@ double integrand_patterson_test(double logM, void *p){
   double r; //store result of mass integral
 
 
+
+
   if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_Y_N_next_order )){
 
   double r_cov_Y_N_next_order_1; // for cov_Y_N_next_order: first part of redshift integrand
@@ -10176,7 +10178,7 @@ double get_theta_at_m_and_z(double m, double z, struct tszspectrum * ptsz, struc
              ptsz->error_message,
              ptsz->error_message);
 
-
+// Eq. 9 of https://arxiv.org/pdf/1303.5080.pdf
 double H0 = pba->h*100.;
 double Eh = pvecback[pba->index_bg_H]/pba->H0;
 double d_A = pvecback[pba->index_bg_ang_distance]*pba->h;

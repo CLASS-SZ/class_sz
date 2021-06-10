@@ -1744,6 +1744,8 @@ int input_read_parameters(
       class_read_double("dlnk_for_pk_hm",ptsz->dlnk_for_pk_hm);
       class_read_double("z_for_pk_hm",ptsz->z_for_pk_hm);
 
+      class_read_double("kstar_damping_1h_term (1/Mpc)",ptsz->kstar_damping_1h_term_Mpc);
+
 
       class_read_int("n_m_dndlnM",ptsz->n_m_dndlnM);
       class_read_int("n_z_dndlnM",ptsz->n_z_dndlnM);
@@ -4882,6 +4884,7 @@ int input_default_params(
   ptsz->M2SZ_dndlnM = 1.e17;
   ptsz->N_mass_dndlnM = 200;
 
+  ptsz->kstar_damping_1h_term_Mpc = 0.01; //same as hmvec default value in inverse Mpc
 
   ptsz->n_arraySZ_for_integral = 30; //used in redshift integral
 
@@ -5010,7 +5013,7 @@ int input_default_params(
   ptsz->ystar_ym = -0.186; //-0.186 ref. value in SZ_plus_priors.ini (cosmomc)
   ptsz->alpha_ym = 1.78; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
   // ptsz->ystar_ym = pow(10.,-0.19)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
-  ptsz->sigmaM_ym = 0.075; //in log10 see tab 1 of planck cc 2015 paper
+  ptsz->sigmaM_ym = 0.173; //innatura logsee tab 1 of planck cc 2015 paper
   ptsz->beta_ym = 0.66;
   ptsz->thetastar = 6.997;
   ptsz->alpha_theta = 1./3.;
