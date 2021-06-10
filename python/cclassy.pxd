@@ -568,6 +568,8 @@ cdef extern from "class.h":
                                              double nu_asked,
                                              void * tsz)
 
+    double get_y_at_m_and_z(double m, double z, void * ptsz, void * pba)
+
     double get_sigma_at_z_and_m(double z_asked,
                                 double m_asked,
                                 void * tsz,

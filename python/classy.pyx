@@ -1654,6 +1654,10 @@ cdef class Class:
     def get_sigma_at_z_and_m(self,z,m):
         return get_sigma_at_z_and_m(z,m,&self.tsz,&self.ba)
 
+    def get_y_at_m_and_z(self,m,z):
+        return get_y_at_m_and_z(m, z, &self.tsz, &self.ba)
+
+
     def get_nu_at_z_and_m(self,z,m):
         return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)
 
