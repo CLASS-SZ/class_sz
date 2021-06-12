@@ -5042,10 +5042,11 @@ int input_default_params(
   ptsz->thetastar = 6.997;
   ptsz->alpha_theta = 1./3.;
 
-  ptsz->B_ym = 0.08;// or 0.08;
-  ptsz->A_ym = 4.95e-5;//or  4.95e-5;
+  // values in Hasselfield et al 2013
+  ptsz->B_ym = 0.08;
+  ptsz->A_ym = 4.95e-5;
   ptsz->C_ym = -0.025;
-  
+
   ptsz->temperature_mass_relation=0;
 
   //For the computation of sigma2
