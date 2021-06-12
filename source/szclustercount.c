@@ -235,6 +235,13 @@ if (pcsz->has_completeness == 1){
         double thp = get_theta_at_m_and_z(mp,zp,ptsz,pba);
         //Planck
 
+        // if not planck, apply the mismatch function with C correction
+        if (ptsz->experiment == 1){
+          double m_pivot = 3.e14*0.7;
+          double m_over_m_pivot_500c = mp/m_pivot;
+          thp = thp*pow(m_over_m_pivot_500c,ptsz->C_ym);
+        }
+
 
         find_theta_bin(ptsz,thp,l_array,theta_array);
         int l1 = l_array[1];
@@ -382,6 +389,13 @@ if (pcsz->has_completeness == 1){
         }
         double yp = get_y_at_m_and_z(mp,zp,ptsz,pba);
         double thp = get_theta_at_m_and_z(mp,zp,ptsz,pba);
+
+        // if not planck, apply the mismatch function with C correction
+        if (ptsz->experiment == 1){
+          double m_pivot = 3.e14*0.7;
+          double m_over_m_pivot_500c = mp/m_pivot;
+          thp = thp*pow(m_over_m_pivot_500c,ptsz->C_ym);
+        }
 
         find_theta_bin(ptsz,thp,l_array,theta_array);
         int l1 = l_array[1];

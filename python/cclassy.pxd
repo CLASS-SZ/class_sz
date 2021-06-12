@@ -554,11 +554,37 @@ cdef extern from "class.h":
                                  double m_asked,
                                  void * tsz)
 
+
+    double get_m200m_to_m500c_at_z_and_M(double z_asked,
+                                         double m_asked,
+                                         void * tsz)
+
+    double get_m200c_to_m500c_at_z_and_M(double z_asked,
+                                         double m_asked,
+                                         void * tsz)
+
+    double get_m500c_to_m200c_at_z_and_M(double z_asked,
+                                         double m_asked,
+                                         void * tsz)
+
     double get_density_profile_at_l_M_z(double l_asked,
                                         double m_asked,
                                         double z_asked,
                                         void * tsz)
 
+    double get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(double z,
+                                                               double m,
+                                                               double x,
+                                                               void * pba,
+                                                               void * ptsz)
+
+
+
+    double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double z,
+                                                           double m,
+                                                           double x,
+                                                           void * pba,
+                                                           void * ptsz)
 
     double get_second_order_bias_at_z_and_nu(double z_asked,
                                              double nu_asked,

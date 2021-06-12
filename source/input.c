@@ -1865,6 +1865,7 @@ int input_read_parameters(
 
       class_read_double("A_ym",ptsz->A_ym);
       class_read_double("B_ym",ptsz->B_ym);
+      class_read_double("C_ym",ptsz->C_ym);
 
       //For the computation of sigma2
       class_read_int("ndim_masses",ptsz->ndimSZ);
@@ -2514,7 +2515,15 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
-
+      if ((strstr(string1,"m200c_to_m500c") != NULL) ) {
+          ptsz->need_m200c_to_m500c = 1;
+          }
+      if ((strstr(string1,"m500c_to_m200c") != NULL) ) {
+          ptsz->need_m500c_to_m200c = 1;
+          }
+      if ((strstr(string1,"m200m_to_m500c") != NULL) ) {
+          ptsz->need_m200m_to_m500c = 1;
+          }
       class_call(parser_read_string(pfc,"include_ssc",&string1,&flag1,errmsg),
                    errmsg,
                    errmsg);
@@ -4955,6 +4964,21 @@ int input_default_params(
   ptsz->alpha_p = 0.12;
   //Hydrostatic Equilibrium Mass Bias, Piffaretti & Valdarnini [arXiv:0808.1111]
 
+
+  // battaglia pressure profile:
+   ptsz->P0_B12 = 18.1;
+   ptsz->xc_B12 = 0.497;
+   ptsz->beta_B12 = 4.35;
+
+   ptsz->alpha_m_P0_B12 = 0.154;
+   ptsz->alpha_m_xc_B12 = -0.00865;
+   ptsz->alpha_m_beta_B12 = 0.0393;
+
+   ptsz->alpha_z_P0_B12 = -0.758;
+   ptsz->alpha_z_xc_B12 = 0.731;
+   ptsz->alpha_z_beta_B12 = 0.415;
+
+
   //units
   ptsz->nu_y_dist_GHz = 150.;
   ptsz->exponent_unit = 2; // 2: dimensionless, 0:  'muK' (micro Kelvin)
@@ -5018,9 +5042,10 @@ int input_default_params(
   ptsz->thetastar = 6.997;
   ptsz->alpha_theta = 1./3.;
 
-  ptsz->B_ym = 0.;// or 0.08;
-  ptsz->A_ym = 2.65e-5;//or  4.95e-5;
-
+  ptsz->B_ym = 0.08;// or 0.08;
+  ptsz->A_ym = 4.95e-5;//or  4.95e-5;
+  ptsz->C_ym = -0.025;
+  
   ptsz->temperature_mass_relation=0;
 
   //For the computation of sigma2
@@ -5239,6 +5264,8 @@ int input_default_params(
   ptsz->integrate_wrt_m200m = 1;
 
   ptsz->need_m200m_to_m500c = 0;
+  ptsz->need_m200c_to_m500c = 0;
+  ptsz->need_m500c_to_m200c = 0;
   ptsz->need_hmf = 0;
 
   ptsz->has_electron_pressure = 0;

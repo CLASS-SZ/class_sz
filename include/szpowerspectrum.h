@@ -159,7 +159,8 @@ struct tszspectrum {
 
   int need_m200m_to_m500c;
   int need_hmf;
-
+  int need_m200c_to_m500c;
+  int need_m500c_to_m200c;
 
   int integrate_wrt_mvir;
   int integrate_wrt_m500c;
@@ -894,6 +895,8 @@ struct tszspectrum {
   double beta_ym;
   double A_ym;
   double B_ym;
+  double C_ym;
+  
   double alpha_theta;
   int y_m_relation;
   double thetastar;
@@ -1082,6 +1085,15 @@ double * steps_m;
   double * array_m_m200m_to_m500c;
   double * array_ln_1pz_m200m_to_m500c;
   double * array_m200m_to_m500c_at_z_and_M;
+
+  double * array_m_m200c_to_m500c;
+  double * array_ln_1pz_m200c_to_m500c;
+  double * array_m200c_to_m500c_at_z_and_M;
+
+
+  double * array_m_m500c_to_m200c;
+  double * array_ln_1pz_m500c_to_m200c;
+  double * array_m500c_to_m200c_at_z_and_M;
 
 
 
@@ -1492,6 +1504,21 @@ double get_nu_at_z_and_m(double z,
                          double m,
                          struct tszspectrum * ptsz,
                          struct background * pba);
+
+// this is r_200c*P_200c
+double get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(double z,
+                                                           double m,
+                                                           double x,
+                                                           struct background * pba,
+                                                           struct tszspectrum * ptsz);
+
+
+double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double z,
+                                                      double m,
+                                                      double x,
+                                                      struct background * pba,
+                                                      struct tszspectrum * ptsz);
+
 
 struct Parameters_for_integrand_kSZ2_X_at_theta{
 struct nonlinear * pnl;

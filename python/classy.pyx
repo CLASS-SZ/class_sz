@@ -1657,6 +1657,15 @@ cdef class Class:
     def get_y_at_m_and_z(self,m,z):
         return get_y_at_m_and_z(m, z, &self.tsz, &self.ba)
 
+    def get_m200m_to_m500c_at_z_and_M(self,z,m):
+        return get_m200m_to_m500c_at_z_and_M(z,m,&self.tsz)
+
+    def get_m200c_to_m500c_at_z_and_M(self,z,m):
+        return get_m200c_to_m500c_at_z_and_M(z,m,&self.tsz)
+
+    def get_m500c_to_m200c_at_z_and_M(self,z,m):
+        return get_m500c_to_m200c_at_z_and_M(z,m,&self.tsz)
+
 
     def get_nu_at_z_and_m(self,z,m):
         return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)
@@ -1664,9 +1673,16 @@ cdef class Class:
     def get_matter_bispectrum_at_z_effective_approach(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
         return get_matter_bispectrum_at_z_effective_approach(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
 
+
     def get_vrms2_at_z(self,z):
         return get_vrms2_at_z(z,&self.tsz)
 
+
+    def get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(self,z,m,x):
+        return get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(z,m,x,&self.ba,&self.tsz)
+
+    def get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(self,z,m,x):
+        return get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(z,m,x,&self.ba,&self.tsz)
 
 
     def dndzdy_theoretical(self):

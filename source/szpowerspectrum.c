@@ -148,6 +148,11 @@ int szpowerspectrum_init(
    if (ptsz->need_m200m_to_m500c == 1)
       tabulate_m200m_to_m500c(pba,ptsz);
 
+   if (ptsz->need_m200c_to_m500c == 1)
+      tabulate_m200c_to_m500c(pba,ptsz);
+
+   if (ptsz->need_m500c_to_m200c == 1)
+      tabulate_m500c_to_m200c(pba,ptsz);
    //exit(0);
 
    external_pressure_profile_init(ppr,ptsz);
@@ -661,6 +666,17 @@ if (ptsz->need_m200m_to_m500c){
    }
 
 
+if (ptsz->need_m200c_to_m500c){
+  free(ptsz->array_m_m200c_to_m500c);
+  free(ptsz->array_ln_1pz_m200c_to_m500c);
+  free(ptsz->array_m200c_to_m500c_at_z_and_M);
+  }
+
+if (ptsz->need_m500c_to_m200c){
+  free(ptsz->array_m_m500c_to_m200c);
+  free(ptsz->array_ln_1pz_m500c_to_m200c);
+  free(ptsz->array_m500c_to_m200c_at_z_and_M);
+  }
 
 
 
@@ -3982,6 +3998,8 @@ int evaluate_pressure_profile(double * pvecback,
       characteristic_radius = pvectsz[ptsz->index_r200c]/pba->h; //in Mpc
       characteristic_multipole = pvectsz[ptsz->index_l200c];
 
+
+
    }
 
    else {
@@ -4057,6 +4075,176 @@ int evaluate_pressure_profile(double * pvecback,
 
    return _SUCCESS_;
 }
+
+
+// this is r_200c*P_200c
+double get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(double x,
+                                                           double z,
+                                                           double m,
+                                                           struct background * pba,
+                                                           struct tszspectrum * ptsz){
+
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+        pba->bg_size*sizeof(double),
+        ptsz->error_message);
+
+  class_call(background_tau_of_z(pba,z,&tau),
+       ptsz->error_message,
+       ptsz->error_message);
+
+  class_call(background_at_tau(pba,
+                         tau,
+                         pba->long_info,
+                         pba->inter_normal,
+                         &first_index_back,
+                         pvecback),
+       ptsz->error_message,
+       ptsz->error_message);
+
+  double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283.2980000259841/0.5176*pba->T_cmb/2.725;
+
+
+  double rho_crit = (3./(8.*_PI_*_G_*_M_sun_))
+                  *pow(_Mpc_over_m_,1)
+                  *pow(_c_,2)
+                  *pvecback[pba->index_bg_rho_crit]
+                  /pow(pba->h,2);
+
+  double r200c =  pow(3.*m/(4.*_PI_*200.*rho_crit),1./3.);
+
+
+  double f_b = pba->Omega0_b/ptsz->Omega_m_0;
+  double Eh = pvecback[pba->index_bg_H]/pba->H0;
+  double d_A = pvecback[pba->index_bg_ang_distance]*pba->h; // in Mpc/h
+
+
+  double P_200 = m/r200c*f_b*2.61051e-18*pow(100.*pba->h*Eh,2.);
+
+
+  /// NORMALIZED PRESSURE PROFILE PART
+
+  double xc;
+  double beta;
+  double P0;
+
+  double m200_over_msol = m/pba->h; // convert to Msun
+
+
+  P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
+  xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
+  beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
+
+  double gamma = -0.3;
+  double alpha = 1.0;
+
+  double plc_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta);
+
+
+  //putting everything together
+  double result = sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb // here Tcmb is in muK
+                   /50. // to cancel the factor 50 above 50eV/cm^3
+                   /pba->T_cmb
+                   *P_200
+                   *plc_x
+                   *r200c/pba->h; //in Mpc
+
+
+  free(pvecback);
+  return result;
+
+}
+
+// this is r_500c*P_500c
+double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double x,
+                                                      double z,
+                                                      double m,
+                                                      struct background * pba,
+                                                      struct tszspectrum * ptsz){
+
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+        pba->bg_size*sizeof(double),
+        ptsz->error_message);
+
+  class_call(background_tau_of_z(pba,z,&tau),
+       ptsz->error_message,
+       ptsz->error_message);
+
+  class_call(background_at_tau(pba,
+                         tau,
+                         pba->long_info,
+                         pba->inter_normal,
+                         &first_index_back,
+                         pvecback),
+       ptsz->error_message,
+       ptsz->error_message);
+
+  double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283.2980000259841/0.5176*pba->T_cmb/2.725;
+
+
+  double rho_crit = (3./(8.*_PI_*_G_*_M_sun_))
+                  *pow(_Mpc_over_m_,1)
+                  *pow(_c_,2)
+                  *pvecback[pba->index_bg_rho_crit]
+                  /pow(pba->h,2);
+
+  double r500c =  pow(3.*m/(4.*_PI_*500.*rho_crit),1./3.);
+
+  double Eh = pvecback[pba->index_bg_H]/pba->H0;
+
+  // formula D1 of WMAP 7 year paper (normalisation of pressure profile)
+  // see also formula 5 of Planck 2013 profile paper, P500:
+   // double C_pressure = 1.65*pow(pba->h/0.7,2)
+   //                     *pow(Eh,8./3.)
+   //                     *pow(m/(3.e14*0.7),2./3.+ptsz->alpha_p);
+                       //*pow(m/3.e14, ptsz->delta_alpha);
+
+  // hasselfield et al 2013:
+   double C_pressure = 1.65*pow(pba->h/0.7,2)
+                       *pow(Eh,8./3.)
+                       *pow(m/(3.e14*0.7),2./3.)
+                       *pow(m/(3.e14*0.7),0.22/(1.+8.*pow(x,3.)));
+
+
+   //A10:
+  double pressure_normalisation = C_pressure
+                                  *ptsz->P0GNFW
+                                  *pow(0.7/pba->h, 1.5); // as found by dimensional analysis (X-ray data, see email with E. Komatsu and R. Makya)
+
+
+
+
+  //putting everything together
+
+
+
+  double plc_x =  (1./(pow(ptsz->c500*x,ptsz->gammaGNFW)
+                  *pow(1.+ pow(ptsz->c500*x,ptsz->alphaGNFW),
+                  (ptsz->betaGNFW-ptsz->gammaGNFW)/ptsz->alphaGNFW)));
+
+
+  // double result = plc_x*ptsz->P0GNFW*pow(0.7/pba->h, 1.5);
+
+
+  double result = sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb // here Tcmb is in muK
+                  /50. // to cancel the factor 50 above 50eV/cm^3
+                  /pba->T_cmb
+                  *pressure_normalisation
+                  *plc_x
+                  *r500c/pba->h; //in Mpc
+  free(pvecback);
+  return result;
+
+}
+
+
+
+
 
 int evaluate_completeness(double * pvecback,
                           double * pvectsz,
