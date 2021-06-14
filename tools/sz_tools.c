@@ -9159,15 +9159,14 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
     return 0;
   }
 
-if (ptsz->sz_verbose>=1)
+if (ptsz->sz_verbose>=1){
 printf("-> Tabulating Wz for lensing magnification\n");
+}
   //Array of z
   double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   int index_z;
   double ln1pz,z;
-
-printf("-> start tabulating Wz for lensing magnification\n");
   class_alloc(ptsz->array_W_lensmag,sizeof(double *)*ptsz->n_z_W_lensmag,ptsz->error_message);
   class_alloc(ptsz->array_z_W_lensmag,sizeof(double *)*ptsz->n_z_W_lensmag,ptsz->error_message);
 

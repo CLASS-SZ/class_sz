@@ -2227,17 +2227,17 @@ double integrand_at_m_and_z(double logM,
  }
 
  else if  (_te_y_y_){
-         pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
-         evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
-         double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
-          //int index_l = (int) pvectsz[ptsz->index_multipole];
-           evaluate_temperature_mass_relation(pvecback,pvectsz,pba,ptsz);
+        pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+        evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+        double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
+        //int index_l = (int) pvectsz[ptsz->index_multipole];
+        evaluate_temperature_mass_relation(pvecback,pvectsz,pba,ptsz);
 
-          pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_te_of_m]
-                                           //*pvectsz[ptsz->index_chi2]
-                                           *pvectsz[ptsz->index_hmf]
-                                           *pvectsz[ptsz->index_completeness]
-                                           *pow(pvectsz[ptsz->index_pressure_profile],2.);
+        pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_te_of_m]
+                                         //*pvectsz[ptsz->index_chi2]
+                                         *pvectsz[ptsz->index_hmf]
+                                         // *pvectsz[ptsz->index_completeness]
+                                         *pow(pvectsz[ptsz->index_pressure_profile],2.);
 
 
         }
