@@ -853,6 +853,27 @@ cdef class Class:
 
         return pk_lin
 
+    # Gives the total matter pk for a given (k,z)
+    def pk_nonlin(self,double k,double z):
+        """
+        Gives the linear total matter pk (in Mpc**3) for a given k (in 1/Mpc) and z
+
+        .. note::
+
+            there is an additional check that output contains `mPk`,
+            because otherwise a segfault will occur
+
+        """
+        cdef double pk_lin
+
+        if (self.pt.has_pk_matter == _FALSE_):
+            raise CosmoSevereError("No power spectrum computed. You must add mPk to the list of outputs.")
+
+        if nonlinear_pk_at_k_and_z(&self.ba,&self.pm,&self.nl,pk_nonlinear,k,z,self.nl.index_pk_m,&pk_lin,NULL)==_FAILURE_:
+            raise CosmoSevereError(self.nl.error_message)
+
+        return pk_lin
+
     # Gives the cdm+b pk for a given (k,z)
     def pk_cb_lin(self,double k,double z):
         """
@@ -1653,7 +1674,8 @@ cdef class Class:
 
     def get_sigma_at_z_and_m(self,z,m):
         return get_sigma_at_z_and_m(z,m,&self.tsz,&self.ba)
-
+    def get_sigma8_at_z(self,z):
+        return get_sigma8_at_z(z,&self.tsz,&self.ba)
     def get_y_at_m_and_z(self,m,z):
         return get_y_at_m_and_z(m, z, &self.tsz, &self.ba)
 
@@ -1672,6 +1694,11 @@ cdef class Class:
 
     def get_matter_bispectrum_at_z_effective_approach(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
         return get_matter_bispectrum_at_z_effective_approach(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
+    def get_matter_bispectrum_at_z_effective_approach_SC(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
+        return get_matter_bispectrum_at_z_effective_approach_SC(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
+
+    def get_nl_index_at_z_and_k(self,z,k1_in_h_over_Mpc):
+        return get_nl_index_at_z_and_k(z,k1_in_h_over_Mpc,&self.tsz,&self.nl)
 
 
     def get_vrms2_at_z(self,z):

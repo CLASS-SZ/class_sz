@@ -600,6 +600,13 @@ cdef extern from "class.h":
                                 double m_asked,
                                 void * tsz,
                                 void * pba)
+    double get_sigma8_at_z(double z_asked,
+                          void * tsz,
+                          void * pba)
+    double get_nl_index_at_z_and_k(double z_asked,
+                                    double k,
+                                    void * tsz,
+                                    void * nl)
 
     double get_matter_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
                                                          double k2_in_h_over_Mpc,
@@ -609,7 +616,14 @@ cdef extern from "class.h":
                                                          void * pba,
                                                          void * pnl,
                                                          void * ppm)
-
+    double get_matter_bispectrum_at_z_effective_approach_SC(double k1_in_h_over_Mpc,
+                                                         double k2_in_h_over_Mpc,
+                                                         double k3_in_h_over_Mpc,
+                                                         double z,
+                                                         void * ptsz,
+                                                         void * pba,
+                                                         void * pnl,
+                                                         void * ppm)
 
     double get_nu_at_z_and_m(double z_asked,
                              double m_asked,

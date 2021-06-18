@@ -80,11 +80,6 @@ int szpowerspectrum_init(
       + ptsz->has_vrms2
       + ptsz->has_sz_counts;
 
-  // int all_comps_hf =  ptsz->has_kSZ_kSZ_gal_hf;
-  //
-  // if (all_comps_hf == 1 && all_comps_hf == all_comps)
-  //     ptsz->need_hmf = 0;
-
 
    // Skip the module if no SZ/halo-model computations are requested:
     if (all_comps == _FALSE_)
@@ -692,17 +687,13 @@ if (ptsz->need_m500c_to_m200c){
 
 // if (ptsz->need_hmf + ptsz->has_vrms2 >= 1)
 
-if (ptsz->need_hmf == 1
- || ptsz->has_kSZ_kSZ_gal_hf
- || ptsz->has_bk_at_z_hf
+if (ptsz->need_sigma == 1
  || ptsz->has_vrms2){
    free(ptsz->array_redshift);
 
  }
 
-if (ptsz->need_hmf == 1
-|| ptsz->has_kSZ_kSZ_gal_hf
-|| ptsz->has_bk_at_z_hf ){
+if (ptsz->need_sigma == 1 ){
    //free(ptsz->array_redshift);
    free(ptsz->array_radius);
 
@@ -4553,7 +4544,21 @@ int evaluate_halo_bias(double * pvecback,
 
    return _SUCCESS_;
 }
-
+double get_sigma8_at_z(double z,
+                      struct tszspectrum * ptsz,
+                      struct background * pba){
+double z_asked = log(1.+z);
+double R_asked = log(8./pba->h); //log(R) in Mpc
+double sigma8_at_z =  exp(pwl_interp_2d(ptsz->n_arraySZ,
+                           ptsz->ndimSZ,
+                           ptsz->array_redshift,
+                           ptsz->array_radius,
+                           ptsz->array_sigma_at_z_and_R,
+                           1,
+                           &z_asked,
+                           &R_asked));
+return sigma8_at_z;
+                         }
 
 double get_sigma_at_z_and_m(double z,
                             double m,
@@ -5820,6 +5825,99 @@ int evaluate_vrms2(double * pvecback,
 return _SUCCESS_;
 }
 
+double get_matter_bispectrum_at_z_effective_approach_SC(double k1_in_h_over_Mpc,
+                                                     double k2_in_h_over_Mpc,
+                                                     double k3_in_h_over_Mpc,
+                                                     double z,
+                                                     struct tszspectrum * ptsz,
+                                                     struct background * pba,
+                                                     struct nonlinear * pnl,
+                                                     struct primordial * ppm){
+
+// // get background quantities at z:
+
+
+double * pk_ic = NULL;
+double pk1;
+//Input: wavenumber in 1/Mpc
+//Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+// printf("z=%.3e\n",z);
+class_call(nonlinear_pk_at_k_and_z(
+                                    pba,
+                                    ppm,
+                                    pnl,
+                                    pk_nonlinear,
+                                    k1_in_h_over_Mpc*pba->h,
+                                    z,
+                                    pnl->index_pk_m,
+                                    &pk1, // number *out_pk_l
+                                    pk_ic // array out_pk_ic_l[index_ic_ic]
+                                  ),
+                                  pnl->error_message,
+                                  pnl->error_message);
+//now compute P(k) in units of h^-3 Mpc^3
+pk1 *= pow(pba->h,3.);
+double pk2;
+//Input: wavenumber in 1/Mpc
+//Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+// printf("z=%.3e\n",z);
+class_call(nonlinear_pk_at_k_and_z(
+                                    pba,
+                                    ppm,
+                                    pnl,
+                                    pk_nonlinear,
+                                    k2_in_h_over_Mpc*pba->h,
+                                    z,
+                                    pnl->index_pk_m,
+                                    &pk2, // number *out_pk_l
+                                    pk_ic // array out_pk_ic_l[index_ic_ic]
+                                  ),
+                                  pnl->error_message,
+                                  pnl->error_message);
+//now compute P(k) in units of h^-3 Mpc^3
+pk2 *= pow(pba->h,3.);
+double pk3;
+//Input: wavenumber in 1/Mpc
+//Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+// printf("z=%.3e\n",z);
+class_call(nonlinear_pk_at_k_and_z(
+                                    pba,
+                                    ppm,
+                                    pnl,
+                                    pk_nonlinear,
+                                    k3_in_h_over_Mpc*pba->h,
+                                    z,
+                                    pnl->index_pk_m,
+                                    &pk3, // number *out_pk_l
+                                    pk_ic // array out_pk_ic_l[index_ic_ic]
+                                  ),
+                                  pnl->error_message,
+                                  pnl->error_message);
+//now compute P(k) in units of h^-3 Mpc^3
+pk3 *= pow(pba->h,3.);
+
+
+
+  double sigma8_at_z =  get_sigma8_at_z(z,ptsz,pba);
+
+  double knl = get_knl_at_z(z,ptsz);
+
+  double n1 = get_nl_index_at_z_and_k(z,k1_in_h_over_Mpc,ptsz,pnl);
+  double n2 = get_nl_index_at_z_and_k(z,k2_in_h_over_Mpc,ptsz,pnl);
+  double n3 = get_nl_index_at_z_and_k(z,k3_in_h_over_Mpc,ptsz,pnl);
+
+  // printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",n1,n2,n3);
+
+  double f2_eff_12 =  bispectrum_f2_kernel_eff_SC(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,n1,n2,sigma8_at_z,knl);
+  double f2_eff_23 =  bispectrum_f2_kernel_eff_SC(k2_in_h_over_Mpc,k3_in_h_over_Mpc,k1_in_h_over_Mpc,n2,n3,sigma8_at_z,knl);
+  double f2_eff_31 =  bispectrum_f2_kernel_eff_SC(k3_in_h_over_Mpc,k1_in_h_over_Mpc,k2_in_h_over_Mpc,n3,n1,sigma8_at_z,knl);
+
+  // printf("f1 = %.3e \t f2 = %.3e \t f3 = %.3e\n",f2_eff_12,f2_eff_23,f2_eff_31);
+
+  double b123 = 2.*pk1*pk2*f2_eff_12 + 2.*pk2*pk3*f2_eff_23 + 2.*pk3*pk1*f2_eff_31;
+  return b123;
+
+}
 
 double get_matter_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
                                                      double k2_in_h_over_Mpc,
@@ -5861,7 +5959,7 @@ class_call(nonlinear_pk_at_k_and_z(
                                     pba,
                                     ppm,
                                     pnl,
-                                    pk_linear,
+                                    pk_nonlinear,
                                     k1_in_h_over_Mpc*pba->h,
                                     z,
                                     pnl->index_pk_m,
@@ -5880,8 +5978,8 @@ class_call(nonlinear_pk_at_k_and_z(
                                     pba,
                                     ppm,
                                     pnl,
-                                    pk_linear,
-                                    k1_in_h_over_Mpc*pba->h,
+                                    pk_nonlinear,
+                                    k2_in_h_over_Mpc*pba->h,
                                     z,
                                     pnl->index_pk_m,
                                     &pk2, // number *out_pk_l
@@ -5899,8 +5997,8 @@ class_call(nonlinear_pk_at_k_and_z(
                                     pba,
                                     ppm,
                                     pnl,
-                                    pk_linear,
-                                    k1_in_h_over_Mpc*pba->h,
+                                    pk_nonlinear,
+                                    k3_in_h_over_Mpc*pba->h,
                                     z,
                                     pnl->index_pk_m,
                                     &pk3, // number *out_pk_l
@@ -7840,12 +7938,12 @@ int select_multipole_array(struct tszspectrum * ptsz)
   // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(5.*ptsz->ell_max_mock)
   //                                                  - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
 
-   // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(1e4)
-   //                                                  - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
+   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(1e4)
+                                                    - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
 
 
-   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = 2. + index_l*(1e4
-                                                    - 2.)/(ptsz->N_kSZ2_gal_multipole_grid-1.);
+   // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = 2. + index_l*(1e4
+   //                                                  - 2.)/(ptsz->N_kSZ2_gal_multipole_grid-1.);
 
 
   }
@@ -9601,6 +9699,7 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
                                   &theta_1,
                                   &ln_ell2);
       if (isnan(db)){
+        // db = 0.;
   printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",theta_1,ln_ell2,ell_3);
   printf("\n\n");
   exit(0);
@@ -9753,12 +9852,70 @@ double c2 = bispectrum_f2_kernel_eff_c(k2,n2,knl);
 double omega_m = 1.; // for simplicity here, not sure whether it should be omega_m(z)
 
 double term1 = 1.-2./7.*pow(omega_m,-2./63);
-double term2a = pow((k3*k3-k1*k1-k2*k2)/(2.*k1*k2),2.);
-double term2b = (k1*k1+k2*k2)/(k3*k3-k1*k1-k2*k2)*b1*b2+2./7.*pow(omega_m,-2./63)*c1*c2;
+double cos_theta_12 = (k3*k3-k1*k1-k2*k2)/(2.*k1*k2);
+double term2a = 1./2.*cos_theta_12*(k2/k1+k1/k2)*b1*b2;
+double term2b = cos_theta_12*cos_theta_12*2./7.*pow(omega_m,-2./63)*c1*c2;
 
-return term1*a1*a2+term2a*term2b;
+return term1*a1*a2+term2a+term2b;
 }
+double bispectrum_f2_kernel_eff_SC(double k1, double k2, double k3,
+                                double n1, double n2, double sig8_at_z, double knl){
+// double cos_theta = 1.;
+// double term1 = 5./7.;
+// double term2 = 1./2.*cos_theta*(k1/k2+k2/k1);
+// double term3 = 2./7*pow(cos_theta,2.);
+// return term1+term2+term3;
 
+double a1 = bispectrum_f2_kernel_eff_a_SC(k1,n1,sig8_at_z,knl);
+double a2 = bispectrum_f2_kernel_eff_a_SC(k2,n2,sig8_at_z,knl);
+
+double b1 = bispectrum_f2_kernel_eff_b_SC(k1,n1,knl);
+double b2 = bispectrum_f2_kernel_eff_b_SC(k2,n2,knl);
+
+double c1 = bispectrum_f2_kernel_eff_c_SC(k1,n1,knl);
+double c2 = bispectrum_f2_kernel_eff_c_SC(k2,n2,knl);
+
+// Eq. 13 of Cooray & Hu - https://iopscience.iop.org/article/10.1086/318660/fulltext/51716.text.html
+double omega_m = 1.; // for simplicity here, not sure whether it should be omega_m(z)
+
+double term1 = 1.-2./7.*pow(omega_m,-2./63);
+double cos_theta_12 = (k3*k3-k1*k1-k2*k2)/(2.*k1*k2);
+double term2a = 1./2.*cos_theta_12*(k2/k1+k1/k2)*b1*b2;
+double term2b = cos_theta_12*cos_theta_12*2./7.*pow(omega_m,-2./63)*c1*c2;
+
+return term1*a1*a2+term2a+term2b;
+}
+double bispectrum_f2_kernel_eff_a_SC(double k1,double n1,double sig8_at_z,double knl){
+double result;
+double a6 = -0.2;
+double a1 = 0.25;
+double a2 = 3.5;
+double q = k1/knl;
+double Q3 = bispectrum_f2_kernel_eff_Q3(n1);
+double term1 = 1. + pow(sig8_at_z,a6)*pow(0.7*Q3,1./2.)*pow(q*a1,n1+a2);
+double term2 = 1.+pow(q*a1,n1+a2);
+result = term1/term2;
+return result;
+}
+double bispectrum_f2_kernel_eff_b_SC(double k1,double n1,double knl){
+double result;
+double a3 = 2.;
+double q = k1/knl;
+double term1 = 1.+0.2*a3*(n1+3.)*pow(q,n1+3.);
+double term2 = 1.+pow(q,n1+3.5);
+result = term1/term2;
+return result;
+}
+double bispectrum_f2_kernel_eff_c_SC(double k1,double n1,double knl){
+double result;
+double a4 = 1.;
+double a5 = 2.;
+double q = k1/knl;
+double term1 = 1. + 4.5*a4/(1.5+pow(n1+3.,4))*pow(q*a5,n1+3.);
+double term2 = 1.+pow(q*a5,n1+3.5);
+result = term1/term2;
+return result;
+}
 double bispectrum_f2_kernel_eff_a(double k1,double n1,double sig8_at_z,double knl){
 double result;
 double a6 = -0.575;

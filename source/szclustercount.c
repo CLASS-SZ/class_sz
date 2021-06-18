@@ -602,7 +602,7 @@ double integrand_cluster_counts_mass(double lnm, void *p){
           //   c1 = 1.;
           // }
           if (isnan(get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz))){
-            printf("volume = %.3e dn = %.3e c = %.3e\n",get_volume_at_z(V->z,V->pba),get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz),c1);
+            printf("z = %.3e volume = %.3e dn = %.3e c = %.3e\n",V->z,get_volume_at_z(V->z,V->pba),get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz),c1);
             exit(0);
             }
   result = f1*c1;
@@ -911,23 +911,28 @@ else if (ptsz->experiment==1){
   for (index_y = 0; index_y<pcsz->Nbins_y+1; index_y ++){
     logy[index_y] = y_i;
     y_i += pcsz->dlogy;
-    if (y_i >= 1.4){
-      break;
-    }
-    // printf("index_y=%d, logy=%e\n",index_y,logy[index_y]);
+    // if (y_i >= 1.5){
+    //   break;
+    // }
+    // // printf("index_y=%d, logy=%e\n",index_y,logy[index_y]);
   }
-  pcsz->Nbins_y = index_y+1;
+  // pcsz->Nbins_y = index_y+1;
+  // pcsz->Nbins_y = index_y;
   class_alloc(pcsz->logy,(pcsz->Nbins_y+1)*sizeof(double),pcsz->error_message);
-  for (index_y = 0; index_y<pcsz->Nbins_y; index_y ++){
+  for (index_y = 0; index_y<pcsz->Nbins_y+1; index_y ++){
     pcsz->logy[index_y] = logy[index_y];
 
     // printf("index_y=%d, logy=%e\n",index_y,logy[index_y]);
   }
-  ptsz->bin_dlog10_snr_last_bin = (pcsz->logy_max-pcsz->logy[pcsz->Nbins_y-1]);
-  pcsz->logy[pcsz->Nbins_y] = pcsz->logy[pcsz->Nbins_y-1]+pcsz->dlogy/2.+ptsz->bin_dlog10_snr_last_bin/2.;
+  // if (pcsz->logy_max <= pcsz->logy[pcsz->Nbins_y-1]){
+  //   pcsz->logy_max = pcsz->logy[pcsz->Nbins_y-1] + pcsz->dlogy;
+  // }
+  ptsz->bin_dlog10_snr_last_bin = pcsz->dlogy;
+  // ptsz->bin_dlog10_snr_last_bin = (pcsz->logy_max-pcsz->logy[pcsz->Nbins_y-1]);
+  // pcsz->logy[pcsz->Nbins_y] = pcsz->logy[pcsz->Nbins_y-1]+pcsz->dlogy/2.+ptsz->bin_dlog10_snr_last_bin/2.;
 
 // for (index_y = 0; index_y<pcsz->Nbins_y+1; index_y ++){
-//   printf("index_y=%d, logy=%e dl=%e\n",index_y,pcsz->logy[index_y],ptsz->bin_dlog10_snr_last_bin);
+//   printf("index_y=%d, logy=%e dl=%e dllb=%e\n",index_y,pcsz->logy[index_y],pcsz->dlogy,ptsz->bin_dlog10_snr_last_bin);
 // }
 // exit(0);
 free(logy);

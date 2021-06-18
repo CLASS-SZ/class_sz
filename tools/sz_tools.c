@@ -6036,10 +6036,13 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   // printf("f1 = %.3e \t f2 = %.3e \t f3 = %.3e\n",f2_eff_12,f2_eff_23,f2_eff_31);
 
   double b123 = 2.*pk1*pk2*f2_eff_12 + 2.*pk2*pk3*f2_eff_23 + 2.*pk3*pk1*f2_eff_31;
+  if (k1 > 1.5 || k2 > 1.5 || k3 > 1.5){
+    b123 =1e-100;
+  }
 
   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
   double galaxy_normalisation = H_over_c_in_h_over_Mpc; // here is normally also the bias but we take it out and multiply afterward
-  galaxy_normalisation *= pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.)/(1.+z);
+  galaxy_normalisation *= pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.);///(1.+z);
   double sigmaT_over_mp = 8.305907197761162e-17 * pow(V->pba->h,2)/V->pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
   double tau_fac = V->pba->Omega0_b/V->ptsz->Omega_m_0/V->ptsz->mu_e*V->ptsz->f_free;///V->pba->h;///V->pba->h; // <!> correct version no h<!>
 // printf("fb = %.4e\n",V->pba->Omega0_b/V->ptsz->Omega_m_0);
@@ -6053,6 +6056,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   // printf("l1 = %.3e l2 = %.3e l3 = %.3e hxhxhxh\n",l1,l2,result);
 
   if (isnan(b123)){
+    // result = 1e-100;
   printf("z = %.3e b123 = %.3e\n",z,b123);
   printf("k1 = %.3e k2 = %.3e k3 = %.3e\n",k1,k2,k3);
   printf("l1 = %.3e l2 = %.3e l3 = %.3e\n",l1,l2,l3);
@@ -7942,11 +7946,9 @@ int read_SO_noise(struct tszspectrum * ptsz){
                             struct tszspectrum * ptsz){
 
 double z_min,z_max;
-if (ptsz->need_hmf==0
- && ptsz->has_kSZ_kSZ_gal_hf == 0
- && ptsz->has_bk_at_z_hf == 0){
+if (ptsz->need_sigma==0){
   class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
-  z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM)+1e-7;
+  z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
   z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
 }
 
@@ -7966,7 +7968,7 @@ int index_z;
 
     for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
     {
-      if (ptsz->need_hmf==0 && ptsz->has_kSZ_kSZ_gal_hf == 0){
+      if (ptsz->need_sigma== 0){
       ptsz->array_redshift[index_z] =
                                       log(1.+z_min)
                                       +index_z*(log(1.+z_max)-log(1.+z_min))
@@ -8909,12 +8911,11 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct primordial * ppm,
                                       struct tszspectrum * ptsz){
 
-if (ptsz->need_hmf == 0
- && ptsz->has_kSZ_kSZ_gal_hf == 0
- && ptsz->has_bk_at_z_hf == 0)
-  return 0;
+if (ptsz->need_sigma == 0)
+    return 0;
 
-// printf("need_hmf2 = %d\n",ptsz->need_hmf);
+// printf("tabulating sigma\n");
+
    // bounds array of radii for sigma computations:
    ptsz->logR1SZ = log(pow(3.*0.1*1e6/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
    ptsz->logR2SZ = log(pow(3.*10.*1e17/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
@@ -8925,7 +8926,7 @@ if (ptsz->need_hmf == 0
 
 
   //Array of z
-  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM)+1e-7;
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   int index_z;
 
@@ -9031,7 +9032,7 @@ num_threads(number_of_threads)
                                       /(ptsz->n_arraySZ-1.); // log(1+z)
 
 
-  if (ptsz->need_hmf == 1){
+  if (ptsz->need_sigma == 1){
       if (ptsz->HMF_prescription_NCDM == 2) //No-pres
         spectra_sigma_for_tSZ(pba,
                               ppm,
@@ -9052,7 +9053,6 @@ num_threads(number_of_threads)
                            &sigma_var//&sigma_at_z_and_R
                            );
 
-// printf("need_hmf2 = %.4e\n",ptsz->need_hmf);
 
 
       //ptsz->array_sigma_at_z_and_R[index_z_R] = log(*sigma_var);//sigma_at_z_and_R); //log(sigma)

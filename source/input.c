@@ -2143,6 +2143,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->need_sigma = 1;
       }
 
       if ((strstr(string1,"vrms2") != NULL) ) {
@@ -2514,6 +2515,10 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
+
+    if (ptsz->need_hmf == 1)
+        ptsz->need_sigma = 1;
+
 
       if ((strstr(string1,"m200c_to_m500c") != NULL) ) {
           ptsz->need_m200c_to_m500c = 1;
@@ -4880,7 +4885,7 @@ int input_default_params(
   ptsz->sn_cutoff = 5.;
   pcsz->sn_cutoff = 5.;
   //Redshift limits for the integration
-  ptsz->z1SZ = 1.e-5;
+  ptsz->z1SZ = 0.;
   ptsz->z2SZ = 4.;
   ppt->z_max_pk = ptsz->z2SZ;
   psp->z_max_pk = ppt->z_max_pk;
@@ -5268,7 +5273,7 @@ int input_default_params(
   ptsz->need_m200c_to_m500c = 0;
   ptsz->need_m500c_to_m200c = 0;
   ptsz->need_hmf = 0;
-
+  ptsz->need_sigma = 0;
   ptsz->has_electron_pressure = 0;
   ptsz->has_electron_density = 0;
   ptsz->has_galaxy = 0;

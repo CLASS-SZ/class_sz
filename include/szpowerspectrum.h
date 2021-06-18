@@ -159,6 +159,7 @@ struct tszspectrum {
 
   int need_m200m_to_m500c;
   int need_hmf;
+  int need_sigma;
   int need_m200c_to_m500c;
   int need_m500c_to_m200c;
 
@@ -896,7 +897,7 @@ struct tszspectrum {
   double A_ym;
   double B_ym;
   double C_ym;
-  
+
   double alpha_theta;
   int y_m_relation;
   double thetastar;
@@ -1463,12 +1464,29 @@ double get_matter_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
                                                      struct background * pba,
                                                      struct nonlinear * pnl,
                                                      struct primordial * ppm);
-
+double get_matter_bispectrum_at_z_effective_approach_SC(double k1_in_h_over_Mpc,
+                                                     double k2_in_h_over_Mpc,
+                                                     double k3_in_h_over_Mpc,
+                                                     double z,
+                                                     struct tszspectrum * ptsz,
+                                                     struct background * pba,
+                                                     struct nonlinear * pnl,
+                                                     struct primordial * ppm);
 
 double bispectrum_f2_kernel(double k,
                             double k_prime,
                             double k_prime_prime);
+double bispectrum_f2_kernel_eff_SC(double k1,
+                            double k2,
+                            double k3,
+                            double n1,
+                            double n2,
+                            double sig8_at_z,
+                            double knl);
 
+double bispectrum_f2_kernel_eff_a_SC(double k1,double n1,double sig8_at_z,double knl);
+double bispectrum_f2_kernel_eff_b_SC(double k1,double n1,double knl);
+double bispectrum_f2_kernel_eff_c_SC(double k1,double n1,double knl);
 double bispectrum_f2_kernel_eff(double k1,
                             double k2,
                             double k3,
@@ -1499,7 +1517,9 @@ double get_sigma_at_z_and_m(double z,
                             double m,
                             struct tszspectrum * ptsz,
                             struct background * pba);
-
+double get_sigma8_at_z(double z,
+                      struct tszspectrum * ptsz,
+                      struct background * pba);
 double get_nu_at_z_and_m(double z,
                          double m,
                          struct tszspectrum * ptsz,
