@@ -1126,6 +1126,7 @@ double * steps_m;
   double * array_radius;
   // double * array_k;
   double * array_nl_index_at_z_and_k;
+  double * array_nl_index_at_z_and_k_no_wiggles;
   double * array_sigma_at_z_and_R;
   double * array_dsigma2dR_at_z_and_R;
 
@@ -1455,6 +1456,23 @@ int evaluate_matter_density_profile(double * pvecback,
                              double * pvectsz,
                              struct background * pba,
                              struct tszspectrum * ptsz);
+double get_matter_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,
+                                                     double k2_in_h_over_Mpc,
+                                                     double k3_in_h_over_Mpc,
+                                                     double z,
+                                                     struct tszspectrum * ptsz,
+                                                     struct background * pba,
+                                                     struct nonlinear * pnl,
+                                                     struct primordial * ppm);
+
+double get_matter_bispectrum_at_z_effective_approach_smoothed(double k1_in_h_over_Mpc,
+                                                     double k2_in_h_over_Mpc,
+                                                     double k3_in_h_over_Mpc,
+                                                     double z,
+                                                     struct tszspectrum * ptsz,
+                                                     struct background * pba,
+                                                     struct nonlinear * pnl,
+                                                     struct primordial * ppm);
 
 double get_matter_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
                                                      double k2_in_h_over_Mpc,

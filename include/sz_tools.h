@@ -170,6 +170,7 @@ double delta_to_delta_prime_nfw(
   double get_m200c_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_m500c_to_m200c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl);
+  double get_nl_index_at_z_and_k_no_wiggles(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl);
 
   double get_completeness_at_z_and_M(double z_asked, double m_asked, double * completeness_2d_to_1d, struct tszspectrum * ptsz);
   double get_detection_proba_at_y_and_theta(double y_asked, double th_asked, double * erfs_2d_to_1d, struct tszspectrum * ptsz);
@@ -436,7 +437,7 @@ int pkl_to_knl (
 
 double integrand_patterson_test(double logM, void *p);
 double integrand_sigma2_hsv(double lnk, void *p);
-
+double nl_fitting_function(double lnk,void *p);
 double Delta_c_of_Omega_m(double Omega_m);
 
 double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);

@@ -164,18 +164,18 @@ https://github.com/lesgourg/class_public/issues/208
 Essentially, you need to edit a line in python/setup.py such as the code knows about the mpi libraries to be used with your compiler (gcc-10 in the example below).
 In my case the modif looks like this:
 
-  extra_link_args=['-lgomp','-lgsl','-lgslcblas','**-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/**']
+  extra_link_args=['-lgomp','-lgsl','-lgslcblas','**-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/**']
 
 
 Compiler - GCC version
 ------------------------------
 
-The current gcc version used in the makefile is gcc-10. But this  can be changed easily to any gcc version that is available to you.
-There is two modifications:
+The current gcc version used in the makefile is gcc-11. But this  can be changed easily to any gcc version that is available to you.
+There are two modifications:
 
-1) Line 20 of Makefile: CC = gcc-XX (where XX=10 in my case.)
+1) Line 20 of Makefile: CC = gcc-XX (where XX=11 in my case.)
 
-2) Line 12 of python/setup.py: replace 'gcc-10' with, e.g., 'gcc-XX'.
+2) Line 12 of python/setup.py: replace 'gcc-11' with, e.g., 'gcc-XX'.
 
 
 

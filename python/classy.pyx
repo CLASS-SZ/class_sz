@@ -20,6 +20,9 @@ from libc.stdio cimport *
 from libc.string cimport *
 import cython
 cimport cython
+from scipy import interpolate
+from scipy import integrate
+from scipy.interpolate import InterpolatedUnivariateSpline as _spline
 
 # Nils : Added for python 3.x and python 2.x compatibility
 import sys
@@ -1679,6 +1682,9 @@ cdef class Class:
     def get_y_at_m_and_z(self,m,z):
         return get_y_at_m_and_z(m, z, &self.tsz, &self.ba)
 
+    def get_theta_at_m_and_z(self,m,z):
+        return get_theta_at_m_and_z(m, z, &self.tsz, &self.ba)
+
     def get_m200m_to_m500c_at_z_and_M(self,z,m):
         return get_m200m_to_m500c_at_z_and_M(z,m,&self.tsz)
 
@@ -1689,16 +1695,212 @@ cdef class Class:
         return get_m500c_to_m200c_at_z_and_M(z,m,&self.tsz)
 
 
+
+    def calcFRel(self,z, M500, obsFreqGHz = 148.0):
+        """Calculates relativistic correction to SZ effect at specified frequency, given z, M500 in MSun.
+
+        This assumes the Arnaud et al. (2005) M-T relation, and applies formulae of Itoh et al. (1998)
+
+        As for H13, we return fRel = 1 + delta_SZE (see also Marriage et al. 2011)
+
+        """
+        h = self.ba.h
+        M500 = M500/h # in Msun
+        Ez = Eh = self.Hubble(z)/self.Hubble(0)
+
+        # NOTE: we should define constants somewhere else...
+        hplanck=6.63e-34
+        kB=1.38e-23
+        sigmaT=6.6524586e-29
+        me=9.11e-31
+        e=1.6e-19
+        c=3e8
+        TCMB = self.T_cmb()
+
+        # Using Arnaud et al. (2005) M-T to get temperature
+        A=3.84e14
+        B=1.71
+        #TkeV=5.*np.power(((cosmoModel.efunc(z)*M500)/A), 1/B)   # HMF/Astropy
+        #TkeV=5.*np.power(((cosmoModel.Ez(z)*M500)/A), 1/B)   # Colossus
+        TkeV=5.*np.power(((Ez*M500)/A), 1/B)
+        TKelvin=TkeV*((1000*e)/kB)
+
+        # Itoh et al. (1998) eqns. 2.25 - 2.30
+        thetae=(kB*TKelvin)/(me*c**2)
+        X=(hplanck*obsFreqGHz*1e9)/(kB*TCMB)
+        Xtw=X*(np.cosh(X/2.)/np.sinh(X/2.))
+        Stw=X/np.sinh(X/2.)
+
+        Y0=-4+Xtw
+
+        Y1=-10. + (47/2.)*Xtw - (42/5.)*Xtw**2 + (7/10.)*Xtw**3 + np.power(Stw, 2)*(-(21/5.) + (7/5.)*Xtw)
+
+        Y2=-(15/2.) +  (1023/8.)*Xtw - (868/5.)*Xtw**2 + (329/5.)*Xtw**3 - (44/5.)*Xtw**4 + (11/30.)*Xtw**5 \
+            + np.power(Stw, 2)*(-(434/5.) + (658/5.)*Xtw - (242/5.)*Xtw**2 + (143/30.)*Xtw**3) \
+            + np.power(Stw, 4)*(-(44/5.) + (187/60.)*Xtw)
+
+        Y3=(15/2.) + (2505/8.)*Xtw - (7098/5.)*Xtw**2 + (14253/10.)*Xtw**3 - (18594/35.)*Xtw**4 + (12059/140.)*Xtw**5 - (128/21.)*Xtw**6 + (16/105.)*Xtw**7 \
+            + np.power(Stw, 2)*(-(7098/10.) + (14253/5.)*Xtw - (102267/35.)*Xtw**2 + (156767/140.)*Xtw**3 - (1216/7.)*Xtw**4 + (64/7.)*Xtw**5) \
+            + np.power(Stw, 4)*(-(18594/35.) + (205003/280.)*Xtw - (1920/7.)*Xtw**2 + (1024/35.)*Xtw**3) \
+            + np.power(Stw, 6)*(-(544/21.) + (992/105.)*Xtw)
+
+        Y4=-(135/32.) + (30375/128.)*Xtw - (62391/10.)*Xtw**2 + (614727/40.)*Xtw**3 - (124389/10.)*Xtw**4 \
+            + (355703/80.)*Xtw**5 - (16568/21.)*Xtw**6 + (7516/105.)*Xtw**7 - (22/7.)*Xtw**8 + (11/210.)*Xtw**9 \
+            + np.power(Stw, 2)*(-(62391/20.) + (614727/20.)*Xtw - (1368279/20.)*Xtw**2 + (4624139/80.)*Xtw**3 - (157396/7.)*Xtw**4 \
+            + (30064/7.)*Xtw**5 - (2717/7.)*Xtw**6 + (2761/210.)*Xtw**7) \
+            + np.power(Stw, 4)*(-(124389/10.) + (6046951/160.)*Xtw - (248520/7.)*Xtw**2 + (481024/35.)*Xtw**3 - (15972/7.)*Xtw**4 + (18689/140.)*Xtw**5) \
+            + np.power(Stw, 6)*(-(70414/21.) + (465992/105.)*Xtw - (11792/7.)*Xtw**2 + (19778/105.)*Xtw**3) \
+            + np.power(Stw, 8)*(-(682/7.) + (7601/210.)*Xtw)
+
+        deltaSZE=((X**3)/(np.exp(X)-1)) * ((thetae*X*np.exp(X))/(np.exp(X)-1)) * (Y0 + Y1*thetae + Y2*thetae**2 + Y3*thetae**3 + Y4*thetae**4)
+
+        fRel=1+deltaSZE
+
+        return fRel
+
+
+
+
+
+    def get_yc_at_m_and_z_H13(self,m,z,A,B):
+        Eh = self.Hubble(z)/self.Hubble(0)
+        f_rel = self.calcFRel(z, m)
+        vec_theta = np.vectorize(self.get_theta_at_m_and_z)
+        theta_500 = vec_theta(m,z)
+        h = self.ba.h
+        QF = np.loadtxt('/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/so_3freqs_020621_theta500arcmin_Q.txt')
+        get_Q_of_theta500 = interpolate.interp1d(QF[:,0],QF[:,1],fill_value='extrapolate')
+        yp = A*pow(Eh,2.)*pow(m/(3.e14*h),1.+B)*f_rel*get_Q_of_theta500(theta_500)
+        return yp
+
+    def _cumulativeNumberDensity(self, z):
+        """Returns N > M (per cubic Mpc).
+
+        """
+
+        h= self.ba.h
+        mm = np.zeros(self.tsz.n_m_dndlnM, dtype=np.double)
+        for imp in range(len(mm)):
+            mm[imp] = self.tsz.array_m_dndlnM[imp]
+        M= np.exp(mm)
+        dndlnM=np.vectorize(self.get_dndlnM_at_z_and_M)(z,M)
+        dndM=dndlnM/M
+        ngtm=integrate.cumtrapz(dndlnM[::-1], np.log(M), initial = 0)[::-1]
+
+        MUpper=np.arange(np.log(M[-1]), np.log(10**18), np.log(M[1])-np.log(M[0]))
+        extrapolator=_spline(np.log(M), np.log(dndlnM), k=1)
+        MF_extr=extrapolator(MUpper)
+        intUpper=integrate.simps(np.exp(MF_extr), dx=MUpper[2] - MUpper[1], even='first')
+        ngtm=ngtm+intUpper
+
+        return ngtm
+
+
+    def getPLog10M(self, z):
+        """Returns the log10(mass) probability distribution at the given z, for the logarithmic mass
+        binning and mass definition set when the MockSurvey object was constructed.
+
+        Args:
+            z (:obj:`float`): Redshift at which to calculate P(log10(M)).
+
+        Returns:
+            Array corresponding to the log10(mass) probability distribution.
+
+        """
+        numberDensity=self._cumulativeNumberDensity(z)
+        mm = np.zeros(self.tsz.n_m_dndlnM, dtype=np.double)
+        for imp in range(len(mm)):
+            mm[imp] = self.tsz.array_m_dndlnM[imp]
+        M= np.exp(mm)
+        PLog10M=numberDensity/np.trapz(numberDensity, M)
+        return PLog10M
+
+    def getM500_from_y0_H13(self,y0,y0Err,A,B,sigma_int,z,applyMFDebiasCorrection = True):
+        # y0 is fixed_y_c*1e-4 in the catalogue
+        # log_y0Err is fixed_err_y_c in the catalogue
+        # returns:
+        # M500*1e14, M500_errPlus*1e14, M500_errMinus*1e14 in Msun
+        M500c_zk = np.geomspace(1.00000000e+12,1e16,300)
+        log10M500c_zk = np.log10(M500c_zk)
+        #log10M500c_zk
+        log_y0 = np.log(y0)
+        log_y0Err = y0Err/y0
+        h = self.ba.h
+        m = (10**log10M500c_zk)*h
+        log_y0pred = np.log(self.get_yc_at_m_and_z_H13(m,z,A,B)) # feeds in m500c in Msun/h
+        Py0GivenM=np.exp(-np.power(log_y0-log_y0pred, 2)/(2*(np.power(log_y0Err, 2)+np.power(sigma_int, 2))))
+        Py0GivenM=Py0GivenM/np.trapz(Py0GivenM, log10M500c_zk)
+        # Mass function de-bias
+        if applyMFDebiasCorrection == True:
+            PLog10M_full=self.getPLog10M(z)
+            log10Ms = log10M500c_zk
+            mm = np.zeros(self.tsz.n_m_dndlnM, dtype=np.double)
+            for imp in range(len(mm)):
+                mm[imp] = self.tsz.array_m_dndlnM[imp]
+            PLog10M =  interpolate.interp1d(mm,PLog10M_full,fill_value='extrapolate')(np.log(10)*log10Ms)
+            PLog10M=PLog10M/np.trapz(PLog10M, np.log(10)*log10Ms)/np.log(10)
+        else:
+            PLog10M=1.0
+        Pz = 1.
+        P=Py0GivenM*PLog10M*Pz
+        PArr = P
+        PArr=np.array(PArr)
+        P = PArr
+        P=P/np.trapz(P, log10M500c_zk)
+
+        calcErrors = True
+        log10M = log10M500c_zk
+        # Find max likelihood and integrate to get error bars
+        tckP=interpolate.splrep(log10M, P)
+        fineLog10M=np.linspace(log10M.min(), log10M.max(), 10000)
+        fineP=interpolate.splev(fineLog10M, tckP)
+        fineP=fineP/np.trapz(fineP, fineLog10M)
+        index=np.argmax(fineP)
+
+        clusterLogM500=fineLog10M[index]
+        clusterM500=np.power(10, clusterLogM500)/1e14
+
+
+        for n in range(fineP.shape[0]):
+            minIndex=index-n
+            maxIndex=index+n
+            if minIndex < 0 or maxIndex > fineP.shape[0]:
+                # This shouldn't happen; if it does, probably y0 is in the wrong units
+                # Previously we threw an exception here, but we can't if using this for forced photometry
+                #print("WARNING: outside M500 range - check y0 units or for problem at cluster location in map (if not in forced photometry mode)")
+                clusterM500MinusErr=0.
+                clusterM500PlusErr=0.
+                break
+            p=np.trapz(fineP[minIndex:maxIndex], fineLog10M[minIndex:maxIndex])
+            if p >= 0.6827:
+                clusterLogM500Min=fineLog10M[minIndex]
+                clusterLogM500Max=fineLog10M[maxIndex]
+                clusterM500MinusErr=(np.power(10, clusterLogM500)-np.power(10, clusterLogM500Min))/1e14
+                clusterM500PlusErr=(np.power(10, clusterLogM500Max)-np.power(10, clusterLogM500))/1e14
+                break
+
+        return clusterM500*1e14, clusterM500MinusErr*1e14, clusterM500PlusErr*1e14
+
+
+
+
     def get_nu_at_z_and_m(self,z,m):
         return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)
+    def get_matter_bispectrum_at_z_effective_approach_smoothed(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
+        return get_matter_bispectrum_at_z_effective_approach_smoothed(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
 
     def get_matter_bispectrum_at_z_effective_approach(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
         return get_matter_bispectrum_at_z_effective_approach(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
     def get_matter_bispectrum_at_z_effective_approach_SC(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
         return get_matter_bispectrum_at_z_effective_approach_SC(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
+    def get_matter_bispectrum_at_z_tree_level_PT(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
+        return get_matter_bispectrum_at_z_tree_level_PT(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
 
     def get_nl_index_at_z_and_k(self,z,k1_in_h_over_Mpc):
         return get_nl_index_at_z_and_k(z,k1_in_h_over_Mpc,&self.tsz,&self.nl)
+    def get_nl_index_at_z_and_k_no_wiggles(self,z,k1_in_h_over_Mpc):
+        return get_nl_index_at_z_and_k_no_wiggles(z,k1_in_h_over_Mpc,&self.tsz,&self.nl)
+
 
 
     def get_vrms2_at_z(self,z):

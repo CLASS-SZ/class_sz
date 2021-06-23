@@ -2,6 +2,8 @@
 # include "sz_tools.h"
 # include "Patterson.h"
 # include "r8lib.h"
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_spline.h>
 
 
 /////////////////////////////////SZ-TOOLS//////////
@@ -6036,9 +6038,9 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   // printf("f1 = %.3e \t f2 = %.3e \t f3 = %.3e\n",f2_eff_12,f2_eff_23,f2_eff_31);
 
   double b123 = 2.*pk1*pk2*f2_eff_12 + 2.*pk2*pk3*f2_eff_23 + 2.*pk3*pk1*f2_eff_31;
-  if (k1 > 1.5 || k2 > 1.5 || k3 > 1.5){
-    b123 =1e-100;
-  }
+  // if (k1 > 1.5 || k2 > 1.5 || k3 > 1.5){
+  //   b123 =1e-100;
+  // }
 
   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
   double galaxy_normalisation = H_over_c_in_h_over_Mpc; // here is normally also the bias but we take it out and multiply afterward
@@ -8098,10 +8100,10 @@ class_alloc(ptsz->array_mean_galaxy_number_density,sizeof(double *)*ptsz->n_arra
 int index_z;
 double r;
 double m_min,m_max;
-m_min = ptsz->m_min_counter_terms;//ptsz->M1SZ;
-m_max = ptsz->m_max_counter_terms;//ptsz->M2SZ;
-// m_min = ptsz->M1SZ;
-// m_max = ptsz->M2SZ;
+// m_min = ptsz->m_min_counter_terms;//ptsz->M1SZ;
+// m_max = ptsz->m_max_counter_terms;//ptsz->M2SZ;
+m_min = ptsz->M1SZ;
+m_max = ptsz->M2SZ;
 double * pvecback;
 double * pvectsz;
 
@@ -10007,6 +10009,12 @@ free(array_m200m_to_m500c_at_z_and_M);
 return _SUCCESS_;
 }
 
+
+struct Parameters_for_nl_fitting_function{
+  gsl_interp_accel *acc;
+  gsl_spline *spline;
+};
+
  int tabulate_nl_index(struct background * pba,
                        struct nonlinear * pnl,
                        struct primordial * ppm,
@@ -10032,10 +10040,14 @@ return _SUCCESS_;
   int index_z_k = 0;
 
   double ** array_nl_index_at_z_and_k;
+  double ** array_nl_index_at_z_and_k_no_wiggles;
 
 
 
 class_alloc(ptsz->array_nl_index_at_z_and_k,
+            sizeof(double *)*ptsz->n_arraySZ*ptsz->ln_k_size_for_tSZ,
+            ptsz->error_message);
+class_alloc(ptsz->array_nl_index_at_z_and_k_no_wiggles,
             sizeof(double *)*ptsz->n_arraySZ*ptsz->ln_k_size_for_tSZ,
             ptsz->error_message);
 
@@ -10043,13 +10055,28 @@ class_alloc(ptsz->array_nl_index_at_z_and_k,
 class_alloc(array_nl_index_at_z_and_k,
             ptsz->n_arraySZ*sizeof(double *),
             ptsz->error_message);
+class_alloc(array_nl_index_at_z_and_k_no_wiggles,
+            ptsz->n_arraySZ*sizeof(double *),
+            ptsz->error_message);
 
+
+// class_alloc(ptsz->array_nl_index_at_z_and_k_splined,
+//             sizeof(double *)*ptsz->n_arraySZ*ptsz->ln_k_size_for_tSZ,
+//             ptsz->error_message);
+//
+//
+// class_alloc(array_nl_index_at_z_and_k_splined,
+//             ptsz->n_arraySZ*sizeof(double *),
+//             ptsz->error_message);
 
 for (index_l=0;
      index_l<ptsz->n_arraySZ;
      index_l++)
 {
   class_alloc(array_nl_index_at_z_and_k[index_l],
+              ptsz->ln_k_size_for_tSZ*sizeof(double),
+              ptsz->error_message);
+  class_alloc(array_nl_index_at_z_and_k_no_wiggles[index_l],
               ptsz->ln_k_size_for_tSZ*sizeof(double),
               ptsz->error_message);
 }
@@ -10098,33 +10125,6 @@ for (index_k=0; index_k<ptsz->ln_k_size_for_tSZ; index_k++)
       double logk =   ptsz->ln_k_for_tSZ[index_k];
 
 
-      // double tau;
-      // int first_index_back = 0;
-      //
-      //
-      // class_call_parallel(background_tau_of_z(pba,z,&tau),
-      //            pba->error_message,
-      //            pba->error_message);
-      //
-      // class_call_parallel(background_at_tau(pba,
-      //                              tau,
-      //                              pba->long_info,
-      //                              pba->inter_normal,
-      //                              &first_index_back,
-      //                              pvecback),
-      //            pba->error_message,
-      //            pba->error_message);
-
-
-
-
-      // pvectsz[ptsz->index_z] = z;
-      // pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
-      //                                 *pow(_Mpc_over_m_,1)
-      //                                 *pow(_c_,2)
-      //                                 *pvecback[pba->index_bg_rho_crit]
-      //                                 /pow(pba->h,2);
-      //
   enum pk_outputs pk_for_nl_index;
   pk_for_nl_index = pk_linear;
 
@@ -10193,6 +10193,266 @@ double pkl1,pkl2;
 
   index_z_k += 1;
     }
+
+  // int i;
+  // int index_num;
+  // int index_x;
+  // int index_y;
+  // int index_ddy;
+  // i=0;
+  // index_x=i;
+  // i++;
+  // index_y=i;
+  // i++;
+  // index_ddy=i;
+  // i++;
+  // index_num=i;
+
+// interpolate the data:
+gsl_interp_accel *acc = gsl_interp_accel_alloc ();
+gsl_spline *spline = gsl_spline_alloc (gsl_interp_linear, ptsz->ln_k_size_for_tSZ);
+gsl_spline_init (spline, ptsz->ln_k_for_tSZ, array_nl_index_at_z_and_k[index_z], ptsz->ln_k_size_for_tSZ);
+// find where the second derivative changes sign:
+int it;
+// for (it=0;it<10;it++){
+// printf ("%g %g %g\n", ptsz->ln_k_for_tSZ[it], array_nl_index_at_z_and_k[index_z][it],gsl_spline_eval (spline, ptsz->ln_k_for_tSZ[it], acc));
+// }
+// printf(" ####### ");
+// printf("nk = %d\n",ptsz->ln_k_size_for_tSZ);
+// exit(0);
+
+
+struct Parameters_for_nl_fitting_function V;
+V.acc = acc;
+V.spline = spline;
+void * params = &V;
+
+// for (it=0;it<10;it++){
+// printf ("nl_fitting_function %g %g %g\n", ptsz->ln_k_for_tSZ[it], array_nl_index_at_z_and_k[index_z][it],nl_fitting_function (ptsz->ln_k_for_tSZ[it], params));
+// }
+//
+// exit(0);
+
+// set-up table of 0's of second derivatives:
+int n_data_guess, n_data = 0;
+int *lnx_zeros = NULL, *tmp = NULL;
+n_data = 0;
+n_data_guess = 1;
+lnx_zeros   = (int *)malloc(n_data_guess*sizeof(double));
+
+double tol=1.e-6;
+double lnkl,lnkc,lnkr;
+double nlkl,nlkc,nlkr;
+double ddndlnk;
+double n_sign_l = -1;
+double n_sign_r = -1;
+
+// compute second derivative at the start;
+index_k = 0;
+// lnkl = ptsz->ln_k_for_tSZ[index_k]+2.*tol-tol;
+// lnkr = ptsz->ln_k_for_tSZ[index_k]+2.*tol+tol;
+// lnkc = ptsz->ln_k_for_tSZ[index_k]+2.*tol;
+tol = 1.e-6;//fabs(ptsz->ln_k_for_tSZ[index_k+1] - ptsz->ln_k_for_tSZ[index_k])/100.;
+lnkl = ptsz->ln_k_for_tSZ[index_k]+2.*tol;
+lnkc = ptsz->ln_k_for_tSZ[index_k]+tol;
+lnkr = ptsz->ln_k_for_tSZ[index_k];
+
+nlkl = nl_fitting_function(lnkl,params);
+nlkr = nl_fitting_function(lnkr,params);
+nlkc = nl_fitting_function(lnkc,params);
+
+
+// ddndlnk = (nlkl - 2.*nlkc + nlkr) / tol/tol;
+
+
+ddndlnk = (nlkc - nlkr)/tol;
+ddndlnk =  array_nl_index_at_z_and_k[index_z][index_k+1]-array_nl_index_at_z_and_k[index_z][index_k];
+// printf("index_z = %d index_k =  %d dndlnk = %.3e\n",index_z, index_k, ddndlnk );
+
+// printf("fitting = %.3e\n",nl_fitting_function(0.,params));
+// //testing
+//        int i;
+//        double xi, yi, x[10], y[10];
+//
+//        printf ("#m=0,S=2\n");
+//
+//        for (i = 0; i < 10; i++)
+//          {
+//            x[i] = i + 0.5 * sin (i);
+//            y[i] = i + cos (i * i);
+//            // printf ("%g %g\n", x[i], y[i]);
+//          }
+//
+//        printf ("#m=1,S=0\n");
+//
+//        {
+//          gsl_interp_accel *acc2
+//            = gsl_interp_accel_alloc ();
+//          gsl_spline *spline2
+//            = gsl_spline_alloc (gsl_interp_cspline, 10);
+//
+//          gsl_spline_init (spline2, x, y, 10);
+//          i= 0;
+//          for (xi = x[0]; xi < x[9]; xi += 0.01)
+//            {
+//              yi = gsl_spline_eval (spline2, xi, acc2);
+//              // printf ("%g %g\n", xi, yi);
+//
+//            }
+//        for (i = 0; i < 10; i++)
+//          {
+//            x[i] = i + 0.5 * sin (i);
+//            y[i] = i + cos (i * i);
+//            printf ("%g %g %g\n", x[i], y[i],gsl_spline_eval (spline2, x[i], acc2));
+//          }
+//          gsl_spline_free (spline2);
+//          gsl_interp_accel_free (acc2);
+//        }
+//
+// exit(0);
+if (ddndlnk < 0){
+  n_sign_l = -1;
+}
+else{
+  n_sign_l = +1;
+}
+
+
+for (index_k=1; index_k<ptsz->ln_k_size_for_tSZ-1; index_k++){
+tol = 1.e-6;//fabs(ptsz->ln_k_for_tSZ[index_k+1] - ptsz->ln_k_for_tSZ[index_k])/100.;
+lnkl = ptsz->ln_k_for_tSZ[index_k]+2.*tol;
+lnkc = ptsz->ln_k_for_tSZ[index_k]+tol;
+lnkr = ptsz->ln_k_for_tSZ[index_k];
+
+
+
+nlkl = nl_fitting_function(lnkl,params);
+nlkr = nl_fitting_function(lnkr,params);
+nlkc = nl_fitting_function(lnkc,params);
+
+// ddndlnk = (nlkl - 2.*nlkc + nlkr) / tol/tol;
+
+ddndlnk = (nlkc - nlkr)/tol;
+ddndlnk = array_nl_index_at_z_and_k[index_z][index_k+1]-array_nl_index_at_z_and_k[index_z][index_k];
+
+
+if (ddndlnk < 0){
+  n_sign_r = -1;
+}
+else{
+  n_sign_r = +1;
+}
+
+if (n_sign_r*n_sign_l == -1){
+  if((n_data+1) > n_data_guess){
+    n_data_guess *= 2;
+    tmp = (int *)realloc(lnx_zeros,n_data_guess*sizeof(int));
+    lnx_zeros = tmp;
+    // printf("reallocating memory\n");
+  }
+  // store the point
+  // lnx_zeros[n_data] = ptsz->ln_k_for_tSZ[index_k];
+  lnx_zeros[n_data] = index_k;
+
+  n_data++;
+}
+// printf("index_z = %d index_k =  %d dndlnk = %.3e\n",index_z, index_k, ddndlnk );
+  n_sign_l = n_sign_r;
+} // continue loop over k
+// exit(0);
+
+double array_nl_no_wiggles = 0.;
+
+
+
+
+
+
+if (n_data >= 3){
+// before entering the oscillations:
+int id_zero = 0;
+int id_zero_next = 1;
+double nod_1_x = (ptsz->ln_k_for_tSZ[lnx_zeros[id_zero_next]] + ptsz->ln_k_for_tSZ[lnx_zeros[id_zero]])/2.;
+double nod_1_y = (array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero_next]] + array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero]])/2.;
+
+double nod_2_x = (ptsz->ln_k_for_tSZ[lnx_zeros[id_zero_next+2]] + ptsz->ln_k_for_tSZ[lnx_zeros[id_zero+2]])/2.;
+double nod_2_y = (array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero_next+2]] + array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero+2]])/2.;
+
+
+
+
+  for (index_k=0; index_k<ptsz->ln_k_size_for_tSZ; index_k++){
+    // if (ptsz->ln_k_for_tSZ[index_k]<=lnx_zeros[0]){
+    if (index_k<=lnx_zeros[0]){
+      // if (ptsz->ln_k_for_tSZ[index_k] >ptsz->ln_k_for_tSZ[lnx_zeros[id_zero]] - (nod_2_x-nod_1_x)/2. ){
+
+      double  array_nl_no_wiggles_interp = nod_1_y + (nod_2_y-nod_1_y)/(nod_2_x-nod_1_x)*(ptsz->ln_k_for_tSZ[index_k]-nod_1_x);
+      double nl_exact = array_nl_index_at_z_and_k[index_z][index_k];
+      // }
+
+      // else{
+      if (nl_exact<array_nl_no_wiggles_interp & (ptsz->ln_k_for_tSZ[index_k] >ptsz->ln_k_for_tSZ[lnx_zeros[id_zero]] - (nod_2_x-nod_1_x)))
+      array_nl_no_wiggles = array_nl_no_wiggles_interp;
+      else
+      array_nl_no_wiggles = nl_exact;
+    // }
+    }
+    // else if (ptsz->ln_k_for_tSZ[index_k]>=lnx_zeros[n_data-1]){
+    else if (index_k+1>=lnx_zeros[n_data-1]){
+      array_nl_no_wiggles = array_nl_index_at_z_and_k[index_z][index_k];
+    }
+    else{
+
+      // linear interpolation:
+      // array_nl_no_wiggles = nl_fitting_function(lnx_zeros[id_zero],params)
+      //                               + (nl_fitting_function(lnx_zeros[id_zero_next],params)
+      //                                  -nl_fitting_function(lnx_zeros[id_zero],params))
+      //                               /(lnx_zeros[id_zero_next]-lnx_zeros[id_zero])*(ptsz->ln_k_for_tSZ[index_k]-lnx_zeros[id_zero]);
+      nod_1_x = (ptsz->ln_k_for_tSZ[lnx_zeros[id_zero_next]] + ptsz->ln_k_for_tSZ[lnx_zeros[id_zero]])/2.;
+      nod_1_y = (array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero_next]] + array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero]])/2.;
+
+      nod_2_x = (ptsz->ln_k_for_tSZ[lnx_zeros[id_zero_next+2]] + ptsz->ln_k_for_tSZ[lnx_zeros[id_zero+2]])/2.;
+      nod_2_y = (array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero_next+2]] + array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero+2]])/2.;
+
+
+      // array_nl_no_wiggles = array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero]]
+      //                               + (array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero_next]]
+      //                                  -array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero]])
+      //                               /(ptsz->ln_k_for_tSZ[lnx_zeros[id_zero_next]]-ptsz->ln_k_for_tSZ[lnx_zeros[id_zero]])*(ptsz->ln_k_for_tSZ[index_k]-ptsz->ln_k_for_tSZ[lnx_zeros[id_zero]]);
+
+      array_nl_no_wiggles = nod_1_y + (nod_2_y-nod_1_y)/(nod_2_x-nod_1_x)*(ptsz->ln_k_for_tSZ[index_k]-nod_1_x);
+
+    // if k larger than next node -> switch range:
+    // if (ptsz->ln_k_for_tSZ[index_k+1]==lnx_zeros[id_zero_next]){
+    if (index_k+1==lnx_zeros[id_zero_next+1]){
+      id_zero_next += 2;
+      id_zero += 2;
+    }
+
+      // array_nl_no_wiggles = nl_fitting_function(lnx_zeros[0],params)
+      //                               + (nl_fitting_function(lnx_zeros[n_data-2],params)-nl_fitting_function(lnx_zeros[0],params))
+      //                               /(lnx_zeros[n_data-2]-lnx_zeros[0])*(ptsz->ln_k_for_tSZ[index_k]-lnx_zeros[0]);
+
+    }
+   array_nl_index_at_z_and_k_no_wiggles[index_z][index_k] = array_nl_no_wiggles;
+  }
+
+}
+else{
+  for (index_k=0; index_k<ptsz->ln_k_size_for_tSZ; index_k++){
+    array_nl_index_at_z_and_k_no_wiggles[index_z][index_k] = array_nl_index_at_z_and_k[index_z][index_k];
+  }
+}
+
+
+gsl_spline_free (spline);
+gsl_interp_accel_free (acc);
+free(lnx_zeros);
+
+
+
+
+
   }
 #ifdef _OPENMP
   tstop = omp_get_wtime();
@@ -10213,7 +10473,11 @@ for (index_k=0; index_k<ptsz->ln_k_size_for_tSZ; index_k++)
   for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
   {
     ptsz->array_nl_index_at_z_and_k[index_z_k] = array_nl_index_at_z_and_k[index_z][index_k];
+    ptsz->array_nl_index_at_z_and_k_no_wiggles[index_z_k] = array_nl_index_at_z_and_k_no_wiggles[index_z][index_k];
+    // printf("index_z = %d index_k =  %d dndlnk_nw = %.3e dndlnk = %.3e\n",index_z, index_k, ptsz->array_nl_index_at_z_and_k_no_wiggles[index_z_k], ptsz->array_nl_index_at_z_and_k[index_z_k]);
+
     index_z_k += 1;
+
   }
 }
 
@@ -10221,8 +10485,18 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++){
 free(array_nl_index_at_z_and_k[index_z]);
 }
   free(array_nl_index_at_z_and_k);
-
+// exit(0);
 return _SUCCESS_;
+}
+
+
+
+
+
+double nl_fitting_function(double lnk,void *p){
+  struct Parameters_for_nl_fitting_function *V = ((struct Parameters_for_nl_fitting_function *) p);
+  double result = gsl_spline_eval(V->spline, lnk, V->acc);
+  return result;
 }
 
 
@@ -10337,7 +10611,30 @@ double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct tszspectru
                       &z,
                       &k);
 }
+//
+double get_nl_index_at_z_and_k_no_wiggles(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl){
+  double z = log(1.+z_asked);
+  double k = log(k_asked); // in h/Mpc
 
+ if (z_asked<exp(ptsz->array_redshift[0])-1.)
+    z = ptsz->array_redshift[0];
+ if (z_asked>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
+    z =  ptsz->array_redshift[ptsz->n_arraySZ-1];
+
+ if (k_asked<exp(ptsz->ln_k_for_tSZ[0]))
+    k =  ptsz->ln_k_for_tSZ[0];
+ if (k_asked>exp(ptsz->ln_k_for_tSZ[ptsz->ln_k_size_for_tSZ-1]))
+    k =  ptsz->ln_k_for_tSZ[ptsz->ln_k_size_for_tSZ-1];
+
+ return pwl_interp_2d(ptsz->n_arraySZ,
+                      ptsz->ln_k_size_for_tSZ,
+                      ptsz->array_redshift,
+                      ptsz->ln_k_for_tSZ,
+                      ptsz->array_nl_index_at_z_and_k_no_wiggles,
+                      1,
+                      &z,
+                      &k);
+}
 
 double get_completeness_at_z_and_M(double z_asked, double m_asked, double * completeness_2d_to_1d, struct tszspectrum * ptsz){
   if (ptsz->has_completeness == 0){
@@ -10673,7 +10970,7 @@ if (ptsz->y_m_relation == 1){
         double B = ptsz->B_ym;
         double t = -0.00848*pow(mp_bias/(3.e14*70./(pba->h*100.))*Eh,-0.585);
         double f_rel = 1. + 3.79*t -28.2*t*t;
-        yp = A*pow(Eh,2.)*pow(mp_bias/(3.e14*70./(pba->h*100.)),1.+B)*f_rel;
+        yp = A*pow(Eh,2.)*pow(mp_bias/(3.e14*pba->h),1.+B)*f_rel;
       }
 else if (ptsz->y_m_relation == 0){
 

@@ -253,6 +253,8 @@ cdef extern from "class.h":
         int n_arraySZ_for_integral
         double M1SZ
         double M2SZ
+        double * array_m_dndlnM
+        int n_m_dndlnM
         double P0GNFW
         double c500
         double gammaGNFW
@@ -595,7 +597,7 @@ cdef extern from "class.h":
                                              void * tsz)
 
     double get_y_at_m_and_z(double m, double z, void * ptsz, void * pba)
-
+    double get_theta_at_m_and_z(double m, double z, void * ptsz, void * pba)
     double get_sigma_at_z_and_m(double z_asked,
                                 double m_asked,
                                 void * tsz,
@@ -607,6 +609,27 @@ cdef extern from "class.h":
                                     double k,
                                     void * tsz,
                                     void * nl)
+    double get_nl_index_at_z_and_k_no_wiggles(double z_asked,
+                                    double k,
+                                    void * tsz,
+                                    void * nl)
+    double get_matter_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,
+                                                         double k2_in_h_over_Mpc,
+                                                         double k3_in_h_over_Mpc,
+                                                         double z,
+                                                         void * ptsz,
+                                                         void * pba,
+                                                         void * pnl,
+                                                         void * ppm)
+
+    double get_matter_bispectrum_at_z_effective_approach_smoothed(double k1_in_h_over_Mpc,
+                                                         double k2_in_h_over_Mpc,
+                                                         double k3_in_h_over_Mpc,
+                                                         double z,
+                                                         void * ptsz,
+                                                         void * pba,
+                                                         void * pnl,
+                                                         void * ppm)
 
     double get_matter_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
                                                          double k2_in_h_over_Mpc,
