@@ -5942,7 +5942,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
 
     ) {
 
- evaluate_mean_galaxy_number_density_at_z(V->pvectsz,V->ptsz);
+ V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
 
  //printf("z = %.3e ng = %.3e\n",z,V->pvectsz[V->ptsz->index_mean_galaxy_number_density]);
 }
@@ -8019,7 +8019,7 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
     double z = V->z;
     // M_halo = 1e16;
     // z = .5;
-    // nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->ptsz);
+    // nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_log10M_HOD,V->ptsz);
     // ns =  HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD,V->ptsz);
     // printf("z=%.3e Mhalo=%.3e  nc=%.3e ns=%.3e\n",z,M_halo,nc,ns);
     // exit(0);
@@ -8072,9 +8072,23 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
 
 
 
-      V->pvectsz[V->ptsz->index_md] = V->ptsz->index_md_gal_gal_1h;
-      double nc = HOD_mean_number_of_central_galaxies(z,M_halo,V->ptsz->M_min_HOD,V->ptsz->sigma_lnM_HOD,V->pvectsz,V->ptsz,V->pba);
-      double ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,V->ptsz->M_min_HOD,V->ptsz->alpha_s_HOD,V->ptsz->M1_prime_HOD,V->ptsz,V->pba);
+      //V->pvectsz[V->ptsz->index_md] = V->ptsz->index_md_gal_gal_1h;
+      double M_min;
+      double M1_prime;
+      double sigma_log10M;
+      double nc,ns;
+      if (V->ptsz->galaxy_sample == 1){ // unwise case:
+      M_min = evaluate_unwise_m_min_cut(z,V->ptsz->unwise_galaxy_sample_id,V->ptsz);
+      M1_prime = V->ptsz->M1_prime_HOD_factor*M_min;
+      sigma_log10M = sqrt(2.)*V->ptsz->sigma_log10M_HOD;
+      }
+      else{
+      M_min = V->ptsz->M_min_HOD;
+      M1_prime = V->ptsz->M1_prime_HOD;
+      sigma_log10M = V->ptsz->sigma_log10M_HOD;
+      }
+      nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,V->ptsz,V->pba);
+      ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M_min,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
 
 
       double result = hmf*(ns+nc);

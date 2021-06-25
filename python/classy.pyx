@@ -24,6 +24,9 @@ from scipy import interpolate
 from scipy import integrate
 from scipy.interpolate import InterpolatedUnivariateSpline as _spline
 
+
+
+
 # Nils : Added for python 3.x and python 2.x compatibility
 import sys
 def viewdictitems(d):
@@ -1758,9 +1761,20 @@ cdef class Class:
 
         return fRel
 
+    def get_ng_bar_at_z(self,double z):
+        return evaluate_mean_galaxy_number_density_at_z(z, &self.tsz)
+
+    def get_N_satellites(self,double z,double M_halo,double Nc_mean,double M_min,double alpha_s,double M1_prime):
+        Ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,Nc_mean,M_min,alpha_s,M1_prime,&self.tsz,&self.ba)
+        return Ns
+
+    def get_N_centrals(self,double z,double M_halo,double M_min,double sigma_log10M):
+        Nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,&self.tsz,&self.ba)
+        return Nc
 
 
-
+    def get_unwise_m_min_cut_at_z(self,double z,int sample_id):
+        return evaluate_unwise_m_min_cut(z,sample_id,&self.tsz)
 
     def get_yc_at_m_and_z_H13(self,m,z,A,B):
         Eh = self.Hubble(z)/self.Hubble(0)
@@ -1774,7 +1788,8 @@ cdef class Class:
         return yp
 
     def _cumulativeNumberDensity(self, z):
-        """Returns N > M (per cubic Mpc).
+        """
+        Returns N > M (per cubic Mpc).
 
         """
 
@@ -1883,6 +1898,8 @@ cdef class Class:
 
 
 
+    def get_bispectrum_f2_kernel(self, double k1, double k2, double k3):
+        return bispectrum_f2_kernel(k1, k2, k3)
 
     def get_nu_at_z_and_m(self,z,m):
         return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)

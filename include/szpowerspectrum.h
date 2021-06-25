@@ -658,7 +658,7 @@ struct tszspectrum {
 
   //HOD
   double M_min_HOD;
-  double sigma_lnM_HOD;
+  double sigma_log10M_HOD;
   double alpha_s_HOD;
   double M1_prime_HOD;
   double rho_y_gal;
@@ -1339,14 +1339,13 @@ int tabulate_density_profile(struct background * pba,
 int tabulate_pressure_profile_gNFW(struct background * pba,
                                    struct tszspectrum * ptsz);
 
-int evaluate_mean_galaxy_number_density_at_z(double * pvectsz,
+double evaluate_mean_galaxy_number_density_at_z(double z,
                                              struct tszspectrum * ptsz);
 
 double HOD_mean_number_of_central_galaxies(double z,
                                            double M_halo,
                                            double M_min,
                                            double sigma_lnM,
-                                           double * pvectsz,
                                            struct tszspectrum * ptsz,
                                            struct background * pba);
 

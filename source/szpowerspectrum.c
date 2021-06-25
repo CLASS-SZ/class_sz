@@ -6000,6 +6000,8 @@ pk3 *= pow(pba->h,3.);
 
 
 
+
+
   // double sigma8_at_z =  get_sigma8_at_z(z,ptsz,pba);
 
   // double knl = get_knl_at_z(z,ptsz);
@@ -6293,12 +6295,12 @@ return vrms2/pow(_c_*1e-3,2.);
 
 
 // evaluate normalisation of galaxy terms, i.e., ng_bar
-int evaluate_mean_galaxy_number_density_at_z(
-                   double * pvectsz,
+double evaluate_mean_galaxy_number_density_at_z(
+                   double z,
                    struct tszspectrum * ptsz)
   {
 
-   double z = pvectsz[ptsz->index_z];
+   // double z = pvectsz[ptsz->index_z];
    double z_asked = log(1.+z);
 
    if (z<exp(ptsz->array_redshift[0])-1.)
@@ -6307,13 +6309,13 @@ int evaluate_mean_galaxy_number_density_at_z(
       z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
 
 
-   pvectsz[ptsz->index_mean_galaxy_number_density] =  exp(pwl_value_1d(ptsz->n_arraySZ,
-                                                          ptsz->array_redshift,
-                                                          ptsz->array_mean_galaxy_number_density,
-                                                          z_asked));
+    return exp(pwl_value_1d(ptsz->n_arraySZ,
+                            ptsz->array_redshift,
+                            ptsz->array_mean_galaxy_number_density,
+                            z_asked));
    //pvectsz[ptsz->index_mean_galaxy_number_density] = 1.; // debug BB
 
-return _SUCCESS_;
+// return _SUCCESS_;
 }
 
 
@@ -9126,47 +9128,11 @@ pvectsz[ptsz->index_phi_galaxy_counts] = phig;
 double HOD_mean_number_of_central_galaxies(double z,
                                            double M_halo,
                                            double M_min,
-                                           double sigma_lnM,
-                                           double * pvectsz,
+                                           double sigma_log10M,
                                            struct tszspectrum * ptsz,
                                            struct background * pba){
  double result = 0.;
-
- int index_md = (int) pvectsz[ptsz->index_md];
- if ( _cib_cib_1h_
-   || _cib_cib_2h_
-   || _tSZ_cib_1h_
-   || _tSZ_cib_2h_
-   || _lens_cib_1h_
-   || _lens_cib_2h_){
-       //printf("cib\n");
-     if (M_halo>=M_min) result = 1.;
-     else result = 0.;
-     }
- else {
-   if (ptsz->galaxy_sample == 1){ // KFSW20
-   // unwise HOD: M_halo in M_sun
-     M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
-     result = 0.5*(1.+gsl_sf_erf((log10(M_halo/pba->h/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
-     }
-
-   else if (ptsz->galaxy_sample == 0){ // WIxSC
-    result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_lnM)));
-    }
-   else{
-      //BB debug
-      // z = 1.5; // BB debug
-      // M_halo = 1e13; // BB debug
-      M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
-      // M_min = pow(10.,12)*pba->h;
-      result = 0.5*(1.+gsl_sf_erf((log10(M_halo/pba->h/M_min)/(sqrt(2.)*ptsz->sigma_lnM_HOD))));
-      // printf("ns test: %.10e\n",result); // BB debug
-      // exit(0);
-      }
-
-}
-
- // result = 1.; //BB debug
+ result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_log10M)));
  return result;
 }
 
@@ -9181,72 +9147,15 @@ double HOD_mean_number_of_satellite_galaxies(double z,
                                              struct background * pba){
 
 
+double result;
+if (M_halo>M_min){
 
-double result =  0.;
-//z =2.1; // BB debug
-   if (ptsz->galaxy_sample == 1){ // KFSW20
-   M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
-   //M_min = 1e14;
-   // BB debug:
-   //M_min = 1e13; // BB debug
-   //M_halo = 1e15*pba->h; // BB debug
-   M_halo *= 1./pba->h;
-   if (M_halo>ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min){
-     result = pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/(ptsz->M1_prime_HOD_factor*M_min),alpha_s);
-     //printf("ns test: %.3e\n",result); // BB debug
-     //exit(0); // BB debug
-      }
-    else result = 0.;
-    }// end KFSW20
+result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
 
-  else if (ptsz->galaxy_sample == 0){
-  if (M_halo>M_min){
-
-   result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
-
-      }
-     else result = 0.;
-      }
-
-  else { // others
-
-  // z = 0.5; // BB debug
-  M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
-  M_halo *= 1./pba->h;
-  // M_halo = 1e13; // BB debug
-  //M_min = 1e14;
-  // BB debug:
-  //M_min = 1e13; // BB debug
-  //M_halo = 1e15*pba->h; // BB debug
-  //M_halo *= 1./pba->h;
-  // if (M_halo>ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min){
-  // result = pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/(ptsz->M1_prime_HOD_factor*M_min),alpha_s);
-  // //printf("ns test: %.3e\n",result); // BB debug
-  // //exit(0); // BB debug
-  //  }
-  //  else result = 0.;
-
-   //
-  if (M_halo>ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min){
-    result = pow((M_halo-ptsz->M_min_HOD_satellite_mass_factor_unwise*M_min)/M_min/ptsz->M1_prime_HOD_factor,alpha_s);
-       }
-  else result = 0.;
-  // printf("ns test: %.3e\n",result); // BB debug
-  // exit(0);
-
-
-
-  // if (M_halo>M_min){
-  //
-  //  result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
-  //
-  //     }
-  //  else result = 0.;
-
-
-   }// end KFSW20
-//
-// result = 0.; //BB debug
+ }
+else {
+result = 0.;
+}
 return result;
 }
 
@@ -9377,7 +9286,11 @@ double Luminosity_of_central_galaxies(double z,
 double result = 0.;
 
 double L_gal = evaluate_galaxy_luminosity(z, M_halo, nu, ptsz);
-double nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,pvectsz,ptsz,pba);
+double nc;
+// nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_log10M_HOD,pvectsz,ptsz,pba);
+if (M_halo>=ptsz->M_min_HOD) nc = 1.;
+else nc = 0.;
+
 return result =  nc*L_gal;
                                       }
 
@@ -9520,8 +9433,23 @@ double ns;
 double us;
 double z = pvectsz[ptsz->index_z];
 
-nc = HOD_mean_number_of_central_galaxies(z,M_halo,ptsz->M_min_HOD,ptsz->sigma_lnM_HOD,pvectsz,ptsz,pba);
-ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,ptsz->M_min_HOD,ptsz->alpha_s_HOD,ptsz->M1_prime_HOD,ptsz,pba);
+
+double M_min;
+double M1_prime;
+double sigma_log10M;
+if (ptsz->galaxy_sample == 1){ // unwise case:
+M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+M1_prime = ptsz->M1_prime_HOD_factor*M_min;
+sigma_log10M = sqrt(2.)*ptsz->sigma_log10M_HOD;
+}
+else{
+M_min = ptsz->M_min_HOD;
+M1_prime = ptsz->M1_prime_HOD;
+sigma_log10M = ptsz->sigma_log10M_HOD;
+}
+
+nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz,pba);
+ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M_min,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
 double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
 us = evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
 
@@ -9864,7 +9792,7 @@ m_cut = pow(10.,m_cut*mass_fac); // as in hmvec 'hod_A_log10mthresh'
 // else if (sample_id == 3) // blue
 //   mass_fac = 1.;
 
-return m_cut;
+return m_cut; // all in m_sun/h
 }
 
 
@@ -10054,24 +9982,24 @@ double bispectrum_f2_kernel(double k1, double k2, double k3){
 //
 // return term1+term2a*term2b;
 
-double a1 = 1.;//bispectrum_f2_kernel_eff_a(k1,n1,sig8_at_z,knl);
-double a2 = 1.;//bispectrum_f2_kernel_eff_a(k2,n2,sig8_at_z,knl);
+// double a1 = 1.;//bispectrum_f2_kernel_eff_a(k1,n1,sig8_at_z,knl);
+// double a2 = 1.;//bispectrum_f2_kernel_eff_a(k2,n2,sig8_at_z,knl);
+//
+// double b1 = 1.;//bispectrum_f2_kernel_eff_b(k1,n1,knl);
+// double b2 = 1.;//bispectrum_f2_kernel_eff_b(k2,n2,knl);
+//
+// double c1 = 1.;//bispectrum_f2_kernel_eff_c(k1,n1,knl);
+// double c2 = 1.;//bispectrum_f2_kernel_eff_c(k2,n2,knl);
+//
+// // Eq. 13 of Cooray & Hu - https://iopscience.iop.org/article/10.1086/318660/fulltext/51716.text.html
+// double omega_m = 1.; // for simplicity here, not sure whether it should be omega_m(z)
 
-double b1 = 1.;//bispectrum_f2_kernel_eff_b(k1,n1,knl);
-double b2 = 1.;//bispectrum_f2_kernel_eff_b(k2,n2,knl);
-
-double c1 = 1.;//bispectrum_f2_kernel_eff_c(k1,n1,knl);
-double c2 = 1.;//bispectrum_f2_kernel_eff_c(k2,n2,knl);
-
-// Eq. 13 of Cooray & Hu - https://iopscience.iop.org/article/10.1086/318660/fulltext/51716.text.html
-double omega_m = 1.; // for simplicity here, not sure whether it should be omega_m(z)
-
-double term1 = 1.-2./7.*pow(omega_m,-2./63);
+double term1 = 5./7.;//1.-2./7.*pow(omega_m,-2./63);
 double cos_theta_12 = (k3*k3-k1*k1-k2*k2)/(2.*k1*k2);
-double term2a = 1./2.*cos_theta_12*(k2/k1+k1/k2)*b1*b2;
-double term2b = cos_theta_12*cos_theta_12*2./7.*pow(omega_m,-2./63)*c1*c2;
+double term2a = 1./2.*cos_theta_12*(k2/k1+k1/k2);//*b1*b2;
+double term2b = cos_theta_12*cos_theta_12*2./7.;//*pow(omega_m,-2./63)*c1*c2;
 
-return term1*a1*a2+term2a+term2b;
+return term1+term2a+term2b;
 }
 
 

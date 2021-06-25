@@ -613,6 +613,25 @@ cdef extern from "class.h":
                                     double k,
                                     void * tsz,
                                     void * nl)
+    double bispectrum_f2_kernel(double k1, double k2, double k3)
+
+    double HOD_mean_number_of_satellite_galaxies(double z,
+                                                 double M_halo,
+                                                 double Nc_mean,
+                                                 double M_min,
+                                                 double alpha_s,
+                                                 double M1_prime,
+                                                 void * ptsz,
+                                                 void * pba)
+
+    double HOD_mean_number_of_central_galaxies(double z,
+                                               double M_halo,
+                                               double M_min,
+                                               double sigma_log10M,
+                                               void * ptsz,
+                                               void * pba)
+
+
     double get_matter_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,
                                                          double k2_in_h_over_Mpc,
                                                          double k3_in_h_over_Mpc,
@@ -647,6 +666,14 @@ cdef extern from "class.h":
                                                          void * pba,
                                                          void * pnl,
                                                          void * ppm)
+
+    double evaluate_mean_galaxy_number_density_at_z(double z,
+                                                    void * ptsz)
+
+    double evaluate_unwise_m_min_cut(double z,
+                                     int sample_id,
+                                     void * ptsz)
+
 
     double get_nu_at_z_and_m(double z_asked,
                              double m_asked,

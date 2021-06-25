@@ -2691,7 +2691,7 @@ int input_read_parameters(
       class_read_double("M1_prime_HOD",ptsz->M1_prime_HOD);
       class_read_double("M1_prime_HOD_factor",ptsz->M1_prime_HOD_factor);
       class_read_double("alpha_s_HOD",ptsz->alpha_s_HOD);
-      class_read_double("sigma_lnM_HOD",ptsz->sigma_lnM_HOD);
+      class_read_double("sigma_log10M_HOD",ptsz->sigma_log10M_HOD);
       class_read_double("rho_y_gal",ptsz->rho_y_gal);
 
 
@@ -2722,7 +2722,7 @@ int input_read_parameters(
 
       }
 
-      class_read_string("full path to dndz (normalized galaxy dist.)",ptsz->full_path_to_dndz_gal);
+      // class_read_string("full path to dndz (normalized galaxy dist.)",ptsz->full_path_to_dndz_gal);
 
 
 
@@ -5304,7 +5304,7 @@ int input_default_params(
   ptsz->M_min_HOD = pow(10,11.5); //Msun/h
   ptsz->M1_prime_HOD = pow(10,12.6); //Msun/h
   ptsz->alpha_s_HOD = 1.;
-  ptsz->sigma_lnM_HOD = 0.15;
+  ptsz->sigma_log10M_HOD = 0.15;
   ptsz->rho_y_gal = -0.6;
 
 
