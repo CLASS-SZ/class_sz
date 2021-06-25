@@ -14,7 +14,7 @@ in the halo model (currently being developped: kSZ, galaxy, ISW, lensing and CIB
 
 **Take a look at the notebook to see what class_sz can do:**
 
-https://github.com/borisbolliet/class_sz/blob/master/notebooks/cl_ST_sz.ipynb
+https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_plots_and_tutorial.ipynb
 
 The code is currently in development, don't hesitate to reach out if anything is unclear due to lack of comments and indications, or if it crashes unexpectedly.
 
@@ -121,7 +121,7 @@ That's it!
 Have a look at the notebook cl_ST_sz.ipynb and try to run it. It should output the primary cmb and tsz power spectra.
 The notebook is here:
 
-https://github.com/borisbolliet/class_sz/blob/master/notebooks/cl_ST_sz.ipynb
+https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_plots_and_tutorial.ipynb
 
 
 
