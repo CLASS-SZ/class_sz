@@ -1460,6 +1460,18 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_te_y_y(self):
+        """
+        (class_sz) Return Te x y x y power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['teyy'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['teyy'].append(self.tsz.cl_te_y_y[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
     def cl_ym(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of y x mu (lensing magnification) power spectrum
@@ -1642,6 +1654,11 @@ cdef class Class:
         """
         return self.tsz.A_cn
 
+    def get_te_of_m500c_at_z_arnaud(self,m,z):
+        return get_te_of_m500c_at_z_arnaud(m,z,&self.ba,&self.tsz)
+
+    def get_te_of_m500c_at_z_lee(self,m,z):
+        return get_te_of_m500c_at_z_lee(m,z,&self.ba,&self.tsz)
 
 
     def get_dndlnM_at_z_and_M(self,z,m):

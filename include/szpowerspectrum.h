@@ -1464,6 +1464,9 @@ double get_matter_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,
                                                      struct nonlinear * pnl,
                                                      struct primordial * ppm);
 
+double get_te_of_m500c_at_z_arnaud(double m, double z, struct background * pba,struct tszspectrum * ptsz);
+double get_te_of_m500c_at_z_lee(double m, double z, struct background * pba,struct tszspectrum * ptsz);
+
 double get_matter_bispectrum_at_z_effective_approach_smoothed(double k1_in_h_over_Mpc,
                                                      double k2_in_h_over_Mpc,
                                                      double k3_in_h_over_Mpc,

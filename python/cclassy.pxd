@@ -276,6 +276,7 @@ cdef extern from "class.h":
         double * ell
         double * cl_sz_1h
         double * cl_sz_2h
+        double * cl_te_y_y
         double * cl_tSZ_gal_1h
         double * cl_tSZ_gal_2h
         double * cl_tSZ_lensmag_1h
@@ -573,6 +574,10 @@ cdef extern from "class.h":
                                         double m_asked,
                                         double z_asked,
                                         void * tsz)
+
+    double get_te_of_m500c_at_z_arnaud(double m, double z, void * pba, void * ptsz)
+    double get_te_of_m500c_at_z_lee(double m, double z, void * pba, void * ptsz)
+
 
     double get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(double z,
                                                                double m,

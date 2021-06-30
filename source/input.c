@@ -2005,9 +2005,10 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
-      if ((strstr(string1,"tSZ_te_y_y") != NULL) ) {
+      if ((strstr(string1,"te_y_y") != NULL) ) {
         ptsz->has_sz_te_y_y =_TRUE_;
         ptsz->has_sz_ps =_TRUE_; //ps is necessary in this case (Te = "Te_y_y/y_y")
+        ptsz->has_sz_2halo =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;

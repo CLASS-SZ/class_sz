@@ -3368,26 +3368,60 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 }
 
 
-int evaluate_temperature_mass_relation( double * pvecback,
-                                        double * pvectsz,
-                                        struct background * pba,
-                                        struct tszspectrum * ptsz)
-  {
+double get_te_of_m500c_at_z_arnaud(double m, double z, struct background * pba,struct tszspectrum * ptsz){
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+              pba->bg_size*sizeof(double),
+              ptsz->error_message);
 
+  class_call(background_tau_of_z(pba,z,&tau),
+             ptsz->error_message,
+             ptsz->error_message);
 
-   double mass = pvectsz[ptsz->index_m500]; //biased mass = M/B (X-ray mass)
-   //double mass = pvectsz[ptsz->index_m500]*ptsz->HSEbias; //biased mass = M/B (X-ray mass)
+  class_call(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             ptsz->error_message,
+             ptsz->error_message);
 
-   double Eh = pvecback[pba->index_bg_H]/pba->H0;
+double Eh = pvecback[pba->index_bg_H]/pba->H0;
 
-if (ptsz->temperature_mass_relation == 0){
-   pvectsz[ptsz->index_te_of_m] = 5.*pow(Eh*mass //biased mass
-                                         /3.e14,2./3.); //kB*Te in keV
+free(pvecback);
 
-      }
-   //lee et al [1912.07924v1]
-   else if (ptsz->temperature_mass_relation == 1){
+double mass = m;
+return  5.*pow(Eh*mass/3.e14,2./3.); //kB*Te in keV
 
+}
+
+double get_te_of_m500c_at_z_lee(double m, double z, struct background * pba,struct tszspectrum * ptsz){
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+              pba->bg_size*sizeof(double),
+              ptsz->error_message);
+
+  class_call(background_tau_of_z(pba,z,&tau),
+             ptsz->error_message,
+             ptsz->error_message);
+
+  class_call(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             ptsz->error_message,
+             ptsz->error_message);
+
+double Eh = pvecback[pba->index_bg_H]/pba->H0;
+
+free(pvecback);
 
       double A[3] = {4.763,4.353,3.997};
       double B[3] = {0.581,0.571,0.593};
@@ -3396,7 +3430,7 @@ if (ptsz->temperature_mass_relation == 0){
 
       double Ap,Bp,Cp,zp;
 
-      zp = pvectsz[ptsz->index_z];
+      zp = z;
       if (zp <= 1.){
       Ap = pwl_value_1d(3,z_interp,A,zp);
       Bp = pwl_value_1d(3,z_interp,B,zp);
@@ -3411,9 +3445,31 @@ if (ptsz->temperature_mass_relation == 0){
 
 
    double Mfid = 3.e14 ; //Msun/h
-   double M = mass*ptsz->HSEbias; //true mass
 
-   pvectsz[ptsz->index_te_of_m] = Ap*pow(Eh,2./3.)*pow(M/Mfid,Bp+Cp*log(M/Mfid)); //kB*Te in keV
+   return Ap*pow(Eh,2./3.)*pow(m/Mfid,Bp+Cp*log(m/Mfid)); //kB*Te in keV
+
+}
+
+
+int evaluate_temperature_mass_relation( double * pvecback,
+                                        double * pvectsz,
+                                        struct background * pba,
+                                        struct tszspectrum * ptsz)
+  {
+
+
+double mass = pvectsz[ptsz->index_m500]; //biased mass = M/B (X-ray mass)
+
+if (ptsz->temperature_mass_relation == 0){
+   // pvectsz[ptsz->index_te_of_m] = 5.*pow(Eh*mass //biased mass
+   //                                       /3.e14,2./3.); //kB*Te in keV
+pvectsz[ptsz->index_te_of_m] = get_te_of_m500c_at_z_arnaud(mass,pvectsz[ptsz->index_z],pba,ptsz);
+      }
+   //lee et al [1912.07924v1]
+else if (ptsz->temperature_mass_relation == 1){
+
+
+pvectsz[ptsz->index_te_of_m] = get_te_of_m500c_at_z_lee(mass*ptsz->HSEbias,pvectsz[ptsz->index_z],pba,ptsz);
 
    }
 
