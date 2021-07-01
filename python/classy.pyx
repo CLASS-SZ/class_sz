@@ -1446,6 +1446,27 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def get_cov_N_N(self):
+        """
+        (class_sz) Return the covariance of cluster number counts
+        """
+        cl = {}
+        cl['poisson'] = []
+        cl['hsv'] = []
+        cl['mass_bin_edges'] = []
+        for index_M_bins in range(self.tsz.nbins_M):
+            cl['poisson'].append(self.tsz.cov_N_N[index_M_bins])
+            cl['hsv'].append([])
+            cl['mass_bin_edges'].append(self.tsz.cov_Y_N_mass_bin_edges[index_M_bins])
+            for index_M_bins_prime in range(self.tsz.nbins_M):
+                cl['hsv'][index_M_bins].append(self.tsz.cov_N_N_hsv[index_M_bins][index_M_bins_prime])
+        cl['mass_bin_edges'].append(self.tsz.cov_Y_N_mass_bin_edges[self.tsz.nbins_M])
+
+        cl['poisson'] = np.array(cl['poisson'])
+        cl['hsv'] = np.array(cl['hsv'])
+        cl['mass_bin_edges'] = np.array(cl['mass_bin_edges'])
+        return cl
+
     def cl_yg(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of y x g power spectrum

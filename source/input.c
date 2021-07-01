@@ -1947,6 +1947,7 @@ int input_read_parameters(
 
       class_read_double("f_sky",ptsz->f_sky);
 
+
       //Foreground Nuisance parameters
       class_read_double("A_cib",ptsz->A_cib);
       class_read_double("A_rs",ptsz->A_rs);
@@ -2048,7 +2049,7 @@ int input_read_parameters(
       }
 
 
-      if ((strstr(string1,"tSZ_cov_N_N") != NULL) ) {
+      if ((strstr(string1,"cov(N,N)") != NULL) ) {
         ptsz->has_sz_cov_N_N_hsv =_TRUE_;
         ptsz->has_sigma2_hsv = _TRUE_;
         ptsz->has_sz_cov_N_N =_TRUE_;
@@ -4945,6 +4946,7 @@ int input_default_params(
   ptsz->x_size_for_pp = 2000;
 
   ptsz->f_sky = 1.; // full sky
+  ptsz->Omega_survey = 4.*_PI_*ptsz->f_sky;
 
   // integration_method_pressure_profile
   // 1: 0 -> Patterson rule

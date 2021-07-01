@@ -2299,12 +2299,13 @@ double integrand_at_m_and_z(double logM,
            evaluate_sigma2_hsv(pvecback,pvectsz,pba,pnl,ptsz);
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-           //printf("%.4e \t %.4e \t %4.e \n",pvectsz[ptsz->index_sigma2_hsv],pvectsz[ptsz->index_halo_bias],pvectsz[ptsz->index_completeness]);
+           // printf("%.4e \t %.4e  \n",pvectsz[ptsz->index_sigma2_hsv],
+           //                                  pvectsz[ptsz->index_halo_bias]);
 
            pvectsz[ptsz->index_integrand] =  ptsz->Omega_survey
                                              //*pvectsz[ptsz->index_chi2]
                                              *pvectsz[ptsz->index_hmf]
-                                             *pvectsz[ptsz->index_completeness]
+                                             // *pvectsz[ptsz->index_completeness]
                                              *pvectsz[ptsz->index_halo_bias]
                                              *pvectsz[ptsz->index_sigma2_hsv];
                                            }
@@ -2316,7 +2317,7 @@ double integrand_at_m_and_z(double logM,
            pvectsz[ptsz->index_integrand] =  ptsz->Omega_survey
                                              //*pvectsz[ptsz->index_chi2]
                                              *pvectsz[ptsz->index_hmf]
-                                             *pvectsz[ptsz->index_completeness]
+                                             // *pvectsz[ptsz->index_completeness]
                                              *pvectsz[ptsz->index_halo_bias];
 
                                            }
@@ -7533,8 +7534,7 @@ int show_preamble_messages(struct background * pba,
       *pvecback[pba->index_bg_rho_crit]
       /pow(pba->h,2);
 
-      //ptsz->D_0 =  pvecback[pba->index_bg_D];
-      //printf("D0 = %e\n",ptsz->D_0);
+      // ptsz->D_0 =  pvecback[pba->index_bg_D];
 
       ptsz->Omega_m_0 = pvecback[pba->index_bg_Omega_m];
       ptsz->Omega_ncdm_0 = ptsz->Omega_m_0
@@ -7729,7 +7729,7 @@ if   (ptsz->has_sz_ps
    //  }
 
 
-    ptsz->Omega_survey = 4.*_PI_*ptsz->f_sky;
+    // ptsz->Omega_survey = 4.*_PI_*ptsz->f_sky;
     free(pvecback);
 
 return _SUCCESS_;
@@ -8309,7 +8309,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    //   class_alloc(ptsz->erfs_2d_to_1d_y_array,10*sizeof(double *),ptsz->error_message);
    //
    // }
-
+   ptsz->Omega_survey = 4.*_PI_*ptsz->f_sky;
    if (ptsz->has_sz_ps
       +ptsz->has_sz_2halo
       +ptsz->has_sz_te_y_y

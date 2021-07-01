@@ -2022,7 +2022,12 @@ double integrand_sigma2_hsv(double lnk, void *p){
               V->pba->bg_size*sizeof(double),
               V->pba->error_message);
 
-  class_call(background_tau_of_z(V->pba,V->z,&tau),
+  double z;
+  if (V->z == 0.)
+    z = V->z + 1e-10; // distance diverges at low-z
+  else
+    z = V->z;
+  class_call(background_tau_of_z(V->pba,z,&tau),
              V->pba->error_message,
              V->pba->error_message);
 
@@ -2039,6 +2044,7 @@ double integrand_sigma2_hsv(double lnk, void *p){
   double Theta_s = sqrt(V->ptsz->Omega_survey/_PI_); // see below Eq. 45 of Takada and Spergel 2013
   double Chi = pvecback[V->pba->index_bg_ang_distance]*(1.+V->z);  //'Chi' comoving distance in Mpc
   double r_hsv = Chi*Theta_s; // in Mpc
+
 
   free(pvecback);
 
@@ -2064,8 +2070,6 @@ double integrand_sigma2_hsv(double lnk, void *p){
                                    ),
                                    V->pnl->error_message,
                                    V->pnl->error_message);
-
-
   double result = k*k*pk*W*W;
 
 
@@ -2084,7 +2088,7 @@ int spectra_sigma2_hsv(
                    double * sigma2_hsv
                    ) {
 
-double k_min = 1e-5;
+double k_min = 1e-4;
 double k_max = 1e1;
 
 

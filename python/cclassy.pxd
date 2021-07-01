@@ -264,6 +264,7 @@ cdef extern from "class.h":
         double x_outSZ
         double HSEbias
         int  ndimSZ
+        int nbins_M
         double logR1SZ
         double logR2SZ
         double delta_cSZ
@@ -294,6 +295,9 @@ cdef extern from "class.h":
         double * cl_lensmag_lensmag_1h
         double * cl_lensmag_lensmag_2h
         double ** tllprime_sz
+        double * cov_Y_N_mass_bin_edges
+        double * cov_N_N
+        double ** cov_N_N_hsv
         short has_tszspectrum
         short sz_verbose
         double bin_dlog10_snr_last_bin
