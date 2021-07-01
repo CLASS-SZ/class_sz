@@ -2287,8 +2287,8 @@ double integrand_at_m_and_z(double logM,
 
            pvectsz[ptsz->index_integrand] =  ptsz->Omega_survey
                                              //*pvectsz[ptsz->index_chi2]
-                                             *pvectsz[ptsz->index_hmf]
-                                             *pvectsz[ptsz->index_completeness];
+                                             *pvectsz[ptsz->index_hmf];
+                                             // *pvectsz[ptsz->index_completeness];
                       }
 
  else if  (_cov_N_N_hsv_){
@@ -2296,8 +2296,9 @@ double integrand_at_m_and_z(double logM,
 
            if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
 
-           evaluate_sigma2_hsv(pvecback,pvectsz,pba,pnl,ptsz);
+           // evaluate_sigma2_hsv(pvecback,pvectsz,pba,pnl,ptsz);
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+           pvectsz[ptsz->index_halo_bias] = 1.;
 
            // printf("%.4e \t %.4e  \n",pvectsz[ptsz->index_sigma2_hsv],
            //                                  pvectsz[ptsz->index_halo_bias]);
@@ -2306,13 +2307,13 @@ double integrand_at_m_and_z(double logM,
                                              //*pvectsz[ptsz->index_chi2]
                                              *pvectsz[ptsz->index_hmf]
                                              // *pvectsz[ptsz->index_completeness]
-                                             *pvectsz[ptsz->index_halo_bias]
-                                             *pvectsz[ptsz->index_sigma2_hsv];
+                                             *pvectsz[ptsz->index_halo_bias];
                                            }
 
            if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+           pvectsz[ptsz->index_halo_bias] = 1.;
 
            pvectsz[ptsz->index_integrand] =  ptsz->Omega_survey
                                              //*pvectsz[ptsz->index_chi2]
@@ -7333,7 +7334,10 @@ if (ptsz->has_sz_cov_Y_N && ptsz->write_sz>0){
 
     int index_M_bins;
     for (index_M_bins=0;index_M_bins<ptsz->nbins_M;index_M_bins++)
-    fprintf(fp,"%e\t%e\t%e\t%e\n",ptsz->cov_Y_N_mass_bin_edges[index_M_bins],ptsz->cov_Y_N_mass_bin_edges[index_M_bins+1],ptsz->cov_N_N[index_M_bins],ptsz->cov_N_N_hsv[index_M_bins][index_M_bins]);
+    fprintf(fp,"%e\t%e\t%e\t%e\n",ptsz->cov_Y_N_mass_bin_edges[index_M_bins],
+    ptsz->cov_Y_N_mass_bin_edges[index_M_bins+1],
+    ptsz->cov_N_N[index_M_bins],
+    ptsz->cov_N_N_hsv[index_M_bins][index_M_bins]);
 
     fclose(fp);
 
@@ -8310,6 +8314,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    //
    // }
    ptsz->Omega_survey = 4.*_PI_*ptsz->f_sky;
+   ptsz->m_min_counter_terms =  ptsz->M1SZ;
+
    if (ptsz->has_sz_ps
       +ptsz->has_sz_2halo
       +ptsz->has_sz_te_y_y

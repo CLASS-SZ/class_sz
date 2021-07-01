@@ -1453,17 +1453,21 @@ cdef class Class:
         cl = {}
         cl['poisson'] = []
         cl['hsv'] = []
+        cl['r'] = []
         cl['mass_bin_edges'] = []
         for index_M_bins in range(self.tsz.nbins_M):
             cl['poisson'].append(self.tsz.cov_N_N[index_M_bins])
             cl['hsv'].append([])
+            cl['r'].append([])
             cl['mass_bin_edges'].append(self.tsz.cov_Y_N_mass_bin_edges[index_M_bins])
             for index_M_bins_prime in range(self.tsz.nbins_M):
                 cl['hsv'][index_M_bins].append(self.tsz.cov_N_N_hsv[index_M_bins][index_M_bins_prime])
+                cl['r'][index_M_bins].append(self.tsz.cov_N_N_hsv[index_M_bins][index_M_bins_prime]/np.sqrt(self.tsz.cov_N_N[index_M_bins]+self.tsz.cov_N_N_hsv[index_M_bins][index_M_bins])/np.sqrt(self.tsz.cov_N_N[index_M_bins_prime]+self.tsz.cov_N_N_hsv[index_M_bins_prime][index_M_bins_prime]))
         cl['mass_bin_edges'].append(self.tsz.cov_Y_N_mass_bin_edges[self.tsz.nbins_M])
 
         cl['poisson'] = np.array(cl['poisson'])
         cl['hsv'] = np.array(cl['hsv'])
+        cl['r'] = np.array(cl['r'])
         cl['mass_bin_edges'] = np.array(cl['mass_bin_edges'])
         return cl
 

@@ -2088,8 +2088,8 @@ int spectra_sigma2_hsv(
                    double * sigma2_hsv
                    ) {
 
-double k_min = 1e-4;
-double k_max = 1e1;
+double k_min = exp(ptsz->ln_k_for_tSZ[0]);
+double k_max = exp(ptsz->ln_k_for_tSZ[ptsz->ln_k_size_for_tSZ-1]);
 
 
 struct Parameters_for_integrand_sigma2_hsv V;
@@ -6432,6 +6432,13 @@ if ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kS
   result *= V->pvectsz[V->ptsz->index_vrms2]/3./pow(_c_*1e-3,2.);
 }
 
+// multiply by dsigma2_hsv
+if ((V->ptsz->has_sz_cov_N_N_hsv == _TRUE_) && (index_md == V->ptsz->index_md_cov_N_N_hsv)){
+  evaluate_sigma2_hsv(V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+  result *= 1.;//V->pvectsz[V->ptsz->index_sigma2_hsv];
+}
+
+
 // gxg needs Wg^2:
 if ( ((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h))
    ||((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
@@ -6493,6 +6500,7 @@ else{
 
   // finally multiply by volume element Chi^2 dChi
   result *= V->pvectsz[V->ptsz->index_chi2];
+  // printf("multiplying by volume\n");
 
   // integrate w.r.t ln(1+z); dz =  (1+z)dln(1+z)
   // volume element in units h^-3 Mpc^3
@@ -6687,7 +6695,10 @@ double integrand_patterson_test(double logM, void *p){
   double m_min;
   double m_max;
 
-  if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_Y_N )|| ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_Y_N_next_order )|| ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_N_N ) || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_N_N_hsv )){
+  if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_Y_N )
+    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_Y_N_next_order )
+    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_N_N )
+    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_cov_N_N_hsv )){
     int index_m_1 = (int) pvectsz[ptsz->index_mass_bin_1];
     m_min = ptsz->cov_Y_N_mass_bin_edges[index_m_1];
     m_max = ptsz->cov_Y_N_mass_bin_edges[index_m_1+1];
@@ -7460,6 +7471,8 @@ double integrand_patterson_test(double logM, void *p){
 // printf("starting counter terms at low M\n");
 // evaluate low mass part:
 // printf("%.3e %.3e\n",ptsz->M1SZ, ptsz->m_min_counter_terms);
+if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
+  && (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N_hsv){
   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
  // double rho0 = (pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0;
  // double nmin;
@@ -7484,6 +7497,7 @@ else {
        double nmin_umin = nmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf];
        r += nmin_umin; // comment this to match hmvec
        }
+     }
 
        // printf("counter terms done\n");
                                    }

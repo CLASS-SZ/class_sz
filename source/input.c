@@ -1802,7 +1802,7 @@ int input_read_parameters(
 
 
       //number of mass bins for cov_Y-N:
-      class_read_double("number of mass bins for cov(Y,N)",ptsz->nbins_M);
+      class_read_double("number of mass bins for cluster covariances",ptsz->nbins_M);
 
       //Pressure profile is considered between x_in and x_out
       class_read_double("x_inSZ",ptsz->x_inSZ);
@@ -4102,6 +4102,7 @@ int input_read_parameters(
       + ptsz->has_sz_m_y_y_2h
       + ptsz->has_sz_te_y_y
       + ptsz->has_sz_cov_N_N
+      + ptsz->has_sz_cov_N_N_hsv
       + ptsz->has_tSZ_tSZ_tSZ_1halo
       + ptsz->has_kSZ_kSZ_gal_1h
       + ptsz->has_kSZ_kSZ_gal_2h
@@ -4849,7 +4850,7 @@ int input_default_params(
   ptsz->M1_prime_HOD_factor = 15.;
   ptsz->M_min_HOD_satellite_mass_factor_unwise = 0.1;
 
-  ptsz->hm_consistency = 0; //0: nothing 1: counter terms 2: alpha(z)
+  ptsz->hm_consistency = 1; //0: nothing 1: counter terms 2: alpha(z)
 
   ptsz->N_kSZ2_gal_multipole_grid = 20;
 
