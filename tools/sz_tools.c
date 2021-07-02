@@ -8179,9 +8179,10 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
                                                integrand_mean_galaxy_number,
                                                params,ptsz->patterson_show_neval);
 
-           double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-           double nmin_umin = nmin*integrand_mean_galaxy_number(log(m_min),params)/pvectsz[ptsz->index_hmf];
-           r += nmin_umin;
+           // counter terms
+           // double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+           // double nmin_umin = nmin*integrand_mean_galaxy_number(log(m_min),params)/pvectsz[ptsz->index_hmf];
+           // r += nmin_umin;
           ptsz->array_mean_galaxy_number_density[index_z] = log(r);
 
        }
