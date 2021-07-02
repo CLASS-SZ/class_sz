@@ -556,7 +556,7 @@ cdef extern from "class.h":
     double get_hmf_counter_term_b2min_at_z(double z_asked,
                                           void * tsz)
 
-
+    double get_volume_at_z(double z, void * pba)
     double get_dndlnM_at_z_and_M(double z_asked,
                                  double m_asked,
                                  void * tsz)

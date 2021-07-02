@@ -1447,11 +1447,7 @@ cdef class Class:
         return cl
 
     def get_volume_dVdzdOmega_at_z(self,z):
-        # Chi^2*dChi = Chi^2 * (c/H) * dz
-        H_over_c_in_h_over_Mpc = self.Hubble(z)/self.ba.h;
-        chi = self.angular_distance(z)*(1.+z)*self.ba.h
-        dV = chi**2./H_over_c_in_h_over_Mpc
-        return dV
+        return get_volume_at_z(z,&self.ba)
 
 
 
