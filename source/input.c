@@ -2858,6 +2858,7 @@ int input_read_parameters(
       class_read_string("root",pcsz->root);
 
       class_read_int("sz_verbose",ptsz->sz_verbose);
+      class_read_double("f_free",ptsz->f_free);
 
       class_call(parser_read_string(pfc,"write sz results to files",&string1,&flag1,errmsg),
                  errmsg,

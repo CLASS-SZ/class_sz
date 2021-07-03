@@ -6052,12 +6052,23 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   double sigmaT_over_mp = 8.305907197761162e-17 * pow(V->pba->h,2)/V->pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
   double tau_fac = V->pba->Omega0_b/V->ptsz->Omega_m_0/V->ptsz->mu_e*V->ptsz->f_free;///V->pba->h;///V->pba->h; // <!> correct version no h<!>
 // printf("fb = %.4e\n",V->pba->Omega0_b/V->ptsz->Omega_m_0);
-  double tau_normalisation = tau_fac
-                            *sigmaT_over_mp
+  double tau_normalisation = //tau_fac
+                            sigmaT_over_mp
                             //*pow(H_over_c_in_h_over_Mpc,3.)
                             *pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.)
-                            *V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
-
+                            *V->pba->Omega0_b*V->ptsz->Rho_crit_0/V->ptsz->mu_e*V->ptsz->f_free;
+                            //*V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
+                            // *V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
+  // printf("mu_e = %.3e A = %.5e\n",V->ptsz->mu_e,sigmaT_over_mp*V->ptsz->Rho_crit_0);
+  // exit(0);
+  double a = 1. / (1. + z);
+  double ya = pow(1./a,1.5);//**1.5
+  double zre = 10.3 ;    // # reionization  redshift
+  double are = 1. / (1 + zre);
+  double yre = pow(1./are,1.5);//**1.5
+  double deltay = 7.56;
+  double xe = (0.5*(1.-tanh((ya-yre)/deltay)));
+  tau_normalisation *= pow(1. + z,3) * xe/ (1. + z);
   result = tau_normalisation*tau_normalisation*galaxy_normalisation*b123;
   // printf("l1 = %.3e l2 = %.3e l3 = %.3e hxhxhxh\n",l1,l2,result);
 
