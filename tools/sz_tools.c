@@ -2863,7 +2863,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
   // in the settings of KFSW20
   //if ()
-  double xout = ptsz->x_out_nfw_profile*c_nfw_prime; //rvir/rs = cvir
+  double xout = ptsz->x_out_nfw_profile;//ptsz->x_out_nfw_profile*c_nfw_prime; //rvir/rs = cvir
 
   // Battaglia 16 case:
   if (flag_matter_type == 1 && ptsz->tau_profile == 1){
@@ -2921,7 +2921,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   int limit = size_w; //number of sub interval
   gsl_integration_qawo(&F,xin,eps_abs,eps_rel,limit,w,wf,&result_gsl,&error);
 
-  *result = result_gsl;
+  *result = result_gsl;///m_nfw(c_nfw);
 
   gsl_integration_qawo_table_free(wf);
   gsl_integration_workspace_free(w);
@@ -3336,7 +3336,7 @@ for (index_m=0;
   // exit(0);
 
 }
-else if (ptsz->tau_profile == 0){
+else if (ptsz->tau_profile == 0){ // truncated nfw profile
 
     pvectsz[ptsz->index_m200m] = exp(lnM);
     // class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200m],
@@ -3363,6 +3363,21 @@ else if (ptsz->tau_profile == 0){
    // set 1 for matter_type = tau
    double xout = ptsz->x_out_truncated_nfw_profile;
    result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,1);
+
+   // //compare truncated vs integrated:
+   double result_int;
+   pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
+   double characteristic_multipole = pvectsz[ptsz->index_ls];
+   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
+   two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int,1);
+   printf("xout_trunc = %.3e r_trunc = %.5e xout_trunc = %.3e r_int = %.5e\n",
+   ptsz->x_out_truncated_nfw_profile,
+   result,
+   ptsz->x_out_nfw_profile,
+   result_int);
+   // //end truncated vs integrated
+
+
    double tau_normalisation = pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
    // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
    tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version no h<!>
@@ -6039,41 +6054,31 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   double f2_eff_23 =  bispectrum_f2_kernel_eff(k2,k3,k1,n2,n3,sigma8_at_z,knl);
   double f2_eff_31 =  bispectrum_f2_kernel_eff(k3,k1,k2,n3,n1,sigma8_at_z,knl);
 
-  // printf("f1 = %.3e \t f2 = %.3e \t f3 = %.3e\n",f2_eff_12,f2_eff_23,f2_eff_31);
-
   double b123 = 2.*pk1*pk2*f2_eff_12 + 2.*pk2*pk3*f2_eff_23 + 2.*pk3*pk1*f2_eff_31;
-  // if (k1 > 1.5 || k2 > 1.5 || k3 > 1.5){
-  //   b123 =1e-100;
-  // }
+
 
   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
   double galaxy_normalisation = H_over_c_in_h_over_Mpc; // here is normally also the bias but we take it out and multiply afterward
   galaxy_normalisation *= pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.);///(1.+z);
   double sigmaT_over_mp = 8.305907197761162e-17 * pow(V->pba->h,2)/V->pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
-  double tau_fac = V->pba->Omega0_b/V->ptsz->Omega_m_0/V->ptsz->mu_e*V->ptsz->f_free;///V->pba->h;///V->pba->h; // <!> correct version no h<!>
-// printf("fb = %.4e\n",V->pba->Omega0_b/V->ptsz->Omega_m_0);
-  double tau_normalisation = //tau_fac
-                            sigmaT_over_mp
-                            //*pow(H_over_c_in_h_over_Mpc,3.)
-                            *pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.)
-                            *V->pba->Omega0_b*V->ptsz->Rho_crit_0/V->ptsz->mu_e*V->ptsz->f_free;
-                            //*V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
-                            // *V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
-  // printf("mu_e = %.3e A = %.5e\n",V->ptsz->mu_e,sigmaT_over_mp*V->ptsz->Rho_crit_0);
-  // exit(0);
   double a = 1. / (1. + z);
-  double ya = pow(1./a,1.5);//**1.5
-  double zre = 10.3 ;    // # reionization  redshift
-  double are = 1. / (1 + zre);
-  double yre = pow(1./are,1.5);//**1.5
-  double deltay = 7.56;
-  double xe = (0.5*(1.-tanh((ya-yre)/deltay)));
-  tau_normalisation *= pow(1. + z,3) * xe/ (1. + z);
+  double tau_fac = a*sigmaT_over_mp*V->pba->Omega0_b/V->ptsz->Omega_m_0/V->ptsz->mu_e*V->ptsz->f_free;
+  double tau_normalisation =tau_fac
+                            *pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.)
+                            *V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
+
+  // simone ferraro's reio implementation:
+  // double ya = pow(1./a,1.5);//**1.5
+  // double zre = 10.3 ;    // # reionization  redshift
+  // double are = 1. / (1 + zre);
+  // double yre = pow(1./are,1.5);//**1.5
+  // double deltay = 7.56;
+  // double xe = (0.5*(1.-tanh((ya-yre)/deltay)));
+  // tau_normalisation *= pow(1. + z,3) * xe;
+
   result = tau_normalisation*tau_normalisation*galaxy_normalisation*b123;
-  // printf("l1 = %.3e l2 = %.3e l3 = %.3e hxhxhxh\n",l1,l2,result);
 
   if (isnan(b123)){
-    // result = 1e-100;
   printf("z = %.3e b123 = %.3e\n",z,b123);
   printf("k1 = %.3e k2 = %.3e k3 = %.3e\n",k1,k2,k3);
   printf("l1 = %.3e l2 = %.3e l3 = %.3e\n",l1,l2,l3);
@@ -8103,21 +8108,23 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
 
       //V->pvectsz[V->ptsz->index_md] = V->ptsz->index_md_gal_gal_1h;
       double M_min;
+      double M0;
       double M1_prime;
       double sigma_log10M;
       double nc,ns;
-      if (V->ptsz->galaxy_sample == 1){ // unwise case:
-      M_min = evaluate_unwise_m_min_cut(z,V->ptsz->unwise_galaxy_sample_id,V->ptsz);
-      M1_prime = V->ptsz->M1_prime_HOD_factor*M_min;
-      sigma_log10M = sqrt(2.)*V->ptsz->sigma_log10M_HOD;
-      }
-      else{
+      // if (V->ptsz->galaxy_sample == 1){ // unwise case:
+      // M_min = evaluate_unwise_m_min_cut(z,V->ptsz->unwise_galaxy_sample_id,V->ptsz);
+      // M1_prime = V->ptsz->M1_prime_HOD_factor*M_min;
+      // sigma_log10M = sqrt(2.)*V->ptsz->sigma_log10M_HOD;
+      // }
+      // else{
       M_min = V->ptsz->M_min_HOD;
+      M0 = V->ptsz->M0_HOD;
       M1_prime = V->ptsz->M1_prime_HOD;
       sigma_log10M = V->ptsz->sigma_log10M_HOD;
-      }
+      // }
       nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,V->ptsz,V->pba);
-      ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M_min,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
+      ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
 
 
       double result = hmf*(ns+nc);

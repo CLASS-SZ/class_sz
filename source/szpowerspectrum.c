@@ -295,8 +295,8 @@ tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
 
  // tabulate density, only used when requested (e.g., kSZ)
  tabulate_density_profile(pba,ptsz);
-//  printf("exiting\n");
-// exit(0);
+ // printf("exiting\n");
+ // exit(0);
 
  // tabulate pressure profile for gnFW
  if (ptsz->pressure_profile == 3)
@@ -3536,7 +3536,7 @@ int evaluate_tau_profile(double * pvecback,
    // rho0 = pvectsz[ptsz->index_m200m]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
 
   // tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> extra h <!>
-  // tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version <!>
+  //tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version <!>
 
 
   double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
@@ -9497,21 +9497,24 @@ double z = pvectsz[ptsz->index_z];
 
 
 double M_min;
+double M0;
 double M1_prime;
 double sigma_log10M;
-if (ptsz->galaxy_sample == 1){ // unwise case:
-M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
-M1_prime = ptsz->M1_prime_HOD_factor*M_min;
-sigma_log10M = sqrt(2.)*ptsz->sigma_log10M_HOD;
-}
-else{
+// if (ptsz->galaxy_sample == 1){ // unwise case:
+// M_min = evaluate_unwise_m_min_cut(z,ptsz->unwise_galaxy_sample_id,ptsz);
+// M1_prime = ptsz->M1_prime_HOD_factor*M_min;
+// sigma_log10M = sqrt(2.)*ptsz->sigma_log10M_HOD;
+// }
+// else{
 M_min = ptsz->M_min_HOD;
 M1_prime = ptsz->M1_prime_HOD;
 sigma_log10M = ptsz->sigma_log10M_HOD;
-}
+M0 = ptsz->M0_HOD;
+// }
 
 nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz,pba);
-ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M_min,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
+
+ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
 double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
 us = evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
 
@@ -9675,7 +9678,7 @@ if ( _pk_at_z_1h_
   }
 
 double q = k*r_delta*xout/c_delta*(1.+z);//TBC: (1+z) needs to be there to match KA20,  but is it consistent?
-double denominator = m_nfw(c_delta);
+double denominator = m_nfw(c_delta); //normalization
 
 
 double numerator = cos(q)*(gsl_sf_Ci((1.+c_delta)*q)-gsl_sf_Ci(q))

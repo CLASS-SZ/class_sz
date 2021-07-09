@@ -2690,15 +2690,16 @@ int input_read_parameters(
       class_read_double("nfw_profile_epsabs",ptsz->nfw_profile_epsabs);
 
       class_read_double("M_min_HOD",ptsz->M_min_HOD);
+      class_read_double("M0_HOD",ptsz->M0_HOD);
       class_read_double("M1_prime_HOD",ptsz->M1_prime_HOD);
-      class_read_double("M1_prime_HOD_factor",ptsz->M1_prime_HOD_factor);
+      //class_read_double("M1_prime_HOD_factor",ptsz->M1_prime_HOD_factor);
       class_read_double("alpha_s_HOD",ptsz->alpha_s_HOD);
       class_read_double("sigma_log10M_HOD",ptsz->sigma_log10M_HOD);
       class_read_double("rho_y_gal",ptsz->rho_y_gal);
 
 
-      class_read_double("M_min_HOD_mass_factor_unwise",ptsz->M_min_HOD_mass_factor_unwise);
-      class_read_double("M_min_HOD_satellite_mass_factor_unwise",ptsz->M_min_HOD_satellite_mass_factor_unwise);
+      //class_read_double("M_min_HOD_mass_factor_unwise",ptsz->M_min_HOD_mass_factor_unwise);
+      //class_read_double("M_min_HOD_satellite_mass_factor_unwise",ptsz->M_min_HOD_satellite_mass_factor_unwise);
       class_read_double("x_out_truncated_nfw_profile",ptsz->x_out_truncated_nfw_profile);
       class_read_double("x_out_truncated_nfw_profile_satellite_galaxies",ptsz->x_out_truncated_nfw_profile_satellite_galaxies);
       class_read_double("cvir_tau_profile_factor",ptsz->cvir_tau_profile_factor);
@@ -4842,6 +4843,7 @@ int input_default_params(
   //ptsz->nlSZ = 18;
 
   ptsz->M_min_HOD_mass_factor_unwise = 1.;
+  ptsz->M0_HOD = 0.; //DES-like HOD see https://arxiv.org/pdf/2106.08438.pdf
   // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
   // in the settings of KFSW20
   ptsz->x_out_truncated_nfw_profile = 2.5;
@@ -5302,7 +5304,7 @@ int input_default_params(
 
   ptsz->sz_verbose = 0;
 
-  ptsz->f_free  = 0.85;
+  ptsz->f_free  = 1.; //  Ionization state of Helium (0.86 = neutral, 0.93 = singly ionized, 1 = completely ionized for Y_p = 0.24)
   ptsz->mu_e = 1.14;
 
   //HOD

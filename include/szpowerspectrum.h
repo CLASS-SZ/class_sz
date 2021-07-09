@@ -658,6 +658,7 @@ struct tszspectrum {
 
   //HOD
   double M_min_HOD;
+  double M0_HOD;
   double sigma_log10M_HOD;
   double alpha_s_HOD;
   double M1_prime_HOD;
