@@ -265,6 +265,7 @@ cdef extern from "class.h":
         double HSEbias
         int  ndimSZ
         int nbins_M
+        int n_k_for_pk_hm
         double logR1SZ
         double logR2SZ
         double delta_cSZ
@@ -288,6 +289,11 @@ cdef extern from "class.h":
         double * cl_gal_lens_2h
         double * cl_lens_lens_1h
         double * cl_lens_lens_2h
+        double * pk_at_z_1h
+        double * pk_at_z_2h
+        double * k_for_pk_hm
+        double * pk_gg_at_z_1h
+        double * pk_gg_at_z_2h
         double * cl_gal_lensmag_1h
         double * cl_gal_lensmag_2h
         double * cl_lens_lensmag_1h

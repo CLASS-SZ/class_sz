@@ -1546,6 +1546,34 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def pk_at_z_hm(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of 3d P(k) matter power spectrum
+        """
+        cl = {}
+        cl['k'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.n_k_for_pk_hm):
+            cl['1h'].append(self.tsz.pk_at_z_1h[index])
+            cl['2h'].append(self.tsz.pk_at_z_2h[index])
+            cl['k'].append(self.tsz.k_for_pk_hm[index])
+        return cl
+
+    def pk_gg_at_z_hm(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of 3d P(k) gg power spectrum
+        """
+        cl = {}
+        cl['k'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.n_k_for_pk_hm):
+            cl['1h'].append(self.tsz.pk_gg_at_z_1h[index])
+            cl['2h'].append(self.tsz.pk_gg_at_z_2h[index])
+            cl['k'].append(self.tsz.k_for_pk_hm[index])
+        return cl
+
     def cl_kk(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of kappa x kappa (lensing) power spectrum

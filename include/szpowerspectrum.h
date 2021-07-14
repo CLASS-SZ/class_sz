@@ -12,6 +12,8 @@
 
 #define _pk_at_z_1h_ ((ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_1h))
 #define _pk_at_z_2h_ ((ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_2h))
+#define _pk_gg_at_z_1h_ ((ptsz->has_pk_gg_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_gg_at_z_1h))
+#define _pk_gg_at_z_2h_ ((ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_gg_at_z_2h))
 #define _bk_at_z_1h_ ((ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_1h))
 #define _bk_at_z_2h_ ((ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_2h))
 #define _bk_at_z_3h_ ((ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_3h))
@@ -36,16 +38,21 @@
 #define _kSZ_kSZ_lensmag_1halo_ ((ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lensmag_1halo))
 #define _gal_gal_1h_ ((ptsz->has_gal_gal_1h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_1h))
 #define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
+#define _gal_gal_hf_ ((ptsz->has_gal_gal_hf == _TRUE_) && (index_md == ptsz->index_md_gal_gal_hf))
 #define _gal_lens_2h_ ((ptsz->has_gal_lens_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_2h))
+#define _gal_lens_hf_ ((ptsz->has_gal_lens_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lens_hf))
 #define _gal_lens_1h_ ((ptsz->has_gal_lens_1h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_1h))
 #define _gal_lensmag_2h_ ((ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_2h))
 #define _gal_lensmag_1h_ ((ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_1h))
+#define _gal_lensmag_hf_ ((ptsz->has_gal_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_hf))
 #define _tSZ_lensmag_2h_ ((ptsz->has_tSZ_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lensmag_2h))
 #define _tSZ_lensmag_1h_ ((ptsz->has_tSZ_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lensmag_1h))
+#define _lensmag_lensmag_hf_ ((ptsz->has_lensmag_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_lensmag_lensmag_hf))
 #define _lensmag_lensmag_2h_ ((ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_lensmag_lensmag_2h))
 #define _lensmag_lensmag_1h_ ((ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_lensmag_lensmag_1h))
 #define _lens_lensmag_2h_ ((ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lensmag_2h))
 #define _lens_lensmag_1h_ ((ptsz->has_lens_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_lens_lensmag_1h))
+#define _lens_lensmag_hf_ ((ptsz->has_lens_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_lens_lensmag_hf))
 #define _lens_lens_1h_ ((ptsz->has_lens_lens_1h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_1h))
 #define _lens_lens_2h_ ((ptsz->has_lens_lens_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_2h))
 #define _tSZ_gal_1h_ ((ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_1h))
@@ -100,20 +107,27 @@ struct tszspectrum {
   double y_monopole;
   double * pk_at_z_1h;
   double * pk_at_z_2h;
+  double * pk_gg_at_z_1h;
+  double * pk_gg_at_z_2h;
   double * bk_at_z_1h;
   double * bk_at_z_2h;
   double * bk_at_z_3h;
   double * cl_sz_1h;
   double * cl_gal_gal_1h;
   double * cl_gal_gal_2h;
+  double * cl_gal_gal_hf;
+  double * cl_gal_lens_hf;
   double * cl_gal_lens_2h;
   double * cl_gal_lens_1h;
+  double * cl_gal_lensmag_hf;
   double * cl_gal_lensmag_2h;
   double * cl_gal_lensmag_1h;
   double * cl_tSZ_lensmag_2h;
   double * cl_tSZ_lensmag_1h;
+  double * cl_lensmag_lensmag_hf;
   double * cl_lensmag_lensmag_2h;
   double * cl_lensmag_lensmag_1h;
+  double * cl_lens_lensmag_hf;
   double * cl_lens_lensmag_2h;
   double * cl_lens_lensmag_1h;
   double * cl_lens_lens_1h;
@@ -238,6 +252,16 @@ struct tszspectrum {
   int index_md_hmf;
   int index_integrand_id_hmf;
 
+  int has_pk_gg_at_z_1h;
+  int index_md_pk_gg_at_z_1h;
+  int index_integrand_id_pk_gg_at_z_1h_first;
+  int index_integrand_id_pk_gg_at_z_1h_last;
+
+  int has_pk_gg_at_z_2h;
+  int index_md_pk_gg_at_z_2h;
+  int index_integrand_id_pk_gg_at_z_2h_first;
+  int index_integrand_id_pk_gg_at_z_2h_last;
+
   int has_pk_at_z_1h;
   int index_md_pk_at_z_1h;
   int index_integrand_id_pk_at_z_1h_first;
@@ -341,6 +365,17 @@ struct tszspectrum {
   int index_integrand_id_gal_gal_2h_first;
   int index_integrand_id_gal_gal_2h_last;
 
+  int has_gal_gal_hf;
+  int index_md_gal_gal_hf;
+  int index_integrand_id_gal_gal_hf_first;
+  int index_integrand_id_gal_gal_hf_last;
+
+  int has_gal_lens_hf;
+  int index_md_gal_lens_hf;
+  int index_integrand_id_gal_lens_hf_first;
+  int index_integrand_id_gal_lens_hf_last;
+
+
   int has_gal_lens_2h;
   int index_md_gal_lens_2h;
   int index_integrand_id_gal_lens_2h_first;
@@ -350,6 +385,11 @@ struct tszspectrum {
   int index_md_gal_lens_1h;
   int index_integrand_id_gal_lens_1h_first;
   int index_integrand_id_gal_lens_1h_last;
+
+  int has_gal_lensmag_hf;
+  int index_md_gal_lensmag_hf;
+  int index_integrand_id_gal_lensmag_hf_first;
+  int index_integrand_id_gal_lensmag_hf_last;
 
   int has_gal_lensmag_2h;
   int index_md_gal_lensmag_2h;
@@ -372,6 +412,10 @@ struct tszspectrum {
   int index_integrand_id_tSZ_lensmag_1h_last;
 
 
+  int has_lensmag_lensmag_hf;
+  int index_md_lensmag_lensmag_hf;
+  int index_integrand_id_lensmag_lensmag_hf_first;
+  int index_integrand_id_lensmag_lensmag_hf_last;
 
   int has_lensmag_lensmag_2h;
   int index_md_lensmag_lensmag_2h;
@@ -382,6 +426,12 @@ struct tszspectrum {
   int index_md_lensmag_lensmag_1h;
   int index_integrand_id_lensmag_lensmag_1h_first;
   int index_integrand_id_lensmag_lensmag_1h_last;
+
+
+  int has_lens_lensmag_hf;
+  int index_md_lens_lensmag_hf;
+  int index_integrand_id_lens_lensmag_hf_first;
+  int index_integrand_id_lens_lensmag_hf_last;
 
 
   int has_lens_lensmag_2h;

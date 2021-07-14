@@ -2091,6 +2091,26 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
+
+      if ((strstr(string1,"pk_gg_at_z_1h") != NULL) ) {
+        ptsz->has_pk_gg_at_z_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"pk_gg_at_z_2h") != NULL) ) {
+        ptsz->has_pk_gg_at_z_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+      }
+
       if ((strstr(string1,"pk_at_z_1h") != NULL) ) {
         ptsz->has_pk_at_z_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2098,6 +2118,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
       }
 
       if ((strstr(string1,"pk_at_z_2h") != NULL) ) {
@@ -2212,7 +2233,7 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->has_knl = _TRUE_;
         ptsz->has_nl_index = _TRUE_;
-        ptsz->need_hmf = 1;
+        ptsz->need_sigma = 1; // need sigma at R,z
 
       }
 
@@ -2267,6 +2288,16 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"gal_gal_hf") != NULL) ) {
+        ptsz->has_gal_gal_hf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        // ptsz->need_hmf = 1;
+      }
+
       if ((strstr(string1,"gal_lens_1h") != NULL) ) {
         ptsz->has_gal_lens_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2285,6 +2316,46 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"gal_lens_hf") != NULL) ) {
+        ptsz->has_gal_lens_hf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        // ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"gal_lensmag_hf") != NULL) ) {
+        ptsz->has_gal_lensmag_hf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        // ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"lens_lensmag_hf") != NULL) ) {
+        ptsz->has_lens_lensmag_hf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        // ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"lensmag_lensmag_hf") != NULL) ) {
+        ptsz->has_lensmag_lensmag_hf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        // ptsz->need_hmf = 1;
       }
 
       if ((strstr(string1,"tSZ_lensmag_1h") != NULL) ) {
@@ -2702,6 +2773,7 @@ int input_read_parameters(
       //class_read_double("M_min_HOD_satellite_mass_factor_unwise",ptsz->M_min_HOD_satellite_mass_factor_unwise);
       class_read_double("x_out_truncated_nfw_profile",ptsz->x_out_truncated_nfw_profile);
       class_read_double("x_out_truncated_nfw_profile_satellite_galaxies",ptsz->x_out_truncated_nfw_profile_satellite_galaxies);
+
       class_read_double("cvir_tau_profile_factor",ptsz->cvir_tau_profile_factor);
       class_read_double("x_out_nfw_profile",ptsz->x_out_nfw_profile);
 
@@ -4093,6 +4165,8 @@ int input_read_parameters(
       + ptsz->has_hmf
       + ptsz->has_pk_at_z_1h
       + ptsz->has_pk_at_z_2h
+      + ptsz->has_pk_gg_at_z_1h
+      + ptsz->has_pk_gg_at_z_2h
       + ptsz->has_bk_at_z_1h
       + ptsz->has_bk_at_z_2h
       + ptsz->has_bk_at_z_3h
@@ -4121,16 +4195,21 @@ int input_read_parameters(
       + ptsz->has_cib_cib_2h
       + ptsz->has_gal_gal_1h
       + ptsz->has_gal_gal_2h
+      + ptsz->has_gal_gal_hf
       + ptsz->has_gal_lens_1h
       + ptsz->has_gal_lens_2h
+      + ptsz->has_gal_lens_hf
       + ptsz->has_gal_lensmag_1h
       + ptsz->has_gal_lensmag_2h
+      + ptsz->has_gal_lensmag_hf
       + ptsz->has_tSZ_lensmag_1h
       + ptsz->has_tSZ_lensmag_2h
       + ptsz->has_lensmag_lensmag_1h
       + ptsz->has_lensmag_lensmag_2h
+      + ptsz->has_lensmag_lensmag_hf
       + ptsz->has_lens_lensmag_1h
       + ptsz->has_lens_lensmag_2h
+      + ptsz->has_lens_lensmag_hf
       + ptsz->has_lens_lens_1h
       + ptsz->has_lens_lens_2h
       + ptsz->has_tSZ_lens_1h
@@ -5166,16 +5245,21 @@ int input_default_params(
   ptsz->has_dndlnM = _FALSE_;
   ptsz->has_gal_gal_1h = _FALSE_;
   ptsz->has_gal_gal_2h = _FALSE_;
+  ptsz->has_gal_gal_hf = _FALSE_;
   ptsz->has_gal_lens_1h = _FALSE_;
   ptsz->has_gal_lens_2h = _FALSE_;
+  ptsz->has_gal_lens_hf = _FALSE_;
   ptsz->has_gal_lensmag_1h = _FALSE_;
   ptsz->has_gal_lensmag_2h = _FALSE_;
+  ptsz->has_gal_lensmag_hf = _FALSE_;
   ptsz->has_tSZ_lensmag_1h = _FALSE_;
   ptsz->has_tSZ_lensmag_2h = _FALSE_;
   ptsz->has_lensmag_lensmag_1h = _FALSE_;
   ptsz->has_lensmag_lensmag_2h = _FALSE_;
+  ptsz->has_lensmag_lensmag_hf = _FALSE_;
   ptsz->has_lens_lensmag_1h = _FALSE_;
   ptsz->has_lens_lensmag_2h = _FALSE_;
+  ptsz->has_lens_lensmag_hf = _FALSE_;
   ptsz->has_tSZ_gal_1h = _FALSE_;
   ptsz->has_tSZ_gal_2h = _FALSE_;
   ptsz->has_tSZ_cib_1h = _FALSE_;
@@ -5186,6 +5270,8 @@ int input_default_params(
   ptsz->has_cib_cib_2h = _FALSE_;
   ptsz->has_pk_at_z_1h = _FALSE_;
   ptsz->has_pk_at_z_2h = _FALSE_;
+  ptsz->has_pk_gg_at_z_1h = _FALSE_;
+  ptsz->has_pk_gg_at_z_2h = _FALSE_;
   ptsz->has_bk_at_z_1h = _FALSE_;
   ptsz->has_bk_at_z_2h = _FALSE_;
   ptsz->has_bk_at_z_3h = _FALSE_;
@@ -5270,6 +5356,13 @@ int input_default_params(
   ptsz->index_md_bk_at_z_2h = 48;
   ptsz->index_md_bk_at_z_3h = 49;
   ptsz->index_md_kSZ_kSZ_gal_hf = 50;
+  ptsz->index_md_gal_gal_hf = 51;
+  ptsz->index_md_gal_lens_hf = 52;
+  ptsz->index_md_gal_lensmag_hf = 53;
+  ptsz->index_md_lens_lensmag_hf = 54;
+  ptsz->index_md_lensmag_lensmag_hf = 55;
+  ptsz->index_md_pk_gg_at_z_1h = 56;
+  ptsz->index_md_pk_gg_at_z_2h = 57;
   // ptsz->index_md_bk_at_z_hf = 51;
 
   ptsz->integrate_wrt_mvir = 0;
