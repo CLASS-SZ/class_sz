@@ -470,12 +470,16 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_gal_gal_hf
       + ptsz->has_gal_lens_1h
       + ptsz->has_gal_lens_2h
+      + ptsz->has_gal_lens_hf
       + ptsz->has_gal_lensmag_1h
       + ptsz->has_gal_lensmag_2h
+      + ptsz->has_gal_lensmag_hf
       + ptsz->has_lensmag_lensmag_1h
       + ptsz->has_lensmag_lensmag_2h
+      + ptsz->has_lensmag_lensmag_hf
       + ptsz->has_lens_lensmag_1h
       + ptsz->has_lens_lensmag_2h
+      + ptsz->has_lens_lensmag_hf
       + ptsz->has_lens_lens_1h
       + ptsz->has_lens_lens_2h
       + ptsz->has_tSZ_lens_1h
@@ -1539,7 +1543,7 @@ else if (ptsz->MF==5 || ptsz->MF==7){
 
 
        b_l1_l2_l[index_theta_1][index_ell_2] = Pvectsz[ptsz->index_integral];
-       // printf("b = %.5e\n",b_l1_l2_l[index_theta_1][index_ell_2]);
+
        // if (index_ell_1 != index_ell_2)
        // b_l1_l2_l[index_ell_2][index_ell_1] = Pvectsz[ptsz->index_integral];
 
@@ -1599,6 +1603,10 @@ else if (ptsz->MF==5 || ptsz->MF==7){
 
      // b_l1_l2_l_1d[index_l1_l2] = log(b_l1_l2_l[index_ell_1][index_ell_2]);
      b_l1_l2_l_1d[index_l1_l2] = b_l1_l2_l[index_theta_1][index_ell_2];
+     printf("index_theta_1 = %d index_ell_2 = %d b = %.5e\n",
+     b_l1_l2_l[index_theta_1][index_ell_2],
+     index_theta_1,
+     index_ell_2);
      index_l1_l2 += 1;
      }
    }
@@ -1942,8 +1950,18 @@ if (_gal_lensmag_1h_){
                                  /(2*_PI_);
 
 }
+// Collect gxlensmag 1-halo at each multipole:
+// result in y-units (dimensionless)
+// [l(l+1)/2pi]*cl
+if (_gal_lensmag_2h_){
+ int index_l = (int) Pvectsz[ptsz->index_multipole];
+ ptsz->cl_gal_lensmag_2h[index_l] = Pvectsz[ptsz->index_integral]
+                                 *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                                 /(2*_PI_);
 
-// Collect gxlensmag 2-halo at each multipole:
+}
+
+// Collect gxlensmag effective approach at each multipole:
 // result in y-units (dimensionless)
 // [l(l+1)/2pi]*cl
 if (_gal_lensmag_hf_){
@@ -2561,18 +2579,28 @@ double integrand_at_m_and_z(double logM,
 
   else if (_kSZ_kSZ_gal_1h_){
 
-   int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
-   pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+   int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
+   double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+   int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+   int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+   double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+   double l3 = ptsz->ell[index_l_3];
+   double ell = l3;
+   double ell_prime = l2;
+   double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
+
+   // pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+   pvectsz[ptsz->index_multipole_for_tau_profile] = l1;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
    evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
 
-   int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
-   pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+   // int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+   pvectsz[ptsz->index_multipole_for_tau_profile] = l2;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
    evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
 
-   int index_l_3 = (int) pvectsz[ptsz->index_multipole_3]; // this is the ell of the power spectrum
-   pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l_3];
+   // int index_l_3 = (int) pvectsz[ptsz->index_multipole_3]; // this is the ell of the power spectrum
+   pvectsz[ptsz->index_multipole_for_galaxy_profile] = l3;//ptsz->ell[index_l_3];
    evaluate_galaxy_profile(pvecback,pvectsz,pba,ptsz);
    double galaxy_profile_at_ell_3 = pvectsz[ptsz->index_galaxy_profile];
 
@@ -2589,18 +2617,27 @@ double integrand_at_m_and_z(double logM,
 
 
   else if (_kSZ_kSZ_gal_2h_){
+   int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
+   double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+   int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+   int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+   double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+   double l3 = ptsz->ell[index_l_3];
+   double ell = l3;
+   double ell_prime = l2;
+   double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
 
     // g3 - t1t2
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-    int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
-    pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+    // int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+    pvectsz[ptsz->index_multipole_for_tau_profile] = l2;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
     evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
     double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
 
-    int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
-    pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+    // int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
+    pvectsz[ptsz->index_multipole_for_tau_profile] = l1;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
     evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
     double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
 
@@ -2613,8 +2650,8 @@ double integrand_at_m_and_z(double logM,
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-    int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-    pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l_3];
+    // int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+    pvectsz[ptsz->index_multipole_for_galaxy_profile] = l3;//ptsz->ell[index_l_3];
     evaluate_galaxy_profile(pvecback,pvectsz,pba,ptsz);
     double galaxy_profile_at_ell_3 = pvectsz[ptsz->index_galaxy_profile];
 
@@ -2628,8 +2665,8 @@ double integrand_at_m_and_z(double logM,
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  3) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-    int index_l_2 = (int) pvectsz[ptsz->index_multipole_3];
-    pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+    // int index_l_2 = (int) pvectsz[ptsz->index_multipole_3];
+    pvectsz[ptsz->index_multipole_for_tau_profile] = l2;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
     evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
     double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
 
@@ -2641,13 +2678,13 @@ double integrand_at_m_and_z(double logM,
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  4) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-    int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-    pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l_3];
+    // int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+    pvectsz[ptsz->index_multipole_for_galaxy_profile] = l3;//ptsz->ell[index_l_3];
     evaluate_galaxy_profile(pvecback,pvectsz,pba,ptsz);
     double galaxy_profile_at_ell_3 = pvectsz[ptsz->index_galaxy_profile];
 
-    int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
-    pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+    // int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
+    pvectsz[ptsz->index_multipole_for_tau_profile] = l1;// ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
     evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
     double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
 
@@ -2662,8 +2699,8 @@ double integrand_at_m_and_z(double logM,
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  5) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-    int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
-    pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+    // int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
+    pvectsz[ptsz->index_multipole_for_tau_profile] = l1;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
     evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
     double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
 
@@ -2675,13 +2712,13 @@ double integrand_at_m_and_z(double logM,
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-    int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
-    pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+    // int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+    pvectsz[ptsz->index_multipole_for_tau_profile] = l2;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
     evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
     double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
 
-    int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-    pvectsz[ptsz->index_multipole_for_galaxy_profile] =ptsz->ell[index_l_3];
+    // int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+    pvectsz[ptsz->index_multipole_for_galaxy_profile] = l3;//ptsz->ell[index_l_3];
     evaluate_galaxy_profile(pvecback,pvectsz,pba,ptsz);
     double galaxy_profile_at_ell_3 = pvectsz[ptsz->index_galaxy_profile];
 
@@ -2698,13 +2735,22 @@ double integrand_at_m_and_z(double logM,
 
 
   else if (_kSZ_kSZ_gal_3h_){
+   int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
+   double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+   int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+   int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+   double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+   double l3 = ptsz->ell[index_l_3];
+   double ell = l3;
+   double ell_prime = l2;
+   double l1 = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(theta_1));
 
     // b1t1
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-    int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
-    pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+    // int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
+    pvectsz[ptsz->index_multipole_for_tau_profile] = l1;
     evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
     double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
 
@@ -2719,8 +2765,8 @@ double integrand_at_m_and_z(double logM,
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-    int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
-    pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+    // int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+    pvectsz[ptsz->index_multipole_for_tau_profile] = l2;
     evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
     double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
 
@@ -2736,8 +2782,8 @@ double integrand_at_m_and_z(double logM,
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  3) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-    int index_l_3 = (int) pvectsz[ptsz->index_multipole_3]; // ell_3 is the ell of the power spectrum
-    pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l_3];
+    // int index_l_3 = (int) pvectsz[ptsz->index_multipole_3]; // ell_3 is the ell of the power spectrum
+    pvectsz[ptsz->index_multipole_for_galaxy_profile] = l3;
     evaluate_galaxy_profile(pvecback,pvectsz,pba,ptsz);
     double galaxy_profile_at_ell_3 = pvectsz[ptsz->index_galaxy_profile];
 
@@ -2753,8 +2799,8 @@ double integrand_at_m_and_z(double logM,
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  4) {
     evaluate_halo_bias_b2(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
-    int index_l_3 = (int) pvectsz[ptsz->index_multipole_3]; // ell_3 is the ell of the power spectrum
-    pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l_3];
+    // int index_l_3 = (int) pvectsz[ptsz->index_multipole_3]; // ell_3 is the ell of the power spectrum
+    pvectsz[ptsz->index_multipole_for_galaxy_profile] = l3;
     evaluate_galaxy_profile(pvecback,pvectsz,pba,ptsz);
     double galaxy_profile_at_ell_3 = pvectsz[ptsz->index_galaxy_profile];
 
@@ -2772,19 +2818,28 @@ double integrand_at_m_and_z(double logM,
 
 
  else if (_kSZ_kSZ_lensmag_1halo_){
+   int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
+   double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+   int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+   int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+   double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+   double l3 = ptsz->ell[index_l_3];
+   double ell = l3;
+   double ell_prime = l2;
+   double l1 = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(theta_1));
 
-   int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
-   pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];//the actual multipole
+   // int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
+   pvectsz[ptsz->index_multipole_for_tau_profile] = l1;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];//the actual multipole
    evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
 
-   int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
-   pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+   // int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+   pvectsz[ptsz->index_multipole_for_tau_profile] = l2;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
    evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
 
-   int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-   pvectsz[ptsz->index_multipole_for_lensing_profile] = ptsz->ell[index_l_3];
+   // int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+   pvectsz[ptsz->index_multipole_for_lensing_profile] = l3;//ptsz->ell[index_l_3];
    evaluate_lensing_profile(pvecback,pvectsz,pba,ptsz);
    double lensing_profile_at_ell_3 = pvectsz[ptsz->index_lensing_profile];
 
@@ -3712,10 +3767,14 @@ int evaluate_tau_profile(double * pvecback,
   double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
   double z = pvectsz[ptsz->index_z];
   double a = 1. / (1. + z);
+  rho0 = pvecback[pba->index_bg_Omega_m]*pvectsz[ptsz->index_Rho_crit];
+  rho0  = ptsz->Omega_m_0*ptsz->Rho_crit_0;
+  double rho0_times_4pirs3 = 3.*pvectsz[ptsz->index_m200m]/200./pvectsz[ptsz->index_c200m]*pow(1.+z,3);
+  //double rho0_times_4pirs3 = 3.*pvectsz[ptsz->index_m200m]/200.*pow(1.+z,-3);
   pvectsz[ptsz->index_tau_profile] = sigmaT_over_mp
                                      *a
                                      //*tau_normalisation
-                                     //*rho0 // in (Msun/h)
+                                     *rho0_times_4pirs3 // in (Msun/h)
                                      *pvectsz[ptsz->index_tau_profile]
                                      //*4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)
                                      *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
@@ -4057,13 +4116,21 @@ int evaluate_lensing_profile(double * pvecback,
 //
 //     }
 //   else{
-   pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
-                                           *rho0
+   // pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation
+   //                                         *rho0
+   //                                         *pvectsz[ptsz->index_lensing_profile]
+   //                                         /pvectsz[ptsz->index_lensing_Sigma_crit] // Sigma_crit is in 1/M^2
+   //                                         *(4*_PI_)
+   //                                         *pow(characteristic_multipole,-2)
+   //                                         *characteristic_radius; //rs in Mpc/h
+
+   pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation // dim less
+                                           *mass_nfw // M
                                            *pvectsz[ptsz->index_lensing_profile]
-                                           /pvectsz[ptsz->index_lensing_Sigma_crit]
-                                           *(4*_PI_)
-                                           *pow(characteristic_multipole,-2)
-                                           *characteristic_radius; //rs in Mpc/h
+                                           /pvectsz[ptsz->index_lensing_Sigma_crit] // Sigma_crit is in M/L^2
+                                           *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); // 1/L^2
+
+
   // printf("analytical nfw norm = %.3e\n",pvectsz[ptsz->index_lensing_Sigma_crit]);
   // printf("analytical nfw norm ln = %.3e\n",lensing_normalisation);
   // printf("analytical nfw norm lr = %.3e\n",rho0);
@@ -9462,6 +9529,7 @@ double evaluate_galaxy_number_counts( double * pvecback,
     double z_asked  = pvectsz[ptsz->index_z];
     double phig = 0.;
   //
+  // if (ptsz->galaxy_sample == 1)
   // if(z_asked<ptsz->normalized_cosmos_dndz_z[0])
   //    phig = 1e-100;
   // else if (z_asked>ptsz->normalized_cosmos_dndz_z[ptsz->normalized_cosmos_dndz_size-1])
@@ -10252,8 +10320,12 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
                                   &ln_ell2);
       if (isnan(db) || isinf(db)){
         // db = 0.;
-  printf("found nan in interpolation of b_l1_l2_l_1d\n");
-  printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",theta_1,ln_ell2,ell_3);
+  if (isnan(db))
+    printf("found nan in interpolation of b_l1_l2_l_1d\n");
+    if (isinf(db))
+      printf("found inf in interpolation of b_l1_l2_l_1d\n");
+  printf("theta = %.3e \t l2 = %.3e \t l = %.3e\n",theta_1,exp(ln_ell2),ell_3);
+
   printf("\n\n");
   exit(0);
 }

@@ -3380,7 +3380,7 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
    // //end truncated vs integrated
 
 
-   double tau_normalisation = pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
+   double tau_normalisation = 1.;//pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
    // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
    tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version no h<!>
    result *= tau_normalisation;
@@ -7450,7 +7450,8 @@ if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
  // printf("starting counter terms at low M M1=Mct\n");
  if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
- //|| ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
  || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)  && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)){

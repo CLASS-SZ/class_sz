@@ -2924,6 +2924,7 @@ int input_read_parameters(
           ptsz->MF=7;
      }
 
+      class_read_string("UNWISE_dndz_file",ptsz->UNWISE_dndz_file);
       class_read_string("path_to_class",ptsz->path_to_class);
       class_read_string("append_name_trispectrum_ref",ptsz->append_name_trispectrum_ref);
       class_read_string("path to reference trispectrum for likelihood code",ptsz->path_to_ref_trispectrum_for_cobaya);
