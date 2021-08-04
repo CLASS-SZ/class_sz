@@ -1,4 +1,4 @@
-/** @file input.c Documented SZ module.
+/** @file szpowerspectrum.c SZ+halo model module.
  *
  * Boris Bolliet, 2020
  */
@@ -309,7 +309,7 @@ tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
 
 }
 
- // tabulate density, only used when requested (e.g., kSZ)
+ // tabulate density, only when requested (e.g., kSZ)
  tabulate_density_profile(pba,ptsz);
  // printf("exiting\n");
  // exit(0);
@@ -321,11 +321,11 @@ tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
 // exit(0);
 
 
-  // tabulate lensing magnificaion integral, only used when requested
+  // tabulate lensing magnificaion integral, only when requested
   tabulate_redshift_int_lensmag(ptsz,pba);
 
 
-   // only performed when requested:
+   // only when requested:
    load_unbinned_nl_yy(ptsz);
 
    if (ptsz->write_sz>0)
@@ -1603,10 +1603,10 @@ else if (ptsz->MF==5 || ptsz->MF==7){
 
      // b_l1_l2_l_1d[index_l1_l2] = log(b_l1_l2_l[index_ell_1][index_ell_2]);
      b_l1_l2_l_1d[index_l1_l2] = b_l1_l2_l[index_theta_1][index_ell_2];
-     printf("index_theta_1 = %d index_ell_2 = %d b = %.5e\n",
-     b_l1_l2_l[index_theta_1][index_ell_2],
-     index_theta_1,
-     index_ell_2);
+     // printf("index_theta_1 = %d index_ell_2 = %d b = %.5e\n",
+     // b_l1_l2_l[index_theta_1][index_ell_2],
+     // index_theta_1,
+     // index_ell_2);
      index_l1_l2 += 1;
      }
    }
@@ -1636,10 +1636,12 @@ else if (ptsz->MF==5 || ptsz->MF==7){
 
     params = &V;
 
-    r=2.*Integrate_using_Patterson_adaptive(0., _PI_,
-                                        epsrel, epsabs,
-                                        integrand_kSZ2_X,
-                                        params,show_neval);
+    // integral is symmetric (triangular configurations):
+    // int(0,2*PI) = 2*int(0,PI)
+    r = 2.*Integrate_using_Patterson_adaptive(0., _PI_,
+                                            epsrel, epsabs,
+                                            integrand_kSZ2_X,
+                                            params,show_neval);
 
 
 
@@ -2743,7 +2745,7 @@ double integrand_at_m_and_z(double logM,
    double l3 = ptsz->ell[index_l_3];
    double ell = l3;
    double ell_prime = l2;
-   double l1 = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(theta_1));
+   double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
 
     // b1t1
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
@@ -2826,7 +2828,7 @@ double integrand_at_m_and_z(double logM,
    double l3 = ptsz->ell[index_l_3];
    double ell = l3;
    double ell_prime = l2;
-   double l1 = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(theta_1));
+   double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
 
    // int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
    pvectsz[ptsz->index_multipole_for_tau_profile] = l1;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];//the actual multipole
@@ -3705,7 +3707,8 @@ pvectsz[ptsz->index_te_of_m] = get_te_of_m500c_at_z_lee(mass*ptsz->HSEbias,pvect
 }
 
 
-int evaluate_tau_profile(double * pvecback,
+int evaluate_tau_profile(
+                        double * pvecback,
                         double * pvectsz,
                         struct background * pba,
                         struct tszspectrum * ptsz)
@@ -3756,9 +3759,13 @@ int evaluate_tau_profile(double * pvecback,
    double z_asked = pvectsz[ptsz->index_z];
    result = get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
 
-   pvectsz[ptsz->index_tau_profile] = result;
+   double xout = ptsz->x_out_truncated_nfw_profile;
+   pvectsz[ptsz->index_multipole_for_galaxy_profile] = l_asked;
+   result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
+
+   pvectsz[ptsz->index_tau_profile] = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free*result;
    // rho0 = pvectsz[ptsz->index_mVIR]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
-   // rho0 = pvectsz[ptsz->index_m200m]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
+   rho0 = pvectsz[ptsz->index_m200m]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
 
   // tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> extra h <!>
   //tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version <!>
@@ -3767,14 +3774,15 @@ int evaluate_tau_profile(double * pvecback,
   double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
   double z = pvectsz[ptsz->index_z];
   double a = 1. / (1. + z);
-  rho0 = pvecback[pba->index_bg_Omega_m]*pvectsz[ptsz->index_Rho_crit];
-  rho0  = ptsz->Omega_m_0*ptsz->Rho_crit_0;
-  double rho0_times_4pirs3 = 3.*pvectsz[ptsz->index_m200m]/200./pvectsz[ptsz->index_c200m]*pow(1.+z,3);
+  // rho0 = pvecback[pba->index_bg_Omega_m]*pvectsz[ptsz->index_Rho_crit];
+  //rho0  = ptsz->Omega_m_0*ptsz->Rho_crit_0;
+  //double rho0_times_4pirs3 = 3.*pvectsz[ptsz->index_m200m]/200./pow(pvectsz[ptsz->index_c200m],3.);//*pow(1.+z,3);
   //double rho0_times_4pirs3 = 3.*pvectsz[ptsz->index_m200m]/200.*pow(1.+z,-3);
   pvectsz[ptsz->index_tau_profile] = sigmaT_over_mp
                                      *a
+                                     *rho0
                                      //*tau_normalisation
-                                     *rho0_times_4pirs3 // in (Msun/h)
+                                     //*rho0_times_4pirs3 // in (Msun/h)
                                      *pvectsz[ptsz->index_tau_profile]
                                      //*4.*_PI_*pow(pvectsz[ptsz->index_rs],3.)
                                      *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
@@ -9946,6 +9954,8 @@ else if(_gal_gal_1h_
      || _gal_lensmag_1h_
      || _tSZ_gal_1h_
      || _kSZ_kSZ_gal_1h_
+     // || _kSZ_kSZ_gal_2h_
+     // || _kSZ_kSZ_gal_3h_
      || _pk_gg_at_z_1h_) {
   //us = 1.; // BB: debug
   //ng_bar = 1.; // BB: debug
@@ -10068,7 +10078,7 @@ if ( _pk_at_z_1h_
     k = ptsz->k_for_pk_hm[index_k];
   }
 
-double q = k*r_delta*xout/c_delta*(1.+z);//TBC: (1+z) needs to be there to match KA20,  but is it consistent?
+double q = k*r_delta*xout/c_delta*(1.+z);//(1+z) needs to be there to match KA20,  but is it consistent?
 double denominator = m_nfw(c_delta); //normalization
 
 
@@ -10266,7 +10276,7 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
 
 
      double ell = V->ptsz->ell[V->index_ell_3];
-     double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(V->theta));
+     double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(V->theta));
 
      double ell_1 = abs_ell_minus_ell_prime;
      double ell_2 = ell_prime;

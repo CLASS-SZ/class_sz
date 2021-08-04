@@ -6026,7 +6026,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   double ell = l3;
   double ell_prime = l2;
   double theta_1 = V->ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
-  double l1 = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*cos(theta_1));
+  double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
   // double l1 = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*theta_1);
 
 
@@ -7207,18 +7207,27 @@ double integrand_patterson_test(double logM, void *p){
   }
 
 
-  int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
-  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+  //int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
+  int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
+  double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+  int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+  int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+  double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+  double l3 = ptsz->ell[index_l_3];
+  double ell = l3;
+  double ell_prime = l2;
+  double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
+  pvectsz[ptsz->index_multipole_for_pk] = l1;
   evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
   double pk1 = pvectsz[ptsz->index_pk_for_halo_bias];
 
-  int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
-  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+
+  pvectsz[ptsz->index_multipole_for_pk] = l2;
   evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
   double pk2 = pvectsz[ptsz->index_pk_for_halo_bias];
 
-  int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell[index_l_3];
+
+  pvectsz[ptsz->index_multipole_for_pk] = l3;
   evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
   double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
 
@@ -7307,27 +7316,37 @@ double integrand_patterson_test(double logM, void *p){
   }
 
 
-  int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
-  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+  // int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
+  int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
+  double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+  int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+  int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+  double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+  double l3 = ptsz->ell[index_l_3];
+  double ell = l3;
+  double ell_prime = l2;
+  double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
+
+  pvectsz[ptsz->index_multipole_for_pk] = l1;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
   evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
   double pk1 = pvectsz[ptsz->index_pk_for_halo_bias];
 
-  int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
-  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+  // int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+  pvectsz[ptsz->index_multipole_for_pk] = l2;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
   evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
   double pk2 = pvectsz[ptsz->index_pk_for_halo_bias];
 
-  int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-  pvectsz[ptsz->index_multipole_for_pk] = ptsz->ell[index_l_3];
+  // int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+  pvectsz[ptsz->index_multipole_for_pk] = l3;//ptsz->ell[index_l_3];
   evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
   double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
 
 
   double z = pvectsz[ptsz->index_z];
   double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z);
-  double k1 = (ptsz->ell_kSZ2_gal_multipole_grid[index_l_1] + 0.5)/d_A;
-  double k2 = (ptsz->ell_kSZ2_gal_multipole_grid[index_l_2] + 0.5)/d_A;
-  double k3 = (ptsz->ell[index_l_3] + 0.5)/d_A;
+  double k1 = (l1 + 0.5)/d_A;
+  double k2 = (l2 + 0.5)/d_A;
+  double k3 = (l3 + 0.5)/d_A;
   double Fk1k2 = bispectrum_f2_kernel(k1,k2,k3);
   double Fk1k3 = bispectrum_f2_kernel(k3,k1,k2);
   double Fk2k3 = bispectrum_f2_kernel(k2,k3,k1);
