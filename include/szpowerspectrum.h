@@ -714,6 +714,8 @@ struct tszspectrum {
   double M1_prime_HOD;
   double rho_y_gal;
 
+  int M0_Mmin_flag;
+
   double M_min_HOD_mass_factor_unwise;
   double x_out_truncated_nfw_profile;
   double x_out_nfw_profile;

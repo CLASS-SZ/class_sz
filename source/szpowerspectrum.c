@@ -9905,7 +9905,6 @@ M_min = ptsz->M_min_HOD;
 M1_prime = ptsz->M1_prime_HOD;
 sigma_log10M = ptsz->sigma_log10M_HOD;
 M0 = ptsz->M0_HOD;
-// }
 
 nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz,pba);
 
