@@ -643,6 +643,7 @@ struct tszspectrum {
   int index_mean_galaxy_number_density;
   int index_c500c_KA20;
   int index_multipole_for_galaxy_profile;
+  int index_multipole_for_truncated_nfw_profile;
   int index_galaxy_profile;
 
   int index_multipole_for_cib_profile;

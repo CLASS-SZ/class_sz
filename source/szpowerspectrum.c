@@ -3734,6 +3734,10 @@ int evaluate_tau_profile(
    // double l_asked = pvectsz[ptsz->index_multipole_for_nfw_profile];
    m_asked = pvectsz[ptsz->index_m200c]; // in Msun/h
    pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200c]/pvectsz[ptsz->index_c200c];
+
+
+   m_asked = pvectsz[ptsz->index_m200m];
+   pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
    // double z_asked = pvectsz[ptsz->index_z];
  }
     }
@@ -3758,10 +3762,6 @@ int evaluate_tau_profile(
    // double m_asked = pvectsz[ptsz->index_m200m]; // in Msun/h
    double z_asked = pvectsz[ptsz->index_z];
    result = get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
-
-   double xout = ptsz->x_out_truncated_nfw_profile;
-   pvectsz[ptsz->index_multipole_for_galaxy_profile] = l_asked;
-   result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
 
    pvectsz[ptsz->index_tau_profile] = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free*result;
    // rho0 = pvectsz[ptsz->index_mVIR]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
@@ -3915,17 +3915,21 @@ int evaluate_matter_density_profile(double * pvecback,
 
 
    //characteristic_radius = pvectsz[ptsz->index_rs]; // in Mpc/h
-
+  // pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
   // class_call(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result,0),
   //                                   ptsz->error_message,
   //                                   ptsz->error_message);
   double xout = ptsz->x_out_truncated_nfw_profile;
+  // here ell doesnt matter we are using this in k-space
   double result_trunc =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
 
-  // double r_diff = 100.*result/m_nfw(pvectsz[ptsz->index_c200m])/result_trunc;
-  // if (fabs(r_diff -100.)>1.)
-  //   printf("int = %.3e trunc = %.3e\n",result_trunc,100.*result/m_nfw(pvectsz[ptsz->index_c200m])/result_trunc);
+//   double r_diff = 100.*result/m_nfw(pvectsz[ptsz->index_c200m])/result_trunc;
+// //  if (fabs(r_diff -100.)>1.)
+    // printf("int = %.3e trunc = %.3e\n",result_trunc,100.*result/m_nfw(pvectsz[ptsz->index_c200m])/result_trunc);
+    // printf("int = %.3e trunc = %.3e\n",result_trunc,result/m_nfw(pvectsz[ptsz->index_c200m]));
 
+//     printf("exiting\n");
+//     exit(0);
 
    // pvectsz[ptsz->index_density_profile] = result/m_nfw(pvectsz[ptsz->index_c200m]);//result_trunc;
    pvectsz[ptsz->index_density_profile] = result_trunc;//result_trunc;
@@ -4025,7 +4029,7 @@ int evaluate_lensing_profile(double * pvecback,
 
    /// uncomment !!
    // else {
-   pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];  // multipole going into truncated nfw, unfortunate name
+   pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];  // multipole going into truncated nfw, unfortunate name
    double xout = ptsz->x_out_truncated_nfw_profile;
    result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
    // }
@@ -8863,7 +8867,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    ptsz->index_mean_galaxy_number_density = ptsz->index_phi_galaxy_counts+1;
    ptsz->index_c500c_KA20 = ptsz->index_mean_galaxy_number_density+1;
    ptsz->index_multipole_for_galaxy_profile = ptsz->index_c500c_KA20+1;
-   ptsz->index_galaxy_profile =  ptsz->index_multipole_for_galaxy_profile + 1;
+   ptsz->index_multipole_for_truncated_nfw_profile = ptsz->index_multipole_for_galaxy_profile+1;
+   ptsz->index_galaxy_profile =  ptsz->index_multipole_for_truncated_nfw_profile + 1;
    ptsz->index_multipole_for_cib_profile = ptsz->index_galaxy_profile + 1;
    ptsz->index_cib_profile = ptsz->index_multipole_for_cib_profile + 1;
    ptsz->index_frequency_for_cib_profile = ptsz->index_cib_profile + 1;
@@ -9636,7 +9641,7 @@ double Ls_nu_prime;
 
 double z = pvectsz[ptsz->index_z];
 
-pvectsz[ptsz->index_multipole_for_galaxy_profile] = pvectsz[ptsz->index_multipole_for_cib_profile];
+pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_cib_profile];
 double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
 double us = evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
 
@@ -9870,17 +9875,17 @@ int evaluate_galaxy_profile(double * pvecback,
 
 int index_md = (int) pvectsz[ptsz->index_md];
 double M_halo;
-if ((_kSZ_kSZ_gal_1h_
-   ||_kSZ_kSZ_gal_2h_
-   ||_kSZ_kSZ_gal_3h_)
-   && ptsz->tau_profile == 1) // if tau_profile == 0 do everthing wrt 200m
-   {
-   // in these cases use 200crit as mass definition for consistency with Battaglia profile fitting formula
-   M_halo = pvectsz[ptsz->index_m200c]; // Msun_over_h
-   }
-else {
-   M_halo = pvectsz[ptsz->index_mass_for_hmf]; // Msun_over_h
-}
+// if ((_kSZ_kSZ_gal_1h_
+//    ||_kSZ_kSZ_gal_2h_
+//    ||_kSZ_kSZ_gal_3h_)
+//    && ptsz->tau_profile == 1) // if tau_profile == 0 do everthing wrt 200m
+//    {
+//    // in these cases use 200crit as mass definition for consistency with Battaglia profile fitting formula
+//    M_halo = pvectsz[ptsz->index_m200c]; // Msun_over_h
+//    }
+// else {
+//    M_halo = pvectsz[ptsz->index_mass_for_hmf]; // Msun_over_h
+// }
 
 M_halo = pvectsz[ptsz->index_mass_for_hmf]; // Msun_over_h
 double ng_bar = pvectsz[ptsz->index_mean_galaxy_number_density];
@@ -9910,6 +9915,7 @@ nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz,pba);
 
 ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
 double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
+pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_galaxy_profile];
 us = evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
 
    // double l_asked = pvectsz[ptsz->index_multipole_for_galaxy_profile];
@@ -10042,6 +10048,10 @@ else if (_tSZ_gal_1h_
     c_delta = pvectsz[ptsz->index_c200c];
     // printf("using 200c\n");
     // exit(0);
+
+    r_delta = pvectsz[ptsz->index_r200m];
+    c_delta = pvectsz[ptsz->index_c200m];
+
 }
   // all other cases:
   else {
@@ -10052,9 +10062,13 @@ else if (_tSZ_gal_1h_
 
     }
 
+
+        // r_delta = pvectsz[ptsz->index_r200m];
+        // c_delta = pvectsz[ptsz->index_c200m];
+
 // if tau_profile: option to rescale concentration:
-if (flag_matter_type ==  1)
-  c_delta *= ptsz->cvir_tau_profile_factor;
+// if (flag_matter_type ==  1)
+//   c_delta *= ptsz->cvir_tau_profile_factor;
 
 // printf("rd = %.3e, cd = %.3e\n", r_delta,c_delta);
 // exit(0);
@@ -10062,7 +10076,7 @@ if (flag_matter_type ==  1)
 
 double z = pvectsz[ptsz->index_z];
 
-double ell = pvectsz[ptsz->index_multipole_for_galaxy_profile];
+double ell = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
 double chi = sqrt(pvectsz[ptsz->index_chi2]);
 double k = (ell+0.5)/chi;
 
@@ -10075,9 +10089,10 @@ if ( _pk_at_z_1h_
   || _bk_at_z_3h_){
     int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
     k = ptsz->k_for_pk_hm[index_k];
+    // exit(0);
   }
 
-double q = k*r_delta*xout/c_delta*(1.+z);//(1+z) needs to be there to match KA20,  but is it consistent?
+double q = k*r_delta*xout/c_delta*(1.+z);
 double denominator = m_nfw(c_delta); //normalization
 
 

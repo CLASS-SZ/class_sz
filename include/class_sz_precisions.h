@@ -24,6 +24,11 @@ class_sz_string_parameter(Planck_ylims_file,"/sz_auxiliary_files/SZ_ylims.txt","
 class_sz_string_parameter(SO_ylims_file,"/sz_auxiliary_files/so_3freqs_020621_ylims.txt","SO_ylims_file")
 
 
+class_sz_ptsz_parameter(n_ell_density_profile,int,100)
+class_sz_ptsz_parameter(n_m_density_profile,int,100)
+class_sz_ptsz_parameter(n_z_density_profile,int,100)
+
+
 class_sz_ptsz_parameter(n_z_hmf_counter_terms,int,200)
 class_sz_ptsz_parameter(array_profile_ln_PgNFW_at_lnl_over_ls_size,int,200)
 class_sz_ptsz_parameter(m_min_counter_terms,double,1e11)

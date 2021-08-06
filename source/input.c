@@ -2909,9 +2909,13 @@ int input_read_parameters(
      else if (ptsz->pressure_profile==4){
        //Battaglia et al pressure profile [arXiv:1109.3711]
 
-       ptsz->P0_B12 = 18.1;
+
+       class_read_double("P0_B12",ptsz->P0_B12);
+       class_read_double("beta_B12",ptsz->beta_B12);
+
+       // ptsz->P0_B12 = 18.1;
        ptsz->xc_B12 = 0.497;
-       ptsz->beta_B12 = 4.35;
+       // ptsz->beta_B12 = 4.35;
 
        ptsz->alpha_m_P0_B12 = 0.154;
        ptsz->alpha_m_xc_B12 = -0.00865;
