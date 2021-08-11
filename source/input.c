@@ -2602,6 +2602,9 @@ int input_read_parameters(
       if ((strstr(string1,"m200m_to_m500c") != NULL) ) {
           ptsz->need_m200m_to_m500c = 1;
           }
+      if ((strstr(string1,"m200m_to_m200c") != NULL) ) {
+          ptsz->need_m200m_to_m200c = 1;
+          }
       class_call(parser_read_string(pfc,"include_ssc",&string1,&flag1,errmsg),
                    errmsg,
                    errmsg);
@@ -5396,6 +5399,7 @@ int input_default_params(
   ptsz->integrate_wrt_m500c = 0;
   ptsz->integrate_wrt_m200m = 1;
 
+  ptsz->need_m200m_to_m200c = 0;
   ptsz->need_m200m_to_m500c = 0;
   ptsz->need_m200c_to_m500c = 0;
   ptsz->need_m500c_to_m200c = 0;

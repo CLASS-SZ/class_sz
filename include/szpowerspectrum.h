@@ -170,7 +170,7 @@ struct tszspectrum {
   double * cov_cl_cl;
   double * sig_cl_squared_binned;
 
-
+  int need_m200m_to_m200c;
   int need_m200m_to_m500c;
   int need_hmf;
   int need_sigma;
@@ -1135,6 +1135,11 @@ double * steps_m;
   int CM_redshift_size;
   int CM_logM_size;
   double * CM_logC;
+
+
+  double * array_m_m200m_to_m200c;
+  double * array_ln_1pz_m200m_to_m200c;
+  double * array_m200m_to_m200c_at_z_and_M;
 
 
   double * array_m_m200m_to_m500c;

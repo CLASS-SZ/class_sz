@@ -151,6 +151,8 @@ int szpowerspectrum_init(
    tabulate_sigma2_hsv_from_pk(pba,pnl,ppm,ptsz);
 
 
+   if (ptsz->need_m200m_to_m200c == 1)
+      tabulate_m200m_to_m200c(pba,ptsz);
 
    if (ptsz->need_m200m_to_m500c == 1)
       tabulate_m200m_to_m500c(pba,ptsz);
@@ -685,6 +687,11 @@ if (ptsz->pressure_profile == 3){
    }
 
 
+if (ptsz->need_m200m_to_m200c){
+   free(ptsz->array_m_m200m_to_m200c);
+   free(ptsz->array_ln_1pz_m200m_to_m200c);
+   free(ptsz->array_m200m_to_m200c_at_z_and_M);
+   }
 
 
 if (ptsz->need_m200m_to_m500c){
@@ -1410,6 +1417,7 @@ int compute_sz(struct background * pba,
 
 if (Pvectsz[ptsz->index_has_electron_pressure] == 1){
         // if battaglia pressure profile need 200c
+        // and virial quantities for integration bound
       if (ptsz->pressure_profile == 4){
         Pvectsz[ptsz->index_has_200c] = 1;
         Pvectsz[ptsz->index_has_vir] = 1;
@@ -1603,14 +1611,29 @@ else if (ptsz->MF==5 || ptsz->MF==7){
 
      // b_l1_l2_l_1d[index_l1_l2] = log(b_l1_l2_l[index_ell_1][index_ell_2]);
      b_l1_l2_l_1d[index_l1_l2] = b_l1_l2_l[index_theta_1][index_ell_2];
-     // printf("index_theta_1 = %d index_ell_2 = %d b = %.5e\n",
+     // printf("index_theta_1 = %.5e index_ell_2 = %d b = %d\n",
      // b_l1_l2_l[index_theta_1][index_ell_2],
      // index_theta_1,
      // index_ell_2);
-     index_l1_l2 += 1;
+
+double db = b_l1_l2_l_1d[index_l1_l2];
+if (isnan(db) || isinf(db)){
+  // db = 0.;
+if (isnan(db))
+printf("found nan in grid of b_l1_l2_l_1d\n");
+if (isinf(db))
+printf("found inf in grid of b_l1_l2_l_1d\n");
+printf("id_theta = %d \t id_l2 = %d \n",index_theta_1,index_ell_2);
+
+printf("\n\n");
+exit(0);
+}
+
+index_l1_l2 += 1;
+
+
      }
    }
-
 
    free(b_l1_l2_l);
 
@@ -2611,8 +2634,19 @@ double integrand_at_m_and_z(double logM,
                                      *tau_profile_at_ell_1
                                      *tau_profile_at_ell_2
                                      *galaxy_profile_at_ell_3;
-  // printf("dn = %.3e t = %.3e t = %.3e g = %.3e\n",pvectsz[ptsz->index_hmf],
-  // tau_profile_at_ell_1,tau_profile_at_ell_2,galaxy_profile_at_ell_3);
+  if (tau_profile_at_ell_1>1e100){
+  printf("tau too big dn = %.9e t = %.9e t = %.9e g = %.9e z = %.3e m200c = %.3e m200m = %.3e\n",
+  pvectsz[ptsz->index_hmf],
+  tau_profile_at_ell_1,
+  tau_profile_at_ell_2,
+  galaxy_profile_at_ell_3,
+  pvectsz[ptsz->index_z],
+  pvectsz[ptsz->index_m200c],
+  pvectsz[ptsz->index_m200m]
+);
+  // pvectsz[ptsz->index_integrand] = 0.;//exit(0);
+  exit(0);
+}
 
 
   }
@@ -3717,7 +3751,7 @@ int evaluate_tau_profile(
   double m_asked;
   if (ptsz->MF == 1){
       m_asked = pvectsz[ptsz->index_m200m];
-      pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
+      // pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
       // pvectsz[ptsz->index_ls] =  sqrt(pvectsz[ptsz->index_chi2])/(1.+pvectsz[ptsz->index_z])/pvectsz[ptsz->index_rs];
 
   if (ptsz->tau_profile == 1){
@@ -3733,17 +3767,19 @@ int evaluate_tau_profile(
 
    // double l_asked = pvectsz[ptsz->index_multipole_for_nfw_profile];
    m_asked = pvectsz[ptsz->index_m200c]; // in Msun/h
-   pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200c]/pvectsz[ptsz->index_c200c];
+   // m_asked = pvectsz[ptsz->index_m200m];
+   // pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200c];///pvectsz[ptsz->index_c200c];
 
 
-   m_asked = pvectsz[ptsz->index_m200m];
-   pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
+   // m_asked = pvectsz[ptsz->index_m200m];
+   // pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
    // double z_asked = pvectsz[ptsz->index_z];
  }
     }
+  // other HMF's :
   else{
       m_asked = pvectsz[ptsz->index_mVIR];
-      pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_rVIR]/pvectsz[ptsz->index_cVIR];
+      // pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_rVIR]/pvectsz[ptsz->index_cVIR];
       // pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+pvectsz[ptsz->index_z])/pvectsz[ptsz->index_rs];
     }
 
@@ -3765,7 +3801,7 @@ int evaluate_tau_profile(
 
    pvectsz[ptsz->index_tau_profile] = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free*result;
    // rho0 = pvectsz[ptsz->index_mVIR]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
-   rho0 = pvectsz[ptsz->index_m200m]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
+   rho0 = 1.;//pvectsz[ptsz->index_m200m]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
 
   // tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> extra h <!>
   //tau_normalisation = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version <!>
@@ -5596,26 +5632,26 @@ int evaluate_HMF(double logM,
     }
 
     if (pvectsz[ptsz->index_has_200c] == 1){
-    double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
-    double delc = Delta_c_of_Omega_m(omega);
-    double rhoc = pvectsz[ptsz->index_Rho_crit];
-    double delrho = 200.*omega*rhoc; // 200m
-    double delrho_prime = 200.*rhoc; //500c
-    double mdel = pvectsz[ptsz->index_m200m];
+    // double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
+    // double delc = Delta_c_of_Omega_m(omega);
+    // double rhoc = pvectsz[ptsz->index_Rho_crit];
+    // double delrho = 200.*omega*rhoc; // 200m
+    // double delrho_prime = 200.*rhoc; //500c
+    // double mdel = pvectsz[ptsz->index_m200m];
+    //
+    // double mdel_prime;
+    // class_call(mDEL_to_mDELprime(mdel,
+    //                        delrho,
+    //                        delrho_prime,
+    //                        delc,
+    //                        rhoc,
+    //                        z,
+    //                        &mdel_prime,
+    //                        ptsz),
+    //                 ptsz->error_message,
+    //                 ptsz->error_message);
 
-    double mdel_prime;
-    class_call(mDEL_to_mDELprime(mdel,
-                           delrho,
-                           delrho_prime,
-                           delc,
-                           rhoc,
-                           z,
-                           &mdel_prime,
-                           ptsz),
-                    ptsz->error_message,
-                    ptsz->error_message);
-
-    pvectsz[ptsz->index_m200c] = mdel_prime;
+    pvectsz[ptsz->index_m200c] = get_m200m_to_m200c_at_z_and_M(z,pvectsz[ptsz->index_m200m],ptsz);
         //r200c for the pressure profile B12
     pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
     pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
@@ -8731,6 +8767,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
   if (ptsz->integrate_wrt_m200m == 1 && ptsz->has_500c == 1)
     ptsz->need_m200m_to_m500c = 1;
 
+  if (ptsz->integrate_wrt_m200m == 1 && ptsz->has_200c == 1)
+    ptsz->need_m200m_to_m200c = 1;
 
 
    class_alloc(ptsz->ln_x_for_pp, ptsz->ln_x_size_for_pp*sizeof(double),ptsz->error_message);
@@ -9993,6 +10031,9 @@ double evaluate_truncated_nfw_profile(//double * pvecback,
 double c_delta, r_delta;
 int index_md = (int) pvectsz[ptsz->index_md];
 
+// printf("%d\n",ptsz->MF);
+// exit(0);
+
 if (_cib_cib_1h_
   || _cib_cib_2h_
   || _tSZ_cib_1h_
@@ -10026,7 +10067,8 @@ else if (_tSZ_gal_1h_
     // printf("computing rd, cd 2\n");
     r_delta = pvectsz[ptsz->index_r200m];
     c_delta = pvectsz[ptsz->index_c200m];
-    //printf("doing c200m samp0 and MF!\n");
+    // printf("doing c200m samp0 and MF!\n");
+    // exit(0);
     }
   // unWISE and 'other'
   else if ((ptsz->galaxy_sample == 1) || (ptsz->galaxy_sample == 2 )) {
@@ -10038,21 +10080,21 @@ else if (_tSZ_gal_1h_
     }
     // printf("doing c200m 3\n");
   }
-  else if ((_kSZ_kSZ_gal_1h_
-           ||_kSZ_kSZ_gal_2h_
-           ||_kSZ_kSZ_gal_3h_)
-           && ptsz->tau_profile == 1 // if tau_profile == 0 do everything wrt m200m
-         ){
-// in these cases use 200crit as mass definition for consistency with Battaglia profile fitting formula
-    r_delta = pvectsz[ptsz->index_r200c];
-    c_delta = pvectsz[ptsz->index_c200c];
-    // printf("using 200c\n");
-    // exit(0);
-
-    r_delta = pvectsz[ptsz->index_r200m];
-    c_delta = pvectsz[ptsz->index_c200m];
-
-}
+//   else if ((_kSZ_kSZ_gal_1h_
+//            ||_kSZ_kSZ_gal_2h_
+//            ||_kSZ_kSZ_gal_3h_)
+//            && ptsz->tau_profile == 1 // if tau_profile == 0 do everything wrt m200m
+//          ){
+// // in these cases use 200crit as mass definition for consistency with Battaglia profile fitting formula
+//     // r_delta = pvectsz[ptsz->index_r200c];
+//     // c_delta = pvectsz[ptsz->index_c200c];
+//     // printf("using 200c\n");
+//     // exit(0);
+//
+//     r_delta = pvectsz[ptsz->index_r200m];
+//     c_delta = pvectsz[ptsz->index_c200m];
+//
+// }
   // all other cases:
   else {
 
@@ -10092,13 +10134,15 @@ if ( _pk_at_z_1h_
     // exit(0);
   }
 
-double q = k*r_delta*xout/c_delta*(1.+z);
+// double q = k*r_delta*xout/c_delta*(1.+z);
+double q = k*r_delta/c_delta*(1.+z);
+
 double denominator = m_nfw(c_delta); //normalization
 
 
-double numerator = cos(q)*(gsl_sf_Ci((1.+c_delta)*q)-gsl_sf_Ci(q))
-                   +sin(q)*(gsl_sf_Si((1.+c_delta)*q)-gsl_sf_Si(q))
-                   -sin(c_delta*q)/((1.+c_delta)*q);
+double numerator = cos(q)*(gsl_sf_Ci((1.+xout*c_delta)*q)-gsl_sf_Ci(q))
+                   +sin(q)*(gsl_sf_Si((1.+xout*c_delta)*q)-gsl_sf_Si(q))
+                   -sin(xout*c_delta*q)/((1.+xout*c_delta)*q);
 
 
 return numerator/denominator;
@@ -10342,16 +10386,16 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
                                   1,
                                   &theta_1,
                                   &ln_ell2);
-      if (isnan(db) || isinf(db)){
-        // db = 0.;
-  if (isnan(db))
-    printf("found nan in interpolation of b_l1_l2_l_1d\n");
-    if (isinf(db))
-      printf("found inf in interpolation of b_l1_l2_l_1d\n");
-  printf("theta = %.3e \t l2 = %.3e \t l = %.3e\n",theta_1,exp(ln_ell2),ell_3);
+if (isnan(db) || isinf(db)){
+  // db = 0.;
+if (isnan(db))
+printf("found nan in interpolation of b_l1_l2_l_1d\n");
+if (isinf(db))
+printf("found inf in interpolation of b_l1_l2_l_1d\n");
+printf("theta = %.3e \t l2 = %.3e \t l = %.3e\n",theta_1,exp(ln_ell2),ell_3);
 
-  printf("\n\n");
-  exit(0);
+printf("\n\n");
+exit(0);
 }
        // printf("end interpolation db = %.3e\n",db);
       // Alternatively, compute the bispectrum here instaead of interpolation:
