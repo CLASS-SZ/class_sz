@@ -5484,9 +5484,9 @@ int evaluate_HMF(double logM,
                       ptsz),
                  ptsz->error_message,
                  ptsz->error_message);
-  pvectsz[ptsz->index_r200m]  = pow(3.*pvectsz[ptsz->index_m200m]
-                                    /(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]
-                                    *pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+  pvectsz[ptsz->index_r200m] = pow(3.*pvectsz[ptsz->index_m200m]
+                                  /(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]
+                                  *pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
 
   evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
 
@@ -10149,6 +10149,17 @@ return numerator/denominator;
 //return 1.; // BB debug
 }
 
+double get_c200m_at_m_and_z_D08(double M, double z){
+  // double M = pvectsz[ptsz->index_m200m];// mass in  Msun/h
+  double A = 10.14;
+  double B = -0.081;
+  double C = -1.01;
+  double M_pivot = 2.e12; // pivot mass in Msun/h
+
+  // double z = pvectsz[ptsz->index_z];
+  double c200m =A*pow(M/M_pivot,B)*pow(1.+z,C);
+  return c200m;
+}
 
 int evaluate_c200m_D08(double * pvecback,
                         double * pvectsz,
@@ -10156,15 +10167,15 @@ int evaluate_c200m_D08(double * pvecback,
                         struct tszspectrum * ptsz)
 {
 double M = pvectsz[ptsz->index_m200m];// mass in  Msun/h
-double A = 10.14;
-double B = -0.081;
-double C = -1.01;
-double M_pivot = 2.e12; // pivot mass in Msun/h
-
+// double A = 10.14;
+// double B = -0.081;
+// double C = -1.01;
+// double M_pivot = 2.e12; // pivot mass in Msun/h
+//
 double z = pvectsz[ptsz->index_z];
-double c200m =A*pow(M/M_pivot,B)*pow(1.+z,C);
+// double c200m =A*pow(M/M_pivot,B)*pow(1.+z,C);
 // printf("c200m D08 = %.3e\n",c200m);
-pvectsz[ptsz->index_c200m] = c200m;
+pvectsz[ptsz->index_c200m] = get_c200m_at_m_and_z_D08(M,z);
 }
 
 

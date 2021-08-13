@@ -1579,6 +1579,23 @@ double bispectrum_f2_kernel_eff_b(double k1,double n1,double knl);
 double bispectrum_f2_kernel_eff_c(double k1,double n1,double knl);
 double bispectrum_f2_kernel_eff_Q3(double n1);
 
+double get_rho_crit_at_z(double z_asked,
+                         struct background * pba,
+                         struct tszspectrum * ptsz);
+
+double get_c200m_at_m_and_z_D08(double M, double z);
+
+double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
+                                         double m_asked,
+                                         double z_asked,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz);
+
+double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
+                                         double m_asked,
+                                         double z_asked,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz);
 
 
 double get_second_order_bias_at_z_and_nu(double z,

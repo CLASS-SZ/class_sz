@@ -3064,6 +3064,302 @@ int rho_gnfw(double * rho_nfw_x,
 }
 
 
+
+
+
+
+double get_rho_crit_at_z(double z_asked,
+                         struct background * pba,
+                         struct tszspectrum * ptsz){
+double result;
+double rho_crit;
+
+
+
+
+double * pvecback;
+double * pvectsz;
+
+
+
+double tau;
+double z = z_asked;
+int first_index_back = 0;
+
+class_alloc(pvecback,
+            pba->bg_size*sizeof(double),
+            ptsz->error_message);
+
+class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+ int i;
+ for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+class_call(background_tau_of_z(pba,z,&tau),
+           pba->error_message,
+           pba->error_message);
+
+class_call(background_at_tau(pba,
+                             tau,
+                             pba->long_info,
+                             pba->inter_normal,
+                             &first_index_back,
+                             pvecback),
+           pba->error_message,
+           pba->error_message);
+
+
+
+
+pvectsz[ptsz->index_z] = z;
+pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                *pow(_Mpc_over_m_,1)
+                                *pow(_c_,2)
+                                *pvecback[pba->index_bg_rho_crit]
+                                /pow(pba->h,2);
+
+rho_crit = pvectsz[ptsz->index_Rho_crit];
+
+
+free(pvecback);
+free(pvectsz);
+
+
+
+result = rho_crit;
+
+return result;
+}
+
+
+double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
+                                         double m_asked,
+                                         double z_asked,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz){
+double result;
+double r_asked = 0.;
+double rho_s;
+double delta;
+double c_delta;
+double r_delta;
+double r_s;
+double rho_crit;
+double f_b = pba->Omega0_b/ptsz->Omega_m_0;
+double x;
+double p_x;
+
+
+
+double * pvecback;
+double * pvectsz;
+
+
+
+double tau;
+double z = z_asked;
+int first_index_back = 0;
+
+class_alloc(pvecback,
+            pba->bg_size*sizeof(double),
+            ptsz->error_message);
+
+class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+ int i;
+ for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+class_call(background_tau_of_z(pba,z,&tau),
+           pba->error_message,
+           pba->error_message);
+
+class_call(background_at_tau(pba,
+                             tau,
+                             pba->long_info,
+                             pba->inter_normal,
+                             &first_index_back,
+                             pvecback),
+           pba->error_message,
+           pba->error_message);
+
+
+
+
+pvectsz[ptsz->index_z] = z;
+pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                *pow(_Mpc_over_m_,1)
+                                *pow(_c_,2)
+                                *pvecback[pba->index_bg_rho_crit]
+                                /pow(pba->h,2);
+
+rho_crit = pvectsz[ptsz->index_Rho_crit];
+delta = 200.*pvecback[pba->index_bg_Omega_m];
+pvectsz[ptsz->index_m200m] = m_asked;
+evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
+
+c_delta = pvectsz[ptsz->index_c200m];
+r_delta = pow(3.*m_asked/(4.*_PI_*delta*rho_crit),1./3.); //in units of h^-1 Mpc
+
+rho_s = pow(c_delta,3.)*delta*rho_crit/3./m_nfw(c_delta);
+
+r_s = r_delta/c_delta;
+x = r_asked/r_s;
+x = x_asked;
+p_x = 1./x*1./pow(1.+x,2);
+
+free(pvecback);
+free(pvectsz);
+
+
+
+result = rho_s*f_b*p_x/rho_crit/f_b;
+
+return result;
+}
+
+
+
+double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
+                                         double m_asked,
+                                         double z_asked,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz){
+double result;
+double r_asked = 0.;
+double rho_s;
+double delta;
+double c_delta;
+double r_delta;
+double r_s;
+double rho_crit;
+double f_b = pba->Omega0_b/ptsz->Omega_m_0;
+double x;
+double p_x;
+
+
+
+double * pvecback;
+double * pvectsz;
+
+
+
+double tau;
+double z = z_asked;
+int first_index_back = 0;
+
+class_alloc(pvecback,
+            pba->bg_size*sizeof(double),
+            ptsz->error_message);
+
+class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+ int i;
+ for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+class_call(background_tau_of_z(pba,z,&tau),
+           pba->error_message,
+           pba->error_message);
+
+class_call(background_at_tau(pba,
+                             tau,
+                             pba->long_info,
+                             pba->inter_normal,
+                             &first_index_back,
+                             pvecback),
+           pba->error_message,
+           pba->error_message);
+
+
+
+
+pvectsz[ptsz->index_z] = z;
+pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                *pow(_Mpc_over_m_,1)
+                                *pow(_c_,2)
+                                *pvecback[pba->index_bg_rho_crit]
+                                /pow(pba->h,2);
+
+rho_crit = pvectsz[ptsz->index_Rho_crit];
+delta = 200.;
+pvectsz[ptsz->index_m200c] = m_asked;
+// evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
+
+c_delta = 1.;
+r_delta = pow(3.*m_asked/(4.*_PI_*delta*rho_crit),1./3.); //in units of h^-1 Mpc
+
+// rho_s = pow(c_delta,3.)*delta*rho_crit/3./m_nfw(c_delta);
+
+r_s = r_delta/c_delta;
+x = r_asked/r_s;
+x = x_asked;
+// p_x = 1./x*1./pow(1.+x,2);
+
+free(pvecback);
+free(pvectsz);
+
+
+    double A_rho0;
+    double A_alpha;
+    double A_beta;
+
+    double alpha_m_rho0;
+    double alpha_m_alpha;
+    double alpha_m_beta;
+
+    double alpha_z_rho0;
+    double alpha_z_alpha;
+    double alpha_z_beta;
+
+  // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
+  // Table 2
+  if (ptsz->tau_profile_mode == 0){
+    // agn feedback
+    A_rho0 = 4.e3;
+    A_alpha = 0.88;
+    A_beta = 3.83;
+
+    alpha_m_rho0 = 0.29;
+    alpha_m_alpha = -0.03;
+    alpha_m_beta = 0.04;
+
+    alpha_z_rho0 = -0.66;
+    alpha_z_alpha = 0.19;
+    alpha_z_beta = -0.025;
+    }
+  else if (ptsz->tau_profile_mode == 1){
+    // shock heating
+    A_rho0 = 1.9e4;
+    A_alpha = 0.70;
+    A_beta = 4.43;
+
+    alpha_m_rho0 = 0.09;
+    alpha_m_alpha = -0.017;
+    alpha_m_beta = 0.005;
+
+    alpha_z_rho0 = -0.95;
+    alpha_z_alpha = 0.27;
+    alpha_z_beta = 0.037;
+  }
+
+  // Eq. A1 and A2:
+  double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
+  // double rho0  = 1.;
+  double rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z,alpha_z_rho0);
+  double alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
+  double beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
+
+  double gamma = -0.3;
+  double xc = 0.5;
+
+  p_x = rho0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-(beta+gamma)/alpha);
+
+
+
+result = rho_crit*f_b*p_x/rho_crit/f_b;
+
+return result;
+}
+
+
+
+
 double get_density_profile_at_l_M_z(double l_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);

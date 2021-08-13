@@ -1746,6 +1746,32 @@ cdef class Class:
         #    elif (self.tsz.tau_profile == 1): # nfw case
         return tau_normalization*get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,&self.tsz)
 
+    def get_r_delta_of_m_delta_at_z(self,delta,m_delta,z):
+        return (3./4./np.pi/delta/self.get_rho_crit_at_z(z))**(1./3.)
+
+    def get_m200m_to_m200c_at_z_and_M(self,z_asked,m_asked):
+        return get_m200m_to_m200c_at_z_and_M(z_asked,m_asked,&self.tsz)
+
+    def get_c200m_at_m_and_z_D08(self,M,z):
+        return get_c200m_at_m_and_z_D08(M,z)
+
+    def get_f_b(self):
+        return self.ba.Omega0_b/self.tsz.Omega_m_0
+
+    def get_f_free(self):
+        return self.tsz.f_free
+
+    def get_mu_e(self):
+        return self.tsz.mu_e
+
+    def get_rho_crit_at_z(self,z_asked):
+        return get_rho_crit_at_z(z_asked,&self.ba,&self.tsz)
+
+    def get_gas_profile_at_x_M_z_b16_200c(self,r_asked,m_asked,z_asked):
+        return get_gas_profile_at_x_M_z_b16_200c(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
+
+    def get_gas_profile_at_x_M_z_nfw_200m(self,r_asked,m_asked,z_asked):
+        return get_gas_profile_at_x_M_z_nfw_200m(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
 
     def get_second_order_bias_at_z_and_nu(self,z,nu):
         return get_second_order_bias_at_z_and_nu(z,nu,&self.tsz)

@@ -263,6 +263,9 @@ cdef extern from "class.h":
         double x_inSZ
         double x_outSZ
         double HSEbias
+        double mu_e
+        double Omega_m_0
+        double f_free
         int  ndimSZ
         int nbins_M
         int n_k_for_pk_hm
@@ -549,6 +552,32 @@ cdef extern from "class.h":
                   double * pk_tot_out,
                   double * pk_cb_tot_out,
                   int nonlinear)
+
+    double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
+                                             double m_asked,
+                                             double z_asked,
+                                            void * pba,
+                                            void * ptsz)
+
+    double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
+                                             double m_asked,
+                                             double z_asked,
+                                            void * pba,
+                                            void * ptsz)
+
+    double get_f_b()
+    double get_mu_e()
+    double get_f_free()
+
+    double get_rho_crit_at_z(double z_asked,
+                             void * pba,
+                             void * ptsz)
+
+    double get_m200m_to_m200c_at_z_and_M(double z_asked,
+                                         double m_asked,
+                                         void * ptsz)
+
+    double get_c200m_at_m_and_z_D08(double M, double z)
 
     double get_vrms2_at_z(double z,
                           void * ptsz)
