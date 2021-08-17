@@ -2965,6 +2965,7 @@ int rho_nfw(double * rho_nfw_x,
 
  int index_md = (int) pvectsz[ptsz->index_md];
  double y_eff;
+ double z = pvectsz[ptsz->index_z];
  if (_pk_at_z_1h_
   || _pk_at_z_2h_
   || _bk_at_z_1h_
@@ -2972,7 +2973,7 @@ int rho_nfw(double * rho_nfw_x,
   || _bk_at_z_3h_){
    int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
    double k = ptsz->k_for_pk_hm[index_k];
-   double z = pvectsz[ptsz->index_z];
+   // double z = pvectsz[ptsz->index_z];
    y_eff = k*pvectsz[ptsz->index_rs]*(1.+z);
 
 
@@ -2984,9 +2985,11 @@ int rho_nfw(double * rho_nfw_x,
  }
 
   //y_eff = 1.e-10;
-  *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*y_eff);
+  // *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*y_eff);
                //*sin(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
                ///pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
+
+  *rho_nfw_x = get_gas_profile_at_x_M_z_nfw_200m(x,pvectsz[ptsz->index_m200m],z,pba,ptsz)*pow(x,2)/(x*y_eff);
 }
 
 
@@ -3056,10 +3059,21 @@ int rho_gnfw(double * rho_nfw_x,
   double alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
   double beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
 
-  double gamma = -0.3;
+  double gamma = -0.2;
   double xc = 0.5;
 
-  *rho_nfw_x = rho0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-(beta+gamma)/alpha)*pow(x,2)/(x*y_eff);
+ //  *rho_nfw_x = rho0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-(beta+gamma)/alpha)*pow(x,2)/(x*y_eff);
+ // double r1 = *rho_nfw_x;
+  *rho_nfw_x = get_gas_profile_at_x_M_z_b16_200c(x,pvectsz[ptsz->index_m200c],z,pba,ptsz)*pow(x,2)/(x*y_eff);
+
+// double r2 = get_gas_profile_at_x_M_z_b16_200c(x,pvectsz[ptsz->index_m200c],z,pba,ptsz);
+
+ // *rho_nfw_x = rho0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-(beta+gamma)/alpha)*pow(x,2)/(x*y_eff);
+// double r1 = m200_over_msol;
+// if (fabs(r1-r2)/r2>0.01){
+// printf("%.7e %.7e\n",r1,r2);
+// exit(0);
+// }
   // *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*y_eff);
 }
 
@@ -3192,18 +3206,19 @@ pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
 
 rho_crit = pvectsz[ptsz->index_Rho_crit];
 delta = 200.*pvecback[pba->index_bg_Omega_m];
-pvectsz[ptsz->index_m200m] = m_asked;
-evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
 
-c_delta = pvectsz[ptsz->index_c200m];
+c_delta = get_c200m_at_m_and_z_D08(m_asked,z);
 r_delta = pow(3.*m_asked/(4.*_PI_*delta*rho_crit),1./3.); //in units of h^-1 Mpc
 
 rho_s = pow(c_delta,3.)*delta*rho_crit/3./m_nfw(c_delta);
+
+
 
 r_s = r_delta/c_delta;
 x = r_asked/r_s;
 x = x_asked;
 p_x = 1./x*1./pow(1.+x,2);
+rho_s = m_asked/m_nfw(c_delta)/4./_PI_/pow(r_s,3.);
 
 free(pvecback);
 free(pvectsz);
@@ -3211,7 +3226,7 @@ free(pvectsz);
 
 
 result = rho_s*f_b*p_x/rho_crit/f_b;
-
+result = rho_s*p_x*f_b;
 return result;
 }
 
@@ -3278,7 +3293,7 @@ pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
 
 rho_crit = pvectsz[ptsz->index_Rho_crit];
 delta = 200.;
-pvectsz[ptsz->index_m200c] = m_asked;
+//pvectsz[ptsz->index_m200c] = m_asked;
 // evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
 
 c_delta = 1.;
@@ -3339,21 +3354,26 @@ free(pvectsz);
   }
 
   // Eq. A1 and A2:
-  double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
+  double m200_over_msol = m_asked/pba->h; // convert to Msun
   // double rho0  = 1.;
   double rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z,alpha_z_rho0);
   double alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
   double beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
 
-  double gamma = -0.3;
+  double gamma = -0.2;
   double xc = 0.5;
 
-  p_x = rho0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-(beta+gamma)/alpha);
+  p_x = pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-(beta+gamma)/alpha);
+  // p_x = m200_over_msol;
+
+  //
+  // double rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z,alpha_z_rho0);
+  // tau_normalisation = rho0*4.*_PI_*pow(pvectsz[ptsz->index_r200c],3)
+  //                     *pvectsz[ptsz->index_Rho_crit];
 
 
-
-result = rho_crit*f_b*p_x/rho_crit/f_b;
-
+// result = rho0*rho_crit*f_b*p_x/rho_crit/f_b;
+result = rho0*rho_crit*p_x*f_b;
 return result;
 }
 
@@ -3735,8 +3755,8 @@ for (index_m=0;
 
  double rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z,alpha_z_rho0);
  tau_normalisation = rho0*4.*_PI_*pow(pvectsz[ptsz->index_r200c],3)
-                     //*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)
                      *pvectsz[ptsz->index_Rho_crit];
+ tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_r200c],3);//*pvectsz[ptsz->index_Rho_crit];
 
  // rho0 = 200*pvecback[pba->index_bg_Omega_m]/3./m_nfw(pvectsz[ptsz->index_c200m]);
  // tau_normalisation = rho0*4.*_PI_*pow(pvectsz[ptsz->index_r200m],3)
@@ -3790,22 +3810,25 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
    result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,1);
 
    // //compare truncated vs integrated:
-   // double result_int;
-   // pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
-   // double characteristic_multipole = pvectsz[ptsz->index_ls];
-   // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
-   // two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int,1);
+   double result_int;
+   pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
+   double characteristic_multipole = pvectsz[ptsz->index_ls];
+   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
+   two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int,1);
    // printf("xout_trunc = %.3e r_trunc = %.5e xout_trunc = %.3e r_int = %.5e\n",
    // ptsz->x_out_truncated_nfw_profile,
    // result,
    // ptsz->x_out_nfw_profile,
-   // result_int);
+   // result_int/m_nfw(pvectsz[ptsz->index_c200m]));
    // //end truncated vs integrated
+   // use integrated version
+   result = result_int;///m_nfw(pvectsz[ptsz->index_c200m]);
 
 
    double tau_normalisation = pvectsz[ptsz->index_m200m];//pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
    // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
    // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version no h<!>
+   tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_rs],3);
    result *= tau_normalisation;
  }
 

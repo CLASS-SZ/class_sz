@@ -3799,7 +3799,8 @@ int evaluate_tau_profile(
    double z_asked = pvectsz[ptsz->index_z];
    result = get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
 
-   pvectsz[ptsz->index_tau_profile] = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free*result;
+   // pvectsz[ptsz->index_tau_profile] = pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free*result;
+   pvectsz[ptsz->index_tau_profile] = 1./ptsz->mu_e*ptsz->f_free*result;
    // rho0 = pvectsz[ptsz->index_mVIR]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
    rho0 = 1.;//pvectsz[ptsz->index_m200m]; // no need of dividing by log(1+c) - c/(1+c) since we use analytical formula
 
