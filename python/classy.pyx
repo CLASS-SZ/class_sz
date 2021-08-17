@@ -1747,7 +1747,7 @@ cdef class Class:
         return tau_normalization*get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,&self.tsz)
 
     def get_r_delta_of_m_delta_at_z(self,delta,m_delta,z):
-        return (3./4./np.pi/delta/self.get_rho_crit_at_z(z))**(1./3.)
+        return (m_delta*3./4./np.pi/delta/self.get_rho_crit_at_z(z))**(1./3.)
 
     def get_m200m_to_m200c_at_z_and_M(self,z_asked,m_asked):
         return get_m200m_to_m200c_at_z_and_M(z_asked,m_asked,&self.tsz)
@@ -1764,11 +1764,76 @@ cdef class Class:
     def get_mu_e(self):
         return self.tsz.mu_e
 
+    def get_m_nfw(self,x):
+        return m_nfw(x)
+
     def get_rho_crit_at_z(self,z_asked):
         return get_rho_crit_at_z(z_asked,&self.ba,&self.tsz)
 
-    def get_gas_profile_at_x_M_z_b16_200c(self,r_asked,m_asked,z_asked):
-        return get_gas_profile_at_x_M_z_b16_200c(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
+    def get_gas_profile_at_x_M_z_b16_200c(self,
+                                          r_asked,
+                                          m_asked,
+                                          z_asked,
+                                          A_rho0 = 4.e3,
+                                          A_alpha = 0.88,
+                                          A_beta = 3.83,
+                                          alpha_m_rho0 = 0.29,
+                                          alpha_m_alpha = -0.03,
+                                          alpha_m_beta = 0.04,
+                                          alpha_z_rho0 = -0.66,
+                                          alpha_z_alpha = 0.19,
+                                          alpha_z_beta = -0.025,
+                                          gamma = -0.2,
+                                          ):
+        return get_gas_profile_at_x_M_z_b16_200c(r_asked,
+                                                 m_asked,
+                                                 z_asked,
+                                                 A_rho0,
+                                                 A_alpha,
+                                                 A_beta,
+                                                 alpha_m_rho0,
+                                                 alpha_m_alpha,
+                                                 alpha_m_beta,
+                                                 alpha_z_rho0,
+                                                 alpha_z_alpha,
+                                                 alpha_z_beta,
+                                                 gamma,
+                                                 &self.ba,
+                                                 &self.tsz)
+
+    def get_dA(self,z):
+        """
+        angular_distance(z) in Mpc/h
+
+
+        Parameters
+        ----------
+        z : float
+                Desired redshift
+        """
+        cdef double tau
+        cdef int last_index #junk
+        cdef double * pvecback
+
+        pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
+
+        if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
+            raise CosmoSevereError(self.ba.error_message)
+
+        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+            raise CosmoSevereError(self.ba.error_message)
+
+        D_A = pvecback[self.ba.index_bg_ang_distance]
+
+        free(pvecback)
+
+        return D_A*self.ba.h
+
+    def get_rad_to_arcmin(self,theta_rad):
+        return (60.*180.)/np.pi*theta_rad
+
+    def get_arcmin_to_rad(self,theta_arcmin):
+        return np.pi/(60.*180.)*theta_arcmin
 
     def get_gas_profile_at_x_M_z_nfw_200m(self,r_asked,m_asked,z_asked):
         return get_gas_profile_at_x_M_z_nfw_200m(r_asked,m_asked,z_asked,&self.ba,&self.tsz)

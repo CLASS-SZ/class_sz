@@ -3025,29 +3025,29 @@ int rho_gnfw(double * rho_nfw_x,
   // Table 2
   if (ptsz->tau_profile_mode == 0){
     // agn feedback
-    // A_rho0 = 4.e3;
+    A_rho0 = 4.e3;
     A_alpha = 0.88;
     A_beta = 3.83;
 
-    // alpha_m_rho0 = 0.29;
+    alpha_m_rho0 = 0.29;
     alpha_m_alpha = -0.03;
     alpha_m_beta = 0.04;
 
-    // alpha_z_rho0 = -0.66;
+    alpha_z_rho0 = -0.66;
     alpha_z_alpha = 0.19;
     alpha_z_beta = -0.025;
     }
   else if (ptsz->tau_profile_mode == 1){
     // shock heating
-    // A_rho0 = 1.9e4;
+    A_rho0 = 1.9e4;
     A_alpha = 0.70;
     A_beta = 4.43;
 
-    // alpha_m_rho0 = 0.09;
+    alpha_m_rho0 = 0.09;
     alpha_m_alpha = -0.017;
     alpha_m_beta = 0.005;
 
-    // alpha_z_rho0 = -0.95;
+    alpha_z_rho0 = -0.95;
     alpha_z_alpha = 0.27;
     alpha_z_beta = 0.037;
   }
@@ -3064,7 +3064,21 @@ int rho_gnfw(double * rho_nfw_x,
 
  //  *rho_nfw_x = rho0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-(beta+gamma)/alpha)*pow(x,2)/(x*y_eff);
  // double r1 = *rho_nfw_x;
-  *rho_nfw_x = get_gas_profile_at_x_M_z_b16_200c(x,pvectsz[ptsz->index_m200c],z,pba,ptsz)*pow(x,2)/(x*y_eff);
+  *rho_nfw_x = get_gas_profile_at_x_M_z_b16_200c(x,
+                                                 pvectsz[ptsz->index_m200c],
+                                                 z,
+                                                 A_rho0,
+                                                 A_alpha,
+                                                 A_beta,
+                                                 alpha_m_rho0,
+                                                 alpha_m_alpha,
+                                                 alpha_m_beta,
+                                                 alpha_z_rho0,
+                                                 alpha_z_alpha,
+                                                 alpha_z_beta,
+                                                 gamma,
+                                                 pba,
+                                                 ptsz)*pow(x,2)/(x*y_eff);
 
 // double r2 = get_gas_profile_at_x_M_z_b16_200c(x,pvectsz[ptsz->index_m200c],z,pba,ptsz);
 
@@ -3235,6 +3249,16 @@ return result;
 double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                          double m_asked,
                                          double z_asked,
+                                         double A_rho0,
+                                         double A_alpha,
+                                         double A_beta,
+                                         double alpha_m_rho0,
+                                         double alpha_m_alpha,
+                                         double alpha_m_beta,
+                                         double alpha_z_rho0,
+                                         double alpha_z_alpha,
+                                         double alpha_z_beta,
+                                         double gamma,
                                          struct background * pba,
                                          struct tszspectrum * ptsz){
 double result;
@@ -3310,48 +3334,48 @@ free(pvecback);
 free(pvectsz);
 
 
-    double A_rho0;
-    double A_alpha;
-    double A_beta;
+    // double A_rho0;
+    // double A_alpha;
+    // double A_beta;
+    //
+    // double alpha_m_rho0;
+    // double alpha_m_alpha;
+    // double alpha_m_beta;
+    //
+    // double alpha_z_rho0;
+    // double alpha_z_alpha;
+    // double alpha_z_beta;
 
-    double alpha_m_rho0;
-    double alpha_m_alpha;
-    double alpha_m_beta;
-
-    double alpha_z_rho0;
-    double alpha_z_alpha;
-    double alpha_z_beta;
-
-  // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
-  // Table 2
-  if (ptsz->tau_profile_mode == 0){
-    // agn feedback
-    A_rho0 = 4.e3;
-    A_alpha = 0.88;
-    A_beta = 3.83;
-
-    alpha_m_rho0 = 0.29;
-    alpha_m_alpha = -0.03;
-    alpha_m_beta = 0.04;
-
-    alpha_z_rho0 = -0.66;
-    alpha_z_alpha = 0.19;
-    alpha_z_beta = -0.025;
-    }
-  else if (ptsz->tau_profile_mode == 1){
-    // shock heating
-    A_rho0 = 1.9e4;
-    A_alpha = 0.70;
-    A_beta = 4.43;
-
-    alpha_m_rho0 = 0.09;
-    alpha_m_alpha = -0.017;
-    alpha_m_beta = 0.005;
-
-    alpha_z_rho0 = -0.95;
-    alpha_z_alpha = 0.27;
-    alpha_z_beta = 0.037;
-  }
+  // // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
+  // // Table 2
+  // if (ptsz->tau_profile_mode == 0){
+  //   // agn feedback
+  //   // A_rho0 = 4.e3;
+  //   A_alpha = 0.88;
+  //   A_beta = 3.83;
+  //
+  //   alpha_m_rho0 = 0.29;
+  //   alpha_m_alpha = -0.03;
+  //   alpha_m_beta = 0.04;
+  //
+  //   alpha_z_rho0 = -0.66;
+  //   alpha_z_alpha = 0.19;
+  //   alpha_z_beta = -0.025;
+  //   }
+  // else if (ptsz->tau_profile_mode == 1){
+  //   // shock heating
+  //   // A_rho0 = 1.9e4;
+  //   A_alpha = 0.70;
+  //   A_beta = 4.43;
+  //
+  //   alpha_m_rho0 = 0.09;
+  //   alpha_m_alpha = -0.017;
+  //   alpha_m_beta = 0.005;
+  //
+  //   alpha_z_rho0 = -0.95;
+  //   alpha_z_alpha = 0.27;
+  //   alpha_z_beta = 0.037;
+  // }
 
   // Eq. A1 and A2:
   double m200_over_msol = m_asked/pba->h; // convert to Msun
@@ -3360,7 +3384,7 @@ free(pvectsz);
   double alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
   double beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
 
-  double gamma = -0.2;
+  // double gamma = -0.2;
   double xc = 0.5;
 
   p_x = pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-(beta+gamma)/alpha);
@@ -3703,59 +3727,59 @@ for (index_m=0;
  double tau_normalisation = 1.;//pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
  // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
  // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version no h<!>
-
- double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
+ //
+ // double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
  // double rho0  = 1.;
-
-
-    double A_rho0;
-    // double A_alpha;
-    // double A_beta;
-
-    double alpha_m_rho0;
-    // double alpha_m_alpha;
-    // double alpha_m_beta;
-
-    double alpha_z_rho0;
-    // double alpha_z_alpha;
-    // double alpha_z_beta;
-
-
-  // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
-  // Table 2
-  if (ptsz->tau_profile_mode == 0){
-    // agn feedback
-    A_rho0 = 4.e3;
-    // A_alpha = 0.88;
-    // A_beta = 3.83;
-    //
-    alpha_m_rho0 = 0.29;
-    // alpha_m_alpha = -0.03;
-    // alpha_m_beta = 0.04;
-    //
-    alpha_z_rho0 = -0.66;
-    // alpha_z_alpha = 0.19;
-    // alpha_z_beta = -0.025;
-    }
-  else if (ptsz->tau_profile_mode == 1){
-    // shock heating
-    A_rho0 = 1.9e4;
-    // A_alpha = 0.70;
-    // A_beta = 4.43;
-    //
-    alpha_m_rho0 = 0.09;
-    // alpha_m_alpha = -0.017;
-    // alpha_m_beta = 0.005;
-    //
-    alpha_z_rho0 = -0.95;
-    // alpha_z_alpha = 0.27;
-    // alpha_z_beta = 0.037;
-  }
-
-
- double rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z,alpha_z_rho0);
- tau_normalisation = rho0*4.*_PI_*pow(pvectsz[ptsz->index_r200c],3)
-                     *pvectsz[ptsz->index_Rho_crit];
+ //
+ //
+ //    double A_rho0;
+ //    // double A_alpha;
+ //    // double A_beta;
+ //
+ //    double alpha_m_rho0;
+ //    // double alpha_m_alpha;
+ //    // double alpha_m_beta;
+ //
+ //    double alpha_z_rho0;
+ //    // double alpha_z_alpha;
+ //    // double alpha_z_beta;
+ //
+ //
+ //  // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
+ //  // Table 2
+ //  if (ptsz->tau_profile_mode == 0){
+ //    // agn feedback
+ //    A_rho0 = 4.e3;
+ //    // A_alpha = 0.88;
+ //    // A_beta = 3.83;
+ //    //
+ //    alpha_m_rho0 = 0.29;
+ //    // alpha_m_alpha = -0.03;
+ //    // alpha_m_beta = 0.04;
+ //    //
+ //    alpha_z_rho0 = -0.66;
+ //    // alpha_z_alpha = 0.19;
+ //    // alpha_z_beta = -0.025;
+ //    }
+ //  else if (ptsz->tau_profile_mode == 1){
+ //    // shock heating
+ //    A_rho0 = 1.9e4;
+ //    // A_alpha = 0.70;
+ //    // A_beta = 4.43;
+ //    //
+ //    alpha_m_rho0 = 0.09;
+ //    // alpha_m_alpha = -0.017;
+ //    // alpha_m_beta = 0.005;
+ //    //
+ //    alpha_z_rho0 = -0.95;
+ //    // alpha_z_alpha = 0.27;
+ //    // alpha_z_beta = 0.037;
+ //  }
+ //
+ //
+ // double rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z,alpha_z_rho0);
+ // tau_normalisation = rho0*4.*_PI_*pow(pvectsz[ptsz->index_r200c],3)
+ //                     *pvectsz[ptsz->index_Rho_crit];
  tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_r200c],3);//*pvectsz[ptsz->index_Rho_crit];
 
  // rho0 = 200*pvecback[pba->index_bg_Omega_m]/3./m_nfw(pvectsz[ptsz->index_c200m]);

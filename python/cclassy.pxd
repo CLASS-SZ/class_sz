@@ -562,8 +562,18 @@ cdef extern from "class.h":
     double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                              double m_asked,
                                              double z_asked,
-                                            void * pba,
-                                            void * ptsz)
+                                             double A_rho0,
+                                             double A_alpha,
+                                             double A_beta,
+                                             double alpha_m_rho0,
+                                             double alpha_m_alpha,
+                                             double alpha_m_beta,
+                                             double alpha_z_rho0,
+                                             double alpha_z_alpha,
+                                             double alpha_z_beta,
+                                             double gamma,
+                                             void * pba,
+                                             void * ptsz)
 
     double get_f_b()
     double get_mu_e()
@@ -578,6 +588,8 @@ cdef extern from "class.h":
                                          void * ptsz)
 
     double get_c200m_at_m_and_z_D08(double M, double z)
+
+    double m_nfw(double x)
 
     double get_vrms2_at_z(double z,
                           void * ptsz)
