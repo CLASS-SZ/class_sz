@@ -3009,48 +3009,48 @@ int rho_gnfw(double * rho_nfw_x,
             /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];//*ptsz->cvir_tau_profile_factor;
 
 
-    double A_rho0;
-    double A_alpha;
-    double A_beta;
+    double A_rho0 = ptsz->A_rho0;
+    double A_alpha = ptsz->A_alpha;
+    double A_beta = ptsz->A_beta;
 
-    double alpha_m_rho0;
-    double alpha_m_alpha;
-    double alpha_m_beta;
+    double alpha_m_rho0 = ptsz->alpha_m_rho0;
+    double alpha_m_alpha = ptsz->alpha_m_alpha;
+    double alpha_m_beta = ptsz->alpha_m_beta;
 
-    double alpha_z_rho0;
-    double alpha_z_alpha;
-    double alpha_z_beta;
-
-  // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
-  // Table 2
-  if (ptsz->tau_profile_mode == 0){
-    // agn feedback
-    A_rho0 = 4.e3;
-    A_alpha = 0.88;
-    A_beta = 3.83;
-
-    alpha_m_rho0 = 0.29;
-    alpha_m_alpha = -0.03;
-    alpha_m_beta = 0.04;
-
-    alpha_z_rho0 = -0.66;
-    alpha_z_alpha = 0.19;
-    alpha_z_beta = -0.025;
-    }
-  else if (ptsz->tau_profile_mode == 1){
-    // shock heating
-    A_rho0 = 1.9e4;
-    A_alpha = 0.70;
-    A_beta = 4.43;
-
-    alpha_m_rho0 = 0.09;
-    alpha_m_alpha = -0.017;
-    alpha_m_beta = 0.005;
-
-    alpha_z_rho0 = -0.95;
-    alpha_z_alpha = 0.27;
-    alpha_z_beta = 0.037;
-  }
+    double alpha_z_rho0 = ptsz->alpha_z_rho0;
+    double alpha_z_alpha = ptsz->alpha_z_alpha;
+    double alpha_z_beta = ptsz->alpha_z_beta;
+  //
+  // // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
+  // // Table 2
+  // if (ptsz->tau_profile_mode == 0){
+  //   // agn feedback
+  //   A_rho0 = 4.e3;
+  //   A_alpha = 0.88;
+  //   A_beta = 3.83;
+  //
+  //   alpha_m_rho0 = 0.29;
+  //   alpha_m_alpha = -0.03;
+  //   alpha_m_beta = 0.04;
+  //
+  //   alpha_z_rho0 = -0.66;
+  //   alpha_z_alpha = 0.19;
+  //   alpha_z_beta = -0.025;
+  //   }
+  // else if (ptsz->tau_profile_mode == 1){
+  //   // shock heating
+  //   A_rho0 = 1.9e4;
+  //   A_alpha = 0.70;
+  //   A_beta = 4.43;
+  //
+  //   alpha_m_rho0 = 0.09;
+  //   alpha_m_alpha = -0.017;
+  //   alpha_m_beta = 0.005;
+  //
+  //   alpha_z_rho0 = -0.95;
+  //   alpha_z_alpha = 0.27;
+  //   alpha_z_beta = 0.037;
+  // }
 
   // Eq. A1 and A2:
   double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
@@ -3059,7 +3059,7 @@ int rho_gnfw(double * rho_nfw_x,
   double alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
   double beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
 
-  double gamma = -0.2;
+  double gamma = ptsz->gamma_B16;
   double xc = 0.5;
 
  //  *rho_nfw_x = rho0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-(beta+gamma)/alpha)*pow(x,2)/(x*y_eff);

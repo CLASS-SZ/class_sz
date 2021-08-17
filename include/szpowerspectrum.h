@@ -865,6 +865,22 @@ struct tszspectrum {
   double alpha_z_xc_B12;
   double alpha_z_beta_B12;
 
+  // Battaglia density profile:
+  double A_rho0;
+  double A_alpha;
+  double A_beta;
+
+  double alpha_m_rho0;
+  double alpha_m_alpha;
+  double alpha_m_beta;
+
+  double alpha_z_rho0;
+  double alpha_z_alpha;
+  double alpha_z_beta;
+
+  double gamma_B16;
+
+
 // JCH
 //double precision :: f_free=0.85d0 !for kSZ calculations, fraction of free electrons w.r.t. total
 //double precision :: mu_e=1.14d0 !mean molecular weight per electron, for primordial composition

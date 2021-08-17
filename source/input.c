@@ -2997,7 +2997,7 @@ int input_read_parameters(
       }
 
       /* tau profile kSZ */
-      class_call(parser_read_string(pfc,"tau profile",&string1,&flag1,errmsg),
+      class_call(parser_read_string(pfc,"gas profile",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
       if (flag1 == _TRUE_) {
@@ -3010,16 +3010,55 @@ int input_read_parameters(
         }
 
       /* tau profile mode kSZ */
-      class_call(parser_read_string(pfc,"tau profile mode",&string1,&flag1,errmsg),
+      class_call(parser_read_string(pfc,"gas profile mode",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
       if (flag1 == _TRUE_) {
-        if ((strstr(string1,"agn") != NULL))
+        if ((strstr(string1,"agn") != NULL)){
           ptsz->tau_profile_mode=0;
-        else  if ((strstr(string1,"shock") != NULL))
-          ptsz->tau_profile_mode=1;
-        }
+            ptsz->A_rho0 = 4.e3;
+            ptsz->A_alpha = 0.88;
+            ptsz->A_beta = 3.83;
 
+            ptsz->alpha_m_rho0 = 0.29;
+            ptsz->alpha_m_alpha = -0.03;
+            ptsz->alpha_m_beta = 0.04;
+
+            ptsz->alpha_z_rho0 = -0.66;
+            ptsz->alpha_z_alpha = 0.19;
+            ptsz->alpha_z_beta = -0.025;
+        }
+        else  if ((strstr(string1,"shock") != NULL)){
+          ptsz->tau_profile_mode=1;
+          //   // shock heating
+            ptsz->A_rho0 = 1.9e4;
+            ptsz->A_alpha = 0.70;
+            ptsz->A_beta = 4.43;
+
+            ptsz->alpha_m_rho0 = 0.09;
+            ptsz->alpha_m_alpha = -0.017;
+            ptsz->alpha_m_beta = 0.005;
+
+            ptsz->alpha_z_rho0 = -0.95;
+            ptsz->alpha_z_alpha = 0.27;
+            ptsz->alpha_z_beta = 0.037;
+        }
+        else if ((strstr(string1,"custom") != NULL)){
+          ptsz->tau_profile_mode=2;
+          class_read_double("A_rho0",ptsz->A_rho0);
+          class_read_double("A_alpha",ptsz->A_alpha);
+          class_read_double("A_beta",ptsz->A_beta);
+
+          class_read_double("alpha_m_rho0",ptsz->alpha_m_rho0);
+          class_read_double("alpha_m_alpha",ptsz->alpha_m_alpha);
+          class_read_double("alpha_m_beta",ptsz->alpha_m_beta);
+
+          class_read_double("alpha_z_rho0",ptsz->alpha_z_rho0);
+          class_read_double("alpha_z_alpha",ptsz->alpha_z_alpha);
+          class_read_double("alpha_z_bet",ptsz->alpha_z_beta);
+          class_read_double("gamma_B16",ptsz->gamma_B16);
+        }
+}
 
 
 
@@ -5098,6 +5137,22 @@ int input_default_params(
    ptsz->alpha_z_P0_B12 = -0.758;
    ptsz->alpha_z_xc_B12 = 0.731;
    ptsz->alpha_z_beta_B12 = 0.415;
+
+
+   //battaglia density profile
+
+   ptsz->A_rho0 = 4.e3;
+   ptsz->A_alpha = 0.88;
+   ptsz->A_beta = 3.83;
+
+   ptsz->alpha_m_rho0 = 0.29;
+   ptsz->alpha_m_alpha = -0.03;
+   ptsz->alpha_m_beta = 0.04;
+
+   ptsz->alpha_z_rho0 = -0.66;
+   ptsz->alpha_z_alpha = 0.19;
+   ptsz->alpha_z_beta = -0.025;
+   ptsz->gamma_B16 = -0.2;
 
 
   //units
