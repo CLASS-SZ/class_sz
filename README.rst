@@ -96,8 +96,8 @@ Run the code with SZ power spectrum computation
     $ ./class class-sz_simple.ini
 
 
-The explanatory files are reference input files, containing and
-explaining the use of all possible input parameters.
+The explanatory 'ini' files are reference input files, containing and
+explaining the use of the possible input parameters.
 
 
 
@@ -118,7 +118,7 @@ $ make
 
 That's it!
 
-Have a look at the notebook cl_ST_sz.ipynb and try to run it. It should output the primary cmb and tsz power spectra.
+Have a look at the notebook class_sz_plots_and_tutorial.ipynb and try to run it. It should output the primary cmb and tsz power spectra.
 The notebook is here:
 
 https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_plots_and_tutorial.ipynb
