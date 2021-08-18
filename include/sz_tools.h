@@ -473,6 +473,10 @@ double get_density_profile_at_l_M_z(double l_asked,
                                     double z_asked,
                                     struct tszspectrum * ptsz);
 
+double get_pressure_profile_at_l_M_z(double l_asked,
+                                    double m_asked,
+                                    double z_asked,
+                                    struct tszspectrum * ptsz);
 
 int tabulate_hmf_counter_terms_nmin(struct background * pba,
                                     struct nonlinear * pnl,

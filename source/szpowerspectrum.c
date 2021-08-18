@@ -317,9 +317,12 @@ tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
  // exit(0);
 
  // tabulate pressure profile for gnFW
+  // printf("tab \n");
  if (ptsz->pressure_profile == 3)
  tabulate_pressure_profile_gNFW(pba,ptsz);
-
+ else if (ptsz->pressure_profile == 4)
+ tabulate_pressure_profile_B12(pba,ptsz);
+//  printf("tab done\n");
 // exit(0);
 
 
@@ -630,7 +633,7 @@ if(ptsz->has_kSZ_kSZ_gal_1h
   free(ptsz->array_profile_ln_m);
   free(ptsz->array_profile_ln_1pz);
 
- int n_ell = 50; //hard coded
+ int n_ell = ptsz->n_ell_density_profile; //hard coded
  int index_l;
 for (index_l=0;
      index_l<n_ell;
@@ -685,6 +688,23 @@ if (ptsz->pressure_profile == 3){
    free(ptsz->array_profile_ln_l_over_ls);
    free(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls);
    }
+
+if(ptsz->pressure_profile == 4){
+  free(ptsz->array_pressure_profile_ln_l);
+  free(ptsz->array_pressure_profile_ln_m);
+  free(ptsz->array_pressure_profile_ln_1pz);
+
+ int n_ell = ptsz->n_ell_pressure_profile; //hard coded
+ int index_l;
+for (index_l=0;
+     index_l<n_ell;
+     index_l++)
+{
+  free(ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[index_l]);
+}
+
+}
+
 
 
 if (ptsz->need_m200m_to_m200c){
@@ -4222,9 +4242,17 @@ int evaluate_pressure_profile(double * pvecback,
    //Battaglia et al 2012
    if (ptsz->pressure_profile == 4 ){
 
-      class_call(two_dim_ft_pressure_profile(ptsz,pba,pvectsz,&result),
-                                              ptsz->error_message,
-                                              ptsz->error_message);
+      // class_call(two_dim_ft_pressure_profile(ptsz,pba,pvectsz,&result),
+      //                                         ptsz->error_message,
+      //                                         ptsz->error_message);
+     // printf("%.7e\n",result);
+   double m_asked = pvectsz[ptsz->index_m200c];
+   double l_asked = pvectsz[ptsz->index_multipole_for_pressure_profile];
+   // double m_asked = pvectsz[ptsz->index_m200m]; // in Msun/h
+   double z_asked = pvectsz[ptsz->index_z];
+   double result_tabulated = get_pressure_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
+   result = result_tabulated;
+   // printf("%.7e %.7e\n",result,result_tabulated);
 
    }
    //custom gNFW pressure profile

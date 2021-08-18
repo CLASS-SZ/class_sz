@@ -158,3 +158,7 @@ minimal2.ini
 minimal3.ini
 class_sz_leaks
 class_sz_leaks_old
+notebooks/test_parameters.ini
+notebooks/test_unused_parameters
+test_parameters.ini
+test_unused_parameters

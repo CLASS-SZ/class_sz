@@ -1171,7 +1171,10 @@ double * steps_m;
   double * array_ln_1pz_m500c_to_m200c;
   double * array_m500c_to_m200c_at_z_and_M;
 
-
+  double ** array_pressure_profile_ln_p_at_lnl_lnM_z;
+  double * array_pressure_profile_ln_l;
+  double * array_pressure_profile_ln_m;
+  double * array_pressure_profile_ln_1pz;
 
   double ** array_profile_ln_rho_at_lnl_lnM_z;
   double * array_profile_ln_l;
@@ -1412,6 +1415,9 @@ int tabulate_density_profile(struct background * pba,
                              struct tszspectrum * ptsz);
 
 int tabulate_pressure_profile_gNFW(struct background * pba,
+                                   struct tszspectrum * ptsz);
+
+int tabulate_pressure_profile_B12(struct background * pba,
                                    struct tszspectrum * ptsz);
 
 double evaluate_mean_galaxy_number_density_at_z(double z,

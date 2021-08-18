@@ -5039,7 +5039,7 @@ int input_default_params(
   ptsz->sn_cutoff = 5.;
   pcsz->sn_cutoff = 5.;
   //Redshift limits for the integration
-  ptsz->z1SZ = 0.;
+  ptsz->z1SZ = 1.e-8;
   ptsz->z2SZ = 4.;
   ppt->z_max_pk = ptsz->z2SZ;
   psp->z_max_pk = ppt->z_max_pk;

@@ -3891,6 +3891,297 @@ ptsz->has_kSZ_kSZ_gal_1h = has_ksz_bkp;
 
 
 
+double get_pressure_profile_at_l_M_z(double l_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double m = log(m_asked);
+  double l = log(l_asked);
+
+
+  // if (ptsz->tau_profile == 1){
+  // find the closest l's in the grid:
+  int id_l_low;
+  int id_l_up;
+  int n_ell = ptsz->n_ell_pressure_profile;
+  int n_m = ptsz->n_m_pressure_profile;
+  int n_z = ptsz->n_z_pressure_profile;
+  r8vec_bracket(n_ell,ptsz->array_pressure_profile_ln_l,l,&id_l_low,&id_l_up);
+
+  // interpolate 2d at l_low:
+
+ double ln_rho_low = pwl_interp_2d(n_m,
+                                n_z,
+                                ptsz->array_pressure_profile_ln_m,
+                                ptsz->array_pressure_profile_ln_1pz,
+                                ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[id_l_low],
+                                1,
+                                &m,
+                                &z);
+
+ double ln_rho_up = pwl_interp_2d(n_m,
+                                n_z,
+                                ptsz->array_pressure_profile_ln_m,
+                                ptsz->array_pressure_profile_ln_1pz,
+                                ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[id_l_up],
+                                1,
+                                &m,
+                                &z);
+ double ln_l_low = ptsz->array_pressure_profile_ln_l[id_l_low];
+ double ln_l_up = ptsz->array_pressure_profile_ln_l[id_l_up];
+
+ // return exp(ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
+ return ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low);
+
+// }
+// else if (){
+//   pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile]; // this is the multipole going into truncated nfw... TBD: needs to be renamed
+//   // set 1 for matter_type = tau
+//   result =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,1);
+//
+// }
+
+}
+
+
+// Tabulate 2D Fourier transform of pressure profile on a [z - ln_M - ln_ell] grid
+int tabulate_pressure_profile_B12(struct background * pba,
+                                  struct tszspectrum * ptsz){
+
+ // array of multipoles:
+ double ln_ell_min = log(0.5);
+ double ln_ell_max = log(5e4);
+ int n_ell = ptsz->n_ell_pressure_profile;
+ int n_m = ptsz->n_m_pressure_profile;
+ int n_z = ptsz->n_z_pressure_profile;
+
+ class_alloc(ptsz->array_pressure_profile_ln_l,sizeof(double *)*n_ell,ptsz->error_message);
+
+ // array of masses:
+ double ln_m_min = log(1e8);
+ double ln_m_max = log(1e17);
+
+
+ class_alloc(ptsz->array_pressure_profile_ln_m,sizeof(double *)*n_m,ptsz->error_message);
+
+
+ // array of redshifts:
+ double ln_1pz_min = log(1.+ptsz->z1SZ);
+ double ln_1pz_max = log(1.+ptsz->z2SZ);
+
+
+ class_alloc(ptsz->array_pressure_profile_ln_1pz,sizeof(double *)*n_z,ptsz->error_message);
+int index_m_z;
+
+int index_l;
+for (index_l=0;
+     index_l<n_ell;
+     index_l++)
+{
+  ptsz->array_pressure_profile_ln_l[index_l] = ln_ell_min
+                                      +index_l*(ln_ell_max-ln_ell_min)
+                                      /(n_ell-1.);
+}
+
+int index_m;
+for (index_m=0;
+     index_m<n_m;
+     index_m++)
+{
+  ptsz->array_pressure_profile_ln_m[index_m] = ln_m_min
+                                      +index_m*(ln_m_max-ln_m_min)
+                                      /(n_m-1.);
+}
+
+int index_z;
+for (index_z=0;
+     index_z<n_z;
+     index_z++)
+{
+  ptsz->array_pressure_profile_ln_1pz[index_z] = ln_1pz_min
+                                   +index_z*(ln_1pz_max-ln_1pz_min)
+                                   /(n_z-1.);
+}
+
+
+class_alloc(ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z,n_ell*sizeof(double *),ptsz->error_message);
+for (index_l=0;
+     index_l<n_ell;
+     index_l++)
+{
+class_alloc(ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[index_l],n_m*n_z*sizeof(double *),ptsz->error_message);
+index_m_z = 0;
+for (index_m=0;
+     index_m<n_m;
+     index_m++){
+//class_alloc(ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z],n_z*sizeof(double ),ptsz->error_message);
+
+for (index_z=0;
+     index_z<n_z;
+     index_z++)
+{
+  // ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = -100.; // initialize with super small number
+  ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[index_l][index_m_z] = 1e-100; // initialize with super small number
+  index_m_z += 1;
+}
+
+     }
+}
+
+
+//Parallelization of profile computation
+/* initialize error management flag */
+
+
+int abort;
+double tstart, tstop;
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+ptsz,pba)\
+private(tstart, tstop,index_l,index_z,index_m,index_m_z) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+#pragma omp for schedule (dynamic)
+for (index_l=0;
+     index_l<n_ell;
+     index_l++)
+{
+#pragma omp flush(abort)
+double * pvectsz;
+double * pvecback;
+class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+int index_pvectsz;
+for (index_pvectsz=0;
+     index_pvectsz<ptsz->tsz_size;
+     index_pvectsz++){
+       pvectsz[index_pvectsz] = 0.; // set everything to 0.
+     }
+index_m_z = 0;
+for (index_z=0;
+     index_z<n_z;
+     index_z++){
+for (index_m=0;
+     index_m<n_m;
+     index_m++){
+
+
+
+  double z = exp(ptsz->array_pressure_profile_ln_1pz[index_z])-1.;
+  double lnM = ptsz->array_pressure_profile_ln_m[index_m];
+  double ell = exp(ptsz->array_pressure_profile_ln_l[index_l]);
+
+
+  double tau;
+  int first_index_back = 0;
+
+
+  class_call_parallel(background_tau_of_z(pba,z,&tau),
+             pba->error_message,
+             pba->error_message);
+
+  class_call_parallel(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             pba->error_message,
+             pba->error_message);
+
+
+  // fill relevant entries
+  pvectsz[ptsz->index_z] = z;
+
+  pvectsz[ptsz->index_multipole_for_pressure_profile] = ell;
+  pvectsz[ptsz->index_md] = 0; // avoid the if condition in rho_nfw for the pk mode computation
+
+  pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                *pow(_Mpc_over_m_,1)
+                                *pow(_c_,2)
+                                *pvecback[pba->index_bg_rho_crit]
+                                /pow(pba->h,2);
+  pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+  double omega = pvecback[pba->index_bg_Omega_m];
+  pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+
+
+  double result;
+  pvectsz[ptsz->index_m200c] = exp(lnM);
+  class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
+                                   200.*(pvectsz[ptsz->index_Rho_crit]),
+                                   pvectsz[ptsz->index_Delta_c],
+                                   pvectsz[ptsz->index_Rho_crit],
+                                   z,
+                                   &pvectsz[ptsz->index_mVIR],
+                                   ptsz),
+                  ptsz->error_message,
+                  ptsz->error_message);
+ //
+ //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
+  pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+  pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+  pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
+  // pvectsz[ptsz->index_characteristic_multipole_for_profile] = pvectsz[ptsz->index_l200c];
+ //  evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz);
+  pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c];///pvectsz[ptsz->index_c200c];
+ double result_int;
+ class_call_parallel(two_dim_ft_pressure_profile(ptsz,pba,pvectsz,&result_int),
+                                    ptsz->error_message,
+                                    ptsz->error_message);
+ result = result_int;
+
+
+
+ // double tau_normalisation = 1.;//pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
+ // tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_r200c],3);//*pvectsz[ptsz->index_Rho_crit];
+ // result *= tau_normalisation;
+
+
+  // ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = log(result);
+  ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[index_l][index_m_z] = result;
+  // printf("ell = %.3e z = %.3e m = %.3e lnrho = %.3e\n",ell,z,exp(lnM),log(result));
+  index_m_z += 1;
+     }
+
+
+     }
+
+free(pvectsz);
+free(pvecback);
+
+}
+
+#ifdef _OPENMP
+  tstop = omp_get_wtime();
+  if (ptsz->sz_verbose > 0)
+    printf("In %s: time spent in tab profile parallel region (loop over ell's) = %e s for thread %d\n",
+           __func__,tstop-tstart,omp_get_thread_num());
+#endif
+
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+
+                                      }
+
+
+
 // Tabulate 2D Fourier transform of density profile on a [ln_ell_over_ell_char] grid
 int tabulate_pressure_profile_gNFW(struct background * pba,
                                    struct tszspectrum * ptsz){
@@ -4127,7 +4418,7 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
   else
   w0 =  (pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500];
 
-  wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,10);
+  wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,50);
 
   struct Parameters_for_integrand_patterson_pp V;
   V.ptsz = ptsz;
