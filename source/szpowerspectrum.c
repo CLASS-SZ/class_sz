@@ -86,6 +86,23 @@ int szpowerspectrum_init(
       + ptsz->has_dndlnM
       + ptsz->has_vrms2
       + ptsz->has_sz_counts;
+  int electron_pressure_comps = ptsz->has_sz_ps
+      + ptsz->has_mean_y
+      + ptsz->has_sz_2halo
+      + ptsz->has_sz_trispec
+      + ptsz->has_sz_m_y_y_1h
+      + ptsz->has_sz_m_y_y_2h
+      + ptsz->has_sz_te_y_y
+      + ptsz->has_tSZ_tSZ_tSZ_1halo
+      + ptsz->has_tSZ_gal_1h
+      + ptsz->has_tSZ_gal_2h
+      + ptsz->has_tSZ_lensmag_1h
+      + ptsz->has_tSZ_lensmag_2h
+      + ptsz->has_tSZ_cib_1h
+      + ptsz->has_tSZ_cib_2h
+      + ptsz->has_tSZ_lens_1h
+      + ptsz->has_tSZ_lens_2h
+      + ptsz->has_isw_tsz;
 
 
    // Skip the module if no SZ/halo-model computations are requested:
@@ -318,10 +335,12 @@ tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
 
  // tabulate pressure profile for gnFW
   // printf("tab \n");
+if (electron_pressure_comps != _FALSE_){
  if (ptsz->pressure_profile == 3)
  tabulate_pressure_profile_gNFW(pba,ptsz);
  else if (ptsz->pressure_profile == 4)
  tabulate_pressure_profile_B12(pba,ptsz);
+}
 //  printf("tab done\n");
 // exit(0);
 
@@ -344,6 +363,7 @@ tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
 
    double * Pvecback;
    double * Pvectsz;
+   double * b_l1_l2_l_1d;
    int index_integrand;
 
    int abort;
@@ -370,7 +390,7 @@ int number_of_threads= 1;
 //number_of_threads= 8;
 #pragma omp parallel \
    shared(abort,pba,ptsz,ppm,pnl)\
-   private(tstart,tstop,Pvectsz,Pvecback,index_integrand)\
+   private(tstart,tstop,Pvectsz,Pvecback,index_integrand,b_l1_l2_l_1d)\
    num_threads(number_of_threads)
 	 {
 
@@ -384,6 +404,10 @@ int number_of_threads= 1;
 
 	   class_alloc_parallel(Pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
 
+
+     class_alloc_parallel(b_l1_l2_l_1d,
+                           sizeof(double *)*ptsz->N_kSZ2_gal_theta_grid*ptsz->N_kSZ2_gal_multipole_grid,
+                           ptsz->error_message);
 
 
 
@@ -416,6 +440,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 #endif
    free(Pvecback);
    free(Pvectsz);
+   // free(b_l1_l2_l_1d);
 	} //end of parallel region
 
    if (abort == _TRUE_) return _FAILURE_;
@@ -494,6 +519,26 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_isw_auto
       + ptsz->has_dndlnM
       + ptsz->has_sz_counts;
+
+  int electron_pressure_comps = ptsz->has_sz_ps
+      + ptsz->has_mean_y
+      + ptsz->has_sz_2halo
+      + ptsz->has_sz_trispec
+      + ptsz->has_sz_m_y_y_1h
+      + ptsz->has_sz_m_y_y_2h
+      + ptsz->has_sz_te_y_y
+      + ptsz->has_tSZ_tSZ_tSZ_1halo
+      + ptsz->has_tSZ_gal_1h
+      + ptsz->has_tSZ_gal_2h
+      + ptsz->has_tSZ_lensmag_1h
+      + ptsz->has_tSZ_lensmag_2h
+      + ptsz->has_tSZ_cib_1h
+      + ptsz->has_tSZ_cib_2h
+      + ptsz->has_tSZ_lens_1h
+      + ptsz->has_tSZ_lens_2h
+      + ptsz->has_isw_tsz;
+
+
   if (all_comps == _FALSE_){
     return  _SUCCESS_;
   }
@@ -684,6 +729,7 @@ free(ptsz->array_L_sat_at_z_and_M_at_nu);
 
 
 // printf("freeing pp\n");
+if (electron_pressure_comps != _FALSE_){
 if (ptsz->pressure_profile == 3){
    free(ptsz->array_profile_ln_l_over_ls);
    free(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls);
@@ -703,6 +749,7 @@ for (index_l=0;
   free(ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[index_l]);
 }
 
+}
 }
 
 
@@ -1497,64 +1544,40 @@ else if (ptsz->MF==5 || ptsz->MF==7){
     || _kSZ_kSZ_gal_3h_
     || _kSZ_kSZ_gal_hf_){
      // loop over l1,l2 for each ell
-     int index_ell_1;
-     int index_theta_1;
-     int index_ell_2;
+     int index_ell_1 = 0;
+     int index_theta_1 = 0;
+     int index_ell_2 = 0;
      int index_ell_3 = (int) Pvectsz[ptsz->index_multipole]; // ell_3 of the bispectrum is always ell of the power spectrum
 
 
-    double **b_l1_l2_l;
-    // class_alloc(b_l1_l2_l,
-    //             ptsz->N_kSZ2_gal_multipole_grid*sizeof(double *),
-    //             ptsz->error_message);
-    class_alloc(b_l1_l2_l,
-                ptsz->N_kSZ2_gal_theta_grid*sizeof(double *),
+    // put bispectrum in 1d format for 2d interpolation
+    int index_l1_l2 = 0;
+    double * b_l1_l2_l_1d;
+    // double * ln_ell;
+    class_alloc(b_l1_l2_l_1d,
+                sizeof(double *)*ptsz->N_kSZ2_gal_theta_grid*ptsz->N_kSZ2_gal_multipole_grid,
                 ptsz->error_message);
-
-                // for (index_ell_1=0;
-                //      index_ell_1<ptsz->N_kSZ2_gal_multipole_grid;
-                //      index_ell_1++)
-                // {
-                //   class_alloc(b_l1_l2_l[index_ell_1],
-                //               ptsz->N_kSZ2_gal_multipole_grid*sizeof(double),
-                //               ptsz->error_message);
-                // }
+    // class_alloc(ln_ell,
+    //             sizeof(double *)*ptsz->N_kSZ2_gal_multipole_grid,
+    //             ptsz->error_message);
 
 
-                for (index_theta_1=0;
-                     index_theta_1<ptsz->N_kSZ2_gal_theta_grid;
-                     index_theta_1++)
-                {
-                  class_alloc(b_l1_l2_l[index_theta_1],
-                              ptsz->N_kSZ2_gal_multipole_grid*sizeof(double),
-                              ptsz->error_message);
-                }
-
-
-
-
-     // for (index_ell_1=0;index_ell_1<ptsz->N_kSZ2_gal_multipole_grid;index_ell_1++){
-     //   for (index_ell_2=0;index_ell_2<=index_ell_1;index_ell_2++){
-
-     for (index_theta_1=0;index_theta_1<ptsz->N_kSZ2_gal_theta_grid;index_theta_1++){
-       for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
-
-         if (ptsz->sz_verbose > 0){
-
+ for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
+//  // // ln_ell[index_ell_2] = log(ptsz->ell_kSZ2_gal_multipole_grid[index_ell_2]);
+      for (index_theta_1=0;index_theta_1<ptsz->N_kSZ2_gal_theta_grid;index_theta_1++){
+//
+        if (ptsz->sz_verbose > 100){
          if (_kSZ_kSZ_gal_1h_)
-          printf("computing b_kSZ_kSZ_g_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+          printf("computing b_kSZ_kSZ_g_1h @ l3_id = %d and (th1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
          if (_kSZ_kSZ_gal_2h_)
-          printf("computing b_kSZ_kSZ_g_2h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+          printf("computing b_kSZ_kSZ_g_2h @ l3_id = %d and (th1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
          if (_kSZ_kSZ_gal_3h_)
-          printf("computing b_kSZ_kSZ_g_3h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+          printf("computing b_kSZ_kSZ_g_3h @ l3_id = %d and (th1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
          if (_kSZ_kSZ_gal_hf_)
-          printf("computing b_kSZ_kSZ_g_hf @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+          printf("computing b_kSZ_kSZ_g_hf @ l3_id = %d and (th1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
          if (_kSZ_kSZ_lensmag_1halo_)
-          printf("computing b_kSZ_kSZ_mu_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
-
-        }
-        // printf("negative value0\n");
-          //Pvectsz[ptsz->index_multipole_1] = index_ell_1;
+          printf("computing b_kSZ_kSZ_mu_1h @ l3_id = %d and (th1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+          }
           Pvectsz[ptsz->index_multipole_1] = index_theta_1;
           Pvectsz[ptsz->index_multipole_2] = index_ell_2;
           Pvectsz[ptsz->index_multipole_3] = index_ell_3;
@@ -1567,75 +1590,10 @@ else if (ptsz->MF==5 || ptsz->MF==7){
                                              Pvectsz),
                           ptsz->error_message,
                           ptsz->error_message);
-          // Pvectsz[ptsz->index_integral] = 0.;
-
-
-       b_l1_l2_l[index_theta_1][index_ell_2] = Pvectsz[ptsz->index_integral];
-
-       // if (index_ell_1 != index_ell_2)
-       // b_l1_l2_l[index_ell_2][index_ell_1] = Pvectsz[ptsz->index_integral];
-
-       // b_l1_l2_l[index_ell_1][index_ell_2] = Pvectsz[ptsz->index_integral];
-       // if (index_ell_1 != index_ell_2)
-       // b_l1_l2_l[index_ell_2][index_ell_1] = Pvectsz[ptsz->index_integral];
-       // if (Pvectsz[ptsz->index_integral] <= 0.){
-         // printf("negative value\n");
-       //   exit(0);
-       // }
-
-       }
-     }
-
-
-
-   // // put bispectrum in 1d format for 2d interpolation
-   // double * b_l1_l2_l_1d;
-   // double * ln_ell;
-   // class_alloc(b_l1_l2_l_1d,
-   //             sizeof(double *)*ptsz->N_kSZ2_gal_multipole_grid*ptsz->N_kSZ2_gal_multipole_grid,
-   //             ptsz->error_message);
-   // class_alloc(ln_ell,
-   //             sizeof(double *)*ptsz->N_kSZ2_gal_multipole_grid,
-   //             ptsz->error_message);
-   //
-   // int index_l1_l2 = 0;
-   // for (index_ell_1=0;index_ell_1<ptsz->N_kSZ2_gal_multipole_grid;index_ell_1++){
-   //   ln_ell[index_ell_1] = log(ptsz->ell_kSZ2_gal_multipole_grid[index_ell_1]);
-   //   for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
-   //   // b_l1_l2_l_1d[index_l1_l2] = log(b_l1_l2_l[index_ell_1][index_ell_2]);
-   //   b_l1_l2_l_1d[index_l1_l2] = b_l1_l2_l[index_ell_1][index_ell_2];
-   //   index_l1_l2 += 1;
-   //   }
-   // }
-
-
-
-   // put bispectrum in 1d format for 2d interpolation
-   double * b_l1_l2_l_1d;
-   double * ln_ell;
-   class_alloc(b_l1_l2_l_1d,
-               sizeof(double *)*ptsz->N_kSZ2_gal_theta_grid*ptsz->N_kSZ2_gal_multipole_grid,
-               ptsz->error_message);
-   class_alloc(ln_ell,
-               sizeof(double *)*ptsz->N_kSZ2_gal_multipole_grid,
-               ptsz->error_message);
-   int index_l1_l2 = 0;
-   for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
-            //if (index_theta_1==0){
-       ln_ell[index_ell_2] = log(ptsz->ell_kSZ2_gal_multipole_grid[index_ell_2]);
-     //}
-   for (index_theta_1=0;index_theta_1<ptsz->N_kSZ2_gal_theta_grid;index_theta_1++){
-
-
-
-
-     // b_l1_l2_l_1d[index_l1_l2] = log(b_l1_l2_l[index_ell_1][index_ell_2]);
-     b_l1_l2_l_1d[index_l1_l2] = b_l1_l2_l[index_theta_1][index_ell_2];
-     // printf("index_theta_1 = %.5e index_ell_2 = %d b = %d\n",
-     // b_l1_l2_l[index_theta_1][index_ell_2],
-     // index_theta_1,
-     // index_ell_2);
-
+//
+       b_l1_l2_l_1d[index_l1_l2] = Pvectsz[ptsz->index_integral];
+//
+//
 double db = b_l1_l2_l_1d[index_l1_l2];
 if (isnan(db) || isinf(db)){
   // db = 0.;
@@ -1649,16 +1607,17 @@ printf("\n\n");
 exit(0);
 }
 
-index_l1_l2 += 1;
+       index_l1_l2 += 1;
+//
+
+// printf("ok %d %d\n",index_ell_2,index_theta_1);
+       }
 
 
      }
-   }
-
-   free(b_l1_l2_l);
-
    // now we integrate the bispectrum to compute power spectrum
    double cl_kSZ2_gal = 0.;
+   double r = 0.; //result of the integral
 
    struct Parameters_for_integrand_kSZ2_X V;
    V.pnl= pnl;
@@ -1667,12 +1626,12 @@ index_l1_l2 += 1;
    V.pba = pba;
    V.Pvecback = Pvecback;
    V.Pvectsz = Pvectsz;
-   V.ln_ell = ln_ell;
+   V.ln_ell = ptsz->ell_kSZ2_gal_multipole_grid;//ln_ell;
    V.index_ell_3 = index_ell_3;
    V.b_l1_l2_l_1d = b_l1_l2_l_1d;
    void * params;
 
-   double r; //result of the integral
+
    double epsrel= 1.e-6;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
    double epsabs= 1.e-50;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
    int show_neval = 0;//ptsz->patterson_show_neval;
@@ -1687,48 +1646,150 @@ index_l1_l2 += 1;
                                             params,show_neval);
 
 
-
-// // ROMBERG
-//
-//     gsl_integration_romberg_workspace * w
-//     = gsl_integration_romberg_alloc (10);
-//
-//     double result_gsl, error;
-//
-//
-//     // struct Parameters_for_integrand_redshift V;
-//     // V.theta = theta;
-//     // params = &V;
-//
-//     // void * params = &V;
-//
-//     gsl_function F;
-//     F.function = &integrand_kSZ2_X_at_theta;
-//     F.params = params;
-//
-//     size_t neval;
-//     gsl_integration_romberg (&F, log(ell_min), log(ell_max), epsabs, epsrel, &result_gsl,&neval,
-//                           w);
-//
-//     gsl_integration_romberg_free (w);
-//
-//     r = result_gsl;
-// // END ROMBERG
-
- cl_kSZ2_gal = r;
-
-
-
+    cl_kSZ2_gal = r;
 
    free(b_l1_l2_l_1d);
-   free(ln_ell);
+   // free(ln_ell);
 
 
 
-
-
+//
+//     double **b_l1_l2_l;
+//
+//     class_alloc(b_l1_l2_l,
+//                 ptsz->N_kSZ2_gal_theta_grid*sizeof(double *),
+//                 ptsz->error_message);
+//
+//
+//                 for (index_theta_1=0;
+//                      index_theta_1<ptsz->N_kSZ2_gal_theta_grid;
+//                      index_theta_1++)
+//                 {
+//                   class_alloc(b_l1_l2_l[index_theta_1],
+//                               ptsz->N_kSZ2_gal_multipole_grid*sizeof(double),
+//                               ptsz->error_message);
+//                 }
+//
+//
+//
+//      for (index_theta_1=0;index_theta_1<ptsz->N_kSZ2_gal_theta_grid;index_theta_1++){
+//        for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
+//
+//          if (_kSZ_kSZ_gal_1h_)
+//           printf("computing b_kSZ_kSZ_g_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+//          if (_kSZ_kSZ_gal_2h_)
+//           printf("computing b_kSZ_kSZ_g_2h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+//          if (_kSZ_kSZ_gal_3h_)
+//           printf("computing b_kSZ_kSZ_g_3h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+//          if (_kSZ_kSZ_gal_hf_)
+//           printf("computing b_kSZ_kSZ_g_hf @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+//          if (_kSZ_kSZ_lensmag_1halo_)
+//           printf("computing b_kSZ_kSZ_mu_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+//
+//           Pvectsz[ptsz->index_multipole_1] = index_theta_1;
+//           Pvectsz[ptsz->index_multipole_2] = index_ell_2;
+//           Pvectsz[ptsz->index_multipole_3] = index_ell_3;
+//
+//           class_call(integrate_over_redshift(pba,
+//                                              pnl,
+//                                              ppm,
+//                                              ptsz,
+//                                              Pvecback,
+//                                              Pvectsz),
+//                           ptsz->error_message,
+//                           ptsz->error_message);
+//
+//        b_l1_l2_l[index_theta_1][index_ell_2] = Pvectsz[ptsz->index_integral];
+//
+//        }
+//      }
+//
+//
+//
+//    // put bispectrum in 1d format for 2d interpolation
+//    double * b_l1_l2_l_1d;
+//    double * ln_ell;
+//    class_alloc(b_l1_l2_l_1d,
+//                sizeof(double *)*ptsz->N_kSZ2_gal_theta_grid*ptsz->N_kSZ2_gal_multipole_grid,
+//                ptsz->error_message);
+//    class_alloc(ln_ell,
+//                sizeof(double *)*ptsz->N_kSZ2_gal_multipole_grid,
+//                ptsz->error_message);
+//    int index_l1_l2 = 0;
+//    for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
+//             //if (index_theta_1==0){
+//        ln_ell[index_ell_2] = log(ptsz->ell_kSZ2_gal_multipole_grid[index_ell_2]);
+//      //}
+//    for (index_theta_1=0;index_theta_1<ptsz->N_kSZ2_gal_theta_grid;index_theta_1++){
+//
+//      b_l1_l2_l_1d[index_l1_l2] = b_l1_l2_l[index_theta_1][index_ell_2];
+//
+//
+// double db = b_l1_l2_l_1d[index_l1_l2];
+// if (isnan(db) || isinf(db)){
+//   // db = 0.;
+// if (isnan(db))
+// printf("found nan in grid of b_l1_l2_l_1d\n");
+// if (isinf(db))
+// printf("found inf in grid of b_l1_l2_l_1d\n");
+// printf("id_theta = %d \t id_l2 = %d \n",index_theta_1,index_ell_2);
+//
+// printf("\n\n");
+// exit(0);
+// }
+//
+// index_l1_l2 += 1;
+//
+//
+//      }
+//    }
+//
+//
+//    for (index_theta_1=0;
+//         index_theta_1<ptsz->N_kSZ2_gal_theta_grid;
+//         index_theta_1++)
+//    {
+//      free(b_l1_l2_l[index_theta_1]);
+//    }
+//    free(b_l1_l2_l);
+//
+//    // now we integrate the bispectrum to compute power spectrum
+//    double cl_kSZ2_gal = 0.;
+//
+//    struct Parameters_for_integrand_kSZ2_X V;
+//    V.pnl= pnl;
+//    V.ppm= ppm;
+//    V.ptsz = ptsz;
+//    V.pba = pba;
+//    V.Pvecback = Pvecback;
+//    V.Pvectsz = Pvectsz;
+//    V.ln_ell = ln_ell;
+//    V.index_ell_3 = index_ell_3;
+//    V.b_l1_l2_l_1d = b_l1_l2_l_1d;
+//    void * params;
+//
+//    double r; //result of the integral
+//    double epsrel= 1.e-6;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
+//    double epsabs= 1.e-50;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
+//    int show_neval = 0;//ptsz->patterson_show_neval;
+//
+//     params = &V;
+//
+//     // integral is symmetric (triangular configurations):
+//     // int(0,2*PI) = 2*int(0,PI)
+//     r = 2.*Integrate_using_Patterson_adaptive(0., _PI_,
+//                                             epsrel, epsabs,
+//                                             integrand_kSZ2_X,
+//                                             params,show_neval);
+//
+//
+//     cl_kSZ2_gal = r;
+//
+//    free(b_l1_l2_l_1d);
+//    free(ln_ell);
 
    int index_l = index_ell_3;
+   // double cl_kSZ2_gal = 0.;
 
   if (_kSZ_kSZ_gal_1h_)
   ptsz->cl_kSZ_kSZ_gal_1h[index_l] = cl_kSZ2_gal;
@@ -2628,7 +2689,7 @@ double integrand_at_m_and_z(double logM,
    double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
    int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
    int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-   double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+   double l2 = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
    double l3 = ptsz->ell[index_l_3];
    double ell = l3;
    double ell_prime = l2;
@@ -2677,7 +2738,7 @@ double integrand_at_m_and_z(double logM,
    double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
    int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
    int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-   double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+   double l2 = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
    double l3 = ptsz->ell[index_l_3];
    double ell = l3;
    double ell_prime = l2;
@@ -2795,7 +2856,7 @@ double integrand_at_m_and_z(double logM,
    double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
    int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
    int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-   double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+   double l2 = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
    double l3 = ptsz->ell[index_l_3];
    double ell = l3;
    double ell_prime = l2;
@@ -2878,7 +2939,7 @@ double integrand_at_m_and_z(double logM,
    double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
    int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
    int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-   double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+   double l2 = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
    double l3 = ptsz->ell[index_l_3];
    double ell = l3;
    double ell_prime = l2;
@@ -8630,8 +8691,8 @@ int select_multipole_array(struct tszspectrum * ptsz)
   // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(5.*ptsz->ell_max_mock)
   //                                                  - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
 
-   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(1e4)
-                                                    - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
+   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = log(2.) + index_l*(log(1e4)
+                                                    - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.);
 
 
    // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = 2. + index_l*(1e4
@@ -10525,7 +10586,7 @@ struct Parameters_for_integrand_kSZ2_X *W = ((struct Parameters_for_integrand_kS
     V.theta = theta;
     params = &V;
 
-    double ell_min = V.ptsz->ell_kSZ2_gal_multipole_grid[0];
+    double ell_min = exp(V.ptsz->ell_kSZ2_gal_multipole_grid[0]);
     double ell_max = V.ptsz->l_unwise_filter[V.ptsz->unwise_filter_size-1];
 
     //printf("ell_min = %.3e \t ell_max = %.3e\n", ell_min,ell_max);

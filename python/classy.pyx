@@ -1490,6 +1490,23 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_kSZ_kSZ_g(self):
+        """
+        (class_sz) Return the 1-halo, 2-halo and 3-halo terms of kSZ x kSZ x g power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['3h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_kSZ_kSZ_gal_1h[index])
+            cl['2h'].append(self.tsz.cl_kSZ_kSZ_gal_2h[index])
+            cl['3h'].append(self.tsz.cl_kSZ_kSZ_gal_3h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+
     def cl_te_y_y(self):
         """
         (class_sz) Return Te x y x y power spectrum

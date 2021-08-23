@@ -3556,8 +3556,7 @@ ptsz->has_kSZ_kSZ_gal_1h = _TRUE_; //pretend we need the tau_profile
 //Parallelization of profile computation
 /* initialize error management flag */
 
-double * pvectsz;
-double * pvecback;
+
 int abort;
 double tstart, tstop;
 abort = _FALSE_;
@@ -3574,7 +3573,7 @@ int number_of_threads= 1;
 #pragma omp parallel \
 shared(abort,\
 ptsz,pba)\
-private(tstart, tstop,index_l,index_z,index_m,index_m_z,pvecback,pvectsz) \
+private(tstart, tstop,index_l,index_z,index_m,index_m_z) \
 num_threads(number_of_threads)
 {
 
@@ -3588,6 +3587,8 @@ for (index_l=0;
      index_l++)
 {
 #pragma omp flush(abort)
+double * pvectsz;
+double * pvecback;
 
 class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
 class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
@@ -3709,7 +3710,9 @@ for (index_m=0;
  // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
 
  double result_int;
- two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int,1);
+ class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int,1),
+                     ptsz->error_message,
+                     ptsz->error_message);
  // printf("%.4e\n",result_int);
  // printf("l_trunc = %.3e xout_trunc = %.3e r_trunc = %.5e l_int = %.3e xout_int = %.3e r_int = %.5e\n",
  // pvectsz[ptsz->index_multipole_for_truncated_nfw_profile],
@@ -3827,7 +3830,9 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
     // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200m];
    pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile]; // this is the multipole going into truncated nfw... TBD: needs to be renamed
    pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_1h; // make sure the mode is set up properly
-   evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz);
+   class_call_parallel(evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz),
+                       ptsz->error_message,
+                       ptsz->error_message);
    pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
    // set 1 for matter_type = tau
    double xout = ptsz->x_out_truncated_nfw_profile;
@@ -3838,7 +3843,9 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
    pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
    double characteristic_multipole = pvectsz[ptsz->index_ls];
    pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
-   two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int,1);
+   class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int,1),
+                       ptsz->error_message,
+                       ptsz->error_message);
    // printf("xout_trunc = %.3e r_trunc = %.5e xout_trunc = %.3e r_int = %.5e\n",
    // ptsz->x_out_truncated_nfw_profile,
    // result,
@@ -3865,8 +3872,8 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
 
      }
 
-
-
+     free(pvectsz);
+     free(pvecback);
 }
 
 #ifdef _OPENMP
@@ -3875,8 +3882,6 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
     printf("In %s: time spent in tab profile parallel region (loop over ell's) = %e s for thread %d\n",
            __func__,tstop-tstart,omp_get_thread_num());
 #endif
-free(pvectsz);
-free(pvecback);
 }
 if (abort == _TRUE_) return _FAILURE_;
 //end of parallel region
@@ -6782,7 +6787,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   // printf("index_l_1 = %d index_l_2 = %d index_l_3 = %d\n",index_theta_1,index_l_2,index_l_3);
 
 
-  double l2 = V->ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+  double l2 = exp(V->ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
   double l3 = V->ptsz->ell[index_l_3];
   double ell = l3;
   double ell_prime = l2;
@@ -7973,7 +7978,7 @@ double integrand_patterson_test(double logM, void *p){
   double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
   int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
   int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-  double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+  double l2 = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
   double l3 = ptsz->ell[index_l_3];
   double ell = l3;
   double ell_prime = l2;
@@ -8082,7 +8087,7 @@ double integrand_patterson_test(double logM, void *p){
   double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
   int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
   int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-  double l2 = ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+  double l2 = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
   double l3 = ptsz->ell[index_l_3];
   double ell = l3;
   double ell_prime = l2;
