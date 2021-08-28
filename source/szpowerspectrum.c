@@ -8691,8 +8691,8 @@ int select_multipole_array(struct tszspectrum * ptsz)
   // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = exp(log(2.) + index_l*(log(5.*ptsz->ell_max_mock)
   //                                                  - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.));
 
-   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = log(2.) + index_l*(log(1e4)
-                                                    - log(2.))/(ptsz->N_kSZ2_gal_multipole_grid-1.);
+   ptsz->ell_kSZ2_gal_multipole_grid[index_l] = log(ptsz->ell_min_kSZ2_gal_multipole_grid) + index_l*(log(ptsz->ell_max_kSZ2_gal_multipole_grid)
+                                                    - log(ptsz->ell_min_kSZ2_gal_multipole_grid))/(ptsz->N_kSZ2_gal_multipole_grid-1.);
 
 
    // ptsz->ell_kSZ2_gal_multipole_grid[index_l] = 2. + index_l*(1e4

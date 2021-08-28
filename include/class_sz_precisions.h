@@ -33,6 +33,9 @@ class_sz_ptsz_parameter(n_m_pressure_profile,int,50)
 class_sz_ptsz_parameter(n_z_pressure_profile,int,50)
 
 
+class_sz_ptsz_parameter(ell_min_kSZ2_gal_multipole_grid,double,2)
+class_sz_ptsz_parameter(ell_max_kSZ2_gal_multipole_grid,double,1e4)
+
 
 class_sz_ptsz_parameter(n_z_hmf_counter_terms,int,200)
 class_sz_ptsz_parameter(array_profile_ln_PgNFW_at_lnl_over_ls_size,int,200)
