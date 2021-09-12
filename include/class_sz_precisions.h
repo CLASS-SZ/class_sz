@@ -17,11 +17,11 @@ class_sz_string_parameter(ksz_filter_file,"/sz_auxiliary_files/UNWISE_galaxy_dis
 
 
 class_sz_string_parameter(Planck_thetas_file,"/sz_auxiliary_files/SZ_thetas.txt","Planck_thetas_file")
-class_sz_string_parameter(SO_thetas_file,"/sz_auxiliary_files/so_3freqs_020621_thetas.txt","SO_thetas_file")
+class_sz_string_parameter(SO_thetas_file,"/sz_auxiliary_files/so_3freqs_120921_thetas.txt","SO_thetas_file")
 class_sz_string_parameter(Planck_skyfracs_file,"/sz_auxiliary_files/SZ_skyfracs.txt","Planck_skyfracs_file")
-class_sz_string_parameter(SO_skyfracs_file,"/sz_auxiliary_files/so_3freqs_020621_skyfracs.txt","SO_skyfracs_file")
+class_sz_string_parameter(SO_skyfracs_file,"/sz_auxiliary_files/so_3freqs_120921_skyfracs.txt","SO_skyfracs_file")
 class_sz_string_parameter(Planck_ylims_file,"/sz_auxiliary_files/SZ_ylims.txt","Planck_ylims_file")
-class_sz_string_parameter(SO_ylims_file,"/sz_auxiliary_files/so_3freqs_020621_ylims.txt","SO_ylims_file")
+class_sz_string_parameter(SO_ylims_file,"/sz_auxiliary_files/so_3freqs_120921_ylims.txt","SO_ylims_file")
 
 
 class_sz_ptsz_parameter(n_ell_density_profile,int,100)

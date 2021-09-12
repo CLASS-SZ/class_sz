@@ -1605,7 +1605,13 @@ double get_rho_crit_at_z(double z_asked,
                          struct background * pba,
                          struct tszspectrum * ptsz);
 
-double get_c200m_at_m_and_z_D08(double M, double z);
+double get_c200m_at_m_and_z_D08(double M,
+                                double z);
+
+double get_c200m_at_m_and_z_B13(double M,
+                                double z,
+                                struct background * pba);
+
 
 double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
                                          double m_asked,

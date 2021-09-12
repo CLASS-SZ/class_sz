@@ -1499,10 +1499,12 @@ cdef class Class:
         cl['1h'] = []
         cl['2h'] = []
         cl['3h'] = []
+        cl['hf'] = []
         for index in range(self.tsz.nlSZ):
             cl['1h'].append(self.tsz.cl_kSZ_kSZ_gal_1h[index])
             cl['2h'].append(self.tsz.cl_kSZ_kSZ_gal_2h[index])
             cl['3h'].append(self.tsz.cl_kSZ_kSZ_gal_3h[index])
+            cl['hf'].append(self.tsz.cl_kSZ_kSZ_gal_hf[index])
             cl['ell'].append(self.tsz.ell[index])
         return cl
 

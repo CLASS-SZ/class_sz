@@ -1646,6 +1646,23 @@ exit(0);
                                             params,show_neval);
 
 
+
+// //ROMBERG
+// gsl_function F;
+// double result_gsl, error;
+// F.function = &integrand_kSZ2_X;
+// F.params = params;
+// int n_subintervals_gsl = 100;
+// gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
+//
+// size_t neval;
+// double xin = 0.;
+// double xout = _PI_;
+// gsl_integration_romberg(&F,xin,xout,epsabs,epsrel,&result_gsl,&neval,w);
+// gsl_integration_romberg_free(w);
+// // *result = result_gsl;
+// r = 2.*result_gsl;
+
     cl_kSZ2_gal = r;
 
    free(b_l1_l2_l_1d);
@@ -2715,19 +2732,24 @@ double integrand_at_m_and_z(double logM,
                                      *tau_profile_at_ell_1
                                      *tau_profile_at_ell_2
                                      *galaxy_profile_at_ell_3;
-  if (tau_profile_at_ell_1>1e100){
-  printf("tau too big dn = %.9e t = %.9e t = %.9e g = %.9e z = %.3e m200c = %.3e m200m = %.3e\n",
-  pvectsz[ptsz->index_hmf],
-  tau_profile_at_ell_1,
-  tau_profile_at_ell_2,
-  galaxy_profile_at_ell_3,
-  pvectsz[ptsz->index_z],
-  pvectsz[ptsz->index_m200c],
-  pvectsz[ptsz->index_m200m]
-);
+  // if (tau_profile_at_ell_1>1e100){
+//   printf("tau too big dn = %.9e t = %.9e t = %.9e g = %.9e z = %.3e m200c = %.3e m200m = %.3e\n",
+//   pvectsz[ptsz->index_hmf],
+//   tau_profile_at_ell_1,
+//   tau_profile_at_ell_2,
+//   galaxy_profile_at_ell_3,
+//   pvectsz[ptsz->index_z],
+//   pvectsz[ptsz->index_m200c],
+//   pvectsz[ptsz->index_m200m]
+// );
+// printf("l1 2 3 = %.3e  %.3e %.3e\n",l1,l2,l3);
+// printf("\n");
+// if (galaxy_profile_at_ell_3 == 0.){
+//   exit(0);
+// }
   // pvectsz[ptsz->index_integrand] = 0.;//exit(0);
-  exit(0);
-}
+//   exit(0);
+// }
 
 
   }
@@ -5514,7 +5536,7 @@ int evaluate_HMF(double logM,
 
     pvectsz[ptsz->index_mVIR] = exp(logM);
     pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
-    pvectsz[ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
+    pvectsz[ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz,pba);
 
     if (pvectsz[ptsz->index_has_500c] == 1){
   class_call(mVIR_to_mDEL(pvectsz[ptsz->index_mVIR],
@@ -5619,13 +5641,14 @@ int evaluate_HMF(double logM,
                              pvectsz[ptsz->index_Rho_crit],
                              z,
                              &pvectsz[ptsz->index_mVIR],
-                             ptsz),
+                             ptsz,
+                             pba),
                     ptsz->error_message,
                     ptsz->error_message);
     // printf("mvir = %.3e\n",pvectsz[ptsz->index_mVIR]);
 
     pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
-    pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
+    pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz,pba);
 
     }
 
@@ -5646,7 +5669,8 @@ int evaluate_HMF(double logM,
                            rhoc,
                            z,
                            &mdel_prime,
-                           ptsz),
+                           ptsz,
+                           pba),
                     ptsz->error_message,
                     ptsz->error_message);
     pvectsz[ptsz->index_m200c] = mdel_prime;
@@ -5674,7 +5698,8 @@ int evaluate_HMF(double logM,
                            rhoc,
                            z,
                            &mdel_prime,
-                           ptsz),
+                           ptsz,
+                           pba),
                     ptsz->error_message,
                     ptsz->error_message);
     pvectsz[ptsz->index_m200m] = mdel_prime;
@@ -5709,7 +5734,8 @@ int evaluate_HMF(double logM,
                              pvectsz[ptsz->index_Rho_crit],
                              z,
                              &pvectsz[ptsz->index_mVIR],
-                             ptsz),
+                             ptsz,
+                             pba),
                     ptsz->error_message,
                     ptsz->error_message);
 
@@ -5717,7 +5743,7 @@ int evaluate_HMF(double logM,
                                                       pvectsz[ptsz->index_Delta_c],
                                                       pvectsz[ptsz->index_Rho_crit],
                                                       ptsz);
-    pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
+    pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz,pba);
 
     }
 
@@ -6995,7 +7021,7 @@ int write_redshift_dependent_quantities(struct background * pba,
 
   double mvir = pow(10.,14); //m200m for M=10^{13.5} Msun/h
   double rvir = evaluate_rvir_of_mvir(mvir,delc,rhoc,ptsz);
-  double cvir = evaluate_cvir_of_mvir(mvir,z,ptsz);// 5.72*pow(mvir/1e14,-0.081)/pow(1.+z_asked,0.71);
+  double cvir = evaluate_cvir_of_mvir(mvir,z,ptsz,pba);// 5.72*pow(mvir/1e14,-0.081)/pow(1.+z_asked,0.71);
   double mdel;
   ///double rs = rvir/cvir;
 
@@ -7025,7 +7051,8 @@ int write_redshift_dependent_quantities(struct background * pba,
                          rhoc,
                          z,
                          &mvir_recovered,
-                         ptsz),
+                         ptsz,
+                         pba),
                   ptsz->error_message,
                   ptsz->error_message);
 
@@ -7038,7 +7065,8 @@ int write_redshift_dependent_quantities(struct background * pba,
                          rhoc,
                          z,
                          &mdel_prime,
-                         ptsz),
+                         ptsz,
+                         pba),
                   ptsz->error_message,
                   ptsz->error_message);
   mvir_over_mvir_recovered = mvir/mvir_recovered;
@@ -9498,8 +9526,8 @@ double z = pvectsz[ptsz->index_z];
   //! normalization becomes 5.72 instead of 7.85
   //! N.B.: this is the same as Eq. (D17) of Komatsu et al., arXiv:1001.4538
 
-  cvir1=evaluate_cvir_of_mvir(mvir1,z,ptsz);//5.72*pow(mvir1/1e14,-0.081)/pow(1.+z,0.71);
-  cvir2=evaluate_cvir_of_mvir(mvir2,z,ptsz);//5.72*pow(mvir2/1e14,-0.081)/pow(1.+z,0.71);
+  cvir1=evaluate_cvir_of_mvir(mvir1,z,ptsz,pba);//5.72*pow(mvir1/1e14,-0.081)/pow(1.+z,0.71);
+  cvir2=evaluate_cvir_of_mvir(mvir2,z,ptsz,pba);//5.72*pow(mvir2/1e14,-0.081)/pow(1.+z,0.71);
   rs1=rvir1/cvir1; //! NFW scale radius, h^-1 Mpc
   rs2=rvir2/cvir2; //! NFW scale radius, h^-1 Mpc
 
@@ -10094,8 +10122,9 @@ else if(_gal_gal_1h_
   //ng_bar = 1.; // BB: debug
   //ns = nc; // BB: debug
   ug_at_ell  =(1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us); ///# commented for debug
+  // ug_at_ell  = (1./ng_bar)*(nc+ns*us);
    //ug_at_ell  =(1./ng_bar)*(us*ns); // BB debug
-  // printf("ug^2=%.3e us = %.3e ns = %.3e\n",ug_at_ell*ug_at_ell, us, ns); // BB debug
+  // printf("ug^2=%.3e us = %.3e ns = %.3e ng = %.3e\n",ug_at_ell*ug_at_ell, us, ns,ng_bar); // BB debug
 
   // printf("\n");
   // printf("ng_bar=%.3e\n",ng_bar); // BB debug
@@ -10233,13 +10262,48 @@ double denominator = m_nfw(c_delta); //normalization
 double numerator = cos(q)*(gsl_sf_Ci((1.+xout*c_delta)*q)-gsl_sf_Ci(q))
                    +sin(q)*(gsl_sf_Si((1.+xout*c_delta)*q)-gsl_sf_Si(q))
                    -sin(xout*c_delta*q)/((1.+xout*c_delta)*q);
+                   // printf("%.3e %.3e\n",numerator, denominator);
+
 
 
 return numerator/denominator;
 //return 1.; // BB debug
 }
 
-double get_c200m_at_m_and_z_D08(double M, double z){
+double get_c200m_at_m_and_z_B13(double M,
+                                double z,
+                                struct background * pba){
+  double * pvecback;
+  double tau;
+  int first_index_back = 0;
+  class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+  class_call(background_tau_of_z(pba,z,&tau),
+             pba->error_message,
+             pba->error_message);
+
+  class_call(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             pba->error_message,
+             pba->error_message);
+
+double D = pvecback[pba->index_bg_D];
+double nu = 1./D*(1.12*pow(M/5e13,0.3)+0.53);
+// double c200m  = pow(D,0.9)*7.7*pow(nu,-0.29); // vir
+double c200m  = pow(D,1.15)*9.*pow(nu,-0.29); // 200m
+free(pvecback);
+return c200m;
+}
+
+
+double get_c200m_at_m_and_z_D08(double M,
+                                double z){
+// if (ptsz->concentration_parameter==0){
   // double M = pvectsz[ptsz->index_m200m];// mass in  Msun/h
   double A = 10.14;
   double B = -0.081;
@@ -10265,7 +10329,12 @@ double M = pvectsz[ptsz->index_m200m];// mass in  Msun/h
 double z = pvectsz[ptsz->index_z];
 // double c200m =A*pow(M/M_pivot,B)*pow(1.+z,C);
 // printf("c200m D08 = %.3e\n",c200m);
+if (ptsz->concentration_parameter==0){
 pvectsz[ptsz->index_c200m] = get_c200m_at_m_and_z_D08(M,z);
+}
+else if (ptsz->concentration_parameter==6){
+pvectsz[ptsz->index_c200m] = get_c200m_at_m_and_z_B13(M,z,pba);
+}
 }
 
 
@@ -10445,7 +10514,7 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
      int bispec_cd;
      bispec_cd = 1.;//bispectrum_condition(ell_1,ell_2,ell_3);
 //
-     if (bispec_cd == 1){
+     // if (bispec_cd == 1){
 //        //
 //        // double ln_ell1 = log(ell_1);
 //        // double ln_ell2 = log(ell_2);
@@ -10543,8 +10612,17 @@ exit(0);
        //integrand_cl_kSZ2_X_at_theta = fl_minus_l_prime*fl_prime*ell_prime*db/(2.*_PI_)/(2.*_PI_);
 
 
-     }
-      //printf("ell = %.3e ell_prime = %.3e theta = %.3e \t integrand = %.3e\n",ell,ell_prime,V->theta, integrand_cl_kSZ2_X_at_theta);
+     // }
+    //  if (ell>5100.){
+    //   printf("ell = %.3e l-l' = %.3e ell_prime = %.3e theta = %.3e \t integrand = %.3e fl = %.3e fl' = %.3e\n",
+    //   ell,
+    //   abs_ell_minus_ell_prime,
+    //   ell_prime,
+    //   V->theta,
+    //   integrand_cl_kSZ2_X_at_theta,
+    //   fl_minus_l_prime,
+    //   fl_prime
+    // );}
        return integrand_cl_kSZ2_X_at_theta;
 
 }
@@ -10587,9 +10665,10 @@ struct Parameters_for_integrand_kSZ2_X *W = ((struct Parameters_for_integrand_kS
     params = &V;
 
     double ell_min = exp(V.ptsz->ell_kSZ2_gal_multipole_grid[0]);
-    double ell_max = V.ptsz->l_unwise_filter[V.ptsz->unwise_filter_size-1];
+    // double ell_min = V.ptsz->l_unwise_filter[0];
+    double ell_max = 2.*V.ptsz->l_unwise_filter[V.ptsz->unwise_filter_size-1];
 
-    //printf("ell_min = %.3e \t ell_max = %.3e\n", ell_min,ell_max);
+    // printf("ell_min = %.3e \t ell_max = %.3e\n", ell_min,ell_max);
     r=Integrate_using_Patterson_adaptive(log(ell_min), log(ell_max),
                                         epsrel, epsabs,
                                         integrand_kSZ2_X_at_theta,

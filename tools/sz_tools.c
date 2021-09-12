@@ -467,7 +467,8 @@ int zbrent_D_to_V_sz(
               double delc,
               double rhoc,
               double * logMVIR,
-              struct tszspectrum * ptsz
+              struct tszspectrum * ptsz,
+              struct background * pba
               )
 {
   int iter;
@@ -501,7 +502,7 @@ int zbrent_D_to_V_sz(
 
 
   mvir_test = exp(a);
-  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz,pba);
   rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
 
 
@@ -520,7 +521,7 @@ int zbrent_D_to_V_sz(
              ptsz->error_message);
 
   mvir_test = exp(b);
-  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz,pba);
   rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
 
 
@@ -607,7 +608,7 @@ int zbrent_D_to_V_sz(
       b += (xm > 0.0 ? fabs(tol1) : -fabs(tol1));
 
   mvir_test = exp(b);
-  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz,pba);
   rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
 
     class_call(
@@ -1303,7 +1304,8 @@ return pow(3.*mvir/(4*_PI_*delc*rhoc),1./3.);
 
 double evaluate_cvir_of_mvir(double mvir,
                             double z,
-                            struct tszspectrum * ptsz){
+                            struct tszspectrum * ptsz,
+                            struct background * pba){
 double cvir;
 //D08 c-m relation
 if (ptsz->concentration_parameter==0){
@@ -1359,6 +1361,34 @@ else if (ptsz->concentration_parameter==5){
 // else if (ptsz->HMF==1 && ptsz->tau_profile == 1){
 //
 // }
+
+else if (ptsz->concentration_parameter==6){
+
+  double * pvecback;
+  double tau;
+  int first_index_back = 0;
+  class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+  class_call(background_tau_of_z(pba,z,&tau),
+             pba->error_message,
+             pba->error_message);
+
+  class_call(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             pba->error_message,
+             pba->error_message);
+
+double D = pvecback[pba->index_bg_D];
+double nu = 1./D*(1.12*pow(mvir/5e13,0.3)+0.53);
+cvir  = pow(D,0.9)*7.7*pow(nu,-0.29); // vir
+free(pvecback);
+}
+
 
 return cvir;
                             }
@@ -1512,7 +1542,8 @@ int mDtomV (
                double rhoc,
                double z,
                double * mDELprime,
-               struct tszspectrum * ptsz
+               struct tszspectrum * ptsz,
+               struct background * pba
              ){
 
 double mvir;
@@ -1523,13 +1554,14 @@ class_call(mDEL_to_mVIR(mDEL,
                         rhoc,
                         z,
                         &mvir,
-                        ptsz),
+                        ptsz,
+                        pba),
                 ptsz->error_message,
                 ptsz->error_message);
 
 //then go from mvir to mdel_prime
 double rvir = evaluate_rvir_of_mvir(mvir,delc,rhoc,ptsz);
-double cvir = evaluate_cvir_of_mvir(mvir,z,ptsz);
+double cvir = evaluate_cvir_of_mvir(mvir,z,ptsz,pba);
 
 class_call(mVIR_to_mDEL(mvir,
                      rvir,
@@ -1834,7 +1866,8 @@ int mDEL_to_mVIR(
               double rhoc,
               double z,
               double * result,
-              struct tszspectrum * ptsz
+              struct tszspectrum * ptsz,
+              struct background * pba
               )
 {
   double  mVIR;
@@ -1867,7 +1900,7 @@ int mDEL_to_mVIR(
   mTEST[0] = mDEL;
 
   mvir_test = mTEST[0];
-  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+  cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz,pba);
   rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
 
 
@@ -1893,7 +1926,7 @@ int mDEL_to_mVIR(
       mTEST[i] = 2.*mTEST[i-1];
 
       mvir_test = mTEST[i];
-      cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+      cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz,pba);
       rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
 
 
@@ -1926,7 +1959,7 @@ int mDEL_to_mVIR(
       mTEST[i] = mTEST[i-1]/2.;
 
       mvir_test = mTEST[i];
-      cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz);
+      cvir_test = evaluate_cvir_of_mvir(mvir_test,z,ptsz,pba);
       rvir_test = evaluate_rvir_of_mvir(mvir_test,delc,rhoc,ptsz);
 
       class_call(
@@ -1968,7 +2001,8 @@ int mDEL_to_mVIR(
                        delc,
                        rhoc,
                        &logMVIR,
-                       ptsz
+                       ptsz,
+                       pba
                        ),
              ptsz->error_message,
              ptsz->error_message);
@@ -3220,8 +3254,13 @@ pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
 
 rho_crit = pvectsz[ptsz->index_Rho_crit];
 delta = 200.*pvecback[pba->index_bg_Omega_m];
-
+if (ptsz->concentration_parameter==0){
 c_delta = get_c200m_at_m_and_z_D08(m_asked,z);
+}
+else if (ptsz->concentration_parameter==6){
+c_delta = get_c200m_at_m_and_z_B13(m_asked,z,pba);
+}
+
 r_delta = pow(3.*m_asked/(4.*_PI_*delta*rho_crit),1./3.); //in units of h^-1 Mpc
 
 rho_s = pow(c_delta,3.)*delta*rho_crit/3./m_nfw(c_delta);
@@ -3659,7 +3698,8 @@ for (index_m=0;
                                    pvectsz[ptsz->index_Rho_crit],
                                    z,
                                    &pvectsz[ptsz->index_mVIR],
-                                   ptsz),
+                                   ptsz,
+                                   pba),
                   ptsz->error_message,
                   ptsz->error_message);
  //
@@ -3830,6 +3870,7 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
     // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200m];
    pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile]; // this is the multipole going into truncated nfw... TBD: needs to be renamed
    pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_1h; // make sure the mode is set up properly
+
    class_call_parallel(evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz),
                        ptsz->error_message,
                        ptsz->error_message);
@@ -4133,7 +4174,8 @@ for (index_m=0;
                                    pvectsz[ptsz->index_Rho_crit],
                                    z,
                                    &pvectsz[ptsz->index_mVIR],
-                                   ptsz),
+                                   ptsz,
+                                   pba),
                   ptsz->error_message,
                   ptsz->error_message);
  //
@@ -6887,7 +6929,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   // galaxy_normalisation,
   // b123);
 
-  if (isnan(b123) || isinf(b123)){
+  if (isnan(b123) || isinf(b123) || result == 0.){
     // result = 1.e-300;
   printf("z = %.3e b123 = %.3e\n",z,b123);
   printf("k1 = %.3e k2 = %.3e k3 = %.3e\n",k1,k2,k3);
@@ -10382,7 +10424,8 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
                            rhoc,
                            z,
                            &mdel_prime,
-                           ptsz),
+                           ptsz,
+                           pba),
                     ptsz->error_message,
                     ptsz->error_message);
     pvectsz[ptsz->index_m500c] = mdel_prime;
@@ -10573,7 +10616,8 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
                            rhoc,
                            z,
                            &mdel_prime,
-                           ptsz),
+                           ptsz,
+                           pba),
                     ptsz->error_message,
                     ptsz->error_message);
     pvectsz[ptsz->index_m200c] = mdel_prime;
@@ -10765,7 +10809,8 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
                            rhoc,
                            z,
                            &mdel_prime,
-                           ptsz),
+                           ptsz,
+                           pba),
                     ptsz->error_message,
                     ptsz->error_message);
     pvectsz[ptsz->index_m500c] = mdel_prime;
@@ -10955,7 +11000,8 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
                            rhoc,
                            z,
                            &mdel_prime,
-                           ptsz),
+                           ptsz,
+                           pba),
                     ptsz->error_message,
                     ptsz->error_message);
     pvectsz[ptsz->index_m200c] = mdel_prime;

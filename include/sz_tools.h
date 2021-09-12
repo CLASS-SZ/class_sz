@@ -64,7 +64,8 @@ double integrate_over_m_at_z(double * pvecback,
                         double delc,
                         double rhoc,
                         double * logMVIR,
-                        struct tszspectrum * ptsz);
+                        struct tszspectrum * ptsz,
+                        struct background * pba);
 
 
 
@@ -86,7 +87,8 @@ double integrate_over_m_at_z(double * pvecback,
                double rhoc,
                double z,
                double * result,
-               struct tszspectrum * ptsz
+               struct tszspectrum * ptsz,
+               struct background * pba
              );
 
 double m_nfw(double x);
@@ -106,7 +108,8 @@ double delta_to_delta_prime_nfw(
                double rhoc,
                double z,
                double * mDELprime,
-               struct tszspectrum * ptsz
+               struct tszspectrum * ptsz,
+               struct background * pba
              );
 
  int mDtomV (
@@ -139,7 +142,8 @@ double delta_to_delta_prime_nfw(
 
  double evaluate_cvir_of_mvir(double mvir,
                              double z,
-                             struct tszspectrum * ptsz);
+                             struct tszspectrum * ptsz,
+                             struct background * pba);
 
  double evaluate_rvir_of_mvir(double mvir,
                              double delc,

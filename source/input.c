@@ -2700,6 +2700,9 @@ int input_read_parameters(
           ptsz->concentration_parameter=4;
         else  if ((strstr(string1,"DM14") != NULL))
           ptsz->concentration_parameter=5; // Dutton and Maccio 2014 (https://arxiv.org/pdf/1402.7073.pdf)
+        else  if ((strstr(string1,"B13") != NULL))
+          ptsz->concentration_parameter=6; // https://arxiv.org/pdf/1112.5479.pdf
+
           }
 
          //  /* HOD */
