@@ -5037,7 +5037,21 @@ double get_sigma_at_z_and_m(double z,
     rh = pow(3.*m/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.);
 
    double z_asked = log(1.+z);
-   double R_asked = log(exp(log(rh))/pba->h);
+   // double R_asked = log(exp(log(rh))/pba->h);
+   double R_asked = log(rh/pba->h);
+
+
+ if (z_asked<ptsz->array_redshift[0])
+    z_asked = ptsz->array_redshift[0];
+ if (z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1])
+    z_asked = ptsz->array_redshift[ptsz->n_arraySZ-1];
+
+ if (R_asked<ptsz->array_radius[0])
+    R_asked = ptsz->array_radius[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (R_asked>ptsz->array_radius[ptsz->ndimSZ-1])
+    R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
+
 
    double sigma = exp(pwl_interp_2d(ptsz->n_arraySZ,
                      ptsz->ndimSZ,
@@ -5056,10 +5070,33 @@ double get_nu_at_z_and_m(double z,
                          double m,
                          struct tszspectrum * ptsz,
                          struct background * pba){
+
+  double * pvecback;
+  double tau;
+  int first_index_back = 0;
+  class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+  class_call(background_tau_of_z(pba,z,&tau),
+             pba->error_message,
+             pba->error_message);
+
+  class_call(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             pba->error_message,
+             pba->error_message);
+
 double sigma = get_sigma_at_z_and_m(z,m,ptsz,pba);
 double lnsigma2 = log(sigma*sigma);
-double lnnu = 2.*log(ptsz->delta_cSZ) - lnsigma2;
+double delta_c = ptsz->delta_cSZ*(1.+0.012299*log10(pvecback[pba->index_bg_Omega_m]));
+// double lnnu = 2.*log(ptsz->delta_cSZ) - lnsigma2;
+double lnnu = 2.*log(delta_c) - lnsigma2;
 double nu = exp(lnnu);
+free(pvecback);
 return nu;
                          }
 
@@ -6119,24 +6156,24 @@ int evaluate_HMF(double logM,
 
 
 
-   pvectsz[ptsz->index_logSigma2] =
-   exp(pwl_interp_2d(ptsz->n_arraySZ,
-                     ptsz->ndimSZ,
-                     ptsz->array_redshift,
-                     ptsz->array_radius,
-                     ptsz->array_sigma_at_z_and_R,
-                     1,
-                     &z_asked,
-                     &R_asked));
+  //  pvectsz[ptsz->index_logSigma2] =
+  //  exp(pwl_interp_2d(ptsz->n_arraySZ,
+  //                    ptsz->ndimSZ,
+  //                    ptsz->array_redshift,
+  //                    ptsz->array_radius,
+  //                    ptsz->array_sigma_at_z_and_R,
+  //                    1,
+  //                    &z_asked,
+  //                    &R_asked));
+  //
+  //  // printf("m=%.3e\n",pvectsz[ptsz->index_logSigma2]);
+  //  // exit(0);
+  // pvectsz[ptsz->index_logSigma2] *= pvectsz[ptsz->index_logSigma2];
+  // pvectsz[ptsz->index_logSigma2] = log(pvectsz[ptsz->index_logSigma2]);
 
-   // printf("m=%.3e\n",pvectsz[ptsz->index_logSigma2]);
-   // exit(0);
-  pvectsz[ptsz->index_logSigma2] *= pvectsz[ptsz->index_logSigma2];
-  pvectsz[ptsz->index_logSigma2] = log(pvectsz[ptsz->index_logSigma2]);
-
-
-  pvectsz[ptsz->index_lognu] = 2.*log(ptsz->delta_cSZ) - pvectsz[ptsz->index_logSigma2];
-
+pvectsz[ptsz->index_logSigma2] = 2.*log(get_sigma_at_z_and_m(z,pvectsz[ptsz->index_mass_for_hmf],ptsz,pba));
+  // pvectsz[ptsz->index_lognu] = 2.*log(ptsz->delta_cSZ) - pvectsz[ptsz->index_logSigma2];
+pvectsz[ptsz->index_lognu] = log(get_nu_at_z_and_m(z,pvectsz[ptsz->index_mass_for_hmf],ptsz,pba));
 
   pvectsz[ptsz->index_dlogSigma2dlogRh] =
   pwl_interp_2d(

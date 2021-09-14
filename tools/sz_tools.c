@@ -4,7 +4,7 @@
 # include "r8lib.h"
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_spline.h>
-
+#include "fft.h"
 
 /////////////////////////////////SZ-TOOLS//////////
 
@@ -1384,7 +1384,18 @@ else if (ptsz->concentration_parameter==6){
              pba->error_message);
 
 double D = pvecback[pba->index_bg_D];
-double nu = 1./D*(1.12*pow(mvir/5e13,0.3)+0.53);
+// double nu = 1./D*(1.12*pow(mvir/5e13,0.3)+0.53);
+
+// # Compute the spherical collapse threshold of Nakamura-Suto, 1997.
+// Om_mz = self.cosmology._Omega_m()
+// dc0 = (3./20.)*pow(12.*np.pi,2./3.);
+// self.delta_c = dc0*(1.+0.012299*np.log10(Om_mz));
+// nu = delta_c / sig
+
+  // double sig = get_sigma_at_z_and_m(z,mvir,ptsz,pba);
+
+double nu = sqrt(get_nu_at_z_and_m(z,mvir,ptsz,pba));
+
 cvir  = pow(D,0.9)*7.7*pow(nu,-0.29); // vir
 free(pvecback);
 }
@@ -3879,23 +3890,23 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
    double xout = ptsz->x_out_truncated_nfw_profile;
    result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,1);
 
-   // //compare truncated vs integrated:
-   double result_int;
-   pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
-   double characteristic_multipole = pvectsz[ptsz->index_ls];
-   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
-   class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int,1),
-                       ptsz->error_message,
-                       ptsz->error_message);
-   // printf("xout_trunc = %.3e r_trunc = %.5e xout_trunc = %.3e r_int = %.5e\n",
-   // ptsz->x_out_truncated_nfw_profile,
-   // result,
-   // ptsz->x_out_nfw_profile,
-   // result_int/m_nfw(pvectsz[ptsz->index_c200m]));
-   // //end truncated vs integrated
-   // use integrated version
-   result = result_int;///m_nfw(pvectsz[ptsz->index_c200m]);
-
+   // // //compare truncated vs integrated:
+   // double result_int;
+   // pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
+   // double characteristic_multipole = pvectsz[ptsz->index_ls];
+   // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = characteristic_multipole;
+   // class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int,1),
+   //                     ptsz->error_message,
+   //                     ptsz->error_message);
+   // // printf("xout_trunc = %.3e r_trunc = %.5e xout_trunc = %.3e r_int = %.5e\n",
+   // // ptsz->x_out_truncated_nfw_profile,
+   // // result,
+   // // ptsz->x_out_nfw_profile,
+   // // result_int/m_nfw(pvectsz[ptsz->index_c200m]));
+   // // //end truncated vs integrated
+   // // use integrated version
+   // result = result_int;///m_nfw(pvectsz[ptsz->index_c200m]);
+  //// end compare truncated vs integrated --
 
    double tau_normalisation = pvectsz[ptsz->index_m200m];//pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
    // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
@@ -12020,6 +12031,18 @@ if (ptsz->y_m_relation == 1){
         double t = -0.00848*pow(mp_bias/(3.e14*70./(pba->h*100.))*Eh,-0.585);
         double f_rel = 1. + 3.79*t -28.2*t*t;
         yp = A*pow(Eh,2.)*pow(mp_bias/(3.e14*pba->h),1.+B)*f_rel;
+
+        // double a = -1.29389e-01;
+        // double b = 9.991387e-01;
+        // double c = -3.403211e+01;
+        // double d = 1.279992e-01;
+        // double e = 8.441768e-01;
+        // double M200m_ws = mp_bias/pba->h;
+        // yp = 1e-4*exp(a*exp(-pow(log(M200m_ws/3e14/e),2.))
+        // +(b*(log(M200m_ws))+c)*(1.-exp(-pow(log(M200m_ws/3e14/d),2.))));
+
+
+
       }
 else if (ptsz->y_m_relation == 0){
 

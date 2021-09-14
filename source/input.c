@@ -5237,7 +5237,7 @@ int input_default_params(
   ptsz->logR1SZ = -10; // 0.0034Mpc/h, 1.8e4  solar mass
   ptsz->logR2SZ = 10.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
 
-  ptsz->delta_cSZ = 1.6865;
+  ptsz->delta_cSZ = (3./20.)*pow(12.*_PI_,2./3.);
 
 
   ptsz->k_per_decade_for_tSZ = 20.; //#default 40
