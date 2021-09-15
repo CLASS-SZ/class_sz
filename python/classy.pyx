@@ -1607,6 +1607,69 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_cib_cib(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of cib x cib power spectrum
+        """
+        cl_cib = {}
+
+        for id_nu1 in range(self.tsz.cib_frequency_list_num):
+            for id_nu2 in range(0,id_nu1+1):
+                nu1 = self.tsz.cib_frequency_list[id_nu1]
+                nu2 = self.tsz.cib_frequency_list[id_nu2]
+
+                cl = {}
+                cl['ell'] = []
+                cl['1h'] = []
+                cl['2h'] = []
+                for index in range(self.tsz.nlSZ):
+                    cl['1h'].append(self.tsz.cl_cib_cib_1h[id_nu1][id_nu2][index])
+                    cl['2h'].append(self.tsz.cl_cib_cib_2h[id_nu1][id_nu2][index])
+                    cl['ell'].append(self.tsz.ell[index])
+                cl_cib[str(int(nu1))+'x'+str(int(nu2))] = cl
+        return cl_cib
+
+    def cl_tSZ_cib(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of tSZ x cib power spectrum
+        """
+        cl_y_cib = {}
+
+        for id_nu1 in range(self.tsz.cib_frequency_list_num):
+            nu1 = self.tsz.cib_frequency_list[id_nu1]
+            cl = {}
+            cl['ell'] = []
+            cl['1h'] = []
+            cl['2h'] = []
+            for index in range(self.tsz.nlSZ):
+                cl['1h'].append(self.tsz.cl_tSZ_cib_1h[id_nu1][index])
+                cl['2h'].append(self.tsz.cl_tSZ_cib_2h[id_nu1][index])
+                cl['ell'].append(self.tsz.ell[index])
+            cl_y_cib[str(int(nu1))] = cl
+        return cl_y_cib
+
+
+
+    def cl_lens_cib(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of lens x cib power spectrum
+        """
+        cl_phi_cib = {}
+
+        for id_nu1 in range(self.tsz.cib_frequency_list_num):
+            nu1 = self.tsz.cib_frequency_list[id_nu1]
+            cl = {}
+            cl['ell'] = []
+            cl['1h'] = []
+            cl['2h'] = []
+            for index in range(self.tsz.nlSZ):
+                cl['1h'].append(self.tsz.cl_lens_cib_1h[id_nu1][index])
+                cl['2h'].append(self.tsz.cl_lens_cib_2h[id_nu1][index])
+                cl['ell'].append(self.tsz.ell[index])
+            cl_phi_cib[str(int(nu1))] = cl
+        return cl_phi_cib
+
+
     def cl_km(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of kappa (lensing) x mu (lensing magnification) power spectrum

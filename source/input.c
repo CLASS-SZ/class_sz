@@ -1745,6 +1745,7 @@ int input_read_parameters(
       class_read_double("z_for_pk_hm",ptsz->z_for_pk_hm);
 
       class_read_double("kstar_damping_1h_term (1/Mpc)",ptsz->kstar_damping_1h_term_Mpc);
+      class_read_int("damping_1h_term",ptsz->damping_1h_term);
 
 
       class_read_int("n_m_dndlnM",ptsz->n_m_dndlnM);
@@ -2200,6 +2201,18 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
+
+      // if ((strstr(string1,"kSZ_kSZ_gal_1h_fft") != NULL) ) {
+      //   ptsz->has_kSZ_kSZ_gal_1_fft =_TRUE_;
+      //   ptsz->has_vrms2 = _TRUE_;
+      //   ppt->has_density_transfers=_TRUE_;
+      //   ppt->has_pk_matter = _TRUE_;
+      //   ppt->has_perturbations = _TRUE_;
+      //   pnl->has_pk_cb = _TRUE_;
+      //   pnl->has_pk_m = _TRUE_;
+      //   ptsz->need_hmf = 1;
+      // }
+
 
       if ((strstr(string1,"kSZ_kSZ_gal_2h") != NULL) ) {
         ptsz->has_kSZ_kSZ_gal_2h =_TRUE_;
@@ -5005,6 +5018,7 @@ int input_default_params(
   ptsz->M_min_HOD_satellite_mass_factor_unwise = 0.1;
 
   ptsz->hm_consistency = 1; //0: nothing 1: counter terms 2: alpha(z)
+  ptsz->damping_1h_term = 1;
 
   ptsz->N_kSZ2_gal_multipole_grid = 20;
 

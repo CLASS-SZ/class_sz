@@ -161,7 +161,7 @@ To run the code in parallel, you may run into a problem on a mac. The solution i
 
 https://github.com/lesgourg/class_public/issues/208
 
-Essentially, you need to edit a line in python/setup.py such as the code knows about the mpi libraries to be used with your compiler (gcc-10 in the example below).
+Essentially, you need to edit a line in python/setup.py such as the code knows about the mpi libraries to be used with your compiler (gcc-11 in the example below).
 In my case the modif looks like this:
 
   extra_link_args=['-lgomp','-lgsl','-lgslcblas','**-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/**']

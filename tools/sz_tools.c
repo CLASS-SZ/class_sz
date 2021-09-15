@@ -9735,8 +9735,8 @@ for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
   }
 }
 
-for (index_nu=0;index_nu<ptsz->cib_frequency_list_num;index_nu++){
-  free(array_L_sat_at_z_and_M_at_nu[index_nu]);
+for (index_z=0;index_z<ptsz->n_z_L_sat;index_z++){
+  free(array_L_sat_at_z_and_M_at_nu[index_z]);
 }
   free(array_L_sat_at_z_and_M_at_nu);
   //free(array_L_sat_at_z_and_M_at_nu_prime);
@@ -12072,6 +12072,8 @@ double get_L_sat_at_z_and_M_at_nu(double z_asked,
                                   struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
+
+ // printf("index_nu = %d\n",index_nu);
  return exp(pwl_interp_2d(ptsz->n_z_L_sat,
                           ptsz->n_m_L_sat,
                           ptsz->array_z_L_sat,
