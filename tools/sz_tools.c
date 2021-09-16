@@ -3274,7 +3274,7 @@ c_delta = get_c200m_at_m_and_z_B13(m_asked,z,pba);
 
 r_delta = pow(3.*m_asked/(4.*_PI_*delta*rho_crit),1./3.); //in units of h^-1 Mpc
 
-rho_s = pow(c_delta,3.)*delta*rho_crit/3./m_nfw(c_delta);
+// rho_s = pow(c_delta,3.)*delta*rho_crit/3./m_nfw(c_delta);
 
 
 
@@ -3289,7 +3289,7 @@ free(pvectsz);
 
 
 
-result = rho_s*f_b*p_x/rho_crit/f_b;
+// result = rho_s*f_b*p_x/rho_crit/f_b;
 result = rho_s*p_x*f_b;
 return result;
 }
@@ -3890,6 +3890,9 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
    // set 1 for matter_type = tau
    double xout = ptsz->x_out_truncated_nfw_profile;
    result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,1);
+   result *= pvectsz[ptsz->index_m200m]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3));
+   double f_b = pba->Omega0_b/ptsz->Omega_m_0;
+   result *= f_b;
 
    // // //compare truncated vs integrated:
    // double result_int;
@@ -3909,10 +3912,10 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
    // result = result_int;///m_nfw(pvectsz[ptsz->index_c200m]);
   //// end compare truncated vs integrated --
 
-   double tau_normalisation = pvectsz[ptsz->index_m200m];//pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
+   // double tau_normalisation = pvectsz[ptsz->index_m200m];//pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
    // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free/pba->h; // <!> correct version no h<!>
    // tau_normalisation *= pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free; // <!> correct version no h<!>
-   tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_rs],3);
+   double tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_rs],3);
    result *= tau_normalisation;
  }
 
