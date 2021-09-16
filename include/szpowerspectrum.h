@@ -32,6 +32,7 @@
 #define _cov_Y_Y_ssc_ ((ptsz->has_sz_cov_Y_Y_ssc == _TRUE_) && (index_md == ptsz->index_md_cov_Y_Y_ssc))
 #define _cov_Y_N_next_order_ ((ptsz->has_sz_cov_Y_N_next_order == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N_next_order))
 #define _kSZ_kSZ_gal_1h_ ((ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1h))
+#define _kSZ_kSZ_gal_1h_fft_ ((ptsz->has_kSZ_kSZ_gal_1h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1h_fft))
 #define _kSZ_kSZ_gal_2h_ ((ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_2h))
 #define _kSZ_kSZ_gal_3h_ ((ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_3h))
 #define _kSZ_kSZ_gal_hf_ ((ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_hf))
@@ -150,6 +151,7 @@ struct tszspectrum {
   double * cl_isw_tsz;
   double * cl_isw_auto;
   double * cl_kSZ_kSZ_gal_1h;
+  double * cl_kSZ_kSZ_gal_1h_fft;
   double * cl_kSZ_kSZ_gal_2h;
   double * cl_kSZ_kSZ_gal_3h;
   double * cl_kSZ_kSZ_gal_hf;
@@ -326,6 +328,11 @@ struct tszspectrum {
   int index_md_kSZ_kSZ_gal_1h;
   int index_integrand_id_kSZ_kSZ_gal_1h_first;
   int index_integrand_id_kSZ_kSZ_gal_1h_last;
+
+  int has_kSZ_kSZ_gal_1h_fft;
+  int index_md_kSZ_kSZ_gal_1h_fft;
+  int index_integrand_id_kSZ_kSZ_gal_1h_fft_first;
+  int index_integrand_id_kSZ_kSZ_gal_1h_fft_last;
 
   int has_kSZ_kSZ_gal_2h;
   int index_md_kSZ_kSZ_gal_2h;

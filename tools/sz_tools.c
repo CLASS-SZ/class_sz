@@ -3513,6 +3513,7 @@ int tabulate_density_profile(struct background * pba,
 
 if (ptsz->has_kSZ_kSZ_lensmag_1halo
 + ptsz->has_kSZ_kSZ_gal_1h
++ ptsz->has_kSZ_kSZ_gal_1h_fft
 + ptsz->has_kSZ_kSZ_gal_2h
 + ptsz->has_kSZ_kSZ_gal_3h
 == _FALSE_
@@ -3880,7 +3881,7 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
     // pvectsz[ptsz->index_l200m] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200m];
     // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200m];
    pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile]; // this is the multipole going into truncated nfw... TBD: needs to be renamed
-   pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_1h; // make sure the mode is set up properly
+   pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_1h; // make sure the mode is set up properly for tau computation
 
    class_call_parallel(evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz),
                        ptsz->error_message,
@@ -5174,6 +5175,7 @@ int load_normalized_dndz(struct tszspectrum * ptsz)
 if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_1h_fft != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_3h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_hf != _TRUE_ )
@@ -5413,6 +5415,7 @@ int load_normalized_fdndz(struct tszspectrum * ptsz)
 if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_1h_fft != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_3h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_hf != _TRUE_ )
@@ -5592,6 +5595,7 @@ int load_normalized_cosmos_dndz(struct tszspectrum * ptsz)
 if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_1h_fft != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_3h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_hf != _TRUE_ )
@@ -6801,6 +6805,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
      || ((V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
      //|| ((V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo))
      || ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h))
+     || ((V->ptsz->has_kSZ_kSZ_gal_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h_fft))
      || ((V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h))
      || ((V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h))
      // || ((V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf))
@@ -7228,6 +7233,7 @@ if ( ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_au
 if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
   || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
   || ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h))
+  || ((V->ptsz->has_kSZ_kSZ_gal_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h_fft))
   || ((V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h))
   || ((V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h))
   || ((V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf))
@@ -7248,6 +7254,7 @@ result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 
 // multiply by velocity dispersion
 if ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h)
+ || (V->ptsz->has_kSZ_kSZ_gal_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h_fft)
  || (V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h)
  || (V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h)
  || (V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf)
