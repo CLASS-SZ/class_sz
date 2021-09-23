@@ -11,6 +11,7 @@
 #include "sz_tools.h"
 #include "Patterson.h"
 #include "r8lib.h"
+#include "fft.h"
 
 
 
@@ -191,6 +192,30 @@ int szpowerspectrum_init(
    load_T10_alpha_norm(ptsz);
    // printf("tabulating dndlnM quantities 0\n");
 
+   // exit(0);
+   // printf("tabulating dndlnM quantities 1\n");
+
+
+   if (ptsz->has_dndlnM == 1
+    || ptsz->has_sz_counts
+    || ptsz->has_kSZ_kSZ_gal_1h
+    || ptsz->has_kSZ_kSZ_gal_1h_fft){
+
+   tabulate_dndlnM(pba,pnl,ppm,ptsz);
+   // printf("tabulating dndlnM quantities 2\n");
+
+   // for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++){
+   // double z =  exp(ptsz->array_redshift_hmf_counter_terms[index_z])-1.;
+   // double n_min = get_hmf_counter_term_nmin_at_z(z,ptsz);
+   // double hmf_m_min = get_dndlnM_at_z_and_M(z,ptsz->M1SZ,ptsz);
+   // printf("z = %.3e n_min = %.8e n_min_interp = %.8e hmf_m_min = %.8e\n",z, ptsz->array_hmf_counter_terms_nmin[index_z],n_min,hmf_m_min);
+   //  }
+  }
+// exit(0);
+  // printf("tabulating dndlnM quantities -1\n");
+
+
+
 if (ptsz->need_hmf != 0){
 
    tabulate_hmf_counter_terms_nmin(pba,pnl,ppm,ptsz);
@@ -220,24 +245,6 @@ if (ptsz->need_hmf != 0){
   }
   }
 }
-   // exit(0);
-   // printf("tabulating dndlnM quantities 1\n");
-
-
-   if (ptsz->has_dndlnM == 1 || ptsz->has_sz_counts){
-
-   tabulate_dndlnM(pba,pnl,ppm,ptsz);
-   // printf("tabulating dndlnM quantities\n");
-
-   // for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++){
-   // double z =  exp(ptsz->array_redshift_hmf_counter_terms[index_z])-1.;
-   // double n_min = get_hmf_counter_term_nmin_at_z(z,ptsz);
-   // double hmf_m_min = get_dndlnM_at_z_and_M(z,ptsz->M1SZ,ptsz);
-   // printf("z = %.3e n_min = %.8e n_min_interp = %.8e hmf_m_min = %.8e\n",z, ptsz->array_hmf_counter_terms_nmin[index_z],n_min,hmf_m_min);
-   //  }
-  }
-
-  // printf("tabulating dndlnM quantities -1\n");
 
    if (ptsz->has_vrms2)
    tabulate_vrms2_from_pk(pba,pnl,ppm,ptsz);
@@ -250,7 +257,7 @@ if (ptsz->need_hmf != 0){
 
    if (ptsz->has_nl_index)
    tabulate_nl_index(pba,pnl,ppm,ptsz);
-   // printf("tabulating dndlnM quantities\n");
+   printf("tabulating dndlnM quantities\n");
 
    // exit(0);
 
@@ -373,7 +380,7 @@ if (electron_pressure_comps != _FALSE_){
 
    double * Pvecback;
    double * Pvectsz;
-   double * b_l1_l2_l_1d;
+   // double * b_l1_l2_l_1d;
    int index_integrand;
 
    int abort;
@@ -397,10 +404,13 @@ int number_of_threads= 1;
 #endif
 
 //printf("number_of_threads = %d\n",number_of_threads);
-//number_of_threads= 8;
+// number_of_threads= 1;
+int id;
+omp_lock_t lock;
+
 #pragma omp parallel \
-   shared(abort,pba,ptsz,ppm,pnl)\
-   private(tstart,tstop,Pvectsz,Pvecback,index_integrand,b_l1_l2_l_1d)\
+   shared(abort,pba,ptsz,ppm,pnl,lock)\
+   private(tstart,tstop,Pvectsz,Pvecback,index_integrand,id)\
    num_threads(number_of_threads)
 	 {
 
@@ -415,19 +425,21 @@ int number_of_threads= 1;
 	   class_alloc_parallel(Pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
 
 
-     class_alloc_parallel(b_l1_l2_l_1d,
-                           sizeof(double *)*ptsz->N_kSZ2_gal_theta_grid*ptsz->N_kSZ2_gal_multipole_grid,
-                           ptsz->error_message);
+     // class_alloc_parallel(b_l1_l2_l_1d,
+     //                       sizeof(double *)*ptsz->N_kSZ2_gal_theta_grid*ptsz->N_kSZ2_gal_multipole_grid,
+     //                       ptsz->error_message);
 
 
 
 
 //Loop over integrands
 //the computation is parallelized with respect to the integrands
+
 #pragma omp for schedule (dynamic)
 for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integrand++)
 	     {
 #pragma omp flush(abort)
+
 
        Pvectsz[ptsz->index_integrand_id] = index_integrand;
        class_call_parallel(compute_sz(pba,
@@ -456,8 +468,10 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
    if (abort == _TRUE_) return _FAILURE_;
 
    ////////////////end - cl
-
-
+   // printf("showing res\n");
+   if (ptsz->sz_verbose>1) show_results(pba,pnl,ppm,ptsz);
+     }
+// printf("printing results\n");
 
    if (ptsz->write_sz>0 || ptsz->create_ref_trispectrum_for_cobaya){
 
@@ -465,8 +479,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
    write_output_to_files_ell_indep_ints(pnl,pba,ptsz);
 
  }
- if (ptsz->sz_verbose>1) show_results(pba,pnl,ppm,ptsz);
-   }
+
 
    return _SUCCESS_;
 }
@@ -706,7 +719,7 @@ for (index_l=0;
 {
   free(ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l]);
 }
-
+free(ptsz->array_profile_ln_rho_at_lnl_lnM_z); //here jump
 }
 
 
@@ -830,11 +843,20 @@ if (ptsz->need_sigma == 1 ){
    free(ptsz->array_dsigma2dR_at_z_and_R);
  }
 
-if (ptsz->need_hmf == 1){
+if (ptsz->has_kSZ_kSZ_gal_1h_fft){
+  fftw_destroy_plan(ptsz->forward_plan);
+  fftw_destroy_plan(ptsz->reverse_plan);
+}
+
+if (ptsz->has_dndlnM == 1
+ || ptsz->has_sz_counts
+ || ptsz->has_kSZ_kSZ_gal_1h
+ || ptsz->has_kSZ_kSZ_gal_1h_fft){
    free(ptsz->array_m_dndlnM);
    free(ptsz->array_z_dndlnM);
    free(ptsz->array_dndlnM_at_z_and_M);
-
+ }
+if (ptsz->need_hmf == 1){
 free(ptsz->array_hmf_counter_terms_nmin);
 free(ptsz->array_redshift_hmf_counter_terms);
 free(ptsz->array_hmf_counter_terms_b1min);
@@ -1885,12 +1907,266 @@ exit(0);
 
 
    }
-   else if (_kSZ_kSZ_gal_1h_fft_){
-printf("startng fft computation\n");
+   // else if (_kSZ_kSZ_gal_1h_fft_){
+
+  else if (1==0){
+// void
+// int fftw_init_threads(void);
+// fftw_init_threads();
+// fftw_plan_with_nthreads(1);
+// printf("starting fft computation\n");
+
+int id = omp_get_thread_num();
+double cl_kSZ2_gal_fft = 0.;
+// omp_set_lock(lock); //Only a single thread writes
+// printf("My Thread num is: %d\n", id);
+
+int index_ell = (int) Pvectsz[ptsz->index_multipole];
+// if (0==0){
+
+int index_z;
+double z_min = 1.0001*ptsz->z1SZ;
+double z_max = 0.9999*ptsz->z2SZ;
+
+int index_m;
+double m_min = 1.0001*ptsz->M1SZ;
+double m_max = 0.9999*ptsz->M2SZ;
+
+
+
+double tau;
+int first_index_back = 0;
+double * pvecback;
+class_alloc(pvecback,
+      pba->bg_size*sizeof(double),
+      ptsz->error_message);
+
+
+int n_z_fft = 100;
+int n_m_fft = 300;
+// double cl_kSZ2_gal_fft = 0.;
+double dln1pz  = (log(1.+z_max)-log(1.+z_min))
+                  /(n_z_fft-1.);
+double dlnm = (log(m_max)-log(m_min))/(n_m_fft-1.);
+
+// printf("starting fft computation loop z\n");
+
+for (index_z=0; index_z<n_z_fft; index_z++)
+{
+/// chose z and m :
+// double z = 0.5;
+
+double z  =  exp(log(1.+z_min)
+              +index_z*(log(1.+z_max)-log(1.+z_min))
+              /(ptsz->n_arraySZ-1.))-1.; // log(1+z)
+// if (index_z == ptsz->n_arraySZ-1){
+//   z = 0.999999*z;
+// }
+
+
+class_call(background_tau_of_z(pba,z,&tau),
+     ptsz->error_message,
+     ptsz->error_message);
+
+class_call(background_at_tau(pba,
+                       tau,
+                       pba->long_info,
+                       pba->inter_normal,
+                       &first_index_back,
+                       pvecback),
+     ptsz->error_message,
+     ptsz->error_message);
+
+double chi = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
+double phi_galaxy_at_z = get_galaxy_number_counts(z,ptsz); // this is ptsz->normalized_dndz_phig
+double Wg = H_over_c_in_h_over_Mpc*phi_galaxy_at_z;
+double vrms2 = get_vrms2_at_z(z,ptsz);
+
+double cl_kSZ2_gal_fft_z  = 0.;
+for (index_m=0; index_m<n_m_fft; index_m++)
+{
+double m = exp(log(m_min)+index_m*(log(m_max)-log(m_min))/(ptsz->ndimSZ-1.));
+
+// double m = 3e14;
+
+
+
+double l_min = 2.;
+double l_max = 1e4;
+// tabulate the integrand in the "l" dimension:
+const int N = ptsz->N_samp_fftw;
+double k[N], Pk[N],Pko[N];
+double lnk[N],lnpk[N];
+int ik;
+double fl;
+double taul;
+double l;
+
+
+for (ik=0; ik<N; ik++){
+k[ik] = exp(log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min)));
+lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
+l = k[ik];
+fl = get_ksz_filter_at_l(l,ptsz);
+taul = get_tau_profile_at_z_m_l(z,m,l,ptsz,pba);
+Pk[ik] = fl*taul;
+Pko[ik] = fl*taul;
+// printf("k = %.5e pk = %.5e\n",l,Pk[ik]);
+}
+
+double r[N], xi[N];
+
+// printf("\n\n####################\n");
+// printf("To position space:\n");
+// printf("####################\n\n");
+// pk2xi(N,k,Pk,r,xi,ptsz);
+xi2pk(N,k,Pk,r,xi,ptsz);
+for (ik=0; ik<N; ik++){
+// printf("r = %.5e xi = %.5e\n",r[ik],xi[ik]);
+// convolution:
+xi[ik] = pow(xi[ik],2.);
+}
+
+// printf("\n\n####################\n");
+// printf("Back to k space:\n");
+// printf("####################\n\n");
+// xi2pk(N,r,xi,k,Pk,ptsz);
+pk2xi(N,r,xi,k,Pk,ptsz);
+for (ik=0; ik<N; ik++){
+// printf("k = %.5e pk rec = %.5e pk = %.5e\n",k[ik],Pk[ik],Pk[ik]/Pko[ik]);
+lnpk[ik] = log(fabs(Pk[ik]));
+}
+   // evaluate at ell:
+
+   double ell = ptsz->ell[index_ell];
+   // printf("ok1\n");
+
+   double f_tau_f_tau = exp(pwl_value_1d(N,lnk,lnpk,log(ell)));
+   // printf("ok2\n");
+   // galaxy term:
+   double g = get_galaxy_profile_at_z_m_l_1h(z,m,ell,ptsz,pba); // this has 1/ng_bar
+      // printf("ok3\n");
+   // double ell = l3;
+   double dn = get_dndlnM_at_z_and_M(z,m,ptsz);
+      // printf("ok4\n");
+   // for (ik=0; ik<N; ik++){
+   // printf("k = %.5e f_tau_f_tau = %.5e g = %.5e dn = %.5e\n",ell,f_tau_f_tau,g,dn);
+   // lnpk[ik] = log(Pk[ik]);
+   // }
+
+double integrand_projected_fields = dn*f_tau_f_tau*g;
+
+
+
+
+
+// --> integrand wrt ln(1+z), ln(m)
+
+// printf("l = %.5e m = %.5e z = %.5e integrand = %.5e\n",ell,m,z,integrand_projected_fields);
+
+if (isnan(integrand_projected_fields) || isinf(integrand_projected_fields)){
+integrand_projected_fields = 0.;
+}
+cl_kSZ2_gal_fft_z += integrand_projected_fields*dlnm;
+// printf("cl_kSZ2_gal_fft_z = %.5e\n",cl_kSZ2_gal_fft_z);
+
+}
+
+
+cl_kSZ2_gal_fft_z *= Wg/chi/chi;
+
+
+cl_kSZ2_gal_fft_z *= vrms2;///3./pow(_c_*1e-3,2.);
+
+cl_kSZ2_gal_fft_z *= chi*chi;
+cl_kSZ2_gal_fft_z *= (1.+z)/H_over_c_in_h_over_Mpc;
+
+cl_kSZ2_gal_fft += cl_kSZ2_gal_fft_z*dln1pz;
+// printf("cl_kSZ2_gal_fft = %.5e dln1pz = %.5e\n",cl_kSZ2_gal_fft,dln1pz);
+
+
+
+}
+
+free(pvecback);
+
+// }
+// omp_unset_lock(lock);
+printf("cl_kSZ2_gal_fft = %.5e \n",cl_kSZ2_gal_fft);
+ptsz->cl_kSZ_kSZ_gal_1h_fft[index_ell] = cl_kSZ2_gal_fft/(2.*_PI_)/(2.*_PI_);
+// exit(0);
+
+// all_tests();
+// timestamp ( );
+// test04 ( );
+// timestamp ( );
+
+// int i;
+// double *in;
+// double *in2;
+// int j;
+// int nx = 100; // l prime
+// int ny = 100; // theta
+// int nyh;
+// fftw_complex *out;
+// fftw_plan plan_backward;
+// fftw_plan plan_forward;
+// // unsigned int seed = 123456789;
+//
+//
+// /// prepare redshift grid:
+//   double z_min = ptsz->z1SZ;
+//   double z_max = ptsz->z2SZ;
+//
+//   //printf("integrating between z_min=%.3e and z_max=%.3e\n",z_min,z_max);
+//
+//   //Evaluation of background quantities @ z:
+//   double tau;
+//   int first_index_back = 0;
+//
+//   class_call(background_tau_of_z(pba,z,&tau),
+//              ptsz->error_message,
+//              ptsz->error_message);
+//
+//   class_call(background_at_tau(pba,
+//                                tau,
+//                                pba->long_info,
+//                                pba->inter_normal,
+//                                &first_index_back,
+//                                pvecback),
+//              ptsz->error_message,
+//              ptsz->error_message);
+//
+//
+//    int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
+//    double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+//    int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+//    int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+//    double l2 = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
+//    double l3 = ptsz->ell[index_l_3];
+//    double ell = l3;
+//    double ell_prime = l2;
+//    double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
+//
+//    // pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+//    pvectsz[ptsz->index_multipole_for_tau_profile] = l1;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+//    evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
+//    double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
+//
+//    // int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+//    pvectsz[ptsz->index_multipole_for_tau_profile] = l2;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+//    evaluate_tau_profile(pvecback,pvectsz,pba,ptsz);
+//    double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
+
+
+
+// exit(0);
 
    }
 
    else {
+  // printf("integrating over redshift\n");
    class_call(integrate_over_redshift(pba,
                                       pnl,
                                       ppm,
@@ -1917,6 +2193,12 @@ printf("startng fft computation\n");
    if (_mean_y_){
       ptsz->y_monopole = Pvectsz[ptsz->index_integral]/pow(ptsz->Tcmb_gNU,1)/1.e6; //1e6 to convert Tcmb in micro Kelvins
 
+   }
+
+   if (_kSZ_kSZ_gal_1h_fft_){
+   // if (1==0){
+     int index_l = (int) Pvectsz[ptsz->index_multipole];
+     ptsz->cl_kSZ_kSZ_gal_1h_fft[index_l] = Pvectsz[ptsz->index_integral]/(2.*_PI_)/(2.*_PI_);
    }
 
 
@@ -2492,10 +2774,10 @@ double integrand_at_m_and_z(double logM,
 
    // double z_asked = pvectsz[ptsz->index_z];
    // double m_asked = exp(logM);
-   // // double calc_dn = get_dndlnM_at_z_and_M(z_asked,m_asked,ptsz);
-   // // printf("z = %.2e M = %.4e \t eHMF = %.4e \t get_dn = %.4e\n",pvectsz[ptsz->index_z],m_asked,pvectsz[ptsz->index_hmf],
-   // // calc_dn );
-   //
+   // double calc_dn = get_dndlnM_at_z_and_M(z_asked,m_asked,ptsz);
+   // printf("z = %.2e M = %.4e \t eHMF = %.4e \t get_dn = %.4e\n",pvectsz[ptsz->index_z],m_asked,pvectsz[ptsz->index_hmf],
+   // calc_dn );
+
    // pvectsz[ptsz->index_hmf] = get_dndlnM_at_z_and_M(z_asked,m_asked,ptsz);
 
    evaluate_completeness(pvecback,pvectsz,pba,ptsz);
@@ -2796,6 +3078,90 @@ double integrand_at_m_and_z(double logM,
 
 
   }
+  else if (_kSZ_kSZ_gal_1h_fft_){
+  // else if (1==0){
+double l_min = 2.;
+double l_max = 1e4;
+// tabulate the integrand in the "l" dimension:
+const int N = ptsz->N_samp_fftw;
+double k[N], Pk[N],Pko[N];
+double lnk[N],lnpk[N];
+int ik;
+double fl;
+double taul;
+double l;
+double m = exp(logM);
+
+for (ik=0; ik<N; ik++){
+k[ik] = exp(log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min)));
+lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
+l = k[ik];
+fl = get_ksz_filter_at_l(l,ptsz);
+taul = get_tau_profile_at_z_m_l(z,m,l,ptsz,pba);
+Pk[ik] = fl*taul;
+Pko[ik] = fl*taul;
+// printf("k = %.5e pk = %.5e\n",l,Pk[ik]);
+}
+
+double r[N], xi[N];
+
+// printf("\n\n####################\n");
+// printf("To position space:\n");
+// printf("####################\n\n");
+// pk2xi(N,k,Pk,r,xi,ptsz);
+xi2pk(N,k,Pk,r,xi,ptsz);
+for (ik=0; ik<N; ik++){
+// printf("r = %.5e xi = %.5e\n",r[ik],xi[ik]);
+// convolution:
+xi[ik] = pow(xi[ik],2.);
+}
+
+// printf("\n\n####################\n");
+// printf("Back to k space:\n");
+// printf("####################\n\n");
+pk2xi(N,r,xi,k,Pk,ptsz);
+// xi2pk(N,r,xi,k,Pk,ptsz);
+// xi2pk(N,r,xi,k,Pk,ptsz);
+
+// for (ik=0; ik<N; ik++){
+// // printf("k = %.5e pk rec = %.5e pk = %.5e\n",k[ik],Pk[ik],Pk[ik]/Pko[ik]);
+// lnpk[ik] = log(fabs(Pk[ik]));
+// }
+   // evaluate at ell:
+   int index_l = (int) pvectsz[ptsz->index_multipole];
+   double ell = ptsz->ell[index_l];
+   // printf("ok1\n");
+
+   // double f_tau_f_tau = exp(pwl_value_1d(N,lnk,lnpk,log(ell)));
+   double f_tau_f_tau = pwl_value_1d(N,lnk,Pk,log(ell));
+   // printf("ok2\n");
+   // galaxy term:
+   double g = get_galaxy_profile_at_z_m_l_1h(z,m,ell,ptsz,pba); // this has 1/ng_bar
+      // printf("ok3\n");
+   // double ell = l3;
+   double dn = get_dndlnM_at_z_and_M(z,m,ptsz);
+      // printf("ok4\n");
+   // for (ik=0; ik<N; ik++){
+   // printf("k = %.5e f_tau_f_tau = %.5e g = %.5e dn = %.5e\n",ell,f_tau_f_tau,g,dn);
+   // lnpk[ik] = log(Pk[ik]);
+   // }
+
+double integrand_projected_fields = dn*f_tau_f_tau*g;
+
+
+
+
+
+// --> integrand wrt ln(1+z), ln(m)
+
+// printf("l = %.5e m = %.5e z = %.5e integrand = %.5e\n",ell,m,z,integrand_projected_fields);
+
+if (isnan(integrand_projected_fields) || isinf(integrand_projected_fields)){
+integrand_projected_fields = 0.;
+}
+
+pvectsz[ptsz->index_integrand] = integrand_projected_fields;
+  }
 
   else if (_kSZ_kSZ_gal_1h_){
 
@@ -2829,6 +3195,22 @@ double integrand_at_m_and_z(double logM,
                                      *tau_profile_at_ell_1
                                      *tau_profile_at_ell_2
                                      *galaxy_profile_at_ell_3;
+
+  //  double l,m,z;
+  //  z = pvectsz[ptsz->index_z];
+  //  m = exp(logM);
+  //  // l = l3;
+  //  double g3 = get_galaxy_profile_at_z_m_l_1h(z,m,l3,ptsz,pba); // this has 1/ng_bar
+  //  double t2 =  get_tau_profile_at_z_m_l(z,m,l2,ptsz,pba);
+  //  double t1 =  get_tau_profile_at_z_m_l(z,m,l1,ptsz,pba);
+  //  double dn = get_dndlnM_at_z_and_M(z,m,ptsz);
+  // pvectsz[ptsz->index_integrand] = dn*g3*t2*t1;
+
+  // printf("g3 %.3e %.3e\n",g3,galaxy_profile_at_ell_3);
+  // printf("t2 %.3e %.3e\n",t2,tau_profile_at_ell_2);
+  // printf("t1 %.3e %.3e\n",t1,tau_profile_at_ell_1);
+  // printf("m %.3e dn %.3e %.3e\n",m,dn,pvectsz[ptsz->index_hmf]);
+
   // if (tau_profile_at_ell_1>1e100){
 //   printf("tau too big dn = %.9e t = %.9e t = %.9e g = %.9e z = %.3e m200c = %.3e m200m = %.3e\n",
 //   pvectsz[ptsz->index_hmf],
@@ -4099,6 +4481,63 @@ int evaluate_tau_profile(
 
 
   }
+
+double get_ksz_filter_at_l(double ell,
+                           struct tszspectrum * ptsz){
+double fl = 1.;
+if  (ell <= ptsz->l_unwise_filter[0] || ell >= ptsz->l_unwise_filter[ptsz->unwise_filter_size-1])
+  fl = 0.;
+else
+  fl = pwl_value_1d(ptsz->unwise_filter_size,
+                          ptsz->l_unwise_filter,
+                          ptsz->f_unwise_filter,
+                          ell);
+return fl;
+                           }
+
+
+double get_tau_profile_at_z_m_l(double z,
+                                double m,
+                                double l,
+                                struct tszspectrum * ptsz,
+                                struct background * pba){
+
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+        pba->bg_size*sizeof(double),
+        ptsz->error_message);
+
+  class_call(background_tau_of_z(pba,z,&tau),
+       ptsz->error_message,
+       ptsz->error_message);
+
+  class_call(background_at_tau(pba,
+                         tau,
+                         pba->long_info,
+                         pba->inter_normal,
+                         &first_index_back,
+                         pvecback),
+       ptsz->error_message,
+       ptsz->error_message);
+
+
+double chi = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+// double k1 = (l+0.5)/chi;
+// double l = chi*k-0.5;
+
+double tau_e  = get_density_profile_at_l_M_z(l,m,z,ptsz);
+tau_e *= 1./ptsz->mu_e*ptsz->f_free;
+double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
+// double z = pvectsz[ptsz->index_z];
+double a = 1. / (1. + z);
+double rho0 = 1.;
+tau_e *= sigmaT_over_mp*a*rho0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.);
+
+free(pvecback);
+return tau_e;
+}
 
    // else if (ptsz->tau_profile == 1){
  //  // Battaglia 2016
@@ -6226,7 +6665,7 @@ int evaluate_HMF(double logM,
 
 
 
-
+// printf("setting dlnm\n");
 
    //dlnm200ddlnm;
    pvectsz[ptsz->index_dlnMdeltadlnM]= 1.;//evaluate_dlnMdeltadlnM(log(pvectsz[ptsz->index_mVIR]),
@@ -6278,6 +6717,8 @@ int evaluate_HMF(double logM,
   pvectsz[ptsz->index_mass_for_hmf] = m_for_hmf;
 }
 
+// printf("setting dlnm 2\n");
+
 
   if (ptsz->HMF_prescription_NCDM == 0) //Matter
     pvectsz[ptsz->index_Rh] = pow(3.*pvectsz[ptsz->index_mass_for_hmf]/(4*_PI_*(pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0),1./3.);
@@ -6320,9 +6761,10 @@ int evaluate_HMF(double logM,
   //  // exit(0);
   // pvectsz[ptsz->index_logSigma2] *= pvectsz[ptsz->index_logSigma2];
   // pvectsz[ptsz->index_logSigma2] = log(pvectsz[ptsz->index_logSigma2]);
-
+// printf("getting sigma\n");
 pvectsz[ptsz->index_logSigma2] = 2.*log(get_sigma_at_z_and_m(z,pvectsz[ptsz->index_mass_for_hmf],ptsz,pba));
   // pvectsz[ptsz->index_lognu] = 2.*log(ptsz->delta_cSZ) - pvectsz[ptsz->index_logSigma2];
+// printf("got sigma\n");
 pvectsz[ptsz->index_lognu] = log(get_nu_at_z_and_m(z,pvectsz[ptsz->index_mass_for_hmf],ptsz,pba));
 
   pvectsz[ptsz->index_dlogSigma2dlogRh] =
@@ -6455,6 +6897,8 @@ pvectsz[ptsz->index_lognu] = log(get_nu_at_z_and_m(z,pvectsz[ptsz->index_mass_fo
 // printf("hmf = %.3e\n",pvectsz[ptsz->index_hmf]);
 return _SUCCESS_;
 }
+
+
 
 int evaluate_vrms2(double * pvecback,
                    double * pvectsz,
@@ -6919,7 +7363,8 @@ pk3 *= pow(pba->h,3.);
 
 }
 
-
+// this is in dimensionless unites:
+// vrms2/3/c2
 double get_vrms2_at_z(double z,
                       struct tszspectrum * ptsz)
   {
@@ -6939,7 +7384,7 @@ double vrms2 =  exp(pwl_value_1d(ptsz->n_arraySZ,
                                  z_asked));
 
 
-return vrms2/pow(_c_*1e-3,2.);
+return vrms2/3./pow(_c_*1e-3,2.);
 }
 
 
@@ -7758,10 +8203,69 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
 
          double cov_cl_cl_1h = sig_cl_squared_binned_1h + ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey;
          double cov_cl_cl_2h = sig_cl_squared_binned_2h + ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey;
+// printf("printing to files\n");
+            // printf("%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\n",
+            //         ptsz->ell[index_l],
+            //         ptsz->cl_sz_1h[index_l],
+            //         sig_cl_squared,
+            //         ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey,
+            //         ptsz->sig_cl_squared_binned[index_l],
+            //         ell*(ell+1.)/(2.*_PI_)*sqrt(ptsz->cov_cl_cl[index_l]),
+            //         ptsz->cl_sz_2h[index_l],
+            //         ptsz->cl_te_y_y[index_l]/ptsz->cl_sz_1h[index_l],
+            //         ptsz->cl_kSZ_kSZ_gal_1h[index_l],
+            //         ptsz->cl_tSZ_lens_1h[index_l],
+            //         ptsz->cl_tSZ_lens_2h[index_l],
+            //         ptsz->cl_isw_lens[index_l],
+            //         ptsz->cl_isw_tsz[index_l],
+            //         ptsz->cl_isw_auto[index_l],
+            //         1./(ell*(ell+1.)/(2.*_PI_)*sqrt(ptsz->cov_cl_cl[index_l])/(ptsz->cl_sz_1h[index_l]+ptsz->cl_sz_2h[index_l])),
+            //         ptsz->m_y_y_1h[index_l]/ptsz->cl_sz_1h[index_l],
+            //         sqrt(ptsz->m_y_y_2h[index_l]/ptsz->cl_sz_2h[index_l]),
+            //         1./(ell*(ell+1.)/(2.*_PI_)*sqrt(cov_cl_cl_1h)/(ptsz->cl_sz_1h[index_l])),
+            //         1./(ell*(ell+1.)/(2.*_PI_)*sqrt(cov_cl_cl_2h)/(ptsz->cl_sz_2h[index_l])),
+            //         sqrt(ptsz->cov_Y_Y_ssc[index_l][index_l]/(ptsz->tllprime_sz[index_l][index_l]/ptsz->Omega_survey)),
+            //         ptsz->cl_tSZ_gal_1h[index_l],
+            //         ptsz->b_tSZ_tSZ_tSZ_1halo[index_l],
+            //         ptsz->cl_gal_gal_1h[index_l],
+            //         ptsz->cl_gal_gal_2h[index_l],
+            //         ptsz->cl_gal_lens_1h[index_l],
+            //         ptsz->cl_gal_lens_2h[index_l],
+            //         ptsz->cl_tSZ_gal_2h[index_l],
+            //         ptsz->cl_lens_lens_1h[index_l],
+            //         ptsz->cl_lens_lens_2h[index_l],
+            //         ptsz->cl_tSZ_cib_1h[ptsz->id_nu_cib_to_save][index_l],
+            //         ptsz->cl_tSZ_cib_2h[ptsz->id_nu_cib_to_save][index_l],
+            //         ptsz->cl_cib_cib_1h[ptsz->id_nu_cib_to_save][ptsz->id_nu_prime_cib_to_save][index_l],
+            //         ptsz->cl_cib_cib_2h[ptsz->id_nu_cib_to_save][ptsz->id_nu_prime_cib_to_save][index_l],
+            //         ptsz->cl_kSZ_kSZ_lensmag_1h[index_l],
+            //         ptsz->cl_lens_cib_1h[ptsz->id_nu_cib_to_save][index_l],
+            //         ptsz->cl_lens_cib_2h[ptsz->id_nu_cib_to_save][index_l],
+            //         ptsz->cl_gal_lensmag_1h[index_l],
+            //         ptsz->cl_gal_lensmag_2h[index_l],
+            //         ptsz->cl_lensmag_lensmag_1h[index_l],
+            //         ptsz->cl_lensmag_lensmag_2h[index_l],
+            //         ptsz->cl_lens_lensmag_1h[index_l],
+            //         ptsz->cl_lens_lensmag_2h[index_l],
+            //         ptsz->cl_kSZ_kSZ_gal_2h[index_l],
+            //         ptsz->cl_kSZ_kSZ_gal_3h[index_l],
+            //         ptsz->cl_tSZ_lensmag_1h[index_l],
+            //         ptsz->cl_tSZ_lensmag_2h[index_l],
+            //         ptsz->cl_kSZ_kSZ_gal_hf[index_l],
+            //         ptsz->cl_gal_gal_hf[index_l],
+            //         ptsz->cl_gal_lens_hf[index_l],
+            //         ptsz->cl_gal_lensmag_hf[index_l],
+            //         ptsz->cl_lens_lensmag_hf[index_l],
+            //         ptsz->cl_lensmag_lensmag_hf[index_l],
+            //         ptsz->cl_gal_cib_1h[ptsz->id_nu_cib_to_save][index_l],
+            //         ptsz->cl_gal_cib_2h[ptsz->id_nu_cib_to_save][index_l],
+            //         ptsz->cl_kSZ_kSZ_gal_1h_fft[index_l]
+            //         );
+
 
 
             fprintf(fp,
-                    "%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\n",
+                    "%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\t\t%e\n",
                     ptsz->ell[index_l],
                     ptsz->cl_sz_1h[index_l],
                     sig_cl_squared,
@@ -8785,6 +9289,25 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 printf("ell = %e\t\t cl_lens_lens (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_lens_lens_2h[index_l]);
 }
 }
+
+if (ptsz->has_cib_cib_1h){
+printf("\n\n");
+printf("#######################################\n");
+printf("cib x cib power spectrum 1-halo term:\n");
+printf("#######################################\n");
+printf("\n");
+int index_l;
+int index_nu;
+int index_nu_prime;
+for (index_nu=0;index_nu<ptsz->cib_frequency_list_num;index_nu++){
+    for (index_nu_prime=0;index_nu_prime<ptsz->cib_frequency_list_num;index_nu_prime++){
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_cib_cib (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_cib_cib_1h[index_nu][index_nu_prime][index_l]);
+}
+}
+}
+}
    return _SUCCESS_;
 }
 
@@ -9086,6 +9609,26 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       ptsz->has_200c = 1;
       }
     }
+
+  if (ptsz->has_kSZ_kSZ_gal_1h_fft){
+    ptsz->N_samp_fftw = 500;
+    fftw_complex* a_tmp;
+    fftw_complex* b_tmp;
+    a_tmp = fftw_alloc_complex(ptsz->N_samp_fftw);
+    b_tmp = fftw_alloc_complex(ptsz->N_samp_fftw);
+    ptsz->forward_plan = fftw_plan_dft_1d(ptsz->N_samp_fftw,
+                                    (fftw_complex*) a_tmp,
+                                    (fftw_complex*) b_tmp,
+                                    -1, FFTW_ESTIMATE);
+    ptsz->reverse_plan = fftw_plan_dft_1d(ptsz->N_samp_fftw,
+                                    (fftw_complex*) b_tmp,
+                                    (fftw_complex*) b_tmp,
+                                    +1, FFTW_ESTIMATE);
+
+    fftw_free(a_tmp);
+    fftw_free(b_tmp);
+  }
+
 
    if (ptsz->has_tSZ_gal_1h
       +ptsz->has_tSZ_gal_2h
@@ -9972,6 +10515,40 @@ pvectsz[ptsz->index_phi_galaxy_counts] = phig;
 
                                     }
 
+
+
+double get_galaxy_number_counts(double z,
+                                struct tszspectrum * ptsz){
+
+
+    double z_asked  = z;
+    double phig = 0.;
+  //
+  // if (ptsz->galaxy_sample == 1)
+  // if(z_asked<ptsz->normalized_cosmos_dndz_z[0])
+  //    phig = 1e-100;
+  // else if (z_asked>ptsz->normalized_cosmos_dndz_z[ptsz->normalized_cosmos_dndz_size-1])
+  //    phig = 1e-100;
+  // else  phig =  pwl_value_1d(ptsz->normalized_cosmos_dndz_size,
+  //                              ptsz->normalized_cosmos_dndz_z,
+  //                              ptsz->normalized_cosmos_dndz_phig,
+  //                              z_asked);
+
+  if(z_asked<ptsz->normalized_dndz_z[0])
+     phig = 1e-100;
+  else if (z_asked>ptsz->normalized_dndz_z[ptsz->normalized_dndz_size-1])
+     phig = 1e-100;
+else  phig =  pwl_value_1d(ptsz->normalized_dndz_size,
+                           ptsz->normalized_dndz_z,
+                           ptsz->normalized_dndz_phig,
+                           z_asked);
+
+return phig;
+
+                                    }
+
+
+
 double evaluate_galaxy_number_counts_fdndz( double * pvecback,
                                             double * pvectsz,
                                             struct background * pba,
@@ -10280,6 +10857,74 @@ return result;
                                       }
 
 
+double get_galaxy_profile_at_z_m_l_1h(double z,
+                                      double m,
+                                      double l,
+                                      struct tszspectrum * ptsz,
+                                      struct background * pba){
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+        pba->bg_size*sizeof(double),
+        ptsz->error_message);
+
+  class_call(background_tau_of_z(pba,z,&tau),
+       ptsz->error_message,
+       ptsz->error_message);
+
+  class_call(background_at_tau(pba,
+                         tau,
+                         pba->long_info,
+                         pba->inter_normal,
+                         &first_index_back,
+                         pvecback),
+       ptsz->error_message,
+       ptsz->error_message);
+
+
+double chi = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+// double k1 = (l+0.5)/chi;
+// double l = chi*k-0.5;
+double M_halo = m; // Msun_over_h
+double ng_bar = evaluate_mean_galaxy_number_density_at_z(z,ptsz);
+// printf("%.3e\n",ng_bar);
+// double ng_bar = pow(pba->h,-3.);//pvectsz[ptsz->index_mean_galaxy_number_density];
+double nc;
+double ns;
+double us;
+// double z = pvectsz[ptsz->index_z];
+
+
+double M_min;
+double M0;
+double M1_prime;
+double sigma_log10M;
+
+
+M_min = ptsz->M_min_HOD;
+M1_prime = ptsz->M1_prime_HOD;
+sigma_log10M = ptsz->sigma_log10M_HOD;
+M0 = ptsz->M0_HOD;
+
+nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz,pba);
+
+ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
+double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
+// pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_galaxy_profile];
+// printf("nc ns %.3e  %.3e\n",nc,ns);
+double k = (l+0.5)/chi;
+double delta = 200.*pvecback[pba->index_bg_Omega_m];
+us = get_truncated_nfw_profile_at_z_m_k_xout(z,m,k,xout,delta,pba,ptsz);
+// printf("us %.3e\n",us);
+double ug_at_ell;
+ug_at_ell  =(1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us);
+
+
+free(pvecback);
+return ug_at_ell;
+
+}
 int evaluate_galaxy_profile(double * pvecback,
                             double * pvectsz,
                             struct background * pba,
@@ -10396,6 +11041,70 @@ else if(_gal_gal_1h_
 
 pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
 
+}
+
+
+
+
+// analytical truncated NFW profile
+double get_truncated_nfw_profile_at_z_m_k_xout(//double * pvecback,
+                                      double z,
+                                      double m,
+                                      double k,
+                                      double xout,
+                                      double delta,
+                                      struct background * pba,
+                                      struct tszspectrum * ptsz)
+{
+  double c_delta, r_delta;
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+        pba->bg_size*sizeof(double),
+        ptsz->error_message);
+
+  class_call(background_tau_of_z(pba,z,&tau),
+       ptsz->error_message,
+       ptsz->error_message);
+
+  class_call(background_at_tau(pba,
+                         tau,
+                         pba->long_info,
+                         pba->inter_normal,
+                         &first_index_back,
+                         pvecback),
+       ptsz->error_message,
+       ptsz->error_message);
+
+
+double chi = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+double rho_crit = (3./(8.*_PI_*_G_*_M_sun_))
+                                *pow(_Mpc_over_m_,1)
+                                *pow(_c_,2)
+                                *pvecback[pba->index_bg_rho_crit]
+                                /pow(pba->h,2);
+// double rho_crit = 1.;
+// printf("z = %.5e rho_cit = %.5e\n",z,pvecback[pba->index_bg_rho_crit]);
+r_delta = pow(3.*m/(4.*_PI_*delta*rho_crit),1./3.);
+c_delta = get_c200m_at_m_and_z_D08(m,z);
+
+// printf("rd cd %.3e  %.3e\n",r_delta,c_delta);
+// double q = k*r_delta*xout/c_delta*(1.+z);
+double q = k*r_delta/c_delta*(1.+z);
+
+double denominator = m_nfw(c_delta); //normalization
+
+
+double numerator = cos(q)*(gsl_sf_Ci((1.+xout*c_delta)*q)-gsl_sf_Ci(q))
+                   +sin(q)*(gsl_sf_Si((1.+xout*c_delta)*q)-gsl_sf_Si(q))
+                   -sin(xout*c_delta*q)/((1.+xout*c_delta)*q);
+                   // printf("%.3e %.3e\n",numerator, denominator);
+
+
+free(pvecback);
+return numerator/denominator;
+//return 1.; // BB debug
 }
 
 

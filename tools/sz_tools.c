@@ -7253,6 +7253,13 @@ if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
 double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
 result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 
+// double chi = V->pvecback[V->pba->index_bg_ang_distance]*V->pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+// double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
+// double phi_galaxy_at_z = get_galaxy_number_counts(z,V->ptsz); // this is ptsz->normalized_dndz_phig
+// double Wg_calc = H_over_c_in_h_over_Mpc*phi_galaxy_at_z;
+//
+// printf("Wg %.5e %.5e\n",Wg/V->pvectsz[V->ptsz->index_chi2],Wg_calc/chi/chi);
+
 }
 
 // multiply by velocity dispersion
@@ -7265,6 +7272,9 @@ if ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kS
   // printf("evaluating vrms2\n");
   evaluate_vrms2(V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
   result *= V->pvectsz[V->ptsz->index_vrms2]/3./pow(_c_*1e-3,2.);
+//
+// double vrms2_calc = get_vrms2_at_z(z,V->ptsz);
+// printf("vrms2 calc %.5e %.5e\n",V->pvectsz[V->ptsz->index_vrms2]/3./pow(_c_*1e-3,2.),vrms2_calc);
 }
 
 // multiply by dsigma2_hsv
@@ -10193,7 +10203,7 @@ int tabulate_dndlnM(struct background * pba,
 
   double tstart, tstop;
   int index_l;
-  double * dndlnM_var;
+  // double * dndlnM_var;
   double * pvecback;
   double * pvectsz;
   int abort;
@@ -10230,7 +10240,7 @@ for (index_l=0;
               ptsz->error_message);
 }
 
-
+// printf("starting tab dn\n");
 //Parallelization of Sigma2(R,z) computation
 /* initialize error management flag */
 abort = _FALSE_;
@@ -10245,9 +10255,9 @@ int number_of_threads= 1;
 #endif
 
 #pragma omp parallel \
-shared(abort,index_z_M,\
+shared(abort,\
 pba,ptsz,ppm,pnl,z_min,z_max,logM_min,logM_max)\
-private(tstart, tstop,index_M,index_z,dndlnM_var,pvecback,pvectsz) \
+private(tstart, tstop,index_z,index_M,pvecback,pvectsz) \
 num_threads(number_of_threads)
 {
 
@@ -10255,37 +10265,31 @@ num_threads(number_of_threads)
   tstart = omp_get_wtime();
 #endif
 
-  class_alloc_parallel(dndlnM_var,
-                       sizeof(double *),
-                       ptsz->error_message);
-  class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+  // class_alloc_parallel(dndlnM_var,
+  //                      sizeof(double *),
+  //                      ptsz->error_message);
 
-  class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+// printf("starting tab dn alloc\n");
+class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+
+class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+// printf("starting tab dn alloc done\n");
+
+int i;
+for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
 
 #pragma omp for schedule (dynamic)
 for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++)
 {
-
 #pragma omp flush(abort)
-
-for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
-{
-      ptsz->array_z_dndlnM[index_z] =
-                                      log(1.+z_min)
-                                      +index_z*(log(1.+z_max)-log(1.+z_min))
-                                      /(ptsz->n_z_dndlnM-1.); // log(1+z)
-
-      ptsz->array_m_dndlnM[index_M] =
-                                    logM_min
-                                    +index_M*(logM_max-logM_min)
-                                    /(ptsz->n_m_dndlnM-1.); //log(R)
-
-      //background quantities @ z:
-      double z =   exp(ptsz->array_z_dndlnM[index_z])-1.;
-      double logM =   ptsz->array_m_dndlnM[index_M];
+// printf("loop z\n");
       double tau;
       int first_index_back = 0;
-
+      ptsz->array_z_dndlnM[index_z] =
+                                log(1.+z_min)
+                                +index_z*(log(1.+z_max)-log(1.+z_min))
+                                /(ptsz->n_z_dndlnM-1.); // log(1+z)
+      double z =   exp(ptsz->array_z_dndlnM[index_z])-1.;
 
       class_call_parallel(background_tau_of_z(pba,z,&tau),
                  pba->error_message,
@@ -10303,6 +10307,21 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
 
 
 
+
+for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
+{
+
+
+      ptsz->array_m_dndlnM[index_M] =
+                                    logM_min
+                                    +index_M*(logM_max-logM_min)
+                                    /(ptsz->n_m_dndlnM-1.); //log(R)
+
+      //background quantities @ z:
+
+      double logM =   ptsz->array_m_dndlnM[index_M];
+
+
       pvectsz[ptsz->index_z] = z;
       pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
                                       *pow(_Mpc_over_m_,1)
@@ -10312,18 +10331,19 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
 
       double omega = pvecback[pba->index_bg_Omega_m];
       pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
-
+// printf("ev hmf\n");
       evaluate_HMF(logM,pvecback,pvectsz,pba,pnl,ptsz);
+// printf("ev hmf done\n");
+
+      // *dndlnM_var = pvectsz[ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
 
 
-      *dndlnM_var = pvectsz[ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
 
+      array_dndlnM_at_z_and_M[index_z][index_M] = log(pvectsz[ptsz->index_hmf]);
 
-
-      array_dndlnM_at_z_and_M[index_z][index_M] = log(*dndlnM_var);
-
-      index_z_M += 1;
+      // index_z_M += 1;
     }
+
   }
 #ifdef _OPENMP
   tstop = omp_get_wtime();
@@ -10332,7 +10352,7 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
            __func__,tstop-tstart,omp_get_thread_num());
 #endif
 
-    free(dndlnM_var);
+    // free(dndlnM_var);
     free(pvecback);
     free(pvectsz);
     }
@@ -11866,6 +11886,19 @@ double get_detection_proba_at_y_and_theta(double y_asked, double th_asked, doubl
 double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
+
+ if (z<ptsz->array_z_dndlnM[0])
+    z = ptsz->array_z_dndlnM[0];
+ if (z>ptsz->array_z_dndlnM[ptsz->n_z_dndlnM-1])
+    z = ptsz->array_z_dndlnM[ptsz->n_z_dndlnM-1];
+
+ if (m<ptsz->array_m_dndlnM[0])
+    m = ptsz->array_m_dndlnM[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (m>ptsz->array_m_dndlnM[ptsz->n_m_dndlnM-1])
+    m =  ptsz->array_m_dndlnM[ptsz->n_m_dndlnM-1];
+
+
  return exp(pwl_interp_2d(ptsz->n_z_dndlnM,
                           ptsz->n_m_dndlnM,
                           ptsz->array_z_dndlnM,

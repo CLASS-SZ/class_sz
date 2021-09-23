@@ -8,6 +8,8 @@
 #include "gsl/gsl_sf_erf.h"
 #include "gsl/gsl_sf_expint.h"
 #include "gsl/gsl_sf_lambert.h"
+# include <fftw3.h>
+// #include "fft.h"
 
 
 #define _pk_at_z_1h_ ((ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_1h))
@@ -91,6 +93,9 @@ struct tszspectrum {
   #include "class_sz_precisions.h"
   #undef __ALLOCATE_TSZ_PARAMETER__
 
+
+  fftw_plan forward_plan, reverse_plan;
+  int N_samp_fftw;
 
 
   int use_analytical_truncated_nfw;
@@ -1324,7 +1329,14 @@ int szpowerspectrum_init(struct background * pba,
                                struct background * pba,
                                struct tszspectrum * ptsz);
 
+double get_tau_profile_at_z_m_l(double z,
+                                double m,
+                                double k,
+                                struct tszspectrum * ptsz,
+                                struct background * pba);
 
+double get_ksz_filter_at_l(double l,
+                           struct tszspectrum * ptsz);
 
   int write_output_to_files_ell_indep_ints(struct nonlinear * pnl,
                                            struct background * pba,
@@ -1460,10 +1472,27 @@ double HOD_mean_number_of_satellite_galaxies(double z,
                                              struct tszspectrum * ptsz,
                                              struct background * pba);
 
+double get_galaxy_profile_at_z_m_l_1h(double z,
+                                      double m,
+                                      double l,
+                                      struct tszspectrum * ptsz,
+                                      struct background * pba);
+
+
 int evaluate_galaxy_profile(double * pvecback,
                             double * pvectsz,
                             struct background * pba,
                             struct tszspectrum * ptsz);
+
+double get_truncated_nfw_profile_at_z_m_k_xout(//double * pvecback,
+                                      double z,
+                                      double m,
+                                      double k,
+                                      double xout,
+                                      double delta,
+                                      struct background * pba,
+                                      struct tszspectrum * ptsz);
+
 
 double evaluate_truncated_nfw_profile(
                                    double xout,
@@ -1490,6 +1519,8 @@ int evaluate_c500c_KA20(//double * pvecback,
                         struct background * pba,
                         struct tszspectrum * ptsz);
 
+double get_galaxy_number_counts(double z,
+                                struct tszspectrum * ptsz);
 
 double radial_kernel_W_galaxy_at_z( double * pvecback,
                                     double * pvectsz,

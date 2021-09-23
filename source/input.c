@@ -2192,6 +2192,8 @@ int input_read_parameters(
 
 
       if ((strstr(string1,"kSZ_kSZ_gal_1h") != NULL) ) {
+        // printf("1h\n");
+        // exit(0);
         ptsz->has_kSZ_kSZ_gal_1h =_TRUE_;
         ptsz->has_vrms2 = _TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2202,7 +2204,7 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
-      if ((strstr(string1,"kSZ_kSZ_gal_1h_fft") != NULL) ) {
+      if ((strstr(string1,"kSZ_kSZ_gal fft (1h)") != NULL) ) {
         ptsz->has_kSZ_kSZ_gal_1h_fft =_TRUE_;
         ptsz->has_vrms2 = _TRUE_;
         ppt->has_density_transfers=_TRUE_;
