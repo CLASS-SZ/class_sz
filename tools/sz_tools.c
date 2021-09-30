@@ -3475,7 +3475,7 @@ double get_density_profile_at_l_M_z(double l_asked, double m_asked, double z_ask
                                 n_z,
                                 ptsz->array_profile_ln_m,
                                 ptsz->array_profile_ln_1pz,
-                                ptsz->array_profile_ln_rho_at_lnl_lnM_z[id_l_low],
+                                ptsz->array_profile_ln_rho_at_lnl_lnM_z[id_l_low-1],
                                 1,
                                 &m,
                                 &z);
@@ -3484,12 +3484,12 @@ double get_density_profile_at_l_M_z(double l_asked, double m_asked, double z_ask
                                 n_z,
                                 ptsz->array_profile_ln_m,
                                 ptsz->array_profile_ln_1pz,
-                                ptsz->array_profile_ln_rho_at_lnl_lnM_z[id_l_up],
+                                ptsz->array_profile_ln_rho_at_lnl_lnM_z[id_l_up-1],
                                 1,
                                 &m,
                                 &z);
- double ln_l_low = ptsz->array_profile_ln_l[id_l_low];
- double ln_l_up = ptsz->array_profile_ln_l[id_l_up];
+ double ln_l_low = ptsz->array_profile_ln_l[id_l_low-1];
+ double ln_l_up = ptsz->array_profile_ln_l[id_l_up-1];
 
  // return exp(ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
  return ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low);
@@ -3514,6 +3514,8 @@ int tabulate_density_profile(struct background * pba,
 if (ptsz->has_kSZ_kSZ_lensmag_1halo
 + ptsz->has_kSZ_kSZ_gal_1h
 + ptsz->has_kSZ_kSZ_gal_1h_fft
++ ptsz->has_kSZ_kSZ_gal_2h_fft
++ ptsz->has_kSZ_kSZ_gal_3h_fft
 + ptsz->has_kSZ_kSZ_gal_2h
 + ptsz->has_kSZ_kSZ_gal_3h
 == _FALSE_
@@ -3973,7 +3975,7 @@ double get_pressure_profile_at_l_M_z(double l_asked, double m_asked, double z_as
                                 n_z,
                                 ptsz->array_pressure_profile_ln_m,
                                 ptsz->array_pressure_profile_ln_1pz,
-                                ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[id_l_low],
+                                ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[id_l_low-1],
                                 1,
                                 &m,
                                 &z);
@@ -3982,12 +3984,12 @@ double get_pressure_profile_at_l_M_z(double l_asked, double m_asked, double z_as
                                 n_z,
                                 ptsz->array_pressure_profile_ln_m,
                                 ptsz->array_pressure_profile_ln_1pz,
-                                ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[id_l_up],
+                                ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[id_l_up-1],
                                 1,
                                 &m,
                                 &z);
- double ln_l_low = ptsz->array_pressure_profile_ln_l[id_l_low];
- double ln_l_up = ptsz->array_pressure_profile_ln_l[id_l_up];
+ double ln_l_low = ptsz->array_pressure_profile_ln_l[id_l_low-1];
+ double ln_l_up = ptsz->array_pressure_profile_ln_l[id_l_up-1];
 
  // return exp(ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
  return ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low);
@@ -5179,6 +5181,8 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h_fft != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_2h_fft != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_3h_fft != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_3h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_hf != _TRUE_ )
@@ -5419,6 +5423,8 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h_fft != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_2h_fft != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_3h_fft != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_3h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_hf != _TRUE_ )
@@ -5599,6 +5605,8 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h_fft != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_2h_fft != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gal_3h_fft != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_3h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_hf != _TRUE_ )
@@ -6809,6 +6817,8 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
      //|| ((V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo))
      || ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h))
      || ((V->ptsz->has_kSZ_kSZ_gal_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h_fft))
+     || ((V->ptsz->has_kSZ_kSZ_gal_2h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h_fft))
+     || ((V->ptsz->has_kSZ_kSZ_gal_3h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h_fft))
      || ((V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h))
      || ((V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h))
      // || ((V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf))
@@ -7237,6 +7247,8 @@ if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
   || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
   || ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h))
   || ((V->ptsz->has_kSZ_kSZ_gal_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h_fft))
+  || ((V->ptsz->has_kSZ_kSZ_gal_2h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h_fft))
+  || ((V->ptsz->has_kSZ_kSZ_gal_3h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h_fft))
   || ((V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h))
   || ((V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h))
   || ((V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf))
@@ -7265,6 +7277,8 @@ result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 // multiply by velocity dispersion
 if ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h)
  || (V->ptsz->has_kSZ_kSZ_gal_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h_fft)
+ || (V->ptsz->has_kSZ_kSZ_gal_2h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h_fft)
+ || (V->ptsz->has_kSZ_kSZ_gal_3h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h_fft)
  || (V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h)
  || (V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h)
  || (V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf)
@@ -8133,6 +8147,286 @@ double integrand_patterson_test(double logM, void *p){
   r = pk3*r_m_11*r_m_21  +  pk2*r_m_12*r_m_22  +  pk1*r_m_13*r_m_23;
   }
 
+
+
+
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_gal_2h_fft){
+  double r_m_11; // first part of redshift integrand
+  double r_m_21; // second part of redshift integrand
+  double r_m_12; // first part of redshift integrand
+  double r_m_22; // second part of redshift integrand
+  double r_m_13; // first part of redshift integrand
+  double r_m_23; // second part of redshift integrand
+
+  double z = pvectsz[ptsz->index_z];
+
+
+  int index_l_3 = (int) pvectsz[ptsz->index_multipole];
+  double l3 = ptsz->ell[index_l_3];
+  pvectsz[ptsz->index_multipole_for_pk] = l3;
+  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
+
+
+
+
+  // r_m_11*r_m_21
+  // pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_11=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double bmin_umin = bmin*integrand_patterson_test(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_11 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+
+  r_m_21 = pk3*get_psi_b1g_at_l_and_z(l3,z,ptsz);
+
+  // printf("%.5e %.5e\n",r_m_11,r_m_21);
+
+
+
+//// r_m_12 and r_m_22
+//// no mass integral
+//// apply convolution theorem
+
+
+  /// set-up:
+
+double l_min = 1e-2;
+double l_max = 2e4; // this is a precision parameter
+// tabulate the integrand in the "l" dimension:
+const int N = ptsz->N_samp_fftw;
+double k[N], Pk1[N],Pk2[N], Pkr[N];
+double lnk[N],lnpk[N];
+int ik;
+double fl;
+// double taul;
+double l;
+// double m = exp(logM);
+
+// printf("z = %.5e l = %.5e\n",z,l3);
+
+for (ik=0; ik<N; ik++){
+k[ik] = exp(log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min)));
+lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
+l = k[ik];
+fl = get_ksz_filter_at_l(l,ptsz);
+
+Pk1[ik] = fl*get_psi_b1gt_at_l1_l2_and_z(l3,l,z,ptsz);
+
+pvectsz[ptsz->index_multipole_for_pk] = l;
+evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+double pkl = pvectsz[ptsz->index_pk_for_halo_bias];
+Pk2[ik] = fl*get_psi_b1t_at_l_and_z(l,z,ptsz)*pkl;
+// if(l>3e3)
+  // printf("k = %.5e pk = %.5e\n",l,Pk2[ik]);
+}
+// printf("k pk done\n");
+
+double rp[N], xi1[N], xi2[N], xi12[N];
+
+// go to Fourier space:
+xi2pk(N,k,Pk1,rp,xi1,ptsz);
+xi2pk(N,k,Pk2,rp,xi2,ptsz);
+for (ik=0; ik<N; ik++){
+// convolution:
+xi12[ik] = xi1[ik]*xi2[ik];
+}
+// printf("xi pi done\n");
+
+// move back to position space:
+pk2xi(N,rp,xi12,k,Pkr,ptsz);
+
+// evaluate at l3
+double f_psi_f_psi = pwl_value_1d(N,lnk,Pkr,log(l3));
+
+r_m_12 = f_psi_f_psi;
+r_m_22 = 1.;
+
+r_m_13 = r_m_12;
+r_m_23 = 1.;
+
+r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
+// printf("xi pd done r=%.5e\n",r);
+  }
+
+
+
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_gal_3h_fft){
+  double t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12;
+
+  double z = pvectsz[ptsz->index_z];
+
+
+  int index_l_3 = (int) pvectsz[ptsz->index_multipole];
+  double l3 = ptsz->ell[index_l_3];
+  pvectsz[ptsz->index_multipole_for_pk] = l3;
+  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
+
+
+  double psi_bg = get_psi_b1g_at_l_and_z(l3,z,ptsz);
+  double psi_b2g = get_psi_b2g_at_l_and_z(l3,z,ptsz);
+
+  // printf("%.5e %.5e\n",r_m_11,r_m_21);
+
+
+
+//// r_m_12 and r_m_22
+//// no mass integral
+//// apply convolution theorem
+
+
+  /// set-up:
+
+double l_min = 1e-2;
+double l_max = 2e4; // this is a precision parameter
+// tabulate the integrand in the "l" dimension:
+const int N = ptsz->N_samp_fftw;
+double k[N];
+
+double t1_xi12[N],t1_Pkr[N];
+double t2_xi12[N],t2_Pkr[N];
+double t3_xi12[N],t3_Pkr[N];
+double t4_xi12[N],t4_Pkr[N];
+double t5_xi12[N],t5_Pkr[N];
+double t6_xi12[N],t6_Pkr[N];
+double t7_xi12[N],t7_Pkr[N];
+double t8_xi12[N],t8_Pkr[N];
+double t9_xi12[N],t9_Pkr[N];
+double t10_xi12[N],t10_Pkr[N];
+
+
+// double  xi1[N], xi2[N], xi12[N];
+
+double lnk[N];
+int ik;
+double fl;
+// double taul;
+double l,pkl;
+
+double pk_phi_0[N],pk_phi_m2[N],pk_phi_4[N],pk_phi_2[N];
+double pk_tilde_phi_0[N],pk_tilde_phi_m2[N],pk_tilde_phi_2[N];
+
+
+double xi_phi_0[N],xi_phi_m2[N],xi_phi_4[N],xi_phi_2[N];
+double xi_tilde_phi_0[N],xi_tilde_phi_m2[N],xi_tilde_phi_2[N];
+
+
+
+
+
+double psi_bt;
+// double m = exp(logM);
+
+// printf("z = %.5e l = %.5e\n",z,l3);
+
+for (ik=0; ik<N; ik++){
+k[ik] = exp(log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min)));
+lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
+l = k[ik];
+pvectsz[ptsz->index_multipole_for_pk] = l;
+evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+pkl = pvectsz[ptsz->index_pk_for_halo_bias];
+fl = get_ksz_filter_at_l(l,ptsz);
+psi_bt = get_psi_b1t_at_l_and_z(l,z,ptsz);
+
+pk_phi_0[ik] = fl*psi_bt;
+pk_phi_m2[ik] = pow(l,-2)*fl*psi_bt;
+pk_phi_4[ik] = pow(l,4)*fl*psi_bt;
+pk_phi_2[ik] = pow(l,2)*fl*psi_bt;
+
+pk_tilde_phi_0[ik] = fl*pkl*psi_bt;
+pk_tilde_phi_m2[ik] = pow(l,-2)*fl*pkl*psi_bt;
+pk_tilde_phi_2[ik] = pow(l,2)*fl*pkl*psi_bt;
+
+
+
+//
+// t1_Pk1[ik] = tilde_phi_0;
+// t1_Pk2[ik] = tilde_phi_0;
+//
+//
+
+
+// if(l>3e3)
+  // printf("k = %.5e pk = %.5e\n",l,Pk2[ik]);
+}
+// printf("k pk done\n");
+
+double rp[N];
+
+// go to Fourier space:
+xi2pk(N,k,pk_phi_0,rp,xi_phi_0,ptsz);
+xi2pk(N,k,pk_phi_2,rp,xi_phi_2,ptsz);
+xi2pk(N,k,pk_phi_m2,rp,xi_phi_m2,ptsz);
+xi2pk(N,k,pk_tilde_phi_0,rp,xi_tilde_phi_0,ptsz);
+xi2pk(N,k,pk_tilde_phi_2,rp,xi_tilde_phi_2,ptsz);
+xi2pk(N,k,pk_tilde_phi_m2,rp,xi_tilde_phi_m2,ptsz);
+xi2pk(N,k,pk_phi_4,rp,xi_phi_4,ptsz);
+
+for (ik=0; ik<N; ik++){
+// convolution:
+t1_xi12[ik] = xi_tilde_phi_0[ik]*xi_tilde_phi_0[ik];
+
+t2_xi12[ik] = xi_tilde_phi_2[ik]*xi_tilde_phi_m2[ik];
+
+t3_xi12[ik] = xi_tilde_phi_0[ik]*xi_tilde_phi_m2[ik];
+
+t4_xi12[ik] = xi_tilde_phi_m2[ik]*xi_tilde_phi_m2[ik];
+
+t5_xi12[ik] = xi_tilde_phi_0[ik]*xi_phi_0[ik];
+
+t6_xi12[ik] = xi_tilde_phi_2[ik]*xi_phi_0[ik];
+
+
+t7_xi12[ik] = xi_tilde_phi_m2[ik]*xi_phi_0[ik];
+
+t8_xi12[ik] = xi_tilde_phi_0[ik]*xi_phi_2[ik];
+
+t9_xi12[ik] = xi_tilde_phi_m2[ik]*xi_phi_2[ik];
+
+t10_xi12[ik] = xi_tilde_phi_m2[ik]*xi_phi_4[ik];
+
+}
+// printf("xi pi done\n");
+
+// move back to position space:
+pk2xi(N,rp,t1_xi12,k,t1_Pkr,ptsz);
+pk2xi(N,rp,t2_xi12,k,t2_Pkr,ptsz);
+pk2xi(N,rp,t3_xi12,k,t3_Pkr,ptsz);
+pk2xi(N,rp,t4_xi12,k,t4_Pkr,ptsz);
+pk2xi(N,rp,t5_xi12,k,t5_Pkr,ptsz);
+pk2xi(N,rp,t6_xi12,k,t6_Pkr,ptsz);
+pk2xi(N,rp,t7_xi12,k,t7_Pkr,ptsz);
+pk2xi(N,rp,t8_xi12,k,t8_Pkr,ptsz);
+pk2xi(N,rp,t9_xi12,k,t9_Pkr,ptsz);
+pk2xi(N,rp,t10_xi12,k,t10_Pkr,ptsz);
+
+
+
+r = (psi_b2g+19./7.*psi_bg)*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
++9./7.*psi_bg*pwl_value_1d(N,lnk,t2_Pkr,log(l3))
+-11./7.*pow(l3,2.)*psi_bg*pwl_value_1d(N,lnk,t3_Pkr,log(l3))
++1./7.*psi_bg*pow(l3,4.)*pwl_value_1d(N,lnk,t4_Pkr,log(l3))
++2.*(psi_b2g+4.*psi_bg)*pk3*pwl_value_1d(N,lnk,t5_Pkr,log(l3))
++2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t6_Pkr,log(l3))
++2./7.*pow(l3,2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t7_Pkr,log(l3))
+-4./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t8_Pkr,log(l3))
+-4./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t9_Pkr,log(l3))
++2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t10_Pkr,log(l3));
+// printf("xi pd done r=%.5e\n",r);
+  }
 
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_gal_3h){
   double r_m_b1t1;
@@ -9162,6 +9456,1040 @@ double integrand_hmf_counter_terms_b1min(double lnM_halo, void *p){
   return result;
 
 }
+
+
+
+struct Parameters_for_integrand_psi_b2g{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+  double l;
+};
+
+
+
+struct Parameters_for_integrand_psi_b1g{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+  double l;
+};
+
+
+struct Parameters_for_integrand_psi_b1t{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+  double l;
+};
+
+
+struct Parameters_for_integrand_psi_b1gt{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+  double l1;
+  double l2;
+};
+
+
+
+double integrand_psi_b1g(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_psi_b1g *V = ((struct Parameters_for_integrand_psi_b1g *) p);
+
+    //double x=exp(ln_x);
+    double z = V->z;
+    double ell = V->l;
+
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
+
+      evaluate_HMF(lnM_halo,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
+
+      // double z_asked = z;
+      // double  m_asked = M_halo;
+      // this  also works:
+      //double hmf = get_dndlnM_at_z_and_M(z_asked,m_asked,V->ptsz);
+
+      // printf("hmf = %.3e\n",hmf);
+      // printf("ns = %.3e\n",ns);
+      // printf("nc = %.3e\n",nc);
+      // double rho_crit_at_z = V->ptsz->Rho_crit_0;// V->pvectsz[V->ptsz->index_Rho_crit];
+      // double Omega_cb = (V->pba->Omega0_cdm + V->pba->Omega0_b);//*pow(1.+z,3.);
+      // double rho_cb = rho_crit_at_z*Omega_cb;
+      //
+
+      V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
+      V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;//ptsz->ell[index_l_3];
+      evaluate_galaxy_profile_2h(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      double g = V->pvectsz[V->ptsz->index_galaxy_profile];
+
+
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      double b1 = V->pvectsz[V->ptsz->index_halo_bias];
+      double result = hmf*b1*g;
+      // printf("ell = %.3e z=%.3e hmf = %.3e b1 = %.3e g = %.3e\n",ell,z, hmf,b1,g);
+      //double result = (ns+nc)/log(10.);
+
+
+
+  return result;
+
+}
+
+
+
+
+double integrand_psi_b2g(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_psi_b2g *V = ((struct Parameters_for_integrand_psi_b2g *) p);
+
+    //double x=exp(ln_x);
+    double z = V->z;
+    double ell = V->l;
+
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
+
+      evaluate_HMF(lnM_halo,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
+
+      // double z_asked = z;
+      // double  m_asked = M_halo;
+      // this  also works:
+      //double hmf = get_dndlnM_at_z_and_M(z_asked,m_asked,V->ptsz);
+
+      // printf("hmf = %.3e\n",hmf);
+      // printf("ns = %.3e\n",ns);
+      // printf("nc = %.3e\n",nc);
+      // double rho_crit_at_z = V->ptsz->Rho_crit_0;// V->pvectsz[V->ptsz->index_Rho_crit];
+      // double Omega_cb = (V->pba->Omega0_cdm + V->pba->Omega0_b);//*pow(1.+z,3.);
+      // double rho_cb = rho_crit_at_z*Omega_cb;
+      //
+
+      V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
+      V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;//ptsz->ell[index_l_3];
+      evaluate_galaxy_profile_2h(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      double g = V->pvectsz[V->ptsz->index_galaxy_profile];
+
+
+      // evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      // double b1 = V->pvectsz[V->ptsz->index_halo_bias];
+      evaluate_halo_bias_b2(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      double b2 = V->pvectsz[V->ptsz->index_halo_bias_b2];
+
+      double result = hmf*b2*g;
+      // printf("ell = %.3e z=%.3e hmf = %.3e b1 = %.3e g = %.3e\n",ell,z, hmf,b1,g);
+      //double result = (ns+nc)/log(10.);
+
+
+
+  return result;
+
+}
+
+
+
+
+
+double integrand_psi_b1t(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_psi_b1t *V = ((struct Parameters_for_integrand_psi_b1t *) p);
+
+    //double x=exp(ln_x);
+    double z = V->z;
+    double ell = V->l;
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
+
+      evaluate_HMF(lnM_halo,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
+
+      // double z_asked = z;
+      // double  m_asked = M_halo;
+      // this  also works:
+      //double hmf = get_dndlnM_at_z_and_M(z_asked,m_asked,V->ptsz);
+
+      // printf("hmf = %.3e\n",hmf);
+      // printf("ns = %.3e\n",ns);
+      // printf("nc = %.3e\n",nc);
+      // double rho_crit_at_z = V->ptsz->Rho_crit_0;// V->pvectsz[V->ptsz->index_Rho_crit];
+      // double Omega_cb = (V->pba->Omega0_cdm + V->pba->Omega0_b);//*pow(1.+z,3.);
+      // double rho_cb = rho_crit_at_z*Omega_cb;
+      //
+
+      V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell;
+      evaluate_tau_profile(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      double t = V->pvectsz[V->ptsz->index_tau_profile];
+
+
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      double b1 = V->pvectsz[V->ptsz->index_halo_bias];
+      double result = hmf*b1*t;
+      // printf("hmf = %.3e b1 = %.3e g = %.3e\n",hmf,b1,g);
+      //double result = (ns+nc)/log(10.);
+
+
+
+  return result;
+
+}
+
+double integrand_psi_b1gt(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_psi_b1gt *V = ((struct Parameters_for_integrand_psi_b1gt *) p);
+
+    //double x=exp(ln_x);
+    double z = V->z;
+    double ell1 = V->l1;
+    double ell2 = V->l2;
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
+
+      evaluate_HMF(lnM_halo,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];//*ptsz->Rho_crit_0/pba->h/pba->h;//pvectsz[ptsz->index_hmf];
+
+      // double z_asked = z;
+      // double  m_asked = M_halo;
+      // this  also works:
+      //double hmf = get_dndlnM_at_z_and_M(z_asked,m_asked,V->ptsz);
+
+      // printf("hmf = %.3e\n",hmf);
+      // printf("ns = %.3e\n",ns);
+      // printf("nc = %.3e\n",nc);
+      // double rho_crit_at_z = V->ptsz->Rho_crit_0;// V->pvectsz[V->ptsz->index_Rho_crit];
+      // double Omega_cb = (V->pba->Omega0_cdm + V->pba->Omega0_b);//*pow(1.+z,3.);
+      // double rho_cb = rho_crit_at_z*Omega_cb;
+      //
+
+      V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
+      V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell1;//ptsz->ell[index_l_3];
+      evaluate_galaxy_profile_2h(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      double g = V->pvectsz[V->ptsz->index_galaxy_profile];
+
+
+
+      V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell2;
+      evaluate_tau_profile(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      double t = V->pvectsz[V->ptsz->index_tau_profile];
+
+
+
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      double b1 = V->pvectsz[V->ptsz->index_halo_bias];
+      double result = hmf*b1*g*t;
+      // printf("hmf = %.3e b1 = %.3e g = %.3e\n",hmf,b1,g);
+      //double result = (ns+nc)/log(10.);
+
+
+
+  return result;
+
+}
+
+
+
+
+int tabulate_psi_b1g(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_psi_b1g_redshift,sizeof(double *)*ptsz->n_z_psi_b1g,ptsz->error_message);
+class_alloc(ptsz->array_psi_b1g_multipole,sizeof(double *)*ptsz->n_l_psi_b1g,ptsz->error_message);
+
+class_alloc(ptsz->array_psi_b1g_psi,sizeof(double *)*ptsz->n_l_psi_b1g*ptsz->n_z_psi_b1g,ptsz->error_message);
+
+
+int index_z, index_l;
+double r;
+double m_min,m_max;
+
+
+m_min = ptsz->M1SZ; // for the mass integral
+m_max = ptsz->M2SZ; // for the mass integral
+// m_min = ptsz->m_min_counter_terms;
+// m_max = ptsz->m_max_counter_terms;
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
+// printf("ptsz->n_z_psi_b1g = %d\n",ptsz->n_z_psi_b1g);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
+        {
+
+          ptsz->array_psi_b1g_redshift[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_psi_b1g-1.); // log(1+z)
+        }
+
+// parallelize ver l
+double l_min = 2.;
+double l_max = 3e4;
+
+
+for (index_l=0; index_l<ptsz->n_l_psi_b1g; index_l++)
+        {
+
+          ptsz->array_psi_b1g_multipole[index_l] =
+                                      log(l_min)
+                                      +index_l*(log(l_max)-log(l_min))
+                                      /(ptsz->n_l_psi_b1g-1.); // log(l)
+        }
+
+
+double * pvecback;
+double * pvectsz;
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,m_min,m_max)\
+private(tstart, tstop,index_z,index_l,pvecback,pvectsz,r) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+#pragma omp for schedule (dynamic)
+for (index_l=0; index_l<ptsz->n_l_psi_b1g; index_l++)
+{
+#pragma omp flush(abort)
+
+double l = exp(ptsz->array_psi_b1g_multipole[index_l]);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
+        {
+
+          int index_l_z = index_l * ptsz->n_z_psi_b1g + index_z;
+
+
+          double z = exp(ptsz->array_psi_b1g_redshift[index_z])-1.;
+
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_psi_b1g V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+          V.l = l;
+
+          void * params = &V;
+          double epsrel=1e-3;
+          double epsabs=1e-100;
+
+          pvectsz[ptsz->index_has_galaxy] = 1; //
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_psi_b1g,
+                                               params,
+                                               ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double bmin_umin = bmin*integrand_psi_b1g(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+          // // here is (1-r) = n_min*m_min/rho_cb at z
+          // double rho_crit_at_z = ptsz->Rho_crit_0;//pvectsz[ptsz->index_Rho_crit];
+          // double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);//*pow(1.+z,3.);
+          // double rho_cb = rho_crit_at_z*Omega_cb;
+          // double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
+          // double b1_min = (1.-r)*rho_cb/m_min/n_min;
+          ptsz->array_psi_b1g_psi[index_l_z] = log(r);
+
+          // printf("ptsz->array_psi_b1g_psi[%d] = %.5e\n",index_l_z,ptsz->array_psi_b1g_psi[index_l_z]);
+
+       }
+     }
+     #ifdef _OPENMP
+       tstop = omp_get_wtime();
+       if (ptsz->sz_verbose > 0)
+         printf("In %s: time spent in parallel region b1g (loop over l's) = %e s for thread %d\n",
+                __func__,tstop-tstart,omp_get_thread_num());
+     #endif
+ free(pvecback);
+ free(pvectsz);
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+    }
+
+
+
+
+int tabulate_psi_b2g(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_psi_b2g_redshift,sizeof(double *)*ptsz->n_z_psi_b2g,ptsz->error_message);
+class_alloc(ptsz->array_psi_b2g_multipole,sizeof(double *)*ptsz->n_l_psi_b2g,ptsz->error_message);
+
+class_alloc(ptsz->array_psi_b2g_psi,sizeof(double *)*ptsz->n_l_psi_b2g*ptsz->n_z_psi_b2g,ptsz->error_message);
+
+
+int index_z, index_l;
+double r;
+double m_min,m_max;
+
+
+m_min = ptsz->M1SZ; // for the mass integral
+m_max = ptsz->M2SZ; // for the mass integral
+// m_min = ptsz->m_min_counter_terms;
+// m_max = ptsz->m_max_counter_terms;
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
+// printf("ptsz->n_z_psi_b2g = %d\n",ptsz->n_z_psi_b2g);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
+        {
+
+          ptsz->array_psi_b2g_redshift[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_psi_b2g-1.); // log(1+z)
+        }
+
+// parallelize ver l
+double l_min = 2.;
+double l_max = 3e4;
+
+
+for (index_l=0; index_l<ptsz->n_l_psi_b2g; index_l++)
+        {
+
+          ptsz->array_psi_b2g_multipole[index_l] =
+                                      log(l_min)
+                                      +index_l*(log(l_max)-log(l_min))
+                                      /(ptsz->n_l_psi_b2g-1.); // log(l)
+        }
+
+
+double * pvecback;
+double * pvectsz;
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,m_min,m_max)\
+private(tstart, tstop,index_z,index_l,pvecback,pvectsz,r) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+#pragma omp for schedule (dynamic)
+for (index_l=0; index_l<ptsz->n_l_psi_b2g; index_l++)
+{
+#pragma omp flush(abort)
+
+double l = exp(ptsz->array_psi_b2g_multipole[index_l]);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b2g; index_z++)
+        {
+
+          int index_l_z = index_l * ptsz->n_z_psi_b2g + index_z;
+
+
+          double z = exp(ptsz->array_psi_b2g_redshift[index_z])-1.;
+
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_psi_b2g V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+          V.l = l;
+
+          void * params = &V;
+          double epsrel=1e-3;
+          double epsabs=1e-100;
+
+          pvectsz[ptsz->index_has_galaxy] = 1; //
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_psi_b1g,
+                                               params,
+                                               ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b2min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double bmin_umin = bmin*integrand_psi_b2g(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias_b2];
+     r += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+          // // here is (1-r) = n_min*m_min/rho_cb at z
+          // double rho_crit_at_z = ptsz->Rho_crit_0;//pvectsz[ptsz->index_Rho_crit];
+          // double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);//*pow(1.+z,3.);
+          // double rho_cb = rho_crit_at_z*Omega_cb;
+          // double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
+          // double b1_min = (1.-r)*rho_cb/m_min/n_min;
+          ptsz->array_psi_b2g_psi[index_l_z] = log(r);
+
+          // printf("ptsz->array_psi_b1g_psi[%d] = %.5e\n",index_l_z,ptsz->array_psi_b1g_psi[index_l_z]);
+
+       }
+     }
+     #ifdef _OPENMP
+       tstop = omp_get_wtime();
+       if (ptsz->sz_verbose > 0)
+         printf("In %s: time spent in parallel region b2g (loop over l's) = %e s for thread %d\n",
+                __func__,tstop-tstart,omp_get_thread_num());
+     #endif
+ free(pvecback);
+ free(pvectsz);
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+    }
+
+
+
+int tabulate_psi_b1t(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_psi_b1t_redshift,sizeof(double *)*ptsz->n_z_psi_b1t,ptsz->error_message);
+class_alloc(ptsz->array_psi_b1t_multipole,sizeof(double *)*ptsz->n_l_psi_b1t,ptsz->error_message);
+
+class_alloc(ptsz->array_psi_b1t_psi,sizeof(double *)*ptsz->n_l_psi_b1t*ptsz->n_z_psi_b1t,ptsz->error_message);
+
+
+int index_z, index_l;
+double r;
+double m_min,m_max;
+
+
+m_min = ptsz->M1SZ; // for the mass integral
+m_max = ptsz->M2SZ; // for the mass integral
+// m_min = ptsz->m_min_counter_terms;
+// m_max = ptsz->m_max_counter_terms;
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
+// printf("ptsz->n_z_psi_b1g = %d\n",ptsz->n_z_psi_b1g);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b1t; index_z++)
+        {
+
+          ptsz->array_psi_b1t_redshift[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_psi_b1t-1.); // log(1+z)
+        }
+
+// parallelize ver l
+double l_min = 2.;
+double l_max = 3e4;
+
+
+for (index_l=0; index_l<ptsz->n_l_psi_b1t; index_l++)
+        {
+
+          ptsz->array_psi_b1t_multipole[index_l] =
+                                      log(l_min)
+                                      +index_l*(log(l_max)-log(l_min))
+                                      /(ptsz->n_l_psi_b1t-1.); // log(l)
+        }
+
+
+double * pvecback;
+double * pvectsz;
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,m_min,m_max)\
+private(tstart, tstop,index_z,index_l,pvecback,pvectsz,r) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+#pragma omp for schedule (dynamic)
+for (index_l=0; index_l<ptsz->n_l_psi_b1t; index_l++)
+{
+#pragma omp flush(abort)
+
+double l = exp(ptsz->array_psi_b1t_multipole[index_l]);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b1t; index_z++)
+        {
+
+          int index_l_z = index_l * ptsz->n_z_psi_b1t + index_z;
+
+
+          double z = exp(ptsz->array_psi_b1t_redshift[index_z])-1.;
+
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_psi_b1t V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+          V.l = l;
+
+          void * params = &V;
+          double epsrel=1e-3;
+          double epsabs=1e-100;
+
+          pvectsz[ptsz->index_has_electron_density] = 1; //
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_psi_b1t,
+                                               params,
+                                               ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double bmin_umin = bmin*integrand_psi_b1t(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+          // // here is (1-r) = n_min*m_min/rho_cb at z
+          // double rho_crit_at_z = ptsz->Rho_crit_0;//pvectsz[ptsz->index_Rho_crit];
+          // double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);//*pow(1.+z,3.);
+          // double rho_cb = rho_crit_at_z*Omega_cb;
+          // double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
+          // double b1_min = (1.-r)*rho_cb/m_min/n_min;
+          ptsz->array_psi_b1t_psi[index_l_z] = log(r);
+
+          // printf("ptsz->array_psi_b1t_psi[%d] = %.5e\n",index_l_z,r);
+
+       }
+     }
+     #ifdef _OPENMP
+       tstop = omp_get_wtime();
+       if (ptsz->sz_verbose > 0)
+         printf("In %s: time spent in parallel region b1t (loop over l's) = %e s for thread %d\n",
+                __func__,tstop-tstart,omp_get_thread_num());
+     #endif
+ free(pvecback);
+ free(pvectsz);
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+    }
+
+
+
+int tabulate_psi_b1gt(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_psi_b1gt_redshift,sizeof(double *)*ptsz->n_z_psi_b1gt,ptsz->error_message);
+class_alloc(ptsz->array_psi_b1gt_multipole,sizeof(double *)*ptsz->n_l_psi_b1gt,ptsz->error_message);
+
+class_alloc(ptsz->array_psi_b1gt_psi,sizeof(double *)*ptsz->n_z_psi_b1gt,ptsz->error_message);
+int index_z, index_l1,index_l2;
+for (index_z=0;index_z<ptsz->n_z_psi_b1gt;index_z++){
+  class_alloc(ptsz->array_psi_b1gt_psi[index_z],sizeof(double *)*ptsz->n_l_psi_b1gt*ptsz->n_l_psi_b1gt,ptsz->error_message);
+
+}
+
+
+
+double r;
+double m_min,m_max;
+
+
+m_min = ptsz->M1SZ; // for the mass integral
+m_max = ptsz->M2SZ; // for the mass integral
+// m_min = ptsz->m_min_counter_terms;
+// m_max = ptsz->m_max_counter_terms;
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
+// printf("ptsz->n_z_psi_b1g = %d\n",ptsz->n_z_psi_b1g);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b1gt; index_z++)
+        {
+
+          ptsz->array_psi_b1gt_redshift[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_psi_b1gt-1.); // log(1+z)
+        }
+
+// parallelize ver l
+double l_min = 2.;
+double l_max = 3e4;
+
+int index_l;
+for (index_l=0; index_l<ptsz->n_l_psi_b1gt; index_l++)
+        {
+
+          ptsz->array_psi_b1gt_multipole[index_l] =
+                                      log(l_min)
+                                      +index_l*(log(l_max)-log(l_min))
+                                      /(ptsz->n_l_psi_b1gt-1.); // log(l)
+        }
+
+
+double * pvecback;
+double * pvectsz;
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,m_min,m_max)\
+private(tstart, tstop,index_z,index_l1,index_l2,pvecback,pvectsz,r) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+// printf("doing well\n");
+
+#pragma omp for collapse(3)
+//#pragma omp for schedule (dynamic)
+for (index_z=0; index_z<ptsz->n_z_psi_b1gt; index_z++)
+{
+//#pragma omp flush(abort)
+  for (index_l1=0; index_l1<ptsz->n_l_psi_b1gt; index_l1++)
+  {
+    for (index_l2=0; index_l2<ptsz->n_l_psi_b1gt; index_l2++)
+    {
+// #pragma omp flush(abort)
+
+
+          double l1 = exp(ptsz->array_psi_b1gt_multipole[index_l1]);
+          double l2 = exp(ptsz->array_psi_b1gt_multipole[index_l2]);
+
+          int index_l1_l2 = index_l2 * ptsz->n_l_psi_b1gt + index_l1;
+
+
+          double z = exp(ptsz->array_psi_b1gt_redshift[index_z])-1.;
+
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_psi_b1gt V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+          V.l1 = l1;
+          V.l2 = l2;
+
+          void * params = &V;
+          double epsrel=1e-3;
+          double epsabs=1e-100;
+
+          pvectsz[ptsz->index_has_electron_density] = 1; //
+          pvectsz[ptsz->index_has_galaxy] = 1; //
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_psi_b1gt,
+                                               params,
+                                               ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double bmin_umin = bmin*integrand_psi_b1gt(log(ptsz->m_min_counter_terms),params)/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+          // // here is (1-r) = n_min*m_min/rho_cb at z
+          // double rho_crit_at_z = ptsz->Rho_crit_0;//pvectsz[ptsz->index_Rho_crit];
+          // double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);//*pow(1.+z,3.);
+          // double rho_cb = rho_crit_at_z*Omega_cb;
+          // double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
+          // double b1_min = (1.-r)*rho_cb/m_min/n_min;
+          ptsz->array_psi_b1gt_psi[index_z][index_l1_l2] = log(r);
+
+          // printf("ptsz->array_psi_b1t_psi[%d] = %.5e\n",index_l_z,r);
+
+       }
+     }
+   }
+     #ifdef _OPENMP
+       tstop = omp_get_wtime();
+       if (ptsz->sz_verbose > 0)
+         printf("In %s: time spent in parallel region b1gt (loop over llz's) = %e s for thread %d\n",
+                __func__,tstop-tstart,omp_get_thread_num());
+     #endif
+ free(pvecback);
+ free(pvectsz);
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+    }
+
 
 
 
@@ -11881,6 +13209,189 @@ double get_detection_proba_at_y_and_theta(double y_asked, double th_asked, doubl
                         }
   return r;
 }
+
+
+double get_psi_b2g_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double l = log(l_asked);
+
+ if (z<ptsz->array_psi_b2g_redshift[0])
+    z = ptsz->array_psi_b2g_redshift[0];
+ if (z>ptsz->array_psi_b2g_redshift[ptsz->n_z_psi_b2g-1])
+    z = ptsz->array_psi_b2g_redshift[ptsz->n_z_psi_b2g-1];
+
+ if (l<ptsz->array_psi_b2g_multipole[0])
+    l = ptsz->array_psi_b2g_multipole[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (l>ptsz->array_psi_b2g_multipole[ptsz->n_l_psi_b2g-1])
+    l =  ptsz->array_psi_b2g_multipole[ptsz->n_l_psi_b2g-1];
+
+
+// printf("l=%.3e\n",l);
+
+ return exp(pwl_interp_2d(
+
+                          ptsz->n_z_psi_b2g,
+                          ptsz->n_l_psi_b2g,
+
+                          ptsz->array_psi_b2g_redshift,
+                          ptsz->array_psi_b2g_multipole,
+                          ptsz->array_psi_b2g_psi,
+                          1,
+                          &z,
+                          &l));
+}
+
+
+double get_psi_b1g_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double l = log(l_asked);
+
+ if (z<ptsz->array_psi_b1g_redshift[0])
+    z = ptsz->array_psi_b1g_redshift[0];
+ if (z>ptsz->array_psi_b1g_redshift[ptsz->n_z_psi_b1g-1])
+    z = ptsz->array_psi_b1g_redshift[ptsz->n_z_psi_b1g-1];
+
+ if (l<ptsz->array_psi_b1g_multipole[0])
+    l = ptsz->array_psi_b1g_multipole[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (l>ptsz->array_psi_b1g_multipole[ptsz->n_l_psi_b1g-1])
+    l =  ptsz->array_psi_b1g_multipole[ptsz->n_l_psi_b1g-1];
+
+
+// printf("l=%.3e\n",l);
+
+ return exp(pwl_interp_2d(
+
+                          ptsz->n_z_psi_b1g,
+                          ptsz->n_l_psi_b1g,
+
+                          ptsz->array_psi_b1g_redshift,
+                          ptsz->array_psi_b1g_multipole,
+                          ptsz->array_psi_b1g_psi,
+                          1,
+                          &z,
+                          &l));
+}
+
+
+double get_psi_b1t_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double l = log(l_asked);
+
+ if (z<ptsz->array_psi_b1t_redshift[0])
+    z = ptsz->array_psi_b1t_redshift[0];
+ if (z>ptsz->array_psi_b1t_redshift[ptsz->n_z_psi_b1t-1])
+    z = ptsz->array_psi_b1t_redshift[ptsz->n_z_psi_b1t-1];
+
+ if (l<ptsz->array_psi_b1t_multipole[0])
+    l = ptsz->array_psi_b1t_multipole[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (l>ptsz->array_psi_b1t_multipole[ptsz->n_l_psi_b1t-1])
+    l =  ptsz->array_psi_b1t_multipole[ptsz->n_l_psi_b1t-1];
+
+
+ return exp(pwl_interp_2d(
+
+                          ptsz->n_z_psi_b1t,
+                          ptsz->n_l_psi_b1t,
+
+                          ptsz->array_psi_b1t_redshift,
+                          ptsz->array_psi_b1t_multipole,
+                          ptsz->array_psi_b1t_psi,
+                          1,
+                          &z,
+                          &l));
+}
+
+
+
+
+double get_psi_b1gt_at_l1_l2_and_z(double l_asked,double l_asked2, double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double l1 = log(l_asked);
+  double l2 = log(l_asked2);
+// printf("z=%.8e\n",z);
+ if (z<ptsz->array_psi_b1gt_redshift[0])
+    z = ptsz->array_psi_b1gt_redshift[0];
+ if (z>ptsz->array_psi_b1gt_redshift[ptsz->n_z_psi_b1gt-1])
+    z = ptsz->array_psi_b1gt_redshift[ptsz->n_z_psi_b1gt-1];
+// printf("z=%.8e\n",z);
+//
+//   printf(" z[:-2] z[:-1] %.8e %.8e\n",
+//   ptsz->array_psi_b1gt_redshift[ptsz->n_z_psi_b1gt-2],
+//   ptsz->array_psi_b1gt_redshift[ptsz->n_z_psi_b1gt-1]);
+//
+//
+//   printf(" z[a] z[b] %.8e %.8e\n",
+//   ptsz->array_psi_b1gt_redshift[0],
+//   ptsz->array_psi_b1gt_redshift[1]);
+
+ if (l1<ptsz->array_psi_b1gt_multipole[0])
+    l1 = ptsz->array_psi_b1gt_multipole[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (l1>ptsz->array_psi_b1gt_multipole[ptsz->n_l_psi_b1gt-1])
+    l1 =  ptsz->array_psi_b1gt_multipole[ptsz->n_l_psi_b1gt-1];
+
+ if (l2<ptsz->array_psi_b1gt_multipole[0])
+    l2 = ptsz->array_psi_b1gt_multipole[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (l2>ptsz->array_psi_b1gt_multipole[ptsz->n_l_psi_b1gt-1])
+    l2 =  ptsz->array_psi_b1gt_multipole[ptsz->n_l_psi_b1gt-1];
+
+  // find the closest z's in the grid:
+  int id_z_low;
+  int id_z_up;
+  r8vec_bracket(ptsz->n_z_psi_b1gt,ptsz->array_psi_b1gt_redshift,z,&id_z_low,&id_z_up);
+  // printf("id_z_low = %d id_z_up = %d nz = %d\n",id_z_low,id_z_up,ptsz->n_z_psi_b1gt);
+  //
+  // r8vec_bracket(ptsz->n_z_psi_b1gt,ptsz->array_psi_b1gt_redshift,6.7e-3,&id_z_low,&id_z_up);
+  // printf("id_z_low = %d id_z_up = %d nz = %d\n",id_z_low,id_z_up,ptsz->n_z_psi_b1gt);
+
+  // printf("l1=%.3e\n",l1);
+  // printf("l2=%.3e\n",l2);
+  // printf("z=%.8e\n",z);
+  // exit(0);
+  // interpolate 2d at l_low:
+
+ double ln_rho_low = pwl_interp_2d(ptsz->n_l_psi_b1gt,
+                                  ptsz->n_l_psi_b1gt,
+                                  ptsz->array_psi_b1gt_multipole,
+                                  ptsz->array_psi_b1gt_multipole,
+                                  ptsz->array_psi_b1gt_psi[id_z_low-1],
+                                  1,
+                                  &l1,
+                                  &l2);
+// printf("ln_rho_low=%.8e\n",ln_rho_low);
+// printf("id_z_low = %d id_z_up = %d nz = %d\n",id_z_low,id_z_up,ptsz->n_z_psi_b1gt);
+// printf("ptsz->array_psi_b1gt_psi[id_z_up]=%.3e\n",ptsz->array_psi_b1gt_psi[id_z_up][0]);
+ double ln_rho_up = pwl_interp_2d(ptsz->n_l_psi_b1gt,
+                                  ptsz->n_l_psi_b1gt,
+                                  ptsz->array_psi_b1gt_multipole,
+                                  ptsz->array_psi_b1gt_multipole,
+                                  ptsz->array_psi_b1gt_psi[id_z_up-1],
+                                  1,
+                                  &l1,
+                                  &l2);
+ double ln_l_low = ptsz->array_psi_b1gt_redshift[id_z_low-1];
+ double ln_l_up = ptsz->array_psi_b1gt_redshift[id_z_up-1];
+// printf("ln_rho_up=%.8e\n",ln_rho_up);
+
+ // return exp(ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
+ return exp(ln_rho_low + ((z - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
+
+// }
+// else if (){
+//   pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile]; // this is the multipole going into truncated nfw... TBD: needs to be renamed
+//   // set 1 for matter_type = tau
+//   result =  evaluate_truncated_nfw_profile(pvectsz,pba,ptsz,1);
+//
+// }
+
+}
+
+
+
 
 
 double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){

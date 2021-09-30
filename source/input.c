@@ -2227,8 +2227,33 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"kSZ_kSZ_gal fft (2h)") != NULL) ) {
+        ptsz->has_kSZ_kSZ_gal_2h_fft =_TRUE_;
+        ptsz->has_vrms2 = _TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+
+
       if ((strstr(string1,"kSZ_kSZ_gal_3h") != NULL) ) {
         ptsz->has_kSZ_kSZ_gal_3h =_TRUE_;
+        ptsz->has_vrms2 = _TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+
+      if ((strstr(string1,"kSZ_kSZ_gal fft (3h)") != NULL) ) {
+        ptsz->has_kSZ_kSZ_gal_3h_fft =_TRUE_;
         ptsz->has_vrms2 = _TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
@@ -4291,6 +4316,8 @@ int input_read_parameters(
       + ptsz->has_tSZ_tSZ_tSZ_1halo
       + ptsz->has_kSZ_kSZ_gal_1h
       + ptsz->has_kSZ_kSZ_gal_1h_fft
+      + ptsz->has_kSZ_kSZ_gal_2h_fft
+      + ptsz->has_kSZ_kSZ_gal_3h_fft
       + ptsz->has_kSZ_kSZ_gal_2h
       + ptsz->has_kSZ_kSZ_gal_3h
       + ptsz->has_kSZ_kSZ_gal_hf
@@ -5414,6 +5441,8 @@ int input_default_params(
   ptsz->has_tSZ_lens_2h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_1h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_1h_fft = _FALSE_;
+  ptsz->has_kSZ_kSZ_gal_2h_fft = _FALSE_;
+  ptsz->has_kSZ_kSZ_gal_3h_fft = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_2h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_3h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_hf = _FALSE_;
@@ -5499,6 +5528,8 @@ int input_default_params(
   ptsz->index_md_gal_cib_1h = 58;
   ptsz->index_md_gal_cib_2h = 59;
   ptsz->index_md_kSZ_kSZ_gal_1h_fft = 60;
+  ptsz->index_md_kSZ_kSZ_gal_2h_fft = 61;
+  ptsz->index_md_kSZ_kSZ_gal_3h_fft = 62;
   // ptsz->index_md_bk_at_z_hf = 51;
 
   ptsz->integrate_wrt_mvir = 0;

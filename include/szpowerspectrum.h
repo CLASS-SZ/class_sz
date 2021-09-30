@@ -35,6 +35,8 @@
 #define _cov_Y_N_next_order_ ((ptsz->has_sz_cov_Y_N_next_order == _TRUE_) && (index_md == ptsz->index_md_cov_Y_N_next_order))
 #define _kSZ_kSZ_gal_1h_ ((ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1h))
 #define _kSZ_kSZ_gal_1h_fft_ ((ptsz->has_kSZ_kSZ_gal_1h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1h_fft))
+#define _kSZ_kSZ_gal_2h_fft_ ((ptsz->has_kSZ_kSZ_gal_2h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_2h_fft))
+#define _kSZ_kSZ_gal_3h_fft_ ((ptsz->has_kSZ_kSZ_gal_3h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_3h_fft))
 #define _kSZ_kSZ_gal_2h_ ((ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_2h))
 #define _kSZ_kSZ_gal_3h_ ((ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_3h))
 #define _kSZ_kSZ_gal_hf_ ((ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_hf))
@@ -157,6 +159,8 @@ struct tszspectrum {
   double * cl_isw_auto;
   double * cl_kSZ_kSZ_gal_1h;
   double * cl_kSZ_kSZ_gal_1h_fft;
+  double * cl_kSZ_kSZ_gal_2h_fft;
+  double * cl_kSZ_kSZ_gal_3h_fft;
   double * cl_kSZ_kSZ_gal_2h;
   double * cl_kSZ_kSZ_gal_3h;
   double * cl_kSZ_kSZ_gal_hf;
@@ -338,6 +342,17 @@ struct tszspectrum {
   int index_md_kSZ_kSZ_gal_1h_fft;
   int index_integrand_id_kSZ_kSZ_gal_1h_fft_first;
   int index_integrand_id_kSZ_kSZ_gal_1h_fft_last;
+
+  int has_kSZ_kSZ_gal_2h_fft;
+  int index_md_kSZ_kSZ_gal_2h_fft;
+  int index_integrand_id_kSZ_kSZ_gal_2h_fft_first;
+  int index_integrand_id_kSZ_kSZ_gal_2h_fft_last;
+
+  int has_kSZ_kSZ_gal_3h_fft;
+  int index_md_kSZ_kSZ_gal_3h_fft;
+  int index_integrand_id_kSZ_kSZ_gal_3h_fft_first;
+  int index_integrand_id_kSZ_kSZ_gal_3h_fft_last;
+
 
   int has_kSZ_kSZ_gal_2h;
   int index_md_kSZ_kSZ_gal_2h;
@@ -1249,6 +1264,26 @@ double * steps_m;
   ErrorMsg error_message; /**< zone for writing error messages */
 
 
+  double * array_psi_b2g_redshift;
+  double * array_psi_b2g_multipole;
+  double * array_psi_b2g_psi;
+
+  double * array_psi_b1g_redshift;
+  double * array_psi_b1g_multipole;
+  double * array_psi_b1g_psi;
+
+  double * array_psi_b1t_redshift;
+  double * array_psi_b1t_multipole;
+  double * array_psi_b1t_psi;
+
+
+  double * array_psi_b1gt_redshift;
+  double * array_psi_b1gt_multipole;
+  double ** array_psi_b1gt_psi;
+  // int n_z_psi_b1g;
+  // int n_l_psi_b1g;
+
+
 };
 
 /*
@@ -1483,6 +1518,15 @@ int evaluate_galaxy_profile(double * pvecback,
                             double * pvectsz,
                             struct background * pba,
                             struct tszspectrum * ptsz);
+
+int evaluate_galaxy_profile_1h(double * pvecback,
+                               double * pvectsz,
+                               struct background * pba,
+                               struct tszspectrum * ptsz);
+int evaluate_galaxy_profile_2h(double * pvecback,
+                               double * pvectsz,
+                               struct background * pba,
+                               struct tszspectrum * ptsz);
 
 double get_truncated_nfw_profile_at_z_m_k_xout(//double * pvecback,
                                       double z,
