@@ -1938,7 +1938,7 @@ cdef class Class:
         return get_gas_profile_at_x_M_z_nfw_200m(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
 
     def get_second_order_bias_at_z_and_nu(self,z,nu):
-        return get_second_order_bias_at_z_and_nu(z,nu,&self.tsz)
+        return get_second_order_bias_at_z_and_nu(z,nu,&self.tsz,&self.ba)
 
     def get_first_order_bias_at_z_and_nu(self,z,nu):
         return get_first_order_bias_at_z_and_nu(z,nu,&self.tsz)

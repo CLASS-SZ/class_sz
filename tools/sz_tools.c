@@ -3524,7 +3524,7 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 
 
  // array of multipoles:
- double ln_ell_min = log(0.5);
+ double ln_ell_min = log(1e-3);
  double ln_ell_max = log(5e4);
  int n_ell = ptsz->n_ell_density_profile;
  int n_m = ptsz->n_m_density_profile;
@@ -8304,8 +8304,8 @@ r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
 
   /// set-up:
 
-double l_min = 1e-2;
-double l_max = 2e4; // this is a precision parameter
+double l_min = 1e-5;
+double l_max = 5e5; // this is a precision parameter
 // tabulate the integrand in the "l" dimension:
 const int N = ptsz->N_samp_fftw;
 double k[N];
@@ -8434,7 +8434,7 @@ r = (psi_b2g+19./7.*psi_bg)*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 +9./7.*psi_bg*pwl_value_1d(N,lnk,t2_Pkr,log(l3))
 -11./7.*pow(l3,2.)*psi_bg*pwl_value_1d(N,lnk,t3_Pkr,log(l3))
 +1./7.*psi_bg*pow(l3,4.)*pwl_value_1d(N,lnk,t4_Pkr,log(l3))
-+2.*(psi_b2g+4.*psi_bg)*pk3*pwl_value_1d(N,lnk,t5_Pkr,log(l3))
++(2.*psi_b2g+24./7.*psi_bg)*pk3*pwl_value_1d(N,lnk,t5_Pkr,log(l3))
 +2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t6_Pkr,log(l3))
 +2./7.*pow(l3,2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t7_Pkr,log(l3))
 -4./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t8_Pkr,log(l3))
@@ -9683,6 +9683,7 @@ double integrand_psi_b2g(double lnM_halo, void *p){
       // double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       evaluate_halo_bias_b2(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
       double b2 = V->pvectsz[V->ptsz->index_halo_bias_b2];
+      // printf("b2=%.3e\n",b2);
 
       double result = hmf*b2*g;
       // printf("ell = %.3e z=%.3e hmf = %.3e b1 = %.3e g = %.3e\n",ell,z, hmf,b1,g);
@@ -9895,7 +9896,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
         }
 
 // parallelize ver l
-double l_min = 2.;
+double l_min = 1.e-3;
 double l_max = 3e4;
 
 
@@ -10057,7 +10058,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
         }
 
 // parallelize ver l
-double l_min = 2.;
+double l_min = 1.e-3;
 double l_max = 3e4;
 
 
@@ -10142,7 +10143,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b2g; index_z++)
 
           r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                                epsrel, epsabs,
-                                               integrand_psi_b1g,
+                                               integrand_psi_b2g,
                                                params,
                                                ptsz->patterson_show_neval);
 
@@ -10218,7 +10219,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1t; index_z++)
         }
 
 // parallelize ver l
-double l_min = 2.;
+double l_min = 1.e-3;
 double l_max = 3e4;
 
 
@@ -10384,7 +10385,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1gt; index_z++)
         }
 
 // parallelize ver l
-double l_min = 2.;
+double l_min = 1.e-3;
 double l_max = 3e4;
 
 int index_l;
@@ -10534,8 +10535,8 @@ double r;
 double m_min,m_max;
 // m_min = ptsz->M1SZ;
 // m_max = ptsz->M2SZ;
-m_min = ptsz->m_min_counter_terms;
-m_max = ptsz->m_max_counter_terms;
+m_min = ptsz->M1SZ;//r8_min(ptsz->M1SZ,ptsz->m_min_counter_terms);
+m_max = ptsz->M2SZ;//r8_max(ptsz->M2SZ,ptsz->m_max_counter_terms);
 double z_min = ptsz->z1SZ;
 double z_max = ptsz->z2SZ;
 
@@ -10595,7 +10596,7 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
           double rho_cb = rho_crit_at_z*Omega_cb;
           double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
           double b1_min = (1.-r)*rho_cb/m_min/n_min;
-          ptsz->array_hmf_counter_terms_b1min[index_z] = b1_min;
+          ptsz->array_hmf_counter_terms_b1min[index_z] = b1_min; // is actually b1_min*m_min
 
        }
  free(pvecback);
@@ -10699,8 +10700,10 @@ class_alloc(ptsz->array_hmf_counter_terms_b2min,sizeof(double *)*ptsz->n_z_hmf_c
 int index_z;
 double r;
 double m_min,m_max;
-m_min = ptsz->m_min_counter_terms;
-m_max = ptsz->m_max_counter_terms;
+// m_min = ptsz->m_min_counter_terms;
+// m_max = ptsz->m_max_counter_terms;
+m_min = ptsz->M1SZ;//r8_min(ptsz->M1SZ,ptsz->m_min_counter_terms);
+m_max = ptsz->M2SZ;//r8_max(ptsz->M2SZ,ptsz->m_max_counter_terms);
 double z_min = ptsz->z1SZ;
 double z_max = ptsz->z2SZ;
 
@@ -10760,7 +10763,7 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
           double rho_cb = rho_crit_at_z*Omega_cb;
           double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
           double b2_min = -r*rho_cb/m_min/n_min;
-          ptsz->array_hmf_counter_terms_b2min[index_z] = b2_min;
+          ptsz->array_hmf_counter_terms_b2min[index_z] = b2_min; // is actually b2_min*m_min
 
        }
  free(pvecback);
@@ -10863,8 +10866,10 @@ class_alloc(ptsz->array_redshift_hmf_counter_terms,sizeof(double *)*ptsz->n_z_hm
 int index_z;
 double r;
 double m_min,m_max;
-m_min = ptsz->m_min_counter_terms;
-m_max = ptsz->m_max_counter_terms;
+// m_min = ptsz->m_min_counter_terms;
+// m_max = ptsz->m_max_counter_terms;
+m_min = ptsz->M1SZ;//r8_min(ptsz->M1SZ,ptsz->m_min_counter_terms);
+m_max = ptsz->M2SZ;//r8_max(ptsz->M2SZ,ptsz->m_max_counter_terms);
 double z_min = ptsz->z1SZ;
 double z_max = ptsz->z2SZ;
 
@@ -10923,7 +10928,7 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
           double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);//*pow(1.+z,3.);
           double rho_cb = rho_crit_at_z*Omega_cb;
           double n_min = (1.-r)*rho_cb/m_min;
-          ptsz->array_hmf_counter_terms_nmin[index_z] = n_min;
+          ptsz->array_hmf_counter_terms_nmin[index_z] = n_min; // is actually n_min*m_min
 
        }
  free(pvecback);

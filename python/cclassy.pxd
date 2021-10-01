@@ -660,7 +660,8 @@ cdef extern from "class.h":
 
     double get_second_order_bias_at_z_and_nu(double z_asked,
                                              double nu_asked,
-                                             void * tsz)
+                                             void * tsz,
+                                             void * pba)
 
     double get_first_order_bias_at_z_and_nu(double z_asked,
                                              double nu_asked,

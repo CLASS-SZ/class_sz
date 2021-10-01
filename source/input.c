@@ -1733,8 +1733,8 @@ int input_read_parameters(
       class_read_int("N_kSZ2_gal_theta_grid",ptsz->N_kSZ2_gal_theta_grid);
 
 
-      class_read_double("ell_max_mock",ptsz->ell_max_mock);
-      class_read_double("ell_min_mock",ptsz->ell_min_mock);
+      class_read_double("ell_max",ptsz->ell_max_mock);
+      class_read_double("ell_min",ptsz->ell_min_mock);
       class_read_double("dlogell",ptsz->dlogell);
       class_read_double("dell",ptsz->dell);
 
@@ -5134,7 +5134,7 @@ int input_default_params(
 
 
   //mass limits: h^-1 Msun
-  ptsz->M1SZ = 5.e11;
+  ptsz->M1SZ = 1.e10;
   ptsz->M2SZ = 5.e15;
 
   ptsz->n_z_dndlnM = 500;

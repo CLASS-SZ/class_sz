@@ -5641,6 +5641,7 @@ double get_nu_at_z_and_m(double z,
 
 double sigma = get_sigma_at_z_and_m(z,m,ptsz,pba);
 double lnsigma2 = log(sigma*sigma);
+// double delta_c = Delta_c_of_Omega_m(pvecback[pba->index_bg_Omega_m]);
 double delta_c = ptsz->delta_cSZ*(1.+0.012299*log10(pvecback[pba->index_bg_Omega_m]));
 // double lnnu = 2.*log(ptsz->delta_cSZ) - lnsigma2;
 double lnnu = 2.*log(delta_c) - lnsigma2;
@@ -5653,14 +5654,38 @@ return nu;
 
 double get_second_order_bias_at_z_and_nu(double z,
                                          double nu,
-                                         struct tszspectrum * ptsz){
+                                         struct tszspectrum * ptsz,
+                                         struct background * pba){
 
  double beta = ptsz->beta0SZ*pow(1.+z,0.2);
  double gamma = ptsz->gamma0SZ*pow(1.+z,-0.01);
  double eta = ptsz->eta0SZ*pow(1.+z,0.27);
  double phi = ptsz->phi0SZ*pow(1.+z,-0.08);
- double delta_c = 1.6865;
 
+  double * pvecback;
+  double tau;
+  int first_index_back = 0;
+  class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+  class_call(background_tau_of_z(pba,z,&tau),
+             pba->error_message,
+             pba->error_message);
+
+  class_call(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             pba->error_message,
+             pba->error_message);
+
+
+// Nakamura Suto
+ double delta_c = ptsz->delta_cSZ*(1.+0.012299*log10(pvecback[pba->index_bg_Omega_m]));
+ // printf("z = %.3e delc = %.3e omega_m = %.3e\n",z, delta_c,pvecback[pba->index_bg_Omega_m]);
+ free(pvecback);
  double t1_num = 2.*(42.*gamma*nu*phi
                      +8.*delta_c*phi
                      -84.*eta*phi
@@ -5708,7 +5733,7 @@ int evaluate_halo_bias_b2(double * pvecback,
    //
    //
    // pvectsz[ptsz->index_halo_bias_b2] = t1_num/t1_den + t2_num/t2_den + t3_num/t3_den;
-   pvectsz[ptsz->index_halo_bias_b2] = get_second_order_bias_at_z_and_nu(z,nu,ptsz);
+   pvectsz[ptsz->index_halo_bias_b2] = get_second_order_bias_at_z_and_nu(z,nu*nu,ptsz,pba);
 
 
   // if (ptsz->hm_consistency==1 && ptsz->hm_consistency_counter_terms_done == 1) {
@@ -9595,7 +9620,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
   if (ptsz->has_kSZ_kSZ_gal_1h_fft
   ||  ptsz->has_kSZ_kSZ_gal_2h_fft
   ||  ptsz->has_kSZ_kSZ_gal_3h_fft){
-    ptsz->N_samp_fftw = 1500;
+    ptsz->N_samp_fftw = 3500;
     fftw_complex* a_tmp;
     fftw_complex* b_tmp;
     a_tmp = fftw_alloc_complex(ptsz->N_samp_fftw);

@@ -1734,7 +1734,8 @@ double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
 
 double get_second_order_bias_at_z_and_nu(double z,
                                      double nu,
-                                     struct tszspectrum * ptsz);
+                                     struct tszspectrum * ptsz,
+                                     struct background * pba);
 
 double get_first_order_bias_at_z_and_nu(double z,
                                          double nu,
