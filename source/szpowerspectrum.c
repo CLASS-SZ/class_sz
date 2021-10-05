@@ -11087,6 +11087,12 @@ if (_gal_gal_2h_
   || _kSZ_kSZ_gal_2h_
   || _kSZ_kSZ_gal_3h_
   || _pk_gg_at_z_2h_
+  || _gal_lens_1h_
+  || _gal_lensmag_1h_
+  || _tSZ_gal_1h_
+  || _gal_cib_1h_
+  || _kSZ_kSZ_gal_1h_
+  || _kSZ_kSZ_gal_1h_fft_
    ){
 //us = 1.; // BB: debug
 //ng_bar = 1.; // BB: debug
@@ -11106,12 +11112,12 @@ ug_at_ell  = (1./ng_bar)*(nc+ns*us);
 
 // 1-halo terms
 else if(_gal_gal_1h_
-     || _gal_lens_1h_
-     || _gal_lensmag_1h_
-     || _tSZ_gal_1h_
-     || _gal_cib_1h_
-     || _kSZ_kSZ_gal_1h_
-     || _kSZ_kSZ_gal_1h_fft_
+     // || _gal_lens_1h_
+     // || _gal_lensmag_1h_
+     // || _tSZ_gal_1h_
+     // || _gal_cib_1h_
+     // || _kSZ_kSZ_gal_1h_
+     // || _kSZ_kSZ_gal_1h_fft_
 
      // || _kSZ_kSZ_gal_2h_
      // || _kSZ_kSZ_gal_3h_
