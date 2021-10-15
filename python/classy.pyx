@@ -1817,6 +1817,11 @@ cdef class Class:
     def get_te_of_m500c_at_z_lee(self,m,z):
         return get_te_of_m500c_at_z_lee(m,z,&self.ba,&self.tsz)
 
+    def get_f_tinker10_at_nu_and_z(self,nu,z,hm_consistency):
+        return get_f_tinker10_at_nu_and_z(nu,z,hm_consistency,&self.tsz)
+
+    def get_T10_alpha_at_z(self,z):
+        return get_T10_alpha_at_z(z,&self.tsz)
 
     def get_dndlnM_at_z_and_M(self,z,m):
         #try:

@@ -3000,6 +3000,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
 //   rhoNFW=x**(-1d0)*(1d0+x)**(-2d0)*x**2d0*dsin(y*x)/(y*x)
 //   return
 // END FUNCTION rhoNFW
+// not relevant anymore since we have the truncated formula
 
 int rho_nfw(double * rho_nfw_x,
             double x ,
@@ -3011,7 +3012,7 @@ int rho_nfw(double * rho_nfw_x,
  int index_md = (int) pvectsz[ptsz->index_md];
  double y_eff;
  double z = pvectsz[ptsz->index_z];
- if (_pk_at_z_1h_
+ if (_pk_at_z_1h_ // not relevant anymore since we have the truncated formula
   || _pk_at_z_2h_
   || _bk_at_z_1h_
   || _bk_at_z_2h_
@@ -3269,7 +3270,7 @@ if (ptsz->concentration_parameter==0){
 c_delta = get_c200m_at_m_and_z_D08(m_asked,z);
 }
 else if (ptsz->concentration_parameter==6){
-c_delta = get_c200m_at_m_and_z_B13(m_asked,z,pba);
+c_delta = get_c200m_at_m_and_z_B13(m_asked,z,pba,ptsz);
 }
 
 r_delta = pow(3.*m_asked/(4.*_PI_*delta*rho_crit),1./3.); //in units of h^-1 Mpc
@@ -3508,6 +3509,8 @@ double get_density_profile_at_l_M_z(double l_asked, double m_asked, double z_ask
 
 
 // Tabulate 2D Fourier transform of density profile on a [z - ln_M - ln_ell] grid
+// this is the tau profile for kSZ
+// here we adopt m200c !
 int tabulate_density_profile(struct background * pba,
                              struct tszspectrum * ptsz){
 
@@ -3755,7 +3758,7 @@ for (index_m=0;
  // pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
  // // // set 1 for matter_type = tau
  // // double xout = ptsz->x_out_truncated_nfw_profile;
- // // result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
+ // // result =  evaluate_truncated_nfw_profile(r_delta,c_delta,xout,pvectsz,pba,ptsz,0);
  //
  // // //compare truncated vs integrated:
  //
@@ -3856,7 +3859,7 @@ for (index_m=0;
  //  // pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
  //  // set 1 for matter_type = tau
  //  double xout = ptsz->x_out_truncated_nfw_profile;
- //  result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,0);
+ //  result =  evaluate_truncated_nfw_profile(r_delta,c_delta,xout,pvectsz,pba,ptsz,0);
  //
  // tau_normalisation = pvectsz[ptsz->index_m200m];
  result *= tau_normalisation;
@@ -3864,7 +3867,7 @@ for (index_m=0;
 }
 else if (ptsz->tau_profile == 0){ // truncated nfw profile
 
-    pvectsz[ptsz->index_m200m] = exp(lnM);
+    pvectsz[ptsz->index_m200c] = exp(lnM);
     // class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200m],
     //                                  200.*pvecback[pba->index_bg_Omega_m]*(pvectsz[ptsz->index_Rho_crit]),
     //                                  pvectsz[ptsz->index_Delta_c],
@@ -3879,24 +3882,27 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
     //compute concentration_parameter using mVIR
     //pvectsz[ ptsz->index_cVIR] = evaluate_cvir_of_mvir(pvectsz[ptsz->index_mVIR],z,ptsz);
 
-    pvectsz[ptsz->index_r200m] = pow(3.*pvectsz[ptsz->index_m200m]/(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]*pvectsz[ptsz->index_Rho_crit]),1./3.);
+  pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
     // pvectsz[ptsz->index_l200m] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200m];
     // pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200m];
    pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile]; // this is the multipole going into truncated nfw... TBD: needs to be renamed
    pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_1h; // make sure the mode is set up properly for tau computation
 
-   class_call_parallel(evaluate_c200m_D08(pvecback,pvectsz,pba,ptsz),
+   class_call_parallel(evaluate_c200c_D08(pvecback,pvectsz,pba,ptsz),
                        ptsz->error_message,
                        ptsz->error_message);
-   pvectsz[ptsz->index_rs] =  pvectsz[ptsz->index_r200m]/pvectsz[ptsz->index_c200m];
+   pvectsz[ptsz->index_c200c] = get_c200c_at_m_and_z_B13(pvectsz[ptsz->index_m200c],z,pba,ptsz);
    // set 1 for matter_type = tau
    double xout = ptsz->x_out_truncated_nfw_profile;
-   result =  evaluate_truncated_nfw_profile(xout,pvectsz,pba,ptsz,1);
-   result *= pvectsz[ptsz->index_m200m]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3));
+   double r_delta = pvectsz[ptsz->index_r200c];
+   double c_delta = pvectsz[ptsz->index_c200c];
+   pvectsz[ptsz->index_rs] = r_delta/c_delta;
+   result =  evaluate_truncated_nfw_profile(r_delta,c_delta,xout,pvectsz,pba,ptsz,1);
+   result *= pvectsz[ptsz->index_m200c]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3));
    double f_b = pba->Omega0_b/ptsz->Omega_m_0;
    result *= f_b;
 
-   // // //compare truncated vs integrated:
+   // //compare truncated vs integrated:
    // double result_int;
    // pvectsz[ptsz->index_ls] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_rs];
    // double characteristic_multipole = pvectsz[ptsz->index_ls];
@@ -3904,12 +3910,12 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
    // class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int,1),
    //                     ptsz->error_message,
    //                     ptsz->error_message);
-   // // printf("xout_trunc = %.3e r_trunc = %.5e xout_trunc = %.3e r_int = %.5e\n",
-   // // ptsz->x_out_truncated_nfw_profile,
-   // // result,
-   // // ptsz->x_out_nfw_profile,
-   // // result_int/m_nfw(pvectsz[ptsz->index_c200m]));
-   // // //end truncated vs integrated
+   // printf("xout_trunc = %.3e r_trunc = %.5e xout_trunc = %.3e r_int = %.5e\n",
+   // ptsz->x_out_truncated_nfw_profile,
+   // result,
+   // ptsz->x_out_nfw_profile,
+   // result_int);
+   // //end truncated vs integrated
    // // use integrated version
    // result = result_int;///m_nfw(pvectsz[ptsz->index_c200m]);
   //// end compare truncated vs integrated --
@@ -5965,7 +5971,8 @@ int load_T10_alpha_norm(struct tszspectrum * ptsz)
   //           "/sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt");
   // process = popen(Filepath, "r");
 
-  class_open(process,"sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt", "r",ptsz->error_message);
+  // class_open(process,"sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt", "r",ptsz->error_message);
+  class_open(process,ptsz->Tinker_et_al_10_alpha_consistency_msyriac_file, "r",ptsz->error_message);
 
 
   /* Read output and store it */
@@ -6033,6 +6040,7 @@ int load_T10_alpha_norm(struct tszspectrum * ptsz)
   for (index_x=0; index_x<ptsz->T10_lnalpha_size; index_x++) {
     ptsz->T10_ln1pz[index_x] = log(1.+lnx[index_x]);
     ptsz->T10_lnalpha[index_x] = log(lnI[index_x]);
+    // printf("%.3e %.3e\n",ptsz->T10_ln1pz[index_x],ptsz->T10_lnalpha[index_x]);
   };
 
   /** Release the memory used locally */
@@ -6190,11 +6198,12 @@ int load_T10_alpha_norm(struct tszspectrum * ptsz)
 
 
 //HMF Tinker et al 2008
-//interpolated at m500c
+//interpolated at mdeltac
 int MF_T08_m500(
                 double * result,
                 double * lognu ,
                 double z ,
+                double delta_crit,
                 struct tszspectrum * ptsz
                 )
 {
@@ -6202,7 +6211,7 @@ int MF_T08_m500(
   if(z>3.) z=3.;
   double om0 = ptsz->Omega_m_0;
   double ol0 = 1.-ptsz->Omega_m_0;
-  double delta_crit = 500.;
+  // double delta_crit = 500.;
   double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0);
   double  delta_mean =
   delta_crit/Omega_m_z;
@@ -6492,30 +6501,65 @@ int MF_T10 (
             struct tszspectrum * ptsz
             )
 {
+  // if(z>3.) z=3.;
+  //
+  // double alpha;
+  // if(ptsz->hm_consistency==0 || ptsz->hm_consistency==1)
+  // alpha = ptsz->alphaSZ;
+  // else if (ptsz->hm_consistency==2)
+  // alpha = get_T10_alpha_at_z(z,ptsz);
+  //
+  //
+  // *result = 0.5
+  //           *alpha
+  //           *(1.+pow(pow(ptsz->beta0SZ*pow(1.+z,0.2),2.)
+  //                  *exp(*lognu),
+  //                  -ptsz->phi0SZ
+  //                  *pow(1.+z,-0.08)))*pow(
+  //                   exp(*lognu),
+  //                   ptsz->eta0SZ
+  //                   *pow(1.+z,0.27))
+  //           *exp(-ptsz->gamma0SZ
+  //                *pow(1.+z,-0.01)
+  //                *exp(*lognu)/2.)
+  //           *sqrt(exp(*lognu));
+
+
+  *result = get_f_tinker10_at_nu_and_z(exp(*lognu),z,ptsz->hm_consistency,ptsz);
+  return _SUCCESS_;
+}
+
+
+double get_f_tinker10_at_nu_and_z(double nu, double z, int hm_consistency, struct tszspectrum * ptsz){
   if(z>3.) z=3.;
 
   double alpha;
-  if(ptsz->hm_consistency==0 || ptsz->hm_consistency==1)
+  if(hm_consistency==0)
   alpha = ptsz->alphaSZ;
-  else if (ptsz->hm_consistency==2)
+  // else if (hm_consistency==2)
+  // always do alpha(z)
+  else{
   alpha = get_T10_alpha_at_z(z,ptsz);
+}
+  double lognu = log(nu);
 
 
-  *result = 0.5
+  double result = 0.5
             *alpha
             *(1.+pow(pow(ptsz->beta0SZ*pow(1.+z,0.2),2.)
-                   *exp(*lognu),
+                   *exp(lognu),
                    -ptsz->phi0SZ
                    *pow(1.+z,-0.08)))*pow(
-                    exp(*lognu),
+                    exp(lognu),
                     ptsz->eta0SZ
                     *pow(1.+z,0.27))
             *exp(-ptsz->gamma0SZ
                  *pow(1.+z,-0.01)
-                 *exp(*lognu)/2.)
-            *sqrt(exp(*lognu));
+                 *exp(lognu)/2.)
+            *sqrt(exp(lognu));
+  return result;
 
-  return _SUCCESS_;
+
 }
 
 
@@ -6949,6 +6993,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   double tau_normalisation =tau_fac
                             *pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.)
                             *V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
+                            // note: Omega_m*Rho_crit = rho_m(z)
 
   // simone ferraro's reio implementation:
   // double ya = pow(1./a,1.5);//**1.5
@@ -7319,9 +7364,11 @@ result *= 1./(1.+z)*1./(1.+z)*pow(1./V->pvectsz[V->ptsz->index_chi2],2.);
 
 if  (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_1h))
     ||((V->ptsz->has_tSZ_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_2h))
+    ||((V->ptsz->has_gal_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_1h))
     ||((V->ptsz->has_gal_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_2h))
     ||((V->ptsz->has_lens_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_1h))
     ||((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
+    ||((V->ptsz->has_cib_monopole == _TRUE_) && (index_md == V->ptsz->index_md_cib_monopole))
     ){
 
   result *= 1./(1.+z)*pow(1./V->pvectsz[V->ptsz->index_chi2],1.);
@@ -9595,7 +9642,7 @@ double integrand_psi_b1g(double lnM_halo, void *p){
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
       V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;//ptsz->ell[index_l_3];
-      evaluate_galaxy_profile_2h(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_r200c],V->pvectsz[V->ptsz->index_c200c],V->pvecback,V->pvectsz,V->pba,V->ptsz);
       double g = V->pvectsz[V->ptsz->index_galaxy_profile];
 
 
@@ -9675,7 +9722,7 @@ double integrand_psi_b2g(double lnM_halo, void *p){
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
       V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;//ptsz->ell[index_l_3];
-      evaluate_galaxy_profile_2h(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_r200c],V->pvectsz[V->ptsz->index_c200c],V->pvecback,V->pvectsz,V->pba,V->ptsz);
       double g = V->pvectsz[V->ptsz->index_galaxy_profile];
 
 
@@ -9835,7 +9882,7 @@ double integrand_psi_b1gt(double lnM_halo, void *p){
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
       V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell1;//ptsz->ell[index_l_3];
-      evaluate_galaxy_profile_2h(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_r200c],V->pvectsz[V->ptsz->index_c200c],V->pvecback,V->pvectsz,V->pba,V->ptsz);
       double g = V->pvectsz[V->ptsz->index_galaxy_profile];
 
 
@@ -10965,6 +11012,268 @@ double integrand_patterson_L_sat(double lnM_sub, void *p){
 }
 
 
+int tabulate_L_sat_at_z_m_nu(struct background * pba,
+                             struct tszspectrum * ptsz){
+if (
+    //   ptsz->has_tSZ_cib_1h
+    // + ptsz->has_tSZ_cib_2h
+    // + ptsz->has_cib_cib_1h
+    ptsz->has_cib_monopole
+    // + ptsz->has_cib_cib_2h
+    // + ptsz->has_lens_cib_1h
+    // + ptsz->has_lens_cib_2h
+    // + ptsz->has_gal_cib_1h
+    // + ptsz->has_gal_cib_2h
+    == _FALSE_
+    )
+return 0;
+
+class_alloc(ptsz->array_L_sat_at_M_z_nu,sizeof(double *)*ptsz->n_nu_L_sat,ptsz->error_message);
+int index_nu, index_M,index_z;
+class_alloc(ptsz->array_nu_L_sat,sizeof(double *)*ptsz->n_nu_L_sat,ptsz->error_message);
+double nu_min  = ptsz->freq_min;
+double nu_max  = ptsz->freq_max;
+
+for (index_nu=0;index_nu<ptsz->n_nu_L_sat;index_nu++){
+  class_alloc(ptsz->array_L_sat_at_M_z_nu[index_nu],sizeof(double *)*ptsz->n_z_L_sat*ptsz->n_m_L_sat,ptsz->error_message);
+      ptsz->array_nu_L_sat[index_nu] =
+                                      log(nu_min)
+                                      +index_nu*(log(nu_max)-log(nu_min))
+                                      /(ptsz->n_nu_L_sat-1.); // log(1+z)
+
+}
+
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_L_sat);
+  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_L_sat);
+  double logM_min = r8_min(log(ptsz->M1SZ/pba->h),log(ptsz->M1SZ_L_sat)); //in Msun
+  double logM_max = r8_max(log(ptsz->M2SZ/pba->h),log(ptsz->M2SZ_L_sat)); //in Msun
+
+if (
+      ptsz->has_tSZ_cib_1h
+    + ptsz->has_tSZ_cib_2h
+    + ptsz->has_cib_cib_1h
+    // + ptsz->has_cib_monopole
+    + ptsz->has_cib_cib_2h
+    + ptsz->has_lens_cib_1h
+    + ptsz->has_lens_cib_2h
+    + ptsz->has_gal_cib_1h
+    + ptsz->has_gal_cib_2h
+    == _FALSE_
+  ){
+
+
+
+  class_alloc(ptsz->array_z_L_sat,sizeof(double *)*ptsz->n_z_L_sat,ptsz->error_message);
+  class_alloc(ptsz->array_m_L_sat,sizeof(double *)*ptsz->n_m_L_sat,ptsz->error_message);
+
+
+for (index_z=0; index_z<ptsz->n_z_L_sat; index_z++)
+{
+      ptsz->array_z_L_sat[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_L_sat-1.); // log(1+z)
+
+}
+
+for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
+{
+      ptsz->array_m_L_sat[index_M] =
+                                    logM_min
+                                    +index_M*(logM_max-logM_min)
+                                    /(ptsz->n_m_L_sat-1.); //log(R)
+
+
+}
+
+}
+
+
+
+
+double r;
+// double m_min,m_max;
+//
+//
+// m_min = ptsz->M1SZ; // for the mass integral
+// m_max = ptsz->M2SZ; // for the mass integral
+// // m_min = ptsz->m_min_counter_terms;
+// // m_max = ptsz->m_max_counter_terms;
+// double z_min = ptsz->z1SZ;
+// double z_max = ptsz->z2SZ;
+
+// printf("ptsz->n_z_psi_b1g = %d\n",ptsz->n_z_psi_b1g);
+
+// for (index_z=0; index_z<ptsz->n_z_psi_b1gt; index_z++)
+//         {
+//
+//           ptsz->array_psi_b1gt_redshift[index_z] =
+//                                       log(1.+z_min)
+//                                       +index_z*(log(1.+z_max)-log(1.+z_min))
+//                                       /(ptsz->n_z_psi_b1gt-1.); // log(1+z)
+//         }
+//
+// // parallelize ver l
+// double l_min = 1.e-3;
+// double l_max = 3e4;
+//
+// int index_l;
+// for (index_l=0; index_l<ptsz->n_l_psi_b1gt; index_l++)
+//         {
+//
+//           ptsz->array_psi_b1gt_multipole[index_l] =
+//                                       log(l_min)
+//                                       +index_l*(log(l_max)-log(l_min))
+//                                       /(ptsz->n_l_psi_b1gt-1.); // log(l)
+//         }
+
+
+double * pvecback;
+double * pvectsz;
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+// number_of_threads = 1;
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,z_min,z_max,logM_min,logM_max)\
+private(tstart, tstop,index_z,index_nu,index_M,pvecback,pvectsz,r) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+// printf("doing well\n");
+
+#pragma omp for collapse(3)
+//#pragma omp for schedule (dynamic)
+for (index_nu=0; index_nu<ptsz->n_nu_L_sat; index_nu++)
+{
+//#pragma omp flush(abort)
+  for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
+  {
+    for (index_z=0; index_z<ptsz->n_z_L_sat; index_z++)
+    {
+// #pragma omp flush(abort)
+          // double l1 = exp(ptsz->array_psi_b1gt_multipole[index_l1]);
+          // double l2 = exp(ptsz->array_psi_b1gt_multipole[index_l2]);
+
+          int index_M_z = index_z * ptsz->n_m_L_sat + index_M;
+
+
+      ptsz->array_z_L_sat[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_L_sat-1.); // log(1+z)
+
+      ptsz->array_m_L_sat[index_M] =
+                                    logM_min
+                                    +index_M*(logM_max-logM_min)
+                                    /(ptsz->n_m_L_sat-1.); //log(R)
+
+
+
+      double z =   exp(ptsz->array_z_L_sat[index_z])-1.;
+      double logM =   ptsz->array_m_L_sat[index_M];
+
+// printf("%.3e %.3e\n",z,logM);
+
+      double lnMs_min = log(1e10);
+      double lnMs_max = logM;//log(1e11);
+
+      double epsrel = ptsz->epsrel_L_sat;
+      double epsabs = ptsz->epsabs_L_sat;
+
+      struct Parameters_for_integrand_patterson_L_sat V;
+      V.nu = exp(ptsz->array_nu_L_sat[index_nu]);
+      V.z = z;
+      V.ptsz = ptsz;
+      V.M_host = exp(logM);
+
+
+      void * params = &V;
+      params = &V;
+
+
+          r=Integrate_using_Patterson_adaptive(lnMs_min, lnMs_max,
+                                               epsrel, epsabs,
+                                               integrand_patterson_L_sat,
+                                               params,ptsz->patterson_show_neval);
+// printf("%.3e %.3e %.3e\n",z,logM,r);
+
+  //  if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+  //    double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+  //    double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+  //    double I0 = integrand_psi_b1gt(log(ptsz->m_min_counter_terms),params);
+  //    double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+  //    r += bmin_umin;
+  //    // printf("counter terms done r_m_1\n");
+  // }
+
+          // // here is (1-r) = n_min*m_min/rho_cb at z
+          // double rho_crit_at_z = ptsz->Rho_crit_0;//pvectsz[ptsz->index_Rho_crit];
+          // double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);//*pow(1.+z,3.);
+          // double rho_cb = rho_crit_at_z*Omega_cb;
+          // double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
+          // double b1_min = (1.-r)*rho_cb/m_min/n_min;
+          if (r==0.){
+            r = 1e-100;
+          }
+          ptsz->array_L_sat_at_M_z_nu[index_nu][index_M_z] = log(r);
+          if (isnan(ptsz->array_L_sat_at_M_z_nu[index_nu][index_M_z])){
+            printf("nan in interp L_sat table\n");
+            exit(0);
+          }
+          if (isinf(ptsz->array_L_sat_at_M_z_nu[index_nu][index_M_z])){
+            printf("inf in interp L_sat table\n");
+            printf("r = %.3e\n",r);
+            exit(0);
+          }
+          // printf("ptsz->array_psi_b1t_psi[%d] = %.5e\n",index_l_z,r);
+
+       }
+     }
+   }
+     #ifdef _OPENMP
+       tstop = omp_get_wtime();
+       if (ptsz->sz_verbose > 0)
+         printf("In %s: time spent in parallel region Lsat (loop over mnuz's) = %e s for thread %d\n",
+                __func__,tstop-tstart,omp_get_thread_num());
+     #endif
+ free(pvecback);
+ free(pvectsz);
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+
+
+
+
+
+                             }
+
 // tabulate L_nu^sat as a function of M (M_host) and z at frequency nu
 
 int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
@@ -10974,6 +11283,7 @@ if (
       ptsz->has_tSZ_cib_1h
     + ptsz->has_tSZ_cib_2h
     + ptsz->has_cib_cib_1h
+    // + ptsz->has_cib_monopole
     + ptsz->has_cib_cib_2h
     + ptsz->has_lens_cib_1h
     + ptsz->has_lens_cib_2h
@@ -13519,7 +13829,7 @@ double result = exp(pwl_value_1d(ptsz->T10_lnalpha_size,
                           ptsz->T10_ln1pz,
                           ptsz->T10_lnalpha,
                           z));
-//printf("z = %.3e  alpha = %.3e\n",z_asked,result);
+// printf("z = %.3e  alpha = %.3e\n",z_asked,result);
 return result;
 }
 
@@ -13713,6 +14023,76 @@ return yp;
 }
 
 
+
+
+double  get_L_sat_at_z_M_nu(double z_asked, double m_asked, double nu_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double m = log(m_asked);
+  double nu = log(nu_asked);
+
+
+  // double z = log(1.+z_asked);
+  // double m = log(m_asked);
+   if (z<ptsz->array_z_L_sat[0])
+      z = ptsz->array_z_L_sat[0];
+        // printf("dealing with mass conversion in hmf\n");
+   if (z>ptsz->array_z_L_sat[ptsz->n_z_L_sat-1])
+      z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
+
+   if (m<ptsz->array_m_L_sat[0])
+    m = ptsz->array_m_L_sat[0];
+      // printf("dealing with mass conversion in hmf\n");
+   if (m>ptsz->array_m_L_sat[ptsz->n_m_L_sat-1])
+      m =  ptsz->array_m_L_sat[ptsz->n_m_L_sat-1];
+
+   if (nu<ptsz->array_nu_L_sat[0])
+    nu = ptsz->array_nu_L_sat[0];
+      // printf("dealing with mass conversion in hmf\n");
+   if (nu>ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1])
+      nu =  ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1];
+
+  // if (ptsz->tau_profile == 1){
+  // find the closest l's in the grid:
+  int id_l_low;
+  int id_l_up;
+  int n_nu = ptsz->n_nu_L_sat;
+  int n_m = ptsz->n_m_L_sat;
+  int n_z = ptsz->n_z_L_sat;
+  r8vec_bracket(n_nu,ptsz->array_nu_L_sat,nu,&id_l_low,&id_l_up);
+
+  // interpolate 2d at l_low:
+
+ double ln_rho_low = pwl_interp_2d(n_m,
+                                n_z,
+                                ptsz->array_m_L_sat,
+                                ptsz->array_z_L_sat,
+                                ptsz->array_L_sat_at_M_z_nu[id_l_low-1],
+                                1,
+                                &m,
+                                &z);
+
+ double ln_rho_up = pwl_interp_2d(n_m,
+                                n_z,
+                                ptsz->array_m_L_sat,
+                                ptsz->array_z_L_sat,
+                                ptsz->array_L_sat_at_M_z_nu[id_l_up-1],
+                                1,
+                                &m,
+                                &z);
+ double ln_l_low = ptsz->array_nu_L_sat[id_l_low-1];
+ double ln_l_up = ptsz->array_nu_L_sat[id_l_up-1];
+
+ // printf("lnrh %.5e %.5e %d %d\n",ln_rho_low,ln_rho_up,id_l_low,id_l_up);
+
+ return exp(ln_rho_low + ((nu - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
+ // return ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low);
+
+
+}
+
+
+
+
 double get_L_sat_at_z_and_M_at_nu(double z_asked,
                                   double m_asked,
                                   int index_nu,
@@ -13720,7 +14100,16 @@ double get_L_sat_at_z_and_M_at_nu(double z_asked,
                                   struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
-
+   if (z<ptsz->array_z_L_sat[0])
+      z = ptsz->array_z_L_sat[0];
+        // printf("dealing with mass conversion in hmf\n");
+   if (z>ptsz->array_z_L_sat[ptsz->n_z_L_sat-1])
+      z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
+   if (m<ptsz->array_m_L_sat[0])
+    m = ptsz->array_m_L_sat[0];
+      // printf("dealing with mass conversion in hmf\n");
+   if (m>ptsz->array_m_L_sat[ptsz->n_m_L_sat-1])
+      m =  ptsz->array_m_L_sat[ptsz->n_m_L_sat-1];
  // printf("index_nu = %d\n",index_nu);
  return exp(pwl_interp_2d(ptsz->n_z_L_sat,
                           ptsz->n_m_L_sat,

@@ -1738,6 +1738,10 @@ int input_read_parameters(
       class_read_double("dlogell",ptsz->dlogell);
       class_read_double("dell",ptsz->dell);
 
+      class_read_double("freq_max",ptsz->freq_max);
+      class_read_double("freq_min",ptsz->freq_min);
+      class_read_double("dlogfreq",ptsz->dlogfreq);
+      class_read_double("dfreq",ptsz->dfreq);
 
       class_read_double("k_min_for_pk_hm",ptsz->k_min_for_pk_hm);
       class_read_double("k_max_for_pk_hm",ptsz->k_max_for_pk_hm);
@@ -1768,15 +1772,24 @@ int input_read_parameters(
       class_read_int("integrate_wrt_mvir",ptsz->integrate_wrt_mvir);
       class_read_int("integrate_wrt_m500c",ptsz->integrate_wrt_m500c);
       class_read_int("integrate_wrt_m200m",ptsz->integrate_wrt_m200m);
+      class_read_int("integrate_wrt_m200c",ptsz->integrate_wrt_m200c);
 
       if (ptsz->integrate_wrt_mvir == 1) {
         ptsz->integrate_wrt_m500c = 0;
         ptsz->integrate_wrt_m200m = 0;
+        ptsz->integrate_wrt_m200c = 0;
       }
       else if (ptsz->integrate_wrt_m500c == 1){
         ptsz->integrate_wrt_mvir = 0;
         ptsz->integrate_wrt_m200m = 0;
+        ptsz->integrate_wrt_m200c = 0;
       }
+      else if (ptsz->integrate_wrt_m200c == 1){
+        ptsz->integrate_wrt_mvir = 0;
+        ptsz->integrate_wrt_m200m = 0;
+        ptsz->integrate_wrt_m500c = 0;
+      }
+
       // else{
       //   ptsz->integrate_wrt_m500c = 0;
       //   ptsz->integrate_wrt_m200m = 0;
@@ -2297,7 +2310,15 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
-
+      if ((strstr(string1,"cib_monopole") != NULL) ) {
+        ptsz->has_cib_monopole =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
       if ((strstr(string1,"cib_cib_2h") != NULL) ) {
         ptsz->has_cib_cib_2h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2720,7 +2741,6 @@ int input_read_parameters(
      class_read_int("Frequency_id nu^prime for cib in GHz (to save in file)",ptsz->id_nu_prime_cib_to_save);
 
 
-
     class_read_int("cib_frequency_list_num",ptsz->cib_frequency_list_num);
     if (ptsz->has_cib_cib_1h
       + ptsz->has_cib_cib_2h
@@ -3008,6 +3028,8 @@ int input_read_parameters(
           ptsz->MF=2;
         else  if ((strstr(string1,"J01") != NULL))
           ptsz->MF=3;
+        else  if ((strstr(string1,"T08M200c") != NULL)) //not working yet
+          ptsz->MF=8;
         else  if ((strstr(string1,"T08") != NULL))
           ptsz->MF=4;
         else  if ((strstr(string1,"M500") != NULL))
@@ -3016,7 +3038,9 @@ int input_read_parameters(
           ptsz->MF=6;
         else  if ((strstr(string1,"B16M500c") != NULL)) //not working yet
           ptsz->MF=7;
+
      }
+     // printf("%d\n",ptsz->MF);
 
       class_read_string("UNWISE_dndz_file",ptsz->UNWISE_dndz_file);
       class_read_string("path_to_class",ptsz->path_to_class);
@@ -4306,6 +4330,7 @@ int input_read_parameters(
       + ptsz->has_bk_at_z_3h
       + ptsz->has_bk_at_z_hf
       + ptsz->has_mean_y
+      + ptsz->has_cib_monopole
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
       + ptsz->has_sz_m_y_y_1h
@@ -5058,6 +5083,11 @@ int input_default_params(
   ptsz->dell = 0.;
   ptsz->ell_max_mock = 4000.;
   ptsz->ell_min_mock = 100.;
+
+  ptsz->dlogfreq = .3;
+  ptsz->dfreq = 0.;
+  ptsz->freq_max = 1000.;
+  ptsz->freq_min = 100.;
   //ptsz->nlSZ = 18;
 
   ptsz->M0_Mmin_flag = 0;
@@ -5077,7 +5107,7 @@ int input_default_params(
 
   ptsz->N_kSZ2_gal_multipole_grid = 20;
 
-  ptsz->concentration_parameter=0;
+  ptsz->concentration_parameter=6;
   //ptsz->hod_model=-1;
   ptsz->effective_temperature=0;
   ptsz->create_ref_trispectrum_for_cobaya=0;
@@ -5145,8 +5175,9 @@ int input_default_params(
   ptsz->M2SZ_L_sat = 1.e17;
   ptsz->z1SZ_L_sat = 1.e-5;
   ptsz->z2SZ_L_sat = 1.;
-  ptsz->n_z_L_sat = 500;
-  ptsz->n_m_L_sat = 500;
+  ptsz->n_z_L_sat = 101;
+  ptsz->n_m_L_sat = 102;
+  ptsz->n_nu_L_sat = 103;
   ptsz->epsabs_L_sat = 1e-15;
   ptsz->epsrel_L_sat = 1e-6;
 
@@ -5333,7 +5364,7 @@ int input_default_params(
 
   ptsz->pk_nonlinear_for_vrms2 = 0;
 
-  ptsz->MF = 1; //Tinker et al 2010
+  ptsz->MF = 8; //Tinker et al 2010
 
   //////////////////////////////////
   //Integration method and parameters (mass)
@@ -5455,6 +5486,7 @@ int input_default_params(
   ptsz->has_sz_2halo = _FALSE_;
   ptsz->has_sz_trispec = _FALSE_;
   ptsz->has_hmf = _FALSE_;
+  ptsz->has_cib_monopole = _FALSE_;
   ptsz->has_mean_y = _FALSE_;
   ptsz->has_sz_cov_Y_N = _FALSE_;
   ptsz->has_sz_cov_Y_Y_ssc = _FALSE_;
@@ -5530,11 +5562,13 @@ int input_default_params(
   ptsz->index_md_kSZ_kSZ_gal_1h_fft = 60;
   ptsz->index_md_kSZ_kSZ_gal_2h_fft = 61;
   ptsz->index_md_kSZ_kSZ_gal_3h_fft = 62;
+  ptsz->index_md_cib_monopole = 63;
   // ptsz->index_md_bk_at_z_hf = 51;
 
   ptsz->integrate_wrt_mvir = 0;
   ptsz->integrate_wrt_m500c = 0;
-  ptsz->integrate_wrt_m200m = 1;
+  ptsz->integrate_wrt_m200c = 1;
+  ptsz->integrate_wrt_m200m = 0;
 
   ptsz->need_m200m_to_m200c = 0;
   ptsz->need_m200m_to_m500c = 0;

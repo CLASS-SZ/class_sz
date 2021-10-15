@@ -573,6 +573,9 @@ cdef extern from "class.h":
                                             void * pba,
                                             void * ptsz)
 
+    double get_f_tinker10_at_nu_and_z(double nu, double z, int hm_consistency, void * ptsz)
+    double get_T10_alpha_at_z(double z,void * ptsz);
+
     double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                              double m_asked,
                                              double z_asked,

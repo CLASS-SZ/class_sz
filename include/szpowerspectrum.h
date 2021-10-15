@@ -21,6 +21,7 @@
 #define _bk_at_z_3h_ ((ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_3h))
 //#define _bk_at_z_hf_ ((ptsz->has_bk_at_z_hf == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_hf))
 #define _mean_y_ ((ptsz->has_mean_y == _TRUE_) && (index_md == ptsz->index_md_mean_y))
+#define _cib_monopole_ ((ptsz->has_cib_monopole == _TRUE_) && (index_md == ptsz->index_md_cib_monopole))
 #define _hmf_ ((ptsz->has_hmf == _TRUE_) && (index_md == ptsz->index_md_hmf))
 #define _tSZ_power_spectrum_ ((ptsz->has_sz_ps == _TRUE_) && (index_md == ptsz->index_md_sz_ps))
 #define _trispectrum_ ((ptsz->has_sz_trispec == _TRUE_) && (index_md == ptsz->index_md_trispectrum))
@@ -115,6 +116,7 @@ struct tszspectrum {
 
   double hmf_int;
   double y_monopole;
+  double * cib_monopole;
   double * pk_at_z_1h;
   double * pk_at_z_2h;
   double * pk_gg_at_z_1h;
@@ -195,6 +197,7 @@ struct tszspectrum {
   int integrate_wrt_mvir;
   int integrate_wrt_m500c;
   int integrate_wrt_m200m;
+  int integrate_wrt_m200c;
 
   int has_electron_pressure;
   int has_electron_density;
@@ -525,6 +528,11 @@ struct tszspectrum {
   int index_integrand_id_lens_cib_2h_first;
   int index_integrand_id_lens_cib_2h_last;
 
+  int has_cib_monopole;
+  int index_md_cib_monopole;
+  int index_integrand_id_cib_monopole_first;
+  int index_integrand_id_cib_monopole_last;
+
   int has_cib_cib_1h;
   int index_md_cib_cib_1h;
   int index_integrand_id_cib_cib_1h_first;
@@ -806,6 +814,7 @@ struct tszspectrum {
   //INPUT PARAMETERS
   int nlSZ;
   int n_ell_independent_integrals;
+  int n_frequencies_for_cib;
 
   double * l_unwise_filter;
   double * f_unwise_filter;
@@ -864,6 +873,7 @@ struct tszspectrum {
 
   int n_z_L_sat;
   int n_m_L_sat;
+  int n_nu_L_sat;
 
   int N_redshift_dndlnM;
   int N_mass_dndlnM;
@@ -1069,6 +1079,8 @@ double * steps_m;
   double * x_gauss;
   double * w_gauss;
 
+  double * frequencies_for_cib;
+
   double * ell_kSZ2_gal_multipole_grid;
   int N_kSZ2_gal_multipole_grid;
 
@@ -1083,7 +1095,10 @@ double * steps_m;
   double ell_max_mock;
 
 
-
+  double freq_max;
+  double freq_min;
+  double dlogfreq;
+  double dfreq;
 
   double Tcmb_gNU_at_150GHz;
   double Tcmb_gNU;
@@ -1235,6 +1250,8 @@ double * steps_m;
 
   double * array_m_L_sat;
   double * array_z_L_sat;
+  double * array_nu_L_sat;
+  double ** array_L_sat_at_M_z_nu;
   double ** array_L_sat_at_z_and_M_at_nu;
   //double * array_L_sat_at_z_and_M_at_nu_prime;
 
@@ -1359,7 +1376,10 @@ int szpowerspectrum_init(struct background * pba,
                            struct background * pba,
                            struct tszspectrum * ptsz);
 
-  int evaluate_lensing_profile(double * pvecback,
+  int evaluate_lensing_profile(double m_delta,
+                               double r_delta,
+                               double c_delta,
+                               double * pvecback,
                                double * pvectsz,
                                struct background * pba,
                                struct tszspectrum * ptsz);
@@ -1509,21 +1529,28 @@ double HOD_mean_number_of_satellite_galaxies(double z,
 
 double get_galaxy_profile_at_z_m_l_1h(double z,
                                       double m,
+                                      double r_delta,
+                                      double c_delta,
                                       double l,
                                       struct tszspectrum * ptsz,
                                       struct background * pba);
 
 
-int evaluate_galaxy_profile(double * pvecback,
-                            double * pvectsz,
-                            struct background * pba,
-                            struct tszspectrum * ptsz);
+// int evaluate_galaxy_profile(double * pvecback,
+//                             double * pvectsz,
+//                             struct background * pba,
+//                             struct tszspectrum * ptsz);
 
-int evaluate_galaxy_profile_1h(double * pvecback,
+int evaluate_galaxy_profile_1h(
+                               double r_delta,
+                               double c_delta,
+                               double * pvecback,
                                double * pvectsz,
                                struct background * pba,
                                struct tszspectrum * ptsz);
-int evaluate_galaxy_profile_2h(double * pvecback,
+int evaluate_galaxy_profile_2h(double r_delta,
+                               double c_delta,
+                               double * pvecback,
                                double * pvectsz,
                                struct background * pba,
                                struct tszspectrum * ptsz);
@@ -1531,14 +1558,18 @@ int evaluate_galaxy_profile_2h(double * pvecback,
 double get_truncated_nfw_profile_at_z_m_k_xout(//double * pvecback,
                                       double z,
                                       double m,
+                                      double r_delta,
+                                      double c_delta,
                                       double k,
                                       double xout,
-                                      double delta,
+                                      // double delta,
                                       struct background * pba,
                                       struct tszspectrum * ptsz);
 
 
 double evaluate_truncated_nfw_profile(
+                                   double r_delta,
+                                   double c_delta,
                                    double xout,
                                    double * pvectsz,
                                    struct background * pba,
@@ -1599,7 +1630,9 @@ double evaluate_unwise_m_min_cut(double z,
                                  struct tszspectrum * ptsz);
 
 
-int evaluate_cib_profile(double * pvecback,
+int evaluate_cib_profile(double r_delta,
+                         double c_delta,
+                         double * pvecback,
                          double * pvectsz,
                          struct background * pba,
                          struct tszspectrum * ptsz);
@@ -1628,7 +1661,10 @@ double integrand_kSZ2_X_at_theta(double ell_prime, void *p);
 double integrand_kSZ2_X(double theta, void *p);
 
 
-int evaluate_matter_density_profile(double * pvecback,
+int evaluate_matter_density_profile(
+                             double r_delta,
+                             double c_delta,
+                             double * pvecback,
                              double * pvectsz,
                              struct background * pba,
                              struct tszspectrum * ptsz);
@@ -1706,7 +1742,13 @@ double get_c200m_at_m_and_z_D08(double M,
 
 double get_c200m_at_m_and_z_B13(double M,
                                 double z,
-                                struct background * pba);
+                                struct background * pba,
+                                struct tszspectrum * ptsz);
+
+double get_c200c_at_m_and_z_B13(double M,
+                                double z,
+                                struct background * pba,
+                                struct tszspectrum * ptsz);
 
 
 double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,

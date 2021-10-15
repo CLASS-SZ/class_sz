@@ -204,6 +204,8 @@ double delta_to_delta_prime_nfw(
 
 int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
                                       struct tszspectrum * ptsz);
+int tabulate_L_sat_at_z_m_nu(struct background * pba,
+                             struct tszspectrum * ptsz);
 
 int tabulate_m200m_to_m200c(struct background * pba,
                             struct tszspectrum * ptsz);
@@ -357,6 +359,9 @@ int pkl_to_knl (
                    double z ,
                    struct tszspectrum * ptsz);
 
+double get_f_tinker10_at_nu_and_z(double nu, double z, int hm_consistency, struct tszspectrum * ptsz);
+double get_T10_alpha_at_z(double z,struct tszspectrum * ptsz);
+
   int  MF_J01(double * result,
               double * lognu ,
               struct tszspectrum * ptsz);
@@ -370,6 +375,7 @@ int pkl_to_knl (
   int MF_T08_m500(double * result,
                   double * lognu ,
                   double z ,
+                  double delta_crit,
                   struct tszspectrum * ptsz);
 
   //HMF Tinker et al 2008
@@ -455,6 +461,9 @@ double get_L_sat_at_z_and_M_at_nu(double z_asked,
                                   int index_nu,
                                   struct background * pba,
                                   struct tszspectrum * ptsz);
+
+double  get_L_sat_at_z_M_nu(double z_asked, double m_asked, double nu_asked, struct tszspectrum * ptsz);
+
 // double get_L_sat_at_z_and_M_at_nu_prime(double z_asked,
 //                                   double m_asked,
 //                                   struct background * pba,

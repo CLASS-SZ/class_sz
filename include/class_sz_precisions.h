@@ -12,6 +12,7 @@ class_sz_string_parameter(UNWISE_cosmos_dndz_file,"/sz_auxiliary_files/UNWISE_ga
 class_sz_string_parameter(WISC3_dndz_file,"/sz_auxiliary_files/WISC_bin3.txt","WISC bin 3 file")
 class_sz_string_parameter(A10_file,"/sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt","A10 file")
 class_sz_string_parameter(P13_file,"/sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_P13.txt","P13 file")
+class_sz_string_parameter(Tinker_et_al_10_alpha_consistency_msyriac_file,"/sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt","Tinker_et_al_10_alpha_consistency_msyriac_file")
 
 class_sz_string_parameter(ksz_filter_file,"/sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt","ksz filter file")
 
