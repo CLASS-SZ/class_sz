@@ -31,6 +31,7 @@ int szpowerspectrum_init(
 
   int all_comps = ptsz->has_sz_ps
       + ptsz->has_hmf
+      // + ptsz->has_pk_at_z_1h
       + ptsz->has_pk_at_z_1h
       + ptsz->has_pk_at_z_2h
       + ptsz->has_pk_gg_at_z_1h
@@ -2649,6 +2650,7 @@ double integrand_at_m_and_z(double logM,
    //for the different fields
    do_mass_conversions(logM,z,pvecback,pvectsz,pba,pnl,ptsz);
 
+
    //Return the HMF - dn/dlogM in units of h^3 Mpc^-3
    //result stored in pvectsz[ptsz->index_hmf]
 
@@ -2762,13 +2764,13 @@ if (pvectsz[ptsz->index_has_cib] == 1){
 // galaxies
 if (pvectsz[ptsz->index_has_galaxy] == 1){
    // galaxies
-    // m_delta_gal = m_delta;
-    // r_delta_gal = r_delta;
-    // c_delta_gal = c_delta;
+    m_delta_gal = m_delta;
+    r_delta_gal = r_delta;
+    c_delta_gal = c_delta;
 
-    m_delta_gal = pvectsz[ptsz->index_m200m];
-    r_delta_gal = pvectsz[ptsz->index_r200m];
-    c_delta_gal = pvectsz[ptsz->index_c200m];
+    // m_delta_gal = pvectsz[ptsz->index_m200m];
+    // r_delta_gal = pvectsz[ptsz->index_r200m];
+    // c_delta_gal = pvectsz[ptsz->index_c200m];
  }// end galaxies
 
 
@@ -5361,41 +5363,10 @@ int evaluate_halo_bias_b2(double * pvecback,
 
    double nu = exp(pvectsz[ptsz->index_lognu]);
    // double nuTink = sqrt(nu); //in T10 paper: nu=delta/sigma while here nu=(delta/sigma)^2
-   //
+
    double z = pvectsz[ptsz->index_z];
-   // double beta = ptsz->beta0SZ*pow(1.+z,0.2);
-   // double gamma = ptsz->gamma0SZ*pow(1.+z,-0.01);
-   // double eta = ptsz->eta0SZ*pow(1.+z,0.27);
-   // double phi = ptsz->phi0SZ*pow(1.+z,-0.08);
-   // double delta_c = 1.6865;
-   //
-   // double t1_num = 2.*(42.*gamma*nu*phi
-   //                     +8.*delta_c*phi
-   //                     -84.*eta*phi
-   //                     +42.*phi*phi
-   //                     -21.*phi);
-   // double t1_den = 21.*delta_c*delta_c*(1.+pow(beta*sqrt(nu),2.*phi));
-   // double t2_num = 21.*gamma*gamma*pow(nu,4.)+8.*gamma*delta_c*nu-84*gamma*eta*nu-63.*gamma*nu;
-   // double t2_den = 21.*pow(delta_c,2.);
-   // double t3_num = -16.*delta_c*eta-8.*delta_c+84.*eta*eta+42*eta;
-   // double t3_den = 21.*delta_c*delta_c;
-   //
-   //
-   // pvectsz[ptsz->index_halo_bias_b2] = t1_num/t1_den + t2_num/t2_den + t3_num/t3_den;
    pvectsz[ptsz->index_halo_bias_b2] = get_second_order_bias_at_z_and_nu(z,nu*nu,ptsz,pba);
 
-
-  // if (ptsz->hm_consistency==1 && ptsz->hm_consistency_counter_terms_done == 1) {
-  //   double logM = log(pvectsz[ptsz->index_mass_for_hmf]);
-  //   double z = pvectsz[ptsz->index_z];
-  // if ((logM <= log(ptsz->M1SZ) + 0.01*log(ptsz->M1SZ)) && (logM >= log(ptsz->M1SZ) - 0.01*log(ptsz->M1SZ))){
-  //   // printf("doing counter terms b1\n");
-  //   double b2_min = get_hmf_counter_term_b2min_at_z(z,ptsz);
-  //   pvectsz[ptsz->index_halo_bias_b2] = b2_min;
-  //
-  // }
-  //
-  // }
 
    return _SUCCESS_;
 }
@@ -5502,108 +5473,6 @@ else {
    pvectsz[ptsz->index_pk_for_halo_bias] = pk*pow(pba->h,3.); //in units Mpc^3/h^3
    return _SUCCESS_;
 }
-
-
-
-//
-//
-// //Compute P(k) in units of h^-3 Mpc^3
-// int evaluate_halo_bispectrum(double * pvecback,
-//                                               double * pvectsz,
-//                                               struct background * pba,
-//                                               struct primordial * ppm,
-//                                               struct nonlinear * pnl,
-//                                               struct tszspectrum * ptsz)
-// {
-//
-//   double k1;
-//   double k2;
-//   double k3;
-//
-//   int index_md = (int) pvectsz[ptsz->index_md];
-//   double z = pvectsz[ptsz->index_z];
-//
-//
-// if (_pk_at_z_2h_){
-//   int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
-//   k = ptsz->k_for_pk_hm[index_k];
-//
-// }
-// else {
-//    int index_l = (int)  pvectsz[ptsz->index_multipole];
-//    //identical to sqrt(pvectsz[index_chi2])
-//    double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
-//
-//    pvectsz[ptsz->index_k_value_for_halo_bias] = (pvectsz[ptsz->index_multipole_for_pk]+0.5)/d_A; //units h/Mpc
-//
-//
-//    k = pvectsz[ptsz->index_k_value_for_halo_bias]; //in h/Mpc
-//  }
-//
-//    double pk;
-//    double * pk_ic = NULL;
-//
-//    //printf("evaluating pk at k=%.3e h/Mpc\n",k);
-//
-//
-//
-//    //int index_md = (int) pvectsz[ptsz->index_md];
-//    if (((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h) && (ptsz->galaxy_sample==1) && (ptsz->use_hod ==0)) // unWISE
-//        //|| ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h) && (ptsz->galaxy_sample==0)) // WIxSC
-//        || ((ptsz->has_lens_lens_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_2h) && (ptsz->use_hod ==0))
-//        || ((ptsz->has_gal_lens_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_2h) && (ptsz->galaxy_sample==1) && (ptsz->use_hod ==0)) // unWISE
-//        || ((ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_2h) && (ptsz->galaxy_sample==1) && (ptsz->use_hod ==0)) // unWISE
-//        || ((ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_lensmag_lensmag_2h) && (ptsz->galaxy_sample==1) && (ptsz->use_hod ==0)) // unWISE
-//        || ((ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lensmag_2h) && (ptsz->galaxy_sample==1) && (ptsz->use_hod ==0))) // unWISE
-//    {
-//
-//        //Input: wavenumber in 1/Mpc
-//        //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-//
-//           // halofit approach: uses non-linear pk
-//           class_call(nonlinear_pk_at_k_and_z(
-//                                             pba,
-//                                             ppm,
-//                                             pnl,
-//                                             pk_nonlinear,
-//                                             //pk_linear,
-//                                             k*pba->h,
-//                                             z,
-//                                             pnl->index_pk_m,
-//                                             &pk, // number *out_pk_l
-//                                             pk_ic // array out_pk_ic_l[index_ic_ic]
-//                                           ),
-//                                           pnl->error_message,
-//                                           pnl->error_message);
-//
-//    }
-//    else{
-//
-//        //Input: wavenumber in 1/Mpc
-//        //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-//           class_call(nonlinear_pk_at_k_and_z(
-//                                             pba,
-//                                             ppm,
-//                                             pnl,
-//                                             pk_linear,
-//                                             k*pba->h,
-//                                             z,
-//                                             pnl->index_pk_m,
-//                                             &pk, // number *out_pk_l
-//                                             pk_ic // array out_pk_ic_l[index_ic_ic]
-//                                           ),
-//                                           pnl->error_message,
-//                                           pnl->error_message);
-// }
-//
-//
-//
-//    //now compute P(k) in units of h^-3 Mpc^3
-//    pvectsz[ptsz->index_pk_for_halo_bias] = pk*pow(pba->h,3.); //in units Mpc^3/h^3
-//    return _SUCCESS_;
-// }
-//
-
 
 
 
@@ -8938,7 +8807,7 @@ if (ptsz->has_gal_cib_1h
   +ptsz->has_lens_cib_2h
   +ptsz->has_cib_cib_1h
   +ptsz->has_cib_cib_2h
-  +ptsz->cib_monopole
+  +ptsz->has_cib_monopole
   )
   {
     ptsz->has_cib = 1;
@@ -8950,8 +8819,9 @@ if (ptsz->has_gal_cib_1h
 
 
  if (ptsz->has_cib
-  +ptsz->has_gal_gal_1h
-  +ptsz->has_gal_gal_2h
+  +  ptsz->has_cib_monopole
+  +  ptsz->has_gal_gal_1h
+  +  ptsz->has_gal_gal_2h
    != _FALSE_){
    ptsz->has_200m = 1;
  }
@@ -9813,16 +9683,7 @@ double evaluate_galaxy_number_counts( double * pvecback,
 
     double z_asked  = pvectsz[ptsz->index_z];
     double phig = 0.;
-  //
-  // if (ptsz->galaxy_sample == 1)
-  // if(z_asked<ptsz->normalized_cosmos_dndz_z[0])
-  //    phig = 1e-100;
-  // else if (z_asked>ptsz->normalized_cosmos_dndz_z[ptsz->normalized_cosmos_dndz_size-1])
-  //    phig = 1e-100;
-  // else  phig =  pwl_value_1d(ptsz->normalized_cosmos_dndz_size,
-  //                              ptsz->normalized_cosmos_dndz_z,
-  //                              ptsz->normalized_cosmos_dndz_phig,
-  //                              z_asked);
+
 
   if(z_asked<ptsz->normalized_dndz_z[0])
      phig = 1e-100;
@@ -10254,7 +10115,6 @@ double M_halo;
 
 M_halo = m_delta; // Msun_over_h
 double ng_bar = pvectsz[ptsz->index_mean_galaxy_number_density];
-// double ng_bar = pow(pba->h,-3.);//pvectsz[ptsz->index_mean_galaxy_number_density];
 double nc;
 double ns;
 double us;
