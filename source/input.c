@@ -1756,8 +1756,8 @@ int input_read_parameters(
       class_read_int("n_z_dndlnM",ptsz->n_z_dndlnM);
 
       //Redshift limits for the integration
-      class_read_double("z1SZ",ptsz->z1SZ);
-      class_read_double("z2SZ",ptsz->z2SZ);
+      class_read_double("z_min",ptsz->z1SZ);
+      class_read_double("z_max",ptsz->z2SZ);
 
 
       class_read_double("redshift_epsrel",ptsz->redshift_epsrel);
@@ -1779,16 +1779,22 @@ int input_read_parameters(
         ptsz->integrate_wrt_m200m = 0;
         ptsz->integrate_wrt_m200c = 0;
       }
-      else if (ptsz->integrate_wrt_m500c == 1){
+      if (ptsz->integrate_wrt_m500c == 1){
         ptsz->integrate_wrt_mvir = 0;
         ptsz->integrate_wrt_m200m = 0;
         ptsz->integrate_wrt_m200c = 0;
       }
-      else if (ptsz->integrate_wrt_m200c == 1){
+      // if (ptsz->integrate_wrt_m200c == 1){
+      //   ptsz->integrate_wrt_mvir = 0;
+      //   ptsz->integrate_wrt_m200m = 0;
+      //   ptsz->integrate_wrt_m500c = 0;
+      // }
+      if (ptsz->integrate_wrt_m200m == 1){
         ptsz->integrate_wrt_mvir = 0;
-        ptsz->integrate_wrt_m200m = 0;
+        ptsz->integrate_wrt_m200c = 0;
         ptsz->integrate_wrt_m500c = 0;
       }
+      // printf("%d\n",ptsz->integrate_wrt_m200c);
 
       // else{
       //   ptsz->integrate_wrt_m500c = 0;
@@ -1800,8 +1806,8 @@ int input_read_parameters(
       class_read_int("n_arraySZ_for_integral",ptsz->n_arraySZ_for_integral);//number of z in the integration
 
       //mass limits: h^-1 Msun
-      class_read_double("M1SZ",ptsz->M1SZ);
-      class_read_double("M2SZ",ptsz->M2SZ);
+      class_read_double("M_min",ptsz->M1SZ);
+      class_read_double("M_max",ptsz->M2SZ);
       ptsz->M1SZ_dndlnM = ptsz->M1SZ;
       ptsz->M2SZ_dndlnM = ptsz->M2SZ;
       ptsz->z1SZ_dndlnM = ptsz->z1SZ;
@@ -2686,6 +2692,9 @@ int input_read_parameters(
           }
       if ((strstr(string1,"m200m_to_m200c") != NULL) ) {
           ptsz->need_m200m_to_m200c = 1;
+          }
+      if ((strstr(string1,"m200c_to_m200m") != NULL) ) {
+          ptsz->need_m200c_to_m200m = 1;
           }
       class_call(parser_read_string(pfc,"include_ssc",&string1,&flag1,errmsg),
                    errmsg,
@@ -5570,6 +5579,7 @@ int input_default_params(
   ptsz->integrate_wrt_m200c = 1;
   ptsz->integrate_wrt_m200m = 0;
 
+  ptsz->need_m200c_to_m200m = 0;
   ptsz->need_m200m_to_m200c = 0;
   ptsz->need_m200m_to_m500c = 0;
   ptsz->need_m200c_to_m500c = 0;

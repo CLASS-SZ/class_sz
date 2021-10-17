@@ -188,6 +188,7 @@ struct tszspectrum {
   double * sig_cl_squared_binned;
 
   int need_m200m_to_m200c;
+  int need_m200c_to_m200m;
   int need_m200m_to_m500c;
   int need_hmf;
   int need_sigma;
@@ -690,7 +691,7 @@ struct tszspectrum {
 
   int index_phi_galaxy_counts;
   int index_mean_galaxy_number_density;
-  int index_c500c_KA20;
+  int index_c500c;
   int index_multipole_for_galaxy_profile;
   int index_multipole_for_truncated_nfw_profile;
   int index_galaxy_profile;
@@ -1214,6 +1215,11 @@ double * steps_m;
   double * array_m200m_to_m200c_at_z_and_M;
 
 
+  double * array_m_m200c_to_m200m;
+  double * array_ln_1pz_m200c_to_m200m;
+  double * array_m200c_to_m200m_at_z_and_M;
+
+
   double * array_m_m200m_to_m500c;
   double * array_ln_1pz_m200m_to_m500c;
   double * array_m200m_to_m500c_at_z_and_M;
@@ -1353,8 +1359,17 @@ int szpowerspectrum_init(struct background * pba,
                                   struct primordial * ppm,
                                   struct nonlinear * pnl,
                                   struct tszspectrum * ptsz);
-
-  int evaluate_HMF(double logM ,
+  int do_mass_conversions(
+                         double logM,
+                         double z,
+                         double * pvecback,
+                         double * pvectsz,
+                         struct background * pba,
+                         struct nonlinear * pnl,
+                         struct tszspectrum * ptsz);
+  int evaluate_HMF_at_logM_and_z(
+                   double logM ,
+                   double z,
                    double * pvecback,
                    double * pvectsz,
                    struct background * pba,
@@ -1583,14 +1598,18 @@ int evaluate_c200m_D08(double * pvecback,
                         struct background * pba,
                         struct tszspectrum * ptsz);
 
-int evaluate_c200c_D08(double * pvecback,
-                        double * pvectsz,
+double get_c200c_at_m_and_z_D08(double M,
+                                double z);
+
+double get_c200c_at_m_and_z(//double * pvecback,
+                        double m,
+                        double z,
                         struct background * pba,
                         struct tszspectrum * ptsz);
 
-
-int evaluate_c500c_KA20(//double * pvecback,
-                        double * pvectsz,
+double get_c500c_at_m_and_z(//double * pvecback,
+                        double m,
+                        double z,
                         struct background * pba,
                         struct tszspectrum * ptsz);
 
@@ -1736,6 +1755,11 @@ double bispectrum_f2_kernel_eff_Q3(double n1);
 double get_rho_crit_at_z(double z_asked,
                          struct background * pba,
                          struct tszspectrum * ptsz);
+
+double get_c200m_at_m_and_z(double M,
+                            double z,
+                            struct background * pba,
+                            struct tszspectrum * ptsz);
 
 double get_c200m_at_m_and_z_D08(double M,
                                 double z);

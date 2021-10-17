@@ -171,6 +171,7 @@ double delta_to_delta_prime_nfw(
   double get_hmf_counter_term_b1min_at_z(double z_asked, struct tszspectrum * ptsz);
   double get_hmf_counter_term_b2min_at_z(double z_asked, struct tszspectrum * ptsz);
   double get_m200m_to_m200c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
+  double get_m200c_to_m200m_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_m200m_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_m200c_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_m500c_to_m200c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
@@ -206,6 +207,8 @@ int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
                                       struct tszspectrum * ptsz);
 int tabulate_L_sat_at_z_m_nu(struct background * pba,
                              struct tszspectrum * ptsz);
+int tabulate_m200c_to_m200m(struct background * pba,
+                            struct tszspectrum * ptsz);
 
 int tabulate_m200m_to_m200c(struct background * pba,
                             struct tszspectrum * ptsz);
