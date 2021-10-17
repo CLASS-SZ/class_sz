@@ -448,8 +448,7 @@ double get_T10_alpha_at_z(double z,struct tszspectrum * ptsz);
   int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
                               struct background * pba,
                               double * pvectsz,
-                              double * result,
-                              int flag_matter_type) ;
+                              double * result) ;
 
 double integrand_patterson_test(double logM, void *p);
 double integrand_sigma2_hsv(double lnk, void *p);

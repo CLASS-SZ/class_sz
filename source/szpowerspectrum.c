@@ -4402,7 +4402,7 @@ int evaluate_matter_density_profile(double r_delta,
     double density_normalisation;
 
     double xout = ptsz->x_out_truncated_nfw_profile;
-    double result_trunc =  evaluate_truncated_nfw_profile(r_delta,c_delta,xout,pvectsz,pba,ptsz,0);
+    double result_trunc =  evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
 
     pvectsz[ptsz->index_density_profile] = result_trunc;
 
@@ -4453,7 +4453,10 @@ int evaluate_lensing_profile(double m_delta,
 
    pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];  // multipole going into truncated nfw, unfortunate name
    double xout = ptsz->x_out_truncated_nfw_profile;
-   result =  evaluate_truncated_nfw_profile(r_delta,c_delta,xout,pvectsz,pba,ptsz,0);
+   double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
+   double chi = sqrt(pvectsz[ptsz->index_chi2]);
+   double k = (l+0.5)/chi;
+   result =  evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
 
 
 
@@ -9945,8 +9948,10 @@ double z = pvectsz[ptsz->index_z];
 
 pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_cib_profile];
 double xout = 1.;//ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
-
-double us = evaluate_truncated_nfw_profile(r_delta,c_delta,xout,pvectsz,pba,ptsz,0);
+double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
+double chi = sqrt(pvectsz[ptsz->index_chi2]);
+double k = (l+0.5)/chi;
+double us = evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
 
 double ug_at_ell;
 double nu;
@@ -10271,7 +10276,10 @@ nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz,pba);
 ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
 double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
 pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_galaxy_profile];
-us = evaluate_truncated_nfw_profile(r_delta,c_delta,xout,pvectsz,pba,ptsz,0);
+double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
+double chi = sqrt(pvectsz[ptsz->index_chi2]);
+double k = (l+0.5)/chi;
+us = evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
 
 double ug_at_ell;
 
@@ -10321,7 +10329,10 @@ nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz,pba);
 ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
 double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
 pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_galaxy_profile];
-us = evaluate_truncated_nfw_profile(r_delta,c_delta,xout,pvectsz,pba,ptsz,0);
+double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
+double chi = sqrt(pvectsz[ptsz->index_chi2]);
+double k = (l+0.5)/chi;
+us = evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
 
 
 double ug_at_ell;
@@ -10396,40 +10407,23 @@ return numerator/denominator;
 
 
 // analytical truncated NFW profile
-// truncated at xout*r_delta
+// truncated at r_out = xout*r_delta
 double evaluate_truncated_nfw_profile(//double * pvecback,
+                                      double k,
                                       double r_delta,
                                       double c_delta,
                                       double xout, // so: r_out = xout*r_delta
                                       double * pvectsz,
                                       struct background * pba,
-                                      struct tszspectrum * ptsz,
-                                      int flag_matter_type)
+                                      struct tszspectrum * ptsz)
 {
-// double c_delta, r_delta;
+
 int index_md = (int) pvectsz[ptsz->index_md];
 
 
 
 double z = pvectsz[ptsz->index_z];
 
-double ell = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
-double chi = sqrt(pvectsz[ptsz->index_chi2]);
-double k = (ell+0.5)/chi;
-
-if ( _pk_at_z_1h_
-  || _pk_at_z_2h_
-  || _pk_gg_at_z_1h_
-  || _pk_gg_at_z_2h_
-  || _bk_at_z_1h_
-  || _bk_at_z_2h_
-  || _bk_at_z_3h_){
-    int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
-    k = ptsz->k_for_pk_hm[index_k];
-    // exit(0);
-  }
-
-// double q = k*r_delta*xout/c_delta*(1.+z);
 double q = k*r_delta/c_delta*(1.+z);
 
 double denominator = m_nfw(c_delta); //normalization
@@ -10438,15 +10432,14 @@ double denominator = m_nfw(c_delta); //normalization
 double numerator = cos(q)*(gsl_sf_Ci((1.+xout*c_delta)*q)-gsl_sf_Ci(q))
                    +sin(q)*(gsl_sf_Si((1.+xout*c_delta)*q)-gsl_sf_Si(q))
                    -sin(xout*c_delta*q)/((1.+xout*c_delta)*q);
-                   // printf("%.3e %.3e\n",numerator, denominator);
 
-if (isnan(numerator/denominator)){
-  printf("%.3e %.3e %.3e %.3e  %.3e %.3e %.3e %.3e\n",numerator, denominator,q,xout,k,z,ell,chi);
+if (isnan(numerator/denominator) || isinf(numerator/denominator)){
+  printf("%.3e %.3e %.3e %.3e  %.3e %.3e\n",numerator, denominator,q,xout,k,z);
   exit(0);
 }
 
 return numerator/denominator;
-//return 1.; // BB debug
+
 }
 
 

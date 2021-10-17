@@ -2762,7 +2762,6 @@ struct Parameters_for_integrand_nfw_profile{
   struct tszspectrum * ptsz;
   struct background * pba;
   double * pvectsz;
-  int flag_matter_type;
 };
 
 
@@ -2771,19 +2770,8 @@ double integrand_nfw_profile(double x, void *p){
   struct Parameters_for_integrand_nfw_profile *V = ((struct Parameters_for_integrand_nfw_profile *) p);
 
     double nfw_profile_at_x = 0.;
-
-    if (V->flag_matter_type == 1 && V->ptsz->tau_profile == 1){
     rho_gnfw(&nfw_profile_at_x,x,V->pvectsz,V->pba,V->ptsz);
-    }
-    else{
-    rho_nfw(&nfw_profile_at_x,x,V->pvectsz,V->pba,V->ptsz);
-    }
-
-
-    // rho_nfw(&nfw_profile_at_x,x,V->pvectsz,V->pba,V->ptsz);
     double result = nfw_profile_at_x;
-
-
   return result;
 
 }
@@ -2806,15 +2794,14 @@ double integrand_patterson_test_pp(double x, void *p){
 int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
                           struct background * pba,
                           double * pvectsz,
-                          double * result,
-                          int flag_matter_type
+                          double * result
                           ) {
 
   struct Parameters_for_integrand_nfw_profile V;
   V.ptsz = ptsz;
   V.pba = pba;
   V.pvectsz = pvectsz;
-  V.flag_matter_type = flag_matter_type;
+
 
   void * params = &V;
 
@@ -2828,57 +2815,20 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   double result_gsl, error;
 
   double xin = 1.e-5;
-  double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
-  double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
   double c_nfw;
 
-  // def at delta
-  if (ptsz->MF == 1){
-
-    c_nfw = pvectsz[ptsz->index_c200m];
-  }
-  else{
-    c_nfw = pvectsz[ptsz->index_cVIR];
-  }
-    c_nfw = pvectsz[ptsz->index_c200m];
-
-
-
-  // double c_nfw_prime;
-  // if (flag_matter_type == 1){
-  //   // for tau profile, option of rescaling concentration
-  //   c_nfw_prime = ptsz->cvir_tau_profile_factor*c_nfw;
-  // }
-  // else{
-  //   c_nfw_prime = c_nfw;
-  // }
-
-  // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
-  // in the settings of KFSW20
-  //if ()
-  double xout = ptsz->x_out_nfw_profile*c_nfw;//ptsz->x_out_nfw_profile*c_nfw_prime; //rvir/rs = cvir
-
   //Battaglia 16 case:
-  if (flag_matter_type == 1 && ptsz->tau_profile == 1){
+
   double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
   // double r200c = pvectsz[ptsz->index_r200c]; //in Mpc/h
   double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
-  xout = 50.*rvir/rs; // as in hmvec (default 20, but set to 50 in example file)
-  xout = 50.; // as in hmvec (default 20, but set to 50 in example file)
+  // xout = 50.*rvir/rs; // as in hmvec (default 20, but set to 50 in example file)
+  double xout = 50.; // as in hmvec (default 20, but set to 50 in example file)
 
   c_nfw = 1.;
-}
-
-  //double delta = ptsz->x_out_nfw_profile;
-  //double delta_prime = delta_to_delta_prime_nfw(delta,cvir,cvir_prime,ptsz);
-  //xout = delta_prime*ptsz->cvir_tau_profile_factor*rvir/rs; //delta_prime*cvir_prime
-
-  //xout = 5.;
 
 
 // QAWO
-
-
 
   double delta_l = xout - xin;
 
@@ -2888,28 +2838,14 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   int size_w = 500;
   w = gsl_integration_workspace_alloc(size_w);
 
-  //int index_l = (int) pvectsz[ptsz->index_multipole_for_nfw_profile];
+
   double w0;
 
   int index_md = (int) pvectsz[ptsz->index_md];
   double y_eff;
-  if (_pk_at_z_1h_
-   || _pk_at_z_2h_
- ){
-    int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
-    double k = ptsz->k_for_pk_hm[index_k];
-    double z = pvectsz[ptsz->index_z];
-    // printf("computing y_eff = %.3e\n");
-    y_eff =k*rs*(1.+z);
-    // printf("computing y_eff = %.3e %.3e  %.3e  %.3e\n",y_eff,k,rs,z);
-  }
-  else{
-    y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
+  y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
              /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
-  }
 
-  //w0 = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)/pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
-  //y_eff = 1.e-10;
   w0 = y_eff;
 
 
@@ -2919,69 +2855,15 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   int limit = size_w; //number of sub interval
   gsl_integration_qawo(&F,xin,eps_abs,eps_rel,limit,w,wf,&result_gsl,&error);
 
-  *result = result_gsl;///m_nfw(c_nfw);
+  *result = result_gsl;
 
   gsl_integration_qawo_table_free(wf);
   gsl_integration_workspace_free(w);
 
-//
-// //ROMBERG
-// int n_subintervals_gsl = 100;
-// gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
-//
-// size_t neval;
-// gsl_integration_romberg(&F,xin,xout,eps_abs,eps_rel,&result_gsl,&neval,w);
-// gsl_integration_romberg_free(w);
-// *result = result_gsl;
 
 
 }
 
-// Code sample from Colin Hill
-// DOUBLE PRECISION FUNCTION rhoNFW(x,y,cvir) ! x=r/rs & y=(l+1/2)/ls & cvir=cvir
-//   IMPLICIT none
-//   double precision :: x,y,cvir
-//
-//   rhoNFW=x**(-1d0)*(1d0+x)**(-2d0)*x**2d0*dsin(y*x)/(y*x)
-//   return
-// END FUNCTION rhoNFW
-// not relevant anymore since we have the truncated formula
-
-int rho_nfw(double * rho_nfw_x,
-            double x ,
-            double * pvectsz,
-            struct background * pba,
-            struct tszspectrum * ptsz)
-{
-
- int index_md = (int) pvectsz[ptsz->index_md];
- double y_eff;
- double z = pvectsz[ptsz->index_z];
- if (_pk_at_z_1h_ // not relevant anymore since we have the truncated formula
-  || _pk_at_z_2h_
-  || _bk_at_z_1h_
-  || _bk_at_z_2h_
-  || _bk_at_z_3h_){
-   int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
-   double k = ptsz->k_for_pk_hm[index_k];
-   // double z = pvectsz[ptsz->index_z];
-   y_eff = k*pvectsz[ptsz->index_rs]*(1.+z);
-
-
- }
- else{
-   y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
-            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];//*ptsz->cvir_tau_profile_factor;
-
- }
-
-  //y_eff = 1.e-10;
-  // *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*y_eff);
-               //*sin(x*(pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
-               ///pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile]);
-
-  *rho_nfw_x = get_gas_profile_at_x_M_z_nfw_200m(x,pvectsz[ptsz->index_m200m],z,pba,ptsz)*pow(x,2)/(x*y_eff);
-}
 
 
 int rho_gnfw(double * rho_nfw_x,
@@ -2997,7 +2879,7 @@ int rho_gnfw(double * rho_nfw_x,
 
  double y_eff;
    y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
-            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];//*ptsz->cvir_tau_profile_factor;
+            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
 
 
     double A_rho0 = ptsz->A_rho0;
@@ -3011,50 +2893,16 @@ int rho_gnfw(double * rho_nfw_x,
     double alpha_z_rho0 = ptsz->alpha_z_rho0;
     double alpha_z_alpha = ptsz->alpha_z_alpha;
     double alpha_z_beta = ptsz->alpha_z_beta;
-  //
-  // // Battaglia 16 -- https://arxiv.org/pdf/1607.02442.pdf
-  // // Table 2
-  // if (ptsz->tau_profile_mode == 0){
-  //   // agn feedback
-  //   A_rho0 = 4.e3;
-  //   A_alpha = 0.88;
-  //   A_beta = 3.83;
-  //
-  //   alpha_m_rho0 = 0.29;
-  //   alpha_m_alpha = -0.03;
-  //   alpha_m_beta = 0.04;
-  //
-  //   alpha_z_rho0 = -0.66;
-  //   alpha_z_alpha = 0.19;
-  //   alpha_z_beta = -0.025;
-  //   }
-  // else if (ptsz->tau_profile_mode == 1){
-  //   // shock heating
-  //   A_rho0 = 1.9e4;
-  //   A_alpha = 0.70;
-  //   A_beta = 4.43;
-  //
-  //   alpha_m_rho0 = 0.09;
-  //   alpha_m_alpha = -0.017;
-  //   alpha_m_beta = 0.005;
-  //
-  //   alpha_z_rho0 = -0.95;
-  //   alpha_z_alpha = 0.27;
-  //   alpha_z_beta = 0.037;
-  // }
 
   // Eq. A1 and A2:
   double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
-  // double rho0  = 1.;
-  double rho0 = 1.;//A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z,alpha_z_rho0);
+  double rho0 = 1.;
   double alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
   double beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
 
   double gamma = ptsz->gamma_B16;
   double xc = 0.5;
 
- //  *rho_nfw_x = rho0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-(beta+gamma)/alpha)*pow(x,2)/(x*y_eff);
- // double r1 = *rho_nfw_x;
   *rho_nfw_x = get_gas_profile_at_x_M_z_b16_200c(x,
                                                  pvectsz[ptsz->index_m200c],
                                                  z,
@@ -3071,15 +2919,6 @@ int rho_gnfw(double * rho_nfw_x,
                                                  pba,
                                                  ptsz)*pow(x,2)/(x*y_eff);
 
-// double r2 = get_gas_profile_at_x_M_z_b16_200c(x,pvectsz[ptsz->index_m200c],z,pba,ptsz);
-
- // *rho_nfw_x = rho0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-(beta+gamma)/alpha)*pow(x,2)/(x*y_eff);
-// double r1 = m200_over_msol;
-// if (fabs(r1-r2)/r2>0.01){
-// printf("%.7e %.7e\n",r1,r2);
-// exit(0);
-// }
-  // *rho_nfw_x = 1./x*1./pow(1.+x,2)*pow(x,2)/(x*y_eff);
 }
 
 
@@ -3659,7 +3498,7 @@ for (index_m=0;
   pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c];
 
  double result_int;
- class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int,1),
+ class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int),
                      ptsz->error_message,
                      ptsz->error_message);
 
@@ -3677,6 +3516,11 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
 
    pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
    pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile]; // this is the multipole going into truncated nfw... TBD: needs to be renamed
+
+  double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
+  double chi = sqrt(pvectsz[ptsz->index_chi2]);
+  double k = (l+0.5)/chi;
+
    pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_1h; // make sure the mode is set up properly for tau computation
 
    pvectsz[ptsz->index_c200c] = get_c200c_at_m_and_z(pvectsz[ptsz->index_m200c],z,pba,ptsz);
@@ -3685,7 +3529,8 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
    double r_delta = pvectsz[ptsz->index_r200c];
    double c_delta = pvectsz[ptsz->index_c200c];
    pvectsz[ptsz->index_rs] = r_delta/c_delta;
-   result =  evaluate_truncated_nfw_profile(r_delta,c_delta,xout,pvectsz,pba,ptsz,1);
+
+   result =  evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
    result *= pvectsz[ptsz->index_m200c]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3));
    double f_b = pba->Omega0_b/ptsz->Omega_m_0;
    result *= f_b;
@@ -4178,44 +4023,7 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
                           ) {
 
 
-  ////////////////////////////////
-  //Patterson [from Jens Chluba]
-  ////////////////////////////////
-
-  if (ptsz->integration_method_pressure_profile==0){
-
-  struct Parameters_for_integrand_patterson_pp V;
-  V.ptsz = ptsz;
-  V.pba = pba;
-  V.pvectsz = pvectsz;
-  void * params = &V;
-  //
-  //
-  double epsrel=ptsz->pressure_profile_epsrel;
-  double epsabs=ptsz->pressure_profile_epsabs;
-  int show_neval = ptsz->patterson_show_neval;
-  //
-
-  int id_max = ptsz->x_size_for_pp-1;
-
-
-
-  double r=Integrate_using_Patterson_adaptive(ptsz->x_for_pp[0],
-                                              ptsz->x_for_pp[id_max],
-                                              epsrel, epsabs,
-                                              integrand_patterson_test_pp,
-                                              params,show_neval);
-
-*result = r;
-
-}
-  ///////////////////////////////////
-  //end Patterson [from Jens Chluba]
-  //////////////////////////////////
-
   //GSL
-  else if (ptsz->integration_method_pressure_profile==1){
-
   // QAWO
 
   double xin = ptsz->x_inSZ;
@@ -4237,7 +4045,7 @@ else{
   int size_w = 3000;
   w = gsl_integration_workspace_alloc(size_w);
 
-  //int index_l = (int) pvectsz[ptsz->index_multipole_for_pressure_profile];
+
   double w0;
   if (ptsz->pressure_profile == 4) //for Battaglia et al 2012 pressure profile
   w0 = (pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l200c];
@@ -4268,8 +4076,6 @@ else{
 
   gsl_integration_qawo_table_free(wf);
   gsl_integration_workspace_free(w);
-
-}
 
   return _SUCCESS_;
 
