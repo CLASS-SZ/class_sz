@@ -1551,19 +1551,15 @@ double get_galaxy_profile_at_z_m_l_1h(double z,
                                       struct background * pba);
 
 
-// int evaluate_galaxy_profile(double * pvecback,
-//                             double * pvectsz,
-//                             struct background * pba,
-//                             struct tszspectrum * ptsz);
-
-int evaluate_galaxy_profile_1h(
+int evaluate_galaxy_profile_1h(double m_delta,
                                double r_delta,
                                double c_delta,
                                double * pvecback,
                                double * pvectsz,
                                struct background * pba,
                                struct tszspectrum * ptsz);
-int evaluate_galaxy_profile_2h(double r_delta,
+int evaluate_galaxy_profile_2h(double m_delta,
+                               double r_delta,
                                double c_delta,
                                double * pvecback,
                                double * pvectsz,
@@ -1649,7 +1645,8 @@ double evaluate_unwise_m_min_cut(double z,
                                  struct tszspectrum * ptsz);
 
 
-int evaluate_cib_profile(double r_delta,
+int evaluate_cib_profile(double m_delta,
+                         double r_delta,
                          double c_delta,
                          double * pvecback,
                          double * pvectsz,

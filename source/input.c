@@ -1769,38 +1769,6 @@ int input_read_parameters(
       class_read_double("max redshift for cluster counts",pcsz->z_max);
 
 
-      class_read_int("integrate_wrt_mvir",ptsz->integrate_wrt_mvir);
-      class_read_int("integrate_wrt_m500c",ptsz->integrate_wrt_m500c);
-      class_read_int("integrate_wrt_m200m",ptsz->integrate_wrt_m200m);
-      class_read_int("integrate_wrt_m200c",ptsz->integrate_wrt_m200c);
-
-      if (ptsz->integrate_wrt_mvir == 1) {
-        ptsz->integrate_wrt_m500c = 0;
-        ptsz->integrate_wrt_m200m = 0;
-        ptsz->integrate_wrt_m200c = 0;
-      }
-      if (ptsz->integrate_wrt_m500c == 1){
-        ptsz->integrate_wrt_mvir = 0;
-        ptsz->integrate_wrt_m200m = 0;
-        ptsz->integrate_wrt_m200c = 0;
-      }
-      // if (ptsz->integrate_wrt_m200c == 1){
-      //   ptsz->integrate_wrt_mvir = 0;
-      //   ptsz->integrate_wrt_m200m = 0;
-      //   ptsz->integrate_wrt_m500c = 0;
-      // }
-      if (ptsz->integrate_wrt_m200m == 1){
-        ptsz->integrate_wrt_mvir = 0;
-        ptsz->integrate_wrt_m200c = 0;
-        ptsz->integrate_wrt_m500c = 0;
-      }
-      // printf("%d\n",ptsz->integrate_wrt_m200c);
-
-      // else{
-      //   ptsz->integrate_wrt_m500c = 0;
-      //   ptsz->integrate_wrt_m200m = 0;
-      // }
-
       //Array size
       class_read_int("ndim_redshifts",ptsz->n_arraySZ);//number of z in the interpolation for sigma
       class_read_int("n_arraySZ_for_integral",ptsz->n_arraySZ_for_integral);//number of z in the integration
@@ -1889,8 +1857,6 @@ int input_read_parameters(
 
       //For the computation of sigma2
       class_read_int("ndim_masses",ptsz->ndimSZ);
-      //class_read_double("logR1SZ",ptsz->logR1SZ); // 0.0034Mpc/h, 1.8e4  solar mass
-      //class_read_double("logR2SZ",ptsz->logR2SZ); // 54.9Mpc/h, 7.5e16 solar mass
 
       class_read_double("delta_cSZ",ptsz->delta_cSZ);
 
@@ -1946,7 +1912,6 @@ int input_read_parameters(
         }
         else if ((strstr(string1,"gsl_qags") != NULL)){
           ptsz->integration_method_mass=1;
-          //class_read_int("mass bins between M_min and M_max",ptsz->number_of_mass_bins);
         }
         else if ((strstr(string1,"gsl_qag") != NULL)){
           ptsz->integration_method_mass=2;
@@ -2211,8 +2176,6 @@ int input_read_parameters(
 
 
       if ((strstr(string1,"kSZ_kSZ_gal_1h") != NULL) ) {
-        // printf("1h\n");
-        // exit(0);
         ptsz->has_kSZ_kSZ_gal_1h =_TRUE_;
         ptsz->has_vrms2 = _TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2683,18 +2646,48 @@ int input_read_parameters(
 
       if ((strstr(string1,"m200c_to_m500c") != NULL) ) {
           ptsz->need_m200c_to_m500c = 1;
+          ppt->has_density_transfers=_TRUE_;
+          ppt->has_pk_matter = _TRUE_;
+          ppt->has_perturbations = _TRUE_;
+          pnl->has_pk_cb = _TRUE_;
+          pnl->has_pk_m = _TRUE_;
+          ptsz->need_sigma = 1;
           }
       if ((strstr(string1,"m500c_to_m200c") != NULL) ) {
           ptsz->need_m500c_to_m200c = 1;
+          ppt->has_density_transfers=_TRUE_;
+          ppt->has_pk_matter = _TRUE_;
+          ppt->has_perturbations = _TRUE_;
+          pnl->has_pk_cb = _TRUE_;
+          pnl->has_pk_m = _TRUE_;
+          ptsz->need_sigma = 1;
           }
       if ((strstr(string1,"m200m_to_m500c") != NULL) ) {
           ptsz->need_m200m_to_m500c = 1;
+          ppt->has_density_transfers=_TRUE_;
+          ppt->has_pk_matter = _TRUE_;
+          ppt->has_perturbations = _TRUE_;
+          pnl->has_pk_cb = _TRUE_;
+          pnl->has_pk_m = _TRUE_;
+          ptsz->need_sigma = 1;
           }
       if ((strstr(string1,"m200m_to_m200c") != NULL) ) {
           ptsz->need_m200m_to_m200c = 1;
+          ppt->has_density_transfers=_TRUE_;
+          ppt->has_pk_matter = _TRUE_;
+          ppt->has_perturbations = _TRUE_;
+          pnl->has_pk_cb = _TRUE_;
+          pnl->has_pk_m = _TRUE_;
+          ptsz->need_sigma = 1;
           }
       if ((strstr(string1,"m200c_to_m200m") != NULL) ) {
           ptsz->need_m200c_to_m200m = 1;
+          ppt->has_density_transfers=_TRUE_;
+          ppt->has_pk_matter = _TRUE_;
+          ppt->has_perturbations = _TRUE_;
+          pnl->has_pk_cb = _TRUE_;
+          pnl->has_pk_m = _TRUE_;
+          ptsz->need_sigma = 1;
           }
       class_call(parser_read_string(pfc,"include_ssc",&string1,&flag1,errmsg),
                    errmsg,
@@ -2797,22 +2790,6 @@ int input_read_parameters(
 
           }
 
-         //  /* HOD */
-         //  class_call(parser_read_string(pfc,"halo occupation distribution",&string1,&flag1,errmsg),
-         //             errmsg,
-         //             errmsg);
-         // if (flag1 == _TRUE_) {
-         //    if ((strstr(string1,"KFSW20") != NULL))
-         //      ptsz->hod_model=0;
-         //   //  else  if ((strstr(string1,"A10") != NULL))
-         //   //    ptsz->pressure_profile=2;
-         //   // else  if ((strstr(string1,"Custom. GNFW") != NULL))
-         //   //    ptsz->pressure_profile=3;
-         //   // else  if ((strstr(string1,"B12") != NULL))
-         //   //   ptsz->pressure_profile=4;
-         //      }
-
-
 
 
 
@@ -2860,6 +2837,7 @@ int input_read_parameters(
 
       class_read_double("M_min_HOD",ptsz->M_min_HOD);
 
+
       class_call(parser_read_string(pfc,"M0 equal M_min (HOD)",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
@@ -2878,17 +2856,12 @@ int input_read_parameters(
 
 
       class_read_double("M1_prime_HOD",ptsz->M1_prime_HOD);
-      //class_read_double("M1_prime_HOD_factor",ptsz->M1_prime_HOD_factor);
+
+
       class_read_double("alpha_s_HOD",ptsz->alpha_s_HOD);
       class_read_double("sigma_log10M_HOD",ptsz->sigma_log10M_HOD);
       class_read_double("rho_y_gal",ptsz->rho_y_gal);
 
-
-
-
-
-      //class_read_double("M_min_HOD_mass_factor_unwise",ptsz->M_min_HOD_mass_factor_unwise);
-      //class_read_double("M_min_HOD_satellite_mass_factor_unwise",ptsz->M_min_HOD_satellite_mass_factor_unwise);
 
       class_read_double("x_out_truncated_nfw_profile_satellite_galaxies",ptsz->x_out_truncated_nfw_profile_satellite_galaxies);
       class_read_double("x_out_truncated_nfw_profile",ptsz->x_out_truncated_nfw_profile);
@@ -2915,9 +2888,6 @@ int input_read_parameters(
         }
 
       }
-
-      // class_read_string("full path to dndz (normalized galaxy dist.)",ptsz->full_path_to_dndz_gal);
-
 
 
       /* temperature mass relation SZ */
@@ -3031,25 +3001,67 @@ int input_read_parameters(
                  errmsg,
                  errmsg);
      if (flag1 == _TRUE_) {
-        if ((strstr(string1,"T10") != NULL))
-          ptsz->MF=1;
-        else  if ((strstr(string1,"B15") != NULL))
+        if ((strstr(string1,"T10") != NULL)){
+            ptsz->MF=1;
+            ptsz->integrate_wrt_m200m = 1;
+        }
+
+        else  if ((strstr(string1,"B15") != NULL)){
           ptsz->MF=2;
-        else  if ((strstr(string1,"J01") != NULL))
+          ptsz->integrate_wrt_m200m = 1;
+        }
+        else  if ((strstr(string1,"J01") != NULL)){
           ptsz->MF=3;
-        else  if ((strstr(string1,"T08M200c") != NULL)) //not working yet
+          // ptsz->integrate_wrt_m180m = 1;
+        }
+        else  if ((strstr(string1,"T08M200c") != NULL)) { // needs to be before T08!
           ptsz->MF=8;
-        else  if ((strstr(string1,"T08") != NULL))
+          ptsz->integrate_wrt_m200c = 1;
+        }
+        else  if ((strstr(string1,"T08") != NULL)){
           ptsz->MF=4;
-        else  if ((strstr(string1,"M500") != NULL))
+          ptsz->integrate_wrt_m200m = 1;
+        }
+        else  if ((strstr(string1,"M500") != NULL)){
           ptsz->MF=5;
-        else  if ((strstr(string1,"M1600") != NULL))
+          ptsz->integrate_wrt_m500c = 1;
+        }
+        else  if ((strstr(string1,"M1600") != NULL)){
           ptsz->MF=6;
-        else  if ((strstr(string1,"B16M500c") != NULL)) //not working yet
+          // ptsz->integrate_wrt_m1600m = 1;
+        }
+        else  if ((strstr(string1,"B16M500c") != NULL)){ //not working yet
           ptsz->MF=7;
+          ptsz->integrate_wrt_m500c = 1;
+        }
 
      }
-     // printf("%d\n",ptsz->MF);
+
+      // class_read_int("integrate_wrt_mvir",ptsz->integrate_wrt_mvir);
+      // class_read_int("integrate_wrt_m500c",ptsz->integrate_wrt_m500c);
+      // class_read_int("integrate_wrt_m200m",ptsz->integrate_wrt_m200m);
+      // class_read_int("integrate_wrt_m200c",ptsz->integrate_wrt_m200c);
+     if (ptsz->integrate_wrt_mvir == 1) {
+        ptsz->integrate_wrt_m500c = 0;
+        ptsz->integrate_wrt_m200m = 0;
+        ptsz->integrate_wrt_m200c = 0;
+      }
+      if (ptsz->integrate_wrt_m500c == 1){
+        ptsz->integrate_wrt_mvir = 0;
+        ptsz->integrate_wrt_m200m = 0;
+        ptsz->integrate_wrt_m200c = 0;
+      }
+      // if (ptsz->integrate_wrt_m200c == 1){
+      //   ptsz->integrate_wrt_mvir = 0;
+      //   ptsz->integrate_wrt_m200m = 0;
+      //   ptsz->integrate_wrt_m500c = 0;
+      // }
+      if (ptsz->integrate_wrt_m200m == 1){
+        ptsz->integrate_wrt_mvir = 0;
+        ptsz->integrate_wrt_m200c = 0;
+        ptsz->integrate_wrt_m500c = 0;
+      }
+
 
       class_read_string("UNWISE_dndz_file",ptsz->UNWISE_dndz_file);
       class_read_string("path_to_class",ptsz->path_to_class);
@@ -3161,17 +3173,6 @@ int input_read_parameters(
 
 
 
-    // class_call(parser_read_string(pfc,"mass_def_hmf",&string1,&flag1,errmsg),
-    //              errmsg,
-    //              errmsg);
-    //  if (flag1 == _TRUE_) {
-    //     if ((strstr(string1,"matter") != NULL))
-    //       ptsz->mass_def_hmf=1;
-    //     else  if ((strstr(string1,"no") != NULL))
-    //       ptsz->mass_def_hmf=0;
-    //     }
-
-
     /* galaxy sample */
     class_call(parser_read_string(pfc,"galaxy_sample",&string1,&flag1,errmsg),
                errmsg,
@@ -3200,6 +3201,7 @@ int input_read_parameters(
         else  if ((strstr(string1,"blue") != NULL))
           ptsz->unwise_galaxy_sample_id=3;
         }
+    // end of class_sz parameters
 
 
     if ((strstr(string1,"mTk") != NULL) || (strstr(string1,"MTk") != NULL) || (strstr(string1,"MTK") != NULL) ||
@@ -5373,7 +5375,7 @@ int input_default_params(
 
   ptsz->pk_nonlinear_for_vrms2 = 0;
 
-  ptsz->MF = 8; //Tinker et al 2010
+  ptsz->MF = 8; //Tinker et al 2008 @ M200c
 
   //////////////////////////////////
   //Integration method and parameters (mass)

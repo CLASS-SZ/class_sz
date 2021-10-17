@@ -164,7 +164,7 @@ double delta_to_delta_prime_nfw(
   int load_normalized_fdndz(struct tszspectrum * ptsz);
   int load_normalized_cosmos_dndz(struct tszspectrum * ptsz);
   int load_unbinned_nl_yy(struct tszspectrum * ptsz);
-  int load_unwise_filter(struct tszspectrum * ptsz);
+  int load_ksz_filter(struct tszspectrum * ptsz);
   double get_T10_alpha_at_z(double z_asked, struct tszspectrum * ptsz);
   double get_knl_at_z(double z_asked, struct tszspectrum * ptsz);
   double get_hmf_counter_term_nmin_at_z(double z_asked, struct tszspectrum * ptsz);

@@ -633,7 +633,12 @@ cdef extern from "class.h":
     double get_m200c_to_m500c_at_z_and_M(double z_asked,
                                          double m_asked,
                                          void * tsz)
-
+    double get_m200m_to_m200c_at_z_and_M(double z_asked,
+                                         double m_asked,
+                                         void * tsz)
+    double get_m200c_to_m200m_at_z_and_M(double z_asked,
+                                         double m_asked,
+                                         void * tsz)
     double get_m500c_to_m200c_at_z_and_M(double z_asked,
                                          double m_asked,
                                          void * tsz)

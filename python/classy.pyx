@@ -1964,6 +1964,15 @@ cdef class Class:
     def get_m200c_to_m500c_at_z_and_M(self,z,m):
         return get_m200c_to_m500c_at_z_and_M(z,m,&self.tsz)
 
+
+    def get_m200c_to_m200m_at_z_and_M(self,z,m):
+        return get_m200c_to_m200m_at_z_and_M(z,m,&self.tsz)
+
+    def get_m200m_to_m200c_at_z_and_M(self,z,m):
+        return get_m200m_to_m200c_at_z_and_M(z,m,&self.tsz)
+
+
+
     def get_m500c_to_m200c_at_z_and_M(self,z,m):
         return get_m500c_to_m200c_at_z_and_M(z,m,&self.tsz)
 
