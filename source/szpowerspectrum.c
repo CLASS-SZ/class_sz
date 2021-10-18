@@ -1087,8 +1087,8 @@ if (ptsz->include_noise_cov_y_y==1){
    free(ptsz->unbinned_nl_yy_ell);
    free(ptsz->unbinned_nl_yy_n_ell);
 }
-
-   free(ptsz->array_sigma2_hsv_at_z);
+   if (ptsz->has_sigma2_hsv)
+    free(ptsz->array_sigma2_hsv_at_z);
 
    if (ptsz->has_tSZ_gal_1h
       +ptsz->has_tSZ_gal_2h
@@ -1143,10 +1143,11 @@ free(ptsz->bk_at_z_3h);
     free(ptsz->T10_ln1pz);
     free(ptsz->T10_lnalpha);
   // }
-
+if (ptsz->concentration_parameter == 4){
   free(ptsz->CM_redshift);
   free(ptsz->CM_logM);
   free(ptsz->CM_logC);
+}
 
   free(ptsz->M_bins);
   free(ptsz->cov_Y_N_mass_bin_edges);
