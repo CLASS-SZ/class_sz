@@ -2814,9 +2814,6 @@ int input_read_parameters(
 
 
 
-
-
-
       /* pressure profile SZ */
       class_call(parser_read_string(pfc,"pressure profile",&string1,&flag1,errmsg),
                  errmsg,
@@ -3069,6 +3066,12 @@ int input_read_parameters(
         ptsz->integrate_wrt_mvir = 0;
         ptsz->integrate_wrt_m200m = 0;
         ptsz->integrate_wrt_m200c = 0;
+
+        ptsz->delta_def_cib = 2;
+        ptsz->delta_def_galaxies = 2;
+        ptsz->delta_def_matter_density = 2;
+        ptsz->delta_def_electron_density = 2;
+        ptsz->delta_def_electron_pressure = 2;
       }
       // if (ptsz->integrate_wrt_m200c == 1){
       //   ptsz->integrate_wrt_mvir = 0;
@@ -3079,7 +3082,67 @@ int input_read_parameters(
         ptsz->integrate_wrt_mvir = 0;
         ptsz->integrate_wrt_m200c = 0;
         ptsz->integrate_wrt_m500c = 0;
+
+
+        ptsz->delta_def_cib = 0;
+        ptsz->delta_def_galaxies = 0;
+        ptsz->delta_def_matter_density = 0;
+        ptsz->delta_def_electron_density = 0;
+        ptsz->delta_def_electron_pressure = 0;
       }
+
+      class_call(parser_read_string(pfc,"delta for galaxies",&string1,&flag1,errmsg),errmsg,errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"200m") != NULL))
+          ptsz->delta_def_galaxies=0;
+        else  if ((strstr(string1,"200c") != NULL))
+          ptsz->delta_def_galaxies=1;
+        else  if ((strstr(string1,"500c") != NULL))
+          ptsz->delta_def_galaxies=2;
+          }
+
+
+      class_call(parser_read_string(pfc,"delta for cib",&string1,&flag1,errmsg),errmsg,errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"200m") != NULL))
+          ptsz->delta_def_cib=0;
+        else  if ((strstr(string1,"200c") != NULL))
+          ptsz->delta_def_cib=1;
+        else  if ((strstr(string1,"500c") != NULL))
+          ptsz->delta_def_cib=2;
+          }
+
+      class_call(parser_read_string(pfc,"delta for matter density",&string1,&flag1,errmsg),errmsg,errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"200m") != NULL))
+          ptsz->delta_def_matter_density=0;
+        else  if ((strstr(string1,"200c") != NULL))
+          ptsz->delta_def_matter_density=1;
+        else  if ((strstr(string1,"500c") != NULL))
+          ptsz->delta_def_matter_density=2;
+          }
+
+
+      class_call(parser_read_string(pfc,"delta for electron density",&string1,&flag1,errmsg),errmsg,errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"200m") != NULL))
+          ptsz->delta_def_electron_density=0;
+        else  if ((strstr(string1,"200c") != NULL))
+          ptsz->delta_def_electron_density=1;
+        else  if ((strstr(string1,"500c") != NULL))
+          ptsz->delta_def_electron_density=2;
+          }
+
+      class_call(parser_read_string(pfc,"delta for electron pressure",&string1,&flag1,errmsg),errmsg,errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"200m") != NULL))
+          ptsz->delta_def_electron_pressure=0;
+        else  if ((strstr(string1,"200c") != NULL))
+          ptsz->delta_def_electron_pressure=1;
+        else  if ((strstr(string1,"500c") != NULL))
+          ptsz->delta_def_electron_pressure=2;
+          }
+
 
 
       class_read_string("UNWISE_dndz_file",ptsz->UNWISE_dndz_file);
@@ -5604,6 +5667,14 @@ int input_default_params(
   ptsz->integrate_wrt_mvir = 0;
   ptsz->integrate_wrt_m500c = 0;
   ptsz->integrate_wrt_m200c = 1;
+
+  ptsz->delta_def_cib = 1;
+  ptsz->delta_def_galaxies = 1;
+  ptsz->delta_def_matter_density = 1;
+  ptsz->delta_def_electron_density = 1;
+  ptsz->delta_def_electron_pressure = 1;
+
+
   ptsz->integrate_wrt_m200m = 0;
 
   ptsz->need_m200c_to_m200m = 0;

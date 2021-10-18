@@ -8444,12 +8444,11 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
 
       V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
 
+      V->pvectsz[V->ptsz->index_has_galaxy] = 1;
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
-
-      double z_asked = z;
-      double  m_asked = M_halo;
 
       double M_min;
       double M0;
@@ -8462,9 +8461,8 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
       M1_prime = V->ptsz->M1_prime_HOD;
       sigma_log10M = V->ptsz->sigma_log10M_HOD;
       // }
-      nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,V->ptsz,V->pba);
-      ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
-
+      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz,V->pba);
+      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],nc,M0,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
 
       double result = hmf*(ns+nc);
 
@@ -8747,7 +8745,6 @@ double integrand_dydz(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_has_electron_pressure] = 1 ;
 
       do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
-
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
@@ -8814,16 +8811,15 @@ double integrand_dcib0dz(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_has_cib] = 1;
 
       do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
-
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
       V->pvectsz[V->ptsz->index_frequency_for_cib_profile] = index_nu;
       V->pvectsz[V->ptsz->index_md] = V->ptsz->index_md_dcib0dz;
       V->pvectsz[V->ptsz->index_multipole_for_cib_profile] = 1.;
-      evaluate_cib_profile(V->pvectsz[V->ptsz->index_m200m],
-                           V->pvectsz[V->ptsz->index_r200m],
-                           V->pvectsz[V->ptsz->index_c200m],
+      evaluate_cib_profile(V->pvectsz[V->ptsz->index_mass_for_cib],
+                           V->pvectsz[V->ptsz->index_radius_for_cib],
+                           V->pvectsz[V->ptsz->index_concentration_for_cib],
                            V->pvecback,V->pvectsz,V->pba,V->ptsz);
 
       double result = hmf*V->pvectsz[V->ptsz->index_cib_profile];
@@ -8883,13 +8879,18 @@ double integrand_psi_b1g(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
       V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
 
+      V->pvectsz[V->ptsz->index_has_galaxy] = 1;
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
       V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;//ptsz->ell[index_l_3];
-      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_m200c],V->pvectsz[V->ptsz->index_r200c],V->pvectsz[V->ptsz->index_c200c],V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_mass_for_galaxies],
+                                 V->pvectsz[V->ptsz->index_radius_for_galaxies],
+                                 V->pvectsz[V->ptsz->index_concentration_for_galaxies],
+                                 V->pvecback,V->pvectsz,V->pba,V->ptsz);
       double g = V->pvectsz[V->ptsz->index_galaxy_profile];
 
 
@@ -8948,13 +8949,19 @@ double integrand_psi_b2g(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
       V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
 
+
+      V->pvectsz[V->ptsz->index_has_galaxy] = 1;
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
       V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;
-      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_m200c],V->pvectsz[V->ptsz->index_r200c],V->pvectsz[V->ptsz->index_c200c],V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_mass_for_galaxies],
+                                 V->pvectsz[V->ptsz->index_radius_for_galaxies],
+                                 V->pvectsz[V->ptsz->index_concentration_for_galaxies],
+                                 V->pvecback,V->pvectsz,V->pba,V->ptsz);
       double g = V->pvectsz[V->ptsz->index_galaxy_profile];
 
       evaluate_halo_bias_b2(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -9013,6 +9020,8 @@ double integrand_psi_b1t(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
       V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
 
+      V->pvectsz[V->ptsz->index_has_electron_density] = 1;
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
@@ -9075,20 +9084,29 @@ double integrand_psi_b1gt(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
       V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
 
+      V->pvectsz[V->ptsz->index_has_galaxy] = 1;
+      V->pvectsz[V->ptsz->index_has_electron_density] = 1;
+
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
       V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell1;
-      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_m200c],V->pvectsz[V->ptsz->index_r200c],V->pvectsz[V->ptsz->index_c200c],V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_mass_for_galaxies],
+                                 V->pvectsz[V->ptsz->index_radius_for_galaxies],
+                                 V->pvectsz[V->ptsz->index_concentration_for_galaxies],
+                                 V->pvecback,V->pvectsz,V->pba,V->ptsz);
       double g = V->pvectsz[V->ptsz->index_galaxy_profile];
 
 
 
       V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell2;
+
       evaluate_tau_profile(V->pvecback,V->pvectsz,V->pba,V->ptsz);
       double t = V->pvectsz[V->ptsz->index_tau_profile];
+
 
 
 
@@ -9221,7 +9239,6 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
           double epsrel=1e-3;
           double epsabs=1e-100;
 
-          pvectsz[ptsz->index_has_galaxy] = 1; //
 
           r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                                epsrel, epsabs,
@@ -9234,7 +9251,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
      double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
      double I0 = integrand_psi_b1g(log(ptsz->m_min_counter_terms),params);
      double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-     r += bmin_umin;
+     //r += bmin_umin;
      // printf("counter terms done r_m_1\n");
   }
 
@@ -9373,7 +9390,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b2g; index_z++)
           double epsrel=1e-3;
           double epsabs=1e-100;
 
-          pvectsz[ptsz->index_has_galaxy] = 1; //
+
 
           r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                                epsrel, epsabs,
@@ -9386,7 +9403,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b2g; index_z++)
      double bmin = get_hmf_counter_term_b2min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
      double I0 = integrand_psi_b2g(log(ptsz->m_min_counter_terms),params);
      double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias_b2];
-     r += bmin_umin;
+     // r += bmin_umin;
   }
 
           ptsz->array_psi_b2g_psi[index_l_z] = log(r);
@@ -9537,7 +9554,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1t; index_z++)
      double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
      double I0 = integrand_psi_b1t(log(ptsz->m_min_counter_terms),params);
      double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-     r += bmin_umin;
+     // r += bmin_umin;
 
   }
 
@@ -9690,8 +9707,6 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1gt; index_z++)
           double epsrel=1e-3;
           double epsabs=1e-100;
 
-          pvectsz[ptsz->index_has_electron_density] = 1; //
-          pvectsz[ptsz->index_has_galaxy] = 1; //
 
           r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                                epsrel, epsabs,

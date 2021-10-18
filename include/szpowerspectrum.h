@@ -189,6 +189,12 @@ struct tszspectrum {
   double * cov_cl_cl;
   double * sig_cl_squared_binned;
 
+  int delta_def_galaxies;
+  int delta_def_cib;
+  int delta_def_matter_density;
+  int delta_def_electron_pressure;
+  int delta_def_electron_density;
+
   int need_m200m_to_m200c;
   int need_m200c_to_m200m;
   int need_m200m_to_m500c;
@@ -646,6 +652,21 @@ struct tszspectrum {
   int  index_m1600m;
   int  index_m500c;
   int  index_mass_for_hmf;
+  int  index_mass_for_galaxies;
+  int  index_mass_for_cib;
+  int  index_mass_for_matter_density;
+  int  index_mass_for_electron_pressure;
+  int  index_mass_for_electron_density;
+  int  index_concentration_for_galaxies;
+  int  index_concentration_for_cib;
+  int  index_concentration_for_matter_density;
+  int  index_concentration_for_electron_pressure;
+  int  index_concentration_for_electron_density;
+  int  index_radius_for_galaxies;
+  int  index_radius_for_cib;
+  int  index_radius_for_matter_density;
+  int  index_radius_for_electron_pressure;
+  int  index_radius_for_electron_density;
   int  index_r500c;
   int  index_Rh;
   int  index_mf;

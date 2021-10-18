@@ -3,14 +3,22 @@ CLASS_SZ
 ==============================================
  Cosmic Linear Anisotropy Solving System
 
- with thermal Sunyaev Zeldovich power spectrum computation
-
- and other halo model observables
-
+ with fast and accurate halo model computations 
 
 
 In addition to SZ power spectrum, class_sz can compute cross and auto power spectra for other tracers
-in the halo model (currently being developped: kSZ, galaxy, ISW, lensing and CIB).
+in the halo model (kSZ, galaxy, ISW, lensing and CIB).
+
+It has several mass function implemented, with several possible halo mass definitions and concentration-mass
+relations. For galaxy clustering and lensing, class_sz has an implementation of HOD based on the one used by
+the DES collaboration.
+
+The code is close to be as fast as it can get, with full parallelization.
+
+Since it is based on Lesgourgues's class code, the halo model (essentially based on distances and
+matter clustering) is always consistent with the cosmological model.
+
+
 
 **Take a look at the notebook to see what class_sz can do:**
 
@@ -91,14 +99,17 @@ If you do not want to compile the **classy** python module do ‘$ make class’
 For the python module, you need the prerequisites such as **numpy**, **scipy**
 and **Cython** installed on your computer.
 
-Run the code with SZ power spectrum computation
+Run the code with most of the power spectra output:
+
+    $ ./class class-sz_test.ini
+
+Run the code with a simple tSZ computation:
 
     $ ./class class-sz_simple.ini
 
 
-The explanatory 'ini' files are reference input files, containing and
-explaining the use of the possible input parameters.
-
+The  'ini' files are the parameter file.
+I will be releasing a detailed explanatory file soon.
 
 
 Computing SZ and Halo model quantities via the Python wrapper classy_sz
@@ -154,6 +165,12 @@ need to do:
 
 Note that these prescriptions are system dependent: you may not need them if your path and environment variables are such that gsl and its libraries are well linked.
 
+FFTLog library
+------------------------------
+
+class_sz now requires FFTW3 library, used for the computations of kSZ^2 x LSS power spectra and bispectra.
+
+
 MacOS problem with OpenMP
 ------------------------------
 
@@ -182,9 +199,9 @@ There are two modifications:
 Support
 -------
 
-To get support on the SZ module, feel free to contact me via slack/email (boris.bolliet@gmail.com), or open an issue on the GitHub page.
+To get support on the class_sz module, feel free to contact me via slack/email (boris.bolliet@gmail.com), or open an issue on the GitHub page.
 
 Acknowledgment
 -------
 
-Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas, Fiona McCarthy, Eunseong Lee, Ola Kusiak for help, suggestions and/or running tests with **class_sz**.
+Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas, Fiona McCarthy, Eunseong Lee, Ola Kusiak, Simone Ferraro, Mat Madhavacheril, Manu Schaan, for help, suggestions and/or running tests with **class_sz**.
