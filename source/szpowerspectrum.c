@@ -43,6 +43,7 @@ int szpowerspectrum_init(
       + ptsz->has_mean_y
       + ptsz->has_cib_monopole
       + ptsz->has_dcib0dz
+      + ptsz->has_dydz
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
       + ptsz->has_sz_m_y_y_1h
@@ -102,6 +103,7 @@ int szpowerspectrum_init(
       + ptsz->need_m200c_to_m200m;
   int electron_pressure_comps = ptsz->has_sz_ps
       + ptsz->has_mean_y
+      + ptsz->has_dydz
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
       + ptsz->has_sz_m_y_y_1h
@@ -355,7 +357,14 @@ if (electron_pressure_comps != _FALSE_){
 
 if (ptsz->has_dcib0dz){
   tabulate_dcib0dz(pba,pnl,ppm,ptsz);
+  // printf("%.8e\n",get_dcib0dz_at_z_and_nu(1.,500.,ptsz));
 }
+
+if (ptsz->has_dydz){
+  tabulate_dydz(pba,pnl,ppm,ptsz);
+  // printf("%.8e\n",get_dydz_at_z(1.,ptsz));
+}
+
 
 
   // tabulate lensing magnificaion integral, only when requested
@@ -531,6 +540,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_mean_y
       + ptsz->has_cib_monopole
       + ptsz->has_dcib0dz
+      + ptsz->has_dydz
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
       + ptsz->has_sz_m_y_y_1h
@@ -583,14 +593,16 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_dndlnM
       + ptsz->has_sz_counts;
 
+
   int mass_conversions = ptsz->need_m200m_to_m200c
-  + ptsz->need_m200c_to_m200m
-  + ptsz->need_m200m_to_m500c
-  + ptsz->need_m200c_to_m500c
-  + ptsz->need_m500c_to_m200c;
+                        + ptsz->need_m200c_to_m200m
+                        + ptsz->need_m200m_to_m500c
+                        + ptsz->need_m200c_to_m500c
+                        + ptsz->need_m500c_to_m200c;
 
   int electron_pressure_comps = ptsz->has_sz_ps
       + ptsz->has_mean_y
+      + ptsz->has_dydz
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
       + ptsz->has_sz_m_y_y_1h
@@ -884,6 +896,12 @@ if (ptsz->has_dcib0dz){
    free(ptsz->array_dcib0dz_at_z_nu);
    }
 
+if (ptsz->has_dydz){
+   free(ptsz->array_dydz_redshift);
+   free(ptsz->array_dydz_at_z);
+   }
+
+
 if (ptsz->need_m200c_to_m200m){
    free(ptsz->array_m_m200c_to_m200m);
    free(ptsz->array_ln_1pz_m200c_to_m200m);
@@ -1085,6 +1103,8 @@ if (ptsz->include_noise_cov_y_y==1){
       +ptsz->has_tSZ_lens_2h
       +ptsz->has_tSZ_tSZ_tSZ_1halo
       +ptsz->has_sz_ps
+      +ptsz->has_mean_y
+      +ptsz->has_dydz
       +ptsz->has_sz_2halo
       != 0){
 if (ptsz->pressure_profile == 0 || ptsz->pressure_profile == 2 )
@@ -1723,49 +1743,6 @@ int compute_sz(struct background * pba,
      return _SUCCESS_;
 }
 
-if (Pvectsz[ptsz->index_has_electron_pressure] == 1){
-        // if battaglia pressure profile need 200c
-        // and virial quantities for integration bound
-      if (ptsz->pressure_profile == 4){
-        Pvectsz[ptsz->index_has_200c] = 1;
-        Pvectsz[ptsz->index_has_vir] = 1;
-      }
-      else if (ptsz->pressure_profile == 0){ // Planck 2013
-        Pvectsz[ptsz->index_has_500c] = 1;
-      }
-      else if (ptsz->pressure_profile == 2){ // Arnaud et al 2010
-        Pvectsz[ptsz->index_has_500c] = 1;
-      }
-      else if (ptsz->pressure_profile == 3){ // custom
-        Pvectsz[ptsz->index_has_500c] = 1;
-      }
-}
-
-if (Pvectsz[ptsz->index_has_electron_density] == 1){
-  if (ptsz->tau_profile == 1){ // battaglia tau profile, need m200c
-  Pvectsz[ptsz->index_has_200c] = 1;
-  }
-}
-
-if (Pvectsz[ptsz->index_has_cib] == 1){
-  Pvectsz[ptsz->index_has_200m] = 1;
-}
-
-
-if (Pvectsz[ptsz->index_has_galaxy] == 1){
-  Pvectsz[ptsz->index_has_200m] = 1;
-}
-
-
-if (ptsz->MF == 1) {
-  // printf("needs 200m\n");
-  Pvectsz[ptsz->index_has_200m] = 1;
-}
-//Tinker et al 2008 @ m500
-//Boquet et al 2015
-else if (ptsz->MF==5 || ptsz->MF==7){
-  Pvectsz[ptsz->index_has_500c] = 1;
-}
 
 
  //return 0;
@@ -2683,6 +2660,7 @@ double integrand_at_m_and_z(double logM,
    do_mass_conversions(logM,z,pvecback,pvectsz,pba,pnl,ptsz);
 
 
+
    //Return the HMF - dn/dlogM in units of h^3 Mpc^-3
    //result stored in pvectsz[ptsz->index_hmf]
 
@@ -2796,13 +2774,13 @@ if (pvectsz[ptsz->index_has_cib] == 1){
 // galaxies
 if (pvectsz[ptsz->index_has_galaxy] == 1){
    // galaxies
-    m_delta_gal = m_delta;
-    r_delta_gal = r_delta;
-    c_delta_gal = c_delta;
+    // m_delta_gal = m_delta;
+    // r_delta_gal = r_delta;
+    // c_delta_gal = c_delta;
 
-    // m_delta_gal = pvectsz[ptsz->index_m200m];
-    // r_delta_gal = pvectsz[ptsz->index_r200m];
-    // c_delta_gal = pvectsz[ptsz->index_c200m];
+    m_delta_gal = pvectsz[ptsz->index_m200m];
+    r_delta_gal = pvectsz[ptsz->index_r200m];
+    c_delta_gal = pvectsz[ptsz->index_c200m];
  }// end galaxies
 
 
@@ -4579,7 +4557,7 @@ int evaluate_pressure_profile(double * pvecback,
 
       lnx_asked = log((pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500]);
 
-      if(lnx_asked<ptsz->array_profile_ln_l_over_ls[0] || _mean_y_)
+      if(lnx_asked<ptsz->array_profile_ln_l_over_ls[0] || _mean_y_ || _dydz_)
          result = ptsz->array_profile_ln_PgNFW_at_lnl_over_ls[0];
       else if (lnx_asked>ptsz->array_profile_ln_l_over_ls[ptsz->array_profile_ln_PgNFW_at_lnl_over_ls_size-1])
          result = -100.;
@@ -4597,7 +4575,7 @@ int evaluate_pressure_profile(double * pvecback,
   else {
 
       lnx_asked = log((pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500]);
-      if(lnx_asked<ptsz->PP_lnx[0] || _mean_y_)
+      if(lnx_asked<ptsz->PP_lnx[0] || _mean_y_ || _dydz_)
          result = ptsz->PP_lnI[0];
       else if (lnx_asked>ptsz->PP_lnx[ptsz->PP_lnx_size-1])
          result = -100.;
@@ -5183,59 +5161,7 @@ int evaluate_halo_bias(double * pvecback,
    double nuTink = sqrt(nu); //in T10 paper: nu=delta/sigma while here nu=(delta/sigma)^2
    double z = pvectsz[ptsz->index_z];
    pvectsz[ptsz->index_halo_bias] = get_first_order_bias_at_z_and_nu(z,nu,ptsz);
-   //
-   // double Delta;
-   //
-   // //Tinker et al 2008 @ M1600-mean
-   // if (ptsz->MF==6)
-   // Delta = 1600.;
-   //
-   // //Jenkins et al 2001
-   // else if (ptsz->MF==3)
-   // Delta = 180.;
-   //
-   // //Tinker et al 2008 @ m500
-   // //Boquet et al 2015
-   // else if (ptsz->MF==5 || ptsz->MF==7)
-   // Delta = 500./pvecback[pba->index_bg_Omega_m];
-   //
-   // // else if (ptsz->MF==1 || ptsz->tau_profile==1)
-   // //  Delta = 200./pvecback[pba->index_bg_Omega_m];
-   // else
-   //  Delta = 200.;
-   //
-   //
-   // // Table 2 of Tinker et al 2010:
-   // double y = log10(Delta);
-   // double ATT = 1.+0.24*y*exp(-pow(4./y,4.));
-   // double aTTT = 0.44*y-0.88;
-   // double BTT = 0.183;
-   // double bTTT = 1.5;
-   // double CTT = 0.019+0.107*y+0.19*exp(-pow(4./y,4.));
-   // double cTTT = 2.4;
-   //
-   // pvectsz[ptsz->index_halo_bias] = 1.-ATT*(pow(nuTink,aTTT)/(pow(nuTink,aTTT)+pow(ptsz->delta_cSZ,aTTT)))
-   //                                                    +BTT*pow(nuTink,bTTT)+CTT*pow(nuTink,cTTT);
-   //
 
-  // if (ptsz->hm_consistency==1 && ptsz->hm_consistency_counter_terms_done == 1) {
-  //   double logM = log(pvectsz[ptsz->index_mass_for_hmf]);
-  //   double z = pvectsz[ptsz->index_z];
-  // if ((logM <= log(ptsz->M1SZ) + 0.01*log(ptsz->M1SZ)) && (logM >= log(ptsz->M1SZ) - 0.01*log(ptsz->M1SZ))){
-  //   // printf("doing counter terms b1\n");
-  //   double b1_min = get_hmf_counter_term_b1min_at_z(z,ptsz);
-  //   pvectsz[ptsz->index_halo_bias] = b1_min;
-  //
-  // }
-  //
-  // }
-
-  // // BB debug
-  // nuTink = 10.;
-  // double result = 1.-ATT*(pow(nuTink,aTTT)/(pow(nuTink,aTTT)+pow(ptsz->delta_cSZ,aTTT)))
-  //                                                    +BTT*pow(nuTink,bTTT)+CTT*pow(nuTink,cTTT);
-  // printf("tinker bias = %.3e\n",result);
-  // exit(0);
 
    return _SUCCESS_;
 }
@@ -5597,40 +5523,6 @@ int evaluate_pk_at_ell_plus_one_half_over_chi_today(double * pvecback,
                                                    struct tszspectrum * ptsz)
 {
 
-   // double nu = exp(pvectsz[ptsz->index_lognu]);
-   // double nuTink = sqrt(nu); //in T10 paper: nu=delta/sigma while here nu=(delta/sigma)^2
-   //
-   // double Delta;
-   //
-   // //Tinker et al 2008 @ M1600-mean
-   // if (ptsz->MF==6)
-   // Delta = 1600.;
-   //
-   // //Jenkins et al 2001
-   // else if (ptsz->MF==3)
-   // Delta = 180.;
-   //
-   // //Tinker et al 2008 @ m500
-   // //Boquet et al 2015
-   // else if (ptsz->MF==5 || ptsz->MF==7)
-   // Delta = 500./pvecback[pba->index_bg_Omega_m];
-   //
-   // else
-   // Delta = 200.;
-   //
-   //
-   // // Table 2 of Tinker et al 2010:
-   // double y = log10(Delta);
-   // double ATT = 1.+0.24*y*exp(-pow(4./y,4.));
-   // double aTTT = 0.44*y-0.88;
-   // double BTT = 0.183;
-   // double bTTT = 1.5;
-   // double CTT = 0.019+0.107*y+0.19*exp(-pow(4./y,4.));
-   // double cTTT = 2.4;
-   //
-   // pvectsz[ptsz->index_halo_bias] = 1.-ATT*(pow(nuTink,aTTT)/(pow(nuTink,aTTT)+pow(ptsz->delta_cSZ,aTTT)))
-   //                                                    +BTT*pow(nuTink,bTTT)+CTT*pow(nuTink,cTTT);
-
    int index_l = (int)  pvectsz[ptsz->index_multipole];
    double z = pvectsz[ptsz->index_z];
    //identical to sqrt(pvectsz[index_chi2])
@@ -5677,6 +5569,48 @@ int do_mass_conversions( double logM,
                          struct tszspectrum * ptsz)
 {
 
+if (pvectsz[ptsz->index_has_electron_pressure] == 1){
+        // if battaglia pressure profile need 200c
+        // and virial quantities for integration bound
+      if (ptsz->pressure_profile == 4){
+        pvectsz[ptsz->index_has_200c] = 1;
+        pvectsz[ptsz->index_has_vir] = 1;
+      }
+      else if (ptsz->pressure_profile == 0){ // Planck 2013
+        pvectsz[ptsz->index_has_500c] = 1;
+      }
+      else if (ptsz->pressure_profile == 2){ // Arnaud et al 2010
+        pvectsz[ptsz->index_has_500c] = 1;
+      }
+      else if (ptsz->pressure_profile == 3){ // custom
+        pvectsz[ptsz->index_has_500c] = 1;
+      }
+}
+
+if (pvectsz[ptsz->index_has_electron_density] == 1){
+  if (ptsz->tau_profile == 1){ // battaglia tau profile, need m200c
+  pvectsz[ptsz->index_has_200c] = 1;
+  }
+}
+
+if (pvectsz[ptsz->index_has_cib] == 1){
+  pvectsz[ptsz->index_has_200m] = 1;
+}
+
+
+if (pvectsz[ptsz->index_has_galaxy] == 1){
+  pvectsz[ptsz->index_has_200m] = 1;
+}
+
+
+// if (ptsz->MF == 1) {
+//   pvectsz[ptsz->index_has_200m] = 1;
+// }
+// //Tinker et al 2008 @ m500
+// //Boquet et al 2015
+// else if (ptsz->MF==5 || ptsz->MF==7){
+//   pvectsz[ptsz->index_has_500c] = 1;
+// }
 
 
    // deal with mass definitions
@@ -5889,7 +5823,6 @@ int do_mass_conversions( double logM,
   pvectsz[ptsz->index_c500c] = get_c500c_at_m_and_z(pvectsz[ptsz->index_m500c],z,pba,ptsz);
 
 
-
     if (pvectsz[ptsz->index_has_electron_pressure] == 1){
 
    if (ptsz->mass_dependent_bias == 1)
@@ -5917,7 +5850,6 @@ pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz
     if (pvectsz[ptsz->index_has_200m] == 1){
 
     pvectsz[ptsz->index_m200m] = get_m200c_to_m200m_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
-        //r200c for the pressure profile B12
     pvectsz[ptsz->index_r200m] = pow(3.*pvectsz[ptsz->index_m200m]/(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
     // pvectsz[ptsz->index_l200m] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200m];
     pvectsz[ptsz->index_c200m] = get_c200m_at_m_and_z(pvectsz[ptsz->index_m200m],z,pba,ptsz);
@@ -7880,7 +7812,8 @@ int show_preamble_messages(struct background * pba,
          if (ptsz->MF==5) printf("->HMF: Tinker et al 2008 @ M500c\n");
          if (ptsz->MF==6) printf("->HMF: Tinker et al 2008 @ M1600m\n");
          if (ptsz->MF==2) printf("->HMF: Bocquet et al 2015 @ M200m\n");
-         if (ptsz->MF==7) printf("->HMF: Bocquet et al 2015 @ M500c\n\n");
+         if (ptsz->MF==7) printf("->HMF: Bocquet et al 2015 @ M500c\n");
+         if (ptsz->MF==8) printf("->HMF: Tinker et al 2008 @ M200c\n");
 
          if (ptsz->has_sz_ps
            + ptsz->has_sz_2halo
@@ -7915,6 +7848,8 @@ if   (ptsz->has_sz_ps
     + ptsz->has_tSZ_lens_1h
     + ptsz->has_tSZ_lens_2h
     + ptsz->has_isw_tsz
+    + ptsz->has_mean_y
+    + ptsz->has_dydz
     > 0
 ){
          if (ptsz->pressure_profile == 0)
@@ -7950,7 +7885,7 @@ if   (ptsz->has_sz_ps
             if (ptsz->concentration_parameter==5)
                printf("->C-M relation:  DM14\n");
             if (ptsz->concentration_parameter==6)
-               printf("->C-M relation:  Battacharya et al 2013\n");
+               printf("->C-M relation:  Bhattacharya et al 2013\n");
 
 
          // }
@@ -8742,6 +8677,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       +ptsz->has_sz_cov_Y_N_next_order
       +ptsz->has_sz_cov_Y_Y_ssc
       +ptsz->has_mean_y
+      +ptsz->has_dydz
       +ptsz->has_sz_m_y_y_1h
       +ptsz->has_sz_m_y_y_2h
       +ptsz->has_tSZ_tSZ_tSZ_1halo
@@ -8858,6 +8794,7 @@ if (ptsz->has_gal_cib_1h
   +  ptsz->has_dcib0dz
   +  ptsz->has_gal_gal_1h
   +  ptsz->has_gal_gal_2h
+  +  ptsz->has_galaxy
    != _FALSE_){
    ptsz->has_200m = 1;
  }
@@ -8871,7 +8808,6 @@ if (ptsz->has_gal_cib_1h
 
   if (ptsz->integrate_wrt_m200c == 1 && ptsz->has_200m == 1)
     ptsz->need_m200c_to_m200m = 1;
-
 
   if (ptsz->integrate_wrt_m200c == 1 && ptsz->has_500c == 1)
     ptsz->need_m200c_to_m500c = 1;

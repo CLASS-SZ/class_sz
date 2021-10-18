@@ -4331,6 +4331,8 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
      +ptsz->has_tSZ_tSZ_tSZ_1halo
      +ptsz->has_sz_2halo
      +ptsz->has_sz_ps
+     +ptsz->has_mean_y
+     +ptsz->has_dydz
      == 0)
      return 0;
 
@@ -5289,18 +5291,7 @@ int load_ksz_filter(struct tszspectrum * ptsz)
 
   class_open(process,ptsz->ksz_filter_file, "r",ptsz->error_message);
   printf("-> File Name: %s\n",ptsz->ksz_filter_file);
-  // printf("-> File Name: %s\n",ptsz->A10_file);
-  // // printf("-> File Name: %s\n",ppr->A10_file);
-  // printf("-> File Name: %.3e\n",ptsz->m_min_counter_terms);
 
-  // exit(0);
-  //   sprintf(Filepath,
-  //           "%s%s",
-  //           "cat ",
-  //           //ptsz->path_to_class,
-  //           "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/UNWISE_galaxy_ditributions/unwise_filter_functions_l_fl.txt");
-  // process = popen(Filepath, "r");
-  //
 
   /* Read output and store it */
   while (fgets(line, sizeof(line)-1, process) != NULL) {
@@ -5726,7 +5717,7 @@ int plc_gnfw(double * plc_gnfw_x,
                     /(x*(pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500]);
 
 
-    if (_mean_y_)
+    if (_mean_y_ || _dydz_)
       *plc_gnfw_x = (1./(pow(ptsz->c500*x,ptsz->gammaGNFW)
                        *pow(1.+ pow(ptsz->c500*x,ptsz->alphaGNFW),
                            (ptsz->betaGNFW-ptsz->gammaGNFW)/ptsz->alphaGNFW)))
@@ -5771,7 +5762,7 @@ int plc_gnfw(double * plc_gnfw_x,
       *plc_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)
                     *pow(x,2)
                     /(x*(pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l200c]);
-    if (_mean_y_)
+    if (_mean_y_ || _dydz_)
       *plc_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)*pow(x,2);
 
 
@@ -8688,6 +8679,15 @@ struct Parameters_for_integrand_psi_b1gt{
 };
 
 
+struct Parameters_for_integrand_dydz{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+};
 
 struct Parameters_for_integrand_dcib0dz{
   struct nonlinear * pnl;
@@ -8699,6 +8699,74 @@ struct Parameters_for_integrand_dcib0dz{
   double z;
   int index_nu;
 };
+
+
+double integrand_dydz(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_dydz *V = ((struct Parameters_for_integrand_dydz *) p);
+
+    double z = V->z;
+
+
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
+
+
+      // request appropriate mass conversion
+      V->pvectsz[V->ptsz->index_has_electron_pressure] = 1 ;
+
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];
+      V->pvectsz[V->ptsz->index_md] = V->ptsz->index_md_dydz;
+      V->pvectsz[V->ptsz->index_multipole_for_pressure_profile] = 1.;
+      evaluate_pressure_profile(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+
+
+      double result = hmf*V->pvectsz[V->ptsz->index_pressure_profile];
+
+      // multiply by volume element:
+      double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
+      result *= V->pvectsz[V->ptsz->index_chi2]/H_over_c_in_h_over_Mpc;
+
+  return result;
+
+}
+
+
 
 
 double integrand_dcib0dz(double lnM_halo, void *p){
@@ -8743,8 +8811,7 @@ double integrand_dcib0dz(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
 
 
-      // request 200m for cib profile computation
-      V->pvectsz[V->ptsz->index_has_200m] = 1;
+      V->pvectsz[V->ptsz->index_has_cib] = 1;
 
       do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
@@ -9652,6 +9719,130 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1gt; index_z++)
        tstop = omp_get_wtime();
        if (ptsz->sz_verbose > 0)
          printf("In %s: time spent in parallel region b1gt (loop over llz's) = %e s for thread %d\n",
+                __func__,tstop-tstart,omp_get_thread_num());
+     #endif
+ free(pvecback);
+ free(pvectsz);
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+    }
+
+
+
+
+int tabulate_dydz(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_dydz_redshift,sizeof(double *)*ptsz->n_z_dydz,ptsz->error_message);
+class_alloc(ptsz->array_dydz_at_z,sizeof(double *)*ptsz->n_z_dydz,ptsz->error_message);
+
+
+
+
+double r;
+double m_min,m_max;
+
+
+m_min = ptsz->M1SZ; // for the mass integral
+m_max = ptsz->M2SZ; // for the mass integral
+
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+int index_z;
+
+
+for (index_z=0; index_z<ptsz->n_z_dydz; index_z++)
+        {
+
+          ptsz->array_dydz_redshift[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_dydz-1.); // log(1+z)
+        }
+
+
+double * pvecback;
+double * pvectsz;
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,m_min,m_max)\
+private(tstart, tstop,index_z,pvecback,pvectsz,r) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+#pragma omp for collapse(1)
+for (index_z=0; index_z<ptsz->n_z_dydz; index_z++)
+{
+
+          double z = exp(ptsz->array_dydz_redshift[index_z])-1.;;
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_dydz V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+
+
+          void * params = &V;
+          double epsrel=1e-3;
+          double epsabs=1e-100;
+
+
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_dydz,
+                                               params,
+                                               ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+       double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+       double I0 = integrand_dydz(log(ptsz->m_min_counter_terms),params);
+       double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
+       r += nmin_umin;
+  }
+
+          ptsz->array_dydz_at_z[index_z] = log(r/pow(ptsz->Tcmb_gNU,1)/1.e6);
+
+     }
+     #ifdef _OPENMP
+       tstop = omp_get_wtime();
+       if (ptsz->sz_verbose > 0)
+         printf("In %s: time spent in parallel region (loop over z nu's) = %e s for thread %d\n",
                 __func__,tstop-tstart,omp_get_thread_num());
      #endif
  free(pvecback);
@@ -12904,16 +13095,6 @@ double get_psi_b1gt_at_l1_l2_and_z(double l_asked,double l_asked2, double z_aske
     z = ptsz->array_psi_b1gt_redshift[0];
  if (z>ptsz->array_psi_b1gt_redshift[ptsz->n_z_psi_b1gt-1])
     z = ptsz->array_psi_b1gt_redshift[ptsz->n_z_psi_b1gt-1];
-// printf("z=%.8e\n",z);
-//
-//   printf(" z[:-2] z[:-1] %.8e %.8e\n",
-//   ptsz->array_psi_b1gt_redshift[ptsz->n_z_psi_b1gt-2],
-//   ptsz->array_psi_b1gt_redshift[ptsz->n_z_psi_b1gt-1]);
-//
-//
-//   printf(" z[a] z[b] %.8e %.8e\n",
-//   ptsz->array_psi_b1gt_redshift[0],
-//   ptsz->array_psi_b1gt_redshift[1]);
 
  if (l1<ptsz->array_psi_b1gt_multipole[0])
     l1 = ptsz->array_psi_b1gt_multipole[0];
@@ -12957,6 +13138,29 @@ double get_psi_b1gt_at_l1_l2_and_z(double l_asked,double l_asked2, double z_aske
 
 
 }
+
+
+double get_dydz_at_z(double z_asked, struct tszspectrum * ptsz)
+{
+  double z = log(1.+z_asked);
+
+
+ if (z<ptsz->array_dydz_redshift[0])
+    z = ptsz->array_dydz_redshift[0];
+ if (z>ptsz->array_dydz_redshift[ptsz->n_z_dydz-1])
+    z = ptsz->array_dydz_redshift[ptsz->n_z_dydz-1];
+
+
+
+
+ return exp(pwl_value_1d(ptsz->n_z_dydz,
+                         ptsz->array_dydz_redshift,
+                         ptsz->array_dydz_at_z,
+                         z));
+
+}
+
+
 
 
 double get_dcib0dz_at_z_and_nu(double z_asked, double nu_asked, struct tszspectrum * ptsz)

@@ -2297,6 +2297,15 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
+      if ((strstr(string1,"dydz") != NULL) ) {
+        ptsz->has_dydz =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
 
       if ((strstr(string1,"cib_cib_2h") != NULL) ) {
         ptsz->has_cib_cib_2h =_TRUE_;
@@ -4353,6 +4362,7 @@ int input_read_parameters(
       + ptsz->has_mean_y
       + ptsz->has_cib_monopole
       + ptsz->has_dcib0dz
+      + ptsz->has_dydz
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
       + ptsz->has_sz_m_y_y_1h
@@ -5510,6 +5520,7 @@ int input_default_params(
   ptsz->has_hmf = _FALSE_;
   ptsz->has_cib_monopole = _FALSE_;
   ptsz->has_dcib0dz = _FALSE_;
+  ptsz->has_dydz = _FALSE_;
   ptsz->has_mean_y = _FALSE_;
   ptsz->has_sz_cov_Y_N = _FALSE_;
   ptsz->has_sz_cov_Y_Y_ssc = _FALSE_;
@@ -5587,6 +5598,7 @@ int input_default_params(
   ptsz->index_md_kSZ_kSZ_gal_3h_fft = 62;
   ptsz->index_md_cib_monopole = 63;
   ptsz->index_md_dcib0dz = 64;
+  ptsz->index_md_dydz = 65;
   // ptsz->index_md_bk_at_z_hf = 51;
 
   ptsz->integrate_wrt_mvir = 0;

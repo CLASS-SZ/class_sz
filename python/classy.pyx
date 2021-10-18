@@ -1836,6 +1836,10 @@ cdef class Class:
         r = get_dcib0dz_at_z_and_nu(z,nu,&self.tsz)
         return r
 
+    def get_dydz_at_z(self,z):
+        r = get_dydz_at_z(z,&self.tsz)
+        return r
+
     def get_hmf_counter_term_nmin_at_z(self,z):
         return get_hmf_counter_term_nmin_at_z(z,&self.tsz)
 

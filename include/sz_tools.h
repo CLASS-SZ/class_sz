@@ -471,7 +471,13 @@ double  get_L_sat_at_z_M_nu(double z_asked, double m_asked, double nu_asked, str
 //                                   struct background * pba,
 //                                   struct tszspectrum * ptsz);
 
+double get_dydz_at_z(double z_asked, struct tszspectrum * ptsz);
 
+
+int tabulate_dydz(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz);
 
 double get_dcib0dz_at_z_and_nu(double z_asked, double nu_asked, struct tszspectrum * ptsz);
 

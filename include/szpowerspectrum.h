@@ -23,6 +23,7 @@
 #define _mean_y_ ((ptsz->has_mean_y == _TRUE_) && (index_md == ptsz->index_md_mean_y))
 #define _cib_monopole_ ((ptsz->has_cib_monopole == _TRUE_) && (index_md == ptsz->index_md_cib_monopole))
 #define _dcib0dz_ ((ptsz->has_dcib0dz == _TRUE_) && (index_md == ptsz->index_md_dcib0dz))
+#define _dydz_ ((ptsz->has_dydz == _TRUE_) && (index_md == ptsz->index_md_dydz))
 #define _hmf_ ((ptsz->has_hmf == _TRUE_) && (index_md == ptsz->index_md_hmf))
 #define _tSZ_power_spectrum_ ((ptsz->has_sz_ps == _TRUE_) && (index_md == ptsz->index_md_sz_ps))
 #define _trispectrum_ ((ptsz->has_sz_trispec == _TRUE_) && (index_md == ptsz->index_md_trispectrum))
@@ -208,6 +209,7 @@ struct tszspectrum {
   int has_lensing;
   int has_cib;
   int has_dcib0dz;
+  int has_dydz;
   int has_isw;
 
   int has_vir;
@@ -603,6 +605,7 @@ struct tszspectrum {
   int index_integrands_last;
 
   int index_md_dcib0dz;
+  int index_md_dydz;
 
 
 
@@ -1307,6 +1310,9 @@ double * steps_m;
   double * array_dcib0dz_redshift;
   double * array_dcib0dz_at_z_nu;
 
+
+  double * array_dydz_redshift;
+  double * array_dydz_at_z;
 
 
   double * array_psi_b1gt_redshift;

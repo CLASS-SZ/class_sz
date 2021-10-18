@@ -624,11 +624,13 @@ cdef extern from "class.h":
     double get_dndlnM_at_z_and_M(double z_asked,
                                  double m_asked,
                                  void * tsz)
-                                 
+
     double get_dcib0dz_at_z_and_nu(double z_asked,
                                    double nu_asked,
                                    void * tsz)
 
+    double get_dydz_at_z(double z_asked,
+                         void * tsz)
     double get_m200m_to_m500c_at_z_and_M(double z_asked,
                                          double m_asked,
                                          void * tsz)
