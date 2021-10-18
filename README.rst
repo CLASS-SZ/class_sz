@@ -3,13 +3,14 @@ CLASS_SZ
 ==============================================
  Cosmic Linear Anisotropy Solving System
 
- with fast and accurate halo model computations 
+ with fast and accurate halo model computations
+
 
 
 In addition to SZ power spectrum, class_sz can compute cross and auto power spectra for other tracers
 in the halo model (kSZ, galaxy, ISW, lensing and CIB).
 
-It has several mass function implemented, with several possible halo mass definitions and concentration-mass
+It has several mass functions implemented, with several possible halo mass definitions and concentration-mass
 relations. For galaxy clustering and lensing, class_sz has an implementation of HOD based on the one used by
 the DES collaboration.
 
