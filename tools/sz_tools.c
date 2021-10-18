@@ -5502,7 +5502,6 @@ int MF_T08_m500(
   if(z>3.) z=3.;
   double om0 = ptsz->Omega_m_0;
   double ol0 = 1.-ptsz->Omega_m_0;
-  // double delta_crit = 500.;
   double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0);
   double  delta_mean =
   delta_crit/Omega_m_z;
@@ -8690,6 +8689,91 @@ struct Parameters_for_integrand_psi_b1gt{
 
 
 
+struct Parameters_for_integrand_dcib0dz{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+  int index_nu;
+};
+
+
+double integrand_dcib0dz(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_dcib0dz *V = ((struct Parameters_for_integrand_dcib0dz *) p);
+
+    double z = V->z;
+    int index_nu = V->index_nu;
+
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
+
+
+      // request 200m for cib profile computation
+      V->pvectsz[V->ptsz->index_has_200m] = 1;
+
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];
+      V->pvectsz[V->ptsz->index_frequency_for_cib_profile] = index_nu;
+      V->pvectsz[V->ptsz->index_md] = V->ptsz->index_md_dcib0dz;
+      V->pvectsz[V->ptsz->index_multipole_for_cib_profile] = 1.;
+      evaluate_cib_profile(V->pvectsz[V->ptsz->index_m200m],
+                           V->pvectsz[V->ptsz->index_r200m],
+                           V->pvectsz[V->ptsz->index_c200m],
+                           V->pvecback,V->pvectsz,V->pba,V->ptsz);
+
+      double result = hmf*V->pvectsz[V->ptsz->index_cib_profile];
+
+      // multiply by volume element:
+      double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
+      result *= V->pvectsz[V->ptsz->index_chi2]/H_over_c_in_h_over_Mpc;
+
+  return result;
+
+}
+
+
+
+
+
+
 double integrand_psi_b1g(double lnM_halo, void *p){
 
   struct Parameters_for_integrand_psi_b1g *V = ((struct Parameters_for_integrand_psi_b1g *) p);
@@ -9581,6 +9665,153 @@ return _SUCCESS_;
 
 
 
+int tabulate_dcib0dz(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_dcib0dz_redshift,sizeof(double *)*ptsz->n_z_dcib0dz,ptsz->error_message);
+class_alloc(ptsz->array_dcib0dz_nu,sizeof(double *)*ptsz->n_nu_dcib0dz,ptsz->error_message);
+
+class_alloc(ptsz->array_dcib0dz_at_z_nu,sizeof(double *)*ptsz->n_z_dcib0dz*ptsz->n_nu_dcib0dz,ptsz->error_message);
+
+
+
+
+double r;
+double m_min,m_max;
+
+
+m_min = ptsz->M1SZ; // for the mass integral
+m_max = ptsz->M2SZ; // for the mass integral
+
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+int index_z;
+
+
+for (index_z=0; index_z<ptsz->n_z_dcib0dz; index_z++)
+        {
+
+          ptsz->array_dcib0dz_redshift[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_dcib0dz-1.); // log(1+z)
+        }
+
+double nu_min = ptsz->freq_min;
+double nu_max = ptsz->freq_max;
+
+int index_nu;
+for (index_nu=0; index_nu<ptsz->n_nu_dcib0dz; index_nu++)
+        {
+
+          ptsz->array_dcib0dz_nu[index_nu] =
+                                      log(nu_min)
+                                      +index_nu*(log(nu_max)-log(nu_min))
+                                      /(ptsz->n_nu_dcib0dz-1.); // log(nu)
+        }
+
+
+double * pvecback;
+double * pvectsz;
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+// number_of_threads= 1;
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,m_min,m_max)\
+private(tstart, tstop,index_z,index_nu,pvecback,pvectsz,r) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+#pragma omp for collapse(2)
+for (index_z=0; index_z<ptsz->n_z_dcib0dz; index_z++)
+{
+  for (index_nu=0; index_nu<ptsz->n_nu_dcib0dz; index_nu++)
+  {
+          double z = exp(ptsz->array_dcib0dz_redshift[index_z])-1.;;
+          double nu = exp(ptsz->array_dcib0dz_nu[index_nu]);
+
+          int index_z_nu = index_nu * ptsz->n_z_dcib0dz + index_z;
+
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_dcib0dz V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+          V.index_nu = index_nu;
+
+          void * params = &V;
+          double epsrel=1e-3;
+          double epsabs=1e-100;
+
+
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_dcib0dz,
+                                               params,
+                                               ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+       double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+       double I0 = integrand_dcib0dz(log(ptsz->m_min_counter_terms),params);
+       double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
+       r += nmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+          ptsz->array_dcib0dz_at_z_nu[index_z_nu] = log(r);
+
+       }
+     }
+     #ifdef _OPENMP
+       tstop = omp_get_wtime();
+       if (ptsz->sz_verbose > 0)
+         printf("In %s: time spent in parallel region (loop over z nu's) = %e s for thread %d\n",
+                __func__,tstop-tstart,omp_get_thread_num());
+     #endif
+ free(pvecback);
+ free(pvectsz);
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+    }
+
+
+
+
+
 int tabulate_hmf_counter_terms_b1min(struct background * pba,
                                     struct nonlinear * pnl,
                                     struct primordial * ppm,
@@ -9986,7 +10217,7 @@ double integrand_patterson_L_sat(double lnM_sub, void *p){
 
 int tabulate_L_sat_at_z_m_nu(struct background * pba,
                              struct tszspectrum * ptsz){
-if ( ptsz->has_cib_monopole == _FALSE_)
+if ( ptsz->has_cib_monopole + ptsz->has_dcib0dz == _FALSE_)
 return 0;
 
 class_alloc(ptsz->array_L_sat_at_M_z_nu,sizeof(double *)*ptsz->n_nu_L_sat,ptsz->error_message);
@@ -10369,7 +10600,7 @@ if (ptsz->need_sigma == 0)
 // printf("tabulating sigma\n");
 
    // bounds array of radii for sigma computations:
-   ptsz->logR1SZ = log(pow(3.*0.1*1e6/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
+   ptsz->logR1SZ = log(pow(3.*0.1*1e5/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
    ptsz->logR2SZ = log(pow(3.*10.*1e17/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
 
 
@@ -12728,7 +12959,35 @@ double get_psi_b1gt_at_l1_l2_and_z(double l_asked,double l_asked2, double z_aske
 }
 
 
+double get_dcib0dz_at_z_and_nu(double z_asked, double nu_asked, struct tszspectrum * ptsz)
+{
+  double z = log(1.+z_asked);
+  double m = log(nu_asked);
 
+ if (z<ptsz->array_dcib0dz_redshift[0])
+    z = ptsz->array_dcib0dz_redshift[0];
+ if (z>ptsz->array_dcib0dz_redshift[ptsz->n_z_dcib0dz-1])
+    z = ptsz->array_dcib0dz_redshift[ptsz->n_z_dcib0dz-1];
+
+ if (m<ptsz->array_dcib0dz_nu[0])
+    m = ptsz->array_dcib0dz_nu[0];
+
+ if (m>ptsz->array_dcib0dz_nu[ptsz->n_nu_dcib0dz-1])
+    m =  ptsz->array_dcib0dz_nu[ptsz->n_nu_dcib0dz-1];
+
+
+
+
+ return exp(pwl_interp_2d(ptsz->n_z_dcib0dz,
+                          ptsz->n_nu_dcib0dz,
+                          ptsz->array_dcib0dz_redshift,
+                          ptsz->array_dcib0dz_nu,
+                          ptsz->array_dcib0dz_at_z_nu,
+                          1,
+                          &z,
+                          &m));
+
+}
 
 
 double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){
@@ -12788,6 +13047,20 @@ double get_m200m_to_m200c_at_z_and_M(double z_asked, double m_asked, struct tszs
 double get_m200c_to_m200m_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
+
+ if (z<ptsz->array_ln_1pz_m200c_to_m200m[0])
+    z = ptsz->array_ln_1pz_m200c_to_m200m[0];
+ if (z>ptsz->array_ln_1pz_m200c_to_m200m[ptsz->n_z_dndlnM-1])
+    z = ptsz->array_ln_1pz_m200c_to_m200m[ptsz->n_z_dndlnM-1];
+
+ if (m<ptsz->array_m_m200c_to_m200m[0])
+    m = ptsz->array_m_m200c_to_m200m[0];
+
+ if (m>ptsz->array_m_m200c_to_m200m[ptsz->n_m_dndlnM-1])
+    m =  ptsz->array_m_m200c_to_m200m[ptsz->n_m_dndlnM-1];
+
+
+
  return exp(pwl_interp_2d(ptsz->n_z_dndlnM,
                           ptsz->n_m_dndlnM,
                           ptsz->array_ln_1pz_m200c_to_m200m,

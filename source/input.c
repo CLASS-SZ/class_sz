@@ -2288,6 +2288,16 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
+      if ((strstr(string1,"dcib0dz") != NULL) ) {
+        ptsz->has_dcib0dz =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
       if ((strstr(string1,"cib_cib_2h") != NULL) ) {
         ptsz->has_cib_cib_2h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -4342,6 +4352,7 @@ int input_read_parameters(
       + ptsz->has_bk_at_z_hf
       + ptsz->has_mean_y
       + ptsz->has_cib_monopole
+      + ptsz->has_dcib0dz
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
       + ptsz->has_sz_m_y_y_1h
@@ -5153,12 +5164,12 @@ int input_default_params(
   pcsz->sn_cutoff = 5.;
   //Redshift limits for the integration
   ptsz->z1SZ = 1.e-8;
-  ptsz->z2SZ = 4.;
+  ptsz->z2SZ = 6.;
   ppt->z_max_pk = ptsz->z2SZ;
   psp->z_max_pk = ppt->z_max_pk;
 
   ptsz->z1SZ_dndlnM = 0.;
-  ptsz->z2SZ_dndlnM = 4.;
+  ptsz->z2SZ_dndlnM = 6.;
   ptsz->N_redshift_dndlnM = 50;
 
   ptsz->M1SZ_dndlnM = 1.e8;
@@ -5185,7 +5196,7 @@ int input_default_params(
   ptsz->M1SZ_L_sat = 1.e9;
   ptsz->M2SZ_L_sat = 1.e17;
   ptsz->z1SZ_L_sat = 1.e-5;
-  ptsz->z2SZ_L_sat = 1.;
+  ptsz->z2SZ_L_sat = 6.;
   ptsz->n_z_L_sat = 101;
   ptsz->n_m_L_sat = 102;
   ptsz->n_nu_L_sat = 103;
@@ -5498,6 +5509,7 @@ int input_default_params(
   ptsz->has_sz_trispec = _FALSE_;
   ptsz->has_hmf = _FALSE_;
   ptsz->has_cib_monopole = _FALSE_;
+  ptsz->has_dcib0dz = _FALSE_;
   ptsz->has_mean_y = _FALSE_;
   ptsz->has_sz_cov_Y_N = _FALSE_;
   ptsz->has_sz_cov_Y_Y_ssc = _FALSE_;
@@ -5574,6 +5586,7 @@ int input_default_params(
   ptsz->index_md_kSZ_kSZ_gal_2h_fft = 61;
   ptsz->index_md_kSZ_kSZ_gal_3h_fft = 62;
   ptsz->index_md_cib_monopole = 63;
+  ptsz->index_md_dcib0dz = 64;
   // ptsz->index_md_bk_at_z_hf = 51;
 
   ptsz->integrate_wrt_mvir = 0;

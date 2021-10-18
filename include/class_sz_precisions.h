@@ -36,6 +36,9 @@ class_sz_ptsz_parameter(n_z_pressure_profile,int,70)
 class_sz_ptsz_parameter(n_z_psi_b1g,int,50)
 class_sz_ptsz_parameter(n_l_psi_b1g,int,50)
 
+class_sz_ptsz_parameter(n_nu_dcib0dz,int,80)
+class_sz_ptsz_parameter(n_z_dcib0dz,int,68)
+
 class_sz_ptsz_parameter(n_z_psi_b2g,int,50)
 class_sz_ptsz_parameter(n_l_psi_b2g,int,50)
 

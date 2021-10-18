@@ -42,6 +42,7 @@ int szpowerspectrum_init(
       + ptsz->has_bk_at_z_hf
       + ptsz->has_mean_y
       + ptsz->has_cib_monopole
+      + ptsz->has_dcib0dz
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
       + ptsz->has_sz_m_y_y_1h
@@ -350,8 +351,11 @@ if (electron_pressure_comps != _FALSE_){
  else if (ptsz->pressure_profile == 4)
  tabulate_pressure_profile_B12(pba,ptsz);
 }
-//  printf("tab done\n");
-// exit(0);
+
+
+if (ptsz->has_dcib0dz){
+  tabulate_dcib0dz(pba,pnl,ppm,ptsz);
+}
 
 
   // tabulate lensing magnificaion integral, only when requested
@@ -526,6 +530,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_bk_at_z_3h
       + ptsz->has_mean_y
       + ptsz->has_cib_monopole
+      + ptsz->has_dcib0dz
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
       + ptsz->has_sz_m_y_y_1h
@@ -578,6 +583,12 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_dndlnM
       + ptsz->has_sz_counts;
 
+  int mass_conversions = ptsz->need_m200m_to_m200c
+  + ptsz->need_m200c_to_m200m
+  + ptsz->need_m200m_to_m500c
+  + ptsz->need_m200c_to_m500c
+  + ptsz->need_m500c_to_m200c;
+
   int electron_pressure_comps = ptsz->has_sz_ps
       + ptsz->has_mean_y
       + ptsz->has_sz_2halo
@@ -597,7 +608,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_isw_tsz;
 
 
-  if (all_comps == _FALSE_){
+  if (all_comps + mass_conversions == _FALSE_){
     return  _SUCCESS_;
   }
 
@@ -791,6 +802,20 @@ if (ptsz->has_cib_cib_1h
   ){
 
 free(ptsz->array_m_L_sat);
+
+  }
+
+if (ptsz->has_cib_cib_1h
+  ||ptsz->has_cib_cib_2h
+  ||ptsz->has_cib_monopole
+  ||ptsz->has_dcib0dz
+  ||ptsz->has_tSZ_cib_1h
+  ||ptsz->has_tSZ_cib_2h
+  ||ptsz->has_lens_cib_1h
+  ||ptsz->has_lens_cib_2h
+  ||ptsz->has_gal_cib_1h
+  ||ptsz->has_gal_cib_2h
+  ){
 free(ptsz->array_z_L_sat);
 
   }
@@ -816,7 +841,7 @@ free(ptsz->array_L_sat_at_z_and_M_at_nu);
 
   }
 
-if (ptsz->has_cib_monopole){
+if (ptsz->has_cib_monopole || ptsz->has_dcib0dz){
 int index_nu;
 for (index_nu=0;index_nu<ptsz->n_nu_L_sat;index_nu++)
 {
@@ -828,7 +853,7 @@ free(ptsz->array_nu_L_sat);
 
 
 
-// printf("freeing pp\n");
+
 if (electron_pressure_comps != _FALSE_){
 if (ptsz->pressure_profile == 3){
    free(ptsz->array_profile_ln_l_over_ls);
@@ -851,6 +876,13 @@ for (index_l=0;
 
 }
 }
+
+
+if (ptsz->has_dcib0dz){
+   free(ptsz->array_dcib0dz_redshift);
+   free(ptsz->array_dcib0dz_nu);
+   free(ptsz->array_dcib0dz_at_z_nu);
+   }
 
 if (ptsz->need_m200c_to_m200m){
    free(ptsz->array_m_m200c_to_m200m);
@@ -5097,7 +5129,11 @@ double get_first_order_bias_at_z_and_nu(double z,
    double nuTink = sqrt(nu); //in T10 paper: nu=delta/sigma while here nu=(delta/sigma)^2
 
    double Delta;
-   double Omega_m_at_z = ptsz->Omega_m_0*pow(1.+z,3.);
+   // double Omega_m_at_z = ptsz->Omega_m_0*pow(1.+z,3.);
+
+  double om0 = ptsz->Omega_m_0;
+  double ol0 = 1.-ptsz->Omega_m_0;
+  double Omega_m_at_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0);
 
    //Tinker et al 2008 @ M1600-mean
    if (ptsz->MF==6)
@@ -5125,7 +5161,6 @@ double get_first_order_bias_at_z_and_nu(double z,
    double bTTT = 1.5;
    double CTT = 0.019+0.107*y+0.19*exp(-pow(4./y,4.));
    double cTTT = 2.4;
-
    return 1.-ATT*(pow(nuTink,aTTT)/(pow(nuTink,aTTT)+pow(ptsz->delta_cSZ,aTTT)))
                                                       +BTT*pow(nuTink,bTTT)+CTT*pow(nuTink,cTTT);
 
@@ -8820,6 +8855,7 @@ if (ptsz->has_gal_cib_1h
 
  if (ptsz->has_cib
   +  ptsz->has_cib_monopole
+  +  ptsz->has_dcib0dz
   +  ptsz->has_gal_gal_1h
   +  ptsz->has_gal_gal_2h
    != _FALSE_){
@@ -8835,6 +8871,7 @@ if (ptsz->has_gal_cib_1h
 
   if (ptsz->integrate_wrt_m200c == 1 && ptsz->has_200m == 1)
     ptsz->need_m200c_to_m200m = 1;
+
 
   if (ptsz->integrate_wrt_m200c == 1 && ptsz->has_500c == 1)
     ptsz->need_m200c_to_m500c = 1;
@@ -9812,6 +9849,7 @@ double xout = 1.;//ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
 double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
 double chi = sqrt(pvectsz[ptsz->index_chi2]);
 double k = (l+0.5)/chi;
+// printf("r = %.8e m = %.8e z = %.8e\n",r_delta,m_delta,z);
 double us = evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
 
 double ug_at_ell;
@@ -9826,6 +9864,7 @@ int index_nu_prime = (int) pvectsz[ptsz->index_frequency_prime_for_cib_profile];
 // 2-halo terms
 if (_tSZ_cib_2h_
   ||_cib_monopole_
+  ||_dcib0dz_
   ||_lens_cib_2h_
   ||_gal_cib_2h_
   ||_tSZ_cib_1h_
@@ -9865,9 +9904,15 @@ if (isnan(Ls_nu)){
 }
 
 }
+else if(_dcib0dz_){
+nu =  exp(ptsz->array_dcib0dz_nu[index_nu]);
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
+Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu,ptsz);
+us = 1.;
+}
 // cross terms
 else {
-nu = ptsz->cib_frequency_list[index_nu];
+nu = ptsz->frequencies_for_cib[index_nu];
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu,pba,ptsz);
 }
@@ -9875,7 +9920,7 @@ Ls_nu = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu,pba,ptsz);
 // eq. 13 of MM20
 ug_at_ell  = 1./(4.*_PI_)*(Lc_nu+Ls_nu*us);
 
-}
+}// end 2halo terms and monopole
 
 // 1-halo terms
 else if( _cib_cib_1h_){
@@ -10294,6 +10339,7 @@ double numerator = cos(q)*(gsl_sf_Ci((1.+xout*c_delta)*q)-gsl_sf_Ci(q))
                    -sin(xout*c_delta*q)/((1.+xout*c_delta)*q);
 
 if (isnan(numerator/denominator) || isinf(numerator/denominator)){
+  printf("%.3e %.3e  %.3e %.3e\n",r_delta,c_delta,k,z);
   printf("%.3e %.3e %.3e %.3e  %.3e %.3e\n",numerator, denominator,q,xout,k,z);
   exit(0);
 }

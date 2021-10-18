@@ -471,6 +471,16 @@ double  get_L_sat_at_z_M_nu(double z_asked, double m_asked, double nu_asked, str
 //                                   struct background * pba,
 //                                   struct tszspectrum * ptsz);
 
+
+
+double get_dcib0dz_at_z_and_nu(double z_asked, double nu_asked, struct tszspectrum * ptsz);
+
+
+int tabulate_dcib0dz(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz);
+
 int tabulate_dndlnM(struct background * pba,
                     struct nonlinear * pnl,
                     struct primordial * ppm,
