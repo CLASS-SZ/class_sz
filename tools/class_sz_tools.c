@@ -1,5 +1,5 @@
-# include "szpowerspectrum.h"
-# include "sz_tools.h"
+# include "class_sz.h"
+# include "class_sz_tools.h"
 # include "Patterson.h"
 # include "r8lib.h"
 #include <gsl/gsl_errno.h>
@@ -3232,7 +3232,7 @@ return result;
 
 
 
-double get_density_profile_at_l_M_z(double l_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
+double get_gas_density_profile_at_l_M_z(double l_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
   double l = log(l_asked);
@@ -3281,7 +3281,7 @@ double get_density_profile_at_l_M_z(double l_asked, double m_asked, double z_ask
 // Tabulate 2D Fourier transform of density profile on a [z - ln_M - ln_ell] grid
 // this is the tau profile for kSZ
 // here we adopt m200c !
-int tabulate_density_profile(struct background * pba,
+int tabulate_gas_density_profile(struct background * pba,
                              struct tszspectrum * ptsz){
 
 if (ptsz->has_kSZ_kSZ_lensmag_1halo
@@ -3474,6 +3474,9 @@ for (index_m=0;
   double result;
 
 
+  // pvectsz[ptsz->index_has_electron_density] = 1;
+  // do_mass_conversions(lnM,z,pvecback,pvectsz,pba,ptsz);
+
  // only  do the integration of Battaglia profile
  // nfw has an analytical formula
  if (ptsz->tau_profile == 1){
@@ -3512,26 +3515,26 @@ for (index_m=0;
 }
 else if (ptsz->tau_profile == 0){ // truncated nfw profile
 
-    pvectsz[ptsz->index_m200c] = exp(lnM);
-
+   pvectsz[ptsz->index_m200c] = exp(lnM);
    pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
-   pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile]; // this is the multipole going into truncated nfw... TBD: needs to be renamed
+   pvectsz[ptsz->index_c200c] = get_c200c_at_m_and_z(pvectsz[ptsz->index_m200c],z,pba,ptsz);
+   // set 1 for matter_type = tau
+   double xout = 1.;//ptsz->x_out_truncated_nfw_profile;
+   double r_delta = pvectsz[ptsz->index_r200c];
+   double c_delta = pvectsz[ptsz->index_c200c];
+   double m_delta = pvectsz[ptsz->index_m200c];
 
+   // double r_delta = pvectsz[ptsz->index_radius_for_electron_density];
+   // double c_delta = pvectsz[ptsz->index_concentration_for_electron_density];
+   // double m_delta = pvectsz[ptsz->index_mass_for_electron_density];
+   pvectsz[ptsz->index_rs] = r_delta/c_delta;
+
+  pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile];
   double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
   double chi = sqrt(pvectsz[ptsz->index_chi2]);
   double k = (l+0.5)/chi;
-
-   pvectsz[ptsz->index_md] = ptsz->index_md_kSZ_kSZ_gal_1h; // make sure the mode is set up properly for tau computation
-
-   pvectsz[ptsz->index_c200c] = get_c200c_at_m_and_z(pvectsz[ptsz->index_m200c],z,pba,ptsz);
-   // set 1 for matter_type = tau
-   double xout = ptsz->x_out_truncated_nfw_profile;
-   double r_delta = pvectsz[ptsz->index_r200c];
-   double c_delta = pvectsz[ptsz->index_c200c];
-   pvectsz[ptsz->index_rs] = r_delta/c_delta;
-
    result =  evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
-   result *= pvectsz[ptsz->index_m200c]/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3));
+   result *= m_delta/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3));
    double f_b = pba->Omega0_b/ptsz->Omega_m_0;
    result *= f_b;
 
@@ -5494,8 +5497,7 @@ int MF_T08_m500(
   double om0 = ptsz->Omega_m_0;
   double ol0 = 1.-ptsz->Omega_m_0;
   double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0);
-  double  delta_mean =
-  delta_crit/Omega_m_z;
+  double  delta_mean = delta_crit/Omega_m_z;
 
   delta_mean = log10(delta_mean);
 
@@ -6504,21 +6506,21 @@ if ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_
   // printf("result 2h = %.3e\n",result);
 }
 
-if ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h)){
-  double bh;
-  double pk;
-  double b0;
-  double f2;
-  int index_k = (int) V->pvectsz[V->ptsz->index_k_for_pk_hm];
-  double k = V->ptsz->k_for_pk_hm[index_k];
-  // printf("result 3h = %.3e\n",result);
-  evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-  pk = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-  f2 = bispectrum_f2_kernel(k,k,k);
-  b0 = 3.*(2.*pk*pk*f2);
-  bh = (b0 + 3.*pk*pk);
-  result *= bh;
-}
+// if ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h)){
+//   double bh;
+//   double pk;
+//   double b0;
+//   double f2;
+//   int index_k = (int) V->pvectsz[V->ptsz->index_k_for_pk_hm];
+//   double k = V->ptsz->k_for_pk_hm[index_k];
+//   // printf("result 3h = %.3e\n",result);
+//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+//   pk = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+//   f2 = bispectrum_f2_kernel(k,k,k);
+//   b0 = 3.*(2.*pk*pk*f2);
+//   bh = (b0 + 3.*pk*pk);
+//   result *= bh;
+// }
 
 
 // Power spectrum today : needed for ISW  stuff
@@ -6615,7 +6617,7 @@ if  (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
 // if computing 3d matter power spectrum P(k):
 if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_1h))
  || ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))){
-   result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-2);
+   // result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-2);
    return result;
  }// end P(k)
 
@@ -6626,7 +6628,7 @@ if( ((V->ptsz->has_pk_gg_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk
 else if( ((V->ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_1h))
       || ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h))
       || ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h))){
-      result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-3);
+      // result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-3);
 
 
    return result;
@@ -7522,6 +7524,7 @@ r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
 
   double psi_bg = get_psi_b1g_at_l_and_z(l3,z,ptsz);
   double psi_b2g = get_psi_b2g_at_l_and_z(l3,z,ptsz);
+  // double psi_b2t = get_psi_b2t_at_l_and_z(l3,z,ptsz);
 
   // printf("%.5e %.5e\n",r_m_11,r_m_21);
 
@@ -7534,8 +7537,8 @@ r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
 
   /// set-up:
 
-double l_min = 1e-5;
-double l_max = 5e5; // this is a precision parameter
+double l_min = 1e-8;
+double l_max = 1e8; // this is a precision parameter
 // tabulate the integrand in the "l" dimension:
 const int N = ptsz->N_samp_fftw;
 double k[N];
@@ -7550,6 +7553,8 @@ double t7_xi12[N],t7_Pkr[N];
 double t8_xi12[N],t8_Pkr[N];
 double t9_xi12[N],t9_Pkr[N];
 double t10_xi12[N],t10_Pkr[N];
+double t11_xi12[N],t11_Pkr[N];
+double t12_xi12[N],t12_Pkr[N];
 
 
 // double  xi1[N], xi2[N], xi12[N];
@@ -7562,16 +7567,19 @@ double l,pkl;
 
 double pk_phi_0[N],pk_phi_m2[N],pk_phi_4[N],pk_phi_2[N];
 double pk_tilde_phi_0[N],pk_tilde_phi_m2[N],pk_tilde_phi_2[N];
+double pk_tilde_phi_b20[N];
 
 
 double xi_phi_0[N],xi_phi_m2[N],xi_phi_4[N],xi_phi_2[N];
 double xi_tilde_phi_0[N],xi_tilde_phi_m2[N],xi_tilde_phi_2[N];
+double xi_tilde_phi_b20[N];
 
 
 
 
 
 double psi_bt;
+double psi_b2t;
 // double m = exp(logM);
 
 // printf("z = %.5e l = %.5e\n",z,l3);
@@ -7585,6 +7593,7 @@ evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 pkl = pvectsz[ptsz->index_pk_for_halo_bias];
 fl = get_ksz_filter_at_l(l,ptsz);
 psi_bt = get_psi_b1t_at_l_and_z(l,z,ptsz);
+psi_b2t = get_psi_b2t_at_l_and_z(l,z,ptsz);
 
 pk_phi_0[ik] = fl*psi_bt;
 pk_phi_m2[ik] = pow(l,-2)*fl*psi_bt;
@@ -7594,6 +7603,9 @@ pk_phi_2[ik] = pow(l,2)*fl*psi_bt;
 pk_tilde_phi_0[ik] = fl*pkl*psi_bt;
 pk_tilde_phi_m2[ik] = pow(l,-2)*fl*pkl*psi_bt;
 pk_tilde_phi_2[ik] = pow(l,2)*fl*pkl*psi_bt;
+pk_tilde_phi_b20[ik] =  fl*pkl*psi_b2t;
+
+
 
 
 
@@ -7616,6 +7628,7 @@ xi2pk(N,k,pk_phi_0,rp,xi_phi_0,ptsz);
 xi2pk(N,k,pk_phi_2,rp,xi_phi_2,ptsz);
 xi2pk(N,k,pk_phi_m2,rp,xi_phi_m2,ptsz);
 xi2pk(N,k,pk_tilde_phi_0,rp,xi_tilde_phi_0,ptsz);
+xi2pk(N,k,pk_tilde_phi_b20,rp,xi_tilde_phi_b20,ptsz);
 xi2pk(N,k,pk_tilde_phi_2,rp,xi_tilde_phi_2,ptsz);
 xi2pk(N,k,pk_tilde_phi_m2,rp,xi_tilde_phi_m2,ptsz);
 xi2pk(N,k,pk_phi_4,rp,xi_phi_4,ptsz);
@@ -7643,6 +7656,10 @@ t9_xi12[ik] = xi_tilde_phi_m2[ik]*xi_phi_2[ik];
 
 t10_xi12[ik] = xi_tilde_phi_m2[ik]*xi_phi_4[ik];
 
+t11_xi12[ik] = xi_tilde_phi_b20[ik]* xi_tilde_phi_0[ik];
+
+t12_xi12[ik] = xi_tilde_phi_b20[ik]* xi_phi_0[ik];
+
 }
 // printf("xi pi done\n");
 
@@ -7657,20 +7674,26 @@ pk2xi(N,rp,t7_xi12,k,t7_Pkr,ptsz);
 pk2xi(N,rp,t8_xi12,k,t8_Pkr,ptsz);
 pk2xi(N,rp,t9_xi12,k,t9_Pkr,ptsz);
 pk2xi(N,rp,t10_xi12,k,t10_Pkr,ptsz);
+pk2xi(N,rp,t11_xi12,k,t11_Pkr,ptsz);
+pk2xi(N,rp,t12_xi12,k,t12_Pkr,ptsz);
 
 
 
-r = (psi_b2g+19./7.*psi_bg)*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
+r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 +9./7.*psi_bg*pwl_value_1d(N,lnk,t2_Pkr,log(l3))
 -11./7.*pow(l3,2.)*psi_bg*pwl_value_1d(N,lnk,t3_Pkr,log(l3))
 +1./7.*psi_bg*pow(l3,4.)*pwl_value_1d(N,lnk,t4_Pkr,log(l3))
-+(2.*psi_b2g+24./7.*psi_bg)*pk3*pwl_value_1d(N,lnk,t5_Pkr,log(l3))
++24./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t5_Pkr,log(l3))
 +2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t6_Pkr,log(l3))
 +2./7.*pow(l3,2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t7_Pkr,log(l3))
 -4./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t8_Pkr,log(l3))
 -4./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t9_Pkr,log(l3))
-+2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t10_Pkr,log(l3));
-// printf("xi pd done r=%.5e\n",r);
++2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t10_Pkr,log(l3))
+// b2 terms:
++psi_b2g*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
++psi_bg*pwl_value_1d(N,lnk,t11_Pkr,log(l3))
++psi_bg*pk3*pwl_value_1d(N,lnk,t12_Pkr,log(l3));
+
   }
 
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_gal_3h){
@@ -7849,11 +7872,11 @@ r = (psi_b2g+19./7.*psi_bg)*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_bk_at_z_3h){
   double r_m_b1t1;
-  // double r_m_b1t2;
+  double r_m_b2t1;
 
 
   // r_m_11*r_m_21
-  // pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
   V.pvectsz = pvectsz;
   params = &V;
   r_m_b1t1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
@@ -7863,15 +7886,65 @@ r = (psi_b2g+19./7.*psi_bg)*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 
    if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
      double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-     double bmin = nmin;//get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
      double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
-     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf];///pvectsz[ptsz->index_halo_bias];
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
      r_m_b1t1 += bmin_umin;
      // printf("counter terms done r_m_1\n");
   }
 
 
-  r = r_m_b1t1*r_m_b1t1*r_m_b1t1;
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b2t1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b2min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias_b2];
+     r_m_b2t1 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 3;
+  V.pvectsz = pvectsz;
+  params = &V;
+  double r_m_mean=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
+     r_m_mean += nmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+  int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
+  double k = ptsz->k_for_pk_hm[index_k];
+  printf("k = %.8e int = %.8e rhom = %.8e\n",k,r_m_mean,pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,1));
+
+
+
+  double bh;
+  double pk;
+  double b0;
+  double f2;
+
+  // printf("result 3h = %.3e\n",result);
+  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  pk = pvectsz[ptsz->index_pk_for_halo_bias];
+  f2 = bispectrum_f2_kernel(k,k,k);
+  b0 = 3.*(2.*pk*pk*f2)*r_m_b1t1*r_m_b1t1*r_m_b1t1;
+  bh = 3.*pk*pk*r_m_b1t1*r_m_b1t1*r_m_b2t1;
+  r  = (bh+b0);
+
 
   }
 
@@ -8343,8 +8416,10 @@ int read_SO_noise(struct tszspectrum * ptsz){
 double z_min,z_max;
 if (ptsz->need_sigma==0){
   class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
-  z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
-  z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
+  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
 }
 
 
@@ -8445,7 +8520,7 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
 
       V->pvectsz[V->ptsz->index_has_galaxy] = 1;
-      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
@@ -8626,6 +8701,18 @@ double integrand_hmf_counter_terms_b1min(double lnM_halo, void *p){
 }
 
 
+struct Parameters_for_integrand_psi_b2t{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+  double l;
+};
+
+
 
 struct Parameters_for_integrand_psi_b2g{
   struct nonlinear * pnl;
@@ -8744,7 +8831,7 @@ double integrand_dydz(double lnM_halo, void *p){
       // request appropriate mass conversion
       V->pvectsz[V->ptsz->index_has_electron_pressure] = 1 ;
 
-      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
@@ -8810,7 +8897,7 @@ double integrand_dcib0dz(double lnM_halo, void *p){
 
       V->pvectsz[V->ptsz->index_has_cib] = 1;
 
-      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
@@ -8880,14 +8967,16 @@ double integrand_psi_b1g(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
 
       V->pvectsz[V->ptsz->index_has_galaxy] = 1;
-      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
       V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;//ptsz->ell[index_l_3];
-      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_mass_for_galaxies],
+      double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+      double kl = (ell+0.5)/chi;
+      evaluate_galaxy_profile_2h(kl,V->pvectsz[V->ptsz->index_mass_for_galaxies],
                                  V->pvectsz[V->ptsz->index_radius_for_galaxies],
                                  V->pvectsz[V->ptsz->index_concentration_for_galaxies],
                                  V->pvecback,V->pvectsz,V->pba,V->ptsz);
@@ -8951,14 +9040,16 @@ double integrand_psi_b2g(double lnM_halo, void *p){
 
 
       V->pvectsz[V->ptsz->index_has_galaxy] = 1;
-      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
       V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;
-      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_mass_for_galaxies],
+      double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+      double kl = (ell+0.5)/chi;
+      evaluate_galaxy_profile_2h(kl,V->pvectsz[V->ptsz->index_mass_for_galaxies],
                                  V->pvectsz[V->ptsz->index_radius_for_galaxies],
                                  V->pvectsz[V->ptsz->index_concentration_for_galaxies],
                                  V->pvecback,V->pvectsz,V->pba,V->ptsz);
@@ -8969,6 +9060,72 @@ double integrand_psi_b2g(double lnM_halo, void *p){
 
 
       double result = hmf*b2*g;
+
+
+  return result;
+
+}
+
+
+
+double integrand_psi_b2t(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_psi_b2t *V = ((struct Parameters_for_integrand_psi_b2t *) p);
+
+    //double x=exp(ln_x);
+    double z = V->z;
+    double ell = V->l;
+
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
+
+
+      V->pvectsz[V->ptsz->index_has_electron_density] = 1;
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];
+
+      V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell;
+      evaluate_tau_profile(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      double t = V->pvectsz[V->ptsz->index_tau_profile];
+
+      evaluate_halo_bias_b2(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      double b2 = V->pvectsz[V->ptsz->index_halo_bias_b2];
+
+
+      double result = hmf*b2*t;
 
 
   return result;
@@ -9021,7 +9178,9 @@ double integrand_psi_b1t(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
 
       V->pvectsz[V->ptsz->index_has_electron_density] = 1;
-      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+      // V->pvectsz[V->ptsz->index_has_matter_density] = 1;
+
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
@@ -9029,12 +9188,20 @@ double integrand_psi_b1t(double lnM_halo, void *p){
 
       V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell;
       evaluate_tau_profile(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+
+      // double r_delta_matter = V->pvectsz[V->ptsz->index_radius_for_matter_density];
+      // double c_delta_matter = V->pvectsz[V->ptsz->index_concentration_for_matter_density];
+      // double k = (ell+0.5)/sqrt(V->pvectsz[V->ptsz->index_chi2]);
+      // evaluate_matter_density_profile(k,r_delta_matter,c_delta_matter,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+
       double t = V->pvectsz[V->ptsz->index_tau_profile];
+      // double rhom =  V->pvectsz[V->ptsz->index_density_profile];
 
 
       evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
       double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       double result = hmf*b1*t;
+      // double result = hmf*b1*rhom;
 
 
 
@@ -9087,14 +9254,16 @@ double integrand_psi_b1gt(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_has_galaxy] = 1;
       V->pvectsz[V->ptsz->index_has_electron_density] = 1;
 
-      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
       V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell1;
-      evaluate_galaxy_profile_2h(V->pvectsz[V->ptsz->index_mass_for_galaxies],
+      double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+      double kl = (ell1+0.5)/chi;
+      evaluate_galaxy_profile_2h(kl,V->pvectsz[V->ptsz->index_mass_for_galaxies],
                                  V->pvectsz[V->ptsz->index_radius_for_galaxies],
                                  V->pvectsz[V->ptsz->index_concentration_for_galaxies],
                                  V->pvecback,V->pvectsz,V->pba,V->ptsz);
@@ -9251,7 +9420,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
      double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
      double I0 = integrand_psi_b1g(log(ptsz->m_min_counter_terms),params);
      double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-     //r += bmin_umin;
+     r += bmin_umin;
      // printf("counter terms done r_m_1\n");
   }
 
@@ -9299,7 +9468,7 @@ double z_min = ptsz->z1SZ;
 double z_max = ptsz->z2SZ;
 
 
-for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
+for (index_z=0; index_z<ptsz->n_z_psi_b2g; index_z++)
         {
 
           ptsz->array_psi_b2g_redshift[index_z] =
@@ -9403,10 +9572,170 @@ for (index_z=0; index_z<ptsz->n_z_psi_b2g; index_z++)
      double bmin = get_hmf_counter_term_b2min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
      double I0 = integrand_psi_b2g(log(ptsz->m_min_counter_terms),params);
      double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias_b2];
-     // r += bmin_umin;
+     r += bmin_umin;
   }
 
           ptsz->array_psi_b2g_psi[index_l_z] = log(r);
+       }
+     }
+     #ifdef _OPENMP
+       tstop = omp_get_wtime();
+       if (ptsz->sz_verbose > 0)
+         printf("In %s: time spent in parallel region b2g (loop over l's) = %e s for thread %d\n",
+                __func__,tstop-tstart,omp_get_thread_num());
+     #endif
+ free(pvecback);
+ free(pvectsz);
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+    }
+
+
+
+
+int tabulate_psi_b2t(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_psi_b2t_redshift,sizeof(double *)*ptsz->n_z_psi_b2t,ptsz->error_message);
+class_alloc(ptsz->array_psi_b2t_multipole,sizeof(double *)*ptsz->n_l_psi_b2t,ptsz->error_message);
+
+class_alloc(ptsz->array_psi_b2t_psi,sizeof(double *)*ptsz->n_l_psi_b2t*ptsz->n_z_psi_b2t,ptsz->error_message);
+
+
+int index_z, index_l;
+double r;
+double m_min,m_max;
+
+
+m_min = ptsz->M1SZ; // for the mass integral
+m_max = ptsz->M2SZ; // for the mass integral
+// m_min = ptsz->m_min_counter_terms;
+// m_max = ptsz->m_max_counter_terms;
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
+
+for (index_z=0; index_z<ptsz->n_z_psi_b2t; index_z++)
+        {
+
+          ptsz->array_psi_b2t_redshift[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_psi_b2t-1.); // log(1+z)
+        }
+
+// parallelize ver l
+double l_min = 1.e-3;
+double l_max = 3e4;
+
+
+for (index_l=0; index_l<ptsz->n_l_psi_b2t; index_l++)
+        {
+
+          ptsz->array_psi_b2t_multipole[index_l] =
+                                      log(l_min)
+                                      +index_l*(log(l_max)-log(l_min))
+                                      /(ptsz->n_l_psi_b2t-1.); // log(l)
+        }
+
+
+double * pvecback;
+double * pvectsz;
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,m_min,m_max)\
+private(tstart, tstop,index_z,index_l,pvecback,pvectsz,r) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+#pragma omp for schedule (dynamic)
+for (index_l=0; index_l<ptsz->n_l_psi_b2t; index_l++)
+{
+#pragma omp flush(abort)
+
+double l = exp(ptsz->array_psi_b2t_multipole[index_l]);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b2t; index_z++)
+        {
+
+          int index_l_z = index_l * ptsz->n_z_psi_b2t + index_z;
+
+
+          double z = exp(ptsz->array_psi_b2t_redshift[index_z])-1.;
+
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_psi_b2t V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+          V.l = l;
+
+          void * params = &V;
+          double epsrel=1e-3;
+          double epsabs=1e-100;
+
+
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_psi_b2t,
+                                               params,
+                                               ptsz->patterson_show_neval);
+          // printf("%.8e %.8e %.8e\n",z,l,r);
+
+double ct = 0.;
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b2min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_psi_b2t(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias_b2];
+     double ct = bmin_umin;
+     r += bmin_umin;
+
+     if (r<-1.){
+       printf("%.8e %.8e int = %.8e ct = %.8e %.8e %.8e\n",z,l,r-ct,ct,nmin,r);
+       printf("sort out the tabulation of b2g.\n");
+     }
+  }
+
+
+          ptsz->array_psi_b2t_psi[index_l_z] = log(1.+r);
        }
      }
      #ifdef _OPENMP
@@ -9554,7 +9883,11 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1t; index_z++)
      double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
      double I0 = integrand_psi_b1t(log(ptsz->m_min_counter_terms),params);
      double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-     // r += bmin_umin;
+     r += bmin_umin;
+     double ct_over_int  = bmin_umin/(r-bmin_umin);
+     if (ct_over_int>0.1)
+     printf("z = %.8e l = %.8e int = %.8e ct = %.8e ct/int = %.8e\n",
+     z,l,r-bmin_umin,bmin_umin,ct_over_int);
 
   }
 
@@ -10170,7 +10503,6 @@ int tabulate_hmf_counter_terms_b2min(struct background * pba,
                                     struct tszspectrum * ptsz){
 
 class_alloc(ptsz->array_hmf_counter_terms_b2min,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
-// class_alloc(ptsz->array_redshift_hmf_counter_terms,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
 
 int index_z;
 double r;
@@ -10179,8 +10511,12 @@ double m_min,m_max;
 // m_max = ptsz->m_max_counter_terms;
 m_min = ptsz->M1SZ;//r8_min(ptsz->M1SZ,ptsz->m_min_counter_terms);
 m_max = ptsz->M2SZ;//r8_max(ptsz->M2SZ,ptsz->m_max_counter_terms);
-double z_min = ptsz->z1SZ;
-double z_max = ptsz->z2SZ;
+// double z_min = ptsz->z1SZ;
+// double z_max = ptsz->z2SZ;
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
+  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
 
 double * pvecback;
 double * pvectsz;
@@ -10334,6 +10670,8 @@ m_max = ptsz->M2SZ;
 
 double z_min = ptsz->z1SZ;
 double z_max = ptsz->z2SZ;
+
+printf("z_min = %.8e\n",z_min);
 
 double * pvecback;
 double * pvectsz;
@@ -10806,7 +11144,7 @@ if (ptsz->need_sigma == 0)
 // printf("tabulating sigma\n");
 
    // bounds array of radii for sigma computations:
-   ptsz->logR1SZ = log(pow(3.*0.1*1e5/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
+   ptsz->logR1SZ = log(pow(3.*0.1*1e0/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
    ptsz->logR2SZ = log(pow(3.*10.*1e17/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
 
 
@@ -10816,7 +11154,11 @@ if (ptsz->need_sigma == 0)
 
   //Array of z
   double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
+  // z_min = 0.99*z_min;
+
   int index_z;
 
   double tstart, tstop;
@@ -10972,7 +11314,7 @@ num_threads(number_of_threads)
                                  &dsigma_var
                                  );
 
-      // printf("dsigma2dR=%.3e\n",dsigma_var);
+
 
       array_dsigma2dR_at_z_and_R[index_z][index_R] = dsigma_var;
 
@@ -11006,11 +11348,17 @@ for (index_R=0; index_R<ptsz->ndimSZ; index_R++)
   {
 
     ptsz->array_sigma_at_z_and_R[index_z_R] = array_sigma_at_z_and_R[index_z][index_R];
+    double sigma =   ptsz->array_sigma_at_z_and_R[index_z_R];
 
     // printf("z = %.3e sig = %.3e\n",
     // exp(ptsz->array_redshift[index_z])-1.,
     // ptsz->array_sigma_at_z_and_R[index_z_R]);
     ptsz->array_dsigma2dR_at_z_and_R[index_z_R]=array_dsigma2dR_at_z_and_R[index_z][index_R];
+    double dsigma = ptsz->array_sigma_at_z_and_R[index_z_R];
+    if (isnan(sigma+dsigma) || isinf(sigma+dsigma) ){
+     printf("z=%.3e R=%.3e sigma=%.3e dsigma2dR=%.3e\n",exp(ptsz->array_redshift[index_z]),exp(ptsz->array_radius[index_R]),sigma,dsigma);
+     exit(0);
+   }
     index_z_R += 1;
   }
 }
@@ -11158,8 +11506,12 @@ int tabulate_dndlnM(struct background * pba,
                     struct tszspectrum * ptsz){
 
   //Array of z
+  // double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
   int index_z;
 
   double tstart, tstop;
@@ -11333,8 +11685,12 @@ int tabulate_m200c_to_m500c(struct background * pba,
                             struct tszspectrum * ptsz){
 
   //Array of z
+  // double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
   int index_z;
 
   double tstart, tstop;
@@ -11522,8 +11878,12 @@ int tabulate_m500c_to_m200c(struct background * pba,
                             struct tszspectrum * ptsz){
 
   //Array of z
+  // double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
   int index_z;
 
   double tstart, tstop;
@@ -11715,8 +12075,12 @@ int tabulate_m200m_to_m500c(struct background * pba,
                             struct tszspectrum * ptsz){
 
   //Array of z
+  // double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
   int index_z;
 
   double tstart, tstop;
@@ -11906,8 +12270,12 @@ int tabulate_m200m_to_m200c(struct background * pba,
                             struct tszspectrum * ptsz){
 
   //Array of z
+  // double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
   int index_z;
 
   double tstart, tstop;
@@ -12098,8 +12466,12 @@ int tabulate_m200c_to_m200m(struct background * pba,
                             struct tszspectrum * ptsz){
 
   //Array of z
+  // double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
   int index_z;
 
   double tstart, tstop;
@@ -13003,6 +13375,38 @@ double get_detection_proba_at_y_and_theta(double y_asked, double th_asked, doubl
                         }
   return r;
 }
+
+double get_psi_b2t_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double l = log(l_asked);
+
+ if (z<ptsz->array_psi_b2t_redshift[0])
+    z = ptsz->array_psi_b2t_redshift[0];
+ if (z>ptsz->array_psi_b2t_redshift[ptsz->n_z_psi_b2t-1])
+    z = ptsz->array_psi_b2t_redshift[ptsz->n_z_psi_b2t-1];
+
+ if (l<ptsz->array_psi_b2t_multipole[0])
+    l = ptsz->array_psi_b2t_multipole[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (l>ptsz->array_psi_b2t_multipole[ptsz->n_l_psi_b2t-1])
+    l =  ptsz->array_psi_b2t_multipole[ptsz->n_l_psi_b2t-1];
+
+
+// printf("l=%.3e\n",l);
+
+ return exp(pwl_interp_2d(
+
+                          ptsz->n_z_psi_b2t,
+                          ptsz->n_l_psi_b2t,
+
+                          ptsz->array_psi_b2t_redshift,
+                          ptsz->array_psi_b2t_multipole,
+                          ptsz->array_psi_b2t_psi,
+                          1,
+                          &z,
+                          &l))-1.;
+}
+
 
 
 double get_psi_b2g_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){

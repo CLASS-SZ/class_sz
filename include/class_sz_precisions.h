@@ -40,11 +40,14 @@ class_sz_ptsz_parameter(n_z_dcib0dz,int,68)
 
 class_sz_ptsz_parameter(n_z_dydz,int,68)
 
+class_sz_ptsz_parameter(n_z_psi_b2t,int,50)
+class_sz_ptsz_parameter(n_l_psi_b2t,int,50)
+
 class_sz_ptsz_parameter(n_z_psi_b2g,int,50)
 class_sz_ptsz_parameter(n_l_psi_b2g,int,50)
 
-class_sz_ptsz_parameter(n_z_psi_b1t,int,50)
-class_sz_ptsz_parameter(n_l_psi_b1t,int,50)
+class_sz_ptsz_parameter(n_z_psi_b1t,int,80)
+class_sz_ptsz_parameter(n_l_psi_b1t,int,80)
 
 class_sz_ptsz_parameter(n_z_psi_b1gt,int,50)
 class_sz_ptsz_parameter(n_l_psi_b1gt,int,50)

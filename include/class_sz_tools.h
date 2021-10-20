@@ -499,7 +499,7 @@ int tabulate_mean_galaxy_number_density(struct background * pba,
                                         struct primordial * ppm,
                                         struct tszspectrum * ptsz);
 
-double get_density_profile_at_l_M_z(double l_asked,
+double get_gas_density_profile_at_l_M_z(double l_asked,
                                     double m_asked,
                                     double z_asked,
                                     struct tszspectrum * ptsz);
@@ -539,6 +539,14 @@ int tabulate_psi_b2g(struct background * pba,
                     struct tszspectrum * ptsz);
 
 double get_psi_b2g_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
+
+int tabulate_psi_b2t(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz);
+
+double get_psi_b2t_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
+
 
 
 int tabulate_psi_b1t(struct background * pba,

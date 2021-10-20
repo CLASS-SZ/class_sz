@@ -15,7 +15,7 @@
 #include "nonlinear.h"
 #include "lensing.h"
 #include "output.h"
-#include "szpowerspectrum.h"
+#include "class_sz.h"
 #include "szclustercount.h"
 
 /* macro for reading parameter values with routines from the parser */

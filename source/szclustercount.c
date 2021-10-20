@@ -8,7 +8,7 @@
  */
 
 #include "szclustercount.h"
-#include "sz_tools.h"
+#include "class_sz_tools.h"
 #include "Patterson.h"
 #include "r8lib.h"
 

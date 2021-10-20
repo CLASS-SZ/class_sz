@@ -1579,6 +1579,24 @@ cdef class Class:
             cl['k'].append(self.tsz.k_for_pk_hm[index])
         return cl
 
+
+    def bk_at_z_hm(self):
+        """
+        (class_sz) Return the 1-halo, 2-halo and 3-halo terms of 3d B(k) matter bispectrum
+        """
+        cl = {}
+        cl['k'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['3h'] = []
+        for index in range(self.tsz.n_k_for_pk_hm):
+            cl['1h'].append(self.tsz.bk_at_z_1h[index])
+            cl['2h'].append(self.tsz.bk_at_z_2h[index])
+            cl['3h'].append(self.tsz.bk_at_z_3h[index])
+            cl['k'].append(self.tsz.k_for_pk_hm[index])
+        return cl
+
+
     def pk_gg_at_z_hm(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of 3d P(k) gg power spectrum
@@ -1849,14 +1867,14 @@ cdef class Class:
     def get_hmf_counter_term_b2min_at_z(self,z):
         return get_hmf_counter_term_b2min_at_z(z,&self.tsz)
 
-    def get_density_profile_at_l_M_z(self,l_asked,m_asked,z_asked, include_normalization = 'no'):
+    def get_gas_density_profile_at_l_M_z(self,l_asked,m_asked,z_asked, include_normalization = 'no'):
         tau_normalization = 1.
         #if (include_normalization == 'yes'):
         #    if (self.tsz.tau_profile == 0): # nfw case
         #        rho0 =  mvir
         #        tau_normalization =  self.ba.Omega0_b/self.tsz.Omega_m_0/self.tsz.mu_e*self.tsz.f_free
         #    elif (self.tsz.tau_profile == 1): # nfw case
-        return tau_normalization*get_density_profile_at_l_M_z(l_asked,m_asked,z_asked,&self.tsz)
+        return tau_normalization*get_gas_density_profile_at_l_M_z(l_asked,m_asked,z_asked,&self.tsz)
 
     def get_r_delta_of_m_delta_at_z(self,delta,m_delta,z):
         return (m_delta*3./4./np.pi/delta/self.get_rho_crit_at_z(z))**(1./3.)

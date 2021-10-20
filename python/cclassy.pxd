@@ -308,6 +308,9 @@ cdef extern from "class.h":
         int cib_frequency_list_num
         double * pk_at_z_1h
         double * pk_at_z_2h
+        double * bk_at_z_1h
+        double * bk_at_z_2h
+        double * bk_at_z_3h
         double * k_for_pk_hm
         double * pk_gg_at_z_1h
         double * pk_gg_at_z_2h
@@ -648,7 +651,7 @@ cdef extern from "class.h":
                                          double m_asked,
                                          void * tsz)
 
-    double get_density_profile_at_l_M_z(double l_asked,
+    double get_gas_density_profile_at_l_M_z(double l_asked,
                                         double m_asked,
                                         double z_asked,
                                         void * tsz)

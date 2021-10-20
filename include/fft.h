@@ -24,7 +24,7 @@
 // void DCT_real(double* input_real,double* input_imag,double* output_real,double* output_imag,int N);
 // #endif
 #include "common.h"
-#include "szpowerspectrum.h"
+#include "class_sz.h"
 # include <fftw3.h>
 
 #ifndef FFT_H

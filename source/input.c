@@ -1746,6 +1746,7 @@ int input_read_parameters(
       class_read_double("k_min_for_pk_hm",ptsz->k_min_for_pk_hm);
       class_read_double("k_max_for_pk_hm",ptsz->k_max_for_pk_hm);
       class_read_double("dlnk_for_pk_hm",ptsz->dlnk_for_pk_hm);
+
       class_read_double("z_for_pk_hm",ptsz->z_for_pk_hm);
 
       class_read_double("kstar_damping_1h_term (1/Mpc)",ptsz->kstar_damping_1h_term_Mpc);
@@ -2094,6 +2095,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
       }
 
       if ((strstr(string1,"pk_at_z_1h") != NULL) ) {
@@ -2113,6 +2115,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
       }
 
       if ((strstr(string1,"bk_at_z_1h") != NULL) ) {
@@ -2122,6 +2125,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
       }
 
       if ((strstr(string1,"bk_at_z_2h") != NULL) ) {
@@ -2131,6 +2135,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
       }
 
       if ((strstr(string1,"bk_at_z_3h") != NULL) ) {
@@ -2140,6 +2145,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
       }
 
       if ((strstr(string1,"bk_at_z_hf") != NULL) ) {
@@ -3264,7 +3270,7 @@ int input_read_parameters(
         ptsz->galaxy_sample=0;
       else  if ((strstr(string1,"unwise") != NULL))
         ptsz->galaxy_sample=1;
-      else  if ((strstr(string1,"other") != NULL))
+      else  if ((strstr(string1,"custom") != NULL))
         ptsz->galaxy_sample=2;
       }
 
@@ -5241,7 +5247,7 @@ int input_default_params(
   ppt->z_max_pk = ptsz->z2SZ;
   psp->z_max_pk = ppt->z_max_pk;
 
-  ptsz->z1SZ_dndlnM = 0.;
+  ptsz->z1SZ_dndlnM = 1.e-8;
   ptsz->z2SZ_dndlnM = 6.;
   ptsz->N_redshift_dndlnM = 50;
 
@@ -5439,6 +5445,7 @@ int input_default_params(
   ptsz->k_min_for_pk_in_tSZ = 1.e-3; //#default 1.e-3
   ptsz->k_max_for_pk_in_tSZ = 1.e1; //#default 5
 
+  ptsz->z_for_pk_hm = 1.;
 
 
   //Multplicity function Tinker 2010

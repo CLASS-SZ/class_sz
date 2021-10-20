@@ -4,8 +4,8 @@
 #define __SZC__
 
 #include "common.h"
-#include "szpowerspectrum.h"
-#include "sz_tools.h"
+#include "class_sz.h"
+#include "class_sz_tools.h"
 #include "r8lib.h"
 
 

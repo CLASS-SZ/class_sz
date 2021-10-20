@@ -1315,6 +1315,10 @@ double * steps_m;
   ErrorMsg error_message; /**< zone for writing error messages */
 
 
+  double * array_psi_b2t_redshift;
+  double * array_psi_b2t_multipole;
+  double * array_psi_b2t_psi;
+
   double * array_psi_b2g_redshift;
   double * array_psi_b2g_multipole;
   double * array_psi_b2g_psi;
@@ -1401,7 +1405,6 @@ int szpowerspectrum_init(struct background * pba,
                          double * pvecback,
                          double * pvectsz,
                          struct background * pba,
-                         struct nonlinear * pnl,
                          struct tszspectrum * ptsz);
   int evaluate_HMF_at_logM_and_z(
                    double logM ,
@@ -1550,8 +1553,9 @@ int evaluate_tau_profile(double * pvecback,
                         struct background * pba,
                         struct tszspectrum * ptsz);
 
-int tabulate_density_profile(struct background * pba,
+int tabulate_gas_density_profile(struct background * pba,
                              struct tszspectrum * ptsz);
+
 
 int tabulate_pressure_profile_gNFW(struct background * pba,
                                    struct tszspectrum * ptsz);
@@ -1587,14 +1591,16 @@ double get_galaxy_profile_at_z_m_l_1h(double z,
                                       struct background * pba);
 
 
-int evaluate_galaxy_profile_1h(double m_delta,
+int evaluate_galaxy_profile_1h(double kl,
+                               double m_delta,
                                double r_delta,
                                double c_delta,
                                double * pvecback,
                                double * pvectsz,
                                struct background * pba,
                                struct tszspectrum * ptsz);
-int evaluate_galaxy_profile_2h(double m_delta,
+int evaluate_galaxy_profile_2h(double kl,
+                               double m_delta,
                                double r_delta,
                                double c_delta,
                                double * pvecback,
@@ -1714,6 +1720,7 @@ double integrand_kSZ2_X(double theta, void *p);
 
 
 int evaluate_matter_density_profile(
+                             double k,
                              double r_delta,
                              double c_delta,
                              double * pvecback,
