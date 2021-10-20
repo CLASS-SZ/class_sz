@@ -10619,14 +10619,14 @@ double evaluate_truncated_nfw_profile(//double * pvecback,
 double z = pvectsz[ptsz->index_z];
 
 double q = k*r_delta/c_delta*(1.+z);
-
+// q = 1e-10;
 double denominator = m_nfw(c_delta); //normalization
 
 
 double numerator = cos(q)*(gsl_sf_Ci((1.+xout*c_delta)*q)-gsl_sf_Ci(q))
                    +sin(q)*(gsl_sf_Si((1.+xout*c_delta)*q)-gsl_sf_Si(q))
                    -sin(xout*c_delta*q)/((1.+xout*c_delta)*q);
-
+// printf("%.8e\n",numerator/denominator);
 if (isnan(numerator/denominator) || isinf(numerator/denominator)){
   printf("r %.3e c %.3e  k %.3e z %.3e\n",r_delta,c_delta,k,z);
   printf("num %.3e den %.3e q %.3e x %.3e  k %.3e z %.3e\n",numerator, denominator,q,xout,k,z);

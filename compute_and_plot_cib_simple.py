@@ -8,19 +8,6 @@
 # Note the last option "-mode run" if you want to run class_sz, and "-mode plot" if you just want to plot
 # what was last computed.
 
-
-
-# set path to the class_sz code
-path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
-# set path to to the repository containing the folder 'cib_files' with your cib's in it
-path_to_class_external_data_and_scripts = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/'
-# set path to where to save the figures
-FIG_DIR = '/Users/boris/Desktop'
-
-# Parameters are set between L152 and L236 of this file
-
-
-
 import argparse
 import numpy as np
 import os
@@ -34,6 +21,14 @@ import ast
 import itertools
 
 
+
+# set path to the class_sz code
+path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
+# path_to_class = '/Users/boris/Downloads/class_sz-df37ebccd13a2e266cecd9bf553b729e93101e7e/'
+# set path to to the repository containing the folder 'cib_files' with your cib's in it
+# set path to where to save the figures
+FIG_DIR = '/Users/boris/Work/CLASS-SZ/SO-SZ/figures'
+subprocess.call(['mkdir','-p',path_to_class+'sz_auxiliary_files/run_scripts'])
 
 # usefule function for formatting numbers
 def scientific_notation(p_value,digit=2):
@@ -73,7 +68,7 @@ def scientific_notation(p_value,digit=2):
 
 def run(args):
     # important parameters are re-ajusted later, here we just load a template file:
-    parameter_file = 'class-sz_parameters_MM20.ini'
+    # parameter_file = 'class-sz_parameters_MM20.ini'
 
     os.chdir(path_to_class)
     #collect arguments
@@ -103,7 +98,17 @@ def run(args):
 
 
     if args.p_val:
-        p = np.asarray(ast.literal_eval(args.p_val))
+        try:
+            p = np.asarray(ast.literal_eval(args.p_val))
+        except ValueError:
+            s = str(args.p_val)
+
+            s = s.replace("[", "")
+            s = s.replace("]", "")
+            s = s.split(",")
+            print(s[0])
+            p = s
+
         args.N = len(p)
         N = args.N
     else:
@@ -155,12 +160,12 @@ def run(args):
 
     # 'M500' is Tinker et al 2008 @ M500
     # 'T10' is Tinker et al 2010 @ m200_mean
-    p_dict['mass function'] = 'T10'  #fiducial  T10
 
+    p_dict['mass function'] = 'M500'
+    p_dict['concentration parameter'] = 'B13'
+    p_dict['hm_consistency'] = 0
+    p_dict['damping_1h_term'] = 0
 
-    # parameters for tSZ
-    p_dict['pressure profile'] = 'A10' #fiducial B12
-    p_dict['B'] = 1.25
 
     # parameters for Cosmology
     p_dict['Omega_cdm'] = 0.3175-0.022068/0.6711/0.6711
@@ -176,6 +181,15 @@ def run(args):
     p_dict['deg_ncdm'] = 3
     p_dict['m_ncdm'] = 0.02
     p_dict['T_ncdm'] = 0.71611
+
+
+    # mass bounds
+    p_dict['M_min'] = 1e8*p_dict['h']
+    p_dict['M_max'] = 1e16*p_dict['h']
+
+    # redshift bounds
+    p_dict['z_min'] = 0.07
+    p_dict['z_max'] = 6. # fiducial for MM20 : 6
 
     # HOD parameters for CIB
     p_dict['M_min_HOD'] = pow(10.,10)
@@ -196,8 +210,8 @@ def run(args):
     p_dict['Size of of halo masses sourcing CIB emission'] = 0.5
 
     # List of frequency bands for cib
-    p_dict['cib_frequency_list_num'] = 2
-    p_dict['cib_frequency_list_in_GHz'] = '217,353'
+    p_dict['cib_frequency_list_num'] = 1
+    p_dict['cib_frequency_list_in_GHz'] = '217'
     # p_dict['cib_frequency_list_num'] = 5
     # p_dict['cib_frequency_list_in_GHz'] = '217,353,545,857,3000'
     p_dict["Frequency_id nu for cib in GHz (to save in file)"] = 0
@@ -211,41 +225,34 @@ def run(args):
     p_dict['pressure_profile_epsabs'] = 1.e-8
     p_dict['pressure_profile_epsrel'] = 1.e-3
     # precision for redshift integal
-    p_dict['redshift_epsabs'] = 1e-4#1.e-40
-    p_dict['redshift_epsrel'] = 1e-3#1.e-10 # fiducial value 1e-8
+    p_dict['redshift_epsabs'] = 1e-40#1.e-40
+    p_dict['redshift_epsrel'] = 1e-4#1.e-10 # fiducial value 1e-8
     # precision for mass integal
-    p_dict['mass_epsabs'] = 1e-4 #1.e-40
-    p_dict['mass_epsrel'] = 1e-3#1e-10
+    p_dict['mass_epsabs'] = 1e-40 #1.e-40
+    p_dict['mass_epsrel'] = 1e-4#1e-10
     # precision for Luminosity integral (sub-halo mass function)
-    p_dict['L_sat_epsabs'] = 1e-2 #1.e-40
+    p_dict['L_sat_epsabs'] = 1e-40 #1.e-40
     p_dict['L_sat_epsrel'] = 1e-2#1e-10
 
-    # mass bounds
-    p_dict['M1SZ'] = 1e10*p_dict['h']
-    p_dict['M2SZ'] = 1e16*p_dict['h']
 
-    # redshift bounds
-    p_dict['z1SZ'] = 0.07
-    p_dict['z2SZ'] = 6
-    p_dict['z_max_pk'] = p_dict['z2SZ']
+    p_dict['z_max_pk'] = p_dict['z_max']
 
     # multipole array
-    p_dict['multipoles_sz'] = 'ell_mock'
     p_dict['dlogell'] = 0.4
-    p_dict['ell_max_mock'] = 5000.
-    p_dict['ell_min_mock'] = 2.
+    p_dict['ell_max'] = 5000.
+    p_dict['ell_min'] = 2.
 
 
 
     p_dict['output'] = args.output
     p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
-    p_dict['path_to_class'] = path_to_class
+    # p_dict['path_to_class'] = path_to_class
 
 
-    L_ref = np.loadtxt(path_to_class_external_data_and_scripts + '/cib_files/cib_1h_217x217.txt')
+    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_1h_217x217.txt')
     ell_MM20 = L_ref[:,0]
     cl_cib_cib_1h_MM20 = L_ref[:,1]
-    L_ref = np.loadtxt(path_to_class_external_data_and_scripts + '/cib_files/cib_2h_217x217.txt')
+    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_2h_217x217.txt')
     cl_cib_cib_2h_MM20 = L_ref[:,1]
 
 
@@ -311,8 +318,8 @@ def run(args):
                 print("time in class -> " + str((datetime.now() - startTime)))
             #print(datetime.now() - startTime)
 
-
-            val_label.append(label_key + ' = ' + scientific_notation(p_val))
+            # try:
+            # val_label.append(label_key + ' = ' + scientific_notation(p_val))
                 #val_label.append(label_key + ' = ' + "%.2f"%(p_val))
 
             col.append(next(colors))
@@ -359,40 +366,41 @@ def run(args):
                 print(cib_cib_2h[id_p])
                 ax.plot(multipoles[id_p],(cib_cib_2h[id_p]),color='r',ls='--',alpha = 1.,
                 marker =  'o',markersize = 2,
-                label = 'class_sz hod (2-halo)')
+                label = 'class_sz (2-halo)')
                 ax.plot(multipoles[id_p],(cib_cib_1h[id_p]),color='k',ls='--',alpha = 1.,
                 marker =  '*',markersize = 1,
-                label = 'class_sz hod (1-halo)')
-                ax.plot(multipoles[id_p],(cib_cib_1h[id_p]+cib_cib_2h[id_p]),color='grey',ls='-',alpha = 1.,
-                marker =  '*',markersize = 1,
-                label = 'class_sz hod (1+2-halo)')
+                label = 'class_sz (1-halo)')
+                # ax.plot(multipoles[id_p],(cib_cib_1h[id_p]+cib_cib_2h[id_p]),color='grey',ls='-',alpha = 1.,
+                # marker =  '*',markersize = 1,
+                # label = 'class_sz (1+2-halo)')
 
             elif (args.plot_tSZ_cib == 'yes'):
                 print(tSZ_cib_1h[id_p])
                 print(tSZ_cib_2h[id_p])
                 ax.plot(multipoles[id_p],(tSZ_cib_2h[id_p]),color='r',ls='--',alpha = 1.,
                 marker =  'o',markersize = 2,
-                label = 'class_sz hod (2-halo)')
+                label = 'class_sz (2-halo)')
                 ax.plot(multipoles[id_p],(tSZ_cib_1h[id_p]),color='k',ls='--',alpha = 1.,
                 marker =  '*',markersize = 1,
-                label = 'class_sz hod (1-halo)')
+                label = 'class_sz (1-halo)')
                 ax.plot(multipoles[id_p],(tSZ_cib_1h[id_p]+tSZ_cib_2h[id_p]),color='grey',ls='-',alpha = 1.,
                 marker =  '*',markersize = 1,
-                label = 'class_sz hod (1+2-halo)')
+                label = 'class_sz (1+2-halo)')
 
             elif (args.plot_lens_cib == 'yes'):
                 print(lens_cib_1h[id_p])
                 print(lens_cib_2h[id_p])
                 ax.plot(multipoles[id_p],multipoles[id_p]*(lens_cib_2h[id_p]),color='r',ls='--',alpha = 1.,
                 marker =  'o',markersize = 2,
-                label = 'class_sz hod (2-halo)')
+                label = 'class_sz (2-halo)')
                 ax.plot(multipoles[id_p],multipoles[id_p]*(lens_cib_1h[id_p]),color='k',ls='--',alpha = 1.,
                 marker =  '*',markersize = 1,
-                label = 'class_sz hod (1-halo)')
+                label = 'class_sz (1-halo)')
                 ax.plot(multipoles[id_p],multipoles[id_p]*(lens_cib_1h[id_p]+lens_cib_2h[id_p]),color='grey',ls='-',alpha = 1.,
                 marker =  '*',markersize = 1,
                 label = 'class_sz hod (1+2-halo)')
 
+            ax.legend(loc=4,ncol = 1)
             plt.draw()
             plt.pause(0.05)
             if args.mode == 'run':
@@ -402,7 +410,7 @@ def run(args):
             id_p += 1
 
         #end loop on p over param values
-    ax1.legend(loc=4,ncol = 1)
+
     fig.tight_layout()
 
     if (args.save_fig == 'yes'):

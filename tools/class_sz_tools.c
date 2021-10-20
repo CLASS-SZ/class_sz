@@ -10671,7 +10671,7 @@ m_max = ptsz->M2SZ;
 double z_min = ptsz->z1SZ;
 double z_max = ptsz->z2SZ;
 
-printf("z_min = %.8e\n",z_min);
+// printf("z_min = %.8e\n",z_min);
 
 double * pvecback;
 double * pvectsz;
