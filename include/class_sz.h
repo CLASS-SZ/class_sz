@@ -803,7 +803,7 @@ struct tszspectrum {
   double cvir_tau_profile_factor;
 
   int hm_consistency;
-
+  int check_consistency_conditions;
 
   // noise curve for cov(y,y)
 
@@ -1453,6 +1453,7 @@ double get_ksz_filter_at_l(double l,
 
   int write_output_to_files_cl(struct nonlinear * pnl,
                                struct background * pba,
+                               struct primordial * ppm,
                                struct tszspectrum * ptsz);
 
 

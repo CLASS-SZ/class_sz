@@ -375,8 +375,6 @@ if (ptsz->has_dydz){
    load_unbinned_nl_yy(ptsz);
 
       printf("number_of_integrands=%d\n",ptsz->number_of_integrands);
-   if (ptsz->write_sz>0)
-   write_redshift_dependent_quantities(pba,ptsz);
 
    printf("number_of_integrands=%d\n",ptsz->number_of_integrands);
 
@@ -531,8 +529,9 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 
    if (ptsz->write_sz>0 || ptsz->create_ref_trispectrum_for_cobaya){
 
-   write_output_to_files_cl(pnl,pba,ptsz);
+   write_output_to_files_cl(pnl,pba,ppm,ptsz);
    write_output_to_files_ell_indep_ints(pnl,pba,ptsz);
+   write_redshift_dependent_quantities(pba,ptsz);
 
  }
 
@@ -3630,13 +3629,28 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
                                       *pvectsz[ptsz->index_halo_bias_b2]
                                       *density_profile_at_k_1;
 }
+if (ptsz->check_consistency_conditions == 1){
+// mass consistency:
 if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  3) {
-    evaluate_halo_bias_b2(pvecback,pvectsz,pba,ppm,pnl,ptsz);
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
-                                      // *pvectsz[ptsz->index_halo_bias_b2]
+                                      *density_profile_at_k_1;
+}
+// b1 consistency:
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  4) {
+    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
                                       *density_profile_at_k_1;
 }
 
+// b2 consistency:
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  5) {
+    evaluate_halo_bias_b2(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias_b2]
+                                      *density_profile_at_k_1;
+}
+}
    }
 
 
@@ -5354,7 +5368,7 @@ int evaluate_halo_bias_b2(double * pvecback,
    // double nuTink = sqrt(nu); //in T10 paper: nu=delta/sigma while here nu=(delta/sigma)^2
 
    double z = pvectsz[ptsz->index_z];
-   pvectsz[ptsz->index_halo_bias_b2] = get_second_order_bias_at_z_and_nu(z,nu*nu,ptsz,pba);
+   pvectsz[ptsz->index_halo_bias_b2] = get_second_order_bias_at_z_and_nu(z,nu,ptsz,pba);
 
 
    return _SUCCESS_;
@@ -7111,6 +7125,7 @@ int write_redshift_dependent_quantities(struct background * pba,
 
 int write_output_to_files_cl(struct nonlinear * pnl,
                              struct background * pba,
+                             struct primordial * ppm,
                              struct tszspectrum * ptsz){
 
 
@@ -7706,6 +7721,12 @@ if ((ptsz->has_bk_at_z_1h + ptsz->has_bk_at_z_2h + ptsz->has_bk_at_z_3h >= _TRUE
                                             ptsz->bk_at_z_1h[index_k],
                                             ptsz->bk_at_z_2h[index_k],
                                             ptsz->bk_at_z_3h[index_k]);
+  // double k = ptsz->k_for_pk_hm[index_k];
+  // double z = ptsz->z_for_pk_hm;
+  // double b_hm = ptsz->bk_at_z_3h[index_k];
+  // double b_tree = get_matter_bispectrum_at_z_tree_level_PT(k,k,k,z,ptsz,pba,pnl,ppm);
+  // printf("bispectrum fields z = %.3e k = %.8e b_hm = %.8e b_tree = %.8e\n",z,k,b_hm,b_tree);
+
     }
       fclose(fp);
   }
@@ -10618,15 +10639,16 @@ double evaluate_truncated_nfw_profile(//double * pvecback,
 
 double z = pvectsz[ptsz->index_z];
 
-double q = k*r_delta/c_delta*(1.+z);
-// q = 1e-10;
+double q = k*r_delta/c_delta*(1.+z); // uk -> 1 when q->0
 double denominator = m_nfw(c_delta); //normalization
+
+
 
 
 double numerator = cos(q)*(gsl_sf_Ci((1.+xout*c_delta)*q)-gsl_sf_Ci(q))
                    +sin(q)*(gsl_sf_Si((1.+xout*c_delta)*q)-gsl_sf_Si(q))
                    -sin(xout*c_delta*q)/((1.+xout*c_delta)*q);
-// printf("%.8e\n",numerator/denominator);
+// printf("%d %.8e\n",ptsz->delta_def_matter_density,numerator/denominator);
 if (isnan(numerator/denominator) || isinf(numerator/denominator)){
   printf("r %.3e c %.3e  k %.3e z %.3e\n",r_delta,c_delta,k,z);
   printf("num %.3e den %.3e q %.3e x %.3e  k %.3e z %.3e\n",numerator, denominator,q,xout,k,z);

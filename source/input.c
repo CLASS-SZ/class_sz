@@ -2894,6 +2894,7 @@ int input_read_parameters(
       class_read_int("pk_nonlinear_for_vrms2",ptsz->pk_nonlinear_for_vrms2);
 
       class_read_int("hm_consistency",ptsz->hm_consistency);
+      class_read_int("check_consistency_conditions",ptsz->check_consistency_conditions);
 
 
       /* Noise for covmat (y,y)*/
@@ -5194,16 +5195,16 @@ int input_default_params(
   ptsz->M0_Mmin_flag = 0;
   ptsz->M_min_HOD_mass_factor_unwise = 1.;
   ptsz->M0_HOD = 0.; //DES-like HOD see https://arxiv.org/pdf/2106.08438.pdf
-  // with xout = 2.5*rvir/rs the halo model cl^phi^phi matches class cl phi_phi
-  // in the settings of KFSW20
-  ptsz->x_out_truncated_nfw_profile = 2.5;
-  ptsz->x_out_truncated_nfw_profile_satellite_galaxies = 2.5;
-  ptsz->x_out_nfw_profile = 2.5;
+
+  ptsz->x_out_truncated_nfw_profile = 1.;
+  ptsz->x_out_truncated_nfw_profile_satellite_galaxies =1.;
+  // ptsz->x_out_nfw_profile = 2.5;
   ptsz->cvir_tau_profile_factor =  1.;
   ptsz->M1_prime_HOD_factor = 15.;
   ptsz->M_min_HOD_satellite_mass_factor_unwise = 0.1;
 
   ptsz->hm_consistency = 1; //0: nothing 1: counter terms 2: alpha(z)
+  ptsz->check_consistency_conditions = 0;
   ptsz->damping_1h_term = 1;
 
   ptsz->N_kSZ2_gal_multipole_grid = 20;

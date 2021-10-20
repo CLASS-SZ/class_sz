@@ -6465,6 +6465,28 @@ result = W_lens*W_lens;
                                  V->pnl,
                                  V->ppm,
                                  V->ptsz);
+
+
+// if computing 3d matter power spectrum P(k) of bispectrum:
+if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_1h))
+ || ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
+ || ((V->ptsz->has_pk_gg_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_1h))
+ || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))
+ || ((V->ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_1h))
+ || ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h))
+ || ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h))){
+
+   if ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h)){
+     // printf("result 2h = %.3e\n",result);
+     evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+     result *= 3.*V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+     // printf("result 2h = %.3e\n",result);
+   }
+
+   return result;
+ }
+
+
   // exit(0);
   }
 
@@ -6499,28 +6521,6 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
 
 }
 
-if ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h)){
-  // printf("result 2h = %.3e\n",result);
-  evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-  result *= 3.*V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-  // printf("result 2h = %.3e\n",result);
-}
-
-// if ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h)){
-//   double bh;
-//   double pk;
-//   double b0;
-//   double f2;
-//   int index_k = (int) V->pvectsz[V->ptsz->index_k_for_pk_hm];
-//   double k = V->ptsz->k_for_pk_hm[index_k];
-//   // printf("result 3h = %.3e\n",result);
-//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-//   pk = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-//   f2 = bispectrum_f2_kernel(k,k,k);
-//   b0 = 3.*(2.*pk*pk*f2);
-//   bh = (b0 + 3.*pk*pk);
-//   result *= bh;
-// }
 
 
 // Power spectrum today : needed for ISW  stuff
@@ -6614,25 +6614,6 @@ if  (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
   result *= 1./(1.+z)*pow(1./V->pvectsz[V->ptsz->index_chi2],1.);
 }
 
-// if computing 3d matter power spectrum P(k):
-if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_1h))
- || ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))){
-   // result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-2);
-   return result;
- }// end P(k)
-
-if( ((V->ptsz->has_pk_gg_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_1h))
- || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))){
-   return result;
- }// end P(k)
-else if( ((V->ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_1h))
-      || ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h))
-      || ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h))){
-      // result *= pow((V->pba->Omega0_cdm+V->pba->Omega0_b)*V->ptsz->Rho_crit_0,-3);
-
-
-   return result;
- }// end b(k,k,k)
 
 else{
 
@@ -7911,10 +7892,20 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
      // printf("counter terms done r_m_1\n");
   }
 
+  int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
+  double k = ptsz->k_for_pk_hm[index_k];
+if (ptsz->check_consistency_conditions == 1){
+  // check consistency conditions:
+
+  double r_m_mean;
+  double r_mass;
+  double r_b1;
+  double r_b2;
+  // mass consistency
   pvectsz[ptsz->index_part_id_cov_hsv] = 3;
   V.pvectsz = pvectsz;
   params = &V;
-  double r_m_mean=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+  r_m_mean=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                            epsrel, epsabs,
                                            integrand_patterson_test,
                                            params,ptsz->patterson_show_neval);
@@ -7924,13 +7915,50 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
      double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
      double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
      r_m_mean += nmin_umin;
+  }
+  r_mass = r_m_mean;
+
+
+  // b1 consistency
+  pvectsz[ptsz->index_part_id_cov_hsv] = 4;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_mean=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_mean += bmin_umin;
      // printf("counter terms done r_m_1\n");
   }
-  int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
-  double k = ptsz->k_for_pk_hm[index_k];
-  printf("k = %.8e int = %.8e rhom = %.8e\n",k,r_m_mean,pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,1));
+  r_b1 = r_m_mean;
 
 
+  // b2 consistency
+  pvectsz[ptsz->index_part_id_cov_hsv] = 5;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_mean=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b2min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias_b2];
+     r_m_mean += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+  r_b2 = r_m_mean;
+  printf("hm consistency z = %.3e k = %.8e m = %.8e b1 = %.8e b2 %.8e\n",pvectsz[ptsz->index_z],k,r_mass,r_b1,1.-r_b2);
+}
 
   double bh;
   double pk;
@@ -7941,10 +7969,14 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
   evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
   pk = pvectsz[ptsz->index_pk_for_halo_bias];
   f2 = bispectrum_f2_kernel(k,k,k);
-  b0 = 3.*(2.*pk*pk*f2)*r_m_b1t1*r_m_b1t1*r_m_b1t1;
-  bh = 3.*pk*pk*r_m_b1t1*r_m_b1t1*r_m_b2t1;
-  r  = (bh+b0);
+  // b0 = (2.*pk*pk*f2)*r_m_b1t1*r_m_b1t1*r_m_b1t1;
+  // bh = 0.;//3.*pk*pk*r_m_b1t1*r_m_b1t1*r_m_b2t1;
+  // r  = (bh+b0);
 
+// r_m_b2t1 = 0.;
+  r = 3.*(2.*r_m_b1t1*r_m_b1t1*r_m_b1t1*f2+r_m_b1t1*r_m_b1t1*r_m_b2t1)*pk*pk;
+  double b_tree = get_matter_bispectrum_at_z_tree_level_PT(k,k,k,pvectsz[ptsz->index_z],ptsz,pba,pnl,ppm);
+  // printf("bispectrum fields z = %.3e k = %.8e <bu> = %.8e <b2u> = %.8e b_hm = %.8e b_tree = %.8e\n",pvectsz[ptsz->index_z],k,r_m_b1t1,r_m_b2t1,r,b_tree);
 
   }
 
@@ -9192,7 +9224,6 @@ double integrand_psi_b1t(double lnM_halo, void *p){
       // double r_delta_matter = V->pvectsz[V->ptsz->index_radius_for_matter_density];
       // double c_delta_matter = V->pvectsz[V->ptsz->index_concentration_for_matter_density];
       // double k = (ell+0.5)/sqrt(V->pvectsz[V->ptsz->index_chi2]);
-      // evaluate_matter_density_profile(k,r_delta_matter,c_delta_matter,V->pvecback,V->pvectsz,V->pba,V->ptsz);
 
       double t = V->pvectsz[V->ptsz->index_tau_profile];
       // double rhom =  V->pvectsz[V->ptsz->index_density_profile];
