@@ -35,7 +35,7 @@ CLASS_SZ is initially based on Eiichiro Komatsu’s fortran code SZFAST.
 
 (See http://wwwmpa.mpa-garching.mpg.de/~komatsu/CRL/clusters/szpowerspectrumks/)
 
-CLASS_SZ modules are located in the files **source/szpowerspectrum.c** and **source/szclustercount.c**.
+CLASS_SZ modules are located in the files **source/class_sz.c** and **source/szclustercount.c**.
 
 
 CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such as:
