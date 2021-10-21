@@ -3285,12 +3285,16 @@ int tabulate_gas_density_profile(struct background * pba,
                              struct tszspectrum * ptsz){
 
 if (ptsz->has_kSZ_kSZ_lensmag_1halo
-+ ptsz->has_kSZ_kSZ_gal_1h
+
 + ptsz->has_kSZ_kSZ_gal_1h_fft
 + ptsz->has_kSZ_kSZ_gal_2h_fft
 + ptsz->has_kSZ_kSZ_gal_3h_fft
++ ptsz->has_kSZ_kSZ_gal_1h
 + ptsz->has_kSZ_kSZ_gal_2h
 + ptsz->has_kSZ_kSZ_gal_3h
++ ptsz->has_bk_ttg_at_z_1h
++ ptsz->has_bk_ttg_at_z_2h
++ ptsz->has_bk_ttg_at_z_3h
 == _FALSE_
 )
   return 0;
@@ -6474,9 +6478,19 @@ if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at
  || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))
  || ((V->ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_1h))
  || ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h))
- || ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h))){
+ || ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h))
+ || ((V->ptsz->has_bk_ttg_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_bk_ttg_at_z_1h))
+ || ((V->ptsz->has_bk_ttg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_ttg_at_z_2h))
+ || ((V->ptsz->has_bk_ttg_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_ttg_at_z_3h))
+){
 
    if ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h)){
+     // printf("result 2h = %.3e\n",result);
+     evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+     result *= 3.*V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+     // printf("result 2h = %.3e\n",result);
+   }
+   if ((V->ptsz->has_bk_ttg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_ttg_at_z_2h)){
      // printf("result 2h = %.3e\n",result);
      evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
      result *= 3.*V->pvectsz[V->ptsz->index_pk_for_halo_bias];
@@ -6674,7 +6688,11 @@ if(_pk_at_z_1h_
 || _pk_gg_at_z_2h_
 || _bk_at_z_1h_
 || _bk_at_z_2h_
-|| _bk_at_z_3h_)
+|| _bk_at_z_3h_
+|| _bk_ttg_at_z_1h_
+|| _bk_ttg_at_z_2h_
+|| _bk_ttg_at_z_3h_
+)
 {
   r = integrand_redshift(log(1. + ptsz->z_for_pk_hm),params);
 }
@@ -7804,7 +7822,6 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 
   }
 
-
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_bk_at_z_2h){
   double r_m_b1t1;
   double r_m_b1t2;
@@ -7852,6 +7869,181 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
   }
 
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_bk_at_z_3h){
+  double r_m_b1t1;
+  double r_m_b2t1;
+
+
+  // r_m_11*r_m_21
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b1t1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_b1t1 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b2t1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b2min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias_b2];
+     r_m_b2t1 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+  int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
+  double k = ptsz->k_for_pk_hm[index_k];
+if (ptsz->check_consistency_conditions == 1){
+  // check consistency conditions:
+
+  double r_m_mean;
+  double r_mass;
+  double r_b1;
+  double r_b2;
+  // mass consistency
+  pvectsz[ptsz->index_part_id_cov_hsv] = 3;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_mean=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
+     r_m_mean += nmin_umin;
+  }
+  r_mass = r_m_mean;
+
+
+  // b1 consistency
+  pvectsz[ptsz->index_part_id_cov_hsv] = 4;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_mean=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_mean += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+  r_b1 = r_m_mean;
+
+
+  // b2 consistency
+  pvectsz[ptsz->index_part_id_cov_hsv] = 5;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_mean=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b2min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias_b2];
+     r_m_mean += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+  r_b2 = r_m_mean;
+  printf("hm consistency z = %.3e k = %.8e m = %.8e b1 = %.8e b2 %.8e\n",pvectsz[ptsz->index_z],k,r_mass,r_b1,1.-r_b2);
+}
+
+  double bh;
+  double pk;
+  double b0;
+  double f2;
+
+  // printf("result 3h = %.3e\n",result);
+  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  pk = pvectsz[ptsz->index_pk_for_halo_bias];
+  f2 = bispectrum_f2_kernel(k,k,k);
+  // b0 = (2.*pk*pk*f2)*r_m_b1t1*r_m_b1t1*r_m_b1t1;
+  // bh = 0.;//3.*pk*pk*r_m_b1t1*r_m_b1t1*r_m_b2t1;
+  // r  = (bh+b0);
+
+// r_m_b2t1 = 0.;
+  r = 3.*(2.*r_m_b1t1*r_m_b1t1*r_m_b1t1*f2+r_m_b1t1*r_m_b1t1*r_m_b2t1)*pk*pk;
+  double b_tree = get_matter_bispectrum_at_z_tree_level_PT(k,k,k,pvectsz[ptsz->index_z],ptsz,pba,pnl,ppm);
+  // printf("bispectrum fields z = %.3e k = %.8e <bu> = %.8e <b2u> = %.8e b_hm = %.8e b_tree = %.8e\n",pvectsz[ptsz->index_z],k,r_m_b1t1,r_m_b2t1,r,b_tree);
+
+  }
+
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_bk_ttg_at_z_2h){
+  double r_m_b1t1;
+  double r_m_b1t2;
+
+
+  // r_m_11*r_m_21
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b1t1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_b1t1 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_b1t2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_b1t2 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+  r = r_m_b1t1*r_m_b1t2;
+
+  }
+
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_bk_ttg_at_z_3h){
   double r_m_b1t1;
   double r_m_b2t1;
 
@@ -8649,10 +8841,12 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
 
 
           ptsz->array_mean_galaxy_number_density[index_z] = log(r);
+          // printf("ng = %.8e\n",r);
 
        }
  free(pvecback);
  free(pvectsz);
+ // exit(0);
 
 return _SUCCESS_;
     }
