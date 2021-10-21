@@ -1597,6 +1597,22 @@ cdef class Class:
         return cl
 
 
+    def bk_ttg_at_z_hm(self):
+        """
+        (class_sz) Return the 1-halo, 2-halo and 3-halo terms of 3d B(k) ttg bispectrum
+        """
+        cl = {}
+        cl['k'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['3h'] = []
+        for index in range(self.tsz.n_k_for_pk_hm):
+            cl['1h'].append(self.tsz.bk_ttg_at_z_1h[index])
+            cl['2h'].append(self.tsz.bk_ttg_at_z_2h[index])
+            cl['3h'].append(self.tsz.bk_ttg_at_z_3h[index])
+            cl['k'].append(self.tsz.k_for_pk_hm[index])
+        return cl
+
     def pk_gg_at_z_hm(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of 3d P(k) gg power spectrum
@@ -2210,6 +2226,9 @@ cdef class Class:
         return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)
     def get_matter_bispectrum_at_z_effective_approach_smoothed(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
         return get_matter_bispectrum_at_z_effective_approach_smoothed(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
+
+    def get_ttg_bispectrum_at_z_effective_approach(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
+        return get_ttg_bispectrum_at_z_effective_approach(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
 
     def get_matter_bispectrum_at_z_effective_approach(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
         return get_matter_bispectrum_at_z_effective_approach(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)

@@ -341,6 +341,7 @@ struct tszspectrum {
 
 
   int has_bk_at_z_hf;
+  int has_bk_ttg_at_z_hf;
 
   int has_mean_y;
   int index_md_mean_y;
@@ -1763,6 +1764,17 @@ double get_matter_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,
 
 double get_te_of_m500c_at_z_arnaud(double m, double z, struct background * pba,struct tszspectrum * ptsz);
 double get_te_of_m500c_at_z_lee(double m, double z, struct background * pba,struct tszspectrum * ptsz);
+
+
+double get_ttg_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
+                                                     double k2_in_h_over_Mpc,
+                                                     double k3_in_h_over_Mpc,
+                                                     double z,
+                                                     struct tszspectrum * ptsz,
+                                                     struct background * pba,
+                                                     struct nonlinear * pnl,
+                                                     struct primordial * ppm);
+
 
 double get_matter_bispectrum_at_z_effective_approach_smoothed(double k1_in_h_over_Mpc,
                                                      double k2_in_h_over_Mpc,

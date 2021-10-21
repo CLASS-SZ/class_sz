@@ -2126,6 +2126,7 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
+        ptsz->has_vrms2 = 1;
       }
 
       if ((strstr(string1,"bk_ttg_at_z_2h") != NULL) ) {
@@ -2136,6 +2137,7 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
+        ptsz->has_vrms2 = 1;
       }
 
       if ((strstr(string1,"bk_ttg_at_z_3h") != NULL) ) {
@@ -2146,6 +2148,7 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
+        ptsz->has_vrms2 = 1;
       }
 
 
@@ -2189,6 +2192,19 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
         ptsz->need_sigma = 1;
+      }
+
+      if ((strstr(string1,"bk_ttg_at_z_hf") != NULL) ) {
+        ptsz->has_bk_ttg_at_z_hf =_TRUE_;
+        ptsz->has_knl = _TRUE_;
+        ptsz->has_nl_index = _TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_sigma = 1;
+        ptsz->has_vrms2 = 1;
       }
 
       if ((strstr(string1,"vrms2") != NULL) ) {

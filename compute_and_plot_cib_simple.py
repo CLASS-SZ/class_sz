@@ -161,8 +161,9 @@ def run(args):
     # 'M500' is Tinker et al 2008 @ M500
     # 'T10' is Tinker et al 2010 @ m200_mean
 
-    p_dict['mass function'] = 'M500'
-    p_dict['concentration parameter'] = 'B13'
+    p_dict['mass function'] = 'T10'
+    p_dict['concentration parameter'] = 'D08'
+    p_dict['delta for cib'] = '200m'
     p_dict['hm_consistency'] = 0
     p_dict['damping_1h_term'] = 0
 
@@ -191,6 +192,9 @@ def run(args):
     p_dict['z_min'] = 0.07
     p_dict['z_max'] = 6. # fiducial for MM20 : 6
 
+    p_dict['freq_min'] = 10.
+    p_dict['freq_max'] = 5e4 # fiducial for MM20 : 6
+
     # HOD parameters for CIB
     p_dict['M_min_HOD'] = pow(10.,10)
     p_dict['M1_prime_HOD'] =pow(10.,12.51536196)*p_dict['h']
@@ -211,7 +215,7 @@ def run(args):
 
     # List of frequency bands for cib
     p_dict['cib_frequency_list_num'] = 1
-    p_dict['cib_frequency_list_in_GHz'] = '217'
+    p_dict['cib_frequency_list_in_GHz'] = '3000'
     # p_dict['cib_frequency_list_num'] = 5
     # p_dict['cib_frequency_list_in_GHz'] = '217,353,545,857,3000'
     p_dict["Frequency_id nu for cib in GHz (to save in file)"] = 0
@@ -232,7 +236,7 @@ def run(args):
     p_dict['mass_epsrel'] = 1e-4#1e-10
     # precision for Luminosity integral (sub-halo mass function)
     p_dict['L_sat_epsabs'] = 1e-40 #1.e-40
-    p_dict['L_sat_epsrel'] = 1e-2#1e-10
+    p_dict['L_sat_epsrel'] = 1e-3#1e-10
 
 
     p_dict['z_max_pk'] = p_dict['z_max']
@@ -249,10 +253,10 @@ def run(args):
     # p_dict['path_to_class'] = path_to_class
 
 
-    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_1h_217x217.txt')
+    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_1h_3000x3000.txt')
     ell_MM20 = L_ref[:,0]
     cl_cib_cib_1h_MM20 = L_ref[:,1]
-    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_2h_217x217.txt')
+    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_2h_3000x3000.txt')
     cl_cib_cib_2h_MM20 = L_ref[:,1]
 
 

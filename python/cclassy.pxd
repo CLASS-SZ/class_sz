@@ -311,6 +311,9 @@ cdef extern from "class.h":
         double * bk_at_z_1h
         double * bk_at_z_2h
         double * bk_at_z_3h
+        double * bk_ttg_at_z_1h
+        double * bk_ttg_at_z_2h
+        double * bk_ttg_at_z_3h
         double * k_for_pk_hm
         double * pk_gg_at_z_1h
         double * pk_gg_at_z_2h
@@ -720,6 +723,15 @@ cdef extern from "class.h":
 
 
     double get_matter_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,
+                                                         double k2_in_h_over_Mpc,
+                                                         double k3_in_h_over_Mpc,
+                                                         double z,
+                                                         void * ptsz,
+                                                         void * pba,
+                                                         void * pnl,
+                                                         void * ppm)
+
+    double get_ttg_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
                                                          double k2_in_h_over_Mpc,
                                                          double k3_in_h_over_Mpc,
                                                          double z,
