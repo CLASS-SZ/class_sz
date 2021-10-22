@@ -3232,10 +3232,26 @@ return result;
 
 
 
-double get_gas_density_profile_at_l_M_z(double l_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
+double get_gas_density_profile_at_k_M_z(double l_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
   double l = log(l_asked);
+
+   if (z<ptsz->array_profile_ln_1pz[0])
+    z = ptsz->array_profile_ln_1pz[0];
+ if (z>ptsz->array_profile_ln_1pz[ptsz->n_z_density_profile-1])
+    z = ptsz->array_profile_ln_1pz[ptsz->n_z_density_profile-1];
+
+ if (m<ptsz->array_profile_ln_m[0])
+    m = ptsz->array_profile_ln_m[0];
+ if (m>ptsz->array_profile_ln_m[ptsz->n_m_density_profile-1])
+    m =  ptsz->array_profile_ln_m[ptsz->n_m_density_profile-1];
+
+if (l<ptsz->array_profile_ln_l[0])
+    l = ptsz->array_profile_ln_l[0];
+ if (l>ptsz->array_profile_ln_l[ptsz->n_ell_density_profile-1])
+    l =  ptsz->array_profile_ln_l[ptsz->n_ell_density_profile-1];
+
 
 
   // if (ptsz->tau_profile == 1){
@@ -3249,28 +3265,35 @@ double get_gas_density_profile_at_l_M_z(double l_asked, double m_asked, double z
 
   // interpolate 2d at l_low:
 
- double ln_rho_low = pwl_interp_2d(n_m,
+ double ln_rho_low = pwl_interp_2d(
                                 n_z,
-                                ptsz->array_profile_ln_m,
+                                n_m,
+
                                 ptsz->array_profile_ln_1pz,
+                                ptsz->array_profile_ln_m,
                                 ptsz->array_profile_ln_rho_at_lnl_lnM_z[id_l_low-1],
                                 1,
-                                &m,
-                                &z);
+                                &z,
+                                &m);
 
- double ln_rho_up = pwl_interp_2d(n_m,
+ double ln_rho_up = pwl_interp_2d(
                                 n_z,
-                                ptsz->array_profile_ln_m,
+                                n_m,
                                 ptsz->array_profile_ln_1pz,
+                                ptsz->array_profile_ln_m,
                                 ptsz->array_profile_ln_rho_at_lnl_lnM_z[id_l_up-1],
                                 1,
-                                &m,
-                                &z);
+                                &z,
+                                &m);
  double ln_l_low = ptsz->array_profile_ln_l[id_l_low-1];
  double ln_l_up = ptsz->array_profile_ln_l[id_l_up-1];
 
-
- return ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low);
+ double result = exp(ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
+ if (isnan(result) || isinf(result)){
+ printf("z %.8e m %.8e l %.8e\n",z_asked,m_asked,l_asked);
+ exit(0);
+}
+ return result;
 
 
 }
@@ -3280,7 +3303,6 @@ double get_gas_density_profile_at_l_M_z(double l_asked, double m_asked, double z
 
 // Tabulate 2D Fourier transform of density profile on a [z - ln_M - ln_ell] grid
 // this is the tau profile for kSZ
-// here we adopt m200c !
 int tabulate_gas_density_profile(struct background * pba,
                              struct tszspectrum * ptsz){
 
@@ -3318,8 +3340,8 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 
 
  // array of redshifts:
- double ln_1pz_min = log(1.+ptsz->z1SZ);
- double ln_1pz_max = log(1.+ptsz->z2SZ);
+ double ln_1pz_min = log(1.+1e-8);
+ double ln_1pz_max = log(1.+6.);
 
 
  class_alloc(ptsz->array_profile_ln_1pz,sizeof(double *)*n_z,ptsz->error_message);
@@ -3371,7 +3393,7 @@ for (index_z=0;
      index_z<n_z;
      index_z++)
 {
-  ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = 1e-100; // initialize with super small number
+  ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = log(1e-100); // initialize with super small number
   index_m_z += 1;
 }
 
@@ -3427,12 +3449,13 @@ for (index_pvectsz=0;
        pvectsz[index_pvectsz] = 0.; // set everything to 0.
      }
 index_m_z = 0;
-for (index_z=0;
-     index_z<n_z;
-     index_z++){
 for (index_m=0;
      index_m<n_m;
      index_m++){
+for (index_z=0;
+     index_z<n_z;
+     index_z++){
+
 
 
 
@@ -3518,35 +3541,61 @@ for (index_m=0;
 
 }
 else if (ptsz->tau_profile == 0){ // truncated nfw profile
+   //
+   // pvectsz[ptsz->index_m200c] = exp(lnM);
+   // pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+   // pvectsz[ptsz->index_c200c] = get_c200c_at_m_and_z(pvectsz[ptsz->index_m200c],z,pba,ptsz);
+   //
+   // double r_delta = pvectsz[ptsz->index_r200c];
+   // double c_delta = pvectsz[ptsz->index_c200c];
+   // double m_delta = pvectsz[ptsz->index_m200c];
 
-   pvectsz[ptsz->index_m200c] = exp(lnM);
-   pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
-   pvectsz[ptsz->index_c200c] = get_c200c_at_m_and_z(pvectsz[ptsz->index_m200c],z,pba,ptsz);
-   // set 1 for matter_type = tau
+   double r_delta;// = pvectsz[ptsz->index_radius_for_electron_density];
+   double c_delta;// = pvectsz[ptsz->index_concentration_for_electron_density];
+   double m_delta;// = pvectsz[ptsz->index_mass_for_electron_density];
+   // printf("de = %d\n",ptsz->delta_def_electron_density);
+   // exit(0);
+
+  if (ptsz->delta_def_electron_density == 0){
+    m_delta = exp(lnM);
+    r_delta = pow(3.*m_delta/(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]*pvectsz[ptsz->index_Rho_crit]),1./3.);
+    c_delta = get_c200m_at_m_and_z(m_delta,z,pba,ptsz);
+  }
+  else if (ptsz->delta_def_electron_density == 1){
+    m_delta = exp(lnM);
+    r_delta = pow(3.*m_delta/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+    c_delta = get_c200c_at_m_and_z(m_delta,z,pba,ptsz);
+  }
+  else if (ptsz->delta_def_electron_density == 2){
+    m_delta = exp(lnM);
+    r_delta = pow(3.*m_delta/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+    c_delta = get_c500c_at_m_and_z(m_delta,z,pba,ptsz);
+  }
    double xout = 1.;//ptsz->x_out_truncated_nfw_profile;
-   double r_delta = pvectsz[ptsz->index_r200c];
-   double c_delta = pvectsz[ptsz->index_c200c];
-   double m_delta = pvectsz[ptsz->index_m200c];
 
-   // double r_delta = pvectsz[ptsz->index_radius_for_electron_density];
-   // double c_delta = pvectsz[ptsz->index_concentration_for_electron_density];
-   // double m_delta = pvectsz[ptsz->index_mass_for_electron_density];
-   pvectsz[ptsz->index_rs] = r_delta/c_delta;
 
-  pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile];
-  double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
+
+   // pvectsz[ptsz->index_rs] = r_delta/c_delta;
+
+  // pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile];
+  // double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
   double chi = sqrt(pvectsz[ptsz->index_chi2]);
-  double k = (l+0.5)/chi;
+  double k = ell;
    result =  evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
-   result *= m_delta/(4.*_PI_*pow(pvectsz[ptsz->index_rs],3));
+   //result *= 1.;//m_delta;///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3));
    double f_b = pba->Omega0_b/ptsz->Omega_m_0;
-   result *= f_b;
+   result *= f_b*m_delta;//*pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,-1);
 
-   double tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_rs],3);
-   result *= tau_normalisation;
+    if (isnan(result) || isinf(result)){
+    printf("z %.8e rt %.8e ct %.8e mt %.8e\n",pvectsz[ptsz->index_z],r_delta,c_delta,m_delta);
+    exit(0);
+  }
+   // double tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_rs],3);
+   // result *= tau_normalisation;
  }
 
-  ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = result;
+  ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = log(result);
+  // printf("l = %.8e m = %.8e z = %.8e lnrho = %.8e\n",ell,exp(lnM),z,log(result));
 
   index_m_z += 1;
      }
@@ -8268,12 +8317,26 @@ if (ptsz->check_consistency_conditions == 1){
   double f2_231 = bispectrum_f2_kernel(k2,k3,k1);
   double f2_312 = bispectrum_f2_kernel(k3,k1,k2);
 
+  // r_m_b1g3 = 1.;
+  //
+  // r_m_b2g3 = 0.;
+  // r_m_b2t2 = 0.;
+  // r_m_b2t1 = 0.;
+  double z = pvectsz[ptsz->index_z];
+
+
+
+
   r = 2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_123*pk1*pk2
      +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_312*pk3*pk1
      +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_231*pk2*pk3
      +r_m_b1t1*r_m_b1t2*r_m_b2g3*pk1*pk2
      +r_m_b1t1*r_m_b2t2*r_m_b1g3*pk3*pk1
      +r_m_b2t1*r_m_b1t2*r_m_b1g3*pk2*pk3;
+
+// double z = pvectsz[ptsz->index_z];
+// double r_effective = get_ttg_bispectrum_at_z_tree_level_PT(k,k,k,z,ptsz,pba,pnl,ppm);
+// printf("bispectrum z = %.3e k = %.8e r_m_b1g3 %.8e b_hm = %.8e b_tree = %.8e\n",z,k,r_m_b1g3,r,r_effective);
 
   }
 
@@ -8793,6 +8856,85 @@ return _SUCCESS_;
 
 
 
+struct Parameters_for_integrand_mean_galaxy_bias{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+};
+
+
+
+double integrand_mean_galaxy_bias(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_mean_galaxy_bias *V = ((struct Parameters_for_integrand_mean_galaxy_bias *) p);
+
+    double M_halo = exp(lnM_halo);
+
+    double z = V->z;
+
+
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+
+      V->pvectsz[V->ptsz->index_has_galaxy] = 1;
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];
+
+      double M_min;
+      double M0;
+      double M1_prime;
+      double sigma_log10M;
+      double nc,ns;
+
+      M_min = V->ptsz->M_min_HOD;
+      M0 = V->ptsz->M0_HOD;
+      M1_prime = V->ptsz->M1_prime_HOD;
+      sigma_log10M = V->ptsz->sigma_log10M_HOD;
+      // }
+      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz,V->pba);
+      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],nc,M0,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      double result = hmf*V->pvectsz[V->ptsz->index_halo_bias]*(ns+nc);
+
+  return result;
+
+}
+
 
 
 struct Parameters_for_integrand_mean_galaxy_number{
@@ -8955,6 +9097,95 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
 
 return _SUCCESS_;
     }
+
+
+
+int tabulate_mean_galaxy_bias(struct background * pba,
+                                        struct nonlinear * pnl,
+                                        struct primordial * ppm,
+                                        struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_mean_galaxy_bias,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+
+int index_z;
+double r;
+double m_min,m_max;
+
+// here we should always integrate over the full mass range,
+// since this is a normalization term
+
+if (ptsz->hm_consistency == 0){
+  m_min = 1e10; // this has to be the same as the minimal mass at whch the counter terms are tabulated
+  m_max = 1e16; // this has to be the same as the maximal mass at whch the counter terms are tabulated
+}
+else{
+m_min = ptsz->M1SZ;
+m_max = ptsz->M2SZ;
+}
+
+double * pvecback;
+double * pvectsz;
+
+
+ class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+ // printf("tabulating dndlnM quantities0\n");
+
+for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
+        {
+          double z = exp(ptsz->array_redshift[index_z])-1.;
+
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_mean_galaxy_number V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+
+          void * params = &V;
+          double epsrel=ptsz->mass_epsrel;
+          double epsabs=ptsz->mass_epsabs;
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_mean_galaxy_bias,
+                                               params,ptsz->patterson_show_neval);
+
+        // here we always impose the consistency condition.
+        // add counter terms:
+         // double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+         // double I0 = integrand_mean_galaxy_number(log(m_min),params);
+         // double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
+         // r += nmin_umin;
+         double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+         double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+         double I0 = integrand_mean_galaxy_bias(log(ptsz->m_min_counter_terms),params);
+         double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+         r += bmin_umin;
+
+
+
+          ptsz->array_mean_galaxy_bias[index_z] = log(r/evaluate_mean_galaxy_number_density_at_z(z,ptsz));
+          // printf("ng = %.8e\n",r);
+
+       }
+ free(pvecback);
+ free(pvectsz);
+ // exit(0);
+
+return _SUCCESS_;
+    }
+
+
 
 
 struct Parameters_for_integrand_hmf_counter_terms_b1min{

@@ -744,6 +744,7 @@ struct tszspectrum {
 
   int index_phi_galaxy_counts;
   int index_mean_galaxy_number_density;
+  int index_mean_galaxy_bias;
   int index_c500c;
   int index_multipole_for_galaxy_profile;
   int index_multipole_for_truncated_nfw_profile;
@@ -1330,6 +1331,7 @@ double * steps_m;
   double * array_sigma2_hsv_at_z;
 
   double * array_mean_galaxy_number_density;
+  double * array_mean_galaxy_bias;
 
   // int n_z_hmf_counter_terms;
   int hm_consistency_counter_terms_done;
@@ -1591,6 +1593,9 @@ int tabulate_pressure_profile_B12(struct background * pba,
 
 double evaluate_mean_galaxy_number_density_at_z(double z,
                                              struct tszspectrum * ptsz);
+double get_mean_galaxy_bias_at_z(double z,
+                                 struct tszspectrum * ptsz);
+
 
 double HOD_mean_number_of_central_galaxies(double z,
                                            double M_halo,
@@ -1774,7 +1779,14 @@ double get_ttg_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
                                                      struct background * pba,
                                                      struct nonlinear * pnl,
                                                      struct primordial * ppm);
-
+double get_ttg_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,
+                                                     double k2_in_h_over_Mpc,
+                                                     double k3_in_h_over_Mpc,
+                                                     double z,
+                                                     struct tszspectrum * ptsz,
+                                                     struct background * pba,
+                                                     struct nonlinear * pnl,
+                                                     struct primordial * ppm);
 
 double get_matter_bispectrum_at_z_effective_approach_smoothed(double k1_in_h_over_Mpc,
                                                      double k2_in_h_over_Mpc,

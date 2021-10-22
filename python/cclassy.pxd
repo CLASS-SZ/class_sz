@@ -654,7 +654,7 @@ cdef extern from "class.h":
                                          double m_asked,
                                          void * tsz)
 
-    double get_gas_density_profile_at_l_M_z(double l_asked,
+    double get_gas_density_profile_at_k_M_z(double l_asked,
                                         double m_asked,
                                         double z_asked,
                                         void * tsz)

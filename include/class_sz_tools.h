@@ -494,12 +494,18 @@ int tabulate_dndlnM(struct background * pba,
 
 int bispectrum_condition(double ell_1, double ell_2, double ell_3);
 
+int tabulate_mean_galaxy_bias(struct background * pba,
+                                        struct nonlinear * pnl,
+                                        struct primordial * ppm,
+                                        struct tszspectrum * ptsz);
+
+
 int tabulate_mean_galaxy_number_density(struct background * pba,
                                         struct nonlinear * pnl,
                                         struct primordial * ppm,
                                         struct tszspectrum * ptsz);
 
-double get_gas_density_profile_at_l_M_z(double l_asked,
+double get_gas_density_profile_at_k_M_z(double l_asked,
                                     double m_asked,
                                     double z_asked,
                                     struct tszspectrum * ptsz);
