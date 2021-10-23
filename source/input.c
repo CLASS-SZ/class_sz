@@ -2308,7 +2308,9 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->has_knl = _TRUE_;
         ptsz->has_nl_index = _TRUE_;
-        ptsz->need_sigma = 1; // need sigma at R,z
+        ptsz->need_hmf = 1; // need sigma at R,z
+        ptsz->has_galaxy = _TRUE_;
+
 
       }
 
@@ -5764,7 +5766,7 @@ int input_default_params(
   ptsz->has_200c = 0;
 
 
-  ptsz->HMF_prescription_NCDM=2; //no-pres
+  ptsz->HMF_prescription_NCDM=1; //no-pres
 
 
   pcsz->size_logM = 100;

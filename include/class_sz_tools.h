@@ -536,7 +536,7 @@ int tabulate_psi_b1g(struct background * pba,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
-double get_psi_b1g_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
+double get_psi_b1g_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
 
 
 int tabulate_psi_b2g(struct background * pba,
@@ -544,14 +544,14 @@ int tabulate_psi_b2g(struct background * pba,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
-double get_psi_b2g_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
+double get_psi_b2g_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
 
 int tabulate_psi_b2t(struct background * pba,
                     struct nonlinear * pnl,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
-double get_psi_b2t_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
+double get_psi_b2t_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
 
 
 
@@ -560,7 +560,7 @@ int tabulate_psi_b1t(struct background * pba,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
-double get_psi_b1t_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
+double get_psi_b1t_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
 
 
 int tabulate_psi_b1gt(struct background * pba,
@@ -568,7 +568,7 @@ int tabulate_psi_b1gt(struct background * pba,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
-double get_psi_b1gt_at_l1_l2_and_z(double l1_asked, double l2_asked, double z_asked, struct tszspectrum * ptsz);
+double get_psi_b1gt_at_k1_k2_and_z(double l1_asked, double l2_asked, double z_asked, struct tszspectrum * ptsz);
 
 
 

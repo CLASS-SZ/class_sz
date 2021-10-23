@@ -3238,19 +3238,19 @@ double get_gas_density_profile_at_k_M_z(double l_asked, double m_asked, double z
   double l = log(l_asked);
 
    if (z<ptsz->array_profile_ln_1pz[0])
-    z = ptsz->array_profile_ln_1pz[0];
+    return 0.;//z = ptsz->array_profile_ln_1pz[0];
  if (z>ptsz->array_profile_ln_1pz[ptsz->n_z_density_profile-1])
-    z = ptsz->array_profile_ln_1pz[ptsz->n_z_density_profile-1];
+    return 0.;//z = ptsz->array_profile_ln_1pz[ptsz->n_z_density_profile-1];
 
  if (m<ptsz->array_profile_ln_m[0])
-    m = ptsz->array_profile_ln_m[0];
+    return 0.;//m = ptsz->array_profile_ln_m[0];
  if (m>ptsz->array_profile_ln_m[ptsz->n_m_density_profile-1])
-    m =  ptsz->array_profile_ln_m[ptsz->n_m_density_profile-1];
+    return 0.;//m =  ptsz->array_profile_ln_m[ptsz->n_m_density_profile-1];
 
 if (l<ptsz->array_profile_ln_l[0])
-    l = ptsz->array_profile_ln_l[0];
+    return 0.;//l = ptsz->array_profile_ln_l[0];
  if (l>ptsz->array_profile_ln_l[ptsz->n_ell_density_profile-1])
-    l =  ptsz->array_profile_ln_l[ptsz->n_ell_density_profile-1];
+    return 0.;//l =  ptsz->array_profile_ln_l[ptsz->n_ell_density_profile-1];
 
 
 
@@ -4928,7 +4928,7 @@ if (ptsz->sz_verbose>=1){
   for (index_x=0; index_x<ptsz->normalized_dndz_size; index_x++) {
     ptsz->normalized_dndz_z[index_x] = lnx[index_x];
     ptsz->normalized_dndz_phig[index_x] = lnI[index_x];
-    //print("z=%.3e phig=%.3e\n",ptsz->normalized_dndz_z[index_x])
+    // printf("z=%.3e phig=%.3e\n",ptsz->normalized_dndz_z[index_x],ptsz->normalized_dndz_z[index_x]);
   };
 
   /** Release the memory used locally */
@@ -6241,92 +6241,242 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   double k2 = (l2+0.5)/d_A;
   double k3 = (l3+0.5)/d_A;
 
-  // printf("k1 = %.3e k2 = %.3e k3 = %3.e\n",k1,k2,k3);
-
-
-  V->pvectsz[V->ptsz->index_multipole_for_pk] = l1; // l1,l2 or l3
-  evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-  double pk1 = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-
-  V->pvectsz[V->ptsz->index_multipole_for_pk] = l2; // l1,l2 or l3
-  evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-  double pk2 = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-
-  V->pvectsz[V->ptsz->index_multipole_for_pk] = l3; // l1,l2 or l3
-  evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-  double pk3 = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-
-  // printf("pk1 = %.3e pk2 = %.3e pk3 = %3.e\n",pk1,pk2,pk3);
-
-
-  double z_asked = log(1.+z);
-  double R_asked = log(8./V->pba->h); //log(R) in Mpc
-  double sigma8_at_z =  exp(pwl_interp_2d(
-                             V->ptsz->n_arraySZ,
-                             V->ptsz->ndimSZ,
-                             V->ptsz->array_redshift,
-                             V->ptsz->array_radius,
-                             V->ptsz->array_sigma_at_z_and_R,
-                             1,
-                             &z_asked,
-                             &R_asked));
-
-  double knl = get_knl_at_z(z,V->ptsz);
-
-  double n1 = get_nl_index_at_z_and_k(z,k1,V->ptsz,V->pnl);
-  double n2 = get_nl_index_at_z_and_k(z,k2,V->ptsz,V->pnl);
-  double n3 = get_nl_index_at_z_and_k(z,k3,V->ptsz,V->pnl);
-
-  // printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",n1,n2,n3);
-  // printf("sigma8_at_z = %.3e \t knl = %.3e\n",sigma8_at_z,knl);
-
-  double f2_eff_12 =  bispectrum_f2_kernel_eff(k1,k2,k3,n1,n2,sigma8_at_z,knl);
-  double f2_eff_23 =  bispectrum_f2_kernel_eff(k2,k3,k1,n2,n3,sigma8_at_z,knl);
-  double f2_eff_31 =  bispectrum_f2_kernel_eff(k3,k1,k2,n3,n1,sigma8_at_z,knl);
-  // printf("f2_eff_12 = %.3e \t f2_eff_23 = %.3e \t f2_eff_31 = %.3e\n",
-  // f2_eff_12,
-  // f2_eff_23,
-  // f2_eff_31);
-
-  double b123 = 2.*pk1*pk2*f2_eff_12 + 2.*pk2*pk3*f2_eff_23 + 2.*pk3*pk1*f2_eff_31;
-
-
-  double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
-  double galaxy_normalisation = 1.;//H_over_c_in_h_over_Mpc; // here is normally also the bias but we take it out and multiply afterward
-  //galaxy_normalisation *= pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.);///(1.+z);
-  double sigmaT_over_mp = 8.305907197761162e-17 * pow(V->pba->h,2)/V->pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
-  double a = 1. / (1. + z);
-  double tau_fac = a*sigmaT_over_mp*V->pba->Omega0_b/V->ptsz->Omega_m_0/V->ptsz->mu_e*V->ptsz->f_free;
-  double tau_normalisation =tau_fac
-                            *pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.)
-                            *V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
-                            // note: Omega_m*Rho_crit = rho_m(z)
-
-  // simone ferraro's reio implementation:
-  // double ya = pow(1./a,1.5);//**1.5
-  // double zre = 10.3 ;    // # reionization  redshift
-  // double are = 1. / (1 + zre);
-  // double yre = pow(1./are,1.5);//**1.5
-  // double deltay = 7.56;
-  // double xe = (0.5*(1.-tanh((ya-yre)/deltay)));
-  // tau_normalisation *= pow(1. + z,3) * xe;
-
-  result = tau_normalisation*tau_normalisation*galaxy_normalisation*b123;
+//   double pk1,pk2,pk3;
+//
+//   // printf("k1 = %.3e k2 = %.3e k3 = %3.e\n",k1,k2,k3);
+//
+//
+//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l1; // l1,l2 or l3
+//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
+//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+//   double pk1_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+//
+//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l2; // l1,l2 or l3
+//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
+//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+//   double pk2_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+//
+//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l3; // l1,l2 or l3
+//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
+//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+//   double pk3_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+// //
+// // double * pk_ic2 = NULL;
+// // pk1 = 0.;
+// // nonlinear_pk_at_k_and_z(
+// //                                     V->pba,
+// //                                     V->ppm,
+// //                                     V->pnl,
+// //                                     pk_nonlinear,
+// //                                     k1*V->pba->h,
+// //                                     z,
+// //                                     V->pnl->index_pk_m,
+// //                                     &pk1, // number *out_pk_l
+// //                                     pk_ic2 // array out_pk_ic_l[index_ic_ic]
+// //                                   );
+// // // //now compute P(k) in units of h^-3 Mpc^3
+// // pk1 *= pow(V->pba->h,3.);
+// // pk1_c = pk1;
+// // // double pk2;
+// // //Input: wavenumber in 1/Mpc
+// // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+// // printf("pk1=%.3e  %.3e\n",pk1,pk1_c);
+// // class_call(nonlinear_pk_at_k_and_z(
+// //                                     V->pba,
+// //                                     V->ppm,
+// //                                     V->pnl,
+// //                                     pk_nonlinear,
+// //                                     k2*V->pba->h,
+// //                                     z,
+// //                                     V->pnl->index_pk_m,
+// //                                     &pk2, // number *out_pk_l
+// //                                     pk_ic // array out_pk_ic_l[index_ic_ic]
+// //                                   ),
+// //                                   V->pnl->error_message,
+// //                                   V->pnl->error_message);
+// // //now compute P(k) in units of h^-3 Mpc^3
+// // pk2 *= pow(V->pba->h,3.);
+// // // double pk3;
+// // //Input: wavenumber in 1/Mpc
+// // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+// // // printf("z=%.3e\n",z);
+// // class_call(nonlinear_pk_at_k_and_z(
+// //                                     V->pba,
+// //                                     V->ppm,
+// //                                     V->pnl,
+// //                                     pk_nonlinear,
+// //                                     k3*V->pba->h,
+// //                                     z,
+// //                                     V->pnl->index_pk_m,
+// //                                     &pk3, // number *out_pk_l
+// //                                     pk_ic // array out_pk_ic_l[index_ic_ic]
+// //                                   ),
+// //                                   V->pnl->error_message,
+// //                                   V->pnl->error_message);
+// // //now compute P(k) in units of h^-3 Mpc^3
+// // pk3 *= pow(V->pba->h,3.);
+//
+//
+//   // printf("pk1 = %.3e pk2 = %.3e pk3 = %3.e\n",pk1,pk2,pk3);
+//
+//
+//   double z_asked = log(1.+z);
+//   double R_asked = log(8./V->pba->h); //log(R) in Mpc
+//   double sigma8_at_z =  exp(pwl_interp_2d(
+//                              V->ptsz->n_arraySZ,
+//                              V->ptsz->ndimSZ,
+//                              V->ptsz->array_redshift,
+//                              V->ptsz->array_radius,
+//                              V->ptsz->array_sigma_at_z_and_R,
+//                              1,
+//                              &z_asked,
+//                              &R_asked));
+//
+//   double knl = get_knl_at_z(z,V->ptsz);
+//
+//   double n1 = get_nl_index_at_z_and_k(z,k1,V->ptsz,V->pnl);
+//   double n2 = get_nl_index_at_z_and_k(z,k2,V->ptsz,V->pnl);
+//   double n3 = get_nl_index_at_z_and_k(z,k3,V->ptsz,V->pnl);
+//
+//   // printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",n1,n2,n3);
+//   // printf("sigma8_at_z = %.3e \t knl = %.3e\n",sigma8_at_z,knl);
+//
+//   double f2_eff_12 =  bispectrum_f2_kernel_eff(k1,k2,k3,n1,n2,sigma8_at_z,knl);
+//   double f2_eff_23 =  bispectrum_f2_kernel_eff(k2,k3,k1,n2,n3,sigma8_at_z,knl);
+//   double f2_eff_31 =  bispectrum_f2_kernel_eff(k3,k1,k2,n3,n1,sigma8_at_z,knl);
+//   // printf("f2_eff_12 = %.3e \t f2_eff_23 = %.3e \t f2_eff_31 = %.3e\n",
+//   // f2_eff_12,
+//   // f2_eff_23,
+//   // f2_eff_31);
+//
+//   double b123 = 2.*pk1_c*pk2_c*f2_eff_12 + 2.*pk2_c*pk3_c*f2_eff_23 + 2.*pk3_c*pk1_c*f2_eff_31;
+//
+//
+//   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
+//   double galaxy_normalisation = 1.;//H_over_c_in_h_over_Mpc; // here is normally also the bias but we take it out and multiply afterward
+//   //galaxy_normalisation *= pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.);///(1.+z);
+//   double sigmaT_over_mp = 8.305907197761162e-17 * pow(V->pba->h,2)/V->pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
+//   double a = 1. / (1. + z);
+//   double tau_fac = a*sigmaT_over_mp*V->pba->Omega0_b/V->ptsz->Omega_m_0/V->ptsz->mu_e*V->ptsz->f_free;
+//   double tau_normalisation =tau_fac
+//                             *pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.)
+//                             *V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
+//                             // note: Omega_m*Rho_crit = rho_m(z)
+//
+//   // simone ferraro's reio implementation:
+//   // double ya = pow(1./a,1.5);//**1.5
+//   // double zre = 10.3 ;    // # reionization  redshift
+//   // double are = 1. / (1 + zre);
+//   // double yre = pow(1./are,1.5);//**1.5
+//   // double deltay = 7.56;
+//   // double xe = (0.5*(1.-tanh((ya-yre)/deltay)));
+//   // tau_normalisation *= pow(1. + z,3) * xe;
+//   double vrms2 = 1.;//get_vrms2_at_z(z,V->ptsz);
+//   double result_c = vrms2*tau_normalisation*tau_normalisation*galaxy_normalisation*b123;
+  // double result_calc;
+  // printf("okkk\n");
+  double result_ev = 0.;
+  class_call(evaluate_ttg_bispectrum_at_z_effective_approach(&result_ev,k1,k2,k3,z,V->ptsz,V->pba,V->pnl,V->ppm),
+  V->ptsz->error_message,
+  V->ptsz->error_message);
+  // class_call(evaluate_ttg_bispectrum_at_z_tree_level_PT(&result_ev,k1,k2,k3,z,V->ptsz,V->pba,V->pnl,V->ppm),
+  // V->ptsz->error_message,
+  // V->ptsz->error_message);
+  result = result_ev;//get_ttg_bispectrum_at_z_effective_approach(k1,k2,k3,z,V->ptsz,V->pba,V->pnl,V->ppm);
+  // printf("z = %.8e result = %.8e result_calc = %.8e\n",z,result,result_calc);
   // printf("result = %.3e tau_norm = %.3e gal_norm = %.3e b123 = %.3e\n",
   // result,
   // tau_normalisation,
   // galaxy_normalisation,
   // b123);
 
-  if (isnan(b123) || isinf(b123) || result == 0.){
-    // result = 1.e-300;
-  printf("z = %.3e b123 = %.3e\n",z,b123);
-  printf("k1 = %.3e k2 = %.3e k3 = %.3e\n",k1,k2,k3);
-  printf("l1 = %.3e l2 = %.3e l3 = %.3e\n",l1,l2,l3);
-  printf("pk1 = %.3e pk2 = %.3e pk3 = %.3e\n",pk1,pk2,pk3);
-  printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",n1,n2,n3);
-  printf("\n\n");
-}
+//
+//   if (isnan(result) || isinf(result) || result == 0.){
+//     // result = 1.e-300;
+//   // printf("z = %.3e b123 = %.3e\n",z,b123);
+//   printf("some problems @ k1 = %.8e k2 = %.8e k3 = %.8e\n",k1,k2,k3);
+//
+// double * pk_ic = NULL;
+// pk1 = 0.;
+// nonlinear_pk_at_k_and_z(
+//                                     V->pba,
+//                                     V->ppm,
+//                                     V->pnl,
+//                                     pk_nonlinear,
+//                                     k1*V->pba->h,
+//                                     z,
+//                                     V->pnl->index_pk_m,
+//                                     &pk1, // number *out_pk_l
+//                                     pk_ic // array out_pk_ic_l[index_ic_ic]
+//                                   );
+// // //now compute P(k) in units of h^-3 Mpc^3
+// pk1 *= pow(V->pba->h,3.);
+// printf("here with some problems @ pk1 = %.8e\n",pk1);
+// // pk1_c = pk1;
+// // double pk2;
+// //Input: wavenumber in 1/Mpc
+// //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+// // printf("pk1=%.3e  %.3e\n",pk1,pk1_c);
+// nonlinear_pk_at_k_and_z(
+//                                     V->pba,
+//                                     V->ppm,
+//                                     V->pnl,
+//                                     pk_nonlinear,
+//                                     k2*V->pba->h,
+//                                     z,
+//                                     V->pnl->index_pk_m,
+//                                     &pk2, // number *out_pk_l
+//                                     pk_ic // array out_pk_ic_l[index_ic_ic]
+//                                   );
+// //now compute P(k) in units of h^-3 Mpc^3
+// pk2 *= pow(V->pba->h,3.);
+// printf("here with some problems @ pk2 = %.8e\n",pk2);
+// // double pk3;
+// //Input: wavenumber in 1/Mpc
+// //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+// // printf("z=%.3e\n",z);
+// nonlinear_pk_at_k_and_z(
+//                                     V->pba,
+//                                     V->ppm,
+//                                     V->pnl,
+//                                     pk_nonlinear,
+//                                     k3*V->pba->h,
+//                                     z,
+//                                     V->pnl->index_pk_m,
+//                                     &pk3, // number *out_pk_l
+//                                     pk_ic // array out_pk_ic_l[index_ic_ic]
+//                                   );
+//
+// //now compute P(k) in units of h^-3 Mpc^3
+// pk3 *= pow(V->pba->h,3.);
+// printf("here with some problems @ pk3 = %.8e\n",pk3);
+//
+//
+//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l1; // l1,l2 or l3
+//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
+//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+//   pk1_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+//
+//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l2; // l1,l2 or l3
+//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
+//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+//   pk2_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+//
+//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l3; // l1,l2 or l3
+//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
+//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+//   pk3_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+//
+//
+//   printf("k1 = %.3e k2 = %.3e k3 = %.3e b123 = %.3e res = %.3e ttg = %.3e pk1 = %.3e %.3e pk2 = %.3e %.3e pk3 = %.3e %.3e\n",k1,k2,k3,result_c,
+//   result,0.,//get_ttg_bispectrum_at_z_effective_approach(k1,k2,k3,z,V->ptsz,V->pba,V->pnl,V->ppm),
+// pk1,pk1_c,pk2,pk2_c,pk3,pk3_c);
+//   // printf("l1 = %.3e l2 = %.3e l3 = %.3e\n",l1,l2,l3);
+//   // printf("pk1 = %.3e pk2 = %.3e pk3 = %.3e\n",pk1,pk2,pk3);
+//   // printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",n1,n2,n3);
+//   // printf("\n\n");
+//   exit(0);
+// }
 
 
   }
@@ -6643,7 +6793,7 @@ if ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kS
  || (V->ptsz->has_kSZ_kSZ_gal_3h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h_fft)
  || (V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h)
  || (V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h)
- || (V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf)
+ // || (V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf)
  || (V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo)){
   // printf("evaluating vrms2\n");
   evaluate_vrms2(V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
@@ -6823,7 +6973,7 @@ double integrand_patterson_test(double logM, void *p){
 //                               ptsz);
 
 
-
+  double chi = sqrt(pvectsz[ptsz->index_chi2]);
   double epsrel=ptsz->mass_epsrel;
   double epsabs=ptsz->mass_epsabs;
 
@@ -7469,9 +7619,10 @@ double integrand_patterson_test(double logM, void *p){
 
   int index_l_3 = (int) pvectsz[ptsz->index_multipole];
   double l3 = ptsz->ell[index_l_3];
-  pvectsz[ptsz->index_multipole_for_pk] = l3;
-  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
-  double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
+  // pvectsz[ptsz->index_multipole_for_pk] = l3;
+  // evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  // double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
+  double pk3 = get_pk_lin_at_k_and_z((l3+0.5)/chi,z,pba,ppm,pnl,ptsz);
 
 
 
@@ -7496,7 +7647,7 @@ double integrand_patterson_test(double logM, void *p){
   }
 
 
-  r_m_21 = pk3*get_psi_b1g_at_l_and_z(l3,z,ptsz);
+  r_m_21 = pk3*get_psi_b1g_at_k_and_z((l3+0.5)/chi,z,ptsz);
 
   // printf("%.5e %.5e\n",r_m_11,r_m_21);
 
@@ -7510,7 +7661,7 @@ double integrand_patterson_test(double logM, void *p){
   /// set-up:
 
 double l_min = 1e-2;
-double l_max = 2e4; // this is a precision parameter
+double l_max = 2e5; // this is a precision parameter
 // tabulate the integrand in the "l" dimension:
 const int N = ptsz->N_samp_fftw;
 double k[N], Pk1[N],Pk2[N], Pkr[N];
@@ -7529,12 +7680,12 @@ lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
 l = k[ik];
 fl = get_ksz_filter_at_l(l,ptsz);
 
-Pk1[ik] = fl*get_psi_b1gt_at_l1_l2_and_z(l3,l,z,ptsz);
+Pk1[ik] = fl*get_psi_b1gt_at_k1_k2_and_z((l3+0.5)/chi,(l+0.5)/chi,z,ptsz);
 
-pvectsz[ptsz->index_multipole_for_pk] = l;
-evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
-double pkl = pvectsz[ptsz->index_pk_for_halo_bias];
-Pk2[ik] = fl*get_psi_b1t_at_l_and_z(l,z,ptsz)*pkl;
+// pvectsz[ptsz->index_multipole_for_pk] = l;
+// evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+double pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,pba,ppm,pnl,ptsz);//pvectsz[ptsz->index_pk_for_halo_bias];
+Pk2[ik] = fl*get_psi_b1t_at_k_and_z((l+0.5)/chi,z,ptsz)*pkl;
 // if(l>3e3)
   // printf("k = %.5e pk = %.5e\n",l,Pk2[ik]);
 }
@@ -7577,14 +7728,17 @@ r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
 
   int index_l_3 = (int) pvectsz[ptsz->index_multipole];
   double l3 = ptsz->ell[index_l_3];
-  pvectsz[ptsz->index_multipole_for_pk] = l3;
-  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
-  double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
+  // pvectsz[ptsz->index_multipole_for_pk] = l3;
+  // evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  // double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
+  double pk3 = 0.;
+  pk3 = get_pk_lin_at_k_and_z((l3+0.5)/chi,z,pba,ppm,pnl,ptsz);
 
 
-  double psi_bg = get_psi_b1g_at_l_and_z(l3,z,ptsz);
-  double psi_b2g = get_psi_b2g_at_l_and_z(l3,z,ptsz);
-  // double psi_b2t = get_psi_b2t_at_l_and_z(l3,z,ptsz);
+
+  double psi_bg = get_psi_b1g_at_k_and_z((l3+0.5)/chi,z,ptsz);
+  double psi_b2g = get_psi_b2g_at_k_and_z((l3+0.5)/chi,z,ptsz);
+  // double psi_b2t = get_psi_b2t_at_k_and_z(l3,z,ptsz);
 
   // printf("%.5e %.5e\n",r_m_11,r_m_21);
 
@@ -7598,7 +7752,7 @@ r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
   /// set-up:
 
 double l_min = 1e-8;
-double l_max = 1e8; // this is a precision parameter
+double l_max = 1e6; // this is a precision parameter
 // tabulate the integrand in the "l" dimension:
 const int N = ptsz->N_samp_fftw;
 double k[N];
@@ -7623,7 +7777,8 @@ double lnk[N];
 int ik;
 double fl;
 // double taul;
-double l,pkl;
+double l;
+double pkl=0.;
 
 double pk_phi_0[N],pk_phi_m2[N],pk_phi_4[N],pk_phi_2[N];
 double pk_tilde_phi_0[N],pk_tilde_phi_m2[N],pk_tilde_phi_2[N];
@@ -7648,12 +7803,15 @@ for (ik=0; ik<N; ik++){
 k[ik] = exp(log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min)));
 lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
 l = k[ik];
-pvectsz[ptsz->index_multipole_for_pk] = l;
-evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
-pkl = pvectsz[ptsz->index_pk_for_halo_bias];
+// pvectsz[ptsz->index_multipole_for_pk] = l;
+// pvectsz[ptsz->index_pk_for_halo_bias] = 0.;
+// evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+// pkl = pvectsz[ptsz->index_pk_for_halo_bias];
+pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,pba,ppm,pnl,ptsz);
 fl = get_ksz_filter_at_l(l,ptsz);
-psi_bt = get_psi_b1t_at_l_and_z(l,z,ptsz);
-psi_b2t = get_psi_b2t_at_l_and_z(l,z,ptsz);
+// if ((l+0.5)/chi>1e-2) fl = 0.;
+psi_bt = get_psi_b1t_at_k_and_z((l+0.5)/chi,z,ptsz);
+psi_b2t = get_psi_b2t_at_k_and_z((l+0.5)/chi,z,ptsz);
 
 pk_phi_0[ik] = fl*psi_bt;
 pk_phi_m2[ik] = pow(l,-2)*fl*psi_bt;
@@ -7748,11 +7906,45 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 +2./7.*pow(l3,2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t7_Pkr,log(l3))
 -4./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t8_Pkr,log(l3))
 -4./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t9_Pkr,log(l3))
-+2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t10_Pkr,log(l3))
++2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t10_Pkr,log(l3));
 // b2 terms:
-+psi_b2g*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
-+psi_bg*pwl_value_1d(N,lnk,t11_Pkr,log(l3))
-+psi_bg*pk3*pwl_value_1d(N,lnk,t12_Pkr,log(l3));
+// +psi_b2g*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
+// +psi_bg*pwl_value_1d(N,lnk,t11_Pkr,log(l3))
+// +psi_bg*pk3*pwl_value_1d(N,lnk,t12_Pkr,log(l3));
+
+// r = (psi_b2g+19./7.*psi_bg)*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
+// +9./7.*psi_bg*pwl_value_1d(N,lnk,t2_Pkr,log(l3))
+// -11./7.*pow(l3,2.)*psi_bg*pwl_value_1d(N,lnk,t3_Pkr,log(l3))
+// +1./7.*psi_bg*pow(l3,4.)*pwl_value_1d(N,lnk,t4_Pkr,log(l3))
+// +(2.*psi_b2g+24./7.*psi_bg)*pk3*pwl_value_1d(N,lnk,t5_Pkr,log(l3))
+// +2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t6_Pkr,log(l3))
+// +2./7.*pow(l3,2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t7_Pkr,log(l3))
+// -4./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t8_Pkr,log(l3))
+// -4./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t9_Pkr,log(l3))
+// +2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t10_Pkr,log(l3));
+
+
+
+
+if (isnan(r) || isinf(r)){
+  printf("nan in bispectrum TTG ffts\n");
+  printf("pk3 = %.3e\n",pk3);
+  printf("psi_bg = %.3e\n",psi_bg);
+  printf("psi_b2g = %.3e\n",psi_b2g);
+  printf("t1_Pkr = %.3e\n",pwl_value_1d(N,lnk,t1_Pkr,log(l3)));
+  printf("t2_Pkr = %.3e\n",pwl_value_1d(N,lnk,t2_Pkr,log(l3)));
+  printf("t3_Pkr = %.3e\n",pwl_value_1d(N,lnk,t3_Pkr,log(l3)));
+  printf("t4_Pkr = %.3e\n",pwl_value_1d(N,lnk,t4_Pkr,log(l3)));
+  printf("t5_Pkr = %.3e\n",pwl_value_1d(N,lnk,t5_Pkr,log(l3)));
+  printf("t6_Pkr = %.3e\n",pwl_value_1d(N,lnk,t6_Pkr,log(l3)));
+  printf("t7_Pkr = %.3e\n",pwl_value_1d(N,lnk,t7_Pkr,log(l3)));
+  printf("t8_Pkr = %.3e\n",pwl_value_1d(N,lnk,t8_Pkr,log(l3)));
+  printf("t9_Pkr = %.3e\n",pwl_value_1d(N,lnk,t9_Pkr,log(l3)));
+  printf("t10_Pkr = %.3e\n",pwl_value_1d(N,lnk,t10_Pkr,log(l3)));
+  printf("t11_Pkr = %.3e\n",pwl_value_1d(N,lnk,t11_Pkr,log(l3)));
+  printf("t12_Pkr = %.3e\n",pwl_value_1d(N,lnk,t12_Pkr,log(l3)));
+  exit(0);
+}
 
   }
 
@@ -7761,8 +7953,27 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
   double r_m_b1t2;
   double r_m_b1g3;
   double r_m_b2g3;
+  double r_tab;
 
-  // r_m_11*r_m_21
+  int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
+  double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+  int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+  int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+  double l2 = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
+  double l3 = ptsz->ell[index_l_3];
+  double ell = l3;
+  double ell_prime = l2;
+  double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
+  double k1 = (l1 + 0.5)/chi;
+  double k2 = (l2 + 0.5)/chi;
+  double k3 = (l3 + 0.5)/chi;
+  double pk1 = 0.;
+  double pk2 = 0.;
+  double pk3 = 0.;
+
+  double z = pvectsz[ptsz->index_z];
+
+  // // r_m_11*r_m_21
   pvectsz[ptsz->index_part_id_cov_hsv] = 1;
   V.pvectsz = pvectsz;
   params = &V;
@@ -7779,9 +7990,12 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
      r_m_b1t1 += bmin_umin;
      // printf("counter terms done r_m_1\n");
   }
+  // r_tab = get_psi_b1t_at_k_and_z(k1,z,ptsz);
+  // printf("r_m_b1t1 %.8e %.8e\n",r_m_b1t1,r_tab);
+  // r_m_b1t1 = r_tab;
 
 
-
+  //
   pvectsz[ptsz->index_part_id_cov_hsv] = 2;
   V.pvectsz = pvectsz;
   params = &V;
@@ -7798,6 +8012,8 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
      r_m_b1t2 += bmin_umin;
      // printf("counter terms done r_m_1\n");
   }
+  // r_tab = get_psi_b1t_at_k_and_z(k2,z,ptsz);
+  // r_m_b1t2  = r_tab;
 
 
 
@@ -7818,7 +8034,8 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
      r_m_b1g3 += bmin_umin;
      // printf("counter terms done r_m_1\n");
   }
-
+  // r_tab = get_psi_b1g_at_k_and_z(k2,z,ptsz);
+  // r_m_b1g3  = r_tab;
 
 
 
@@ -7838,48 +8055,59 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
      r_m_b2g3 += bmin_umin;
      // printf("counter terms done r_m_1\n");
   }
+  // r_tab = get_psi_b2g_at_k_and_z(k3,z,ptsz);
+  // r_m_b2g3 = r_tab;
+
+  //
+  // // int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
+  //
+  // pvectsz[ptsz->index_multipole_for_pk] = l1;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+  // pvectsz[ptsz->index_pk_for_halo_bias] = 0.;
+  // evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  // double pk1 = pvectsz[ptsz->index_pk_for_halo_bias];
+  //
+  // // int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
+  // pvectsz[ptsz->index_multipole_for_pk] = l2;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+  // pvectsz[ptsz->index_pk_for_halo_bias] = 0.;
+  // evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  // double pk2 = pvectsz[ptsz->index_pk_for_halo_bias];
+  //
+  // // int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
+  // pvectsz[ptsz->index_multipole_for_pk] = l3;//ptsz->ell[index_l_3];
+  // pvectsz[ptsz->index_pk_for_halo_bias] = 0.;
+  // evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+  // double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
+
+  pk1 = get_pk_lin_at_k_and_z(k1,z,pba,ppm,pnl,ptsz);
+  pk2 = get_pk_lin_at_k_and_z(k2,z,pba,ppm,pnl,ptsz);
+  pk3 = get_pk_lin_at_k_and_z(k3,z,pba,ppm,pnl,ptsz);
 
 
-  // int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
-  int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
-  double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
-  int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
-  int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-  double l2 = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
-  double l3 = ptsz->ell[index_l_3];
-  double ell = l3;
-  double ell_prime = l2;
-  double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
 
-  pvectsz[ptsz->index_multipole_for_pk] = l1;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
-  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
-  double pk1 = pvectsz[ptsz->index_pk_for_halo_bias];
+  // double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z);
 
-  // int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
-  pvectsz[ptsz->index_multipole_for_pk] = l2;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
-  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
-  double pk2 = pvectsz[ptsz->index_pk_for_halo_bias];
+  // double Fk1k2 = bispectrum_f2_kernel(k1,k2,k3);
+  // double Fk1k3 = bispectrum_f2_kernel(k3,k1,k2);
+  // double Fk2k3 = bispectrum_f2_kernel(k2,k3,k1);
 
-  // int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
-  pvectsz[ptsz->index_multipole_for_pk] = l3;//ptsz->ell[index_l_3];
-  evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
-  double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
+  double f2_123 = bispectrum_f2_kernel(k1,k2,k3);
+  double f2_312 = bispectrum_f2_kernel(k3,k1,k2);
+  double f2_231 = bispectrum_f2_kernel(k2,k3,k1);
+
+  // double comb_pks = pk1*pk2+pk1*pk3+pk2*pk3;
+  // double comb_pks_fks = 2.*pk1*pk2*Fk1k2+2.*pk1*pk3*Fk1k3+2.*pk2*pk3*Fk2k3;
 
 
-  double z = pvectsz[ptsz->index_z];
-  double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z);
-  double k1 = (l1 + 0.5)/d_A;
-  double k2 = (l2 + 0.5)/d_A;
-  double k3 = (l3 + 0.5)/d_A;
-  double Fk1k2 = bispectrum_f2_kernel(k1,k2,k3);
-  double Fk1k3 = bispectrum_f2_kernel(k3,k1,k2);
-  double Fk2k3 = bispectrum_f2_kernel(k2,k3,k1);
-
-  double comb_pks = pk1*pk2+pk1*pk3+pk2*pk3;
-  double comb_pks_fks = 2.*pk1*pk2*Fk1k2+2.*pk1*pk3*Fk1k3+2.*pk2*pk3*Fk2k3;
+  // r = r_m_b1t1*r_m_b1t2*r_m_b1g3*comb_pks_fks+r_m_b1t1*r_m_b1t2*r_m_b2g3*comb_pks;
+  r = 2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_123*pk1*pk2
+     +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_312*pk3*pk1
+     +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_231*pk2*pk3;
+     // +r_m_b1t1*r_m_b1t2*r_m_b2g3*pk1*pk2
+     // +r_m_b1t1*r_m_b2t2*r_m_b1g3*pk3*pk1
+     // +r_m_b2t1*r_m_b1t2*r_m_b1g3*pk2*pk3;
 
 
-  r = r_m_b1t1*r_m_b1t2*r_m_b1g3*comb_pks_fks+r_m_b1t1*r_m_b1t2*r_m_b2g3*comb_pks;
+
 
   }
 
@@ -8319,12 +8547,10 @@ if (ptsz->check_consistency_conditions == 1){
 
   // r_m_b1g3 = 1.;
   //
-  // r_m_b2g3 = 0.;
+  r_m_b2g3 = 0.;
   // r_m_b2t2 = 0.;
   // r_m_b2t1 = 0.;
   double z = pvectsz[ptsz->index_z];
-
-
 
 
   r = 2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_123*pk1*pk2
@@ -8333,6 +8559,7 @@ if (ptsz->check_consistency_conditions == 1){
      +r_m_b1t1*r_m_b1t2*r_m_b2g3*pk1*pk2
      +r_m_b1t1*r_m_b2t2*r_m_b1g3*pk3*pk1
      +r_m_b2t1*r_m_b1t2*r_m_b1g3*pk2*pk3;
+
 
 // double z = pvectsz[ptsz->index_z];
 // double r_effective = get_ttg_bispectrum_at_z_tree_level_PT(k,k,k,z,ptsz,pba,pnl,ppm);
@@ -8992,6 +9219,7 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
 
       V->pvectsz[V->ptsz->index_has_galaxy] = 1;
       do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
@@ -9052,7 +9280,14 @@ double * pvectsz;
  class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
 
 
- // printf("tabulating dndlnM quantities0\n");
+
+ pvectsz[ptsz->index_has_galaxy] = 1;
+ if (ptsz->delta_def_galaxies == 0)
+   pvectsz[ptsz->index_has_200m] = 1;
+ else if (ptsz->delta_def_galaxies == 1)
+   pvectsz[ptsz->index_has_200c] = 1;
+ else if (ptsz->delta_def_galaxies == 2)
+   pvectsz[ptsz->index_has_500c] = 1;
 
 for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
         {
@@ -9088,7 +9323,7 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
 
 
           ptsz->array_mean_galaxy_number_density[index_z] = log(r);
-          // printf("ng = %.8e\n",r);
+
 
        }
  free(pvecback);
@@ -9537,9 +9772,9 @@ double integrand_psi_b1g(double lnM_halo, void *p){
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
       V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;//ptsz->ell[index_l_3];
-      double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
-      double kl = (ell+0.5)/chi;
-      evaluate_galaxy_profile_2h(kl,V->pvectsz[V->ptsz->index_mass_for_galaxies],
+      // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+      // double kl = (ell+0.5)/chi;
+      evaluate_galaxy_profile_2h(ell,V->pvectsz[V->ptsz->index_mass_for_galaxies],
                                  V->pvectsz[V->ptsz->index_radius_for_galaxies],
                                  V->pvectsz[V->ptsz->index_concentration_for_galaxies],
                                  V->pvecback,V->pvectsz,V->pba,V->ptsz);
@@ -9609,10 +9844,10 @@ double integrand_psi_b2g(double lnM_halo, void *p){
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
-      V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;
-      double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
-      double kl = (ell+0.5)/chi;
-      evaluate_galaxy_profile_2h(kl,V->pvectsz[V->ptsz->index_mass_for_galaxies],
+      // V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;
+      // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+      // double kl = (ell+0.5)/chi;
+      evaluate_galaxy_profile_2h(ell,V->pvectsz[V->ptsz->index_mass_for_galaxies],
                                  V->pvectsz[V->ptsz->index_radius_for_galaxies],
                                  V->pvectsz[V->ptsz->index_concentration_for_galaxies],
                                  V->pvecback,V->pvectsz,V->pba,V->ptsz);
@@ -9680,8 +9915,9 @@ double integrand_psi_b2t(double lnM_halo, void *p){
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
-      V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell;
-      evaluate_tau_profile(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      // V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell;
+
+      evaluate_tau_profile(ell,V->pvecback,V->pvectsz,V->pba,V->ptsz);
       double t = V->pvectsz[V->ptsz->index_tau_profile];
 
       evaluate_halo_bias_b2(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -9749,8 +9985,8 @@ double integrand_psi_b1t(double lnM_halo, void *p){
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
 
-      V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell;
-      evaluate_tau_profile(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      // V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell;
+      evaluate_tau_profile(ell,V->pvecback,V->pvectsz,V->pba,V->ptsz);
 
       // double r_delta_matter = V->pvectsz[V->ptsz->index_radius_for_matter_density];
       // double c_delta_matter = V->pvectsz[V->ptsz->index_concentration_for_matter_density];
@@ -9822,10 +10058,10 @@ double integrand_psi_b1gt(double lnM_halo, void *p){
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
-      V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell1;
-      double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
-      double kl = (ell1+0.5)/chi;
-      evaluate_galaxy_profile_2h(kl,V->pvectsz[V->ptsz->index_mass_for_galaxies],
+      // V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell1;
+      // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+      // double kl = (ell1+0.5)/chi;
+      evaluate_galaxy_profile_2h(ell1,V->pvectsz[V->ptsz->index_mass_for_galaxies],
                                  V->pvectsz[V->ptsz->index_radius_for_galaxies],
                                  V->pvectsz[V->ptsz->index_concentration_for_galaxies],
                                  V->pvecback,V->pvectsz,V->pba,V->ptsz);
@@ -9833,9 +10069,9 @@ double integrand_psi_b1gt(double lnM_halo, void *p){
 
 
 
-      V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell2;
+      // V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell2;
 
-      evaluate_tau_profile(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_tau_profile(ell2,V->pvecback,V->pvectsz,V->pba,V->ptsz);
       double t = V->pvectsz[V->ptsz->index_tau_profile];
 
 
@@ -9890,7 +10126,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
 
 // parallelize ver l
 double l_min = 1.e-3;
-double l_max = 3e4;
+double l_max = 3e5;
 
 
 for (index_l=0; index_l<ptsz->n_l_psi_b1g; index_l++)
@@ -10137,7 +10373,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b2g; index_z++)
      r += bmin_umin;
   }
 
-          ptsz->array_psi_b2g_psi[index_l_z] = log(r);
+          ptsz->array_psi_b2g_psi[index_l_z] = log(1.+r);
        }
      }
      #ifdef _OPENMP
@@ -10352,7 +10588,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1t; index_z++)
 
 // parallelize ver l
 double l_min = 1.e-3;
-double l_max = 3e4;
+double l_max = 3e5;
 
 
 for (index_l=0; index_l<ptsz->n_l_psi_b1t; index_l++)
@@ -10446,10 +10682,10 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1t; index_z++)
      double I0 = integrand_psi_b1t(log(ptsz->m_min_counter_terms),params);
      double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
      r += bmin_umin;
-     double ct_over_int  = bmin_umin/(r-bmin_umin);
-     if (ct_over_int>0.1)
-     printf("z = %.8e l = %.8e int = %.8e ct = %.8e ct/int = %.8e\n",
-     z,l,r-bmin_umin,bmin_umin,ct_over_int);
+     // double ct_over_int  = bmin_umin/(r-bmin_umin);
+     // if (ct_over_int>0.1)
+     // printf("z = %.8e l = %.8e int = %.8e ct = %.8e ct/int = %.8e\n",
+     // z,l,r-bmin_umin,bmin_umin,ct_over_int);
 
   }
 
@@ -10514,7 +10750,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1gt; index_z++)
 
 // parallelize ver l
 double l_min = 1.e-3;
-double l_max = 3e4;
+double l_max = 3e5;
 
 int index_l;
 for (index_l=0; index_l<ptsz->n_l_psi_b1gt; index_l++)
@@ -13952,7 +14188,7 @@ double get_detection_proba_at_y_and_theta(double y_asked, double th_asked, doubl
   return r;
 }
 
-double get_psi_b2t_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
+double get_psi_b2t_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double l = log(l_asked);
 
@@ -13985,7 +14221,7 @@ double get_psi_b2t_at_l_and_z(double l_asked, double z_asked, struct tszspectrum
 
 
 
-double get_psi_b2g_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
+double get_psi_b2g_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double l = log(l_asked);
 
@@ -14013,24 +14249,24 @@ double get_psi_b2g_at_l_and_z(double l_asked, double z_asked, struct tszspectrum
                           ptsz->array_psi_b2g_psi,
                           1,
                           &z,
-                          &l));
+                          &l))-1.;
 }
 
 
-double get_psi_b1g_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
+double get_psi_b1g_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double l = log(l_asked);
 
  if (z<ptsz->array_psi_b1g_redshift[0])
-    z = ptsz->array_psi_b1g_redshift[0];
+    return 0.;//z = ptsz->array_psi_b1g_redshift[0];
  if (z>ptsz->array_psi_b1g_redshift[ptsz->n_z_psi_b1g-1])
-    z = ptsz->array_psi_b1g_redshift[ptsz->n_z_psi_b1g-1];
+    return 0.;//z = ptsz->array_psi_b1g_redshift[ptsz->n_z_psi_b1g-1];
 
  if (l<ptsz->array_psi_b1g_multipole[0])
-    l = ptsz->array_psi_b1g_multipole[0];
+    return 0.;//l = ptsz->array_psi_b1g_multipole[0];
       // printf("dealing with mass conversion in hmf3\n");
  if (l>ptsz->array_psi_b1g_multipole[ptsz->n_l_psi_b1g-1])
-    l =  ptsz->array_psi_b1g_multipole[ptsz->n_l_psi_b1g-1];
+    return 0.;//l =  ptsz->array_psi_b1g_multipole[ptsz->n_l_psi_b1g-1];
 
 
 // printf("l=%.3e\n",l);
@@ -14049,20 +14285,20 @@ double get_psi_b1g_at_l_and_z(double l_asked, double z_asked, struct tszspectrum
 }
 
 
-double get_psi_b1t_at_l_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
+double get_psi_b1t_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double l = log(l_asked);
 
  if (z<ptsz->array_psi_b1t_redshift[0])
-    z = ptsz->array_psi_b1t_redshift[0];
+    return 0.;//z = ptsz->array_psi_b1t_redshift[0];
  if (z>ptsz->array_psi_b1t_redshift[ptsz->n_z_psi_b1t-1])
-    z = ptsz->array_psi_b1t_redshift[ptsz->n_z_psi_b1t-1];
+    return 0.;//z = ptsz->array_psi_b1t_redshift[ptsz->n_z_psi_b1t-1];
 
  if (l<ptsz->array_psi_b1t_multipole[0])
-    l = ptsz->array_psi_b1t_multipole[0];
+    return 0.;//l = ptsz->array_psi_b1t_multipole[0];
       // printf("dealing with mass conversion in hmf3\n");
  if (l>ptsz->array_psi_b1t_multipole[ptsz->n_l_psi_b1t-1])
-    l =  ptsz->array_psi_b1t_multipole[ptsz->n_l_psi_b1t-1];
+    return 0.;//l =  ptsz->array_psi_b1t_multipole[ptsz->n_l_psi_b1t-1];
 
 
  return exp(pwl_interp_2d(
@@ -14081,7 +14317,7 @@ double get_psi_b1t_at_l_and_z(double l_asked, double z_asked, struct tszspectrum
 
 
 
-double get_psi_b1gt_at_l1_l2_and_z(double l_asked,double l_asked2, double z_asked, struct tszspectrum * ptsz){
+double get_psi_b1gt_at_k1_k2_and_z(double l_asked,double l_asked2, double z_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double l1 = log(l_asked);
   double l2 = log(l_asked2);

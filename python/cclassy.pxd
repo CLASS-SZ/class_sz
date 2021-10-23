@@ -731,6 +731,15 @@ cdef extern from "class.h":
                                                          void * pnl,
                                                          void * ppm)
 
+
+    double get_ttg_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,
+                                                         double k2_in_h_over_Mpc,
+                                                         double k3_in_h_over_Mpc,
+                                                         double z,
+                                                         void * ptsz,
+                                                         void * pba,
+                                                         void * pnl,
+                                                         void * ppm)
     double get_ttg_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
                                                          double k2_in_h_over_Mpc,
                                                          double k3_in_h_over_Mpc,

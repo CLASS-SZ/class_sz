@@ -53,7 +53,7 @@ class_sz_ptsz_parameter(n_z_psi_b1gt,int,50)
 class_sz_ptsz_parameter(n_l_psi_b1gt,int,50)
 
 class_sz_ptsz_parameter(ell_min_kSZ2_gal_multipole_grid,double,2)
-class_sz_ptsz_parameter(ell_max_kSZ2_gal_multipole_grid,double,1e4)
+class_sz_ptsz_parameter(ell_max_kSZ2_gal_multipole_grid,double,1e5)
 
 
 class_sz_ptsz_parameter(n_z_hmf_counter_terms,int,200)

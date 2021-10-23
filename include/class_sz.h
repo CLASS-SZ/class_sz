@@ -1452,7 +1452,8 @@ int szpowerspectrum_init(struct background * pba,
                                 struct background * pba,
                                 struct tszspectrum * ptsz);
 
-  int evaluate_tau_profile(double * pvecback,
+  int evaluate_tau_profile(double k,
+                           double * pvecback,
                            double * pvectsz,
                            struct background * pba,
                            struct tszspectrum * ptsz);
@@ -1517,7 +1518,11 @@ double get_ksz_filter_at_l(double l,
                                     struct primordial * ppm,
                                     struct nonlinear * pnl,
                                     struct tszspectrum * ptsz);
-
+int get_pk_lin_at_k_and_z(double k, double z,
+                          struct background * pba,
+                          struct primordial * ppm,
+                          struct nonlinear * pnl,
+                          struct tszspectrum * ptsz);
 
  int evaluate_pk_at_ell_plus_one_half_over_chi(double * pvecback,
                                               double * pvectsz,
@@ -1576,10 +1581,10 @@ int write_redshift_dependent_quantities(struct background * pba,
                                         struct tszspectrum * ptsz);
 
 
-int evaluate_tau_profile(double * pvecback,
-                        double * pvectsz,
-                        struct background * pba,
-                        struct tszspectrum * ptsz);
+// int evaluate_tau_profile(double * pvecback,
+//                         double * pvectsz,
+//                         struct background * pba,
+//                         struct tszspectrum * ptsz);
 
 int tabulate_gas_density_profile(struct background * pba,
                              struct tszspectrum * ptsz);
@@ -1770,6 +1775,27 @@ double get_matter_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,
 double get_te_of_m500c_at_z_arnaud(double m, double z, struct background * pba,struct tszspectrum * ptsz);
 double get_te_of_m500c_at_z_lee(double m, double z, struct background * pba,struct tszspectrum * ptsz);
 
+
+int  evaluate_ttg_bispectrum_at_z_tree_level_PT(double * r,
+                                                      double k1_in_h_over_Mpc,
+                                                     double k2_in_h_over_Mpc,
+                                                     double k3_in_h_over_Mpc,
+                                                     double z,
+                                                     struct tszspectrum * ptsz,
+                                                     struct background * pba,
+                                                     struct nonlinear * pnl,
+                                                     struct primordial * ppm);
+
+
+int  evaluate_ttg_bispectrum_at_z_effective_approach(double * r,
+                                                      double k1_in_h_over_Mpc,
+                                                     double k2_in_h_over_Mpc,
+                                                     double k3_in_h_over_Mpc,
+                                                     double z,
+                                                     struct tszspectrum * ptsz,
+                                                     struct background * pba,
+                                                     struct nonlinear * pnl,
+                                                     struct primordial * ppm);
 
 double get_ttg_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
                                                      double k2_in_h_over_Mpc,
