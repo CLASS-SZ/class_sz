@@ -1,4 +1,4 @@
-/** @file szclustercount.h Documented includes for sz module. */
+/** @file class_sz_clustercounts.h Documented includes for sz module. */
 
 #ifndef __SZC__
 #define __SZC__

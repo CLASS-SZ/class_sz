@@ -7,7 +7,7 @@
  *the number counts from Halo Mass Functions (HMF)
  */
 
-#include "szclustercount.h"
+#include "class_sz_clustercounts.h"
 #include "class_sz_tools.h"
 #include "Patterson.h"
 #include "r8lib.h"

@@ -16,7 +16,7 @@
 #include "lensing.h"
 #include "output.h"
 #include "class_sz.h"
-#include "szclustercount.h"
+#include "class_sz_clustercounts.h"
 
 /* macro for reading parameter values with routines from the parser */
 #define class_read_double(name,destination)				\
