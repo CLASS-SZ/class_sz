@@ -6223,6 +6223,8 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   double ell_prime = l2;
   double theta_1 = V->ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
   double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
+  // double cos_theta_1 = V->ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+  // double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos_theta_1);
   // double l1 = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*theta_1);
 
 
@@ -7897,7 +7899,7 @@ pk2xi(N,rp,t12_xi12,k,t12_Pkr,ptsz);
 
 
 
-r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
+r =19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 +9./7.*psi_bg*pwl_value_1d(N,lnk,t2_Pkr,log(l3))
 -11./7.*pow(l3,2.)*psi_bg*pwl_value_1d(N,lnk,t3_Pkr,log(l3))
 +1./7.*psi_bg*pow(l3,4.)*pwl_value_1d(N,lnk,t4_Pkr,log(l3))
@@ -7906,11 +7908,11 @@ r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 +2./7.*pow(l3,2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t7_Pkr,log(l3))
 -4./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t8_Pkr,log(l3))
 -4./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t9_Pkr,log(l3))
-+2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t10_Pkr,log(l3));
++2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t10_Pkr,log(l3))
 // b2 terms:
-// +psi_b2g*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
-// +psi_bg*pwl_value_1d(N,lnk,t11_Pkr,log(l3))
-// +psi_bg*pk3*pwl_value_1d(N,lnk,t12_Pkr,log(l3));
++psi_b2g*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
++psi_bg*pwl_value_1d(N,lnk,t11_Pkr,log(l3))
++psi_bg*pk3*pwl_value_1d(N,lnk,t12_Pkr,log(l3));
 
 // r = (psi_b2g+19./7.*psi_bg)*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 // +9./7.*psi_bg*pwl_value_1d(N,lnk,t2_Pkr,log(l3))
@@ -7951,12 +7953,15 @@ if (isnan(r) || isinf(r)){
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_gal_3h){
   double r_m_b1t1;
   double r_m_b1t2;
+  double r_m_b2t1;
+  double r_m_b2t2;
   double r_m_b1g3;
   double r_m_b2g3;
   double r_tab;
 
   int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
   double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+  // double cos_theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
   int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
   int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
   double l2 = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
@@ -7964,6 +7969,7 @@ if (isnan(r) || isinf(r)){
   double ell = l3;
   double ell_prime = l2;
   double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
+  // double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos_theta_1);
   double k1 = (l1 + 0.5)/chi;
   double k2 = (l2 + 0.5)/chi;
   double k3 = (l3 + 0.5)/chi;
@@ -7974,90 +7980,95 @@ if (isnan(r) || isinf(r)){
   double z = pvectsz[ptsz->index_z];
 
   // // r_m_11*r_m_21
-  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
-  V.pvectsz = pvectsz;
-  params = &V;
-  r_m_b1t1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
-                                           epsrel, epsabs,
-                                           integrand_patterson_test,
-                                           params,ptsz->patterson_show_neval);
-
-   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
-     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
-     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
-     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-     r_m_b1t1 += bmin_umin;
-     // printf("counter terms done r_m_1\n");
-  }
-  // r_tab = get_psi_b1t_at_k_and_z(k1,z,ptsz);
+  // pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  // V.pvectsz = pvectsz;
+  // params = &V;
+  // r_m_b1t1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+  //                                          epsrel, epsabs,
+  //                                          integrand_patterson_test,
+  //                                          params,ptsz->patterson_show_neval);
+  //
+  //  if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+  //    double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+  //    double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+  //    double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+  //    double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+  //    r_m_b1t1 += bmin_umin;
+  //    // printf("counter terms done r_m_1\n");
+  // }
+  r_tab = get_psi_b1t_at_k_and_z(k1,z,ptsz);
   // printf("r_m_b1t1 %.8e %.8e\n",r_m_b1t1,r_tab);
-  // r_m_b1t1 = r_tab;
+  r_m_b1t1 = r_tab;
 
 
   //
-  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
-  V.pvectsz = pvectsz;
-  params = &V;
-  r_m_b1t2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
-                                           epsrel, epsabs,
-                                           integrand_patterson_test,
-                                           params,ptsz->patterson_show_neval);
-
-   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
-     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
-     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
-     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-     r_m_b1t2 += bmin_umin;
-     // printf("counter terms done r_m_1\n");
-  }
-  // r_tab = get_psi_b1t_at_k_and_z(k2,z,ptsz);
-  // r_m_b1t2  = r_tab;
-
-
-
-  // r_m_12*r_m_22
-  pvectsz[ptsz->index_part_id_cov_hsv] = 3;
-  V.pvectsz = pvectsz;
-  params = &V;
-  r_m_b1g3=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
-                                           epsrel, epsabs,
-                                           integrand_patterson_test,
-                                           params,ptsz->patterson_show_neval);
-
-   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
-     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
-     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
-     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-     r_m_b1g3 += bmin_umin;
-     // printf("counter terms done r_m_1\n");
-  }
-  // r_tab = get_psi_b1g_at_k_and_z(k2,z,ptsz);
-  // r_m_b1g3  = r_tab;
+  // pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  // V.pvectsz = pvectsz;
+  // params = &V;
+  // r_m_b1t2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+  //                                          epsrel, epsabs,
+  //                                          integrand_patterson_test,
+  //                                          params,ptsz->patterson_show_neval);
+  //
+  //  if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+  //    double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+  //    double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+  //    double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+  //    double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+  //    r_m_b1t2 += bmin_umin;
+  //    // printf("counter terms done r_m_1\n");
+  // }
+  r_tab = get_psi_b1t_at_k_and_z(k2,z,ptsz);
+  r_m_b1t2  = r_tab;
 
 
 
-  pvectsz[ptsz->index_part_id_cov_hsv] = 4;
-  V.pvectsz = pvectsz;
-  params = &V;
-  r_m_b2g3=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
-                                           epsrel, epsabs,
-                                           integrand_patterson_test,
-                                           params,ptsz->patterson_show_neval);
+  // // r_m_12*r_m_22
+  // pvectsz[ptsz->index_part_id_cov_hsv] = 3;
+  // V.pvectsz = pvectsz;
+  // params = &V;
+  // r_m_b1g3=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+  //                                          epsrel, epsabs,
+  //                                          integrand_patterson_test,
+  //                                          params,ptsz->patterson_show_neval);
+  //
+  //  if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+  //    double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+  //    double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+  //    double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+  //    double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+  //    r_m_b1g3 += bmin_umin;
+  //    // printf("counter terms done r_m_1\n");
+  // }
+  r_tab = get_psi_b1g_at_k_and_z(k2,z,ptsz);
+  r_m_b1g3  = r_tab;
 
-   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
-     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-     double bmin = get_hmf_counter_term_b2min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
-     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
-     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias_b2];
-     r_m_b2g3 += bmin_umin;
-     // printf("counter terms done r_m_1\n");
-  }
-  // r_tab = get_psi_b2g_at_k_and_z(k3,z,ptsz);
-  // r_m_b2g3 = r_tab;
 
+
+  // pvectsz[ptsz->index_part_id_cov_hsv] = 4;
+  // V.pvectsz = pvectsz;
+  // params = &V;
+  // r_m_b2g3=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+  //                                          epsrel, epsabs,
+  //                                          integrand_patterson_test,
+  //                                          params,ptsz->patterson_show_neval);
+  //
+  //  if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+  //    double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+  //    double bmin = get_hmf_counter_term_b2min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+  //    double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+  //    double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias_b2];
+  //    r_m_b2g3 += bmin_umin;
+  //    // printf("counter terms done r_m_1\n");
+  // }
+  r_tab = get_psi_b2g_at_k_and_z(k3,z,ptsz);
+  r_m_b2g3 = r_tab;
+
+  r_tab = get_psi_b2t_at_k_and_z(k1,z,ptsz);
+  r_m_b2t1 = r_tab;
+
+  r_tab = get_psi_b2t_at_k_and_z(k2,z,ptsz);
+  r_m_b2t2 = r_tab;
   //
   // // int index_l_1 = (int) pvectsz[ptsz->index_multipole_1];
   //
@@ -8101,10 +8112,10 @@ if (isnan(r) || isinf(r)){
   // r = r_m_b1t1*r_m_b1t2*r_m_b1g3*comb_pks_fks+r_m_b1t1*r_m_b1t2*r_m_b2g3*comb_pks;
   r = 2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_123*pk1*pk2
      +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_312*pk3*pk1
-     +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_231*pk2*pk3;
-     // +r_m_b1t1*r_m_b1t2*r_m_b2g3*pk1*pk2
-     // +r_m_b1t1*r_m_b2t2*r_m_b1g3*pk3*pk1
-     // +r_m_b2t1*r_m_b1t2*r_m_b1g3*pk2*pk3;
+     +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_231*pk2*pk3
+     +r_m_b1t1*r_m_b1t2*r_m_b2g3*pk1*pk2
+     +r_m_b1t1*r_m_b2t2*r_m_b1g3*pk3*pk1
+     +r_m_b2t1*r_m_b1t2*r_m_b1g3*pk2*pk3;
 
 
 
@@ -14853,21 +14864,3 @@ double get_L_sat_at_z_and_M_at_nu(double z_asked,
 //                           &z,
 //                           &m))-1.;
 // }
-
-
-int bispectrum_condition(double ell_1, double ell_2, double ell_3){
-int ell_1_min = abs(ell_2-ell_3);
-// TBC
-if (ell_1_min<2)
- ell_1_min  = 2;
-
-
-
-// full sky:
-//if ( (ell_1 >= ell_1_min) && (( (int)floor(ell_1 + ell_2 + ell_3)) % 2 == 0) )
-// flat sky:
-if ( (ell_1 >= ell_1_min))
-  return 1;
-else
-  return 0;
-}

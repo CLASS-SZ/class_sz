@@ -25,7 +25,7 @@ matter clustering) is always consistent with the cosmological model.
 
 https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_plots_and_tutorial.ipynb
 
-The code is currently in development, don't hesitate to reach out if anything is unclear due to lack of comments and indications, or if it crashes unexpectedly.
+The code is currently in development, don't hesitate to reach out if you would like to use the code and need assistance.
 
 CLASS_SZ is an extension of Julien Lesgourgues's CLASS code.
 

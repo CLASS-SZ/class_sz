@@ -3437,6 +3437,7 @@ pvectsz[ptsz->index_integrand] = integrand_projected_fields;
   else if (_kSZ_kSZ_gal_3h_){
    int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
    double theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+   // double cos_theta_1 = ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
    int index_l_2 = (int) pvectsz[ptsz->index_multipole_2];
    int index_l_3 = (int) pvectsz[ptsz->index_multipole_3];
    double l2 = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
@@ -3444,6 +3445,7 @@ pvectsz[ptsz->index_integrand] = integrand_projected_fields;
    double ell = l3;
    double ell_prime = l2;
    double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
+   // double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos_theta_1);
 
     // b1t1
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
@@ -9505,8 +9507,10 @@ int select_multipole_array(struct tszspectrum * ptsz)
 
   }
 
-  double theta_min = 0.;
-  double theta_max = _PI_;
+  // double theta_min = 0.;
+  // double theta_max = _PI_;
+  double theta_min = -1.;
+  double theta_max = 1.;
 
   for (index_l=0;index_l<ptsz->N_kSZ2_gal_theta_grid;index_l++){
 
@@ -11786,7 +11790,8 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
 
 
      double ell = V->ptsz->ell[V->index_ell_3];
-     double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(V->theta));
+     // double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(V->theta));
+     double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*V->theta);
 
      double ell_1 = abs_ell_minus_ell_prime;
      double ell_2 = ell_prime;
