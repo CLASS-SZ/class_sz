@@ -1979,6 +1979,7 @@ exit(0);
 // gsl_integration_romberg_free(w);
 // // *result = result_gsl;
 // r = 2.*result_gsl;
+// printf("r 0-pi = %.8e \n",r);
 
     cl_kSZ2_gal = r;
 
@@ -8893,7 +8894,7 @@ if (ptsz->has_kSZ_kSZ_gal_1h){
 int index_l;
 for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
-printf("ell = %e\t\t cl_kSZ_kSZ_gal_1h (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_kSZ_kSZ_gal_1h[index_l]);
+printf("ell = %e\t\t cl_kSZ_kSZ_gal_1h  = %e \n",ptsz->ell[index_l],ptsz->cl_kSZ_kSZ_gal_1h[index_l]);
 }
 }
 
@@ -8925,14 +8926,14 @@ if (ptsz->has_kSZ_kSZ_gal_2h){
 int index_l;
 for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
-printf("ell = %e\t\t cl_kSZ_kSZ_gal_2h (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_kSZ_kSZ_gal_2h[index_l]);
+printf("ell = %e\t\t cl_kSZ_kSZ_gal_2h = %e \n",ptsz->ell[index_l],ptsz->cl_kSZ_kSZ_gal_2h[index_l]);
 }
 }
 if (ptsz->has_kSZ_kSZ_gal_3h){
 int index_l;
 for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
-printf("ell = %e\t\t cl_kSZ_kSZ_gal_3h (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_kSZ_kSZ_gal_3h[index_l]);
+printf("ell = %e\t\t cl_kSZ_kSZ_gal_3h = %e \n",ptsz->ell[index_l],ptsz->cl_kSZ_kSZ_gal_3h[index_l]);
 }
 }
 
@@ -9507,10 +9508,10 @@ int select_multipole_array(struct tszspectrum * ptsz)
 
   }
 
-  // double theta_min = 0.;
-  // double theta_max = _PI_;
-  double theta_min = -1.;
-  double theta_max = 1.;
+  double theta_min = 0.;
+  double theta_max = _PI_;
+  // double theta_min = -1.;
+  // double theta_max = 1.;
 
   for (index_l=0;index_l<ptsz->N_kSZ2_gal_theta_grid;index_l++){
 
@@ -9659,7 +9660,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
   if (ptsz->has_kSZ_kSZ_gal_1h_fft
   ||  ptsz->has_kSZ_kSZ_gal_2h_fft
   ||  ptsz->has_kSZ_kSZ_gal_3h_fft){
-    ptsz->N_samp_fftw = 1000;
+    ptsz->N_samp_fftw = 5000;
     fftw_complex* a_tmp;
     fftw_complex* b_tmp;
     a_tmp = fftw_alloc_complex(ptsz->N_samp_fftw);
@@ -11790,8 +11791,8 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
 
 
      double ell = V->ptsz->ell[V->index_ell_3];
-     // double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(V->theta));
-     double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*V->theta);
+     double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(V->theta));
+     // double abs_ell_minus_ell_prime = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*V->theta);
 
      double ell_1 = abs_ell_minus_ell_prime;
      double ell_2 = ell_prime;
@@ -11822,7 +11823,7 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
 //        //                                &ln_ell1,
 //        //                                &ln_ell2);
 //
-       //double theta_1 = cos(V->theta);
+       // double theta_1 = cos(V->theta);
        double theta_1 = V->theta;
        double ln_ell2 = log(ell_2);
        // printf("interpolating @ l = %.3e with l_min = %.3e l_max = %.3e\n",
@@ -11843,6 +11844,7 @@ struct Parameters_for_integrand_kSZ2_X_at_theta *V = ((struct Parameters_for_int
                                   1,
                                   &theta_1,
                                   &ln_ell2);
+      // printf("theta = %.8e db = %.8e\n",V->theta,db);
 if (isnan(db) || isinf(db)){
   // db = 0.;
 if (isnan(db))
@@ -11909,7 +11911,8 @@ exit(0);
     //   integrand_cl_kSZ2_X_at_theta,
     //   fl_minus_l_prime,
     //   fl_prime
-    // );}
+    // );
+  //}
        return integrand_cl_kSZ2_X_at_theta;
 
 }
@@ -11962,7 +11965,7 @@ struct Parameters_for_integrand_kSZ2_X *W = ((struct Parameters_for_integrand_kS
                                         integrand_kSZ2_X_at_theta,
                                         params,show_neval);
 
-
+// printf("r at theta = %.8e, r = %.8e \n",theta,r);
     integrand_cl_kSZ2_X = r;
 
     return integrand_cl_kSZ2_X;

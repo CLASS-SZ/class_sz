@@ -5893,7 +5893,7 @@ int MF_T08(
   double   b=2.57*pow(1.+z,-alphaT08);
   double   c=1.19;
   double   nu= exp(*lognu);
-  double sigma= 1.6865/sqrt(nu);
+  double sigma= ptsz->delta_cSZ/sqrt(nu);
 
   *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
 
@@ -5917,7 +5917,7 @@ int MF_T08_M1600m(
   double   b=1.46*pow(1.+z,-alphaT08);
   double   c=1.97;
   double   nu= exp(*lognu);
-  double sigma= 1.6865/sqrt(nu);
+  double sigma= ptsz->delta_cSZ/sqrt(nu);
 
   *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
   return _SUCCESS_;
@@ -5938,7 +5938,7 @@ int MF_B15(
   double   b=ptsz->b0*pow(1.+z,-0.366);
   double   c=ptsz->c0*pow(1.+z,-0.045);
   double   nu= exp(*lognu);
-  double sigma= 1.6865/sqrt(nu);
+  double sigma= ptsz->delta_cSZ/sqrt(nu);
 
   *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
 
@@ -5960,7 +5960,7 @@ int MF_B15_M500c(double * result,
   double   b=2.44*pow(1.+z,-1.008);
   double   c=1.97*pow(1.+z,-0.322);
   double   nu= exp(*lognu);
-  double sigma= 1.6865/sqrt(nu);
+  double sigma= ptsz->delta_cSZ/sqrt(nu);
 
   *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
 
@@ -5974,7 +5974,7 @@ int MF_J01(double * result,
            struct tszspectrum * ptsz)
 {
   double   nu= exp(*lognu);
-  double sigma= 1.6865/sqrt(nu);
+  double sigma= ptsz->delta_cSZ/sqrt(nu);
 
   *result =
   0.5
@@ -7603,6 +7603,7 @@ double integrand_patterson_test(double logM, void *p){
 
 
   r = pk3*r_m_11*r_m_21  +  pk2*r_m_12*r_m_22  +  pk1*r_m_13*r_m_23;
+
   }
 
 
@@ -7734,7 +7735,7 @@ r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
   // evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
   // double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
   double pk3 = 0.;
-  pk3 = get_pk_lin_at_k_and_z((l3+0.5)/chi,z,pba,ppm,pnl,ptsz);
+  pk3 =  get_pk_lin_at_k_and_z((l3+0.5)/chi,z,pba,ppm,pnl,ptsz);
 
 
 
@@ -7753,8 +7754,8 @@ r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
 
   /// set-up:
 
-double l_min = 1e-8;
-double l_max = 1e6; // this is a precision parameter
+double l_min = 1e-10;
+double l_max = 1e10; // this is a precision parameter
 // tabulate the integrand in the "l" dimension:
 const int N = ptsz->N_samp_fftw;
 double k[N];
@@ -8001,7 +8002,7 @@ if (isnan(r) || isinf(r)){
   r_m_b1t1 = r_tab;
 
 
-  //
+
   // pvectsz[ptsz->index_part_id_cov_hsv] = 2;
   // V.pvectsz = pvectsz;
   // params = &V;
@@ -8019,7 +8020,9 @@ if (isnan(r) || isinf(r)){
   //    // printf("counter terms done r_m_1\n");
   // }
   r_tab = get_psi_b1t_at_k_and_z(k2,z,ptsz);
+  // printf("r_m_b1t2 %.8e %.8e\n",r_m_b1t2,r_tab);
   r_m_b1t2  = r_tab;
+
 
 
 
@@ -8040,8 +8043,10 @@ if (isnan(r) || isinf(r)){
   //    r_m_b1g3 += bmin_umin;
   //    // printf("counter terms done r_m_1\n");
   // }
-  r_tab = get_psi_b1g_at_k_and_z(k2,z,ptsz);
+  r_tab = get_psi_b1g_at_k_and_z(k3,z,ptsz);
+  // printf("r_m_b1g3 %.8e %.8e\n",r_m_b1g3,r_tab);
   r_m_b1g3  = r_tab;
+
 
 
 
@@ -8104,20 +8109,21 @@ if (isnan(r) || isinf(r)){
   double f2_123 = bispectrum_f2_kernel(k1,k2,k3);
   double f2_312 = bispectrum_f2_kernel(k3,k1,k2);
   double f2_231 = bispectrum_f2_kernel(k2,k3,k1);
+  // printf("f2_123 = %.8e\n",f2_123);
 
   // double comb_pks = pk1*pk2+pk1*pk3+pk2*pk3;
   // double comb_pks_fks = 2.*pk1*pk2*Fk1k2+2.*pk1*pk3*Fk1k3+2.*pk2*pk3*Fk2k3;
 
 
   // r = r_m_b1t1*r_m_b1t2*r_m_b1g3*comb_pks_fks+r_m_b1t1*r_m_b1t2*r_m_b2g3*comb_pks;
-  r = 2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_123*pk1*pk2
-     +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_312*pk3*pk1
-     +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_231*pk2*pk3
-     +r_m_b1t1*r_m_b1t2*r_m_b2g3*pk1*pk2
-     +r_m_b1t1*r_m_b2t2*r_m_b1g3*pk3*pk1
-     +r_m_b2t1*r_m_b1t2*r_m_b1g3*pk2*pk3;
+  r =2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_123*pk1*pk2
+    +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_312*pk3*pk1
+    +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_231*pk2*pk3
+    +r_m_b1t1*r_m_b1t2*r_m_b2g3*pk1*pk2
+    +r_m_b1t1*r_m_b2t2*r_m_b1g3*pk3*pk1
+    +r_m_b2t1*r_m_b1t2*r_m_b1g3*pk2*pk3;
 
-
+// printf("r = %.8e\n",r);
 
 
   }
@@ -10288,7 +10294,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b2g; index_z++)
 
 // parallelize ver l
 double l_min = 1.e-3;
-double l_max = 3e4;
+double l_max = 3e5;
 
 
 for (index_l=0; index_l<ptsz->n_l_psi_b2g; index_l++)
@@ -10439,7 +10445,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b2t; index_z++)
 
 // parallelize ver l
 double l_min = 1.e-3;
-double l_max = 3e4;
+double l_max = 3e5;
 
 
 for (index_l=0; index_l<ptsz->n_l_psi_b2t; index_l++)
