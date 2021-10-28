@@ -7840,6 +7840,10 @@ double psi_b2t;
 
 // printf("z = %.5e l = %.5e\n",z,l3);
 
+psi_bg =  1.;
+
+
+
 for (ik=0; ik<N; ik++){
 k[ik] = exp(log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min)));
 lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
@@ -7851,7 +7855,8 @@ l = k[ik];
 pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,pba,ppm,pnl,ptsz);
 fl = get_ksz_filter_at_l(l,ptsz);
 // if ((l+0.5)/chi>1e-2) fl = 0.;
-psi_bt = get_psi_b1t_at_k_and_z((l+0.5)/chi,z,ptsz);
+psi_bt = 1.;//get_psi_b1t_at_k_and_z((l+0.5)/chi,z,ptsz);
+
 psi_b2t = get_psi_b2t_at_k_and_z((l+0.5)/chi,z,ptsz);
 
 pk_phi_0[ik] = fl*psi_bt;
@@ -7941,17 +7946,17 @@ pk2xi(N,rp,t12_xi12,k,t12_Pkr,ptsz);
 r =19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 +9./7.*psi_bg*pwl_value_1d(N,lnk,t2_Pkr,log(l3))
 -11./7.*pow(l3,2.)*psi_bg*pwl_value_1d(N,lnk,t3_Pkr,log(l3))
-+1./7.*psi_bg*pow(l3,4.)*pwl_value_1d(N,lnk,t4_Pkr,log(l3))
-+24./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t5_Pkr,log(l3))
-+2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t6_Pkr,log(l3))
-+2./7.*pow(l3,2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t7_Pkr,log(l3))
--4./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t8_Pkr,log(l3))
--4./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t9_Pkr,log(l3))
-+2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t10_Pkr,log(l3))
-// b2 terms:
-+psi_b2g*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
-+psi_bg*pwl_value_1d(N,lnk,t11_Pkr,log(l3))
-+psi_bg*pk3*pwl_value_1d(N,lnk,t12_Pkr,log(l3));
++1./7.*psi_bg*pow(l3,4.)*pwl_value_1d(N,lnk,t4_Pkr,log(l3));
+// +24./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t5_Pkr,log(l3))
+// +2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t6_Pkr,log(l3))
+// +2./7.*pow(l3,2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t7_Pkr,log(l3))
+// -4./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t8_Pkr,log(l3))
+// -4./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t9_Pkr,log(l3))
+// +2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t10_Pkr,log(l3))
+// // b2 terms:
+// +psi_b2g*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
+// +psi_bg*pwl_value_1d(N,lnk,t11_Pkr,log(l3))
+// +psi_bg*pk3*pwl_value_1d(N,lnk,t12_Pkr,log(l3));
 
 // r = (psi_b2g+19./7.*psi_bg)*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 // +9./7.*psi_bg*pwl_value_1d(N,lnk,t2_Pkr,log(l3))
