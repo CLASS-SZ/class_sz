@@ -2938,7 +2938,7 @@ int input_read_parameters(
       class_read_double("x_out_truncated_nfw_profile",ptsz->x_out_truncated_nfw_profile);
 
       class_read_double("cvir_tau_profile_factor",ptsz->cvir_tau_profile_factor);
-      class_read_double("x_out_nfw_profile",ptsz->x_out_nfw_profile);
+      // class_read_double("x_out_nfw_profile",ptsz->x_out_nfw_profile);
 
       class_read_int("pk_nonlinear_for_vrms2",ptsz->pk_nonlinear_for_vrms2);
 
@@ -5766,7 +5766,7 @@ int input_default_params(
   ptsz->has_200c = 0;
 
 
-  ptsz->HMF_prescription_NCDM=1; //no-pres
+  ptsz->HMF_prescription_NCDM=1; //CDM
 
 
   pcsz->size_logM = 100;

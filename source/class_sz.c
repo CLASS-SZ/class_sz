@@ -5647,7 +5647,7 @@ int evaluate_halo_bias_b2(double * pvecback,
    return _SUCCESS_;
 }
 
-int get_pk_lin_at_k_and_z(double k, double z,
+double get_pk_lin_at_k_and_z(double k, double z,
                           struct background * pba,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
@@ -9660,7 +9660,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
   if (ptsz->has_kSZ_kSZ_gal_1h_fft
   ||  ptsz->has_kSZ_kSZ_gal_2h_fft
   ||  ptsz->has_kSZ_kSZ_gal_3h_fft){
-    ptsz->N_samp_fftw = 5000;
+    ptsz->N_samp_fftw = 1000;
     fftw_complex* a_tmp;
     fftw_complex* b_tmp;
     a_tmp = fftw_alloc_complex(ptsz->N_samp_fftw);

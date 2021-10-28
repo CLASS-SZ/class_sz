@@ -1518,7 +1518,7 @@ double get_ksz_filter_at_l(double l,
                                     struct primordial * ppm,
                                     struct nonlinear * pnl,
                                     struct tszspectrum * ptsz);
-int get_pk_lin_at_k_and_z(double k, double z,
+double get_pk_lin_at_k_and_z(double k, double z,
                           struct background * pba,
                           struct primordial * ppm,
                           struct nonlinear * pnl,

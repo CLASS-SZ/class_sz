@@ -6052,6 +6052,9 @@ double integrand_redshift(double ln1pz, void *p){
 
   double z =  V->pvectsz[V->ptsz->index_z];
 
+
+
+
   //Evaluation of background quantities @ z:
   double tau;
   int first_index_back = 0;
@@ -6081,11 +6084,35 @@ double integrand_redshift(double ln1pz, void *p){
 
 
   V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2); // conformal distance squared in [Mpc/h]^2
-
+  double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
   V->pvectsz[V->ptsz->index_dgdz] = V->pvecback[V->pba->index_bg_D]*(1.-V->pvecback[V->pba->index_bg_f]); // d/dz(D/a)
 
 
+
   int index_md = (int) V->pvectsz[V->ptsz->index_md];
+
+
+  double kl;
+  //  if (_pk_at_z_1h_
+  //   || _pk_gg_at_z_1h_
+  //   || _pk_at_z_2h_
+  //   || _pk_gg_at_z_2h_
+  //   || _bk_at_z_1h_
+  //   || _bk_at_z_2h_
+  //   || _bk_at_z_3h_
+  //   || _bk_ttg_at_z_1h_
+  //   || _bk_ttg_at_z_2h_
+  //   || _bk_ttg_at_z_3h_
+  // ){
+  //    int index_k = (int) V->pvectsz[ptsz->index_k_for_pk_hm];
+  //    kl = V->ptsz->k_for_pk_hm[index_k];
+  //     }
+  //  else{
+  //    int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
+  //    kl = (V->ptsz->ell[index_l]+0.5)/chi;
+  //   }
+
+
 
   if (((V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo))
     ||((V->ptsz->has_tSZ_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lensmag_1h))
@@ -6100,7 +6127,7 @@ double integrand_redshift(double ln1pz, void *p){
 
     evaluate_redshift_int_lensmag(V->pvectsz,V->ptsz);
     double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_lensmag];
-    double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+    // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
     V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_lensmag);
 
   }
@@ -6110,7 +6137,7 @@ double integrand_redshift(double ln1pz, void *p){
   )
   {
 
-double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+// double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
 double chi_star =  V->ptsz->chi_star;  // in Mpc/h
 // sigma_crit_lensmag:
 evaluate_redshift_int_lensmag(V->pvectsz,V->ptsz);
@@ -6128,7 +6155,7 @@ V->pvectsz[V->ptsz->index_lensing_Sigma_crit] =  sqrt(sigma_crit_lensmag*sigma_c
 // CMB lensing
 // Eq. 6 of https://arxiv.org/pdf/1312.4525.pdf
 
-double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+// double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
 double chi_star =  V->ptsz->chi_star;  // in Mpc/h
 double sigma_crit_kappa =  pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)*chi_star/chi/(chi_star-chi);
 V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = sigma_crit_kappa;
@@ -6688,6 +6715,17 @@ if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at
  || ((V->ptsz->has_bk_ttg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_ttg_at_z_2h))
  || ((V->ptsz->has_bk_ttg_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_ttg_at_z_3h))
 ){
+int index_k = (int) V->pvectsz[V->ptsz->index_k_for_pk_hm];
+kl = V->ptsz->k_for_pk_hm[index_k];
+
+if (((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
+ || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))){
+   result *= get_pk_lin_at_k_and_z(kl,z,V->pba,V->ppm,V->pnl,V->ptsz);
+   // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+   // result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+ }
+
+
 
    if ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h)){
      evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -6731,8 +6769,8 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lens_2h))
  || ((V->ptsz->has_tSZ_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lensmag_2h))
  || ((V->ptsz->has_sz_m_y_y_2h == _TRUE_) && (index_md == V->ptsz->index_md_m_y_y_2h))
- || ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
- || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))
+ // || ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
+ // || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))
  // || ((V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h))
     ){
 
@@ -7754,8 +7792,8 @@ r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
 
   /// set-up:
 
-double l_min = 1e-10;
-double l_max = 1e10; // this is a precision parameter
+double l_min = 1e-12;
+double l_max = 1e9; // this is a precision parameter
 // tabulate the integrand in the "l" dimension:
 const int N = ptsz->N_samp_fftw;
 double k[N];
@@ -9276,15 +9314,15 @@ double m_min,m_max;
 
 // here we should always integrate over the full mass range,
 // since this is a normalization term
-
-if (ptsz->hm_consistency == 0){
-  m_min = 1e10; // this has to be the same as the minimal mass at whch the counter terms are tabulated
-  m_max = 1e16; // this has to be the same as the maximal mass at whch the counter terms are tabulated
-}
-else{
+//
+// if (ptsz->hm_consistency == 0){
+//   m_min = 1e10; // this has to be the same as the minimal mass at which the counter terms are tabulated
+//   m_max = 1e16; // this has to be the same as the maximal mass at which the counter terms are tabulated
+// }
+// else{
 m_min = ptsz->M1SZ;
 m_max = ptsz->M2SZ;
-}
+// }
 
 double * pvecback;
 double * pvectsz;
