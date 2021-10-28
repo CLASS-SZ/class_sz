@@ -239,17 +239,17 @@ def run(args):
     p_dict['n_m_density_profile'] = 200 # 80
     p_dict['n_z_density_profile'] = 200 # 80
 
-    p_dict['n_z_psi_b1g'] = 400
-    p_dict['n_l_psi_b1g'] = 2000
+    p_dict['n_z_psi_b1g'] = 100
+    p_dict['n_l_psi_b1g'] = 400
 
     p_dict['n_z_psi_b2g'] = 100
-    p_dict['n_l_psi_b2g'] = 4000
+    p_dict['n_l_psi_b2g'] = 400
 
     p_dict['n_z_psi_b2t'] = 100
-    p_dict['n_l_psi_b2t'] = 2000
+    p_dict['n_l_psi_b2t'] = 400
 
-    p_dict['n_z_psi_b1t'] = 400
-    p_dict['n_l_psi_b1t'] = 2000
+    p_dict['n_z_psi_b1t'] = 100
+    p_dict['n_l_psi_b1t'] = 400
     # p_dict['P0_B12'] = 30.
     #p_dict['halofit_k_per_decade'] = 3000.
     # p_dict['P_k_max_h/Mpc'] = 50.
@@ -386,8 +386,8 @@ def run(args):
             p_dict['redshift_epsabs'] = 1.e-30 # fiducial 1e-30
             p_dict['redshift_epsrel'] = 1.e-2 # fiducial value 1e-8
 
-            p_dict['N_kSZ2_gal_multipole_grid'] =  100#70 # fiducial 70
-            p_dict['N_kSZ2_gal_theta_grid'] =  100#70 # fiducial 70
+            p_dict['N_kSZ2_gal_multipole_grid'] =  70#70 # fiducial 70
+            p_dict['N_kSZ2_gal_theta_grid'] =  70#70 # fiducial 70
             p_dict['ell_min_kSZ2_gal_multipole_grid'] = 2.
             p_dict['ell_max_kSZ2_gal_multipole_grid'] = 2e5
 
@@ -894,7 +894,7 @@ def run(args):
                             markersize = 3,
                             marker='o')
 
-                    ax.plot(multipoles[id_p],kSZ_kSZ_gal_3h_fft[id_p]*fac,color='green',
+                    ax.plot(multipoles[id_p],np.abs(kSZ_kSZ_gal_3h_fft[id_p])*fac,color='green',
                             ls='-',alpha = 1.,
                             # label = val_label[id_p] + ' (1h)',
                             label = '3-halo (FFTs)',

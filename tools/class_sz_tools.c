@@ -7772,13 +7772,9 @@ r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
   // pvectsz[ptsz->index_multipole_for_pk] = l3;
   // evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
   // double pk3 = pvectsz[ptsz->index_pk_for_halo_bias];
-  double pk3 = 0.;
-  pk3 =  get_pk_lin_at_k_and_z((l3+0.5)/chi,z,pba,ppm,pnl,ptsz);
-
-
-
+  double pk3 = get_pk_lin_at_k_and_z((l3+0.5)/chi,z,pba,ppm,pnl,ptsz);
   double psi_bg = get_psi_b1g_at_k_and_z((l3+0.5)/chi,z,ptsz);
-  double psi_b2g = get_psi_b2g_at_k_and_z((l3+0.5)/chi,z,ptsz);
+  double psi_b2g =get_psi_b2g_at_k_and_z((l3+0.5)/chi,z,ptsz);
   // double psi_b2t = get_psi_b2t_at_k_and_z(l3,z,ptsz);
 
   // printf("%.5e %.5e\n",r_m_11,r_m_21);
@@ -7840,7 +7836,6 @@ double psi_b2t;
 
 // printf("z = %.5e l = %.5e\n",z,l3);
 
-psi_bg =  1.;
 
 
 
@@ -7855,18 +7850,19 @@ l = k[ik];
 pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,pba,ppm,pnl,ptsz);
 fl = get_ksz_filter_at_l(l,ptsz);
 // if ((l+0.5)/chi>1e-2) fl = 0.;
-psi_bt = 1.;//get_psi_b1t_at_k_and_z((l+0.5)/chi,z,ptsz);
+psi_bt = get_psi_b1t_at_k_and_z((l+0.5)/chi,z,ptsz);
 
 psi_b2t = get_psi_b2t_at_k_and_z((l+0.5)/chi,z,ptsz);
+// l = 1.;
 
 pk_phi_0[ik] = fl*psi_bt;
-pk_phi_m2[ik] = pow(l,-2)*fl*psi_bt;
-pk_phi_4[ik] = pow(l,4)*fl*psi_bt;
-pk_phi_2[ik] = pow(l,2)*fl*psi_bt;
+pk_phi_m2[ik] = pow((l+0.5)/chi,-2)*fl*psi_bt;
+pk_phi_4[ik] = pow((l+0.5)/chi,4)*fl*psi_bt;
+pk_phi_2[ik] = pow((l+0.5)/chi,2)*fl*psi_bt;
 
 pk_tilde_phi_0[ik] = fl*pkl*psi_bt;
-pk_tilde_phi_m2[ik] = pow(l,-2)*fl*pkl*psi_bt;
-pk_tilde_phi_2[ik] = pow(l,2)*fl*pkl*psi_bt;
+pk_tilde_phi_m2[ik] = pow((l+0.5)/chi,-2)*fl*pkl*psi_bt;
+pk_tilde_phi_2[ik] = pow((l+0.5)/chi,2)*fl*pkl*psi_bt;
 pk_tilde_phi_b20[ik] =  fl*pkl*psi_b2t;
 
 
@@ -7942,11 +7938,35 @@ pk2xi(N,rp,t11_xi12,k,t11_Pkr,ptsz);
 pk2xi(N,rp,t12_xi12,k,t12_Pkr,ptsz);
 
 
+r = 10./14.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
+   -5./7.*psi_bg*pwl_value_1d(N,lnk,t2_Pkr,log(l3))
+   +3./7.*psi_bg*pow((l3+0.5)/chi,2.)*pwl_value_1d(N,lnk,t3_Pkr,log(l3))
+   +1./7.*psi_bg*pow((l3+0.5)/chi,4.)*pwl_value_1d(N,lnk,t4_Pkr,log(l3))
+   // b2 terms:
+   +psi_b2g*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
+   +2.*psi_bg*pk3*pwl_value_1d(N,lnk,t12_Pkr,log(l3))
 
-r =19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
-+9./7.*psi_bg*pwl_value_1d(N,lnk,t2_Pkr,log(l3))
--11./7.*pow(l3,2.)*psi_bg*pwl_value_1d(N,lnk,t3_Pkr,log(l3))
-+1./7.*psi_bg*pow(l3,4.)*pwl_value_1d(N,lnk,t4_Pkr,log(l3));
+   +10./14.*pk3*psi_bg*pwl_value_1d(N,lnk,t5_Pkr,log(l3))
+   +3./14.*pk3*psi_bg*pow((l3+0.5)/chi,-2.)*pwl_value_1d(N,lnk,t8_Pkr,log(l3))
+   +3./14.*pk3*psi_bg*pwl_value_1d(N,lnk,t9_Pkr,log(l3))
+   -5./14.*pk3*psi_bg*pow((l3+0.5)/chi,2.)*pwl_value_1d(N,lnk,t7_Pkr,log(l3))
+   -5./14.*pk3*psi_bg*pow((l3+0.5)/chi,-2.)*pwl_value_1d(N,lnk,t6_Pkr,log(l3))
+   +1./7.*pk3*psi_bg*pow((l3+0.5)/chi,-2.)*pwl_value_1d(N,lnk,t10_Pkr,log(l3))
+
+   +10./14.*pk3*psi_bg*pwl_value_1d(N,lnk,t5_Pkr,log(l3))
+   +3./14.*pk3*psi_bg*pwl_value_1d(N,lnk,t9_Pkr,log(l3))
+   +3./14.*pk3*psi_bg*pow((l3+0.5)/chi,-2.)*pwl_value_1d(N,lnk,t8_Pkr,log(l3))
+   -5./14.*pk3*psi_bg*pow((l3+0.5)/chi,2.)*pwl_value_1d(N,lnk,t7_Pkr,log(l3))
+   -5./14.*pk3*psi_bg*pow((l3+0.5)/chi,-2.)*pwl_value_1d(N,lnk,t6_Pkr,log(l3))
+   +1./7.*pk3*psi_bg*pow((l3+0.5)/chi,-2.)*pwl_value_1d(N,lnk,t10_Pkr,log(l3));
+
+
+
+   //+2./7.*pwl_value_1d(N,lnk,t2_Pkr,log(l3));
+// r = 19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
+//     +9./7.*psi_bg*pwl_value_1d(N,lnk,t2_Pkr,log(l3))
+//     -11./7.*pow((l3+0.5)/chi,2.)*psi_bg*pwl_value_1d(N,lnk,t3_Pkr,log(l3))
+//     +1./7.*psi_bg*pow((l3+0.5)/chi,4.)*pwl_value_1d(N,lnk,t4_Pkr,log(l3));
 // +24./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t5_Pkr,log(l3))
 // +2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t6_Pkr,log(l3))
 // +2./7.*pow(l3,2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t7_Pkr,log(l3))
@@ -7954,7 +7974,7 @@ r =19./7.*psi_bg*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 // -4./7.*psi_bg*pk3*pwl_value_1d(N,lnk,t9_Pkr,log(l3))
 // +2./7.*pow(l3,-2.)*psi_bg*pk3*pwl_value_1d(N,lnk,t10_Pkr,log(l3))
 // // b2 terms:
-// +psi_b2g*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
+ // psi_b2g*pwl_value_1d(N,lnk,t1_Pkr,log(l3))
 // +psi_bg*pwl_value_1d(N,lnk,t11_Pkr,log(l3))
 // +psi_bg*pk3*pwl_value_1d(N,lnk,t12_Pkr,log(l3));
 
@@ -8159,6 +8179,19 @@ if (isnan(r) || isinf(r)){
 
 
   // r = r_m_b1t1*r_m_b1t2*r_m_b1g3*comb_pks_fks+r_m_b1t1*r_m_b1t2*r_m_b2g3*comb_pks;
+  // r_m_b1t1 = 1.;
+  // r_m_b1t2 = 1.;
+  // r_m_b1g3 = 1.;
+  // r_m_b2g3 = 1.;
+  // r_m_b2t1 = 1.;
+  // r_m_b2t2 = 1.;
+  //
+  //
+  // pk1 = 1.;
+  // pk2 = 1.;
+  // pk3 = 1.;
+  // f2_123 = 1.;
+
   r =2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_123*pk1*pk2
     +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_312*pk3*pk1
     +2.*r_m_b1t1*r_m_b1t2*r_m_b1g3*f2_231*pk2*pk3
