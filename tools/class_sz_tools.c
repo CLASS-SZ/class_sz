@@ -2819,11 +2819,11 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
 
   //Battaglia 16 case:
 
-  double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
+  // double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
   // double r200c = pvectsz[ptsz->index_r200c]; //in Mpc/h
-  double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
+  // double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
   // xout = 50.*rvir/rs; // as in hmvec (default 20, but set to 50 in example file)
-  double xout = 50.; // as in hmvec (default 20, but set to 50 in example file)
+  double xout = 5.; // as in hmvec (default 20, but set to 50 in example file)
 
   c_nfw = 1.;
 
@@ -2835,7 +2835,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 500;
+  int size_w = 3000;
   w = gsl_integration_workspace_alloc(size_w);
 
 
@@ -2843,8 +2843,9 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
 
   int index_md = (int) pvectsz[ptsz->index_md];
   double y_eff;
-  y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
-             /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+  // y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
+  //            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+  y_eff = pvectsz[ptsz->index_multipole_for_nfw_profile]*pvectsz[ptsz->index_r200c]*(1.+pvectsz[ptsz->index_z]);
 
   w0 = y_eff;
 
@@ -2877,10 +2878,14 @@ int rho_gnfw(double * rho_nfw_x,
 
  double z = pvectsz[ptsz->index_z];
 
- double y_eff;
-   y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
-            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+ // double y_eff;
+ //   y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
+ //            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
 
+ double y_eff;
+ // y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
+ //            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+ y_eff = pvectsz[ptsz->index_multipole_for_nfw_profile]*pvectsz[ptsz->index_r200c]*(1.+pvectsz[ptsz->index_z]);
 
     double A_rho0 = ptsz->A_rho0;
     double A_alpha = ptsz->A_alpha;
@@ -3154,7 +3159,7 @@ r_delta = pow(3.*m_asked/(4.*_PI_*delta*rho_crit),1./3.); //in units of h^-1 Mpc
 // rho_s = pow(c_delta,3.)*delta*rho_crit/3./m_nfw(c_delta);
 
 r_s = r_delta/c_delta;
-x = r_asked/r_s;
+// x = r_asked/r_s;
 x = x_asked;
 // p_x = 1./x*1./pow(1.+x,2);
 
@@ -3290,7 +3295,7 @@ if (l<ptsz->array_profile_ln_l[0])
 
  double result = exp(ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
  if (isnan(result) || isinf(result)){
- printf("z %.8e m %.8e l %.8e\n",z_asked,m_asked,l_asked);
+ printf("in get gas: z %.8e m %.8e l %.8e  ln_rho_low  %.8e ln_rho_low  %.8e id_l_low %d\n",z_asked,m_asked,l_asked,ln_rho_low,ln_rho_up,id_l_low);
  exit(0);
 }
  return result;
@@ -3324,7 +3329,7 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 
  // array of multipoles:
  double ln_ell_min = log(1e-3);
- double ln_ell_max = log(5e4);
+ double ln_ell_max = log(5e2);
  int n_ell = ptsz->n_ell_density_profile;
  int n_m = ptsz->n_m_density_profile;
  int n_z = ptsz->n_z_density_profile;
@@ -3332,16 +3337,16 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
  class_alloc(ptsz->array_profile_ln_l,sizeof(double *)*n_ell,ptsz->error_message);
 
  // array of masses:
- double ln_m_min = log(1e6);
- double ln_m_max = log(1e18);
+ double ln_m_min = log(5e8);
+ double ln_m_max = log(1e16);
 
 
  class_alloc(ptsz->array_profile_ln_m,sizeof(double *)*n_m,ptsz->error_message);
 
 
  // array of redshifts:
- double ln_1pz_min = log(1.+1e-8);
- double ln_1pz_max = log(1.+6.);
+ double ln_1pz_min = log(1.+ptsz->z1SZ);
+ double ln_1pz_max = log(1.+ptsz->z2SZ);
 
 
  class_alloc(ptsz->array_profile_ln_1pz,sizeof(double *)*n_z,ptsz->error_message);
@@ -3508,24 +3513,24 @@ for (index_z=0;
  // nfw has an analytical formula
  if (ptsz->tau_profile == 1){
   pvectsz[ptsz->index_m200c] = exp(lnM);
-  class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
-                                   200.*(pvectsz[ptsz->index_Rho_crit]),
-                                   pvectsz[ptsz->index_Delta_c],
-                                   pvectsz[ptsz->index_Rho_crit],
-                                   z,
-                                   &pvectsz[ptsz->index_mVIR],
-                                   ptsz,
-                                   pba),
-                  ptsz->error_message,
-                  ptsz->error_message);
+  // class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
+  //                                  200.*(pvectsz[ptsz->index_Rho_crit]),
+  //                                  pvectsz[ptsz->index_Delta_c],
+  //                                  pvectsz[ptsz->index_Rho_crit],
+  //                                  z,
+  //                                  &pvectsz[ptsz->index_mVIR],
+  //                                  ptsz,
+  //                                  pba),
+  //                 ptsz->error_message,
+  //                 ptsz->error_message);
  //
  //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
-  pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+  // pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
 
   pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
   pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
-  pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c];
+  // pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c];
 
  double result_int;
  class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int),
@@ -3538,7 +3543,10 @@ for (index_z=0;
  tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_r200c],3);
 
  result *= tau_normalisation;
-
+ if (result<=0 || isnan(result) || isinf(result)){
+ printf("In tab gas: k %.4e z %.8e rt %.8e mt %.8e res = %.4e\n",ell,pvectsz[ptsz->index_z],pvectsz[ptsz->index_r200c],pvectsz[ptsz->index_m200c],result);
+ // exit(0);
+}
 }
 else if (ptsz->tau_profile == 0){ // truncated nfw profile
    //
@@ -7690,6 +7698,7 @@ double integrand_patterson_test(double logM, void *p){
 
   r_m_21 = pk3*get_psi_b1g_at_k_and_z((l3+0.5)/chi,z,ptsz);
 
+
   // printf("%.5e %.5e\n",r_m_11,r_m_21);
 
 
@@ -7701,8 +7710,10 @@ double integrand_patterson_test(double logM, void *p){
 
   /// set-up:
 
-double l_min = 1e-2;
-double l_max = 2e5; // this is a precision parameter
+// double l_min = 1e-2;
+// double l_max = 2e5; // this is a precision parameter
+double l_min = ptsz->l_min_samp_fftw;
+double l_max = ptsz->l_max_samp_fftw; // this is a precision parameter
 // tabulate the integrand in the "l" dimension:
 const int N = ptsz->N_samp_fftw;
 double k[N], Pk1[N],Pk2[N], Pkr[N];
@@ -7722,11 +7733,15 @@ l = k[ik];
 fl = get_ksz_filter_at_l(l,ptsz);
 
 Pk1[ik] = fl*get_psi_b1gt_at_k1_k2_and_z((l3+0.5)/chi,(l+0.5)/chi,z,ptsz);
+if (isnan(Pk1[ik])||isinf(Pk1[ik])){
+  printf("fft 2h : z %.3e k3 %.4e k' %.4e\n",z,(l3+0.5)/chi,(l+0.5)/chi);
+  exit(0);
+}
 
 // pvectsz[ptsz->index_multipole_for_pk] = l;
 // evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 double pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,pba,ppm,pnl,ptsz);//pvectsz[ptsz->index_pk_for_halo_bias];
-Pk2[ik] = fl*get_psi_b1t_at_k_and_z((l+0.5)/chi,z,ptsz)*pkl;
+Pk2[ik] = fl*pkl*get_psi_b1t_at_k_and_z((l+0.5)/chi,z,ptsz);
 // if(l>3e3)
   // printf("k = %.5e pk = %.5e\n",l,Pk2[ik]);
 }
@@ -7757,6 +7772,10 @@ r_m_23 = 1.;
 
 r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
 // printf("xi pd done r=%.5e\n",r);
+if (isnan(r) || isinf(r)){
+  printf("k %.3e z %.3e r_m_11 %.5e r_m_12 %.5e r_m_21 %.5e\n",(l3+0.5)/chi,z,r_m_11,r_m_12,r_m_21);
+  exit(0);
+}
   }
 
 
@@ -7788,8 +7807,8 @@ r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
 
   /// set-up:
 
-double l_min = 1e-12;
-double l_max = 1e9; // this is a precision parameter
+  double l_min = ptsz->l_min_samp_fftw;
+  double l_max = ptsz->l_max_samp_fftw; // this is a precision parameter
 // tabulate the integrand in the "l" dimension:
 const int N = ptsz->N_samp_fftw;
 double k[N];
@@ -10173,7 +10192,10 @@ double integrand_psi_b1gt(double lnM_halo, void *p){
       evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
       double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       double result = hmf*b1*g*t;
-
+      if (isnan(result)||isinf(result)){
+        printf("tab b1gt : z %.3e k3 %.4e k' %.4e\n",z,ell1,ell2);
+        exit(0);
+      }
 
 
   return result;
@@ -10843,7 +10865,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1gt; index_z++)
 
 // parallelize ver l
 double l_min = 1.e-3;
-double l_max = 3e5;
+double l_max = 1e3;
 
 int index_l;
 for (index_l=0; index_l<ptsz->n_l_psi_b1gt; index_l++)
@@ -10946,7 +10968,13 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1gt; index_z++)
      r += bmin_umin;
      // printf("counter terms done r_m_1\n");
   }
-
+  if (r==0){
+    r = 1e-100;
+  }
+  if (r < 0. || isnan(r)||isinf(r)){
+    printf("tab b1gt after int : z %.3e r %.3e k1 %.3e k2 %.3e\n",z,r,l1,l2);
+    // exit(0);
+  }
           ptsz->array_psi_b1gt_psi[index_z][index_l1_l2] = log(r);
 
           // printf("ptsz->array_psi_b1t_psi[%d] = %.5e\n",index_l_z,r);
@@ -14457,8 +14485,12 @@ double get_psi_b1gt_at_k1_k2_and_z(double l_asked,double l_asked2, double z_aske
                                   &l2);
  double ln_l_low = ptsz->array_psi_b1gt_redshift[id_z_low-1];
  double ln_l_up = ptsz->array_psi_b1gt_redshift[id_z_up-1];
-
- return exp(ln_rho_low + ((z - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
+ double result =  exp(ln_rho_low + ((z - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
+ if (isnan(result)||isinf(result)){
+   printf("get b1gt : z %.3e l_asked %.4e k1 %.4e k2 %.4e ln_rho_low %.4e ln_rho_up %.4e\n",z,l_asked,exp(l1),exp(l2),ln_rho_low,ln_rho_up);
+   exit(0);
+ }
+ return result;
 
 
 }

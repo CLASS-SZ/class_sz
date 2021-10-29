@@ -278,6 +278,9 @@ cdef extern from "class.h":
         double phi0SZ
         double eta0SZ
         double sigma8_Pcb
+        double * frequencies_for_cib
+        double * cib_monopole
+        int n_frequencies_for_cib
         double * ell
         double * cl_sz_1h
         double * cl_sz_2h

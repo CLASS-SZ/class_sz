@@ -358,6 +358,14 @@ if (ptsz->has_bk_ttg_at_z_hf
  // tabulate density, only when requested (e.g., kSZ)
  tabulate_gas_density_profile(pba,ptsz);
 
+//  if (ptsz->check_consistency_conditions == 1){
+//  printf("checking normalization of profile\n");
+//  // the normalization of the profile should be m_delta in the limit k->0.
+//  result = get_gas_density_profile_at_k_M_z(k,m_asked,z_asked,ptsz);
+//
+//  exit(0);
+// }
+
     // printf("l_asked %.8e")
 // l = 5.00000000e+04 m = 1.00000000e+18 z = 5.66598637e+00 lnrho = -9.90530714e+00
 // l = 4.31674192e+04 m = 4.34701316e+17 z = 1.25153177e+00 lnrho = -9.22605976e+00
@@ -3118,8 +3126,8 @@ double damping_1h_term;
 
   else if (_kSZ_kSZ_gal_1h_fft_){
 
-        double l_min = 1e-4;
-        double l_max = 2e5; // this is a precision parameter
+    double l_min = ptsz->l_min_samp_fftw;
+    double l_max = ptsz->l_max_samp_fftw; // this is a precision parameter
         // tabulate the integrand in the "l" dimension:
         const int N = ptsz->N_samp_fftw;
         double k[N], Pk[N],Pko[N];
@@ -3218,8 +3226,10 @@ double damping_1h_term;
 
   else if (_kSZ_kSZ_gal_2h_fft_){
   // else if (1==0){
-double l_min = 1e-2;
-double l_max = 2e5; // this is a precision parameter
+// double l_min = 1e-2;
+// double l_max = 2e5; // this is a precision parameter
+double l_min = ptsz->l_min_samp_fftw;
+double l_max = ptsz->l_max_samp_fftw; // this is a precision parameter
 // tabulate the integrand in the "l" dimension:
 const int N = ptsz->N_samp_fftw;
 double k[N], Pk[N],Pko[N];
@@ -4590,7 +4600,9 @@ int evaluate_tau_profile(
   double a = 1. / (1. + z);
   double tau_fac = a*sigmaT_over_mp/ptsz->mu_e*ptsz->f_free;
 
+  // pvectsz[ptsz->index_tau_profile] = tau_fac*result*pow(1.+z,3.)/pow(chi,2.);
   pvectsz[ptsz->index_tau_profile] = tau_fac*result*pow(1.+z,3.)/pow(chi,2.);
+
                                     //  //*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); //(rs*ls)^2 in [Mpc/h]^2
 
 
@@ -9660,7 +9672,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
   if (ptsz->has_kSZ_kSZ_gal_1h_fft
   ||  ptsz->has_kSZ_kSZ_gal_2h_fft
   ||  ptsz->has_kSZ_kSZ_gal_3h_fft){
-    ptsz->N_samp_fftw = 1000;
+    // ptsz->N_samp_fftw = 100;
     fftw_complex* a_tmp;
     fftw_complex* b_tmp;
     a_tmp = fftw_alloc_complex(ptsz->N_samp_fftw);

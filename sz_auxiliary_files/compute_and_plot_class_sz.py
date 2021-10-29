@@ -235,9 +235,9 @@ def run(args):
     p_dict['f_free'] = 1.
 
 
-    p_dict['n_ell_density_profile'] = 2000
-    p_dict['n_m_density_profile'] = 200 # 80
-    p_dict['n_z_density_profile'] = 200 # 80
+    p_dict['n_ell_density_profile'] =1000
+    p_dict['n_m_density_profile'] = 100 # 80
+    p_dict['n_z_density_profile'] = 100 # 80
 
     p_dict['n_z_psi_b1g'] = 100
     p_dict['n_l_psi_b1g'] = 400
@@ -248,8 +248,15 @@ def run(args):
     p_dict['n_z_psi_b2t'] = 100
     p_dict['n_l_psi_b2t'] = 400
 
-    p_dict['n_z_psi_b1t'] = 100
-    p_dict['n_l_psi_b1t'] = 400
+    p_dict['n_z_psi_b1t'] = 1000
+    p_dict['n_l_psi_b1t'] = 100
+
+    p_dict['n_z_psi_b1gt'] = 100
+    p_dict['n_l_psi_b1gt'] = 100
+
+    p_dict['N_samp_fftw'] = 2000
+    p_dict['l_min_samp_fftw'] = 1e-9
+    p_dict['l_max_samp_fftw'] = 1e9
     # p_dict['P0_B12'] = 30.
     #p_dict['halofit_k_per_decade'] = 3000.
     # p_dict['P_k_max_h/Mpc'] = 50.
@@ -270,12 +277,12 @@ def run(args):
 
     p_dict['z_min'] = 1e-2
     p_dict['hm_consistency'] = 1
-    p_dict['check_consistency_conditions'] = 0
+    p_dict['check_consistency_conditions'] = 1
     p_dict['M_min'] = 1e10#*p_dict['h']
-    p_dict['M_max'] = 1e17#*p_dict['h']
+    p_dict['M_max'] = 5e15#*p_dict['h']
     # p_dict['HMF_prescription_NCDM'] = 'No-pres'
     # p_dict['mass function'] = 'T10'  #fiducial  T10
-    p_dict['mass function'] = 'T10'  #fiducial  T10
+    p_dict['mass function'] = 'T08M200c'  #fiducial  T10
     p_dict['galaxy_sample'] = "unwise"
     #p_dict['full path to dndz (normalized galaxy dist.)'] = "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/unwise_"+couleur+".txt"
 
@@ -307,7 +314,7 @@ def run(args):
     p_dict['pk_nonlinear_for_vrms2'] = 1
     # p_dict['hm_consistency'] =  0: nothing 1: counter terms 2: alpha(z)
 
-    p_dict['delta for electron density'] ='200m'
+    p_dict['delta for electron density'] ='200c'
     p_dict['delta for galaxies'] ='200m'
     p_dict['delta for matter density'] ='200m' # not used
 
@@ -316,7 +323,7 @@ def run(args):
     p_dict['write sz results to files'] = 'yes' # this writes  PS and f(z)
 
     p_dict['nfw_profile_epsabs'] = 1.e-33
-    p_dict['nfw_profile_epsrel'] = 1.e-3
+    p_dict['nfw_profile_epsrel'] = 1.e-2
 
     p_dict['redshift_epsabs'] = 1.e-50 # fiducial 1e-30
     p_dict['redshift_epsrel'] = 1.e-8 # fiducial value 1e-8
@@ -392,10 +399,10 @@ def run(args):
             p_dict['ell_max_kSZ2_gal_multipole_grid'] = 2e5
 
             p_dict['mass_epsabs'] = 1.e-30 # fiducial 1e-30
-            p_dict['mass_epsrel'] = 1.e-2
+            p_dict['mass_epsrel'] = 1.e-3
             #p_dict['halo occupation distribution'] = 'KFSW20'
 
-            p_dict['dlogell'] = 0.1 # 0.1
+            p_dict['dlogell'] = 0.05 # 0.1
             # p_dict['dell'] = 100.
             # p_dict['dell'] = 100.
             p_dict['ell_min'] = 10.
@@ -860,13 +867,13 @@ def run(args):
                     print(kSZ_kSZ_gal_3h[id_p])
                     print(kSZ_kSZ_gal_hf[id_p])
                     fac =  (2.726e6)**2*multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi
-                    # if kSZ_kSZ_gal_1h[id_p].all() != 0:
-                    ax.plot(multipoles[id_p],kSZ_kSZ_gal_1h[id_p]*fac,color='k',
-                            ls='-',alpha = 1.,
-                            # label = val_label[id_p] + ' (1h)',
-                            label = '1-halo',
-                            markersize = 3,
-                            marker='o')
+                    if kSZ_kSZ_gal_1h[id_p].all() != 0:
+                        ax.plot(multipoles[id_p],kSZ_kSZ_gal_1h[id_p]*fac,color='k',
+                                ls='-',alpha = 1.,
+                                # label = val_label[id_p] + ' (1h)',
+                                label = '1-halo',
+                                markersize = 3,
+                                marker='o')
                     # ax.plot(kSZ_kSZ_gal_1h_ells_ref,kSZ_kSZ_gal_1h_ref*fac,color='k',
                     #         ls='-',alpha = 1.,
                     #         # label = val_label[id_p] + ' (1h)',
@@ -907,12 +914,12 @@ def run(args):
                                 label = '2-halo',
                                 markersize = 3,
                                 marker='o')
-                    # if kSZ_kSZ_gal_3h[id_p].all() != 0:
-                    ax.plot(multipoles[id_p],np.abs(kSZ_kSZ_gal_3h[id_p]*fac),color='orange',
-                            ls='-.',alpha = 1.,
-                            # label = val_label[id_p] + ' (3h)',
-                            label = '3-halo',
-                            markersize = 3,
+                    if kSZ_kSZ_gal_3h[id_p].all() != 0:
+                        ax.plot(multipoles[id_p],np.abs(kSZ_kSZ_gal_3h[id_p]*fac),color='orange',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = '3-halo',
+                                markersize = 3,
                             marker='o')
                         # ax.plot(multipoles[id_p],-kSZ_kSZ_gal_3h[id_p]*fac,color='orange',
                         #         ls='--',alpha = 1.,
@@ -920,17 +927,24 @@ def run(args):
                         #         # label = '3-halo',
                         #         markersize = 3,
                         #         marker='o')
-                    # if kSZ_kSZ_gal_hf[id_p].all() != 0:
-                    bgeff = 1.
-                    ax.plot(multipoles[id_p],kSZ_kSZ_gal_hf[id_p]*fac*bgeff,
-                            color='pink',
-                            ls='-',alpha = 1.,
+                    ax.plot(multipoles[id_p],np.abs(kSZ_kSZ_gal_1h_fft[id_p]*fac+kSZ_kSZ_gal_2h_fft[id_p]*fac+kSZ_kSZ_gal_3h_fft[id_p]*fac),
+                            color='grey',
+                            ls='-.',alpha = 1.,
                             # label = val_label[id_p] + ' (3h)',
-                            label = 'new computation - effective approach (class_sz)',
-                            markersize = 2,
-                            markerfacecolor = 'pink',
-                            markeredgecolor = 'k',
-                            marker='o')
+                            label = '1+2+3-halo')#,
+                            # markersize = 3,
+                            # marker='o')
+                    if kSZ_kSZ_gal_hf[id_p].all() != 0:
+                        bgeff = 1.
+                        ax.plot(multipoles[id_p],kSZ_kSZ_gal_hf[id_p]*fac*bgeff,
+                                color='pink',
+                                ls='-',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'new computation - effective approach (class_sz)',
+                                markersize = 2,
+                                markerfacecolor = 'pink',
+                                markeredgecolor = 'k',
+                                marker='o')
                     # # total = (kSZ_kSZ_gal_1h[id_p]+kSZ_kSZ_gal_2h[id_p]+kSZ_kSZ_gal_3h[id_p])*fac
                     # if (kSZ_kSZ_gal_1h[id_p]+kSZ_kSZ_gal_2h[id_p]+np.nan_to_num(kSZ_kSZ_gal_3h[id_p])).all() != 0:
                     #     ax.plot(multipoles[id_p],(kSZ_kSZ_gal_1h[id_p]+kSZ_kSZ_gal_2h[id_p]+np.nan_to_num(kSZ_kSZ_gal_3h[id_p]))*fac,color='red',
@@ -1362,22 +1376,22 @@ def run(args):
             FIG_NAME = '/bk_ttg'
             plt.savefig(FIG_DIR + FIG_NAME +".pdf")
         if (args.plot_gal_lens == 'yes'):
-            FIG_NAME = '/cl_gkappa_for_paper_final'
+            FIG_NAME = '/cl_gkappa_'
             plt.savefig(FIG_DIR + FIG_NAME +"_"+couleur+".pdf")
         elif (args.plot_gal_gal == 'yes'):
-            FIG_NAME = '/cl_gg_for_paper_final'
+            FIG_NAME = '/cl_gg_'
             plt.savefig(FIG_DIR + FIG_NAME +"_"+couleur+".pdf")
         elif (args.plot_lens_lens == 'yes'):
-            FIG_NAME = '/cl_phiphi_for_paper_final'
+            FIG_NAME = '/cl_phiphi_'
             plt.savefig(FIG_DIR + FIG_NAME +".pdf")
         elif (args.plot_kSZ_kSZ_gal == 'yes'):
-            FIG_NAME = '/cl_ksz2g_for_paper_final'
+            FIG_NAME = '/cl_ksz2g_'
             plt.savefig(FIG_DIR + FIG_NAME +"_"+couleur+".pdf")
         elif (args.plot_kSZ_kSZ_lensmag_1h == 'yes'):
-            FIG_NAME = '/cl_ksz2mu_for_paper_final'
+            FIG_NAME = '/cl_ksz2mu_'
             plt.savefig(FIG_DIR + FIG_NAME +"_"+couleur+".pdf")
         elif (args.plot_tSZ_gal == 'yes'):
-            FIG_NAME = '/cl_yxg_for_paper_'
+            FIG_NAME = '/cl_yxg_'
             plt.savefig(FIG_DIR + FIG_NAME +"_"+couleur+".pdf")
     plt.show(block=True)
 

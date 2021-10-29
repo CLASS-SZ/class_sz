@@ -1641,6 +1641,18 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cib_monopole(self):
+        """
+        (class_sz) Return the cib monopole as a function of frequency
+        """
+        cl = {}
+        cl['nu'] = []
+        cl['I0'] = []
+        for index in range(self.tsz.n_frequencies_for_cib):
+            cl['nu'].append(self.tsz.frequencies_for_cib[index])
+            cl['I0'].append(self.tsz.cib_monopole[index])
+        return cl
+
     def cl_cib_cib(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of cib x cib power spectrum

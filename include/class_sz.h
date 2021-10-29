@@ -104,7 +104,7 @@ struct tszspectrum {
 
 
   fftw_plan forward_plan, reverse_plan;
-  int N_samp_fftw;
+  // int N_samp_fftw;
 
 
   int use_analytical_truncated_nfw;
