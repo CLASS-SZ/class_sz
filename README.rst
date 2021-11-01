@@ -176,7 +176,7 @@ FFTLog library
 class_sz now requires FFTW3 library, used for the computations of kSZ^2 x LSS power spectra and bispectra.
 
 If the code complains about the library not being found, just make sure you followed the same installation instruction as you did for gsl.
-Namely, edit the the Makefile with the path to the include files (the ones that end with '.h') -I/path_to_fftw3/fftw3/include/, the path to the library files (the ones that end with .so,.a, .dylib, and so on) -L/path_to_fftw3/fftw3/lib/
+Namely, edit the the Makefile with the path to the include files (the ones that end with '.h') -I/path_to_fftw3/fftw3/include/, the path to the library files (the ones that end with .so,.a, .dylib, and so on) -L/path_to_fftw3/fftw3/lib/. The setup.py file may also need to be amended accordingly.
 And also make sure you do:
 
     $ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path_to_fftw3/fftw3/lib
