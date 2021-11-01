@@ -100,6 +100,8 @@ If you do not want to compile the **classy** python module do ‘$ make class’
 For the python module, you need the prerequisites such as **numpy**, **scipy**
 and **Cython** installed on your computer.
 
+(class_sz also works on the new mac M1 chips.)
+
 Run the code with most of the power spectra output:
 
     $ ./class class-sz_test.ini
@@ -109,8 +111,9 @@ Run the code with a simple tSZ computation:
     $ ./class class-sz_simple.ini
 
 
-The  'ini' files are the parameter file.
-I will be releasing a detailed explanatory file soon.
+The  'ini' files are the parameter file. I will be releasing a detailed explanatory file soon.
+If any of these two ini file crash, it simply means that the installation was not successful. In this case, please read carefully this readme file and follow the instructions given below. If you are still not able to run these test files, please get in touch.
+
 
 
 Computing SZ and Halo model quantities via the Python wrapper classy_sz
@@ -147,13 +150,13 @@ One may need to edit the **Makefile** adding the include path for gsl libraries,
 
     INCLUDES = -I../include -I/usr/local/include/ **-I/path_to_gsl/gsl-2.6/include/**
 
-    class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS) $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm **-L/path_to_gsl/gsl-2.6/lib/ -lgsl -lgslcblas**
+    class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS) $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm **-L/path_to_gsl/gsl-2.6/lib/ -lgsl -lgslcblas** -lfftw3
 
 For the python wrapper, one also may need to add the absolute path to gsl libraries, e.g.,:
 
 in **class_sz/python/setup.py**:
 
-    classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")], include_dirs=[nm.get_include(), include_folder, '**/path/to/gsl-2.6/include**'], libraries=liblist,library_dirs=[root_folder, GCCPATH],extra_link_args=['-lgomp','**-L/path_to_gsl/gsl-2.6/lib/**','**-lgsl**','**-lgslcblas**'])
+    classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")], include_dirs=[nm.get_include(), include_folder, '**/path/to/gsl-2.6/include**'], libraries=liblist,library_dirs=[root_folder, GCCPATH],extra_link_args=['-lgomp','**-L/path_to_gsl/gsl-2.6/lib/**','**-lgsl**','**-lgslcblas**',-lfftw3])
 
 
 
@@ -165,12 +168,22 @@ need to do:
     $ export LD_LIBRARY_PATH
 
 Note that these prescriptions are system dependent: you may not need them if your path and environment variables are such that gsl and its libraries are well linked.
+If you are tired having to execute these lines each time you run codes in a fresh terminal, just paste them in your bash profile file (the one that ends with .sh).
 
 FFTLog library
 ------------------------------
 
 class_sz now requires FFTW3 library, used for the computations of kSZ^2 x LSS power spectra and bispectra.
 
+If the code complains about the library not being found, just make sure you followed the same installation instruction as you did for gsl.
+Namely, edit the the Makefile with the path to the include files (the ones that end with '.h') -I/path_to_fftw3/fftw3/include/, the path to the library files (the ones that end with .so,.a, .dylib, and so on) -L/path_to_fftw3/fftw3/lib/
+And also make sure you do:
+
+    $ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path_to_fftw3/fftw3/lib
+
+    $ export LD_LIBRARY_PATH
+
+if the previous modifs were not enough.
 
 MacOS problem with OpenMP
 ------------------------------
