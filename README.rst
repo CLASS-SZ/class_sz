@@ -112,8 +112,9 @@ Run the code with a simple tSZ computation:
 
 
 The  'ini' files are the parameter file. I will be releasing a detailed explanatory file soon.
-If any of these two ini file crash, it simply means that the installation was not successful. In this case, please read carefully this readme file and follow the instructions given below. If you are still not able to run these test files, please get in touch.
 
+If any of these two ini file crash, it simply means that the installation was not successful. In this case, please read carefully this readme file and follow the instructions given below. If you are still not able to run these test files, please get in touch.
+If nothing appears to solve your installation issues: it is a good idea to try installing the original class code and check that it runs as well as its python wrapper (e.g., the notebook cl_SZ.ipynb). If the class code does not run on your system, you should consult the issue page of the class repository and first make sure you solve your issues with the original class code, before moving to class_sz. 
 
 
 Computing SZ and Halo model quantities via the Python wrapper classy_sz
