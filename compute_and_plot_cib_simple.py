@@ -7,12 +7,12 @@
 
 # Note the last option "-mode run" if you want to run class_sz, and "-mode plot" if you just want to plot
 # what was last computed.
-
+import matplotlib.pyplot as plt
 import argparse
 import numpy as np
 import os
 import subprocess
-import matplotlib.pyplot as plt
+
 from matplotlib.pyplot import cm
 from scipy import interpolate
 from scipy import stats
@@ -215,7 +215,7 @@ def run(args):
 
     # List of frequency bands for cib
     p_dict['cib_frequency_list_num'] = 1
-    p_dict['cib_frequency_list_in_GHz'] = '3000'
+    p_dict['cib_frequency_list_in_GHz'] = '217'
     # p_dict['cib_frequency_list_num'] = 5
     # p_dict['cib_frequency_list_in_GHz'] = '217,353,545,857,3000'
     p_dict["Frequency_id nu for cib in GHz (to save in file)"] = 0
@@ -253,10 +253,10 @@ def run(args):
     # p_dict['path_to_class'] = path_to_class
 
 
-    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_1h_3000x3000.txt')
+    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_1h_217x217.txt')
     ell_MM20 = L_ref[:,0]
     cl_cib_cib_1h_MM20 = L_ref[:,1]
-    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_2h_3000x3000.txt')
+    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_2h_217x217.txt')
     cl_cib_cib_2h_MM20 = L_ref[:,1]
 
 
@@ -368,12 +368,16 @@ def run(args):
                 ax.plot(ell_MM20,cl_cib_cib_2h_MM20,ls='-',label='MM20-2h')
                 print(cib_cib_1h[id_p])
                 print(cib_cib_2h[id_p])
+                print('ok')
+                print(multipoles[id_p])
                 ax.plot(multipoles[id_p],(cib_cib_2h[id_p]),color='r',ls='--',alpha = 1.,
                 marker =  'o',markersize = 2,
                 label = 'class_sz (2-halo)')
+                print('ok')
                 ax.plot(multipoles[id_p],(cib_cib_1h[id_p]),color='k',ls='--',alpha = 1.,
                 marker =  '*',markersize = 1,
                 label = 'class_sz (1-halo)')
+                print('ok')
                 # ax.plot(multipoles[id_p],(cib_cib_1h[id_p]+cib_cib_2h[id_p]),color='grey',ls='-',alpha = 1.,
                 # marker =  '*',markersize = 1,
                 # label = 'class_sz (1+2-halo)')
@@ -403,14 +407,18 @@ def run(args):
                 ax.plot(multipoles[id_p],multipoles[id_p]*(lens_cib_1h[id_p]+lens_cib_2h[id_p]),color='grey',ls='-',alpha = 1.,
                 marker =  '*',markersize = 1,
                 label = 'class_sz hod (1+2-halo)')
-
+            print('ok3')
             ax.legend(loc=4,ncol = 1)
+            print('ok4')
             plt.draw()
+            print('ok5')
             plt.pause(0.05)
+            print('ok6')
             if args.mode == 'run':
                 #save some results and remove the temporary files
+                print('ok3')
                 subprocess.call(['mv',path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt', path_to_class+'sz_auxiliary_files/run_scripts/tmp/' + 'class-sz_szpowerspectrum_' + str(p_val) + '.txt'])
-
+                print('ok3')
             id_p += 1
 
         #end loop on p over param values
