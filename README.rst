@@ -63,15 +63,21 @@ Using the code
 
 The **class_sz** code is public.
 
-References:
+Some References.
+
+The first papers using class_sz were:
 
 `Including massive neutrinos in thermal Sunyaev Zeldovich power spectrum and cluster counts analyses (Bolliet, Brinckmann, Chluba, Lesgourgues, 2020) <https://arxiv.org/abs/1906.10359>`_.
 
 `Dark Energy from the Thermal Sunyaev Zeldovich Power Spectrum (Bolliet, Comis, Komatsu, Macias-Perez, 2017)
 <https://arxiv.org/abs/1712.00788>`_.
 
+If you use the code, please also cite the original class papers (since class_sz is an extension of class), e.g.,:
+
 `CLASS II: Approximation schemes (Blas, Lesgourgues, Tram, 2011)
 <http://arxiv.org/abs/1104.2933>`_.
+
+As well as the original tSZ power spectrum halo-model paper:
 
 `The Sunyaev-Zel'dovich angular power spectrum as a probe of cosmological parameters (Komatsu and Seljak, 2002)
 <https://arxiv.org/abs/astro-ph/0205468>`_.
@@ -111,10 +117,10 @@ Run the code with a simple tSZ computation:
     $ ./class class-sz_simple.ini
 
 
-The  'ini' files are the parameter file. I will be releasing a detailed explanatory file soon.
+The  'ini' files are the parameter files. I will be releasing a detailed explanatory file soon.
 
-If any of these two ini file crash, it simply means that the installation was not successful. In this case, please read carefully this readme file and follow the instructions given below. If you are still not able to run these test files, please get in touch.
-If nothing appears to solve your installation issues: it is a good idea to try installing the original class code and check that it runs as well as its python wrapper (e.g., the notebook cl_SZ.ipynb). If the class code does not run on your system, you should consult the issue page of the class repository and first make sure you solve your issues with the original class code, before moving to class_sz. 
+If any of these two ini files crash, it simply means that the installation was not successful. In this case, please read carefully this readme file and follow the instructions given below. If you are still not able to run these test files, please get in touch.
+If nothing appears to solve your installation issues: it is a good idea to try installing the original class code and check that it runs as well as its python wrapper (e.g., the notebook cl_ST.ipynb). If the class code does not run on your system, you should consult the issue page of the class repository and first make sure you solve your issues with the original class code, before moving to class_sz.
 
 
 Computing SZ and Halo model quantities via the Python wrapper classy_sz
@@ -169,7 +175,7 @@ need to do:
     $ export LD_LIBRARY_PATH
 
 Note that these prescriptions are system dependent: you may not need them if your path and environment variables are such that gsl and its libraries are well linked.
-If you are tired having to execute these lines each time you run codes in a fresh terminal, just paste them in your bash profile file (the one that ends with .sh).
+If you are tired of having to execute these lines each time you run codes in a fresh terminal, just paste them in your bash profile file (the one that ends with .sh).
 
 FFTLog library
 ------------------------------
