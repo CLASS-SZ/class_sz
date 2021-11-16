@@ -293,7 +293,7 @@ def run(args):
     p_dict['galaxy_sample'] = 'custom'
     p_dict['full_path_to_dndz_gal'] = '/Users/boris/Work/DES/nz_maglim_z_bin1.txt'
     p_dict['full_path_to_source_dndz_gal'] = '/Users/boris/Work/DES/nz_maglim_z_bin3.txt'
-
+    p_dict['convert_cls_to_gamma'] = 1
 
     p_dict['concentration parameter'] = 'D08'
 
@@ -339,7 +339,7 @@ def run(args):
     p_dict['mass_epsabs'] = 1.e-40 # fiducial 1e-30
     p_dict['mass_epsrel'] = 1e-5
 
-    p_dict['dlogell'] = 0.05 # 0.1
+    p_dict['dell'] = 10. # 0.1
     p_dict['ell_min'] = 10.
     p_dict['ell_max'] = 5000.
 

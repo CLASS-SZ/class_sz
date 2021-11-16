@@ -573,6 +573,29 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
    write_redshift_dependent_quantities(pba,ptsz);
 
  }
+  if ( (ptsz->has_gal_gallens_1h || ptsz->has_gal_gallens_2h) && ptsz->convert_cls_to_gamma){
+    printf("converting cls to gamma\n");
+    const int N = ptsz->N_samp_fftw;
+    double l[N],thetas[N], gamma_t_1h[N], gamma_t_2h[N], cl_1h[N], cl_2h[N], l_min, l_max;
+    l_min = 1e-2;
+    l_max = 1e5;
+    int i;
+    for (i=0;i<N;i++){
+    l[i] = exp(log(l_min)+i/(N-1.)*(log(l_max)-log(l_min)));
+    double fac = l[i]*(l[i]+1.)/(2*_PI_);
+    cl_1h[i] = pwl_value_1d(ptsz->nlSZ,ptsz->ell,ptsz->cl_gal_gallens_1h,l[i])/fac;
+    cl_2h[i] = pwl_value_1d(ptsz->nlSZ,ptsz->ell,ptsz->cl_gal_gallens_2h,l[i])/fac;
+    }
+
+    cl2gamma(N,l,cl_1h,thetas,gamma_t_1h,ptsz);
+    cl2gamma(N,l,cl_2h,thetas,gamma_t_2h,ptsz);
+    for (i=0;i<N;i++){
+      printf("thetas = %.5e gamma_t_1h = %.5e gamma_t_2h = %.5e\n",thetas[i],gamma_t_1h[i],gamma_t_2h[i]);
+    }
+
+
+
+  }
 
 
    return _SUCCESS_;
@@ -1039,7 +1062,8 @@ if (ptsz->need_sigma == 1 ){
 
 if (ptsz->has_kSZ_kSZ_gal_1h_fft
    || ptsz->has_kSZ_kSZ_gal_2h_fft
-   || ptsz->has_kSZ_kSZ_gal_3h_fft){
+   || ptsz->has_kSZ_kSZ_gal_3h_fft
+   || ptsz->convert_cls_to_gamma){
   fftw_destroy_plan(ptsz->forward_plan);
   fftw_destroy_plan(ptsz->reverse_plan);
 }
@@ -9827,7 +9851,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
 
   if (ptsz->has_kSZ_kSZ_gal_1h_fft
   ||  ptsz->has_kSZ_kSZ_gal_2h_fft
-  ||  ptsz->has_kSZ_kSZ_gal_3h_fft){
+  ||  ptsz->has_kSZ_kSZ_gal_3h_fft
+  ||  ptsz->convert_cls_to_gamma){
     // ptsz->N_samp_fftw = 100;
     fftw_complex* a_tmp;
     fftw_complex* b_tmp;

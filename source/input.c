@@ -1728,6 +1728,7 @@ int input_read_parameters(
 
       //BB: read SZ parameters from ini file
       class_read_int("nlSZ",ptsz->nlSZ);
+      class_read_int("convert_cls_to_gamma",ptsz->convert_cls_to_gamma);
 
       class_read_int("N_kSZ2_gal_multipole_grid",ptsz->N_kSZ2_gal_multipole_grid);
       class_read_int("N_kSZ2_gal_theta_grid",ptsz->N_kSZ2_gal_theta_grid);
@@ -5359,6 +5360,8 @@ int input_default_params(
   ptsz->n_nu_L_sat = 103;
   ptsz->epsabs_L_sat = 1e-15;
   ptsz->epsrel_L_sat = 1e-6;
+
+  ptsz->convert_cls_to_gamma = 0;
 
 
 

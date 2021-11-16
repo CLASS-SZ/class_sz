@@ -475,6 +475,7 @@ struct tszspectrum {
   int index_integrand_id_gal_lensmag_1h_first;
   int index_integrand_id_gal_lensmag_1h_last;
 
+  int convert_cls_to_gamma;
   int has_gal_gallens_2h;
   int index_md_gal_gallens_2h;
   int index_integrand_id_gal_gallens_2h_first;

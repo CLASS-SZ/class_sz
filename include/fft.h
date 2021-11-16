@@ -128,10 +128,12 @@ These are the C++ bindings
 /* Compute the correlation function xi(r) from a power spectrum P(k), sampled
  * at logarithmically spaced points k[j]. */
 void pk2xi(int N,  const double k[],  const double pk[], double r[], double xi[], struct tszspectrum * ptsz);
+void cl2gamma(int N,  const double k[],  const double pk[], double r[], double xi[], struct tszspectrum * ptsz);
 
 /* Compute the power spectrum P(k) from a correlation function xi(r), sampled
  * at logarithmically spaced points r[i]. */
 void xi2pk(int N,  const double r[],  const double xi[], double k[], double pk[], struct tszspectrum * ptsz);
+void gamma2cl(int N,  const double r[],  const double xi[], double k[], double pk[], struct tszspectrum * ptsz);
 
 /* Compute the function
  *   \xi_l^m(r) = \int_0^\infty \frac{dk}{2\pi^2} k^m j_l(kr) P(k)
@@ -140,6 +142,7 @@ void xi2pk(int N,  const double r[],  const double xi[], double k[], double pk[]
  * resulting xi_l^m(r) will be evaluated at the dual r-values
  *   r[0] = 1/k[N-1], ..., r[N-1] = 1/k[0]. */
 void fftlog_ComputeXiLM(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[], struct tszspectrum * ptsz);
+void fftlog_ComputeXiLM_cl2gamma(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[], struct tszspectrum * ptsz);
 
 
 #include <complex.h>

@@ -858,6 +858,30 @@ void fftlog_ComputeXiLM(int l, int m, int N, const double k[], const double pk[]
       // fftw_free(b);
 }
 
+void fftlog_ComputeXiLM_cl2gamma(int l, int m, int N, const double k[], const double pk[], double r[], double xi[], struct tszspectrum * ptsz) {
+  double complex* a = malloc(sizeof(complex double)*N);
+  double complex* b = malloc(sizeof(complex double)*N);
+      // fftw_complex* a=NULL;
+      // fftw_complex* b=NULL;
+      // a = fftw_alloc_complex(N);
+      // b = fftw_alloc_complex(N);
+    int i;
+    for(i = 0; i < N; i++)
+        // a[i] = pow(k[i], m - 0.5) * pk[i];
+        a[i] = pow(k[i], 1 ) * pk[i]; // m = 1 in our case
+    fht(N, k, a, r, b, 2, 0, 1, 1, NULL, ptsz);
+    for(i = 0; i < N; i++)
+        xi[i] = creal(pow(2*M_PI*r[i], -1) * b[i]);
+        // xi[i] = creal(pow(2*M_PI*r[i], -1.5) * b[i]);
+    //
+    free(a);
+    free(b);
+
+      // fftw_free(a);
+      // fftw_free(b);
+}
+
+
 void pk2xi(int N, const double k[], const double pk[], double r[], double xi[], struct tszspectrum * ptsz) {
     // fftlog_ComputeXiLM(0, 2, N, k, pk, r, xi, ptsz);
     fftlog_ComputeXiLM(0, 1, N, k, pk, r, xi, ptsz);
@@ -868,6 +892,21 @@ void xi2pk(int N, const double r[], const double xi[], double k[], double pk[], 
     static const double TwoPiCubed = pow(2.*M_PI,2.);///2./pow(2.*M_PI,-3)/4./pow(M_PI,3);
     // fftlog_ComputeXiLM(0, 2, N, r, xi, k, pk, ptsz);
     fftlog_ComputeXiLM(0, 1, N, r, xi, k, pk, ptsz);
+    int j;
+    for(j = 0; j < N; j++)
+        pk[j] *= TwoPiCubed;
+}
+
+void cl2gamma(int N, const double k[], const double pk[], double r[], double xi[], struct tszspectrum * ptsz) {
+    // fftlog_ComputeXiLM(0, 2, N, k, pk, r, xi, ptsz);
+    fftlog_ComputeXiLM_cl2gamma(0, 1, N, k, pk, r, xi, ptsz);
+}
+
+void gamma2cl(int N, const double r[], const double xi[], double k[], double pk[], struct tszspectrum * ptsz) {
+    // static const double TwoPiCubed = 8*M_PI*M_PI*M_PI;
+    static const double TwoPiCubed = pow(2.*M_PI,2.);///2./pow(2.*M_PI,-3)/4./pow(M_PI,3);
+    // fftlog_ComputeXiLM(0, 2, N, r, xi, k, pk, ptsz);
+    fftlog_ComputeXiLM_cl2gamma(0, 1, N, r, xi, k, pk, ptsz);
     int j;
     for(j = 0; j < N; j++)
         pk[j] *= TwoPiCubed;
