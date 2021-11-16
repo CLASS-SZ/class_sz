@@ -2503,6 +2503,28 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"gal_gallens_1h") != NULL) ) {
+        ptsz->has_gal_gallens_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"gal_gallens_2h") != NULL) ) {
+        ptsz->has_gal_gallens_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+
+
       if ((strstr(string1,"lensmag_lensmag_1h") != NULL) ) {
         ptsz->has_lensmag_lensmag_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -4519,6 +4541,8 @@ int input_read_parameters(
       + ptsz->has_gal_lens_hf
       + ptsz->has_gal_lensmag_1h
       + ptsz->has_gal_lensmag_2h
+      + ptsz->has_gal_gallens_1h
+      + ptsz->has_gal_gallens_2h
       + ptsz->has_gal_lensmag_hf
       + ptsz->has_tSZ_lensmag_1h
       + ptsz->has_tSZ_lensmag_2h
@@ -4792,6 +4816,7 @@ int input_read_parameters(
   // class_read_string("sBBN_file",ppr->sBBN_file);
   class_read_string("ksz_filter_file",ptsz->ksz_filter_file);
   class_read_string("full_path_to_dndz_gal",ptsz->full_path_to_dndz_gal);
+  class_read_string("full_path_to_source_dndz_gal",ptsz->full_path_to_source_dndz_gal);
   // printf("-> File Name: %s\n",ptsz->ksz_filter_file);
   // exit(0);
   class_read_string("A10_file",ptsz->A10_file);
@@ -5594,6 +5619,8 @@ int input_default_params(
   ptsz->has_gal_lens_hf = _FALSE_;
   ptsz->has_gal_lensmag_1h = _FALSE_;
   ptsz->has_gal_lensmag_2h = _FALSE_;
+  ptsz->has_gal_gallens_1h = _FALSE_;
+  ptsz->has_gal_gallens_2h = _FALSE_;
   ptsz->has_gal_lensmag_hf = _FALSE_;
   ptsz->has_tSZ_lensmag_1h = _FALSE_;
   ptsz->has_tSZ_lensmag_2h = _FALSE_;
@@ -5730,6 +5757,9 @@ int input_default_params(
   ptsz->index_md_bk_ttg_at_z_1h = 66;
   ptsz->index_md_bk_ttg_at_z_2h = 67;
   ptsz->index_md_bk_ttg_at_z_3h = 68;
+
+  ptsz->index_md_gal_gallens_2h = 69;
+  ptsz->index_md_gal_gallens_1h = 70;
   // ptsz->index_md_bk_at_z_hf = 51;
 
   ptsz->integrate_wrt_mvir = 0;

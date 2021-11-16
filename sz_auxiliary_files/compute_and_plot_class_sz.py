@@ -191,6 +191,8 @@ def run(args):
     lens_lens_2h = []
     gal_lensmag_1h = []
     gal_lensmag_2h = []
+    gal_gallens_1h = []
+    gal_gallens_2h = []
     gal_lensmag_hf = []
     lensmag_lensmag_1h = []
     lensmag_lensmag_2h = []
@@ -287,6 +289,12 @@ def run(args):
     #p_dict['full path to dndz (normalized galaxy dist.)'] = "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/unwise_"+couleur+".txt"
 
     p_dict['galaxy_sample_id'] = couleur
+
+    p_dict['galaxy_sample'] = 'custom'
+    p_dict['full_path_to_dndz_gal'] = '/Users/boris/Work/DES/nz_maglim_z_bin1.txt'
+    p_dict['full_path_to_source_dndz_gal'] = '/Users/boris/Work/DES/nz_maglim_z_bin3.txt'
+
+
     p_dict['concentration parameter'] = 'D08'
 
 
@@ -298,7 +306,7 @@ def run(args):
     p_dict['M0 equal M_min (HOD)'] = 'no'
 
 
-    p_dict['gas profile'] = 'nfw' # 'nfw' or 'B16'
+    p_dict['gas profile'] = 'B16' # 'nfw' or 'B16'
     p_dict['gas profile mode'] = 'agn'
 
 
@@ -331,9 +339,9 @@ def run(args):
     p_dict['mass_epsabs'] = 1.e-40 # fiducial 1e-30
     p_dict['mass_epsrel'] = 1e-5
 
-    p_dict['dlogell'] = 3. # .1
-    p_dict['ell_max'] = 10000.
-    p_dict['ell_min'] = 2.
+    p_dict['dlogell'] = 0.05 # 0.1
+    p_dict['ell_min'] = 10.
+    p_dict['ell_max'] = 5000.
 
 
     # p_dict['N_kSZ2_gal_multipole_grid'] =  20 # fiducial 10
@@ -347,6 +355,7 @@ def run(args):
     # p_dict['perturb_sampling_stepsize'] = 0.01
     # p_dict['k_max_tau0_over_l_max']=10.
     # p_dict['l_max_scalars'] = 5000
+
 
 
 
@@ -608,6 +617,8 @@ def run(args):
             ax.set_ylabel(r'$10^{5}\times\mathrm{C^{gg}_\ell}$',size=title_size)
         elif (args.plot_gal_lens == 'yes'):
             ax.set_ylabel(r'$10^{5}\times\mathrm{C^{g\kappa}_\ell}$',size=title_size)
+        elif (args.plot_gal_gallens == 'yes'):
+            ax.set_ylabel(r'$10^{5}\times\mathrm{C^{g\gamma}_\ell}$',size=title_size)
         elif (args.plot_lens_lens == 'yes'):
             ax.set_ylabel(r'$[\ell(\ell+1)]^2\mathrm{C^{\phi\phi}_\ell}/2\pi$',size=title_size)
         elif (args.plot_tSZ_lens == 'yes'):
@@ -781,6 +792,7 @@ def run(args):
             or 'isw_lens' in p_dict['output']
             or 'gal_gal' in p_dict['output']
             or 'gal_lens' in p_dict['output']
+            or 'gal_gallens' in p_dict['output']
             or 'lens_lensmag' in p_dict['output']
             or 'lensmag_lensmag' in p_dict['output']
             or 'isw_tsz' in p_dict['output']
@@ -835,6 +847,8 @@ def run(args):
                 gal_lensmag_hf.append(R[:,49])
                 lens_lensmag_hf.append(R[:,50])
                 lensmag_lensmag_hf.append(R[:,51])
+                gal_gallens_1h.append(R[:,57])
+                gal_gallens_2h.append(R[:,58])
 
                 # r_dict[p_val] = L
 
@@ -1028,6 +1042,17 @@ def run(args):
                         ax.plot(multipoles[id_p],(tSZ_gal_1h[id_p])/fac,ls='--',alpha = 1.,label = 'class_sz hod: 1-halo '+val_label[id_p])
                         ax.plot(multipoles[id_p],(tSZ_gal_2h[id_p])/fac,ls='-',alpha = 1.,label = 'class_sz hod: 2-halo '+val_label[id_p])
                     #ax.plot(ell_KA20,cl_yg_1h_KA20,label='KA20')
+                elif (args.plot_gal_gallens == 'yes'):
+                    print(gal_gallens_1h[id_p])
+                    print(gal_gallens_2h[id_p])
+                    fac = multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi/1e5
+                    if ('gal_gallens_1h' in p_dict['output']):
+                        ax.plot(multipoles[id_p],(gal_gallens_1h[id_p])/fac,color=col[id_p],ls=':',alpha = 1.,label =  r'g$\gamma$ (1h)')
+                    if ('gal_gallens_2h' in p_dict['output']):
+                        ax.plot(multipoles[id_p],(gal_gallens_2h[id_p])/fac,color=col[id_p],ls='--',alpha = 1.,label =  r'g$\gamma$ (2h)')
+                    if (('gal_gallens_1h' or  'gal_gallens_2h') in p_dict['output']):
+                        ax.plot(multipoles[id_p],(gal_gallens_1h[id_p])/fac+(gal_gallens_2h[id_p])/fac,color=col[id_p],ls='-.',alpha = 1.,label =  r'g$\gamma$ (1+2h)')
+
                 elif (args.plot_gal_gal == 'yes'):
                     print('plotting gxg')
                     fac = multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi/1e5
@@ -1238,37 +1263,37 @@ def run(args):
                     # np.savetxt("/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/ksz2xunwise_hm_data/data_hm_1e5cl_gkappa_halofit_l_gk_muk_%s.txt"%(couleur),
                     #            np.c_[multipoles[id_p],(gal_lens_1h[id_p]+gal_lens_2h[id_p])/fac,(5.*smag-2.)*(lens_lensmag_1h[id_p]+lens_lensmag_2h[id_p])/fac])
 
-
-                    if id_p == N-1:
-
-                        if couleur == 'red':
-                            #alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Auto_Sample7.dat')
-                            alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Cross_Sample7_Sample5.dat')
-                            OK = np.loadtxt(path_to_class_external_data+'/FINALred_c_ell_kappa_g.txt')
-                            alex_kg = np.loadtxt(path_to_class_external_data+'/theory_kg_plus_kmu_low_ind_1.txt')
-                            alex_kg = alex_kg[:]
-                            alex_kg_ell = np.arange(0,len(alex_kg))
-                            ax.plot(alex_kg_ell,1e5*alex_kg_ell*alex_kg,label='alex kg+km',ls=':',c='r')
-                            alex_km = np.loadtxt(path_to_class_external_data+'/theory_kmu_low_ind_1.txt')
-                            alex_km = alex_km[:]
-                            alex_km_ell = np.arange(0,len(alex_km))
-                            #ax.plot(alex_km_ell,1e5*alex_km_ell*alex_km,label='alex km',ls=':')
-                        if couleur == 'blue':
-                            #alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Auto_Sample1.dat')
-                            alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Cross_Sample1_Sample5.dat')
-                            OK = np.loadtxt(path_to_class_external_data+'/FINALblue_c_ell_kappa_g.txt')
-                        if couleur == 'green':
-                            alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Cross_Sample2_Sample5.dat')
-                            OK = np.loadtxt(path_to_class_external_data+'/FINALgreen_c_ell_kappa_g.txt')
-                            #alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Auto_Sample2.dat')
-
-                        # ax.errorbar(alex[0,:],1e5*alex[1,:]*alex[0,:],yerr=[1e5*alex[2,:]*alex[0,:],1e5*alex[2,:]*alex[0,:]],ls='none',
-                        #             marker='o',markersize=3,capsize=5,c='k',label='KFSW20')
-                        ax.errorbar(alex[0,:],1e5*alex[1,:],yerr=[1e5*alex[2,:],1e5*alex[2,:]],ls='none',
-                                    marker='o',markersize=3,capsize=5,c='k',label='KFSW20')
-
-                        # np.savetxt("/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/ksz2xunwise_hm_data/data_hm_1e5lcl_gkappa_kfsw20_l_1e5lcl_1e5errlcl.txt",
-                        #            np.c_[alex[0,:],1e5*alex[1,:]*alex[0,:],1e5*alex[2,:]*alex[0,:]])
+                    ## plot data:
+                    # if id_p == N-1:
+                    #
+                    #     if couleur == 'red':
+                    #         #alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Auto_Sample7.dat')
+                    #         alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Cross_Sample7_Sample5.dat')
+                    #         OK = np.loadtxt(path_to_class_external_data+'/FINALred_c_ell_kappa_g.txt')
+                    #         alex_kg = np.loadtxt(path_to_class_external_data+'/theory_kg_plus_kmu_low_ind_1.txt')
+                    #         alex_kg = alex_kg[:]
+                    #         alex_kg_ell = np.arange(0,len(alex_kg))
+                    #         ax.plot(alex_kg_ell,1e5*alex_kg_ell*alex_kg,label='alex kg+km',ls=':',c='r')
+                    #         alex_km = np.loadtxt(path_to_class_external_data+'/theory_kmu_low_ind_1.txt')
+                    #         alex_km = alex_km[:]
+                    #         alex_km_ell = np.arange(0,len(alex_km))
+                    #         #ax.plot(alex_km_ell,1e5*alex_km_ell*alex_km,label='alex km',ls=':')
+                    #     if couleur == 'blue':
+                    #         #alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Auto_Sample1.dat')
+                    #         alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Cross_Sample1_Sample5.dat')
+                    #         OK = np.loadtxt(path_to_class_external_data+'/FINALblue_c_ell_kappa_g.txt')
+                    #     if couleur == 'green':
+                    #         alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Cross_Sample2_Sample5.dat')
+                    #         OK = np.loadtxt(path_to_class_external_data+'/FINALgreen_c_ell_kappa_g.txt')
+                    #         #alex = np.loadtxt(path_to_class_external_data+'/alex_measurements/Bandpowers_Auto_Sample2.dat')
+                    #
+                    #     # ax.errorbar(alex[0,:],1e5*alex[1,:]*alex[0,:],yerr=[1e5*alex[2,:]*alex[0,:],1e5*alex[2,:]*alex[0,:]],ls='none',
+                    #     #             marker='o',markersize=3,capsize=5,c='k',label='KFSW20')
+                    #     ax.errorbar(alex[0,:],1e5*alex[1,:],yerr=[1e5*alex[2,:],1e5*alex[2,:]],ls='none',
+                    #                 marker='o',markersize=3,capsize=5,c='k',label='KFSW20')
+                    #
+                    #     # np.savetxt("/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/ksz2xunwise_hm_data/data_hm_1e5lcl_gkappa_kfsw20_l_1e5lcl_1e5errlcl.txt",
+                    #     #            np.c_[alex[0,:],1e5*alex[1,:]*alex[0,:],1e5*alex[2,:]*alex[0,:]])
 
                 elif (args.plot_lens_lens == 'yes'):
                     print(lens_lens_1h[id_p])
@@ -1378,6 +1403,9 @@ def run(args):
         if (args.plot_gal_lens == 'yes'):
             FIG_NAME = '/cl_gkappa_'
             plt.savefig(FIG_DIR + FIG_NAME +"_"+couleur+".pdf")
+        elif (args.plot_gal_gallens == 'yes'):
+            FIG_NAME = '/cl_ggamma_'
+            plt.savefig(FIG_DIR + FIG_NAME +"_"+".pdf")
         elif (args.plot_gal_gal == 'yes'):
             FIG_NAME = '/cl_gg_'
             plt.savefig(FIG_DIR + FIG_NAME +"_"+couleur+".pdf")
@@ -1444,6 +1472,7 @@ def main():
     parser.add_argument("-plot_tSZ_gal",help="tSZ_gal" ,dest="plot_tSZ_gal", type=str, required=False)
     parser.add_argument("-plot_gal_gal",help="gal_gal" ,dest="plot_gal_gal", type=str, required=False)
     parser.add_argument("-plot_gal_lens",help="gal_lens" ,dest="plot_gal_lens", type=str, required=False)
+    parser.add_argument("-plot_gal_gallens",help="gal_gallens" ,dest="plot_gal_gallens", type=str, required=False)
     parser.add_argument("-plot_isw_lens",help="isw_lens" ,dest="plot_isw_lens", type=str, required=False)
     parser.add_argument("-plot_lens_lens",help="lens_lens" ,dest="plot_lens_lens", type=str, required=False)
     parser.add_argument("-plot_isw_tsz",help="isw_tsz" ,dest="plot_isw_tsz", type=str, required=False)

@@ -161,6 +161,7 @@ double delta_to_delta_prime_nfw(
   int load_rho_nfw_profile(struct tszspectrum * ptsz);
   int load_T10_alpha_norm(struct tszspectrum * ptsz);
   int load_normalized_dndz(struct tszspectrum * ptsz);
+  int load_normalized_source_dndz(struct tszspectrum * ptsz);
   int load_normalized_fdndz(struct tszspectrum * ptsz);
   int load_normalized_cosmos_dndz(struct tszspectrum * ptsz);
   int load_unbinned_nl_yy(struct tszspectrum * ptsz);
@@ -203,6 +204,11 @@ double delta_to_delta_prime_nfw(
   int tabulate_redshift_int_lensmag(struct tszspectrum * ptsz,
                                     struct background * pba);
 
+  int evaluate_redshift_int_gallens_sources(double * pvectsz,
+                                    struct tszspectrum * ptsz);
+
+  int tabulate_redshift_int_gallens_sources(struct tszspectrum * ptsz,
+                                    struct background * pba);
 int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
                                       struct tszspectrum * ptsz);
 int tabulate_L_sat_at_z_m_nu(struct background * pba,
@@ -221,6 +227,12 @@ int tabulate_m200c_to_m500c(struct background * pba,
 int tabulate_m500c_to_m200c(struct background * pba,
                             struct tszspectrum * ptsz);
   int redshift_int_lensmag(
+                    struct tszspectrum * ptsz,
+                    struct background * pba,
+                    double * pvectsz,
+                    double * result
+                  );
+  int redshift_int_gallens_sources(
                     struct tszspectrum * ptsz,
                     struct background * pba,
                     double * pvectsz,

@@ -2131,6 +2131,121 @@ struct Parameters_for_integrand_sigma2_hsv V;
 
 
 
+
+struct Parameters_for_integrand_gallens_sources{
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+};
+
+
+
+double integrand_gallens_sources(double ln1pzs, void *p){
+
+  struct Parameters_for_integrand_gallens_sources *V = ((struct Parameters_for_integrand_gallens_sources *) p);
+
+  double integrand;
+  double  zs = exp(ln1pzs)-1.;
+
+
+
+
+  double W;
+
+
+  //background quantities @ zs:
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+              V->pba->bg_size*sizeof(double),
+              V->pba->error_message);
+
+  class_call(background_tau_of_z(V->pba,zs,&tau),
+             V->pba->error_message,
+             V->pba->error_message);
+
+  class_call(background_at_tau(V->pba,
+                               tau,
+                               V->pba->long_info,
+                               V->pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             V->pba->error_message,
+             V->pba->error_message);
+
+
+
+  double Chi_at_zs = pvecback[V->pba->index_bg_ang_distance]*(1.+zs);  //'Chi' comoving distance in Mpc
+  double Chi_at_z = sqrt(V->pvectsz[V->ptsz->index_chi2])/V->pba->h;  //'Chi' comoving distance in Mpc
+
+
+
+  free(pvecback);
+
+
+
+  W = (Chi_at_zs-Chi_at_z)/Chi_at_zs;
+
+  double dndzs = 0.;
+
+/////////////////////////////////
+  double z_asked  = zs;
+  double phig = 0.;
+
+phig = get_source_galaxy_number_counts(z_asked,V->ptsz);
+ dndzs = phig;
+////////////////////////////////
+
+  integrand = dndzs*W;
+
+  integrand *= (1.+zs);
+
+  // printf("-> integrand z = %.3e phig = =%.3e\n",z_asked,phig);
+
+  return integrand;
+
+}
+
+int redshift_int_gallens_sources(
+                  struct tszspectrum * ptsz,
+                  struct background * pba,
+                  double * pvectsz,
+                  double * result
+                   ) {
+
+double z =  pvectsz[ptsz->index_z];
+
+double zs_min = z;
+double zs_max = ptsz->z2SZ;
+
+
+struct Parameters_for_integrand_gallens_sources V;
+  V.pvectsz = pvectsz;
+  V.ptsz = ptsz;
+  V.pba = pba;
+
+
+  void * params = &V;
+  double r; //result of the integral
+
+  double epsrel = 1e-6;
+  double epsabs = 1e-30;
+  //int show_neval = ptsz->patterson_show_neval;
+
+  r=Integrate_using_Patterson_adaptive(log(1.+zs_min),
+                                        log(1.+zs_max),
+                                        epsrel, epsabs,
+                                        integrand_gallens_sources,
+                                        params,0);
+
+
+  *result = r;
+                     }
+
+
+
+
 struct Parameters_for_integrand_lensmag{
   struct tszspectrum * ptsz;
   struct background * pba;
@@ -2204,15 +2319,16 @@ else  phig =  pwl_value_1d(V->ptsz->normalized_cosmos_dndz_size,
 // printf("integrand ok phig\n");
 }
 else{
-  if(z_asked<V->ptsz->normalized_dndz_z[0])
-     phig = 1e-100;
-  else if (z_asked>V->ptsz->normalized_dndz_z[V->ptsz->normalized_dndz_size-1])
-     phig = 1e-100;
-  else  phig =  pwl_value_1d(V->ptsz->normalized_dndz_size,
-                               V->ptsz->normalized_dndz_z,
-                               V->ptsz->normalized_dndz_phig,
-                               z_asked);
+  // if(z_asked<V->ptsz->normalized_dndz_z[0])
+  //    phig = 1e-100;
+  // else if (z_asked>V->ptsz->normalized_dndz_z[V->ptsz->normalized_dndz_size-1])
+  //    phig = 1e-100;
+  // else  phig =  pwl_value_1d(V->ptsz->normalized_dndz_size,
+  //                              V->ptsz->normalized_dndz_z,
+  //                              V->ptsz->normalized_dndz_phig,
+  //                              z_asked);
 
+phig = get_galaxy_number_counts(z_asked,V->ptsz);
 }
  dndzs = phig;
 ////////////////////////////////
@@ -4701,6 +4817,157 @@ if (ptsz->sz_verbose >= 1)
 //dndz galaxy counts,
 //and stores the tabulated values.
 
+int load_normalized_source_dndz(struct tszspectrum * ptsz)
+{
+
+// don't load the unwise  dndz  if none of the following are required:
+// all quantities requiring galaxy or lensmag need that:
+if (
+     (ptsz->has_gal_gallens_1h != _TRUE_ )
+    && (ptsz->has_gal_gallens_2h != _TRUE_ )
+)
+  return 0;
+
+if (ptsz->sz_verbose>=1){
+
+    printf("-> Loading source dndz file\n");
+}
+
+  class_alloc(ptsz->normalized_source_dndz_z,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->normalized_source_dndz_phig,sizeof(double *)*100,ptsz->error_message);
+
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI, this_lnJ, this_lnK;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+
+  /* Prepare the command */
+  /* If the command is just a "cat", no arguments need to be passed */
+  // if(strncmp("cat ", ptsz->command, 4) == 0)
+  // {
+  // sprintf(arguments, " ");
+  // }
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+    if (ptsz->sz_verbose > 0){
+      printf("-> Openning the dndz file for source galaxies\n");
+      printf("-> File Name: %s\n",ptsz->full_path_to_source_dndz_gal);
+      // printf("-> File Name: %s\n",ptsz->UNWISE_fdndz_file);
+      // printf("-> File Name: %s\n",ptsz->A10_file);
+    }
+  class_open(process,ptsz->full_path_to_source_dndz_gal, "r",ptsz->error_message);
+  if (ptsz->sz_verbose > 0)
+    printf("-> File opened successfully\n");
+
+
+  // process = popen(Filepath, "r");
+
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+
+    sscanf(line, "%lf %lf ", &this_lnx, &this_lnI);
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  // if (ptsz->galaxy_sample == 2){
+  // // if (ptsz->galaxy_sample == 2 || ptsz->galaxy_sample == 0 ){
+  //   status = pclose(process);
+  // }
+  // else{
+    status = fclose(process);
+  //}
+  // status = pclose(process);
+
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->normalized_source_dndz_size = n_data;
+  /** Make room */
+
+  class_realloc(ptsz->normalized_source_dndz_z,
+                ptsz->normalized_source_dndz_z,
+                ptsz->normalized_source_dndz_size*sizeof(double),
+                ptsz->error_message);
+  class_realloc(ptsz->normalized_source_dndz_phig,
+                ptsz->normalized_source_dndz_phig,
+                ptsz->normalized_source_dndz_size*sizeof(double),
+                ptsz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<ptsz->normalized_source_dndz_size; index_x++) {
+    ptsz->normalized_source_dndz_z[index_x] = lnx[index_x];
+    ptsz->normalized_source_dndz_phig[index_x] = lnI[index_x];
+    // printf("z=%.3e phig=%.3e\n",ptsz->normalized_dndz_z[index_x],ptsz->normalized_dndz_z[index_x]);
+  };
+
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  return _SUCCESS_;
+}
+
+
+
+//This routine reads the tabulated
+//dndz galaxy counts,
+//and stores the tabulated values.
+
 int load_normalized_dndz(struct tszspectrum * ptsz)
 {
 
@@ -4727,6 +4994,8 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_gal_lens_hf != _TRUE_ )
     && (ptsz->has_gal_lensmag_1h != _TRUE_ )
     && (ptsz->has_gal_lensmag_2h != _TRUE_ )
+    && (ptsz->has_gal_gallens_1h != _TRUE_ )
+    && (ptsz->has_gal_gallens_2h != _TRUE_ )
     && (ptsz->has_gal_lensmag_hf != _TRUE_ )
     && (ptsz->has_tSZ_lensmag_1h != _TRUE_ )
     && (ptsz->has_tSZ_lensmag_2h != _TRUE_ )
@@ -4822,7 +5091,7 @@ if (ptsz->sz_verbose>=1){
 
   else if (ptsz->galaxy_sample == 2){
     if (ptsz->sz_verbose > 0){
-      printf("-> Openning the dndz file for unWISE galaxies\n");
+      printf("-> Openning the dndz file for galaxies\n");
       printf("-> File Name: %s\n",ptsz->full_path_to_dndz_gal);
       // printf("-> File Name: %s\n",ptsz->UNWISE_fdndz_file);
       // printf("-> File Name: %s\n",ptsz->A10_file);
@@ -4945,6 +5214,7 @@ if (ptsz->sz_verbose>=1){
 
   return _SUCCESS_;
 }
+
 
 
 int load_normalized_fdndz(struct tszspectrum * ptsz)
@@ -6158,6 +6428,19 @@ double sigma_crit_kappa =  pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_cr
 V->pvectsz[V->ptsz->index_lensing_Sigma_crit] =  sqrt(sigma_crit_lensmag*sigma_crit_kappa);
 
   }
+  else if (
+      ((V->ptsz->has_gal_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_1h))
+    ||((V->ptsz->has_gal_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_2h))
+  )
+  {
+
+    evaluate_redshift_int_gallens_sources(V->pvectsz,V->ptsz);
+    double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_gallens_sources];
+    // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+    V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_lensmag);
+
+  }
+
   else {
 
 // CMB lensing
@@ -6198,6 +6481,8 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
      || ((V->ptsz->has_gal_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_2h))
      || ((V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
      || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
+     || ((V->ptsz->has_gal_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_1h))
+     || ((V->ptsz->has_gal_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_2h))
      || ((V->ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_1h))
      || ((V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
      || ((V->ptsz->has_lens_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_1h))
@@ -6771,6 +7056,7 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
  || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
  || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
+ || ((V->ptsz->has_gal_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_2h))
  || ((V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
  || ((V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
  || ((V->ptsz->has_lens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_2h))
@@ -6828,6 +7114,8 @@ if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
   || ((V->ptsz->has_gal_lensmag_hf == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_hf))
   || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
   || ((V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
+  || ((V->ptsz->has_gal_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_2h))
+  || ((V->ptsz->has_gal_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_1h))
     ){
 // multiply by radial kernel for galaxies
 double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
@@ -7363,6 +7651,56 @@ double integrand_patterson_test(double logM, void *p){
     }
 
 
+
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gallens_2h){
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Y' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_1\n");
+}
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('galaxy' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  r = r_m_1*r_m_2;
+    }
+
+
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tSZ_lensmag_2h){
   double r_m_1; // first part of redshift integrand
   double r_m_2; // second part of redshift integrand
@@ -7427,6 +7765,16 @@ double integrand_patterson_test(double logM, void *p){
                                            integrand_patterson_test,
                                            params,ptsz->patterson_show_neval);
 
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_1\n");
+}
+
+
   pvectsz[ptsz->index_part_id_cov_hsv] = 2;
   V.pvectsz = pvectsz;
   params = &V;
@@ -7442,8 +7790,16 @@ double integrand_patterson_test(double logM, void *p){
   // in hmvec :
   // (integral+b1-consistency1)
   // with integral = r_m_2, b1 = 1, consistency1 = low mass part
-  r_m_2 = r_m_2+ptsz->Omega_m_0*ptsz->Rho_crit_0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)/pvectsz[ptsz->index_lensing_Sigma_crit];
+  // r_m_2 = r_m_2+ptsz->Omega_m_0*ptsz->Rho_crit_0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)/pvectsz[ptsz->index_lensing_Sigma_crit];
 
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
 
   r = r_m_1*r_m_2;
   }
@@ -12405,8 +12761,6 @@ printf("-> end tabulating Wz for lensing magnification\n");
  free(pvecback);
 }
 
-
-
 int evaluate_redshift_int_lensmag(double * pvectsz,
                                   struct tszspectrum * ptsz)
   {
@@ -12423,6 +12777,112 @@ int evaluate_redshift_int_lensmag(double * pvectsz,
    pvectsz[ptsz->index_W_lensmag] =  exp(pwl_value_1d(ptsz->n_z_W_lensmag,
                                                         ptsz->array_z_W_lensmag,
                                                         ptsz->array_W_lensmag,
+                                                        z_asked));
+
+return _SUCCESS_;
+}
+
+
+
+// Tabulate redshift_int_lensmag
+// as functions of z
+int tabulate_redshift_int_gallens_sources(struct tszspectrum * ptsz,
+                                          struct background * pba){
+
+if (
+    ptsz->has_gal_gallens_2h
+  + ptsz->has_gal_gallens_1h
+   == _FALSE_){
+    // if (ptsz->sz_verbose>=1)
+    // printf("-> Not tabulating Wz for lensing magnification\n");
+    return 0;
+  }
+
+if (ptsz->sz_verbose>=1){
+printf("-> Tabulating Wz for source galaxies\n");
+}
+  //Array of z
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  int index_z;
+  double ln1pz,z;
+  class_alloc(ptsz->array_W_gallens_sources,sizeof(double *)*ptsz->n_z_W_gallens_sources,ptsz->error_message);
+  class_alloc(ptsz->array_z_W_gallens_sources,sizeof(double *)*ptsz->n_z_W_gallens_sources,ptsz->error_message);
+
+  double * pvectsz;
+  class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+
+  double * pvecback;
+  class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+  for (index_z=0; index_z<ptsz->n_z_W_gallens_sources; index_z++)
+  {
+    ln1pz =  log(1.+z_min)
+              +index_z*(log(1.+z_max)-log(1.+z_min))
+              /(ptsz->n_z_W_gallens_sources-1.); // log(1+z)
+
+    z = exp(ln1pz) - 1.;
+
+    // set redshift z
+    pvectsz[ptsz->index_z] = z;
+
+    int first_index_back = 0;
+    double tau;
+
+    // printf("-> start tabulating Wz for lensing magnification\n");
+
+    class_call(background_tau_of_z(pba,z,&tau),
+               pba->error_message,
+               pba->error_message);
+
+    class_call(background_at_tau(pba,
+                                 tau,
+                                 pba->long_info,
+                                 pba->inter_normal,
+                                 &first_index_back,
+                                 pvecback),
+               pba->error_message,
+               pba->error_message);
+
+    // set chi at redshift z in Mpc/h
+    pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+
+    // printf("-> doing tabulating Wz for lensing magnification\n");
+
+    // printf("-> Computing integral at z=%.3e\n",z);
+    double result;
+    redshift_int_gallens_sources(ptsz,pba,pvectsz,&result);
+      // printf("-> 2 doing tabulating Wz for lensing magnification\n");
+    if (result <= 0.)
+      result = 1e-100;
+    ptsz->array_W_gallens_sources[index_z] = log(result);
+    ptsz->array_z_W_gallens_sources[index_z] = ln1pz;
+    // printf("-> integral z = %.3e W = =%.3e\n",z,exp(ptsz->array_W_lensmag[index_z]));
+}
+if (ptsz->sz_verbose>=1)
+printf("-> end tabulating Wz for source galaxies\n");
+ free(pvectsz);
+ free(pvecback);
+}
+
+
+
+int evaluate_redshift_int_gallens_sources(double * pvectsz,
+                                          struct tszspectrum * ptsz)
+  {
+
+   double z = pvectsz[ptsz->index_z];
+   double z_asked = log(1.+z);
+
+   if (z<exp(ptsz->array_z_W_gallens_sources[0])-1.)
+      z_asked = ptsz->array_z_W_gallens_sources[0];
+   if (z>exp(ptsz->array_z_W_gallens_sources[ptsz->n_z_W_gallens_sources-1])-1.)
+      z_asked =  ptsz->array_z_W_gallens_sources[ptsz->n_z_W_gallens_sources-1];
+
+
+   pvectsz[ptsz->index_W_gallens_sources] =  exp(pwl_value_1d(ptsz->n_z_W_gallens_sources,
+                                                        ptsz->array_z_W_gallens_sources,
+                                                        ptsz->array_W_gallens_sources,
                                                         z_asked));
 
 return _SUCCESS_;

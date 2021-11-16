@@ -56,6 +56,8 @@
 #define _gal_lens_1h_ ((ptsz->has_gal_lens_1h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_1h))
 #define _gal_lensmag_2h_ ((ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_2h))
 #define _gal_lensmag_1h_ ((ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_1h))
+#define _gal_gallens_2h_ ((ptsz->has_gal_gallens_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gallens_2h))
+#define _gal_gallens_1h_ ((ptsz->has_gal_gallens_1h == _TRUE_) && (index_md == ptsz->index_md_gal_gallens_1h))
 #define _gal_lensmag_hf_ ((ptsz->has_gal_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_hf))
 #define _tSZ_lensmag_2h_ ((ptsz->has_tSZ_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lensmag_2h))
 #define _tSZ_lensmag_1h_ ((ptsz->has_tSZ_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lensmag_1h))
@@ -142,6 +144,8 @@ struct tszspectrum {
   double * cl_gal_lens_1h;
   double * cl_gal_lensmag_hf;
   double * cl_gal_lensmag_2h;
+  double * cl_gal_gallens_1h;
+  double * cl_gal_gallens_2h;
   double * cl_gal_lensmag_1h;
   double * cl_tSZ_lensmag_2h;
   double * cl_tSZ_lensmag_1h;
@@ -471,6 +475,17 @@ struct tszspectrum {
   int index_integrand_id_gal_lensmag_1h_first;
   int index_integrand_id_gal_lensmag_1h_last;
 
+  int has_gal_gallens_2h;
+  int index_md_gal_gallens_2h;
+  int index_integrand_id_gal_gallens_2h_first;
+  int index_integrand_id_gal_gallens_2h_last;
+
+  int has_gal_gallens_1h;
+  int index_md_gal_gallens_1h;
+  int index_integrand_id_gal_gallens_1h_first;
+  int index_integrand_id_gal_gallens_1h_last;
+
+
   int has_tSZ_lensmag_2h;
   int index_md_tSZ_lensmag_2h;
   int index_integrand_id_tSZ_lensmag_2h_first;
@@ -757,6 +772,8 @@ struct tszspectrum {
 
   int index_W_lensmag;
 
+  int index_W_gallens_sources;
+
   int index_k_for_pk_hm;
   int index_density_profile;
 
@@ -917,6 +934,7 @@ struct tszspectrum {
   double cluster_count_completeness_grid_z_cutoff_mid;
 
   int n_z_W_lensmag;
+  int n_z_W_gallens_sources;
 
   /*Array size*/
   int n_arraySZ;//number of z in the interpolation
@@ -1232,6 +1250,10 @@ double * steps_m;
   double * T10_lnalpha;
   int T10_lnalpha_size;
 
+  double * normalized_source_dndz_z;
+  double * normalized_source_dndz_phig;
+
+  int normalized_source_dndz_size;
 
   double * normalized_dndz_z;
   double * normalized_dndz_phig;
@@ -1317,6 +1339,9 @@ double * steps_m;
 
   double * array_z_W_lensmag;
   double * array_W_lensmag;
+
+  double * array_z_W_gallens_sources;
+  double * array_W_gallens_sources;
 
   double * array_redshift;
   double * array_radius;
@@ -1690,6 +1715,8 @@ double get_c500c_at_m_and_z(//double * pvecback,
 double get_galaxy_number_counts(double z,
                                 struct tszspectrum * ptsz);
 
+double get_source_galaxy_number_counts(double z,
+                                struct tszspectrum * ptsz);
 double radial_kernel_W_galaxy_at_z( double * pvecback,
                                     double * pvectsz,
                                     struct background * pba,
