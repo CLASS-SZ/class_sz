@@ -6438,7 +6438,11 @@ V->pvectsz[V->ptsz->index_lensing_Sigma_crit] =  sqrt(sigma_crit_lensmag*sigma_c
     double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_gallens_sources];
     // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
     V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_lensmag);
-
+    if (isnan(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])||isinf(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])){
+      printf("%.3e\n",redshift_int_lensmag);
+      printf("nan or inf in sigmacrit\n");
+      exit(0);
+    }
   }
 
   else {
@@ -7119,6 +7123,7 @@ if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
     ){
 // multiply by radial kernel for galaxies
 double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+
 result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 }
 
@@ -7193,7 +7198,10 @@ if  (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
   result = (1.+V->pvectsz[V->ptsz->index_z])*result/H_over_c_in_h_over_Mpc;
 
-
+  if (isnan(result)||isinf(result)){
+  printf("nan or inf in integrand redshift 1h\n");
+  exit(0);
+  }
   return result;
 // }
 
@@ -12814,7 +12822,7 @@ printf("-> Tabulating Wz for source galaxies\n");
 
   double * pvecback;
   class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
-
+// printf("-> nz=%d\n",ptsz->n_z_W_gallens_sources);
   for (index_z=0; index_z<ptsz->n_z_W_gallens_sources; index_z++)
   {
     ln1pz =  log(1.+z_min)
@@ -12857,7 +12865,7 @@ printf("-> Tabulating Wz for source galaxies\n");
       result = 1e-100;
     ptsz->array_W_gallens_sources[index_z] = log(result);
     ptsz->array_z_W_gallens_sources[index_z] = ln1pz;
-    // printf("-> integral z = %.3e W = =%.3e\n",z,exp(ptsz->array_W_lensmag[index_z]));
+    // printf("-> integral z = %.3e W = %.3e\n",z,exp(ptsz->array_W_gallens_sources[index_z]));
 }
 if (ptsz->sz_verbose>=1)
 printf("-> end tabulating Wz for source galaxies\n");
@@ -12884,7 +12892,10 @@ int evaluate_redshift_int_gallens_sources(double * pvectsz,
                                                         ptsz->array_z_W_gallens_sources,
                                                         ptsz->array_W_gallens_sources,
                                                         z_asked));
-
+if ( pvectsz[ptsz->index_W_gallens_sources] == 0){
+  printf("null W gallens source %.3e\n",z);
+  exit(0);
+}
 return _SUCCESS_;
 }
 

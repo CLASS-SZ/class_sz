@@ -5364,6 +5364,7 @@ int input_default_params(
 
 
   ptsz->n_z_W_lensmag = 500;
+  ptsz->n_z_W_gallens_sources = 500;
 
   //Set pressure profile to A10
   ptsz->pressure_profile=2;

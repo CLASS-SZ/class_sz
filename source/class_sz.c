@@ -2499,7 +2499,11 @@ if (_gal_gallens_1h_){
  ptsz->cl_gal_gallens_1h[index_l] = Pvectsz[ptsz->index_integral]
                                  *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
                                  /(2*_PI_);
-
+  // printf("%.3e\n",ptsz->cl_gal_gallens_1h[index_l]);
+  if (isnan(ptsz->cl_gal_gallens_1h[index_l])||isinf(ptsz->cl_gal_gallens_1h[index_l])){
+  printf("nan or inf in cls 1h\n");
+  exit(0);
+  }
 }
 // Collect gxlensmag 1-halo at each multipole:
 // result in y-units (dimensionless)
@@ -4132,6 +4136,11 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
                                                    *galaxy_profile_at_ell_1
                                                    *lensing_profile_at_ell_2
                                                    *damping_1h_term;
+            if (isnan(pvectsz[ptsz->index_integrand])||isinf(pvectsz[ptsz->index_integrand])){
+            printf("nan or inf in integrand gallens 1h\n");
+            printf("%.5e %.5e %.5e\n",pvectsz[ptsz->index_hmf],galaxy_profile_at_ell_1,lensing_profile_at_ell_2);
+            exit(0);
+            }
 
                   }
            else if (_gal_gallens_2h_){
@@ -10918,6 +10927,8 @@ double phi_galaxy_at_z = pvectsz[ptsz->index_phi_galaxy_counts];
 // H_over_c_in_h_over_Mpc = dz/dChi
 // phi_galaxy_at_z = dng/dz normalized
 double result = H_over_c_in_h_over_Mpc*phi_galaxy_at_z;
+
+
 
 
 
