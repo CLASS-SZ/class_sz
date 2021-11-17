@@ -8,7 +8,7 @@ CLASS_SZ
 
 
 In addition to SZ power spectrum, class_sz can compute cross and auto power spectra for other tracers
-in the halo model (kSZ, galaxy, ISW, lensing and CIB).
+in the halo model (kSZ, galaxy, galaxy-lensing, ISW, CMB lensing and CIB).
 
 It has several mass functions implemented, with several possible halo mass definitions and concentration-mass
 relations. For galaxy clustering and lensing, class_sz has an implementation of HOD based on the one used by
@@ -225,4 +225,4 @@ To get support on the class_sz module, feel free to contact me via slack/email (
 Acknowledgment
 -------
 
-Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas, Fiona McCarthy, Eunseong Lee, Ola Kusiak, Simone Ferraro, Mat Madhavacheril, Manu Schaan, for help, suggestions and/or running tests with **class_sz**.
+Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas, Fiona McCarthy, Eunseong Lee, Ola Kusiak, Simone Ferraro, Mat Madhavacheril, Manu Schaan, Shivam Pandey for help, suggestions and/or running tests with **class_sz**.
