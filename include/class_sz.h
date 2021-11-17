@@ -1186,6 +1186,9 @@ double * steps_m;
   double Omega_m_0;
   double Omega_ncdm_0;
 
+  double bispectrum_lambda_k2;
+  double bispectrum_lambda_k3;
+
   double Sigma8OmegaM_SZ;
   double sigma8_Pcb;
 
@@ -1555,6 +1558,12 @@ double get_pk_lin_at_k_and_z(double k, double z,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
                           struct tszspectrum * ptsz);
+double get_pk_nonlin_at_k_and_z(double k, double z,
+                          struct background * pba,
+                          struct primordial * ppm,
+                          struct nonlinear * pnl,
+                          struct tszspectrum * ptsz);
+
 
  int evaluate_pk_at_ell_plus_one_half_over_chi(double * pvecback,
                                               double * pvectsz,

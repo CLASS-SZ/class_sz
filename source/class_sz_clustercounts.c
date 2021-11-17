@@ -24,7 +24,7 @@ int szcount_init(struct background * pba,
   if (ptsz->has_sz_counts == _FALSE_)
   {
     if (ptsz->sz_verbose > 0)
-      printf("->No SZ cluster counts requested. SZ cluster count module skipped.\n");
+      printf("->No SZ cluster counts requested. SZ cluster counts module skipped.\n");
       return _SUCCESS_;
   }
 

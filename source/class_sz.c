@@ -3813,11 +3813,15 @@ pvectsz[ptsz->index_integrand] = integrand_projected_fields;
 
     evaluate_matter_density_profile(kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
     double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+    evaluate_matter_density_profile(ptsz->bispectrum_lambda_k2*kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_2 = pvectsz[ptsz->index_density_profile];
+    evaluate_matter_density_profile(ptsz->bispectrum_lambda_k3*kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_3 = pvectsz[ptsz->index_density_profile];
 
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                       *density_profile_at_k_1
-                                      *density_profile_at_k_1
-                                      *density_profile_at_k_1
+                                      *density_profile_at_k_2
+                                      *density_profile_at_k_3
                                       *damping_1h_term;
    }
 
@@ -3825,6 +3829,11 @@ pvectsz[ptsz->index_integrand] = integrand_projected_fields;
 
     evaluate_matter_density_profile(kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
     double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+    evaluate_matter_density_profile(ptsz->bispectrum_lambda_k2*kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_2 = pvectsz[ptsz->index_density_profile];
+    evaluate_matter_density_profile(ptsz->bispectrum_lambda_k3*kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_3 = pvectsz[ptsz->index_density_profile];
+
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
 
 if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
@@ -3836,15 +3845,47 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
 if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                       *pvectsz[ptsz->index_halo_bias]
+                                      *density_profile_at_k_2
+                                      *density_profile_at_k_3;
+                                    }
+
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  3) {
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *density_profile_at_k_3;
+                                    }
+
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  4) {
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
                                       *density_profile_at_k_1
+                                      *density_profile_at_k_2;
+                                    }
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  5) {
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *density_profile_at_k_2;
+                                    }
+
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *density_profile_at_k_3
                                       *density_profile_at_k_1;
                                     }
+
+
    }
 
   else if (_bk_at_z_3h_){
 
     evaluate_matter_density_profile(kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
     double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+    evaluate_matter_density_profile(ptsz->bispectrum_lambda_k2*kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_2 = pvectsz[ptsz->index_density_profile];
+    evaluate_matter_density_profile(ptsz->bispectrum_lambda_k3*kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_3 = pvectsz[ptsz->index_density_profile];
+
 if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
@@ -3858,6 +3899,36 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
                                       *pvectsz[ptsz->index_halo_bias_b2]
                                       *density_profile_at_k_1;
 }
+
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
+    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *density_profile_at_k_2;
+}
+
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  7) {
+    evaluate_halo_bias_b2(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias_b2]
+                                      *density_profile_at_k_2;
+}
+
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  8) {
+    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *density_profile_at_k_3;
+}
+
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  9) {
+    evaluate_halo_bias_b2(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias_b2]
+                                      *density_profile_at_k_3;
+}
+
+
 if (ptsz->check_consistency_conditions == 1){
 // mass consistency:
 if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  3) {
@@ -3886,8 +3957,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  5) {
     // double chi = sqrt(pvectsz[ptsz->index_chi2]);
     double l1,l2,l3;
     l1 = kl*chi-0.5;
-    l2 = kl*chi-0.5;
-    l3 = kl*chi-0.5;
+    l2 = ptsz->bispectrum_lambda_k2*kl*chi-0.5;
+    l3 = ptsz->bispectrum_lambda_k3*kl*chi-0.5;
 
     // if (l1<0.) l1 =1e-100;
     // if (l2<0.) l2 =1e-100;
@@ -3916,6 +3987,7 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  5) {
                                       *tau_profile_at_ell_2
                                       *galaxy_profile_at_ell_3
                                       *damping_1h_term;
+
     if (isnan(pvectsz[ptsz->index_integrand]) || isinf(pvectsz[ptsz->index_integrand])){
     printf("z %.8e rg %.8e cg %.8e t %.8e t %.8e g %.8e\n",pvectsz[ptsz->index_z],r_delta_gal,c_delta_gal,tau_profile_at_ell_1,tau_profile_at_ell_2,galaxy_profile_at_ell_3);
     exit(0);
@@ -3926,8 +3998,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  5) {
     // double chi = sqrt(pvectsz[ptsz->index_chi2]);
     double l1,l2,l3;
     l1 = kl*chi-0.5;
-    l2 = kl*chi-0.5;
-    l3 = kl*chi-0.5;
+    l2 = ptsz->bispectrum_lambda_k2*kl*chi-0.5;
+    l3 = ptsz->bispectrum_lambda_k3*kl*chi-0.5;
     // if (l1<0.) l1 =1e-100;
     // if (l2<0.) l2 =1e-100;
     // if (l3<0.) l3 =1e-100;
@@ -3992,8 +4064,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
     // double chi = sqrt(pvectsz[ptsz->index_chi2]);
     double l1,l2,l3;
     l1 = kl*chi-0.5;
-    l2 = kl*chi-0.5;
-    l3 = kl*chi-0.5;
+    l2 = ptsz->bispectrum_lambda_k2*kl*chi-0.5;
+    l3 = ptsz->bispectrum_lambda_k3*kl*chi-0.5;
     // if (l1<0.) l1 =1e-100;
     // if (l2<0.) l2 =1e-100;
     // if (l3<0.) l3 =1e-100;
@@ -5849,6 +5921,30 @@ int evaluate_halo_bias_b2(double * pvecback,
    return _SUCCESS_;
 }
 
+double get_pk_nonlin_at_k_and_z(double k, double z,
+                          struct background * pba,
+                          struct primordial * ppm,
+                          struct nonlinear * pnl,
+                          struct tszspectrum * ptsz){
+double pk;
+double * pk_ic = NULL;
+          class_call(nonlinear_pk_at_k_and_z(
+                                            pba,
+                                            ppm,
+                                            pnl,
+                                            pk_nonlinear,
+                                            k*pba->h,
+                                            z,
+                                            pnl->index_pk_m,
+                                            &pk, // number *out_pk_l
+                                            pk_ic // array out_pk_ic_l[index_ic_ic]
+                                          ),
+                                          pnl->error_message,
+                                          pnl->error_message);
+return pk*pow(pba->h,3.);
+                          }
+
+
 double get_pk_lin_at_k_and_z(double k, double z,
                           struct background * pba,
                           struct primordial * ppm,
@@ -5873,190 +5969,190 @@ return pk*pow(pba->h,3.);
                           }
 
 
-
-//Compute P(k) in units of h^-3 Mpc^3
-int evaluate_pk_at_ell_plus_one_half_over_chi(double * pvecback,
-                                              double * pvectsz,
-                                              struct background * pba,
-                                              struct primordial * ppm,
-                                              struct nonlinear * pnl,
-                                              struct tszspectrum * ptsz)
-{
-
-  double k;
-  int index_md = (int) pvectsz[ptsz->index_md];
-  double z = pvectsz[ptsz->index_z];
-
-
-if (_pk_at_z_2h_
-  ||_pk_gg_at_z_2h_
-  || _bk_at_z_2h_
-  || _bk_at_z_3h_
-  || _bk_ttg_at_z_2h_
-  || _bk_ttg_at_z_3h_){
-  int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
-  k = ptsz->k_for_pk_hm[index_k];
-  // printf("exiting\n");
-  // exit(0);
-
-}
-else {
-   //int index_l = (int)  pvectsz[ptsz->index_multipole];
-   //identical to sqrt(pvectsz[index_chi2])
-   double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
-
-   pvectsz[ptsz->index_k_value_for_halo_bias] = (pvectsz[ptsz->index_multipole_for_pk]+0.5)/d_A; //units h/Mpc
-
-
-   k = pvectsz[ptsz->index_k_value_for_halo_bias]; //in h/Mpc
- }
-
-   double pk;
-   double * pk_ic = NULL;
-
-   //printf("evaluating pk at k=%.3e h/Mpc\n",k);
-
-
-
-   //int index_md = (int) pvectsz[ptsz->index_md];
-   if (
-       ((ptsz->has_gal_gal_hf == _TRUE_) && (index_md == ptsz->index_md_gal_gal_hf)) // WIxSC
-    || ((ptsz->has_lens_lens_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_2h) && ptsz->use_hod == 0)
-    || ((ptsz->has_gal_lens_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lens_hf))
-    || ((ptsz->has_gal_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_hf))
-    || ((ptsz->has_lens_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_lens_lensmag_hf))
-    || ((ptsz->has_lensmag_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_lensmag_lensmag_hf))
-    || ((ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_hf))) // unWISE
-
-   {
-       //Input: wavenumber in 1/Mpc
-       //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-// printf("evaluating pk at z=%.3e and k=%.3e\n",z,k);
-
-          // halofit approach: uses non-linear pk
-          class_call(nonlinear_pk_at_k_and_z(
-                                            pba,
-                                            ppm,
-                                            pnl,
-                                            pk_nonlinear,
-                                            //pk_linear,
-                                            k*pba->h,
-                                            z,
-                                            pnl->index_pk_m,
-                                            &pk, // number *out_pk_l
-                                            pk_ic // array out_pk_ic_l[index_ic_ic]
-                                          ),
-                                          pnl->error_message,
-                                          pnl->error_message);
-
-  // printf("evaluating pk at z=%.3e and k=%.3e, getting pk =%.3e\n",z,k,pk);
-
-   }
-   else{
-
-       //Input: wavenumber in 1/Mpc
-       //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-       // printf("z=%.3e\n",z);
-          class_call(nonlinear_pk_at_k_and_z(
-                                            pba,
-                                            ppm,
-                                            pnl,
-                                            pk_linear,
-                                            k*pba->h,
-                                            z,
-                                            pnl->index_pk_m,
-                                            &pk, // number *out_pk_l
-                                            pk_ic // array out_pk_ic_l[index_ic_ic]
-                                          ),
-                                          pnl->error_message,
-                                          pnl->error_message);
-}
-
-
-
-   //now compute P(k) in units of h^-3 Mpc^3
-   pvectsz[ptsz->index_pk_for_halo_bias] = pk*pow(pba->h,3.); //in units Mpc^3/h^3
-   return _SUCCESS_;
-}
-
-
+//
+// //Compute P(k) in units of h^-3 Mpc^3
+// int evaluate_pk_at_ell_plus_one_half_over_chi(double * pvecback,
+//                                               double * pvectsz,
+//                                               struct background * pba,
+//                                               struct primordial * ppm,
+//                                               struct nonlinear * pnl,
+//                                               struct tszspectrum * ptsz)
+// {
+//
+//   double k;
+//   int index_md = (int) pvectsz[ptsz->index_md];
+//   double z = pvectsz[ptsz->index_z];
+//
+//
+// if (_pk_at_z_2h_
+//   ||_pk_gg_at_z_2h_
+//   || _bk_at_z_2h_
+//   || _bk_at_z_3h_
+//   || _bk_ttg_at_z_2h_
+//   || _bk_ttg_at_z_3h_){
+//   int index_k = (int) pvectsz[ptsz->index_k_for_pk_hm];
+//   k = ptsz->k_for_pk_hm[index_k];
+//   // printf("exiting\n");
+//   // exit(0);
+//
+// }
+// else {
+//    //int index_l = (int)  pvectsz[ptsz->index_multipole];
+//    //identical to sqrt(pvectsz[index_chi2])
+//    double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+//
+//    pvectsz[ptsz->index_k_value_for_halo_bias] = (pvectsz[ptsz->index_multipole_for_pk]+0.5)/d_A; //units h/Mpc
+//
+//
+//    k = pvectsz[ptsz->index_k_value_for_halo_bias]; //in h/Mpc
+//  }
+//
+//    double pk;
+//    double * pk_ic = NULL;
+//
+//    //printf("evaluating pk at k=%.3e h/Mpc\n",k);
+//
+//
+//
+//    //int index_md = (int) pvectsz[ptsz->index_md];
+//    if (
+//        ((ptsz->has_gal_gal_hf == _TRUE_) && (index_md == ptsz->index_md_gal_gal_hf)) // WIxSC
+//     || ((ptsz->has_lens_lens_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_2h) && ptsz->use_hod == 0)
+//     || ((ptsz->has_gal_lens_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lens_hf))
+//     || ((ptsz->has_gal_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_hf))
+//     || ((ptsz->has_lens_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_lens_lensmag_hf))
+//     || ((ptsz->has_lensmag_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_lensmag_lensmag_hf))
+//     || ((ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_hf))) // unWISE
+//
+//    {
+//        //Input: wavenumber in 1/Mpc
+//        //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+// // printf("evaluating pk at z=%.3e and k=%.3e\n",z,k);
+//
+//           // halofit approach: uses non-linear pk
+//           class_call(nonlinear_pk_at_k_and_z(
+//                                             pba,
+//                                             ppm,
+//                                             pnl,
+//                                             pk_nonlinear,
+//                                             //pk_linear,
+//                                             k*pba->h,
+//                                             z,
+//                                             pnl->index_pk_m,
+//                                             &pk, // number *out_pk_l
+//                                             pk_ic // array out_pk_ic_l[index_ic_ic]
+//                                           ),
+//                                           pnl->error_message,
+//                                           pnl->error_message);
+//
+//   // printf("evaluating pk at z=%.3e and k=%.3e, getting pk =%.3e\n",z,k,pk);
+//
+//    }
+//    else{
+//
+//        //Input: wavenumber in 1/Mpc
+//        //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+//        // printf("z=%.3e\n",z);
+//           class_call(nonlinear_pk_at_k_and_z(
+//                                             pba,
+//                                             ppm,
+//                                             pnl,
+//                                             pk_linear,
+//                                             k*pba->h,
+//                                             z,
+//                                             pnl->index_pk_m,
+//                                             &pk, // number *out_pk_l
+//                                             pk_ic // array out_pk_ic_l[index_ic_ic]
+//                                           ),
+//                                           pnl->error_message,
+//                                           pnl->error_message);
+// }
+//
+//
+//
+//    //now compute P(k) in units of h^-3 Mpc^3
+//    pvectsz[ptsz->index_pk_for_halo_bias] = pk*pow(pba->h,3.); //in units Mpc^3/h^3
+//    return _SUCCESS_;
+// }
 
 
-double evaluate_pk_halofit_over_pk_linear_at_ell_plus_one_half_over_chi(double * pvecback,
-                                                                     double * pvectsz,
-                                                                     struct background * pba,
-                                                                     struct primordial * ppm,
-                                                                     struct nonlinear * pnl,
-                                                                     struct tszspectrum * ptsz)
-{
-
-
-   int index_l = (int)  pvectsz[ptsz->index_multipole];
-   double z = pvectsz[ptsz->index_z];
-   //identical to sqrt(pvectsz[index_chi2])
-   double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
-
-   pvectsz[ptsz->index_k_value_for_halo_bias] = (ptsz->ell[index_l]+0.5)/d_A; //units h/Mpc
-
-
-   double k = pvectsz[ptsz->index_k_value_for_halo_bias]; //in h/Mpc
-
-   double pk;
-   double * pk_ic = NULL;
-
-   //printf("evaluating pk at k=%.3e h/Mpc\n",k);
-
-
-
-   int index_md = (int) pvectsz[ptsz->index_md];
-
-
-          class_call(nonlinear_pk_at_k_and_z(
-                                            pba,
-                                            ppm,
-                                            pnl,
-                                            //pk_nonlinear,
-                                            pk_nonlinear,
-                                            k*pba->h,
-                                            z,
-                                            pnl->index_pk_cb,
-                                            &pk, // number *out_pk_l
-                                            pk_ic // array out_pk_ic_l[index_ic_ic]
-                                          ),
-                                          pnl->error_message,
-                                          pnl->error_message);
-
-   double pk_halofit = pk;
-
-
-
-       //Input: wavenumber in 1/Mpc
-       //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-          class_call(nonlinear_pk_at_k_and_z(
-                                            pba,
-                                            ppm,
-                                            pnl,
-                                            pk_linear,
-                                            k*pba->h,
-                                            z,
-                                            pnl->index_pk_cb,
-                                            &pk, // number *out_pk_l
-                                            pk_ic // array out_pk_ic_l[index_ic_ic]
-                                          ),
-                                          pnl->error_message,
-                                          pnl->error_message);
-
-    double pk_lin  = pk;
-
-
-
-
-   double  result = pk_halofit/pk_lin;
-   return result;
-}
-
-
-
+//
+//
+// double evaluate_pk_halofit_over_pk_linear_at_ell_plus_one_half_over_chi(double * pvecback,
+//                                                                      double * pvectsz,
+//                                                                      struct background * pba,
+//                                                                      struct primordial * ppm,
+//                                                                      struct nonlinear * pnl,
+//                                                                      struct tszspectrum * ptsz)
+// {
+//
+//
+//    int index_l = (int)  pvectsz[ptsz->index_multipole];
+//    double z = pvectsz[ptsz->index_z];
+//    //identical to sqrt(pvectsz[index_chi2])
+//    double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+//
+//    pvectsz[ptsz->index_k_value_for_halo_bias] = (ptsz->ell[index_l]+0.5)/d_A; //units h/Mpc
+//
+//
+//    double k = pvectsz[ptsz->index_k_value_for_halo_bias]; //in h/Mpc
+//
+//    double pk;
+//    double * pk_ic = NULL;
+//
+//    //printf("evaluating pk at k=%.3e h/Mpc\n",k);
+//
+//
+//
+//    int index_md = (int) pvectsz[ptsz->index_md];
+//
+//
+//           class_call(nonlinear_pk_at_k_and_z(
+//                                             pba,
+//                                             ppm,
+//                                             pnl,
+//                                             //pk_nonlinear,
+//                                             pk_nonlinear,
+//                                             k*pba->h,
+//                                             z,
+//                                             pnl->index_pk_cb,
+//                                             &pk, // number *out_pk_l
+//                                             pk_ic // array out_pk_ic_l[index_ic_ic]
+//                                           ),
+//                                           pnl->error_message,
+//                                           pnl->error_message);
+//
+//    double pk_halofit = pk;
+//
+//
+//
+//        //Input: wavenumber in 1/Mpc
+//        //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+//           class_call(nonlinear_pk_at_k_and_z(
+//                                             pba,
+//                                             ppm,
+//                                             pnl,
+//                                             pk_linear,
+//                                             k*pba->h,
+//                                             z,
+//                                             pnl->index_pk_cb,
+//                                             &pk, // number *out_pk_l
+//                                             pk_ic // array out_pk_ic_l[index_ic_ic]
+//                                           ),
+//                                           pnl->error_message,
+//                                           pnl->error_message);
+//
+//     double pk_lin  = pk;
+//
+//
+//
+//
+//    double  result = pk_halofit/pk_lin;
+//    return result;
+// }
+//
+//
+//
 
 
 int evaluate_pk_at_ell_plus_one_half_over_chi_today(double * pvecback,
@@ -7156,8 +7252,8 @@ return result;
 
 
 double get_matter_bispectrum_at_z_effective_approach_SC(double k1_in_h_over_Mpc,
-                                                     double k2_in_h_over_Mpc,
-                                                     double k3_in_h_over_Mpc,
+                                                     double lambda2,
+                                                     double lambda3,
                                                      double z,
                                                      struct tszspectrum * ptsz,
                                                      struct background * pba,
@@ -7165,7 +7261,8 @@ double get_matter_bispectrum_at_z_effective_approach_SC(double k1_in_h_over_Mpc,
                                                      struct primordial * ppm){
 
 // // get background quantities at z:
-
+double k2_in_h_over_Mpc = lambda2;//*k1_in_h_over_Mpc;
+double k3_in_h_over_Mpc = lambda3;//*k1_in_h_over_Mpc;
 
 double * pk_ic = NULL;
 double pk1;
@@ -7253,15 +7350,17 @@ pk3 *= pow(pba->h,3.);
 
 
 double get_matter_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,
-                                                     double k2_in_h_over_Mpc,
-                                                     double k3_in_h_over_Mpc,
-                                                     double z,
-                                                     struct tszspectrum * ptsz,
-                                                     struct background * pba,
-                                                     struct nonlinear * pnl,
-                                                     struct primordial * ppm){
+                                                 double lambda2,
+                                                 double lambda3,
+                                                 double z,
+                                                 struct tszspectrum * ptsz,
+                                                 struct background * pba,
+                                                 struct nonlinear * pnl,
+                                                 struct primordial * ppm){
 
 // // get background quantities at z:
+double k2_in_h_over_Mpc = lambda2;//*k1_in_h_over_Mpc;
+double k3_in_h_over_Mpc = lambda3;//*k1_in_h_over_Mpc;
 
 
 double * pk_ic = NULL;
@@ -7350,14 +7449,16 @@ pk3 *= pow(pba->h,3.);
 
 
 double get_matter_bispectrum_at_z_effective_approach_smoothed(double k1_in_h_over_Mpc,
-                                                     double k2_in_h_over_Mpc,
-                                                     double k3_in_h_over_Mpc,
+                                                     double lambda2,
+                                                     double lambda3,
                                                      double z,
                                                      struct tszspectrum * ptsz,
                                                      struct background * pba,
                                                      struct nonlinear * pnl,
                                                      struct primordial * ppm){
 
+double k2_in_h_over_Mpc = lambda2;//*k1_in_h_over_Mpc;
+double k3_in_h_over_Mpc = lambda3;//*k1_in_h_over_Mpc;
 double * pk_ic = NULL;
 double pk1;
 //Input: wavenumber in 1/Mpc
@@ -7452,14 +7553,17 @@ pk3 *= pow(pba->h,3.);
 
 
 double get_matter_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
-                                                     double k2_in_h_over_Mpc,
-                                                     double k3_in_h_over_Mpc,
+                                                     double lambda2,
+                                                     double lambda3,
                                                      double z,
                                                      struct tszspectrum * ptsz,
                                                      struct background * pba,
                                                      struct nonlinear * pnl,
                                                      struct primordial * ppm){
 
+
+double k2_in_h_over_Mpc = lambda2;//*k1_in_h_over_Mpc;
+double k3_in_h_over_Mpc = lambda3;//*k1_in_h_over_Mpc;
 
 double * pk_ic = NULL;
 double pk1;

@@ -2957,6 +2957,9 @@ int input_read_parameters(
       class_read_double("Delta_z_lens",ptsz->Delta_z_lens);
       class_read_double("Delta_z_source",ptsz->Delta_z_source);
 
+      class_read_double("bispectrum_lambda_k2",ptsz->bispectrum_lambda_k2);
+      class_read_double("bispectrum_lambda_k3",ptsz->bispectrum_lambda_k3);
+
 
       class_call(parser_read_string(pfc,"M0 equal M_min (HOD)",&string1,&flag1,errmsg),
                  errmsg,
@@ -5295,6 +5298,9 @@ int input_default_params(
   ptsz->freq_max = 1000.;
   ptsz->freq_min = 100.;
   //ptsz->nlSZ = 18;
+
+  ptsz->bispectrum_lambda_k2 = 1.;
+  ptsz->bispectrum_lambda_k3 = 1.;
 
   ptsz->M0_Mmin_flag = 0;
   ptsz->f_cen_HOD = 1.;
