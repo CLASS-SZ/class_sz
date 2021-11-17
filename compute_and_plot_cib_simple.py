@@ -24,8 +24,8 @@ import pyccl as ccl
 
 do_ccl_comparison = 'yes'
 # path_to_ccl = '/Users/boris/Work/CCL/'
-freq_cib_1 = 217.
-freq_cib_2 = 217.
+freq_cib_1 = 3000.
+freq_cib_2 = 3000.
 
 
 
