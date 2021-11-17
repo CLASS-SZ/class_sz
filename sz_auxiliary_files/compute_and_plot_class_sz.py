@@ -339,8 +339,8 @@ def run(args):
     p_dict['mass_epsabs'] = 1.e-40 # fiducial 1e-30
     p_dict['mass_epsrel'] = 1e-5
 
-    p_dict['dell'] = 10. # 0.1
-    p_dict['ell_min'] = 10.
+    p_dict['dlogell'] = 0.1 # 0.1
+    p_dict['ell_min'] = 2.
     p_dict['ell_max'] = 5000.
 
 

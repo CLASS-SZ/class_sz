@@ -293,6 +293,11 @@ cdef extern from "class.h":
         double * cl_kSZ_kSZ_gal_hf
         double * cl_tSZ_lensmag_1h
         double * cl_tSZ_lensmag_2h
+        double * cl_gal_gallens_1h
+        double * cl_gal_gallens_2h
+        double * thetas_arcmin
+        double * gamma_gal_gallens_1h
+        double * gamma_gal_gallens_2h
         double * cl_gal_gal_1h
         double * cl_gal_gal_2h
         double * cl_gal_lens_1h
@@ -721,6 +726,7 @@ cdef extern from "class.h":
                                                double M_halo,
                                                double M_min,
                                                double sigma_log10M,
+                                               double fcen,
                                                void * ptsz,
                                                void * pba)
 

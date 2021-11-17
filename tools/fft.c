@@ -868,7 +868,7 @@ void fftlog_ComputeXiLM_cl2gamma(int l, int m, int N, const double k[], const do
     int i;
     for(i = 0; i < N; i++)
         // a[i] = pow(k[i], m - 0.5) * pk[i];
-        a[i] = pow(k[i], 1 ) * pk[i]; // m = 1 in our case
+        a[i] = pow(k[i], 1 ) * pk[i]; //dim = 2 in our case
     fht(N, k, a, r, b, 2, 0, 1, 1, NULL, ptsz);
     for(i = 0; i < N; i++)
         xi[i] = creal(pow(2*M_PI*r[i], -1) * b[i]);

@@ -2525,6 +2525,29 @@ int input_read_parameters(
       }
 
 
+      if ((strstr(string1,"gamma_gal_gallens_1h") != NULL) ) {
+        ptsz->has_gal_gallens_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+        ptsz->convert_cls_to_gamma = 1;
+      }
+
+      if ((strstr(string1,"gamma_gal_gallens_2h") != NULL) ) {
+        ptsz->has_gal_gallens_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+        ptsz->convert_cls_to_gamma = 1;
+      }
+
+
 
       if ((strstr(string1,"lensmag_lensmag_1h") != NULL) ) {
         ptsz->has_lensmag_lensmag_1h =_TRUE_;
@@ -2930,6 +2953,9 @@ int input_read_parameters(
       class_read_double("nfw_profile_epsabs",ptsz->nfw_profile_epsabs);
 
       class_read_double("M_min_HOD",ptsz->M_min_HOD);
+      class_read_double("f_cen_HOD",ptsz->f_cen_HOD);
+      class_read_double("Delta_z_lens",ptsz->Delta_z_lens);
+      class_read_double("Delta_z_source",ptsz->Delta_z_source);
 
 
       class_call(parser_read_string(pfc,"M0 equal M_min (HOD)",&string1,&flag1,errmsg),
@@ -5271,6 +5297,9 @@ int input_default_params(
   //ptsz->nlSZ = 18;
 
   ptsz->M0_Mmin_flag = 0;
+  ptsz->f_cen_HOD = 1.;
+  ptsz->Delta_z_lens = 0.;
+  ptsz->Delta_z_source = 0.;
   ptsz->M_min_HOD_mass_factor_unwise = 1.;
   ptsz->M0_HOD = 0.; //DES-like HOD see https://arxiv.org/pdf/2106.08438.pdf
 

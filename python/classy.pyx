@@ -1551,6 +1551,38 @@ cdef class Class:
         return cl
 
 
+
+    def cl_ggamma(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of galaxy x galaxy lensing power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_gal_gallens_1h[index])
+            cl['2h'].append(self.tsz.cl_gal_gallens_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+    def gamma_ggamma(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of tangential shear
+        """
+        cl = {}
+        cl['thetas'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.gamma_gal_gallens_1h[index])
+            cl['2h'].append(self.tsz.gamma_gal_gallens_2h[index])
+            cl['thetas'].append(self.tsz.thetas_arcmin[index])
+        return cl
+
+
+
+
     def cl_kg(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of kappa (lensing) x galaxy power spectrum
@@ -2101,8 +2133,8 @@ cdef class Class:
         Ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,Nc_mean,M_min,alpha_s,M1_prime,&self.tsz,&self.ba)
         return Ns
 
-    def get_N_centrals(self,double z,double M_halo,double M_min,double sigma_log10M):
-        Nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,&self.tsz,&self.ba)
+    def get_N_centrals(self,double z,double M_halo,double M_min,double sigma_log10M,double fc):
+        Nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,fc,&self.tsz,&self.ba)
         return Nc
 
 

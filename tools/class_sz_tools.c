@@ -9629,7 +9629,7 @@ double integrand_mean_galaxy_bias(double lnM_halo, void *p){
       M1_prime = V->ptsz->M1_prime_HOD;
       sigma_log10M = V->ptsz->sigma_log10M_HOD;
       // }
-      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz,V->pba);
+      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD,V->ptsz,V->pba);
       ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],nc,M0,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
       evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
       double result = hmf*V->pvectsz[V->ptsz->index_halo_bias]*(ns+nc);
@@ -9711,7 +9711,7 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
       M1_prime = V->ptsz->M1_prime_HOD;
       sigma_log10M = V->ptsz->sigma_log10M_HOD;
       // }
-      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz,V->pba);
+      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD,V->ptsz,V->pba);
       ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],nc,M0,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
 
       double result = hmf*(ns+nc);

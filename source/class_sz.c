@@ -574,24 +574,57 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 
  }
   if ( (ptsz->has_gal_gallens_1h || ptsz->has_gal_gallens_2h) && ptsz->convert_cls_to_gamma){
-    printf("converting cls to gamma\n");
+
+    if (ptsz->sz_verbose > 0) printf("converting cls to gamma\n");
+    class_alloc(ptsz->thetas_arcmin,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+    class_alloc(ptsz->gamma_gal_gallens_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+    class_alloc(ptsz->gamma_gal_gallens_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+
+
+    int i;
+    double lnl[ptsz->nlSZ],lncl_1h[ptsz->nlSZ],lncl_2h[ptsz->nlSZ];
+    for (i=0;i<ptsz->nlSZ;i++){
+      double fac = ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_);
+      lnl[i] = log(ptsz->ell[i]);
+      lncl_1h[i] = log(ptsz->cl_gal_gallens_1h[i]/fac);
+      lncl_2h[i] = log(ptsz->cl_gal_gallens_2h[i]/fac);
+
+    }
+
     const int N = ptsz->N_samp_fftw;
     double l[N],thetas[N], gamma_t_1h[N], gamma_t_2h[N], cl_1h[N], cl_2h[N], l_min, l_max;
-    l_min = 1e-2;
-    l_max = 1e5;
-    int i;
+    l_min = ptsz->l_min_samp_fftw;
+    l_max = ptsz->l_max_samp_fftw;
+
     for (i=0;i<N;i++){
     l[i] = exp(log(l_min)+i/(N-1.)*(log(l_max)-log(l_min)));
-    double fac = l[i]*(l[i]+1.)/(2*_PI_);
-    cl_1h[i] = pwl_value_1d(ptsz->nlSZ,ptsz->ell,ptsz->cl_gal_gallens_1h,l[i])/fac;
-    cl_2h[i] = pwl_value_1d(ptsz->nlSZ,ptsz->ell,ptsz->cl_gal_gallens_2h,l[i])/fac;
+
+    if ((l[i]<ptsz->ell[0]) || (l[i]>ptsz->ell[ptsz->nlSZ-1])){
+      cl_1h[i] = 0.;
+      cl_2h[i] = 0.;
+    }
+    else{
+    cl_1h[i] = exp(pwl_value_1d(ptsz->nlSZ,lnl,lncl_1h,log(l[i])));
+    cl_2h[i] = exp(pwl_value_1d(ptsz->nlSZ,lnl,lncl_2h,log(l[i])));
+  }
     }
 
     cl2gamma(N,l,cl_1h,thetas,gamma_t_1h,ptsz);
     cl2gamma(N,l,cl_2h,thetas,gamma_t_2h,ptsz);
-    for (i=0;i<N;i++){
-      printf("thetas = %.5e gamma_t_1h = %.5e gamma_t_2h = %.5e\n",thetas[i],gamma_t_1h[i],gamma_t_2h[i]);
+    // double ltest[N],cltest[N];
+    // gamma2cl(N,thetas,gamma_t_1h,ltest,cltest,ptsz);
+    // for (i=0;i<N;i++){
+    //   printf("%.5e %.5e\n",cltest[i],cl_1h[i]);
+    // }
+    // gamma2cl(N,l,cl_2h,thetas,gamma_t_2h,ptsz);
+    for (i=0;i<ptsz->nlSZ;i++){
+      ptsz->thetas_arcmin[i] = 1./ptsz->ell[ptsz->nlSZ-i-1]*(60.*180.)/_PI_;
+      ptsz->gamma_gal_gallens_1h[i] = pwl_value_1d(N,thetas,gamma_t_1h,1./ptsz->ell[ptsz->nlSZ-i-1]);
+      ptsz->gamma_gal_gallens_2h[i] = pwl_value_1d(N,thetas,gamma_t_2h,1./ptsz->ell[ptsz->nlSZ-i-1]);
+if (ptsz->sz_verbose > 0){
+      printf("thetas = %.5e gamma_t_1h = %.5e gamma_t_2h = %.5e\n",ptsz->thetas_arcmin[i],ptsz->gamma_gal_gallens_1h[i],ptsz->gamma_gal_gallens_2h[i]);
     }
+  }
 
 
 
@@ -723,6 +756,11 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->cl_gal_lensmag_2h);
    free(ptsz->cl_gal_gallens_1h);
    free(ptsz->cl_gal_gallens_2h);
+     if ( (ptsz->has_gal_gallens_1h || ptsz->has_gal_gallens_2h) && ptsz->convert_cls_to_gamma){
+       free(ptsz->thetas_arcmin);
+       free(ptsz->gamma_gal_gallens_1h);
+       free(ptsz->gamma_gal_gallens_2h);
+     }
    free(ptsz->cl_gal_lensmag_hf);
    free(ptsz->cl_tSZ_lensmag_1h);
    free(ptsz->cl_tSZ_lensmag_2h);
@@ -10968,19 +11006,19 @@ double evaluate_galaxy_number_counts( double * pvecback,
 
 
     double z_asked  = pvectsz[ptsz->index_z];
-    double phig = 0.;
+//     double phig = 0.;
+//
+//
+//   if(z_asked<ptsz->normalized_dndz_z[0])
+//      phig = 1e-100;
+//   else if (z_asked>ptsz->normalized_dndz_z[ptsz->normalized_dndz_size-1])
+//      phig = 1e-100;
+// else  phig =  pwl_value_1d(ptsz->normalized_dndz_size,
+//                            ptsz->normalized_dndz_z,
+//                            ptsz->normalized_dndz_phig,
+//                            z_asked);
 
-
-  if(z_asked<ptsz->normalized_dndz_z[0])
-     phig = 1e-100;
-  else if (z_asked>ptsz->normalized_dndz_z[ptsz->normalized_dndz_size-1])
-     phig = 1e-100;
-else  phig =  pwl_value_1d(ptsz->normalized_dndz_size,
-                           ptsz->normalized_dndz_z,
-                           ptsz->normalized_dndz_phig,
-                           z_asked);
-
-pvectsz[ptsz->index_phi_galaxy_counts] = phig;
+pvectsz[ptsz->index_phi_galaxy_counts] = get_galaxy_number_counts(z_asked,ptsz);
 
                                     }
 
@@ -10991,7 +11029,7 @@ double get_source_galaxy_number_counts(double z,
                                 struct tszspectrum * ptsz){
 
 
-    double z_asked  = z;
+    double z_asked  = z-ptsz->Delta_z_source;
     double phig = 0.;
 
   if(z_asked<ptsz->normalized_source_dndz_z[0])
@@ -11012,7 +11050,7 @@ double get_galaxy_number_counts(double z,
                                 struct tszspectrum * ptsz){
 
 
-    double z_asked  = z;
+    double z_asked  = z-ptsz->Delta_z_lens;
     double phig = 0.;
   //
   // if (ptsz->galaxy_sample == 1)
@@ -11066,10 +11104,11 @@ double HOD_mean_number_of_central_galaxies(double z,
                                            double M_halo,
                                            double M_min,
                                            double sigma_log10M,
+                                           double f_cen,
                                            struct tszspectrum * ptsz,
                                            struct background * pba){
  double result = 0.;
- result = 0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_log10M)));
+ result = f_cen*0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_log10M)));
  return result;
 }
 
@@ -11528,7 +11567,7 @@ M1_prime = ptsz->M1_prime_HOD;
 sigma_log10M = ptsz->sigma_log10M_HOD;
 M0 = ptsz->M0_HOD;
 
-nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz,pba);
+nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz->f_cen_HOD,ptsz,pba);
 
 ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
 double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
@@ -11579,7 +11618,7 @@ M1_prime = ptsz->M1_prime_HOD;
 sigma_log10M = ptsz->sigma_log10M_HOD;
 M0 = ptsz->M0_HOD;
 
-nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz,pba);
+nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz->f_cen_HOD,ptsz,pba);
 
 ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
 double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
@@ -11636,7 +11675,7 @@ M1_prime = ptsz->M1_prime_HOD;
 sigma_log10M = ptsz->sigma_log10M_HOD;
 M0 = ptsz->M0_HOD;
 
-nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz,pba);
+nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz->f_cen_HOD,ptsz,pba);
 
 ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
 double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
