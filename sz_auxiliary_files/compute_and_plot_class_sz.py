@@ -1,5 +1,5 @@
 
-# $ python3 compute_and_plot_comparison_with_KFW20_kSZ2_gal_varying_params_master.py -param_name 'h' -p_val '[0.6732]'  -show_legend yes -show_error_bars no -output 'kSZ_kSZ_gal_3h,kSZ_kSZ_gal fft (3h)' -plot_kSZ_kSZ_gal yes  -save_figure yes -plot_redshift_dependent_functions no -mode run -x_min 1e1 -x_max 5e3
+# $ python3 compute_and_plot_class_sz.py -param_name 'h' -p_val '[0.6732]'  -show_legend yes -show_error_bars no -output 'kSZ_kSZ_gal_3h,kSZ_kSZ_gal fft (3h)' -plot_kSZ_kSZ_gal yes  -save_figure yes -plot_redshift_dependent_functions no -mode run -x_min 1e1 -x_max 5e3
 import argparse
 couleur = 'green'
 use_hod = 'yes'
@@ -169,6 +169,9 @@ def run(args):
     kSZ_kSZ_gal_1h_fft = []
     kSZ_kSZ_gal_2h_fft = []
     kSZ_kSZ_gal_3h_fft = []
+    kSZ_kSZ_tSZ_1h = []
+    kSZ_kSZ_tSZ_2h = []
+    kSZ_kSZ_tSZ_3h = []
     kSZ_kSZ_gal_2h = []
     kSZ_kSZ_gal_3h = []
     kSZ_kSZ_gal_hf = []
@@ -237,7 +240,7 @@ def run(args):
     p_dict['f_free'] = 1.
 
 
-    p_dict['n_ell_density_profile'] =1000
+    p_dict['n_ell_density_profile'] =100
     p_dict['n_m_density_profile'] = 100 # 80
     p_dict['n_z_density_profile'] = 100 # 80
 
@@ -306,7 +309,7 @@ def run(args):
     p_dict['M0 equal M_min (HOD)'] = 'no'
 
 
-    p_dict['gas profile'] = 'B16' # 'nfw' or 'B16'
+    p_dict['gas profile'] = 'nfw' # 'nfw' or 'B16'
     p_dict['gas profile mode'] = 'agn'
 
 
@@ -392,6 +395,27 @@ def run(args):
         # exit(0)
         # p_dict['nfw_profile_epsabs'] = 1.e-50
         # p_dict['nfw_profile_epsrel'] = 1.e-4
+    if ("kSZ_kSZ_tSZ" in p_dict['output']):
+            p_dict['redshift_epsabs'] = 1.e-30 # fiducial 1e-30
+            p_dict['redshift_epsrel'] = 1.e-2 # fiducial value 1e-8
+            p_dict['mass_epsabs'] = 1.e-30 # fiducial 1e-30
+            p_dict['mass_epsrel'] = 1.e-3
+
+            p_dict['dlogell'] = 0.05 # 0.1
+            p_dict['ell_min'] = 2.
+            p_dict['ell_max'] = 5000.
+            p_dict['n_z_hmf_counter_terms'] = 300
+            p_dict['ndim_masses'] = 200 # important 128 is default ccl value
+            p_dict['ndim_redshifts'] = 120
+            p_dict['P_k_max_h/Mpc'] = 100.
+            # set the k grid for compuation of sigma and dsigma used in HMF
+            p_dict['k_min_for_pk_class_sz'] = 1E-3
+            p_dict['k_max_for_pk_class_sz'] = 60.
+            p_dict['k_per_decade_class_sz'] = 50 # at least 40?
+            p_dict['Frequency for y-distortion in GHz'] = 143.
+            p_dict['bispectrum_lambda_2'] = 1.
+            p_dict['bispectrum_lambda_3'] = 0.01
+
     if ("kSZ_kSZ_gal" in p_dict['output']):
             # p_dict['nfw_profile_epsabs'] = 1.e-6
             # p_dict['nfw_profile_epsrel'] = 1.e-10
@@ -635,6 +659,9 @@ def run(args):
         elif (args.plot_bk == 'yes'):
             ax.set_xlabel(r'$k\,\, [h/\mathrm{Mpc}]$',size=title_size)
             ax.set_ylabel(r'$B(k,k,k)\,\, [(\mathrm{Mpc}/h)^6]$',size=title_size)
+        elif (args.plot_b_kSZ_kSZ_tSZ == 'yes'):
+            ax.set_xlabel(r'$\ell$',size=title_size)
+            ax.set_ylabel(r'$B(\ell,\lambda_2 \ell,\lambda_3 \ell)\,\,TTY\,\, [(\mathrm{Mpc}/h)^6]$',size=title_size)
         elif (args.plot_bk_ttg == 'yes'):
             ax.set_xlabel(r'$k\,\, [h/\mathrm{Mpc}]$',size=title_size)
             ax.set_ylabel(r'$B(k,k,k) [ttg]\,\, [(\mathrm{Mpc}/h)^6]$',size=title_size)
@@ -784,6 +811,9 @@ def run(args):
             or 'kSZ_kSZ_gal_2h' in p_dict['output']
             or 'kSZ_kSZ_gal_3h' in p_dict['output']
             or 'kSZ_kSZ_gal_hf' in p_dict['output']
+            or 'kSZ_kSZ_tSZ_1h' in p_dict['output']
+            or 'kSZ_kSZ_tSZ_2h' in p_dict['output']
+            or 'kSZ_kSZ_tSZ_3h' in p_dict['output']
             or 'kSZ_kSZ_lensmag_1h' in p_dict['output']
             or 'tSZ_lens_1h' in p_dict['output']
             or 'tSZ_lens_2h' in p_dict['output']
@@ -849,6 +879,9 @@ def run(args):
                 lensmag_lensmag_hf.append(R[:,51])
                 gal_gallens_1h.append(R[:,57])
                 gal_gallens_2h.append(R[:,58])
+                kSZ_kSZ_tSZ_1h.append(R[:,59])
+                kSZ_kSZ_tSZ_2h.append(R[:,60])
+                kSZ_kSZ_tSZ_3h.append(R[:,61])
 
                 # r_dict[p_val] = L
 
@@ -871,6 +904,36 @@ def run(args):
                 elif (args.plot_te_y_y == 'yes'):
                     print(te_y_y[id_p])
                     ax.plot(multipoles[id_p],te_y_y[id_p],color=col[id_p],ls='-.',alpha = 1.,label = val_label[id_p],marker='o')
+                elif (args.plot_b_kSZ_kSZ_tSZ == 'yes'):
+                    print(multipoles[id_p])
+                    print(kSZ_kSZ_tSZ_1h[id_p])
+                    print(kSZ_kSZ_tSZ_2h[id_p])
+                    print(kSZ_kSZ_tSZ_3h[id_p])
+                    fac =  1.#(2.726e6)**2*multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi
+                    ax.plot(multipoles[id_p],kSZ_kSZ_tSZ_1h[id_p]*fac,color='k',
+                            ls=':',alpha = 1.,
+                            # label = val_label[id_p] + ' (1h)',
+                            label = '1-halo')#,
+                            # markersize = 3,
+                            # marker='o')
+                    ax.plot(multipoles[id_p],kSZ_kSZ_tSZ_2h[id_p]*fac,color='r',
+                            ls='--',alpha = 1.,
+                            # label = val_label[id_p] + ' (1h)',
+                            label = '2-halo')#,
+                            # markersize = 3,
+                            # marker='o')
+                    ax.plot(multipoles[id_p],kSZ_kSZ_tSZ_3h[id_p]*fac,color='b',
+                            ls='-.',alpha = 1.,
+                            # label = val_label[id_p] + ' (1h)',
+                            label = '3-halo')#,
+                            # markersize = 3,
+                            # marker='o')
+                    ax.plot(multipoles[id_p],(kSZ_kSZ_tSZ_1h[id_p]+kSZ_kSZ_tSZ_2h[id_p]+kSZ_kSZ_tSZ_3h[id_p])*fac,color='k',
+                            ls='-',alpha = 0.12,
+                            # label = val_label[id_p] + ' (1h)',
+                            label = '1+2+3-halo')#,
+                            # markersize = 3,
+                            # marker='o')
                 elif (args.plot_kSZ_kSZ_gal == 'yes'):
                     print(multipoles[id_p])
                     print(kSZ_kSZ_gal_1h_fft[id_p])
@@ -1346,6 +1409,10 @@ def run(args):
             ax.set_xscale('log')
             ax.set_yscale('log')
             ax.legend(loc=3,ncol = 1,frameon=True,fontsize=11)
+        elif (args.plot_b_kSZ_kSZ_tSZ == 'yes'):
+            ax.set_xscale('log')
+            ax.set_yscale('log')
+            ax.legend(loc=3,ncol = 1,frameon=True,fontsize=11)
         elif (args.plot_pk == 'yes'):
             ax.set_xscale('log')
             ax.set_yscale('log')
@@ -1368,8 +1435,8 @@ def run(args):
         # ax.set_yscale('log')
         # ax.set_xscale('log')
 
-    ax.set_xscale('log')
-    ax.set_yscale('log')
+    # ax.set_xscale('log')
+    # ax.set_yscale('log')
 
 
     #
@@ -1414,6 +1481,9 @@ def run(args):
             plt.savefig(FIG_DIR + FIG_NAME +".pdf")
         elif (args.plot_kSZ_kSZ_gal == 'yes'):
             FIG_NAME = '/cl_ksz2g_'
+            plt.savefig(FIG_DIR + FIG_NAME +"_"+couleur+".pdf")
+        elif (args.plot_b_kSZ_kSZ_tSZ == 'yes'):
+            FIG_NAME = '/b_ksz_kSZ_tSZ_'
             plt.savefig(FIG_DIR + FIG_NAME +"_"+couleur+".pdf")
         elif (args.plot_kSZ_kSZ_lensmag_1h == 'yes'):
             FIG_NAME = '/cl_ksz2mu_'
@@ -1463,6 +1533,7 @@ def main():
     parser.add_argument("-plot_trispectrum",help="Tll" ,dest="plot_trispectrum", type=str, required=False)
     parser.add_argument("-plot_pk",help="pk" ,dest="plot_pk", type=str, required=False)
     parser.add_argument("-plot_bk",help="bk" ,dest="plot_bk", type=str, required=False)
+    parser.add_argument("-plot_b_kSZ_kSZ_tSZ",help="bk" ,dest="plot_b_kSZ_kSZ_tSZ", type=str, required=False)
     parser.add_argument("-plot_bk_ttg",help="bk" ,dest="plot_bk_ttg", type=str, required=False)
     parser.add_argument("-plot_te_y_y",help="Tll" ,dest="plot_te_y_y", type=str, required=False)
     parser.add_argument("-plot_kSZ_kSZ_gal",help="plot_kSZ_kSZ_gal" ,dest="plot_kSZ_kSZ_gal", type=str, required=False)

@@ -2326,6 +2326,38 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"kSZ_kSZ_tSZ_1h") != NULL) ) {
+        ptsz->has_kSZ_kSZ_tSZ_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+        ptsz->has_vrms2 = _TRUE_;
+      }
+      if ((strstr(string1,"kSZ_kSZ_tSZ_2h") != NULL) ) {
+        ptsz->has_kSZ_kSZ_tSZ_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+        ptsz->has_vrms2 = _TRUE_;
+      }
+
+      if ((strstr(string1,"kSZ_kSZ_tSZ_3h") != NULL) ) {
+        ptsz->has_kSZ_kSZ_tSZ_3h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+        ptsz->has_vrms2 = _TRUE_;
+      }
+
       if ((strstr(string1,"cib_cib_1h") != NULL) ) {
         ptsz->has_cib_cib_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -2957,8 +2989,8 @@ int input_read_parameters(
       class_read_double("Delta_z_lens",ptsz->Delta_z_lens);
       class_read_double("Delta_z_source",ptsz->Delta_z_source);
 
-      class_read_double("bispectrum_lambda_k2",ptsz->bispectrum_lambda_k2);
-      class_read_double("bispectrum_lambda_k3",ptsz->bispectrum_lambda_k3);
+      class_read_double("bispectrum_lambda_2",ptsz->bispectrum_lambda_k2);
+      class_read_double("bispectrum_lambda_3",ptsz->bispectrum_lambda_k3);
 
 
       class_call(parser_read_string(pfc,"M0 equal M_min (HOD)",&string1,&flag1,errmsg),
@@ -4545,6 +4577,9 @@ int input_read_parameters(
       + ptsz->has_sz_cov_N_N
       + ptsz->has_sz_cov_N_N_hsv
       + ptsz->has_tSZ_tSZ_tSZ_1halo
+      + ptsz->has_kSZ_kSZ_tSZ_1h
+      + ptsz->has_kSZ_kSZ_tSZ_2h
+      + ptsz->has_kSZ_kSZ_tSZ_3h
       + ptsz->has_kSZ_kSZ_gal_1h
       + ptsz->has_kSZ_kSZ_gal_1h_fft
       + ptsz->has_kSZ_kSZ_gal_2h_fft
@@ -5703,6 +5738,9 @@ int input_default_params(
   ptsz->has_kSZ_kSZ_gal_hf = _FALSE_;
   ptsz->has_kSZ_kSZ_lensmag_1halo = _FALSE_;
   ptsz->has_tSZ_tSZ_tSZ_1halo = _FALSE_;
+  ptsz->has_kSZ_kSZ_tSZ_1h = _FALSE_;
+  ptsz->has_kSZ_kSZ_tSZ_2h = _FALSE_;
+  ptsz->has_kSZ_kSZ_tSZ_3h = _FALSE_;
   ptsz->has_sz_te_y_y = _FALSE_;
   ptsz->has_sz_m_y_y_1h = _FALSE_;
   ptsz->has_sz_m_y_y_2h = _FALSE_;
@@ -5799,6 +5837,10 @@ int input_default_params(
 
   ptsz->index_md_gal_gallens_2h = 69;
   ptsz->index_md_gal_gallens_1h = 70;
+
+  ptsz->index_md_kSZ_kSZ_tSZ_1h = 71;
+  ptsz->index_md_kSZ_kSZ_tSZ_2h = 72;
+  ptsz->index_md_kSZ_kSZ_tSZ_3h = 73;
   // ptsz->index_md_bk_at_z_hf = 51;
 
   ptsz->integrate_wrt_mvir = 0;
