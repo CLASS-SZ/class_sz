@@ -6058,6 +6058,63 @@ double get_sigma_at_z_and_m(double z,
                             }
 
 
+double get_dlnsigma_dlnR_at_z_and_m(double z,
+                            double m,
+                            struct tszspectrum * ptsz,
+                            struct background * pba){
+
+  double rh;
+  if (ptsz->HMF_prescription_NCDM == 0) //Matter
+    rh = pow(3.*m/(4*_PI_*(pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0),1./3.);
+
+  else if (ptsz->HMF_prescription_NCDM == 1) //CDM
+    rh = pow(3.*m/(4*_PI_*(pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0),1./3.);
+
+  else if (ptsz->HMF_prescription_NCDM == 2) //No-pres
+    rh = pow(3.*m/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.);
+
+   double z_asked = log(1.+z);
+   // double R_asked = log(exp(log(rh))/pba->h);
+   double R_asked = log(rh/pba->h); // in Mpc
+
+
+ if (z_asked<ptsz->array_redshift[0])
+    z_asked = ptsz->array_redshift[0];
+ if (z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1])
+    z_asked = ptsz->array_redshift[ptsz->n_arraySZ-1];
+
+ if (R_asked<ptsz->array_radius[0])
+    R_asked = ptsz->array_radius[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (R_asked>ptsz->array_radius[ptsz->ndimSZ-1])
+    R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
+
+
+   double sigma =  pwl_interp_2d(
+                   ptsz->n_arraySZ,
+                   ptsz->ndimSZ,
+                   ptsz->array_redshift,
+                   ptsz->array_radius,
+                   ptsz->array_dsigma2dR_at_z_and_R,
+                   1,
+                   &z_asked,
+                   &R_asked
+                   );
+  sigma = sigma/2.;
+
+
+  if (isnan(sigma) || isinf(sigma)){
+    printf("failed interpolation of sigma.\n");
+    printf("z=%.8e zmin=%.8e m=%.8e\n",z,ptsz->array_redshift[0],m);
+    exit(0);
+  }
+
+   return sigma;
+                            }
+
+
+
+
 double get_nu_at_z_and_m(double z,
                          double m,
                          struct tszspectrum * ptsz,
@@ -7004,36 +7061,36 @@ int evaluate_HMF_at_logM_and_z(
 
 
    double z_asked = log(1.+z);
-   double R_asked = log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h);
-// printf("dealing with mass conversion in hmf0 %.3e\n",ptsz->array_redshift[0]);
-   if (z<exp(ptsz->array_redshift[0])-1.)
-      z_asked = ptsz->array_redshift[0];
-        // printf("dealing with mass conversion in hmf\n");
-   if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
-      z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
-        // printf("dealing with mass conversion in hmf2\n");
-   if (log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h)<ptsz->array_radius[0])
-      R_asked = ptsz->array_radius[0];
-        // printf("dealing with mass conversion in hmf3\n");
-   if (log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h)>ptsz->array_radius[ptsz->ndimSZ-1])
-      R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
+//    double R_asked = log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h);
+// // printf("dealing with mass conversion in hmf0 %.3e\n",ptsz->array_redshift[0]);
+//    if (z<exp(ptsz->array_redshift[0])-1.)
+//       z_asked = ptsz->array_redshift[0];
+//         // printf("dealing with mass conversion in hmf\n");
+//    if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
+//       z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
+//         // printf("dealing with mass conversion in hmf2\n");
+//    if (log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h)<ptsz->array_radius[0])
+//       R_asked = ptsz->array_radius[0];
+//         // printf("dealing with mass conversion in hmf3\n");
+//    if (log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h)>ptsz->array_radius[ptsz->ndimSZ-1])
+//       R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
 
 
 pvectsz[ptsz->index_logSigma2] = 2.*log(get_sigma_at_z_and_m(exp(z_asked)-1.,m_for_hmf,ptsz,pba));
 
 pvectsz[ptsz->index_lognu] = log(get_nu_at_z_and_m(exp(z_asked)-1.,m_for_hmf,ptsz,pba));
 
-  pvectsz[ptsz->index_dlogSigma2dlogRh] =
-  pwl_interp_2d(
-                ptsz->n_arraySZ,
-                ptsz->ndimSZ,
-                ptsz->array_redshift,
-                ptsz->array_radius,
-                ptsz->array_dsigma2dR_at_z_and_R,
-                1,
-                &z_asked,
-                &R_asked
-                );
+  pvectsz[ptsz->index_dlogSigma2dlogRh] = 2.*get_dlnsigma_dlnR_at_z_and_m(z,m_for_hmf,ptsz,pba);
+  // pwl_interp_2d(
+  //               ptsz->n_arraySZ,
+  //               ptsz->ndimSZ,
+  //               ptsz->array_redshift,
+  //               ptsz->array_radius,
+  //               ptsz->array_dsigma2dR_at_z_and_R,
+  //               1,
+  //               &z_asked,
+  //               &R_asked
+  //               );
 
 
 
@@ -7167,6 +7224,7 @@ pvectsz[ptsz->index_dndlogRh] = 3./(4.*_PI_*pow(pvectsz[ptsz->index_Rh],3))
 
 //Return the HMF - dn/dlogM in units of h^3 Mpc^-3
 pvectsz[ptsz->index_hmf] = pvectsz[ptsz->index_dndlogRh]/3.;
+// pvectsz[ptsz->index_hmf] = pvectsz[ptsz->index_mf];
 
 return _SUCCESS_;
 }

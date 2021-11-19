@@ -1994,6 +1994,10 @@ double get_first_order_bias_at_z_and_nu(double z,
 double get_vrms2_at_z(double z,
                       struct tszspectrum * ptsz);
 
+double get_dlnsigma_dlnR_at_z_and_m(double z,
+                                    double m,
+                                    struct tszspectrum * ptsz,
+                                    struct background * pba);
 double get_sigma_at_z_and_m(double z,
                             double m,
                             struct tszspectrum * ptsz,
