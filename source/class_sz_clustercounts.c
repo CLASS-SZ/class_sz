@@ -231,6 +231,10 @@ if (pcsz->has_completeness == 1){
         if (ptsz->integrate_wrt_m200m == 1){
           mp = get_m200m_to_m500c_at_z_and_M(zp,mp,ptsz);
         }
+        if (ptsz->integrate_wrt_m200c == 1){
+          mp = get_m200c_to_m500c_at_z_and_M(zp,mp,ptsz);
+        }
+        //
         double yp = get_y_at_m_and_z(mp,zp,ptsz,pba);
         double thp = get_theta_at_m_and_z(mp,zp,ptsz,pba);
         //Planck
@@ -387,6 +391,10 @@ if (pcsz->has_completeness == 1){
         if (ptsz->integrate_wrt_m200m == 1){
           mp = get_m200m_to_m500c_at_z_and_M(zp,mp,ptsz);
         }
+        if (ptsz->integrate_wrt_m200c == 1){
+          mp = get_m200c_to_m500c_at_z_and_M(zp,mp,ptsz);
+        }
+
         double yp = get_y_at_m_and_z(mp,zp,ptsz,pba);
         double thp = get_theta_at_m_and_z(mp,zp,ptsz,pba);
 

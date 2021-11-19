@@ -2778,6 +2778,7 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
+        ptsz->has_500c = 1;
 
       }
 
