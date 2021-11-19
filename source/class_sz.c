@@ -12229,7 +12229,7 @@ return numerator/denominator;
 
 }
 
-
+// from https://arxiv.org/pdf/1112.5479.pdf
 double get_c200c_at_m_and_z_B13(double M,
                                 double z,
                                 struct background * pba,
@@ -12254,7 +12254,7 @@ double get_c200c_at_m_and_z_B13(double M,
              pba->error_message);
 
 double D = pvecback[pba->index_bg_D];
-double nu = 1./D*(1.12*pow(M/5e13,0.3)+0.53); //use the nu as defined in the B13 paper
+double nu = 1./D*(1.12*pow(M/5e13,0.3)+0.53); //use the nu as defined in the B13 paper and pivot mass in Msun/h
 // double c200m  = pow(D,0.9)*7.7*pow(nu,-0.29); // vir
 // double nu = sqrt(get_nu_at_z_and_m(z,M,ptsz,pba));
 double c200c  = pow(D,0.54)*5.9*pow(nu,-0.35); // 200c
@@ -12293,6 +12293,7 @@ c = get_c200m_at_m_and_z_B13(M,z,pba,ptsz);
 return  c;
                             }
 
+// from https://arxiv.org/pdf/1112.5479.pdf
 double get_c200m_at_m_and_z_B13(double M,
                                 double z,
                                 struct background * pba,
@@ -12317,7 +12318,7 @@ double get_c200m_at_m_and_z_B13(double M,
              pba->error_message);
 
 double D = pvecback[pba->index_bg_D];
-double nu = 1./D*(1.12*pow(M/5e13,0.3)+0.53);
+double nu = 1./D*(1.12*pow(M/5e13,0.3)+0.53); // pivot mass in Msun/h
 // double nu = sqrt(get_nu_at_z_and_m(z,M,ptsz,pba));
 
 

@@ -1230,6 +1230,8 @@ double * steps_m;
 
   double bin_dlog10_snr;
   double bin_dlog10_snr_last_bin;
+  double log10_snr_min;
+  double log10_snr_max;
 
   double x_out_truncated_nfw_profile_satellite_galaxies;
   double f_cen_HOD;

@@ -1812,7 +1812,10 @@ int input_read_parameters(
       class_read_double("bin_z_min_cluster_counts",ptsz->bin_z_min_cluster_counts);
       class_read_double("bin_z_max_cluster_counts",ptsz->bin_z_max_cluster_counts);
       class_read_double("bin_dz_cluster_counts",ptsz->bin_dz_cluster_counts);
+
       class_read_double("bin_dlog10_snr",ptsz->bin_dlog10_snr);
+      class_read_double("log10_snr_min",ptsz->log10_snr_min);
+      class_read_double("log10_snr_max",ptsz->log10_snr_max);
 
       class_read_double("lnymin",ptsz->lnymin);
       class_read_double("lnymax",ptsz->lnymax);
@@ -3288,6 +3291,10 @@ int input_read_parameters(
 
       class_read_string("UNWISE_dndz_file",ptsz->UNWISE_dndz_file);
       // class_read_string("path_to_class",ptsz->path_to_class);
+      class_read_string("SO_thetas_file",ptsz->SO_thetas_file);
+      class_read_string("SO_skyfracs_file",ptsz->SO_skyfracs_file);
+      class_read_string("SO_ylims_file",ptsz->SO_ylims_file);
+
       class_read_string("append_name_trispectrum_ref",ptsz->append_name_trispectrum_ref);
       class_read_string("path to reference trispectrum for likelihood code",ptsz->path_to_ref_trispectrum_for_cobaya);
       class_read_string("root",ptsz->root);
@@ -5546,6 +5553,8 @@ int input_default_params(
 
 
   ptsz->bin_dlog10_snr = 0.25;
+  ptsz->log10_snr_min = 0.6;
+  ptsz->log10_snr_max = 2.0;
 
 
   ptsz->lnymin = -11.5;// -11.5 in planck

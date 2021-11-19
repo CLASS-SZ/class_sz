@@ -905,8 +905,8 @@ for(index_z = 0; index_z<pcsz->nsteps_z; index_z++)
   pcsz->dlogy = ptsz->bin_dlog10_snr;
 }
 else if (ptsz->experiment==1){
-  pcsz->logy_min = log10(ptsz->sn_cutoff);
-  pcsz->logy_max = 1.8124259665302023;
+  pcsz->logy_min = ptsz->log10_snr_min; //log10(ptsz->sn_cutoff);
+  pcsz->logy_max = ptsz->log10_snr_max;//1.8124259665302023;
   pcsz->dlogy =ptsz->bin_dlog10_snr;
 }
   pcsz->Nbins_y = floor((pcsz->logy_max - pcsz->logy_min)/pcsz->dlogy)+1;
