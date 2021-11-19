@@ -1499,14 +1499,21 @@ cdef class Class:
         cl['1h'] = []
         cl['2h'] = []
         cl['3h'] = []
+        cl['1h (slow)'] = []
+        cl['2h (slow)'] = []
+        cl['3h (slow)'] = []
         cl['hf'] = []
         for index in range(self.tsz.nlSZ):
-            cl['1h'].append(self.tsz.cl_kSZ_kSZ_gal_1h[index])
-            cl['2h'].append(self.tsz.cl_kSZ_kSZ_gal_2h[index])
-            cl['3h'].append(self.tsz.cl_kSZ_kSZ_gal_3h[index])
+            cl['1h (slow)'].append(self.tsz.cl_kSZ_kSZ_gal_1h[index])
+            cl['2h (slow)'].append(self.tsz.cl_kSZ_kSZ_gal_2h[index])
+            cl['3h (slow)'].append(self.tsz.cl_kSZ_kSZ_gal_3h[index])
             cl['hf'].append(self.tsz.cl_kSZ_kSZ_gal_hf[index])
+            cl['1h'].append(self.tsz.cl_kSZ_kSZ_gal_1h_fft[index])
+            cl['2h'].append(self.tsz.cl_kSZ_kSZ_gal_2h_fft[index])
+            cl['3h'].append(self.tsz.cl_kSZ_kSZ_gal_3h_fft[index])
             cl['ell'].append(self.tsz.ell[index])
         return cl
+
 
 
     def cl_te_y_y(self):
