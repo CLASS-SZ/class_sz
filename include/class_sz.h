@@ -1227,7 +1227,7 @@ double * steps_m;
   double bin_z_min_cluster_counts;
   double bin_z_max_cluster_counts;
   double bin_dz_cluster_counts;
-
+  int apply_relativistic_correction_to_y_m;
   double bin_dlog10_snr;
   double bin_dlog10_snr_last_bin;
   double log10_snr_min;

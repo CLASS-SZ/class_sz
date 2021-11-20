@@ -1839,6 +1839,7 @@ int input_read_parameters(
 
       class_read_double("sky area in deg2",ptsz->sky_area_deg2);
 
+      class_read_int("apply_relativistic_correction_to_y_m",ptsz->apply_relativistic_correction_to_y_m);
       class_read_int("has_selection_function",pcsz->has_completeness);
       class_read_int("mass_range",pcsz->mass_range);
 
@@ -5564,6 +5565,7 @@ int input_default_params(
   pcsz->mass_range = 1;//szcount masses
   ptsz->experiment = 0; //planck
   ptsz->sky_area_deg2 = 599.;
+  ptsz->apply_relativistic_correction_to_y_m = 0;
 
   ptsz->y_m_relation = 1; //0: planck, 1: act/so
 

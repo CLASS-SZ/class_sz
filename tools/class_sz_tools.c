@@ -15939,8 +15939,16 @@ double yp;
 if (ptsz->y_m_relation == 1){
         double A = ptsz->A_ym;
         double B = ptsz->B_ym;
-        double t = -0.00848*pow(mp_bias/(3.e14*70./(pba->h*100.))*Eh,-0.585);
-        double f_rel = 1. + 3.79*t -28.2*t*t;
+
+        double f_rel;
+        if (ptsz->apply_relativistic_correction_to_y_m == 0){
+          f_rel = 1.;
+        }
+        else{
+          double t = -0.00848*pow(mp_bias/(3.e14*70./(pba->h*100.))*Eh,-0.585);
+          f_rel = 1. + 3.79*t -28.2*t*t;
+        }
+
         yp = A*pow(Eh,2.)*pow(mp_bias/(3.e14*pba->h),1.+B)*f_rel;
 
         // double a = -1.29389e-01;
