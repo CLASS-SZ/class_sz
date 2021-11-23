@@ -253,7 +253,7 @@ def run(args):
     p_dict['n_z_psi_b2t'] = 100
     p_dict['n_l_psi_b2t'] = 400
 
-    p_dict['n_z_psi_b1t'] = 1000
+    p_dict['n_z_psi_b1t'] = 100
     p_dict['n_l_psi_b1t'] = 100
 
     p_dict['n_z_psi_b1gt'] = 100
@@ -309,8 +309,10 @@ def run(args):
     p_dict['M0 equal M_min (HOD)'] = 'no'
 
 
-    p_dict['gas profile'] = 'nfw' # 'nfw' or 'B16'
+    p_dict['gas profile'] = 'B16' # 'nfw' or 'B16'
     p_dict['gas profile mode'] = 'agn'
+    p_dict['k_min_gas_density_profile'] = 1e-4
+    p_dict['normalize_gas_density_profile'] = 1
 
 
 

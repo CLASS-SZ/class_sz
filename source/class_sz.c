@@ -3329,7 +3329,7 @@ double damping_1h_term;
    double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
 
    evaluate_tau_profile((l3+0.5)/chi,pvecback,pvectsz,pba,ptsz);
-   double tau_profile_at_ell_3 = pvectsz[ptsz->index_pressure_profile];
+   double tau_profile_at_ell_3 = pvectsz[ptsz->index_tau_profile];
 
        pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                          *pressure_profile_at_ell_1
@@ -3358,7 +3358,7 @@ double damping_1h_term;
    evaluate_tau_profile((l2+0.5)/chi,pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
    evaluate_tau_profile((l3+0.5)/chi,pvecback,pvectsz,pba,ptsz);
-   double tau_profile_at_ell_3 = pvectsz[ptsz->index_pressure_profile];
+   double tau_profile_at_ell_3 = pvectsz[ptsz->index_tau_profile];
 
 
    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
@@ -3429,7 +3429,7 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
      evaluate_tau_profile((l2+0.5)/chi,pvecback,pvectsz,pba,ptsz);
      double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
      evaluate_tau_profile((l3+0.5)/chi,pvecback,pvectsz,pba,ptsz);
-     double tau_profile_at_ell_3 = pvectsz[ptsz->index_pressure_profile];
+     double tau_profile_at_ell_3 = pvectsz[ptsz->index_tau_profile];
 
 
      evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
@@ -5099,6 +5099,12 @@ int evaluate_tau_profile(
    double z_asked = pvectsz[ptsz->index_z];
    // printf("l_asked %.8e")
    result = get_gas_density_profile_at_k_M_z(k,m_asked,z_asked,ptsz);
+   // printf("%.5e %.5e %.5e %.5e %.5e\n",
+   // z_asked,
+   // m_asked,
+   // get_gas_density_profile_at_k_M_z(1e-3,m_asked,z_asked,ptsz)/m_asked,
+   // get_gas_density_profile_at_k_M_z(1e-2,m_asked,z_asked,ptsz)/m_asked,
+   // ptsz->f_b_gas);
 
 
 
@@ -5177,6 +5183,8 @@ double chi = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h
 // double l = chi*k-0.5;
 
 double tau_e  = get_gas_density_profile_at_k_M_z(l,m,z,ptsz);
+// printf("%.5e %.5e %.5e %.5e\n",z,m,get_gas_density_profile_at_k_M_z(1e-3,m,z,ptsz)/m,ptsz->f_b_gas);
+
 tau_e *= 1./ptsz->mu_e*ptsz->f_free;
 double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
 // double z = pvectsz[ptsz->index_z];
@@ -5450,7 +5458,7 @@ int evaluate_pressure_profile(double * pvecback,
 
 
       double R_200crit = pvectsz[ptsz->index_r200c]; //in units of h^-1 Mpc
-      double f_b = pba->Omega0_b/ptsz->Omega_m_0;
+      double f_b = ptsz->f_b_gas;//pba->Omega0_b/ptsz->Omega_m_0;
 
       double Eh = pvecback[pba->index_bg_H]/pba->H0;
 
@@ -5600,7 +5608,7 @@ double get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(double x,
   double r200c =  pow(3.*m/(4.*_PI_*200.*rho_crit),1./3.);
 
 
-  double f_b = pba->Omega0_b/ptsz->Omega_m_0;
+  double f_b = ptsz->f_b_gas;//pba->Omega0_b/ptsz->Omega_m_0;
   double Eh = pvecback[pba->index_bg_H]/pba->H0;
   double d_A = pvecback[pba->index_bg_ang_distance]*pba->h; // in Mpc/h
 
@@ -7360,7 +7368,7 @@ pk3 *= pow(pba->h,3.);
   //galaxy_normalisation *= pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.);///(1.+z);
   double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
   double a = 1. / (1. + z);
-  double tau_fac = a*sigmaT_over_mp*pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free;
+  double tau_fac = a*sigmaT_over_mp*ptsz->f_b_gas/ptsz->mu_e*ptsz->f_free;
   double rho_crit  = (3./(8.*_PI_*_G_*_M_sun_))
                                   *pow(_Mpc_over_m_,1)
                                   *pow(_c_,2)
@@ -7542,7 +7550,7 @@ pk3 *= pow(pba->h,3.);
   //galaxy_normalisation *= pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.);///(1.+z);
   double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
   double a = 1. / (1. + z);
-  double tau_fac = a*sigmaT_over_mp*pba->Omega0_b/ptsz->Omega_m_0/ptsz->mu_e*ptsz->f_free;
+  double tau_fac = a*sigmaT_over_mp*ptsz->f_b_gas/ptsz->mu_e*ptsz->f_free;
   double rho_crit  = (3./(8.*_PI_*_G_*_M_sun_))
                                   *pow(_Mpc_over_m_,1)
                                   *pow(_c_,2)
@@ -9289,10 +9297,14 @@ int show_preamble_messages(struct background * pba,
 
 
       ptsz->Omega_m_0 = pvecback[pba->index_bg_Omega_m];
+
       ptsz->Omega_ncdm_0 = ptsz->Omega_m_0
       -pba->Omega0_b
       -pba->Omega0_cdm;
 
+      if (ptsz->f_b_gas == -1.){
+        ptsz->f_b_gas = pba->Omega0_b/ptsz->Omega_m_0;
+      }
 
       if (pba->Omega0_lambda != 0.) OmegaM = 1-pba->Omega0_lambda;
       else OmegaM = 1-pba->Omega0_fld;

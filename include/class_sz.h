@@ -1038,6 +1038,7 @@ struct tszspectrum {
 
   double f_free;
   double mu_e;
+  double f_b_gas;
 
   /*Pressure profile is considered between x_in and x_out*/
   double x_inSZ;

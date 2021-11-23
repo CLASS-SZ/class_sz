@@ -56,6 +56,8 @@ class_sz_ptsz_parameter(n_l_psi_b1gt,int,50)
 class_sz_ptsz_parameter(N_samp_fftw,int,150)
 class_sz_ptsz_parameter(l_min_samp_fftw,double,1e-12)
 class_sz_ptsz_parameter(l_max_samp_fftw,double,1e9)
+class_sz_ptsz_parameter(k_min_gas_density_profile,double,1e-4)
+class_sz_ptsz_parameter(normalize_gas_density_profile,int,0)
 
 class_sz_ptsz_parameter(ell_min_kSZ2_gal_multipole_grid,double,2)
 class_sz_ptsz_parameter(ell_max_kSZ2_gal_multipole_grid,double,1e5)

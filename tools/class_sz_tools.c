@@ -3123,7 +3123,7 @@ double c_delta;
 double r_delta;
 double r_s;
 double rho_crit;
-double f_b = pba->Omega0_b/ptsz->Omega_m_0;
+double f_b = ptsz->f_b_gas;//pba->Omega0_b/ptsz->Omega_m_0;
 double x;
 double p_x;
 
@@ -3219,7 +3219,7 @@ double c_delta;
 double r_delta;
 double r_s;
 double rho_crit;
-double f_b = pba->Omega0_b/ptsz->Omega_m_0;
+double f_b = ptsz->f_b_gas;//pba->Omega0_b/ptsz->Omega_m_0;
 double x;
 double p_x;
 
@@ -3410,6 +3410,20 @@ if (l<ptsz->array_profile_ln_l[0])
  double ln_l_up = ptsz->array_profile_ln_l[id_l_up-1];
 
  double result = exp(ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
+
+if (ptsz->normalize_gas_density_profile == 1){
+  double norm = exp(pwl_interp_2d(
+                                 n_z,
+                                 n_m,
+                                 ptsz->array_profile_ln_1pz,
+                                 ptsz->array_profile_ln_m,
+                                 ptsz->array_profile_ln_rho_at_lnl_lnM_z[0],
+                                 1,
+                                 &z,
+                                 &m))/exp(m)/ptsz->f_b_gas;
+  result *= 1./norm;
+}
+
  if (isnan(result) || isinf(result)){
  printf("in get gas: z %.8e m %.8e l %.8e  ln_rho_low  %.8e ln_rho_low  %.8e id_l_low %d\n",z_asked,m_asked,l_asked,ln_rho_low,ln_rho_up,id_l_low);
  exit(0);
@@ -3447,7 +3461,8 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 
 
  // array of multipoles:
- double ln_ell_min = log(1e-3);
+
+ double ln_ell_min = log(ptsz->k_min_gas_density_profile);
  double ln_ell_max = log(5e2);
  int n_ell = ptsz->n_ell_density_profile;
  int n_m = ptsz->n_m_density_profile;
@@ -3710,7 +3725,7 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
   double k = ell;
    result =  evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
    //result *= 1.;//m_delta;///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3));
-   double f_b = pba->Omega0_b/ptsz->Omega_m_0;
+   double f_b = ptsz->f_b_gas;//pba->Omega0_b/ptsz->Omega_m_0;
    result *= f_b*m_delta;//*pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,-1);
 
     if (isnan(result) || isinf(result)){

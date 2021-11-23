@@ -164,3 +164,6 @@ test_parameters.ini
 test_unused_parameters
 notebooks/NzCheck_noSelFn.csv
 notebooks/NzCheck_withSelFn.csv
+notebooks/advact_ttg_211121.npy
+notebooks/planck_unwise_ttg_211121.npy
+notebooks/planck_unwise_ttg_221121.npy

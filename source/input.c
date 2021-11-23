@@ -3303,6 +3303,7 @@ int input_read_parameters(
 
       class_read_int("sz_verbose",ptsz->sz_verbose);
       class_read_double("f_free",ptsz->f_free);
+      class_read_double("f_b_gas",ptsz->f_b_gas);
 
       class_call(parser_read_string(pfc,"write sz results to files",&string1,&flag1,errmsg),
                  errmsg,
@@ -5899,6 +5900,7 @@ int input_default_params(
   ptsz->sz_verbose = 0;
 
   ptsz->f_free  = 1.; //  Ionization state of Helium (0.86 = neutral, 0.93 = singly ionized, 1 = completely ionized for Y_p = 0.24)
+  ptsz->f_b_gas  = -1.;
   ptsz->mu_e = 1.14;
 
   //HOD
