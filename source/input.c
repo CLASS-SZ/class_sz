@@ -2911,9 +2911,13 @@ int input_read_parameters(
       + ptsz->has_lens_cib_2h
       != _FALSE_){
     class_read_list_of_doubles("cib_frequency_list_in_GHz",ptsz->cib_frequency_list,ptsz->cib_frequency_list_num);
-    class_read_list_of_doubles("cib_Snu_cutoff_list [mJy]",ptsz->cib_Snu_cutoff_list_in_mJy,ptsz->cib_frequency_list_num);
+
   }
     class_read_int("has_cib_flux_cut",ptsz->has_cib_flux_cut);
+    if (ptsz->has_cib_flux_cut != _FALSE_){
+      class_read_list_of_doubles("cib_Snu_cutoff_list [mJy]",ptsz->cib_Snu_cutoff_list_in_mJy,ptsz->cib_frequency_list_num);
+    }
+
 
 
 
