@@ -2909,8 +2909,10 @@ int input_read_parameters(
       + ptsz->has_gal_cib_2h
       + ptsz->has_lens_cib_1h
       + ptsz->has_lens_cib_2h
-      != _FALSE_)
+      != _FALSE_){
     class_read_list_of_doubles("cib_frequency_list_in_GHz",ptsz->cib_frequency_list,ptsz->cib_frequency_list_num);
+    class_read_list_of_doubles("cib_Snu_cutoff_list [mJy]",ptsz->cib_Snu_cutoff_list_in_mJy,ptsz->cib_frequency_list_num);
+  }
 
 
 
@@ -3032,6 +3034,7 @@ int input_read_parameters(
       class_read_int("pk_nonlinear_for_vrms2",ptsz->pk_nonlinear_for_vrms2);
 
       class_read_int("hm_consistency",ptsz->hm_consistency);
+      class_read_int("T10_alpha_fixed",ptsz->T10_alpha_fixed);
       class_read_int("check_consistency_conditions",ptsz->check_consistency_conditions);
 
 
@@ -5538,6 +5541,10 @@ int input_default_params(
   ptsz->L0_cib = 6.4e-8; // Normalisation of L − M relation in [Jy MPc2/Msun]
   ptsz->sigma2_LM_cib = 0.5; // Size of of halo masses sourcing CIB emission
 
+  //# Table 1 of https://arxiv.org/pdf/1309.0382.pdf
+  ptsz->has_cib_flux_cut  = 0;
+  ptsz->cib_Snu_cutoff_list_in_mJy = NULL;
+
 
   ptsz->cib_frequency_list_num=1;
   ptsz->cib_frequency_list=NULL;
@@ -5615,6 +5622,7 @@ int input_default_params(
 
   //Multplicity function Tinker 2010
 
+  ptsz->T10_alpha_fixed = 0;
   ptsz->alphaSZ = 0.368;
   ptsz->beta0SZ = 0.589;
   ptsz->gamma0SZ = 0.864;

@@ -11775,7 +11775,7 @@ int evaluate_cib_profile(double m_delta,
                          struct tszspectrum * ptsz){
 
 
-double M_halo = m_delta/pba->h; // convet to Msun
+double M_halo = m_delta/pba->h; // convert to Msun
 
 double Lc_nu;
 double Lc_nu_prime;
@@ -11788,10 +11788,12 @@ pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_m
 double xout = 1.;//ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
 double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
 double chi = sqrt(pvectsz[ptsz->index_chi2]);
+double chi_in_Mpc = chi/pba->h;
 double k = (l+0.5)/chi;
 // double k = (l)/chi;
 // printf("r = %.8e m = %.8e z = %.8e\n",r_delta,m_delta,z);
 double us = evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
+
 
 double ug_at_ell;
 double nu;
@@ -11801,7 +11803,8 @@ int index_md = (int) pvectsz[ptsz->index_md];
 int index_nu = (int) pvectsz[ptsz->index_frequency_for_cib_profile];
 int index_nu_prime = (int) pvectsz[ptsz->index_frequency_prime_for_cib_profile];
 
-
+double L_nu;
+double S_nu;
 // 2-halo terms
 if (_tSZ_cib_2h_
   ||_cib_monopole_
@@ -11819,10 +11822,17 @@ if (index_nu != index_nu_prime){
 if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1){
 nu = ptsz->cib_frequency_list[index_nu];
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
-// printf("ok\n");
 Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu,ptsz);
 
-// printf("ok33\n");
+if (ptsz->has_cib_flux_cut == 1){
+L_nu = Lc_nu+Ls_nu;
+S_nu = L_nu/4./_PI_/(1.+z)/chi_in_Mpc/chi_in_Mpc;
+if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu]){
+  Lc_nu = 0.;
+  Ls_nu = 0.;
+}
+}
+
 }
 else if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2){
 nu = ptsz->cib_frequency_list[index_nu_prime];

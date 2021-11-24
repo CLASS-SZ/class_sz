@@ -3827,7 +3827,7 @@ int tabulate_pressure_profile_B12(struct background * pba,
  class_alloc(ptsz->array_pressure_profile_ln_l,sizeof(double *)*n_ell,ptsz->error_message);
 
  // array of masses:
- double ln_m_min = log(1e7);
+ double ln_m_min = log(1e5);
  double ln_m_max = log(1e17);
 
 
@@ -4229,7 +4229,7 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
 if (ptsz->pressure_profile == 4) { //for Battaglia et al 2012 pressure profile
     double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
     double r200c = pvectsz[ptsz->index_r200c]; //in Mpc/h
-    xout = 1.5*rvir/r200c; // the truncation radius is in multiples of rvir
+    xout = ptsz->x_outSZ*rvir/r200c; // the truncation radius is in multiples of rvir
     }
 else{
     xout = ptsz->x_outSZ; // in all other cases the truncation radius is in multiples of rs=r_delta/c_delta
@@ -6151,7 +6151,13 @@ double get_f_tinker10_at_nu_and_z(double nu, double z, int hm_consistency, struc
 
   // always do alpha(z)
 
+
+  if (ptsz->T10_alpha_fixed == 1){
+  alpha = ptsz->alphaSZ;
+  }
+  else{
   alpha = get_T10_alpha_at_z(z,ptsz);
+  }
 
   double lognu = log(nu);
 

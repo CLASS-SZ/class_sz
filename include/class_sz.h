@@ -1062,6 +1062,7 @@ struct tszspectrum {
 
   double phi0SZ;
   double eta0SZ;
+  int T10_alpha_fixed;
 
 
   /*Multplicity function Bocquet 2015*/
@@ -1108,6 +1109,7 @@ struct tszspectrum {
   int cib_frequency_list_num;
   int cib_dim;
   double * cib_frequency_list;
+  double * cib_Snu_cutoff_list_in_mJy;
 
   int id_nu_cib_to_save;
   int id_nu_prime_cib_to_save;
@@ -1147,6 +1149,7 @@ double * steps_m;
   double m_eff_cib; // Most efficient halo mass in Msun/h
   double L0_cib; // Normalisation of L − M relation
   double sigma2_LM_cib; // Size of of halo masses sourcing CIB emission
+  int has_cib_flux_cut;
 
   double nfw_profile_epsabs;
   double nfw_profile_epsrel;

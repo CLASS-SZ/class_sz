@@ -416,7 +416,8 @@ def run(args):
             p_dict['k_per_decade_class_sz'] = 50 # at least 40?
             p_dict['Frequency for y-distortion in GHz'] = 143.
             p_dict['bispectrum_lambda_2'] = 1.
-            p_dict['bispectrum_lambda_3'] = 0.01
+            p_dict['bispectrum_lambda_3'] = 1.
+            p_dict['pressure profile'] =  'B12'
 
     if ("kSZ_kSZ_gal" in p_dict['output']):
             # p_dict['nfw_profile_epsabs'] = 1.e-6
@@ -912,30 +913,34 @@ def run(args):
                     print(kSZ_kSZ_tSZ_2h[id_p])
                     print(kSZ_kSZ_tSZ_3h[id_p])
                     fac =  1.#(2.726e6)**2*multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi
-                    ax.plot(multipoles[id_p],kSZ_kSZ_tSZ_1h[id_p]*fac,color='k',
+                    fac = multipoles[id_p]**4.*(2.726e6)**2
+                    ax.plot(multipoles[id_p],np.abs(kSZ_kSZ_tSZ_1h[id_p]*fac),color='k',
                             ls=':',alpha = 1.,
                             # label = val_label[id_p] + ' (1h)',
                             label = '1-halo')#,
                             # markersize = 3,
                             # marker='o')
-                    ax.plot(multipoles[id_p],kSZ_kSZ_tSZ_2h[id_p]*fac,color='r',
+                    ax.plot(multipoles[id_p],np.abs(kSZ_kSZ_tSZ_2h[id_p]*fac),color='r',
                             ls='--',alpha = 1.,
                             # label = val_label[id_p] + ' (1h)',
                             label = '2-halo')#,
                             # markersize = 3,
                             # marker='o')
-                    ax.plot(multipoles[id_p],kSZ_kSZ_tSZ_3h[id_p]*fac,color='b',
+                    ax.plot(multipoles[id_p],np.abs(kSZ_kSZ_tSZ_3h[id_p]*fac),color='b',
                             ls='-.',alpha = 1.,
                             # label = val_label[id_p] + ' (1h)',
                             label = '3-halo')#,
                             # markersize = 3,
                             # marker='o')
-                    ax.plot(multipoles[id_p],(kSZ_kSZ_tSZ_1h[id_p]+kSZ_kSZ_tSZ_2h[id_p]+kSZ_kSZ_tSZ_3h[id_p])*fac,color='k',
+                    ax.plot(multipoles[id_p],np.abs((kSZ_kSZ_tSZ_1h[id_p]+kSZ_kSZ_tSZ_2h[id_p]+kSZ_kSZ_tSZ_3h[id_p])*fac),color='k',
                             ls='-',alpha = 0.12,
                             # label = val_label[id_p] + ' (1h)',
                             label = '1+2+3-halo')#,
                             # markersize = 3,
                             # marker='o')
+                    l_web, b_web, eb_web = np.loadtxt('/Users/boris/Work/ksz_bispectra/b_tty_web_231121.txt',unpack=True)
+                    ax.errorbar(l_web,np.abs(b_web),yerr=eb_web,label='websky tty (equi.)')
+
                 elif (args.plot_kSZ_kSZ_gal == 'yes'):
                     print(multipoles[id_p])
                     print(kSZ_kSZ_gal_1h_fft[id_p])
