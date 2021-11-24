@@ -11838,6 +11838,14 @@ else if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2){
 nu = ptsz->cib_frequency_list[index_nu_prime];
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu,ptsz);
+if (ptsz->has_cib_flux_cut == 1){
+L_nu = Lc_nu+Ls_nu;
+S_nu = L_nu/4./_PI_/(1.+z)/chi_in_Mpc/chi_in_Mpc;
+if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu_prime]){
+  Lc_nu = 0.;
+  Ls_nu = 0.;
+}
+}
 }
 }
 else{
@@ -11846,6 +11854,15 @@ Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu,ptsz);
 // double Ls_nu_old = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu,pba,ptsz);
 // printf("%.8e %.8e\n",Ls_nu,Ls_nu_old);
+if (ptsz->has_cib_flux_cut == 1){
+L_nu = Lc_nu+Ls_nu;
+S_nu = L_nu/4./_PI_/(1.+z)/chi_in_Mpc/chi_in_Mpc;
+if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu]){
+  Lc_nu = 0.;
+  Ls_nu = 0.;
+}
+}
+
 }
 }
 else if(_cib_monopole_){
@@ -11853,6 +11870,15 @@ nu = ptsz->frequencies_for_cib[index_nu];
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu,ptsz);
 us = 1.;
+
+if (ptsz->has_cib_flux_cut == 1){
+L_nu = Lc_nu+Ls_nu;
+S_nu = L_nu/4./_PI_/(1.+z)/chi_in_Mpc/chi_in_Mpc;
+if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu]){
+  Lc_nu = 0.;
+  Ls_nu = 0.;
+}
+}
 
 if (isnan(Ls_nu)){
   printf("nan at %.5e %.5e %.5e\n",z,M_halo,nu);
@@ -11865,12 +11891,28 @@ nu =  exp(ptsz->array_dcib0dz_nu[index_nu]);
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu,ptsz);
 us = 1.;
+if (ptsz->has_cib_flux_cut == 1){
+L_nu = Lc_nu+Ls_nu;
+S_nu = L_nu/4./_PI_/(1.+z)/chi_in_Mpc/chi_in_Mpc;
+if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu]){
+  Lc_nu = 0.;
+  Ls_nu = 0.;
+}
+}
 }
 // cross terms
 else {
 nu = ptsz->frequencies_for_cib[index_nu];
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu,ptsz);
+if (ptsz->has_cib_flux_cut == 1){
+L_nu = Lc_nu+Ls_nu;
+S_nu = L_nu/4./_PI_/(1.+z)/chi_in_Mpc/chi_in_Mpc;
+if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu]){
+  Lc_nu = 0.;
+  Ls_nu = 0.;
+}
+}
 }
 
 // eq. 13 of MM20
@@ -11886,12 +11928,28 @@ nu = ptsz->cib_frequency_list[index_nu];
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu,ptsz);
 
+if (ptsz->has_cib_flux_cut == 1){
+L_nu = Lc_nu+Ls_nu;
+S_nu = L_nu/4./_PI_/(1.+z)/chi_in_Mpc/chi_in_Mpc;
+if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu]){
+  Lc_nu = 0.;
+  Ls_nu = 0.;
+}
+}
+
 nu_prime = ptsz->cib_frequency_list[index_nu_prime];
 
 Lc_nu_prime = Luminosity_of_central_galaxies(z,M_halo,nu_prime,pvectsz,ptsz,pba);
 Ls_nu_prime = get_L_sat_at_z_M_nu(z,M_halo,nu_prime,ptsz);
-// double Ls_nu_old = get_L_sat_at_z_and_M_at_nu(z,M_halo,index_nu_prime,pba,ptsz);
-// printf("%.8e %.8e\n",Ls_nu_prime,Ls_nu_old);
+if (ptsz->has_cib_flux_cut == 1){
+L_nu = Lc_nu+Ls_nu;
+S_nu = L_nu/4./_PI_/(1.+z)/chi_in_Mpc/chi_in_Mpc;
+if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu_prime]){
+  Lc_nu = 0.;
+  Ls_nu = 0.;
+}
+}
+
 // eq. 15 of MM20
 ug_at_ell  = 1./(4.*_PI_)*sqrt(Ls_nu*Ls_nu_prime*us*us+Lc_nu*Ls_nu_prime*us+Lc_nu_prime*Ls_nu*us);
 

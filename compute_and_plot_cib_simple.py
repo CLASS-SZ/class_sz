@@ -26,6 +26,17 @@ do_ccl_comparison = 'yes'
 # path_to_ccl = '/Users/boris/Work/CCL/'
 freq_cib_1 = 3000.
 freq_cib_2 = 3000.
+# table 1 of https://arxiv.org/pdf/1309.0382.pdf
+#1: freq GHz 2: Flux cut mJy
+# 100 - 400
+# 143 - 350
+# 217 - 225
+# 353 - 315
+# 545 - 350
+# 857 - 710
+# 3000  - 1000
+cib_Snu_1 = 1000.
+cib_Snu_2 = 1000.
 
 
 
@@ -175,6 +186,8 @@ def run(args):
     p_dict['damping_1h_term'] = 0
 
 
+
+
     # parameters for Cosmology
     p_dict['Omega_cdm'] = 0.3175-0.022068/0.6711/0.6711
     p_dict['omega_b'] = 0.022068
@@ -219,18 +232,22 @@ def run(args):
     p_dict['Most efficient halo mass in Msun'] = pow(10.,12.6)
     p_dict['Normalisation of L − M relation in [Jy MPc2/Msun/Hz]'] = 6.4e-8
     p_dict['Size of of halo masses sourcing CIB emission'] = 0.5
+    p_dict['has_cib_flux_cut'] = 1
 
     # List of frequency bands for cib
     if freq_cib_1 == freq_cib_2:
         p_dict['cib_frequency_list_num'] = 1
         p_dict['cib_frequency_list_in_GHz'] = str(freq_cib_1)
+        p_dict['cib_Snu_cutoff_list [mJy]'] = str(cib_Snu_1)
         # p_dict['cib_frequency_list_num'] = 5
         # p_dict['cib_frequency_list_in_GHz'] = '217,353,545,857,3000'
         p_dict["Frequency_id nu for cib in GHz (to save in file)"] = 0
         p_dict["Frequency_id nu^prime for cib in GHz (to save in file)"] = 0
+
     else:
         p_dict['cib_frequency_list_num'] = 2
         p_dict['cib_frequency_list_in_GHz'] = str(freq_cib_1)+','+str(freq_cib_2)
+        p_dict['cib_Snu_cutoff_list [mJy]'] = str(cib_Snu_1)+','+str(cib_Snu_2)
         # p_dict['cib_frequency_list_num'] = 5
         # p_dict['cib_frequency_list_in_GHz'] = '217,353,545,857,3000'
         p_dict["Frequency_id nu for cib in GHz (to save in file)"] = 0
