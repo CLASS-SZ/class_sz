@@ -5569,6 +5569,58 @@ int evaluate_pressure_profile(double * pvecback,
 }
 
 
+
+
+
+
+
+// normaized pressure profile battaglia et al 2012
+double get_pressure_P_over_P_delta_at_x_M_z_b12_200c(double x_asked,
+                                                     double m_asked,
+                                                     double z_asked,
+                                                     double A_P0,
+                                                     double A_xc,
+                                                     double A_beta,
+                                                     double alpha_m_P0,
+                                                     double alpha_m_xc,
+                                                     double alpha_m_beta,
+                                                     double alpha_z_P0,
+                                                     double alpha_z_xc,
+                                                     double alpha_z_beta,
+                                                     double alpha,
+                                                     double gamma,
+                                                     struct background * pba,
+                                                     struct tszspectrum * ptsz){
+
+  /// NORMALIZED PRESSURE PROFILE PART
+
+  double xc;
+  double beta;
+  double P0;
+
+  double m200_over_msol = m_asked/pba->h; // convert to Msun
+  double x = x_asked;
+  double z = z_asked;
+
+
+  P0 = A_P0*pow(m200_over_msol/1e14,alpha_m_P0)*pow(1.+z,alpha_z_P0);
+  xc = A_xc*pow(m200_over_msol/1e14,alpha_m_xc)*pow(1.+z,alpha_z_xc);
+  beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
+
+  // double gamma = -0.3;
+  // double alpha = 1.0;
+
+  double plc_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta);
+
+
+  //putting everything together
+  double result =  plc_x;
+
+  return result;
+
+}
+
+
 // this is r_200c*P_200c
 double get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(double x,
                                                            double z,
@@ -5735,6 +5787,40 @@ double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double x,
 }
 
 
+// normaized pressure profile gnfw Arnaud et al 2010
+double get_pressure_P_over_P_delta_at_x_gnfw_500c(double x_asked,
+                                                  double P0GNFW,
+                                                  double alphaGNFW,
+                                                  double betaGNFW,
+                                                  double gammaGNFW,
+                                                  double c500,
+                                                  struct background * pba,
+                                                  struct tszspectrum * ptsz){
+
+  //  //A10:
+  // double pressure_normalisation = C_pressure
+  //                                 *ptsz->P0GNFW
+  //                                 *pow(0.7/pba->h, 1.5); // as found by dimensional analysis (X-ray data, see email with E. Komatsu and R. Makya)
+  //
+
+
+
+  //putting everything together
+  double x = x_asked;
+
+
+  double plc_x =  (1./(pow(c500*x,gammaGNFW)
+                  *pow(1.+ pow(c500*x,alphaGNFW),
+                  (betaGNFW-gammaGNFW)/alphaGNFW)));
+
+
+  // double result = plc_x*ptsz->P0GNFW*pow(0.7/pba->h, 1.5);
+
+
+  double result = P0GNFW*plc_x; //in Mpc
+  return result;
+
+}
 
 
 

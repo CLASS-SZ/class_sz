@@ -688,6 +688,33 @@ cdef extern from "class.h":
                                                            void * pba,
                                                            void * ptsz)
 
+
+    double get_pressure_P_over_P_delta_at_x_M_z_b12_200c(double x_asked,
+                                                         double m_asked,
+                                                         double z_asked,
+                                                         double A_P0,
+                                                         double A_xc,
+                                                         double A_beta,
+                                                         double alpha_m_P0,
+                                                         double alpha_m_xc,
+                                                         double alpha_m_beta,
+                                                         double alpha_z_P0,
+                                                         double alpha_z_xc,
+                                                         double alpha_z_beta,
+                                                         double alpha,
+                                                         double gamma,
+                                                         void * pba,
+                                                         void * tsz)
+
+    double get_pressure_P_over_P_delta_at_x_gnfw_500c(double x_asked,
+                                                          double P0GNFW,
+                                                          double alphaGNFW,
+                                                          double betaGNFW,
+                                                          double gammaGNFW,
+                                                          double c500,
+                                                          void * pba,
+                                                          void * tsz)
+
     double get_second_order_bias_at_z_and_nu(double z_asked,
                                              double nu_asked,
                                              void * tsz,

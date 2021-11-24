@@ -1998,6 +1998,54 @@ cdef class Class:
                                                  &self.ba,
                                                  &self.tsz)
 
+    def get_pressure_P_over_P_delta_at_x_M_z_b12_200c(self,
+                                                        x_asked,
+                                                        m_asked,
+                                                        z_asked,
+                                                        A_P0 = 18.1,
+                                                        A_xc = 0.497,
+                                                        A_beta = 4.35,
+                                                        alpha_m_P0 = 0.154,
+                                                        alpha_m_xc = -0.00865,
+                                                        alpha_m_beta = 0.0393,
+                                                        alpha_z_P0 = -0.758,
+                                                        alpha_z_xc = 0.731,
+                                                        alpha_z_beta = 0.415,
+                                                        alpha = 1.,
+                                                        gamma = -0.3):
+        return  get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x_asked,
+                                                              m_asked,
+                                                              z_asked,
+                                                              A_P0,
+                                                              A_xc,
+                                                              A_beta,
+                                                              alpha_m_P0,
+                                                              alpha_m_xc,
+                                                              alpha_m_beta,
+                                                              alpha_z_P0,
+                                                              alpha_z_xc,
+                                                              alpha_z_beta,
+                                                              alpha,
+                                                              gamma,
+                                                              &self.ba,
+                                                              &self.tsz)
+
+
+    def get_pressure_P_over_P_delta_at_x_gnfw_500c(self,
+                                                     x_asked,
+                                                     P0GNFW = 8.130,
+                                                     alphaGNFW = 1.0620,
+                                                     betaGNFW = 5.4807,
+                                                     gammaGNFW = 0.3292,
+                                                     c500 = 1.156):
+        return  get_pressure_P_over_P_delta_at_x_gnfw_500c(x_asked,
+                                                           P0GNFW,
+                                                           alphaGNFW,
+                                                           betaGNFW,
+                                                           gammaGNFW,
+                                                           c500,
+                                                           &self.ba,
+                                                           &self.tsz)
     def get_dA(self,z):
         """
         angular_distance(z) in Mpc/h
