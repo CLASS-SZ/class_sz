@@ -16,6 +16,7 @@ class_sz_string_parameter(P13_file,"/sz_auxiliary_files/class_sz_lnIgnfw-and-d2l
 class_sz_string_parameter(Tinker_et_al_10_alpha_consistency_msyriac_file,"/sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt","Tinker_et_al_10_alpha_consistency_msyriac_file")
 
 class_sz_string_parameter(ksz_filter_file,"/sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt","ksz filter file")
+class_sz_string_parameter(ksz_template_file,"/sz_auxiliary_files/cl_ksz_bat.dat","ksz template file")
 
 
 class_sz_string_parameter(Planck_thetas_file,"/sz_auxiliary_files/SZ_thetas.txt","Planck_thetas_file")

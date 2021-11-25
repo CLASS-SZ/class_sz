@@ -165,6 +165,7 @@ def run(args):
     y_err = []
     cl_2h = []
     te_y_y = []
+    cov_ll_kSZ_kSZ_gal = []
     kSZ_kSZ_gal_1h = []
     kSZ_kSZ_gal_1h_fft = []
     kSZ_kSZ_gal_2h_fft = []
@@ -442,18 +443,18 @@ def run(args):
             # p_dict['dell'] = 100.
             # p_dict['dell'] = 100.
             p_dict['ell_min'] = 10.
-            p_dict['ell_max'] = 5000.
+            p_dict['ell_max'] = 8000.
 
 
 
 
 
-            p_dict['n_z_hmf_counter_terms'] = 300
+            p_dict['n_z_hmf_counter_terms'] = 100
 
             # p_dict['m_min_counter_terms'] = 1e8
-            p_dict['ksz_filter_file'] = path_to_class+'/sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt'
+            # p_dict['ksz_filter_file'] = path_to_class+'/sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt'
             # print('setting ksz file')
-            # p_dict['ksz_filter_file'] = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/UNWISE_galaxy_distributions/AdvACT_kSZfilt_ellmax8000_smoothed_tapered_nosqrt_w1p5arcminbeam.txt'
+            p_dict['ksz_filter_file'] = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/UNWISE_galaxy_distributions/AdvACT_kSZfilt_ellmax8000_smoothed_tapered_nosqrt_w1p5arcminbeam.txt'
 
             #p_dict['A10_file'] = "class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt"
 
@@ -461,8 +462,8 @@ def run(args):
             # p_dict['nfw_profile_epsabs'] = 1.e-50
             # p_dict['nfw_profile_epsrel'] = 1.e-4
 
-            p_dict['ndim_masses'] = 200 # important 128 is default ccl value
-            p_dict['ndim_redshifts'] = 120
+            p_dict['ndim_masses'] = 100 # important 128 is default ccl value
+            p_dict['ndim_redshifts'] = 100
             #
             p_dict['P_k_max_h/Mpc'] = 100.
 
@@ -470,7 +471,7 @@ def run(args):
             # set the k grid for compuation of sigma and dsigma used in HMF
             p_dict['k_min_for_pk_class_sz'] = 1E-3
             p_dict['k_max_for_pk_class_sz'] = 60.
-            p_dict['k_per_decade_class_sz'] = 50 # at least 40?
+            p_dict['k_per_decade_class_sz'] = 20 # at least 40?
 
 
             p_dict['write sz results to files'] = 'yes'
@@ -808,6 +809,7 @@ def run(args):
 
             elif ('tSZ_1h' in p_dict['output']
             or 'kSZ_kSZ_gal_1h' in p_dict['output']
+            or 'kSZ_kSZ_gal_covmat' in p_dict['output']
             or 'kSZ_kSZ_gal fft (1h)' in p_dict['output']
             or 'kSZ_kSZ_gal fft (2h)' in p_dict['output']
             or 'kSZ_kSZ_gal fft (3h)' in p_dict['output']
@@ -885,6 +887,7 @@ def run(args):
                 kSZ_kSZ_tSZ_1h.append(R[:,59])
                 kSZ_kSZ_tSZ_2h.append(R[:,60])
                 kSZ_kSZ_tSZ_3h.append(R[:,61])
+                cov_ll_kSZ_kSZ_gal.append(R[:,62])
 
                 # r_dict[p_val] = L
 
@@ -943,6 +946,7 @@ def run(args):
 
                 elif (args.plot_kSZ_kSZ_gal == 'yes'):
                     print(multipoles[id_p])
+                    print(cov_ll_kSZ_kSZ_gal[id_p])
                     print(kSZ_kSZ_gal_1h_fft[id_p])
                     print(kSZ_kSZ_gal_2h_fft[id_p])
                     print(kSZ_kSZ_gal_3h_fft[id_p])
@@ -1011,13 +1015,32 @@ def run(args):
                         #         # label = '3-halo',
                         #         markersize = 3,
                         #         marker='o')
-                    ax.plot(multipoles[id_p],np.abs(kSZ_kSZ_gal_1h_fft[id_p]*fac+kSZ_kSZ_gal_2h_fft[id_p]*fac+kSZ_kSZ_gal_3h_fft[id_p]*fac),
-                            color='grey',
-                            ls='-.',alpha = 1.,
-                            # label = val_label[id_p] + ' (3h)',
-                            label = '1+2+3-halo')#,
+                    # ax.plot(multipoles[id_p],np.abs(kSZ_kSZ_gal_1h_fft[id_p]*fac+kSZ_kSZ_gal_2h_fft[id_p]*fac+kSZ_kSZ_gal_3h_fft[id_p]*fac),
+                    #         color='grey',
+                    #         ls='-.',alpha = 1.,
+                    #         # label = val_label[id_p] + ' (3h)',
+                    #         label = '1+2+3-halo')#,
                             # markersize = 3,
                             # marker='o')
+                    if ('kSZ_kSZ_gal_covmat' in p_dict['output']):
+                        ax.errorbar(multipoles[id_p],np.abs(kSZ_kSZ_gal_1h_fft[id_p]*fac+kSZ_kSZ_gal_2h_fft[id_p]*fac+kSZ_kSZ_gal_3h_fft[id_p]*fac),
+                                yerr = np.sqrt(cov_ll_kSZ_kSZ_gal[id_p])*fac,
+                                color='grey',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = '1+2+3-halo')#,
+                        # ax.errorbar(multipoles[id_p],np.abs(kSZ_kSZ_gal_1h_fft[id_p]*fac+kSZ_kSZ_gal_2h_fft[id_p]*fac+kSZ_kSZ_gal_3h_fft[id_p]*fac),
+                        #         yerr = np.sqrt(2./(2.*multipoles[id_p]+1.))*100.*np.abs(kSZ_kSZ_gal_1h_fft[id_p]*fac+kSZ_kSZ_gal_2h_fft[id_p]*fac+kSZ_kSZ_gal_3h_fft[id_p]*fac),
+                        #         color='k',
+                        #         ls='-.',alpha = 1.,
+                        #         # label = val_label[id_p] + ' (3h)',
+                        #         label = '1+2+3-halo')#,
+                    else:
+                        ax.plot(multipoles[id_p],np.abs(kSZ_kSZ_gal_1h_fft[id_p]*fac+kSZ_kSZ_gal_2h_fft[id_p]*fac+kSZ_kSZ_gal_3h_fft[id_p]*fac),
+                                color='grey',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = '1+2+3-halo')#,
                     if kSZ_kSZ_gal_hf[id_p].all() != 0:
                         bgeff = 1.
                         ax.plot(multipoles[id_p],kSZ_kSZ_gal_hf[id_p]*fac*bgeff,

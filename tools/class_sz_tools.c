@@ -3451,6 +3451,8 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 + ptsz->has_kSZ_kSZ_gal_3h
 + ptsz->has_kSZ_kSZ_tSZ_1h
 + ptsz->has_kSZ_kSZ_tSZ_2h
++ ptsz->has_kSZ_kSZ_1h
++ ptsz->has_kSZ_kSZ_2h
 + ptsz->has_kSZ_kSZ_tSZ_3h
 + ptsz->has_bk_ttg_at_z_1h
 + ptsz->has_bk_ttg_at_z_2h
@@ -7087,6 +7089,7 @@ if (((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at
 if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h)) //## BB debug
  || ((V->ptsz->has_cib_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_cib_cib_2h))
+ || ((V->ptsz->has_kSZ_kSZ_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_2h))
  || ((V->ptsz->has_tSZ_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_2h))
  || ((V->ptsz->has_gal_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_2h))
  || ((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
@@ -7170,6 +7173,8 @@ if ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kS
  || (V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h)
  || (V->ptsz->has_kSZ_kSZ_tSZ_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_tSZ_1h)
  || (V->ptsz->has_kSZ_kSZ_tSZ_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_tSZ_2h)
+ || (V->ptsz->has_kSZ_kSZ_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_1h)
+ || (V->ptsz->has_kSZ_kSZ_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_2h)
  || (V->ptsz->has_kSZ_kSZ_tSZ_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_tSZ_3h)
  // || (V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf)
  || (V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo)){
@@ -9717,6 +9722,7 @@ if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
  // autocorrelation 2-halo cases (correlation of same fields).
  if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
@@ -9747,6 +9753,7 @@ else {
 // for autocorelations 2-halo we square the results
 if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)

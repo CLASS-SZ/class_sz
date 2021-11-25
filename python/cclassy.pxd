@@ -301,6 +301,8 @@ cdef extern from "class.h":
         double * thetas_arcmin
         double * gamma_gal_gallens_1h
         double * gamma_gal_gallens_2h
+        double * cl_kSZ_kSZ_1h
+        double * cl_kSZ_kSZ_2h
         double * cl_gal_gal_1h
         double * cl_gal_gal_2h
         double * cl_gal_lens_1h
@@ -444,7 +446,7 @@ cdef extern from "class.h":
     int transfer_init(void*,void*,void*,void*,void*,void*)
     int spectra_init(void*,void*,void*,void*,void*,void*,void*)
     int lensing_init(void*,void*,void*,void*,void*)
-    int szpowerspectrum_init(void*,void*,void*,void*,void*,void*)
+    int szpowerspectrum_init(void*,void*,void*,void*,void*,void*,void*,void*,void*)
     int szcount_init(void*,void*,void*,void*,void*)
 
     int background_tau_of_z(void* pba, double z,double* tau)

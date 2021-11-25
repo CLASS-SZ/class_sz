@@ -453,8 +453,8 @@ cdef class Class:
 
 
         if "szpowerspectrum" in level:
-            if szpowerspectrum_init(&(self.ba), &(self.th),  &(self.nl), &(self.pm),
-            &(self.tsz),&(self.pr)) == _FAILURE_:
+            if szpowerspectrum_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+            &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.tsz.error_message)
             self.ncp.add("szpowerspectrum")
@@ -1557,6 +1557,20 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+
+    def cl_ksz(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of kszxksz power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_kSZ_kSZ_1h[index])
+            cl['2h'].append(self.tsz.cl_kSZ_kSZ_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
 
 
     def cl_ggamma(self):

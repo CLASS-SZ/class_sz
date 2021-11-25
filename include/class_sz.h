@@ -86,6 +86,8 @@
 #define _isw_auto_ ((ptsz->has_isw_auto == _TRUE_) && (index_md == ptsz->index_md_isw_auto))
 #define _dndlnM_ ((ptsz->has_dndlnM == _TRUE_) && (index_md == ptsz->index_md_dndlnM))
 #define _tSZ_tSZ_tSZ_1halo_ ((ptsz->has_tSZ_tSZ_tSZ_1halo == _TRUE_) && (index_md == ptsz->index_md_tSZ_tSZ_tSZ_1halo))
+#define _kSZ_kSZ_1h_ ((ptsz->has_kSZ_kSZ_1h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_1h))
+#define _kSZ_kSZ_2h_ ((ptsz->has_kSZ_kSZ_2h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_2h))
 #define _kSZ_kSZ_tSZ_1h_ ((ptsz->has_kSZ_kSZ_tSZ_1h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_tSZ_1h))
 #define _kSZ_kSZ_tSZ_2h_ ((ptsz->has_kSZ_kSZ_tSZ_2h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_tSZ_2h))
 #define _kSZ_kSZ_tSZ_3h_ ((ptsz->has_kSZ_kSZ_tSZ_3h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_tSZ_3h))
@@ -179,6 +181,7 @@ struct tszspectrum {
   double * cl_isw_lens;
   double * cl_isw_tsz;
   double * cl_isw_auto;
+  double * cov_ll_kSZ_kSZ_gal;
   double * cl_kSZ_kSZ_gal_1h;
   double * cl_kSZ_kSZ_gal_1h_fft;
   double * cl_kSZ_kSZ_gal_2h_fft;
@@ -188,6 +191,8 @@ struct tszspectrum {
   double * cl_kSZ_kSZ_gal_hf;
   double * cl_kSZ_kSZ_lensmag_1h;
   double * b_tSZ_tSZ_tSZ_1halo;
+  double * cl_kSZ_kSZ_1h;
+  double * cl_kSZ_kSZ_2h;
   double * b_kSZ_kSZ_tSZ_1h;
   double * b_kSZ_kSZ_tSZ_2h;
   double * b_kSZ_kSZ_tSZ_3h;
@@ -417,6 +422,8 @@ struct tszspectrum {
   int index_integrand_id_kSZ_kSZ_gal_3h_first;
   int index_integrand_id_kSZ_kSZ_gal_3h_last;
 
+  int has_kSZ_kSZ_gal_covmat;
+
   int has_kSZ_kSZ_gal_hf;
   int index_md_kSZ_kSZ_gal_hf;
   int index_integrand_id_kSZ_kSZ_gal_hf_first;
@@ -433,6 +440,17 @@ struct tszspectrum {
   int index_md_tSZ_tSZ_tSZ_1halo;
   int index_integrand_id_tSZ_tSZ_tSZ_1halo_first;
   int index_integrand_id_tSZ_tSZ_tSZ_1halo_last;
+
+  int has_kSZ_kSZ_1h;
+  int index_md_kSZ_kSZ_1h;
+  int index_integrand_id_kSZ_kSZ_1h_first;
+  int index_integrand_id_kSZ_kSZ_1h_last;
+
+  int has_kSZ_kSZ_2h;
+  int index_md_kSZ_kSZ_2h;
+  int index_integrand_id_kSZ_kSZ_2h_first;
+  int index_integrand_id_kSZ_kSZ_2h_last;
+
 
   int has_kSZ_kSZ_tSZ_1h;
   int index_md_kSZ_kSZ_tSZ_1h;
@@ -918,6 +936,10 @@ struct tszspectrum {
   double * l_unwise_filter;
   double * f_unwise_filter;
   int unwise_filter_size;
+
+  double * l_ksz_template;
+  double * cl_ksz_template;
+  int ksz_template_size;
 
   int damping_1h_term;
   double kstar_damping_1h_term_Mpc; // inverse Mpc
@@ -1449,8 +1471,11 @@ extern "C" {
 
 int szpowerspectrum_init(struct background * pba,
                          struct thermo * pth,
+                         struct perturbs * ppt,
                          struct nonlinear * pnl,
                          struct primordial * ppm,
+                         struct spectra * psp,
+                         struct lensing * ple,
                          struct tszspectrum * ptsz,
                          struct precision * ppr);
 
@@ -1615,6 +1640,8 @@ double evaluate_pk_halofit_over_pk_linear_at_ell_plus_one_half_over_chi(double *
                                                                      struct primordial * ppm,
                                                                      struct nonlinear * pnl,
                                                                      struct tszspectrum * ptsz);
+int load_cl_ksz_template(struct tszspectrum * ptsz);
+
 
   int initialise_and_allocate_memory(struct tszspectrum * ptsz);
 
