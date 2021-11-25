@@ -182,6 +182,7 @@ struct tszspectrum {
   double * cl_isw_tsz;
   double * cl_isw_auto;
   double * cov_ll_kSZ_kSZ_gal;
+  double * cl_kSZ_kSZ_gal_lensing_term;
   double * cl_kSZ_kSZ_gal_1h;
   double * cl_kSZ_kSZ_gal_1h_fft;
   double * cl_kSZ_kSZ_gal_2h_fft;
@@ -423,6 +424,7 @@ struct tszspectrum {
   int index_integrand_id_kSZ_kSZ_gal_3h_last;
 
   int has_kSZ_kSZ_gal_covmat;
+  int has_kSZ_kSZ_gal_lensing_term;
 
   int has_kSZ_kSZ_gal_hf;
   int index_md_kSZ_kSZ_gal_hf;
@@ -1854,6 +1856,8 @@ double subhalo_hmf_dndlnMs(double M_host,double M_sub);
 double integrand_kSZ2_X_at_theta(double ell_prime, void *p);
 double integrand_kSZ2_X(double theta, void *p);
 
+double integrand_kSZ2_X_lensing_term_at_theta(double ell_prime, void *p);
+double integrand_kSZ2_X_lensing_term(double theta, void *p);
 
 int evaluate_matter_density_profile(
                              double k,
@@ -2108,6 +2112,33 @@ double * b_l1_l2_l_1d;
 double * ln_ell;
 };
 
+
+struct Parameters_for_integrand_kSZ2_X_lensing_term_at_theta{
+struct nonlinear * pnl;
+struct primordial * ppm;
+struct tszspectrum * ptsz;
+struct background * pba;
+// double * Pvecback;
+// double * Pvectsz;
+double theta;
+int index_ell;
+double * integrand_l_lprime_phi;
+double * ln_ellprime;
+};
+
+
+
+struct Parameters_for_integrand_kSZ2_X_lensing_term{
+struct nonlinear * pnl;
+struct primordial * ppm;
+struct tszspectrum * ptsz;
+struct background * pba;
+// double * Pvecback;
+// double * Pvectsz;
+int index_ell;
+double * integrand_l_lprime_phi;
+double * ln_ellprime;
+};
 
 
 

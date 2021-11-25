@@ -166,6 +166,7 @@ def run(args):
     cl_2h = []
     te_y_y = []
     cov_ll_kSZ_kSZ_gal = []
+    cl_kSZ_kSZ_gal_lensing_term = []
     kSZ_kSZ_gal_1h = []
     kSZ_kSZ_gal_1h_fft = []
     kSZ_kSZ_gal_2h_fft = []
@@ -430,8 +431,8 @@ def run(args):
             p_dict['redshift_epsabs'] = 1.e-30 # fiducial 1e-30
             p_dict['redshift_epsrel'] = 1.e-2 # fiducial value 1e-8
 
-            p_dict['N_kSZ2_gal_multipole_grid'] =  70#70 # fiducial 70
-            p_dict['N_kSZ2_gal_theta_grid'] =  70#70 # fiducial 70
+            p_dict['N_kSZ2_gal_multipole_grid'] =  100#70 # fiducial 70
+            p_dict['N_kSZ2_gal_theta_grid'] =  100#70 # fiducial 70
             p_dict['ell_min_kSZ2_gal_multipole_grid'] = 2.
             p_dict['ell_max_kSZ2_gal_multipole_grid'] = 2e5
 
@@ -810,6 +811,7 @@ def run(args):
             elif ('tSZ_1h' in p_dict['output']
             or 'kSZ_kSZ_gal_1h' in p_dict['output']
             or 'kSZ_kSZ_gal_covmat' in p_dict['output']
+            or 'kSZ_kSZ_gal_lensing_term' in p_dict['output']
             or 'kSZ_kSZ_gal fft (1h)' in p_dict['output']
             or 'kSZ_kSZ_gal fft (2h)' in p_dict['output']
             or 'kSZ_kSZ_gal fft (3h)' in p_dict['output']
@@ -888,6 +890,7 @@ def run(args):
                 kSZ_kSZ_tSZ_2h.append(R[:,60])
                 kSZ_kSZ_tSZ_3h.append(R[:,61])
                 cov_ll_kSZ_kSZ_gal.append(R[:,62])
+                cl_kSZ_kSZ_gal_lensing_term.append(R[:,65])
 
                 # r_dict[p_val] = L
 
@@ -946,6 +949,8 @@ def run(args):
 
                 elif (args.plot_kSZ_kSZ_gal == 'yes'):
                     print(multipoles[id_p])
+                    print('lensing term')
+                    print(cl_kSZ_kSZ_gal_lensing_term[id_p])
                     print(cov_ll_kSZ_kSZ_gal[id_p])
                     print(kSZ_kSZ_gal_1h_fft[id_p])
                     print(kSZ_kSZ_gal_2h_fft[id_p])
@@ -1007,6 +1012,14 @@ def run(args):
                                 ls='-.',alpha = 1.,
                                 # label = val_label[id_p] + ' (3h)',
                                 label = '3-halo',
+                                markersize = 3,
+                            marker='o')
+                    # if cl_kSZ_kSZ_gal_lensing_term[id_p].all() != 0:
+                    if ('kSZ_kSZ_gal_lensing_term' in p_dict['output']):
+                        ax.plot(multipoles[id_p],cl_kSZ_kSZ_gal_lensing_term[id_p]*fac,color='magenta',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'lensing term',
                                 markersize = 3,
                             marker='o')
                         # ax.plot(multipoles[id_p],-kSZ_kSZ_gal_3h[id_p]*fac,color='orange',

@@ -329,6 +329,7 @@ if (ptsz->has_kSZ_kSZ_gal_1h
  || ptsz->has_kSZ_kSZ_gal_2h_fft
  || ptsz->has_kSZ_kSZ_gal_3h_fft
  || ptsz->has_kSZ_kSZ_gal_covmat
+ || ptsz->has_kSZ_kSZ_gal_lensing_term
  || ptsz->has_kSZ_kSZ_lensmag_1halo
  || ptsz->has_kSZ_kSZ_gal_2h
  || ptsz->has_kSZ_kSZ_gal_3h
@@ -659,8 +660,8 @@ class_alloc(cl_tot,
             psp->ct_size*sizeof(double),
             ptsz->error_message);
 
-double cl_tt_lensed[ppt->l_scalar_max-2];
-double l_lensed[ppt->l_scalar_max-2];
+double cl_tt_lensed[ple->l_lensed_max-2];
+double l_lensed[ple->l_lensed_max-2];
 printf("ct_size = %d\n",psp->ct_size);
 printf("l_max lensed %d\n",ple->l_lensed_max);
 // exit(0);
@@ -756,12 +757,149 @@ printf("l = %.3e t2t2f = %.5e gg = %.5e t2t2gg = %.5e t2gt2g = %.5e  cov = %.5e\
 }
 
 free(cl_tot);
+}
 
 
 
+if (ptsz->has_kSZ_kSZ_gal_lensing_term){
+if (ptsz->sz_verbose > 0){
+printf("starting TTG lensing term computation.\n");
+}
+int i;
 
+//collect unlensed cls at lprime:
+// spectra_cl_at_l(psp,(double)l,cl,cl_md,cl_md_ic);
+double cl_tt_unlensed[ppt->l_scalar_max-2];
+double l_unlensed[ppt->l_scalar_max-2];
+double * cl_tot;
+class_alloc(cl_tot,
+            psp->ct_size*sizeof(double),
+            ptsz->error_message);
+  double ** cl_md_ic; /* array with argument
+                         cl_md_ic[index_md][index_ic1_ic2*psp->ct_size+index_ct] */
+
+  double ** cl_md;    /* array with argument
+                         cl_md[index_md][index_ct] */
+  int index_md;
+
+    class_alloc(cl_md_ic,
+                psp->md_size*sizeof(double *),
+                ptsz->error_message);
+
+    class_alloc(cl_md,
+                psp->md_size*sizeof(double *),
+                ptsz->error_message);
+    for (index_md = 0; index_md < psp->md_size; index_md++) {
+
+      if (psp->md_size > 1)
+
+        class_alloc(cl_md[index_md],
+                    psp->ct_size*sizeof(double),
+                    ptsz->error_message);
+
+      if (psp->ic_size[index_md] > 1)
+
+        class_alloc(cl_md_ic[index_md],
+                    psp->ic_ic_size[index_md]*psp->ct_size*sizeof(double),
+                    ptsz->error_message);
+    }
+
+
+for (i=2;i<ppt->l_scalar_max;i++){
+    l_unlensed[i-2] = i;
+
+    class_call(spectra_cl_at_l(psp,
+                               i,
+                               cl_tot,
+                               cl_md,
+                               cl_md_ic),
+               psp->error_message,
+               ptsz->error_message);
+    cl_tt_unlensed[i-2] = cl_tot[0];
+  if ((i<20) || (i>(ppt->l_scalar_max-10))){
+  printf("i %d l_unlensed[i] %e dl_unlensed[i] %.8e cl_unlensed[i] %.8e\n",i,l_unlensed[i-2],l_unlensed[i-2]*(l_unlensed[i-2]+1.)/2./_PI_*cl_tt_unlensed[i-2],cl_tt_unlensed[i-2]);
+}
+}
+
+free(cl_tot);
+  for (index_md = 0; index_md < psp->md_size; index_md++) {
+    if (psp->md_size > 1)
+      free(cl_md[index_md]);
+    if (psp->ic_size[index_md] > 1)
+       free(cl_md_ic[index_md]);
+}
+free(cl_md);
+free(cl_md_ic);
+
+// exit(0);
+for (i=0;i<ptsz->nlSZ;i++){
+// at each l, we tabulate the integrand:
+double * integrand_l_lprime_phi;
+class_alloc(integrand_l_lprime_phi,
+            sizeof(double *)*ptsz->N_kSZ2_gal_theta_grid*ptsz->N_kSZ2_gal_multipole_grid,
+            ptsz->error_message);
+int index_lprime = 0;
+int index_theta = 0;
+int index_lprime_theta = 0;
+for (index_lprime=0;index_lprime<ptsz->N_kSZ2_gal_multipole_grid;index_lprime++){
+for (index_theta=0;index_theta<ptsz->N_kSZ2_gal_theta_grid;index_theta++){
+double lprime = exp(ptsz->ell_kSZ2_gal_multipole_grid[index_lprime]);
+double theta = ptsz->theta_kSZ2_gal_theta_grid[index_theta];
+double l = ptsz->ell[i];
+
+double flprime = get_ksz_filter_at_l(lprime,ptsz);
+double abs_l_plus_lprime = sqrt(l*l+lprime*lprime+2.*l*lprime*cos(theta));
+double fl_plus_lprime = get_ksz_filter_at_l(abs_l_plus_lprime,ptsz);
+
+double clprime_tt_unlensed = pwl_value_1d(ppt->l_scalar_max-2,l_unlensed,cl_tt_unlensed,lprime);
+if (lprime<l_unlensed[0])
+  clprime_tt_unlensed = 0.;
+if (lprime>l_unlensed[ppt->l_scalar_max-3])
+  clprime_tt_unlensed = 0.;
+
+
+integrand_l_lprime_phi[index_lprime_theta] = lprime*lprime*flprime*clprime_tt_unlensed*fl_plus_lprime*cos(theta);
+integrand_l_lprime_phi[index_lprime_theta] *= lprime; //for integration in log(ell)
+printf("l = %.4e lp = %.4e th = %.3e flprime = %.5e fl_plus_lprime = %.5e clprime = %.5e integrand_l_lprime_phi = %.5e\n",
+l,lprime,theta,flprime,fl_plus_lprime,clprime_tt_unlensed,
+integrand_l_lprime_phi[index_lprime_theta]);
+index_lprime_theta += 1;
+}
+}
+
+// tabulation done
+   double epsrel= 1.e-6;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
+   double epsabs= 1.e-50;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
+   int show_neval = 0;//ptsz->patterson_show_neval;
+
+   struct Parameters_for_integrand_kSZ2_X_lensing_term V;
+   V.pnl= pnl;
+   V.ppm= ppm;
+   V.ptsz = ptsz;
+   V.pba = pba;
+   // V.Pvecback = Pvecback;
+   // V.Pvectsz = Pvectsz;
+   V.ln_ellprime = ptsz->ell_kSZ2_gal_multipole_grid;//ln_ell;
+   V.index_ell = i;
+   V.integrand_l_lprime_phi = integrand_l_lprime_phi;
+   void * params;
+   params = &V;
+
+ptsz->cl_kSZ_kSZ_gal_lensing_term[i] = Integrate_using_Patterson_adaptive(0., 2.*_PI_,
+                                            epsrel, epsabs,
+                                            integrand_kSZ2_X_lensing_term,
+                                            params,show_neval);
+
+double cl_gk = (ptsz->cl_gal_lens_2h[i] + ptsz->cl_gal_lens_1h[i])
+                /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
+double cl_gp = 2./(ptsz->ell[i]*(ptsz->ell[i]+1.))*cl_gk;
+ptsz->cl_kSZ_kSZ_gal_lensing_term[i] *= -2./(2.*_PI_)/(2.*_PI_)*ptsz->ell[i]*cl_gp;
+
+free(integrand_l_lprime_phi);
+}
 
 }
+
    if (ptsz->sz_verbose>1) show_results(pba,pnl,ppm,ptsz);
    if (ptsz->write_sz>0 || ptsz->create_ref_trispectrum_for_cobaya){
 
@@ -772,6 +910,9 @@ free(cl_tot);
  }
    return _SUCCESS_;
 }
+
+
+
 
 int szpowerspectrum_free(struct tszspectrum *ptsz)
 {
@@ -952,6 +1093,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->cl_kSZ_kSZ_gal_2h_fft);
    free(ptsz->cl_kSZ_kSZ_gal_3h_fft);
    free(ptsz->cov_ll_kSZ_kSZ_gal);
+   free(ptsz->cl_kSZ_kSZ_gal_lensing_term);
    free(ptsz->cl_kSZ_kSZ_gal_2h);
    free(ptsz->cl_kSZ_kSZ_gal_3h);
    free(ptsz->cl_kSZ_kSZ_gal_hf);
@@ -1024,6 +1166,7 @@ if(ptsz->has_kSZ_kSZ_gal_1h
 || ptsz->has_kSZ_kSZ_gal_2h_fft
 || ptsz->has_kSZ_kSZ_gal_3h_fft
 || ptsz->has_kSZ_kSZ_gal_covmat
+|| ptsz->has_kSZ_kSZ_gal_lensing_term
 || ptsz->has_kSZ_kSZ_lensmag_1halo
 || ptsz->has_kSZ_kSZ_gal_2h
 || ptsz->has_kSZ_kSZ_gal_3h
@@ -9313,7 +9456,8 @@ if (ptsz->create_ref_trispectrum_for_cobaya){
                     ptsz->b_kSZ_kSZ_tSZ_3h[index_l],
                     ptsz->cov_ll_kSZ_kSZ_gal[index_l],
                     ptsz->cl_kSZ_kSZ_1h[index_l],
-                    ptsz->cl_kSZ_kSZ_2h[index_l]
+                    ptsz->cl_kSZ_kSZ_2h[index_l],
+                    ptsz->cl_kSZ_kSZ_gal_lensing_term[index_l]
                     );
 
       }
@@ -9955,6 +10099,14 @@ int index_l;
 for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
 printf("ell = %e\t\t cov_ll_kSZ_kSZ_gal = %e \n",ptsz->ell[index_l],ptsz->cov_ll_kSZ_kSZ_gal[index_l]);
+}
+}
+
+if (ptsz->has_kSZ_kSZ_gal_lensing_term){
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t kSZ_kSZ_gal (lensing) = %e \n",ptsz->ell[index_l],ptsz->cl_kSZ_kSZ_gal_lensing_term[index_l]);
 }
 }
 
@@ -10634,6 +10786,8 @@ int select_multipole_array(struct tszspectrum * ptsz)
    || ptsz->has_kSZ_kSZ_gal_2h
    || ptsz->has_kSZ_kSZ_gal_3h
    || ptsz->has_kSZ_kSZ_gal_hf
+   || ptsz->has_kSZ_kSZ_gal_covmat
+   || ptsz->has_kSZ_kSZ_gal_lensing_term
    || ptsz->has_kSZ_kSZ_lensmag_1halo){
   class_alloc(ptsz->ell_kSZ2_gal_multipole_grid,
               ptsz->N_kSZ2_gal_multipole_grid*sizeof(double),
@@ -10658,7 +10812,7 @@ int select_multipole_array(struct tszspectrum * ptsz)
   }
 
   double theta_min = 0.;
-  double theta_max = _PI_;
+  double theta_max = 2.*_PI_;
   // double theta_min = -1.;
   // double theta_max = 1.;
 
@@ -11364,6 +11518,7 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
    class_alloc(ptsz->cl_tSZ_lens_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_kSZ_kSZ_gal_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cov_ll_kSZ_kSZ_gal,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   class_alloc(ptsz->cl_kSZ_kSZ_gal_lensing_term,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_kSZ_kSZ_gal_1h_fft,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_kSZ_kSZ_gal_2h_fft,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_kSZ_kSZ_gal_3h_fft,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
@@ -11440,6 +11595,7 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
       ptsz->cl_tSZ_lens_2h[index_l] = 0.;
       ptsz->cl_kSZ_kSZ_gal_1h[index_l] = 0.;
       ptsz->cov_ll_kSZ_kSZ_gal[index_l] = 0.;
+      ptsz->cl_kSZ_kSZ_gal_lensing_term[index_l] = 0.;
       ptsz->cl_kSZ_kSZ_gal_1h_fft[index_l] = 0.;
       ptsz->cl_kSZ_kSZ_gal_2h_fft[index_l] = 0.;
       ptsz->cl_kSZ_kSZ_gal_3h_fft[index_l] = 0.;
@@ -13225,6 +13381,52 @@ exit(0);
 
 
 
+double integrand_kSZ2_X_lensing_term_at_theta(double ln_ell_prime, void *p){
+
+struct Parameters_for_integrand_kSZ2_X_lensing_term_at_theta *V = ((struct Parameters_for_integrand_kSZ2_X_lensing_term_at_theta *) p);
+
+
+
+     double ell = V->ptsz->ell[V->index_ell];
+     double ell_prime  = exp(ln_ell_prime);
+     double integrand_cl_kSZ2_X_at_theta = 0.;
+
+
+       double theta = V->theta;
+
+       double db =  pwl_interp_2d(V->ptsz->N_kSZ2_gal_theta_grid,
+                                  V->ptsz->N_kSZ2_gal_multipole_grid,
+                                  V->ptsz->theta_kSZ2_gal_theta_grid,
+                                  V->ln_ellprime,
+                                  V->integrand_l_lprime_phi,
+                                  1,
+                                  &theta,
+                                  &ln_ell_prime);
+      // printf("theta = %.8e db = %.8e\n",V->theta,db);
+if (isnan(db) || isinf(db)){
+  // db = 0.;
+if (isnan(db))
+printf("found nan in interpolation of b_l1_l2_l_1d\n");
+if (isinf(db))
+printf("found inf in interpolation of b_l1_l2_l_1d\n");
+printf("theta = %.3e \t l2 = %.3e \t l = %.3e\n",theta,exp(ln_ell_prime),ell);
+
+printf("\n\n");
+exit(0);
+}
+
+
+
+       integrand_cl_kSZ2_X_at_theta = db;
+
+       return integrand_cl_kSZ2_X_at_theta;
+
+}
+
+
+
+
+
 double integrand_kSZ2_X(double theta, void *p){
 // double ell_prime  = exp(ln_ell_prime);
   //double ell_prime  = ln_ell_prime;
@@ -13276,6 +13478,62 @@ struct Parameters_for_integrand_kSZ2_X *W = ((struct Parameters_for_integrand_kS
     return integrand_cl_kSZ2_X;
 
 }
+
+
+
+
+double integrand_kSZ2_X_lensing_term(double theta, void *p){
+// double ell_prime  = exp(ln_ell_prime);
+  //double ell_prime  = ln_ell_prime;
+
+double integrand_cl_kSZ2_X = 0.;
+struct Parameters_for_integrand_kSZ2_X_lensing_term *W = ((struct Parameters_for_integrand_kSZ2_X_lensing_term *) p);
+
+
+  // adaptative integration
+   struct Parameters_for_integrand_kSZ2_X_lensing_term_at_theta V;
+   V.pnl = W->pnl;
+   V.ppm = W->ppm;
+   V.ptsz = W->ptsz;
+   V.pba = W->pba;
+   // V.Pvecback = W->Pvecback;
+   // V.Pvectsz = W->Pvectsz;
+   V.ln_ellprime = W->ln_ellprime;
+   V.index_ell = W->index_ell;
+   V.integrand_l_lprime_phi = W->integrand_l_lprime_phi;
+
+   //printf("index l3 = %d\n",V.index_ell_3);
+
+   void * params;
+
+   double r; //result of the integral
+   double epsrel= 1.e-6;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
+   double epsabs= 1.e-50;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
+   int show_neval = 0;//ptsz->patterson_show_neval;
+
+  // while(theta < 2.*_PI_){
+
+    V.theta = theta;
+    params = &V;
+
+    double ell_min = exp(V.ptsz->ell_kSZ2_gal_multipole_grid[0]);
+    // double ell_min = V.ptsz->l_unwise_filter[0];
+    double ell_max = 2.*V.ptsz->l_unwise_filter[V.ptsz->unwise_filter_size-1];
+
+    // printf("ell_min = %.3e \t ell_max = %.3e\n", ell_min,ell_max);
+    // exit(0);
+    r=Integrate_using_Patterson_adaptive(log(ell_min), log(ell_max),
+                                        epsrel, epsabs,
+                                        integrand_kSZ2_X_lensing_term_at_theta,
+                                        params,show_neval);
+
+// printf("r at theta = %.8e, r = %.8e \n",theta,r);
+    integrand_cl_kSZ2_X = r;
+
+    return integrand_cl_kSZ2_X;
+
+}
+
 
 
 // eq. 16 of https://arxiv.org/pdf/1510.04075.pdf

@@ -2310,6 +2310,25 @@ int input_read_parameters(
 
       }
 
+      if ((strstr(string1,"kSZ_kSZ_gal_lensing_term") != NULL) ) {
+        ppt->has_scalars = _TRUE_;
+        ppt->has_cl_cmb_temperature = _TRUE_;
+        ppt->has_cls = _TRUE_;
+        ptsz->has_gal_lens_1h = _TRUE_;
+        ptsz->has_gal_lens_2h = _TRUE_;
+        ptsz->has_kSZ_kSZ_gal_lensing_term =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+        ppt->l_scalar_max = 10000;
+
+      }
+
+
+
       if ((strstr(string1,"kSZ_kSZ_gal fft (3h)") != NULL) ) {
         ptsz->has_kSZ_kSZ_gal_3h_fft =_TRUE_;
         ptsz->has_vrms2 = _TRUE_;
@@ -5800,6 +5819,7 @@ int input_default_params(
   ptsz->has_kSZ_kSZ_gal_2h_fft = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_3h_fft = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_covmat = _FALSE_;
+  ptsz->has_kSZ_kSZ_gal_lensing_term = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_2h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_3h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_hf = _FALSE_;
