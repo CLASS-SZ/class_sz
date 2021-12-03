@@ -1503,6 +1503,8 @@ cdef class Class:
         cl['2h (slow)'] = []
         cl['3h (slow)'] = []
         cl['hf'] = []
+        cl['covmat'] = []
+        cl['lensing term'] = []
         for index in range(self.tsz.nlSZ):
             cl['1h (slow)'].append(self.tsz.cl_kSZ_kSZ_gal_1h[index])
             cl['2h (slow)'].append(self.tsz.cl_kSZ_kSZ_gal_2h[index])
@@ -1511,6 +1513,8 @@ cdef class Class:
             cl['1h'].append(self.tsz.cl_kSZ_kSZ_gal_1h_fft[index])
             cl['2h'].append(self.tsz.cl_kSZ_kSZ_gal_2h_fft[index])
             cl['3h'].append(self.tsz.cl_kSZ_kSZ_gal_3h_fft[index])
+            cl['lensing term'].append(self.tsz.cl_kSZ_kSZ_gal_lensing_term[index])
+            cl['covmat'].append(self.tsz.cov_ll_kSZ_kSZ_gal[index])
             cl['ell'].append(self.tsz.ell[index])
         return cl
 

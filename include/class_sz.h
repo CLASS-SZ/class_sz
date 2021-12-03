@@ -1026,8 +1026,10 @@ struct tszspectrum {
   double x_size_for_pp;
   double * x_for_pp;
 
-
+  int use_websky_m200m_to_m200c_conversion;
   //Battaglia pressure profile
+  double alpha_B12;
+  double gamma_B12;
   double P0_B12;
   double xc_B12;
   double beta_B12;
@@ -1338,6 +1340,11 @@ double * steps_m;
   int nl_yy_is_binned;
   int unbinned_nl_yy_size;
 
+  double * unbinned_nl_tt_ell;
+  double * unbinned_nl_tt_n_ell;
+  int unbinned_nl_tt_size;
+
+  int truncate_wrt_rvir;
 
 
 
@@ -1610,6 +1617,13 @@ double get_ksz_filter_at_l(double l,
                                     struct nonlinear * pnl,
                                     struct tszspectrum * ptsz);
 double get_pk_lin_at_k_and_z(double k, double z,
+                          struct background * pba,
+                          struct primordial * ppm,
+                          struct nonlinear * pnl,
+                          struct tszspectrum * ptsz);
+
+double get2_pk_lin_at_k_and_z(//double * pvecback,//double * pvectsz,
+  double * r,double k, double z,
                           struct background * pba,
                           struct primordial * ppm,
                           struct nonlinear * pnl,

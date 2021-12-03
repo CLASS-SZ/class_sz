@@ -662,30 +662,35 @@ class_alloc(cl_tot,
 
 double cl_tt_lensed[ple->l_lensed_max-2];
 double l_lensed[ple->l_lensed_max-2];
-printf("ct_size = %d\n",psp->ct_size);
-printf("l_max lensed %d\n",ple->l_lensed_max);
+// printf("ct_size = %d\n",psp->ct_size);
+// printf("l_max lensed %d\n",ple->l_lensed_max);
 // exit(0);
 for (i=2;i<ple->l_lensed_max;i++){
   lensing_cl_at_l(ple,i,cl_tot);
   l_lensed[i-2] = i;
   cl_tt_lensed[i-2] = cl_tot[0]; //dimensionless total lensed cl TT
-  if ((i<20) || (i>(ple->l_lensed_max-10))){
-  printf("i %d l_lensed[i] %e dl_lensed[i] %.8e cl_lensed[i] %.8e\n",i,l_lensed[i-2],l_lensed[i-2]*(l_lensed[i-2]+1.)/2./_PI_*cl_tt_lensed[i-2],cl_tt_lensed[i-2]);
-}
+//   if ((i<20) || (i>(ple->l_lensed_max-10))){
+//   printf("i %d l_lensed[i] %e dl_lensed[i] %.8e cl_lensed[i] %.8e\n",i,l_lensed[i-2],l_lensed[i-2]*(l_lensed[i-2]+1.)/2./_PI_*cl_tt_lensed[i-2],cl_tt_lensed[i-2]);
+// }
 
 }
 
 load_cl_ksz_template(ptsz);
+load_unbinned_nl_tt(ptsz);
 // exit(0);
-// printf("%.3e %.3e\n",l_lensed[0],l_lensed[ple->l_lensed_max-3]);
+// printf("%.3e %.8e\n",ptsz->unbinned_nl_tt_ell[0],ptsz->unbinned_nl_tt_n_ell[0]);
+// printf("%.3e %.8e\n",ptsz->unbinned_nl_tt_ell[1],ptsz->unbinned_nl_tt_n_ell[1]);
 // exit(0);
 for (i=0;i<N;i++){
 l[i] = exp(log(l_min)+i/(N-1.)*(log(l_max)-log(l_min)));
 cl_tt_lensed_fft[i] = pwl_value_1d(ple->l_lensed_max-2,l_lensed,cl_tt_lensed,l[i]);
 cl_ksz_fft[i] = pwl_value_1d(ptsz->ksz_template_size,ptsz->l_ksz_template,ptsz->cl_ksz_template,l[i]);
+cl_noise_fft[i] = pwl_value_1d(ptsz->unbinned_nl_tt_size,ptsz->unbinned_nl_tt_ell,ptsz->unbinned_nl_tt_n_ell,l[i]);
 
 cl_ksz_fft[i] = cl_ksz_fft[i]/l[i]/(l[i]+1.)*2.*_PI_*1e-12/pba->T_cmb/pba->T_cmb;
+cl_noise_fft[i] = cl_noise_fft[i]*1e-12/pba->T_cmb/pba->T_cmb;
 Fl_bl = get_ksz_filter_at_l(l[i],ptsz);
+
 
 if (l[i]<l_lensed[0])
   cl_tt_lensed_fft[i] = 0.;
@@ -697,12 +702,17 @@ if (l[i]<ptsz->l_ksz_template[0])
 if (l[i]>ptsz->l_ksz_template[ptsz->ksz_template_size-1])
   cl_ksz_fft[i] = 0.;
 
+if (l[i]<ptsz->unbinned_nl_tt_ell[0])
+  cl_noise_fft[i] = 0.;
+if (l[i]>ptsz->unbinned_nl_tt_ell[ptsz->unbinned_nl_tt_size-1])
+  cl_noise_fft[i] = 0.;
 
 
-cl_noise_fft[i] = Delta_t2*exp(theta_fwhm*theta_fwhm*l[i]*l[i]/8./log(2.));
+// cl_noise_fft[i] = Delta_t2*exp(theta_fwhm*theta_fwhm*l[i]*l[i]/8./log(2.));
+
 cl_ttf[i] = Fl_bl*Fl_bl*(cl_tt_lensed_fft[i]+cl_ksz_fft[i]+cl_noise_fft[i])*sqrt(2./(2.*_PI_)/(2.*_PI_)); // divide by 2pi^2 and multiply by 2 -- see formula
 // if (i<10)
-printf(" l = %.3e cl tt = %.8e  ksz = %.8e flbl = %.8e ttf = %.8e\n",l[i],cl_tt_lensed_fft[i],cl_ksz_fft[i],Fl_bl,cl_ttf[i]);
+// printf(" l = %.3e cl tt = %.8e  ksz = %.8e flbl = %.8e ttf = %.8e\n",l[i],cl_tt_lensed_fft[i],cl_ksz_fft[i],Fl_bl,cl_ttf[i]);
 // lensing_cl_at_l(ple,l[i])
 }
 
@@ -714,9 +724,9 @@ xi[i] = pow(xi[i],2.);
 }
 pk2xi(N,r,xi,l,cl_t2t2f,ptsz);
 
-for (i=0;i<N;i++){
-printf("l = %.3e t2t2f = %.5e\n",l[i],cl_t2t2f[i]);
-}
+// for (i=0;i<N;i++){
+// printf("l = %.3e t2t2f = %.5e\n",l[i],cl_t2t2f[i]);
+// }
 double cl_gg,clp_t2t2f,cl_kSZ2g;
 for (i=0;i<ptsz->nlSZ;i++){
 cl_gg = (ptsz->cl_gal_gal_2h[i] + ptsz->cl_gal_gal_1h[i])
@@ -731,6 +741,7 @@ ptsz->cov_ll_kSZ_kSZ_gal[i] = (clp_t2t2f*cl_gg+cl_kSZ2g*cl_kSZ2g)
                               /ptsz->f_sky;
 double ln_ell_up,ln_ell_down,ln_ell_max,ln_ell_min,n_modes;
 double ell = ptsz->ell[i];
+if (ptsz->dell == 0){
  if (i == 0){
     ln_ell_up = log(ptsz->ell[i+1]);
     ln_ell_max = log(ell) + 0.5*(ln_ell_up-log(ell));
@@ -750,10 +761,32 @@ double ell = ptsz->ell[i];
     ln_ell_max = log(ell) + 0.5*(ln_ell_up-log(ell));
     n_modes = exp(ln_ell_max)-exp(ln_ell_min);
  }
+}
+else{
+ if (i == 0){
+    ln_ell_up = ptsz->ell[i+1];
+    ln_ell_max = ell + 0.5*(ln_ell_up-ell);
+    ln_ell_min = ell - 0.5*(ln_ell_up-ell);
+    n_modes = ln_ell_max-ln_ell_min;
+ }
+ else if (i == ptsz->nlSZ -1){
+    ln_ell_down = ptsz->ell[i-1];
+    ln_ell_min = ell - 0.5*(ell-ln_ell_down);
+    ln_ell_max = ell + 0.5*(ell-ln_ell_down);
+    n_modes = ln_ell_max-ln_ell_min;
+ }
+ else {
+    ln_ell_down = ptsz->ell[i-1];
+    ln_ell_up = ptsz->ell[i+1];
+    ln_ell_min = ell - 0.5*(ell-ln_ell_down);
+    ln_ell_max = ell + 0.5*(ln_ell_up-ell);
+    n_modes = ln_ell_max-ln_ell_min;
+ }
+}
 ptsz->cov_ll_kSZ_kSZ_gal[i] *= 1./n_modes;
 
 
-printf("l = %.3e t2t2f = %.5e gg = %.5e t2t2gg = %.5e t2gt2g = %.5e  cov = %.5e\n",ptsz->ell[i],clp_t2t2f,cl_gg,clp_t2t2f*cl_gg,cl_kSZ2g*cl_kSZ2g,ptsz->cov_ll_kSZ_kSZ_gal[i]);
+// printf("l = %.3e t2t2f = %.5e gg = %.5e t2t2gg = %.5e t2gt2g = %.5e  cov = %.5e\n",ptsz->ell[i],clp_t2t2f,cl_gg,clp_t2t2f*cl_gg,cl_kSZ2g*cl_kSZ2g,ptsz->cov_ll_kSZ_kSZ_gal[i]);
 }
 
 free(cl_tot);
@@ -816,9 +849,9 @@ for (i=2;i<ppt->l_scalar_max;i++){
                psp->error_message,
                ptsz->error_message);
     cl_tt_unlensed[i-2] = cl_tot[0];
-  if ((i<20) || (i>(ppt->l_scalar_max-10))){
-  printf("i %d l_unlensed[i] %e dl_unlensed[i] %.8e cl_unlensed[i] %.8e\n",i,l_unlensed[i-2],l_unlensed[i-2]*(l_unlensed[i-2]+1.)/2./_PI_*cl_tt_unlensed[i-2],cl_tt_unlensed[i-2]);
-}
+//   if ((i<20) || (i>(ppt->l_scalar_max-10))){
+//   printf("i %d l_unlensed[i] %e dl_unlensed[i] %.8e cl_unlensed[i] %.8e\n",i,l_unlensed[i-2],l_unlensed[i-2]*(l_unlensed[i-2]+1.)/2./_PI_*cl_tt_unlensed[i-2],cl_tt_unlensed[i-2]);
+// }
 }
 
 free(cl_tot);
@@ -860,9 +893,9 @@ if (lprime>l_unlensed[ppt->l_scalar_max-3])
 
 integrand_l_lprime_phi[index_lprime_theta] = lprime*lprime*flprime*clprime_tt_unlensed*fl_plus_lprime*cos(theta);
 integrand_l_lprime_phi[index_lprime_theta] *= lprime; //for integration in log(ell)
-printf("l = %.4e lp = %.4e th = %.3e flprime = %.5e fl_plus_lprime = %.5e clprime = %.5e integrand_l_lprime_phi = %.5e\n",
-l,lprime,theta,flprime,fl_plus_lprime,clprime_tt_unlensed,
-integrand_l_lprime_phi[index_lprime_theta]);
+// printf("l = %.4e lp = %.4e th = %.3e flprime = %.5e fl_plus_lprime = %.5e clprime = %.5e integrand_l_lprime_phi = %.5e\n",
+// l,lprime,theta,flprime,fl_plus_lprime,clprime_tt_unlensed,
+// integrand_l_lprime_phi[index_lprime_theta]);
 index_lprime_theta += 1;
 }
 }
@@ -1546,6 +1579,11 @@ if (ptsz->include_noise_cov_y_y==1){
 }
    if (ptsz->has_sigma2_hsv)
     free(ptsz->array_sigma2_hsv_at_z);
+
+if(ptsz->has_kSZ_kSZ_gal_covmat){
+  free(ptsz->unbinned_nl_tt_ell);
+  free(ptsz->unbinned_nl_tt_n_ell);
+}
 
    if (ptsz->has_tSZ_gal_1h
       +ptsz->has_tSZ_gal_2h
@@ -6130,8 +6168,8 @@ double get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(double x,
   xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
   beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
 
-  double gamma = -0.3;
-  double alpha = 1.0;
+  double gamma = ptsz->gamma_B12;
+  double alpha = ptsz->alpha_B12;
 
   double plc_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta);
 
@@ -6786,6 +6824,10 @@ double get_pk_nonlin_at_k_and_z(double k, double z,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
                           struct tszspectrum * ptsz){
+if ((k*pba->h < exp(pnl->ln_k[0])) || (k*pba->h > exp(pnl->ln_k[pnl->k_size-1]))){
+  return 0.;
+}
+
 double pk;
 double * pk_ic = NULL;
           class_call(nonlinear_pk_at_k_and_z(
@@ -6810,9 +6852,14 @@ double get_pk_lin_at_k_and_z(double k, double z,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
                           struct tszspectrum * ptsz){
+
+if ((k*pba->h < exp(pnl->ln_k[0])) || (k*pba->h > exp(pnl->ln_k[pnl->k_size-1]))){
+  return 0.;
+}
 double pk;
 double * pk_ic = NULL;
-          class_call(nonlinear_pk_at_k_and_z(
+// printf("before\n");
+        class_call(nonlinear_pk_at_k_and_z(
                                             pba,
                                             ppm,
                                             pnl,
@@ -6823,13 +6870,18 @@ double * pk_ic = NULL;
                                             &pk, // number *out_pk_l
                                             pk_ic // array out_pk_ic_l[index_ic_ic]
                                           ),
-                                          pnl->error_message,
-                                          pnl->error_message);
+                                          ptsz->error_message,
+                                          ptsz->error_message);
+// printf("k=%.3e z=%.3e pklin=%.3e\n",k,z,pk*pow(pba->h,3.));
+// printf("after\n");
+
+// evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+
 return pk*pow(pba->h,3.);
                           }
 
 
-//
+// //
 // //Compute P(k) in units of h^-3 Mpc^3
 // int evaluate_pk_at_ell_plus_one_half_over_chi(double * pvecback,
 //                                               double * pvectsz,
@@ -7604,20 +7656,21 @@ int evaluate_HMF_at_logM_and_z(
 
 
    double z_asked = log(1.+z);
-//    double R_asked = log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h);
-// // printf("dealing with mass conversion in hmf0 %.3e\n",ptsz->array_redshift[0]);
-//    if (z<exp(ptsz->array_redshift[0])-1.)
-//       z_asked = ptsz->array_redshift[0];
-//         // printf("dealing with mass conversion in hmf\n");
-//    if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
-//       z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
-//         // printf("dealing with mass conversion in hmf2\n");
-//    if (log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h)<ptsz->array_radius[0])
-//       R_asked = ptsz->array_radius[0];
-//         // printf("dealing with mass conversion in hmf3\n");
-//    if (log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h)>ptsz->array_radius[ptsz->ndimSZ-1])
-//       R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
 
+   // double R_asked = log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h);
+// printf("dealing with mass conversion in hmf0 %.3e\n",ptsz->array_redshift[0]);
+   // if (z<exp(ptsz->array_redshift[0])-1.)
+   //    z_asked = ptsz->array_redshift[0];
+   //      // printf("dealing with mass conversion in hmf\n");
+   // if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
+   //    z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
+   //      // printf("dealing with mass conversion in hmf2\n");
+   // if (log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h)<ptsz->array_radius[0])
+   //    R_asked = ptsz->array_radius[0];
+   //      // printf("dealing with mass conversion in hmf3\n");
+   // if (log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h)>ptsz->array_radius[ptsz->ndimSZ-1])
+   //    R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
+   //
 
 pvectsz[ptsz->index_logSigma2] = 2.*log(get_sigma_at_z_and_m(exp(z_asked)-1.,m_for_hmf,ptsz,pba));
 

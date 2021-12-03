@@ -413,7 +413,6 @@ int nonlinear_pk_at_k_and_z(
   class_test((k < 0.) || (k > exp(pnl->ln_k[pnl->k_size-1])),
              pnl->error_message,
              "k=%e out of bounds [%e:%e]",k,0.,exp(pnl->ln_k[pnl->k_size-1]));
-
   /** - deal with case k = 0 for which P(k) is set to zero
       (this non-physical result can be useful for interpolations) */
 

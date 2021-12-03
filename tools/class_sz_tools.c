@@ -1255,6 +1255,7 @@ double cvir;
 //D08 c-m relation
 if (ptsz->concentration_parameter==0){
 cvir = 7.85*pow(mvir/2.e12,-0.081)*pow(1.+z,-0.71);
+// cvir = 7.; // websky uses 7
 }
 
 //S00 c-m relation
@@ -4231,7 +4232,12 @@ int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
 if (ptsz->pressure_profile == 4) { //for Battaglia et al 2012 pressure profile
     double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
     double r200c = pvectsz[ptsz->index_r200c]; //in Mpc/h
+    if (ptsz->truncate_wrt_rvir == 1){
     xout = ptsz->x_outSZ*rvir/r200c; // the truncation radius is in multiples of rvir
+    }
+    else{
+    xout = ptsz->x_outSZ;
+    }
     }
 else{
     xout = ptsz->x_outSZ; // in all other cases the truncation radius is in multiples of rs=r_delta/c_delta
@@ -4833,6 +4839,136 @@ if (ptsz->sz_verbose >= 1)
   return _SUCCESS_;
 }
 
+
+
+//This routine reads the tabulated
+//noise curve for t-t covariance,
+//and stores the tabulated values.
+
+int load_unbinned_nl_tt(struct tszspectrum * ptsz)
+{
+
+if (ptsz->sz_verbose >= 1)
+  printf("-> loading the noise curve for TT covariance\n");
+
+
+  class_alloc(ptsz->unbinned_nl_tt_ell,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->unbinned_nl_tt_n_ell,sizeof(double *)*100,ptsz->error_message);
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+
+  /* Prepare the command */
+  /* If the command is just a "cat", no arguments need to be passed */
+  // if(strncmp("cat ", ptsz->command, 4) == 0)
+  // {
+  // sprintf(arguments, " ");
+  // }
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+    sprintf(Filepath,
+            "%s%s",
+            "cat ",
+            ptsz->full_path_to_noise_curve_for_t_t);
+  //printf("-> HI2 loading the noise curve for yxy covariance\n");
+  process = popen(Filepath, "r");
+  printf("-> %s\n",Filepath);
+
+  //int il = 0;
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+    //printf("%d\n",il);
+    //il++;
+    sscanf(line, "%lf %lf ", &this_lnx, &this_lnI);
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  status = pclose(process);
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->unbinned_nl_tt_size = n_data;
+  /** Make room */
+
+  class_realloc(ptsz->unbinned_nl_tt_ell,
+                ptsz->unbinned_nl_tt_ell,
+                ptsz->unbinned_nl_tt_size*sizeof(double),
+                ptsz->error_message);
+  class_realloc(ptsz->unbinned_nl_tt_n_ell,
+                ptsz->unbinned_nl_tt_n_ell,
+                ptsz->unbinned_nl_tt_size*sizeof(double),
+                ptsz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<ptsz->unbinned_nl_tt_size; index_x++) {
+    ptsz->unbinned_nl_tt_ell[index_x] = lnx[index_x];
+    ptsz->unbinned_nl_tt_n_ell[index_x] = lnI[index_x];
+    //printf("z=%.3e phig=%.3e\n",ptsz->unbinned_nl_yy_ell[index_x],ptsz->unbinned_nl_yy_n_ell[index_x]);
+  };
+
+  //exit(0);
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  return _SUCCESS_;
+}
 
 
 
@@ -6115,8 +6251,8 @@ int plc_gnfw(double * plc_gnfw_x,
     xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
     beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
 
-    double gamma = -0.3;
-    double alpha = 1.0;
+    double gamma = ptsz->gamma_B12;
+    double alpha = ptsz->alpha_B12;
 
       *plc_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)
                     *pow(x,2)
@@ -7112,11 +7248,27 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
   int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
   // V->pvectsz[V->ptsz->index_multipole_for_pk] = V->ptsz->ell[index_l];
   // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-  double pk1 =  get_pk_lin_at_k_and_z((V->ptsz->ell[index_l]+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+  // double z = V->pvectsz[V->ptsz->index_z];
+  //  double d_A = V->pvecback[V->pba->index_bg_ang_distance]*V->pba->h*(1.+z);
+  //  double pk;
 
+// double pkr;
+// double fr = get2_pk_lin_at_k_and_z(//V->pvecback,//V->pvectsz,
+//   &pkr,(V->ptsz->ell[index_l]+0.5)/d_A,z,V->pba,V->ppm,V->pnl,V->ptsz);
+//   printf("k=%.3e z=%.3e pke=%.3e pklin2=%.3e pklin=%.3e fr=%.3e\n",
+//          (V->ptsz->ell[index_l]+0.5)/chi,z,
+//          V->pvectsz[V->ptsz->index_pk_for_halo_bias],
+//          pkr,
+//          pkp,
+//          fr);
+//
+// if (fr == 1.)
+//   exit(0);
+// if (fr == 0.)
+//   exit(0);
   // For all the above cases we multiply the linear matter power spectrum to the redshift integrand
   // evaluated at (ell+1/2)/Chi and redshift z
-  result *= pk1;//V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+  result *= get_pk_lin_at_k_and_z((V->ptsz->ell[index_l]+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);//V->pvectsz[V->ptsz->index_pk_for_halo_bias];
 
 }
 
@@ -14490,6 +14642,14 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
                     ptsz->error_message,
                     ptsz->error_message);
     pvectsz[ptsz->index_m200c] = mdel_prime;
+
+    if (ptsz->use_websky_m200m_to_m200c_conversion == 1){
+      // omegamz = co.omegam*(1+z)**3/(co.omegam*(1+z)**3+1-co.omegam)
+      // m200c   = omegamz**0.35 * m200m # m200m to m200c conversion used for websky
+      // return m200c
+
+      pvectsz[ptsz->index_m200c] = pow(omega,0.35)*pvectsz[ptsz->index_m200m];
+    }
 
     array_m200m_to_m200c_at_z_and_M[index_z][index_M] = log(pvectsz[ptsz->index_m200c]);
     // printf("m = %.3e\n",array_m200m_to_m200c_at_z_and_M[index_z][index_M]);

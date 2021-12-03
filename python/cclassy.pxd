@@ -294,6 +294,8 @@ cdef extern from "class.h":
         double * cl_kSZ_kSZ_gal_2h_fft
         double * cl_kSZ_kSZ_gal_3h_fft
         double * cl_kSZ_kSZ_gal_hf
+        double * cl_kSZ_kSZ_gal_lensing_term
+        double * cov_ll_kSZ_kSZ_gal
         double * cl_tSZ_lensmag_1h
         double * cl_tSZ_lensmag_2h
         double * cl_gal_gallens_1h

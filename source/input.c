@@ -3114,7 +3114,8 @@ int input_read_parameters(
         }
 
       }
-
+      class_read_string("full path to noise curve for tt",ptsz->full_path_to_noise_curve_for_t_t);
+      // class_read_int("nl_yy_is_binned",ptsz->nl_yy_is_binned);
 
       /* temperature mass relation SZ */
       class_call(parser_read_string(pfc,"temperature mass relation",&string1,&flag1,errmsg),
@@ -3206,21 +3207,24 @@ int input_read_parameters(
 
        class_read_double("P0_B12",ptsz->P0_B12);
        class_read_double("beta_B12",ptsz->beta_B12);
+       class_read_double("alpha_B12",ptsz->alpha_B12);
+       class_read_double("gamma_B12",ptsz->gamma_B12);
 
        // ptsz->P0_B12 = 18.1;
-       ptsz->xc_B12 = 0.497;
+       class_read_double("xc_B12",ptsz->xc_B12);// = 0.497;
        // ptsz->beta_B12 = 4.35;
 
-       ptsz->alpha_m_P0_B12 = 0.154;
-       ptsz->alpha_m_xc_B12 = -0.00865;
-       ptsz->alpha_m_beta_B12 = 0.0393;
+       class_read_double("alpha_m_P0_B12",ptsz->alpha_m_P0_B12);// = 0.154;
+       class_read_double("alpha_m_xc_B12",ptsz->alpha_m_xc_B12);// = -0.00865;
+       class_read_double("alpha_m_beta_B12",ptsz->alpha_m_beta_B12);// = 0.0393;
 
-       ptsz->alpha_z_P0_B12 = -0.758;
-       ptsz->alpha_z_xc_B12 = 0.731;
-       ptsz->alpha_z_beta_B12 = 0.415;
+       class_read_double("alpha_z_P0_B12",ptsz->alpha_z_P0_B12);// = -0.758;
+       class_read_double("alpha_z_xc_B12",ptsz->alpha_z_xc_B12);// = 0.731;
+       class_read_double("alpha_z_beta_B12",ptsz->alpha_z_beta_B12);// = 0.415;
 
      }
-
+class_read_int("truncate_wrt_rvir",ptsz->truncate_wrt_rvir);
+class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_m200c_conversion);
 
       /* mass function SZ */
       class_call(parser_read_string(pfc,"mass function",&string1,&flag1,errmsg),
@@ -5557,8 +5561,10 @@ int input_default_params(
   ptsz->alpha_p = 0.12;
   //Hydrostatic Equilibrium Mass Bias, Piffaretti & Valdarnini [arXiv:0808.1111]
 
-
+   ptsz->truncate_wrt_rvir = 1;
   // battaglia pressure profile:
+  ptsz->gamma_B12 = -0.3;
+  ptsz->alpha_B12 = 1.;
    ptsz->P0_B12 = 18.1;
    ptsz->xc_B12 = 0.497;
    ptsz->beta_B12 = 4.35;
@@ -5570,6 +5576,8 @@ int input_default_params(
    ptsz->alpha_z_P0_B12 = -0.758;
    ptsz->alpha_z_xc_B12 = 0.731;
    ptsz->alpha_z_beta_B12 = 0.415;
+
+   ptsz->use_websky_m200m_to_m200c_conversion = 0;
 
 
    //battaglia density profile
