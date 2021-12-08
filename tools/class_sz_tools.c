@@ -10601,8 +10601,8 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
           V.z = z;
 
           void * params = &V;
-          double epsrel=ptsz->mass_epsrel;
-          double epsabs=ptsz->mass_epsabs;
+          double epsrel=ptsz->mass_epsrel_ngbar;
+          double epsabs=ptsz->mass_epsabs_ngbar;
 
           r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                                epsrel, epsabs,
@@ -16083,11 +16083,11 @@ double get_volume_at_z(double z, struct background * pba){
              pba->error_message);
 
 
-double H0 = pba->h*100.;
+// double H0 = pba->h*100.;
 double Eh = pvecback[pba->index_bg_H]/pba->H0;
 double d_A = pvecback[pba->index_bg_ang_distance]*pba->h;
 double rz = d_A*(1.+z);
-double volume = 3.0e8/1.0e5*rz*rz/Eh;
+double volume = _c_/1.0e5*rz*rz/Eh;
 free(pvecback);
 
 return volume;

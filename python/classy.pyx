@@ -1449,6 +1449,8 @@ cdef class Class:
     def get_volume_dVdzdOmega_at_z(self,z):
         return get_volume_at_z(z,&self.ba)
 
+    def get_galaxy_number_counts(self,z):
+        return get_galaxy_number_counts(z,&self.tsz)
 
 
     def get_cov_N_N(self):
@@ -1942,6 +1944,15 @@ cdef class Class:
     def get_dydz_at_z(self,z):
         r = get_dydz_at_z(z,&self.tsz)
         return r
+
+    def get_mean_y(self,z):
+        r = self.tsz.y_monopole
+        return r
+
+    def get_gnu_tsz_of_nu_in_ghz(nu_in_ghz,Tcmb):
+        r = gnu_tsz_of_nu_in_ghz(nu_in_ghz,Tcmb)
+        return r
+
 
     def get_hmf_counter_term_nmin_at_z(self,z):
         return get_hmf_counter_term_nmin_at_z(z,&self.tsz)

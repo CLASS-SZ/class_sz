@@ -1589,6 +1589,8 @@ double get_ksz_filter_at_l(double l,
                              struct primordial * ppm,
                              struct tszspectrum * ptsz);
 
+  double gnu_tsz_of_nu_in_ghz(double nu_in_ghz,double Tcmb);
+
   int show_results(struct background * pba,
                    struct nonlinear * pnl,
                    struct primordial * ppm,

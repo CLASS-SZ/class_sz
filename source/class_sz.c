@@ -10039,7 +10039,7 @@ if   (ptsz->has_sz_ps
     *((_h_P_*frequency_in_Hz
         /(_k_B_*pba->T_cmb))
        *(1./tanh((_h_P_*frequency_in_Hz
-                       /(_k_B_*pba->T_cmb))
+                      /(_k_B_*pba->T_cmb))
                       /2.))
        -4.);
 
@@ -10049,7 +10049,15 @@ return _SUCCESS_;
 }
 
 
+double gnu_tsz_of_nu_in_ghz(double nu_in_ghz,
+                            double Tcmb){
 
+      double frequency_in_Hz = 1e9*nu_in_ghz;
+
+      return ((_h_P_*frequency_in_Hz/(_k_B_*Tcmb))*(1./tanh((_h_P_*frequency_in_Hz
+              /(_k_B_*Tcmb))
+              /2.))-4.);
+}
 
 int show_results(struct background * pba,
                          struct nonlinear * pnl,
