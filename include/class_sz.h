@@ -1056,6 +1056,7 @@ struct tszspectrum {
   double alpha_z_beta;
 
   double gamma_B16;
+  double xc_B16;
 
 
 // JCH
@@ -2008,6 +2009,11 @@ double get_c200c_at_m_and_z_B13(double M,
                                 double z,
                                 struct background * pba,
                                 struct tszspectrum * ptsz);
+double get_gas_profile_at_x_M_z_nfw_200c(double x_asked,
+                                         double m_asked,
+                                         double z_asked,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz);
 
 
 double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
@@ -2029,6 +2035,7 @@ double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                          double alpha_z_alpha,
                                          double alpha_z_beta,
                                          double gamma,
+                                         double xc,
                                          struct background * pba,
                                          struct tszspectrum * ptsz);
 

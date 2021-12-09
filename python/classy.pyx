@@ -1981,6 +1981,9 @@ cdef class Class:
     def get_c200m_at_m_and_z_D08(self,M,z):
         return get_c200m_at_m_and_z_D08(M,z)
 
+    def get_c200c_at_m_and_z_D08(self,M,z):
+        return get_c200c_at_m_and_z_D08(M,z)
+
     def get_f_b(self):
         return self.ba.Omega0_b/self.tsz.Omega_m_0
 
@@ -2010,6 +2013,7 @@ cdef class Class:
                                           alpha_z_alpha = 0.19,
                                           alpha_z_beta = -0.025,
                                           gamma = -0.2,
+                                          xc = 0.5
                                           ):
         return get_gas_profile_at_x_M_z_b16_200c(r_asked,
                                                  m_asked,
@@ -2024,6 +2028,7 @@ cdef class Class:
                                                  alpha_z_alpha,
                                                  alpha_z_beta,
                                                  gamma,
+                                                 xc,
                                                  &self.ba,
                                                  &self.tsz)
 
@@ -2111,6 +2116,10 @@ cdef class Class:
 
     def get_gas_profile_at_x_M_z_nfw_200m(self,r_asked,m_asked,z_asked):
         return get_gas_profile_at_x_M_z_nfw_200m(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
+
+    def get_gas_profile_at_x_M_z_nfw_200c(self,r_asked,m_asked,z_asked):
+        return get_gas_profile_at_x_M_z_nfw_200c(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
+
 
     def get_second_order_bias_at_z_and_nu(self,z,nu):
         return get_second_order_bias_at_z_and_nu(z,nu,&self.tsz,&self.ba)

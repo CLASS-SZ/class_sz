@@ -3439,6 +3439,7 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
             ptsz->alpha_z_rho0 = -0.66;
             ptsz->alpha_z_alpha = 0.19;
             ptsz->alpha_z_beta = -0.025;
+            ptsz->xc_B16 = 0.5;
         }
         else  if ((strstr(string1,"shock") != NULL)){
           ptsz->tau_profile_mode=1;
@@ -3454,6 +3455,7 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
             ptsz->alpha_z_rho0 = -0.95;
             ptsz->alpha_z_alpha = 0.27;
             ptsz->alpha_z_beta = 0.037;
+            ptsz->xc_B16 = 0.5;
         }
         else if ((strstr(string1,"custom") != NULL)){
           ptsz->tau_profile_mode=2;
@@ -3469,6 +3471,7 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
           class_read_double("alpha_z_alpha",ptsz->alpha_z_alpha);
           class_read_double("alpha_z_bet",ptsz->alpha_z_beta);
           class_read_double("gamma_B16",ptsz->gamma_B16);
+          class_read_double("xc_B16",ptsz->xc_B16);
         }
 }
 
@@ -5594,6 +5597,7 @@ int input_default_params(
    ptsz->alpha_z_alpha = 0.19;
    ptsz->alpha_z_beta = -0.025;
    ptsz->gamma_B16 = -0.2;
+   ptsz->xc_B16 = 0.5;
 
 
   //units
