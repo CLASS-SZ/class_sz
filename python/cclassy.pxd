@@ -594,12 +594,18 @@ cdef extern from "class.h":
                                              double z_asked,
                                              void * pba,
                                              void * ptsz)
-                                             
+
     double get_gas_profile_at_x_M_z_nfw_200c(double x_asked,
                                              double m_asked,
                                              double z_asked,
                                              void * pba,
                                              void * ptsz)
+
+    double evaluate_truncated_nfw_profile(double z,
+                                          double k,
+                                          double r_delta,
+                                          double c_delta,
+                                          double xout)
 
 
     double get_f_tinker10_at_nu_and_z(double nu, double z, int hm_consistency, void * ptsz)

@@ -3813,7 +3813,7 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
   // double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
   double chi = sqrt(pvectsz[ptsz->index_chi2]);
   double k = ell;
-   result =  evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
+   result =  evaluate_truncated_nfw_profile(pvectsz[ptsz->index_z],k,r_delta,c_delta,xout);
    //result *= 1.;//m_delta;///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3));
    double f_b = ptsz->f_b_gas;//pba->Omega0_b/ptsz->Omega_m_0;
    result *= f_b*m_delta;//*pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,-1);

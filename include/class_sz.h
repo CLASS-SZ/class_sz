@@ -1774,13 +1774,11 @@ double get_truncated_nfw_profile_at_z_m_k_xout(//double * pvecback,
 
 
 double evaluate_truncated_nfw_profile(
+                                   double z,
                                    double k,
                                    double r_delta,
                                    double c_delta,
-                                   double xout,
-                                   double * pvectsz,
-                                   struct background * pba,
-                                   struct tszspectrum * ptsz);
+                                   double xout);
 
 
 

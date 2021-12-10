@@ -4511,7 +4511,7 @@ pvectsz[ptsz->index_integrand] = integrand_projected_fields;
 
   else if (_pk_gg_at_z_1h_){
 
-    evaluate_galaxy_profile_2h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
+    evaluate_galaxy_profile_1h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
     double galaxy_profile_at_k_1 = pvectsz[ptsz->index_galaxy_profile];
 
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
@@ -4883,7 +4883,7 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
     int index_l = (int) pvectsz[ptsz->index_multipole];
     pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l];
-    evaluate_galaxy_profile_2h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
+    evaluate_galaxy_profile_1h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
     double galaxy_profile_at_ell_1 = pvectsz[ptsz->index_galaxy_profile];
 
         pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
@@ -5702,7 +5702,7 @@ int evaluate_matter_density_profile(double k,
     double density_normalisation;
 
     double xout = ptsz->x_out_truncated_nfw_profile;
-    double result_trunc =  evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
+    double result_trunc =  evaluate_truncated_nfw_profile(pvectsz[ptsz->index_z],k,r_delta,c_delta,xout);
 
     pvectsz[ptsz->index_density_profile] = result_trunc;
 
@@ -5759,7 +5759,7 @@ int evaluate_lensing_profile(double m_delta,
    double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
    double chi = sqrt(pvectsz[ptsz->index_chi2]);
    double k = (l+0.5)/chi;
-   result =  evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
+   result =  evaluate_truncated_nfw_profile(pvectsz[ptsz->index_z],k,r_delta,c_delta,xout);
 
 
 
@@ -12459,7 +12459,7 @@ double chi_in_Mpc = chi/pba->h;
 double k = (l+0.5)/chi;
 // double k = (l)/chi;
 // printf("r = %.8e m = %.8e z = %.8e\n",r_delta,m_delta,z);
-double us = evaluate_truncated_nfw_profile(k,r_delta,c_delta,xout,pvectsz,pba,ptsz);
+double us = evaluate_truncated_nfw_profile(z,k,r_delta,c_delta,xout);
 
 
 double ug_at_ell;
@@ -12759,77 +12759,77 @@ return result;
                                       }
 
 
-double get_galaxy_profile_at_z_m_l_1h(double z,
-                                      double m,
-                                      double r_delta,
-                                      double c_delta,
-                                      double l,
-                                      struct tszspectrum * ptsz,
-                                      struct background * pba){
-  double tau;
-  int first_index_back = 0;
-  double * pvecback;
-  class_alloc(pvecback,
-        pba->bg_size*sizeof(double),
-        ptsz->error_message);
-
-  class_call(background_tau_of_z(pba,z,&tau),
-       ptsz->error_message,
-       ptsz->error_message);
-
-  class_call(background_at_tau(pba,
-                         tau,
-                         pba->long_info,
-                         pba->inter_normal,
-                         &first_index_back,
-                         pvecback),
-       ptsz->error_message,
-       ptsz->error_message);
-
-
-double chi = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
-// double k1 = (l+0.5)/chi;
-// double l = chi*k-0.5;
-double M_halo = m; // Msun_over_h
-double ng_bar = evaluate_mean_galaxy_number_density_at_z(z,ptsz);
-// printf("%.3e\n",ng_bar);
-// double ng_bar = pow(pba->h,-3.);//pvectsz[ptsz->index_mean_galaxy_number_density];
-double nc;
-double ns;
-double us;
-// double z = pvectsz[ptsz->index_z];
-
-
-double M_min;
-double M0;
-double M1_prime;
-double sigma_log10M;
-
-
-M_min = ptsz->M_min_HOD;
-M1_prime = ptsz->M1_prime_HOD;
-sigma_log10M = ptsz->sigma_log10M_HOD;
-M0 = ptsz->M0_HOD;
-
-nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz->f_cen_HOD,ptsz,pba);
-
-ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
-double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
-// pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_galaxy_profile];
-// printf("nc ns %.3e  %.3e\n",nc,ns);
-double k = (l+0.5)/chi;
-// double delta = 200.*pvecback[pba->index_bg_Omega_m];
-us = get_truncated_nfw_profile_at_z_m_k_xout(z,m,r_delta,c_delta,k,xout,pba,ptsz);
-// printf("us %.3e\n",us);
-double ug_at_ell;
-ug_at_ell  =(1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us);
-
-
-free(pvecback);
-return ug_at_ell;
-
-}
-
+// double get_galaxy_profile_at_z_m_l_1h(double z,
+//                                       double m,
+//                                       double r_delta,
+//                                       double c_delta,
+//                                       double l,
+//                                       struct tszspectrum * ptsz,
+//                                       struct background * pba){
+//   double tau;
+//   int first_index_back = 0;
+//   double * pvecback;
+//   class_alloc(pvecback,
+//         pba->bg_size*sizeof(double),
+//         ptsz->error_message);
+//
+//   class_call(background_tau_of_z(pba,z,&tau),
+//        ptsz->error_message,
+//        ptsz->error_message);
+//
+//   class_call(background_at_tau(pba,
+//                          tau,
+//                          pba->long_info,
+//                          pba->inter_normal,
+//                          &first_index_back,
+//                          pvecback),
+//        ptsz->error_message,
+//        ptsz->error_message);
+//
+//
+// double chi = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+// // double k1 = (l+0.5)/chi;
+// // double l = chi*k-0.5;
+// double M_halo = m; // Msun_over_h
+// double ng_bar = evaluate_mean_galaxy_number_density_at_z(z,ptsz);
+// // printf("%.3e\n",ng_bar);
+// // double ng_bar = pow(pba->h,-3.);//pvectsz[ptsz->index_mean_galaxy_number_density];
+// double nc;
+// double ns;
+// double us;
+// // double z = pvectsz[ptsz->index_z];
+//
+//
+// double M_min;
+// double M0;
+// double M1_prime;
+// double sigma_log10M;
+//
+//
+// M_min = ptsz->M_min_HOD;
+// M1_prime = ptsz->M1_prime_HOD;
+// sigma_log10M = ptsz->sigma_log10M_HOD;
+// M0 = ptsz->M0_HOD;
+//
+// nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,ptsz->f_cen_HOD,ptsz,pba);
+//
+// ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,ptsz->alpha_s_HOD,M1_prime,ptsz,pba);
+// double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
+// // pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_galaxy_profile];
+// // printf("nc ns %.3e  %.3e\n",nc,ns);
+// double k = (l+0.5)/chi;
+// // double delta = 200.*pvecback[pba->index_bg_Omega_m];
+// us = get_truncated_nfw_profile_at_z_m_k_xout(z,m,r_delta,c_delta,k,xout,pba,ptsz);
+// // printf("us %.3e\n",us);
+// double ug_at_ell;
+// ug_at_ell  =(1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us);
+//
+//
+// free(pvecback);
+// return ug_at_ell;
+//
+// }
+//
 
 int evaluate_galaxy_profile_2h(
                             double kl,
@@ -12870,7 +12870,7 @@ double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
 // double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
 // double chi = sqrt(pvectsz[ptsz->index_chi2]);
 // double k = (l+0.5)/chi;
-us = evaluate_truncated_nfw_profile(kl,r_delta,c_delta,xout,pvectsz,pba,ptsz);
+us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
 
 double ug_at_ell;
 
@@ -12927,7 +12927,7 @@ double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies;
 // double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
 // double chi = sqrt(pvectsz[ptsz->index_chi2]);
 // double k = (l+0.5)/chi;
-us = evaluate_truncated_nfw_profile(kl,r_delta,c_delta,xout,pvectsz,pba,ptsz);
+us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
 
 
 double ug_at_ell;
@@ -12941,79 +12941,80 @@ pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
 
 
 
-
-// analytical truncated NFW profile
-double get_truncated_nfw_profile_at_z_m_k_xout(//double * pvecback,
-                                      double z,
-                                      double m,
-                                      double r_delta,
-                                      double c_delta,
-                                      double k,
-                                      double xout,
-                                      // double delta,
-                                      struct background * pba,
-                                      struct tszspectrum * ptsz)
-{
-  // double c_delta, r_delta;
-  double tau;
-  int first_index_back = 0;
-  double * pvecback;
-  class_alloc(pvecback,
-        pba->bg_size*sizeof(double),
-        ptsz->error_message);
-
-  class_call(background_tau_of_z(pba,z,&tau),
-       ptsz->error_message,
-       ptsz->error_message);
-
-  class_call(background_at_tau(pba,
-                         tau,
-                         pba->long_info,
-                         pba->inter_normal,
-                         &first_index_back,
-                         pvecback),
-       ptsz->error_message,
-       ptsz->error_message);
-
-
-double chi = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
-double rho_crit = (3./(8.*_PI_*_G_*_M_sun_))
-                                *pow(_Mpc_over_m_,1)
-                                *pow(_c_,2)
-                                *pvecback[pba->index_bg_rho_crit]
-                                /pow(pba->h,2);
-
-double q = k*r_delta/c_delta*(1.+z);
-
-double denominator = m_nfw(c_delta); //normalization
-
-
-double numerator = cos(q)*(gsl_sf_Ci((1.+xout*c_delta)*q)-gsl_sf_Ci(q))
-                   +sin(q)*(gsl_sf_Si((1.+xout*c_delta)*q)-gsl_sf_Si(q))
-                   -sin(xout*c_delta*q)/((1.+xout*c_delta)*q);
-                   // printf("%.3e %.3e\n",numerator, denominator);
-
-
-free(pvecback);
-return numerator/denominator;
-//return 1.; // BB debug
-}
+//
+// // analytical truncated NFW profile
+// double get_truncated_nfw_profile_at_z_m_k_xout(//double * pvecback,
+//                                       double z,
+//                                       double m,
+//                                       double r_delta,
+//                                       double c_delta,
+//                                       double k,
+//                                       double xout,
+//                                       // double delta,
+//                                       struct background * pba,
+//                                       struct tszspectrum * ptsz)
+// {
+//   // double c_delta, r_delta;
+//   double tau;
+//   int first_index_back = 0;
+//   double * pvecback;
+//   class_alloc(pvecback,
+//         pba->bg_size*sizeof(double),
+//         ptsz->error_message);
+//
+//   class_call(background_tau_of_z(pba,z,&tau),
+//        ptsz->error_message,
+//        ptsz->error_message);
+//
+//   class_call(background_at_tau(pba,
+//                          tau,
+//                          pba->long_info,
+//                          pba->inter_normal,
+//                          &first_index_back,
+//                          pvecback),
+//        ptsz->error_message,
+//        ptsz->error_message);
+//
+//
+// double chi = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+// double rho_crit = (3./(8.*_PI_*_G_*_M_sun_))
+//                                 *pow(_Mpc_over_m_,1)
+//                                 *pow(_c_,2)
+//                                 *pvecback[pba->index_bg_rho_crit]
+//                                 /pow(pba->h,2);
+//
+// double q = k*r_delta/c_delta*(1.+z);
+//
+// double denominator = m_nfw(c_delta); //normalization
+//
+//
+// double numerator = cos(q)*(gsl_sf_Ci((1.+xout*c_delta)*q)-gsl_sf_Ci(q))
+//                    +sin(q)*(gsl_sf_Si((1.+xout*c_delta)*q)-gsl_sf_Si(q))
+//                    -sin(xout*c_delta*q)/((1.+xout*c_delta)*q);
+//                    // printf("%.3e %.3e\n",numerator, denominator);
+//
+//
+// free(pvecback);
+// return numerator/denominator;
+// //return 1.; // BB debug
+// }
 
 
 
 // analytical truncated NFW profile
 // truncated at r_out = xout*r_delta
 double evaluate_truncated_nfw_profile(//double * pvecback,
+                                      double z,
                                       double k,
                                       double r_delta,
                                       double c_delta,
-                                      double xout, // so: r_out = xout*r_delta
-                                      double * pvectsz,
-                                      struct background * pba,
-                                      struct tszspectrum * ptsz)
+                                      double xout)//, // so: r_out = xout*r_delta
+                                      //double * pvectsz,
+                                      // struct background * pba,
+                                      // struct tszspectrum * ptsz)
 {
 
-double z = pvectsz[ptsz->index_z];
+//double z = pvectsz[ptsz->index_z];
 
 double q = k*r_delta/c_delta*(1.+z); // uk -> 1 when q->0
 double denominator = m_nfw(xout*c_delta); //normalization

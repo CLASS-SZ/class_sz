@@ -2111,6 +2111,9 @@ cdef class Class:
     def get_rad_to_arcmin(self,theta_rad):
         return (60.*180.)/np.pi*theta_rad
 
+    def get_truncated_nfw_profile_at_z_k_rd_cd_xout(self,z,k,r_delta,c_delta,xout):
+        return evaluate_truncated_nfw_profile(z,k,r_delta,c_delta,xout)
+
     def get_arcmin_to_rad(self,theta_arcmin):
         return np.pi/(60.*180.)*theta_arcmin
 
