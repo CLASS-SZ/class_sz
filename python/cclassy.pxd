@@ -333,6 +333,8 @@ cdef extern from "class.h":
         double * k_for_pk_hm
         double * pk_gg_at_z_1h
         double * pk_gg_at_z_2h
+        double * pk_bb_at_z_1h
+        double * pk_bb_at_z_2h
         double * cl_gal_lensmag_1h
         double * cl_gal_lensmag_2h
         double * cl_lens_lensmag_1h
@@ -607,6 +609,7 @@ cdef extern from "class.h":
                                           double c_delta,
                                           double xout)
 
+    double get_mean_galaxy_bias_at_z(double z, void * ptsz)
 
     double get_f_tinker10_at_nu_and_z(double nu, double z, int hm_consistency, void * ptsz)
     double get_T10_alpha_at_z(double z,void * ptsz);

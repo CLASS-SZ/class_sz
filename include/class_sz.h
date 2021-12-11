@@ -16,6 +16,8 @@
 #define _pk_at_z_2h_ ((ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_at_z_2h))
 #define _pk_gg_at_z_1h_ ((ptsz->has_pk_gg_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_gg_at_z_1h))
 #define _pk_gg_at_z_2h_ ((ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_gg_at_z_2h))
+#define _pk_bb_at_z_1h_ ((ptsz->has_pk_bb_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_bb_at_z_1h))
+#define _pk_bb_at_z_2h_ ((ptsz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_bb_at_z_2h))
 #define _bk_at_z_1h_ ((ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_1h))
 #define _bk_at_z_2h_ ((ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_2h))
 #define _bk_at_z_3h_ ((ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_3h))
@@ -135,6 +137,8 @@ struct tszspectrum {
   double * pk_at_z_2h;
   double * pk_gg_at_z_1h;
   double * pk_gg_at_z_2h;
+  double * pk_bb_at_z_1h;
+  double * pk_bb_at_z_2h;
   double * bk_at_z_1h;
   double * bk_at_z_2h;
   double * bk_at_z_3h;
@@ -308,6 +312,17 @@ struct tszspectrum {
   int index_md_hmf;
   int index_integrand_id_hmf;
 
+  int has_pk_bb_at_z_1h;
+  int index_md_pk_bb_at_z_1h;
+  int index_integrand_id_pk_bb_at_z_1h_first;
+  int index_integrand_id_pk_bb_at_z_1h_last;
+
+  int has_pk_bb_at_z_2h;
+  int index_md_pk_bb_at_z_2h;
+  int index_integrand_id_pk_bb_at_z_2h_first;
+  int index_integrand_id_pk_bb_at_z_2h_last;
+
+
   int has_pk_gg_at_z_1h;
   int index_md_pk_gg_at_z_1h;
   int index_integrand_id_pk_gg_at_z_1h_first;
@@ -362,6 +377,8 @@ struct tszspectrum {
 
   int has_bk_at_z_hf;
   int has_bk_ttg_at_z_hf;
+
+  int has_mean_galaxy_bias;
 
   int has_mean_y;
   int index_md_mean_y;

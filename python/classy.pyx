@@ -1686,6 +1686,20 @@ cdef class Class:
             cl['k'].append(self.tsz.k_for_pk_hm[index])
         return cl
 
+    def pk_bb_at_z_hm(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of 3d P(k) bb power spectrum
+        """
+        cl = {}
+        cl['k'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.n_k_for_pk_hm):
+            cl['1h'].append(self.tsz.pk_bb_at_z_1h[index])
+            cl['2h'].append(self.tsz.pk_bb_at_z_2h[index])
+            cl['k'].append(self.tsz.k_for_pk_hm[index])
+        return cl
+
     def cl_kk(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of kappa x kappa (lensing) power spectrum
@@ -1948,6 +1962,9 @@ cdef class Class:
     def get_mean_y(self,z):
         r = self.tsz.y_monopole
         return r
+
+    def get_mean_galaxy_bias_at_z(self,z):
+        return get_mean_galaxy_bias_at_z(z,&self.tsz)
 
     def get_gnu_tsz_of_nu_in_ghz(nu_in_ghz,Tcmb):
         r = gnu_tsz_of_nu_in_ghz(nu_in_ghz,Tcmb)

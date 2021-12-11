@@ -312,7 +312,7 @@ def run(args):
 
 
     p_dict['gas profile'] = 'B16' # 'nfw' or 'B16'
-    p_dict['gas profile mode'] = 'agn'
+    p_dict['gas profile mode'] = 'shock'
     p_dict['k_min_gas_density_profile'] = 1e-4
     p_dict['normalize_gas_density_profile'] = 1
 

@@ -3541,6 +3541,8 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 + ptsz->has_kSZ_kSZ_tSZ_2h
 + ptsz->has_kSZ_kSZ_1h
 + ptsz->has_kSZ_kSZ_2h
++ ptsz->has_pk_bb_at_z_1h
++ ptsz->has_pk_bb_at_z_2h
 + ptsz->has_kSZ_kSZ_tSZ_3h
 + ptsz->has_bk_ttg_at_z_1h
 + ptsz->has_bk_ttg_at_z_2h
@@ -7263,6 +7265,8 @@ if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at
  || ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
  || ((V->ptsz->has_pk_gg_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_1h))
  || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))
+ || ((V->ptsz->has_pk_bb_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_bb_at_z_1h))
+ || ((V->ptsz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_bb_at_z_2h))
  || ((V->ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_1h))
  || ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h))
  || ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h))
@@ -7274,6 +7278,7 @@ int index_k = (int) V->pvectsz[V->ptsz->index_k_for_pk_hm];
 kl = V->ptsz->k_for_pk_hm[index_k];
 
 if (((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
+ || ((V->ptsz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_bb_at_z_2h))
  || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))){
    result *= get_pk_lin_at_k_and_z(kl,z,V->pba,V->ppm,V->pnl,V->ptsz);
    // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -7522,6 +7527,8 @@ if(_pk_at_z_1h_
 || _pk_at_z_2h_
 || _pk_gg_at_z_1h_
 || _pk_gg_at_z_2h_
+|| _pk_bb_at_z_1h_
+|| _pk_bb_at_z_2h_
 || _bk_at_z_1h_
 || _bk_at_z_2h_
 || _bk_at_z_3h_
@@ -9964,6 +9971,7 @@ if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_bb_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
@@ -9995,6 +10003,7 @@ if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_bb_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
