@@ -226,6 +226,11 @@ struct tszspectrum {
   int delta_def_electron_pressure;
   int delta_def_electron_density;
 
+  int bispec_conf_id;
+
+  double M_min_ng_bar;
+  double M_max_ng_bar;
+
   int need_m200m_to_m200c;
   int need_m200c_to_m200m;
   int need_m200m_to_m500c;
@@ -974,14 +979,14 @@ struct tszspectrum {
   double M2SZ_dndlnM;
 
 
-  double z1SZ_L_sat;
-  double z2SZ_L_sat;
-
-  double M1SZ_L_sat;
-  double M2SZ_L_sat;
-
-  double epsabs_L_sat;
-  double epsrel_L_sat;
+  // double z1SZ_L_sat;
+  // double z2SZ_L_sat;
+  //
+  // double M1SZ_L_sat;
+  // double M2SZ_L_sat;
+  // 
+  // double epsabs_L_sat;
+  // double epsrel_L_sat;
 
   double mass_epsrel_cluster_counts;
   double mass_epsabs_cluster_counts;
@@ -1012,9 +1017,9 @@ struct tszspectrum {
   int n_z_dndlnM;
   int n_m_dndlnM;
 
-  int n_z_L_sat;
-  int n_m_L_sat;
-  int n_nu_L_sat;
+  // int n_z_L_sat;
+  // int n_m_L_sat;
+  // int n_nu_L_sat;
 
   int N_redshift_dndlnM;
   int N_mass_dndlnM;

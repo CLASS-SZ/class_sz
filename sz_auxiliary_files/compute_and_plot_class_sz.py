@@ -29,7 +29,8 @@ def g_nu(nu_in_GHz):
 
 
 path_to_class_external_data = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts'
-path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
+# path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
+path_to_class = '/Users/boris/Downloads/class_sz-0a3498f27820375938252474f04a383ab7a9f0d8/'
 # path_to_class = '/Users/boris/Downloads/class_sz-6c5cb2cde2445ecf3e308fa8e90e10af4adf245f/'
 # path_to_class = '/Users/boris/Downloads/class_sz/'
 FIG_DIR = '/Users/boris/Work/CLASS-SZ/SO-SZ/figures'
@@ -283,7 +284,7 @@ def run(args):
     p_dict['non linear'] = 'halofit'
 
     p_dict['z_min'] = 1e-2
-    p_dict['hm_consistency'] = 1
+    p_dict['hm_consistency'] = 0
     p_dict['check_consistency_conditions'] = 1
     p_dict['M_min'] = 1e10#*p_dict['h']
     p_dict['M_max'] = 5e15#*p_dict['h']
@@ -311,8 +312,8 @@ def run(args):
     p_dict['M0 equal M_min (HOD)'] = 'no'
 
 
-    p_dict['gas profile'] = 'B16' # 'nfw' or 'B16'
-    p_dict['gas profile mode'] = 'shock'
+    p_dict['gas profile'] = 'nfw' # 'nfw' or 'B16'
+    p_dict['gas profile mode'] = 'agn' # 'agn' or 'shock'
     p_dict['k_min_gas_density_profile'] = 1e-4
     p_dict['normalize_gas_density_profile'] = 1
 

@@ -10657,8 +10657,8 @@ double m_min,m_max;
 //   m_max = 1e16; // this has to be the same as the maximal mass at which the counter terms are tabulated
 // }
 // else{
-m_min = ptsz->M1SZ;
-m_max = ptsz->M2SZ;
+m_min = ptsz->M_min_ng_bar;
+m_max = ptsz->M_max_ng_bar;
 // }
 
 double * pvecback;

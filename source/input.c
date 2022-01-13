@@ -1783,6 +1783,12 @@ int input_read_parameters(
       ptsz->z1SZ_dndlnM = ptsz->z1SZ;
       ptsz->z2SZ_dndlnM = ptsz->z2SZ;
 
+      ptsz->M_min_ng_bar = ptsz->M1SZ;
+      ptsz->M_max_ng_bar = ptsz->M2SZ;
+
+      class_read_double("M_min for ng_bar",ptsz->M_min_ng_bar);
+      class_read_double("M_max for ng_bar",ptsz->M_max_ng_bar);
+
       //mass limits: h^-1 Msun
       class_read_double("M1SZ_dndlnM",ptsz->M1SZ_dndlnM);
       class_read_double("M2SZ_dndlnM",ptsz->M2SZ_dndlnM);
@@ -1937,6 +1943,8 @@ int input_read_parameters(
       class_read_double("size_logM_for_dndm",pcsz->size_logM);
 
       class_read_double("f_sky",ptsz->f_sky);
+
+      class_read_int("bispec_conf_id",ptsz->bispec_conf_id);
 
 
       //Foreground Nuisance parameters
@@ -2221,7 +2229,7 @@ int input_read_parameters(
 
       if ((strstr(string1,"bk_ttg_at_z_hf") != NULL) ) {
         ptsz->has_bk_ttg_at_z_hf =_TRUE_;
-        ptsz->has_mean_galaxy_bias;
+        ptsz->has_mean_galaxy_bias =_TRUE_;
         ptsz->has_knl = _TRUE_;
         ptsz->has_nl_index = _TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -5811,6 +5819,8 @@ int input_default_params(
   ptsz->A_rs = 0.01;
   ptsz->A_ir = 1.97;
   ptsz->A_cn = 1.0;
+
+  ptsz->bispec_conf_id = 0;
 
   //ptsz->has_tszspectrum = _FALSE_;
   ptsz->has_sz_counts = _FALSE_;

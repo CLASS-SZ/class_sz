@@ -171,8 +171,11 @@ int szpowerspectrum_init(
 
    tabulate_sigma_and_dsigma_from_pk(pba,pnl,ppm,ptsz);
    // exit(0);
+   if (ptsz->sz_verbose>1)
+    printf("-> allocating class_sz memory...\n");
    initialise_and_allocate_memory(ptsz);
-
+   if (ptsz->sz_verbose>1)
+    printf("-> memory allocated.\n");
 
 
 
@@ -200,12 +203,19 @@ int szpowerspectrum_init(
    tabulate_sigma2_hsv_from_pk(pba,pnl,ppm,ptsz);
 
 
-   if (ptsz->need_m200c_to_m200m == 1)
+   if (ptsz->need_m200c_to_m200m == 1){
+    if (ptsz->sz_verbose>1)
+       printf("-> tabulating m200c to m200m...\n");
+
       tabulate_m200c_to_m200m(pba,ptsz);
 
+    if (ptsz->sz_verbose>1)
+      printf("-> m200c to m200m tabulated.\n");
+    }
 // exit(0);
    if (ptsz->need_m200m_to_m200c == 1)
       tabulate_m200m_to_m200c(pba,ptsz);
+
 
    if (ptsz->need_m200m_to_m500c == 1)
       tabulate_m200m_to_m500c(pba,ptsz);
@@ -219,6 +229,7 @@ int szpowerspectrum_init(
    external_pressure_profile_init(ppr,ptsz);
    // load alpha(z) normalisation for Tinker et al 2010 HMF
    load_T10_alpha_norm(ptsz);
+
 
 
    if (ptsz->has_dndlnM == 1
@@ -4120,6 +4131,11 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
    // pvectsz[ptsz->index_multipole_for_tau_profile] = ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
    // pvectsz[ptsz->index_multipole_for_tau_profile] = l1;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_1];
+   double k1p,k2p,k3p;
+   k1p = (l1+0.5)/chi;
+   k2p = (l2+0.5)/chi;
+   k3p = (l3+0.5)/chi;
+
    evaluate_tau_profile((l1+0.5)/chi,pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
 
@@ -4136,10 +4152,49 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
    double galaxy_profile_at_ell_3 = pvectsz[ptsz->index_galaxy_profile];
 
 
+
    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                      *tau_profile_at_ell_1
                                      *tau_profile_at_ell_2
                                      *galaxy_profile_at_ell_3;
+
+
+////configurations::
+if (ptsz->bispec_conf_id!=0){
+double lambda1p  = fabs(k1p/k3p);
+double lambda2p  = fabs(k2p/k3p);
+double flag_conf = 0.;
+if (ptsz->bispec_conf_id==1){ // equi
+// just equilateral:
+if ((fabs(lambda1p-1.)<0.3) && (fabs(lambda2p-1.)<0.3)){
+flag_conf = 1.;
+}
+}
+else if (ptsz->bispec_conf_id==2){ //squeezed
+// // just flattened:
+// if ((fabs(lambda1p-(1.-lambda2p))<0.1)){
+// flag_conf = 1.;
+// }
+// just squeezed:
+if ((fabs(lambda1p)>3.) && (fabs(lambda2p)>3.) && fabs((lambda1p/lambda2p)-1.)<0.1){
+flag_conf = 1.;
+}
+}
+else if (ptsz->bispec_conf_id==3){ //anti-squeezed
+flag_conf = 1.;
+// // just flattened:
+// if ((fabs(lambda1p-(1.-lambda2p))<0.1)){
+// flag_conf = 1.;
+// }
+// just squeezed:
+if ((fabs(lambda1p)>3.) && (fabs(lambda2p)>3.) && fabs((lambda1p/lambda2p)-1.)<0.1){
+flag_conf = 0.;
+}
+}
+
+pvectsz[ptsz->index_integrand] *= flag_conf;
+////end configurations.
+}
 
 
   }

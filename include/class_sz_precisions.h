@@ -53,6 +53,17 @@ class_sz_ptsz_parameter(n_l_psi_b2g,int,50)
 class_sz_ptsz_parameter(n_z_psi_b1t,int,80)
 class_sz_ptsz_parameter(n_l_psi_b1t,int,80)
 
+
+class_sz_ptsz_parameter(M1SZ_L_sat, double, 1.e9);
+class_sz_ptsz_parameter(M2SZ_L_sat, double, 1.e17);
+class_sz_ptsz_parameter(z1SZ_L_sat, double, 1.e-5);
+class_sz_ptsz_parameter(z2SZ_L_sat, double, 6.);
+class_sz_ptsz_parameter( epsabs_L_sat, double, 1e-15);
+class_sz_ptsz_parameter( epsrel_L_sat, double, 1e-6);
+class_sz_ptsz_parameter(n_z_L_sat , int,101);
+class_sz_ptsz_parameter(n_m_L_sat , int,102);
+class_sz_ptsz_parameter(n_nu_L_sat, int, 103);
+
 class_sz_ptsz_parameter(n_z_psi_b1gt,int,50)
 class_sz_ptsz_parameter(n_l_psi_b1gt,int,50)
 class_sz_ptsz_parameter(N_samp_fftw,int,150)
