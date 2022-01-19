@@ -29,8 +29,8 @@ def g_nu(nu_in_GHz):
 
 
 path_to_class_external_data = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts'
-# path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
-path_to_class = '/Users/boris/Downloads/class_sz-0a3498f27820375938252474f04a383ab7a9f0d8/'
+path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
+# path_to_class = '/Users/boris/Downloads/class_sz-0a3498f27820375938252474f04a383ab7a9f0d8/'
 # path_to_class = '/Users/boris/Downloads/class_sz-6c5cb2cde2445ecf3e308fa8e90e10af4adf245f/'
 # path_to_class = '/Users/boris/Downloads/class_sz/'
 FIG_DIR = '/Users/boris/Work/CLASS-SZ/SO-SZ/figures'
@@ -284,19 +284,19 @@ def run(args):
     p_dict['non linear'] = 'halofit'
 
     p_dict['z_min'] = 1e-2
-    p_dict['hm_consistency'] = 0
+    p_dict['hm_consistency'] = 1
     p_dict['check_consistency_conditions'] = 1
     p_dict['M_min'] = 1e10#*p_dict['h']
     p_dict['M_max'] = 5e15#*p_dict['h']
     # p_dict['HMF_prescription_NCDM'] = 'No-pres'
-    # p_dict['mass function'] = 'T10'  #fiducial  T10
-    p_dict['mass function'] = 'T08M200c'  #fiducial  T10
+    p_dict['mass function'] = 'T10'  #fiducial  T10
+    # p_dict['mass function'] = 'T08M200c'  #fiducial  T10
     p_dict['galaxy_sample'] = "unwise"
     #p_dict['full path to dndz (normalized galaxy dist.)'] = "/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/run_scripts/yxg/data/dndz/unwise_"+couleur+".txt"
 
     p_dict['galaxy_sample_id'] = couleur
 
-    p_dict['galaxy_sample'] = 'custom'
+    # p_dict['galaxy_sample'] = 'custom'
     p_dict['full_path_to_dndz_gal'] = '/Users/boris/Work/DES/nz_maglim_z_bin1.txt'
     p_dict['full_path_to_source_dndz_gal'] = '/Users/boris/Work/DES/nz_maglim_z_bin3.txt'
     p_dict['convert_cls_to_gamma'] = 1
@@ -441,7 +441,8 @@ def run(args):
             p_dict['mass_epsrel'] = 1.e-3
             #p_dict['halo occupation distribution'] = 'KFSW20'
 
-            p_dict['dlogell'] = 0.05 # 0.1
+            p_dict['dlogell'] = 0.5 # 0.1
+            p_dict['use_bg_at_z_in_ksz2g_eff'] = 0
             # p_dict['dell'] = 100.
             # p_dict['dell'] = 100.
             p_dict['ell_min'] = 10.
@@ -454,9 +455,9 @@ def run(args):
             p_dict['n_z_hmf_counter_terms'] = 100
 
             # p_dict['m_min_counter_terms'] = 1e8
-            # p_dict['ksz_filter_file'] = path_to_class+'/sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt'
+            p_dict['ksz_filter_file'] = path_to_class+'/sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt'
             # print('setting ksz file')
-            p_dict['ksz_filter_file'] = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/UNWISE_galaxy_distributions/AdvACT_kSZfilt_ellmax8000_smoothed_tapered_nosqrt_w1p5arcminbeam.txt'
+            # p_dict['ksz_filter_file'] = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/UNWISE_galaxy_distributions/AdvACT_kSZfilt_ellmax8000_smoothed_tapered_nosqrt_w1p5arcminbeam.txt'
             p_dict['full_path_to_noise_curve_for_t_t'] = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/noise_curves/AdvACT_T_default_Nseasons4.0_NLFyrs2.0_noisecurves_deproj0_mask_16000_ell_TT_yy.txt'
             #p_dict['A10_file'] = "class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt"
 
@@ -473,7 +474,14 @@ def run(args):
             # set the k grid for compuation of sigma and dsigma used in HMF
             p_dict['k_min_for_pk_class_sz'] = 1E-3
             p_dict['k_max_for_pk_class_sz'] = 60.
-            p_dict['k_per_decade_class_sz'] = 20 # at least 40?
+            # for hf comp. these next two params should be checked carefully.
+            p_dict['k_per_decade_class_sz'] = 50 # at least 40?
+            p_dict['k_per_decade_for_pk'] = 50 # at least 40?
+
+            # 'k_min_for_pk_class_sz' : 0.001,
+            # 'k_max_for_pk_class_sz' : 60.0,
+            # 'k_per_decade_class_sz' : 50,
+            # 'P_k_max_h/Mpc' : 100.0,
 
 
             p_dict['write sz results to files'] = 'yes'
@@ -550,13 +558,13 @@ def run(args):
         shot_noise = 0.92e-2
         #print('bg_blue=%.3e'%bg_blue)
 
-    t2g_1h_ref = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/class-sz_szpowerspectrum_1.0.txt')
-    kSZ_kSZ_gal_1h_ref = t2g_1h_ref[:,8]
-    kSZ_kSZ_gal_1h_ells_ref = t2g_1h_ref[:,0]
-
-    t2g_2h_ref = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/class-sz_szpowerspectrum_1.0_2h.txt')
-    kSZ_kSZ_gal_2h_ref = t2g_2h_ref[:,42]
-    kSZ_kSZ_gal_2h_ells_ref = t2g_2h_ref[:,0]
+    # t2g_1h_ref = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/class-sz_szpowerspectrum_1.0.txt')
+    # kSZ_kSZ_gal_1h_ref = t2g_1h_ref[:,8]
+    # kSZ_kSZ_gal_1h_ells_ref = t2g_1h_ref[:,0]
+    #
+    # t2g_2h_ref = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/class-sz_szpowerspectrum_1.0_2h.txt')
+    # kSZ_kSZ_gal_2h_ref = t2g_2h_ref[:,42]
+    # kSZ_kSZ_gal_2h_ells_ref = t2g_2h_ref[:,0]
 
     ell_ref_sf_august= L_ref_sf_august[0,:]
     kSZ_kSZ_gal_1h_ref_sf_august = L_ref_sf_august[1,:]
@@ -1055,17 +1063,17 @@ def run(args):
                                 ls='-.',alpha = 1.,
                                 # label = val_label[id_p] + ' (3h)',
                                 label = '1+2+3-halo')#,
-                    if kSZ_kSZ_gal_hf[id_p].all() != 0:
-                        bgeff = 1.
-                        ax.plot(multipoles[id_p],kSZ_kSZ_gal_hf[id_p]*fac*bgeff,
-                                color='pink',
-                                ls='-',alpha = 1.,
-                                # label = val_label[id_p] + ' (3h)',
-                                label = 'new computation - effective approach (class_sz)',
-                                markersize = 2,
-                                markerfacecolor = 'pink',
-                                markeredgecolor = 'k',
-                                marker='o')
+                    # if kSZ_kSZ_gal_hf[id_p].all() != 0:
+                    #     bgeff = 1.
+                    ax.plot(multipoles[id_p],kSZ_kSZ_gal_hf[id_p]*fac*bgeff,
+                            color='pink',
+                            ls='-',alpha = 1.,
+                            # label = val_label[id_p] + ' (3h)',
+                            label = 'new computation - effective approach (class_sz)',
+                            markersize = 2,
+                            markerfacecolor = 'pink',
+                            markeredgecolor = 'k',
+                            marker='o')
                     # # total = (kSZ_kSZ_gal_1h[id_p]+kSZ_kSZ_gal_2h[id_p]+kSZ_kSZ_gal_3h[id_p])*fac
                     # if (kSZ_kSZ_gal_1h[id_p]+kSZ_kSZ_gal_2h[id_p]+np.nan_to_num(kSZ_kSZ_gal_3h[id_p])).all() != 0:
                     #     ax.plot(multipoles[id_p],(kSZ_kSZ_gal_1h[id_p]+kSZ_kSZ_gal_2h[id_p]+np.nan_to_num(kSZ_kSZ_gal_3h[id_p]))*fac,color='red',
@@ -1078,17 +1086,17 @@ def run(args):
                     # #            np.c_[multipoles[id_p],kSZ_kSZ_gal_1h[id_p]*fac])
                     # #fac =  (2.726e6)**2*ell_ref*(ell_ref+1.)/2./np.pi
                     # #ax.plot(ell_ref,kSZ_kSZ_gal_1h_ref*fac,c='k',ls='--',label='ref',alpha=0.7)
-                    # if id_p == N-1:
-                    #     fac = bgeff
-                    #     # ax.plot(ell_ref_sf_july,kSZ_kSZ_gal_1h_ref_sf_july*fac,c='r',ls='--',marker='o',label='Simone x bg_eff (July)',alpha=0.7)
-                    #     ax.plot(ell_ref_sf_august,kSZ_kSZ_gal_1h_ref_sf_august*fac,
-                    #     c='k',
-                    #     ls=':',
-                    #     marker='o',
-                    #     markersize = 2,
-                    #     markerfacecolor = 'r',
-                    #     label='previous computation (1605.02722)',
-                    #     alpha=0.7)
+                    if id_p == N-1:
+                        fac = bgeff
+                        # ax.plot(ell_ref_sf_july,kSZ_kSZ_gal_1h_ref_sf_july*fac,c='r',ls='--',marker='o',label='Simone x bg_eff (July)',alpha=0.7)
+                        ax.plot(ell_ref_sf_august,kSZ_kSZ_gal_1h_ref_sf_august*fac,
+                        c='k',
+                        ls=':',
+                        marker='o',
+                        markersize = 2,
+                        markerfacecolor = 'r',
+                        label='previous computation (1605.02722)',
+                        alpha=0.7)
                     #ax.plot(multipoles[id_p],-kSZ_kSZ_gal_1h[id_p],color=col[id_p],ls='--',alpha = 1.,marker='o')
                         # np.savetxt("/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/ksz2xunwise_hm_data/data_hm_bg_times_kSZ2g_sf_in_muk2_l_dllin_dlnonlin.txt",
                         #            np.c_[ell_ref_sf_july,kSZ_kSZ_gal_1h_ref_sf_july*fac,kSZ_kSZ_gal_1h_ref_sf_august*fac])

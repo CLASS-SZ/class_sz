@@ -5551,7 +5551,7 @@ int input_default_params(
 
   ptsz->M1SZ_L_sat = 1.e9;
   ptsz->M2SZ_L_sat = 1.e17;
-  ptsz->z1SZ_L_sat = 1.e-5;
+  ptsz->z1SZ_L_sat = 1.e-3;
   ptsz->z2SZ_L_sat = 6.;
   ptsz->n_z_L_sat = 101;
   ptsz->n_m_L_sat = 102;
@@ -5628,7 +5628,7 @@ int input_default_params(
 
 
    //battaglia density profile
-
+   // default set to agn paremeters
    ptsz->A_rho0 = 4.e3;
    ptsz->A_alpha = 0.88;
    ptsz->A_beta = 3.83;

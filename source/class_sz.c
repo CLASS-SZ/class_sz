@@ -213,24 +213,46 @@ int szpowerspectrum_init(
       printf("-> m200c to m200m tabulated.\n");
     }
 // exit(0);
-   if (ptsz->need_m200m_to_m200c == 1)
+   if (ptsz->need_m200m_to_m200c == 1){
+     if (ptsz->sz_verbose>1)
+        printf("-> tabulating m200m to m200c...\n");
       tabulate_m200m_to_m200c(pba,ptsz);
+    if (ptsz->sz_verbose>1)
+      printf("-> m200m to m200c tabulated.\n");
+    }
 
 
-   if (ptsz->need_m200m_to_m500c == 1)
+   if (ptsz->need_m200m_to_m500c == 1){
+     if (ptsz->sz_verbose>1)
+     printf("-> tabulating m200m to m500c...\n");
       tabulate_m200m_to_m500c(pba,ptsz);
+     if (ptsz->sz_verbose>1)
+     printf("-> m200m to m500c tabulated.\n");
+    }
 
-   if (ptsz->need_m200c_to_m500c == 1)
+   if (ptsz->need_m200c_to_m500c == 1){
+     if (ptsz->sz_verbose>1)
+     printf("-> tabulating m200c to m500c...\n");
       tabulate_m200c_to_m500c(pba,ptsz);
+     if (ptsz->sz_verbose>1)
+     printf("-> m200c to m500c tabulated.\n");
+    }
 
-   if (ptsz->need_m500c_to_m200c == 1)
+   if (ptsz->need_m500c_to_m200c == 1){
+     if (ptsz->sz_verbose>1)
+     printf("-> tabulating m500c to m200c...\n");
       tabulate_m500c_to_m200c(pba,ptsz);
+     if (ptsz->sz_verbose>1)
+     printf("-> m500c to m200c tabulated.\n");
+    }
    //exit(0);
    external_pressure_profile_init(ppr,ptsz);
    // load alpha(z) normalisation for Tinker et al 2010 HMF
+   if (ptsz->sz_verbose>1)
+    printf("-> loading alpha(z) for Tinker al 2010 HMF...\n");
    load_T10_alpha_norm(ptsz);
-
-
+   if (ptsz->sz_verbose>1)
+    printf("-> alpha(z) for Tinker al HMF loaded.\n");
 
    if (ptsz->has_dndlnM == 1
     || ptsz->has_sz_counts
@@ -239,7 +261,15 @@ int szpowerspectrum_init(
     || ptsz->has_kSZ_kSZ_gal_2h_fft
     || ptsz->has_kSZ_kSZ_gal_3h_fft){
 
-   tabulate_dndlnM(pba,pnl,ppm,ptsz);
+if (ptsz->sz_verbose>1)
+   printf("-> Tabulating dndlnM HMF in mass and redshift...\n");
+
+  tabulate_dndlnM(pba,pnl,ppm,ptsz);
+
+if (ptsz->sz_verbose>1)
+   printf("-> dndlnM HMF tabulated.\n");
+
+
 
   }
 // exit(0);
@@ -274,17 +304,32 @@ if (ptsz->need_hmf != 0){
   }
 }
 
-   if (ptsz->has_vrms2)
+   if (ptsz->has_vrms2){
+if (ptsz->sz_verbose>1)
+    printf("-> Tabulating velocity dispersion...\n");
    tabulate_vrms2_from_pk(pba,pnl,ppm,ptsz);
+if (ptsz->sz_verbose>1)
+   printf("-> Velocity dispersion tabulated.\n");
+ }
 
    // printf("tabulating dndlnM quantities 0\n");
 
-   if (ptsz->has_knl)
+   if (ptsz->has_knl){
+if (ptsz->sz_verbose>1)
+   printf("-> Tabulating knl...\n");
    tabulate_knl(pba,pnl,ppm,ptsz);
+if (ptsz->sz_verbose>1)
+  printf("-> knl tabulated.\n");
+ }
    // printf("tabulating dndlnM quantities 1\n");
 
-   if (ptsz->has_nl_index)
+   if (ptsz->has_nl_index){
+if (ptsz->sz_verbose>1)
+    printf("-> Tabulating nl index...\n");
    tabulate_nl_index(pba,pnl,ppm,ptsz);
+if (ptsz->sz_verbose>1)
+    printf("-> nl index tabulated.\n");
+ }
    // printf("tabulating dndlnM quantities\n");
 
    // exit(0);
@@ -1742,9 +1787,10 @@ int load_cl_ksz_template(struct tszspectrum * ptsz)
 
   char line[_LINE_LENGTH_MAX_];
   //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
-  FILE *process;
+  FILE *process,*process2;
   int n_data_guess, n_data = 0;
-  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  int n_data_guess2, n_data2 = 0;
+  double *lnx = NULL, *lnI = NULL, *lnJ = NULL,  *tmp = NULL;
   double this_lnx, this_lnI;
   int status;
   int index_x;
@@ -1753,8 +1799,10 @@ int load_cl_ksz_template(struct tszspectrum * ptsz)
   /** 1. Initialization */
   /* Prepare the data (with some initial size) */
   n_data_guess = 100;
+  n_data_guess2 = 100;
   lnx   = (double *)malloc(n_data_guess*sizeof(double));
   lnI = (double *)malloc(n_data_guess*sizeof(double));
+  lnJ = (double *)malloc(n_data_guess*sizeof(double));
 
 
   /** 2. Launch the command and retrieve the output */
@@ -1762,8 +1810,12 @@ int load_cl_ksz_template(struct tszspectrum * ptsz)
   char Filepath[_ARGUMENT_LENGTH_MAX_];
 
   class_open(process,ptsz->ksz_template_file, "r",ptsz->error_message);
-  printf("-> File Name: %s\n",ptsz->ksz_template_file);
+  if (ptsz->sz_verbose >= 1)
+    printf("-> File Name: %s\n",ptsz->ksz_template_file);
 
+  class_open(process2,ptsz->ksz_reio_template_file, "r",ptsz->error_message);
+  if (ptsz->sz_verbose >= 1)
+    printf("-> File Name: %s\n",ptsz->ksz_reio_template_file);
 
   /* Read output and store it */
   while (fgets(line, sizeof(line)-1, process) != NULL) {
@@ -1811,6 +1863,56 @@ int load_cl_ksz_template(struct tszspectrum * ptsz)
              "The attempt to launch the external command was unsuccessful. "
              "Try doing it by hand to check for errors.");
 
+
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process2) != NULL) {
+    sscanf(line, "%lf %lf", &this_lnx, &this_lnI);
+    //printf("lnx = %e\n",this_lnx);
+
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data2+1) > n_data_guess2) {
+      n_data_guess2 *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess2*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnJ, n_data_guess2*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnJ = tmp;
+    };
+    /* Store */
+    lnx[n_data2]   = this_lnx;
+    lnJ[n_data2]   = this_lnI;
+
+    n_data2++;
+    /* Check ascending order of the k's */
+    if(n_data2>1) {
+      class_test(lnx[n_data2-1] <= lnx[n_data2-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  // status = pclose(process);
+  status = fclose(process2);
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+
+
+
   /** 3. Store the read results into CLASS structures */
   ptsz->ksz_template_size = n_data;
   /** Make room */
@@ -1829,14 +1931,20 @@ int load_cl_ksz_template(struct tszspectrum * ptsz)
   /** Store them */
   for (index_x=0; index_x<ptsz->ksz_template_size; index_x++) {
     ptsz->l_ksz_template[index_x] = lnx[index_x];
-    ptsz->cl_ksz_template[index_x] = lnI[index_x];
-// printf("%.3e  %.3e\n",ptsz->l_ksz_template[index_x],ptsz->cl_ksz_template[index_x]);
+    ptsz->cl_ksz_template[index_x] = lnI[index_x]+lnJ[index_x];
+// printf("%.3e  %.3e  %.3e  %.3e\n",
+// ptsz->l_ksz_template[index_x],
+// ptsz->cl_ksz_template[index_x],
+// lnI[index_x],
+// lnJ[index_x]
+// );
   };
 
 
   /** Release the memory used locally */
   free(lnx);
   free(lnI);
+  free(lnJ);
 
   return _SUCCESS_;
 }
@@ -8264,8 +8372,9 @@ pk3 *= pow(pba->h,3.);
                             *pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,-2.)
                             *pvecback[pba->index_bg_Omega_m]*rho_crit;
 free(pvecback);
-
-double bg = get_mean_galaxy_bias_at_z(z,ptsz);
+double bg = 1.;
+if (ptsz->use_bg_at_z_in_ksz2g_eff==1)
+  bg = get_mean_galaxy_bias_at_z(z,ptsz);
 double vrms2 = get_vrms2_at_z(z,ptsz);
 // bg = 1.;
 // vrms2 = 1.;
@@ -12285,7 +12394,7 @@ if ((ptsz->galaxy_sample==1 && index_md == ptsz->index_md_gal_gal_hf)
  || (ptsz->galaxy_sample==1 && index_md == ptsz->index_md_gal_lensmag_hf)
  || (ptsz->galaxy_sample==1 && index_md == ptsz->index_md_lens_lensmag_hf)
  || (ptsz->galaxy_sample==1 && index_md == ptsz->index_md_lensmag_lensmag_hf)
- // || (ptsz->galaxy_sample==1 && index_md == ptsz->index_md_kSZ_kSZ_gal_hf)
+ || (ptsz->galaxy_sample==1 && index_md == ptsz->index_md_kSZ_kSZ_gal_hf  && ptsz->use_fdndz_for_ksz2g_eff == 1)
 )
 {
 evaluate_galaxy_number_counts_fdndz(pvecback,pvectsz,pba,ptsz);

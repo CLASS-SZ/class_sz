@@ -1308,7 +1308,7 @@ else if (ptsz->concentration_parameter==5){
 //
 // }
 
-else if (ptsz->concentration_parameter==6){
+else if (ptsz->concentration_parameter==6){ // Battacharya et al 2013
 
   double * pvecback;
   double tau;

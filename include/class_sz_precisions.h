@@ -18,6 +18,7 @@ class_sz_string_parameter(Tinker_et_al_10_alpha_consistency_msyriac_file,"/sz_au
 
 class_sz_string_parameter(ksz_filter_file,"/sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt","ksz filter file")
 class_sz_string_parameter(ksz_template_file,"/sz_auxiliary_files/cl_ksz_bat.dat","ksz template file")
+class_sz_string_parameter(ksz_reio_template_file,"/sz_auxiliary_files/FBN_kSZ_PS_patchy.d.txt","ksz template file, reio contribution")
 
 
 class_sz_string_parameter(Planck_thetas_file,"/sz_auxiliary_files/SZ_thetas.txt","Planck_thetas_file")
@@ -63,6 +64,9 @@ class_sz_ptsz_parameter( epsrel_L_sat, double, 1e-6);
 class_sz_ptsz_parameter(n_z_L_sat , int,101);
 class_sz_ptsz_parameter(n_m_L_sat , int,102);
 class_sz_ptsz_parameter(n_nu_L_sat, int, 103);
+
+class_sz_ptsz_parameter(use_bg_at_z_in_ksz2g_eff, int, 0);
+class_sz_ptsz_parameter(use_fdndz_for_ksz2g_eff, int, 0);
 
 class_sz_ptsz_parameter(n_z_psi_b1gt,int,50)
 class_sz_ptsz_parameter(n_l_psi_b1gt,int,50)
