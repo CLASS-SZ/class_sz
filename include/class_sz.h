@@ -46,9 +46,13 @@
 #define _kSZ_kSZ_gal_1h_fft_ ((ptsz->has_kSZ_kSZ_gal_1h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_1h_fft))
 #define _kSZ_kSZ_gal_2h_fft_ ((ptsz->has_kSZ_kSZ_gal_2h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_2h_fft))
 #define _kSZ_kSZ_gal_3h_fft_ ((ptsz->has_kSZ_kSZ_gal_3h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_3h_fft))
+#define _kSZ_kSZ_gallens_1h_fft_ ((ptsz->has_kSZ_kSZ_gallens_1h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gallens_1h_fft))
+#define _kSZ_kSZ_gallens_2h_fft_ ((ptsz->has_kSZ_kSZ_gallens_2h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gallens_2h_fft))
+#define _kSZ_kSZ_gallens_3h_fft_ ((ptsz->has_kSZ_kSZ_gallens_3h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gallens_3h_fft))
 #define _kSZ_kSZ_gal_2h_ ((ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_2h))
 #define _kSZ_kSZ_gal_3h_ ((ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_3h))
 #define _kSZ_kSZ_gal_hf_ ((ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_hf))
+#define _kSZ_kSZ_gallens_hf_ ((ptsz->has_kSZ_kSZ_gallens_hf == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gallens_hf))
 #define _kSZ_kSZ_lensmag_1halo_ ((ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lensmag_1halo))
 #define _gal_gal_1h_ ((ptsz->has_gal_gal_1h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_1h))
 #define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
@@ -60,6 +64,10 @@
 #define _gal_lensmag_1h_ ((ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_1h))
 #define _gal_gallens_2h_ ((ptsz->has_gal_gallens_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gallens_2h))
 #define _gal_gallens_1h_ ((ptsz->has_gal_gallens_1h == _TRUE_) && (index_md == ptsz->index_md_gal_gallens_1h))
+#define _gallens_gallens_2h_ ((ptsz->has_gallens_gallens_2h == _TRUE_) && (index_md == ptsz->index_md_gallens_gallens_2h))
+#define _gallens_gallens_1h_ ((ptsz->has_gallens_gallens_1h == _TRUE_) && (index_md == ptsz->index_md_gallens_gallens_1h))
+#define _gallens_lens_2h_ ((ptsz->has_gallens_lens_2h == _TRUE_) && (index_md == ptsz->index_md_gallens_lens_2h))
+#define _gallens_lens_1h_ ((ptsz->has_gallens_lens_1h == _TRUE_) && (index_md == ptsz->index_md_gallens_lens_1h))
 #define _gal_lensmag_hf_ ((ptsz->has_gal_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_hf))
 #define _tSZ_lensmag_2h_ ((ptsz->has_tSZ_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lensmag_2h))
 #define _tSZ_lensmag_1h_ ((ptsz->has_tSZ_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lensmag_1h))
@@ -156,6 +164,10 @@ struct tszspectrum {
   double * cl_gal_lensmag_2h;
   double * cl_gal_gallens_1h;
   double * cl_gal_gallens_2h;
+  double * cl_gallens_gallens_1h;
+  double * cl_gallens_gallens_2h;
+  double * cl_gallens_lens_1h;
+  double * cl_gallens_lens_2h;
   double * thetas_arcmin;
   double * gamma_gal_gallens_1h;
   double * gamma_gal_gallens_2h;
@@ -191,6 +203,12 @@ struct tszspectrum {
   double * cl_kSZ_kSZ_gal_1h_fft;
   double * cl_kSZ_kSZ_gal_2h_fft;
   double * cl_kSZ_kSZ_gal_3h_fft;
+  double * cl_kSZ_kSZ_gallens_1h_fft;
+  double * cl_kSZ_kSZ_gallens_2h_fft;
+  double * cl_kSZ_kSZ_gallens_3h_fft;
+  double * cl_kSZ_kSZ_gallens_hf;
+  double * cov_ll_kSZ_kSZ_gallens;
+  double * cl_kSZ_kSZ_gallens_lensing_term;
   double * cl_kSZ_kSZ_gal_2h;
   double * cl_kSZ_kSZ_gal_3h;
   double * cl_kSZ_kSZ_gal_hf;
@@ -238,6 +256,10 @@ struct tszspectrum {
   int need_sigma;
   int need_m200c_to_m500c;
   int need_m500c_to_m200c;
+
+  int need_ksz_template;
+  int need_tt_noise;
+
 
   int integrate_wrt_mvir;
   int integrate_wrt_m500c;
@@ -446,13 +468,34 @@ struct tszspectrum {
   int index_integrand_id_kSZ_kSZ_gal_3h_last;
 
   int has_kSZ_kSZ_gal_covmat;
+  int has_kSZ_kSZ_gallens_covmat;
   int has_kSZ_kSZ_gal_lensing_term;
+  int has_kSZ_kSZ_gallens_lensing_term;
 
   int has_kSZ_kSZ_gal_hf;
   int index_md_kSZ_kSZ_gal_hf;
   int index_integrand_id_kSZ_kSZ_gal_hf_first;
   int index_integrand_id_kSZ_kSZ_gal_hf_last;
 
+  int has_kSZ_kSZ_gallens_1h_fft;
+  int index_md_kSZ_kSZ_gallens_1h_fft;
+  int index_integrand_id_kSZ_kSZ_gallens_1h_fft_first;
+  int index_integrand_id_kSZ_kSZ_gallens_1h_fft_last;
+
+  int has_kSZ_kSZ_gallens_2h_fft;
+  int index_md_kSZ_kSZ_gallens_2h_fft;
+  int index_integrand_id_kSZ_kSZ_gallens_2h_fft_first;
+  int index_integrand_id_kSZ_kSZ_gallens_2h_fft_last;
+
+  int has_kSZ_kSZ_gallens_3h_fft;
+  int index_md_kSZ_kSZ_gallens_3h_fft;
+  int index_integrand_id_kSZ_kSZ_gallens_3h_fft_first;
+  int index_integrand_id_kSZ_kSZ_gallens_3h_fft_last;
+
+  int has_kSZ_kSZ_gallens_hf;
+  int index_md_kSZ_kSZ_gallens_hf;
+  int index_integrand_id_kSZ_kSZ_gallens_hf_first;
+  int index_integrand_id_kSZ_kSZ_gallens_hf_last;
 
   int has_kSZ_kSZ_lensmag_1halo;
   int index_md_kSZ_kSZ_lensmag_1halo;
@@ -553,6 +596,30 @@ struct tszspectrum {
   int index_md_gal_gallens_1h;
   int index_integrand_id_gal_gallens_1h_first;
   int index_integrand_id_gal_gallens_1h_last;
+
+
+  int has_gallens_gallens_2h;
+  int index_md_gallens_gallens_2h;
+  int index_integrand_id_gallens_gallens_2h_first;
+  int index_integrand_id_gallens_gallens_2h_last;
+
+  int has_gallens_gallens_1h;
+  int index_md_gallens_gallens_1h;
+  int index_integrand_id_gallens_gallens_1h_first;
+  int index_integrand_id_gallens_gallens_1h_last;
+
+
+  int has_gallens_lens_2h;
+  int index_md_gallens_lens_2h;
+  int index_integrand_id_gallens_lens_2h_first;
+  int index_integrand_id_gallens_lens_2h_last;
+
+  int has_gallens_lens_1h;
+  int index_md_gallens_lens_1h;
+  int index_integrand_id_gallens_lens_1h_first;
+  int index_integrand_id_gallens_lens_1h_last;
+
+
 
 
   int has_tSZ_lensmag_2h;
@@ -984,7 +1051,7 @@ struct tszspectrum {
   //
   // double M1SZ_L_sat;
   // double M2SZ_L_sat;
-  // 
+  //
   // double epsabs_L_sat;
   // double epsrel_L_sat;
 
@@ -1472,6 +1539,16 @@ double * steps_m;
   double * array_psi_b1g_multipole;
   double * array_psi_b1g_psi;
 
+  double * array_psi_b2kg_redshift;
+  double * array_psi_b2kg_multipole;
+  double * array_psi_b2kg_psi;
+
+  double * array_psi_b1kg_redshift;
+  double * array_psi_b1kg_multipole;
+  double * array_psi_b1kg_psi;
+
+
+
   double * array_psi_b1t_redshift;
   double * array_psi_b1t_multipole;
   double * array_psi_b1t_psi;
@@ -1488,6 +1565,11 @@ double * steps_m;
   double * array_psi_b1gt_redshift;
   double * array_psi_b1gt_multipole;
   double ** array_psi_b1gt_psi;
+
+  double * array_psi_b1kgt_redshift;
+  double * array_psi_b1kgt_multipole;
+  double ** array_psi_b1kgt_psi;
+
   // int n_z_psi_b1g;
   // int n_l_psi_b1g;
 
@@ -1579,7 +1661,8 @@ int szpowerspectrum_init(struct background * pba,
                            struct background * pba,
                            struct tszspectrum * ptsz);
 
-  int evaluate_lensing_profile(double m_delta,
+  int evaluate_lensing_profile(double kl,
+                               double m_delta,
                                double r_delta,
                                double c_delta,
                                double * pvecback,

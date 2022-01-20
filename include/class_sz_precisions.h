@@ -40,6 +40,9 @@ class_sz_ptsz_parameter(n_z_pressure_profile,int,50)
 class_sz_ptsz_parameter(n_z_psi_b1g,int,50)
 class_sz_ptsz_parameter(n_l_psi_b1g,int,50)
 
+class_sz_ptsz_parameter(n_z_psi_b1kg,int,50)
+class_sz_ptsz_parameter(n_l_psi_b1kg,int,50)
+
 class_sz_ptsz_parameter(n_nu_dcib0dz,int,80)
 class_sz_ptsz_parameter(n_z_dcib0dz,int,68)
 
@@ -50,6 +53,9 @@ class_sz_ptsz_parameter(n_l_psi_b2t,int,50)
 
 class_sz_ptsz_parameter(n_z_psi_b2g,int,50)
 class_sz_ptsz_parameter(n_l_psi_b2g,int,50)
+
+class_sz_ptsz_parameter(n_z_psi_b2kg,int,50)
+class_sz_ptsz_parameter(n_l_psi_b2kg,int,50)
 
 class_sz_ptsz_parameter(n_z_psi_b1t,int,80)
 class_sz_ptsz_parameter(n_l_psi_b1t,int,80)
@@ -70,6 +76,10 @@ class_sz_ptsz_parameter(use_fdndz_for_ksz2g_eff, int, 0);
 
 class_sz_ptsz_parameter(n_z_psi_b1gt,int,50)
 class_sz_ptsz_parameter(n_l_psi_b1gt,int,50)
+
+class_sz_ptsz_parameter(n_z_psi_b1kgt,int,50)
+class_sz_ptsz_parameter(n_l_psi_b1kgt,int,50)
+
 class_sz_ptsz_parameter(N_samp_fftw,int,150)
 class_sz_ptsz_parameter(l_min_samp_fftw,double,1e-12)
 class_sz_ptsz_parameter(l_max_samp_fftw,double,1e9)

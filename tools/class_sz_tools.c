@@ -3547,6 +3547,9 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 + ptsz->has_bk_ttg_at_z_1h
 + ptsz->has_bk_ttg_at_z_2h
 + ptsz->has_bk_ttg_at_z_3h
++ ptsz->has_kSZ_kSZ_gallens_1h_fft
++ ptsz->has_kSZ_kSZ_gallens_2h_fft
++ ptsz->has_kSZ_kSZ_gallens_3h_fft
 == _FALSE_
 )
   return 0;
@@ -5073,6 +5076,14 @@ int load_normalized_source_dndz(struct tszspectrum * ptsz)
 if (
      (ptsz->has_gal_gallens_1h != _TRUE_ )
     && (ptsz->has_gal_gallens_2h != _TRUE_ )
+    && (ptsz->has_gallens_gallens_2h != _TRUE_ )
+    && (ptsz->has_gallens_gallens_2h != _TRUE_ )
+    && (ptsz->has_gallens_lens_1h != _TRUE_ )
+    && (ptsz->has_gallens_lens_2h != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gallens_1h_fft != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gallens_2h_fft != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gallens_3h_fft != _TRUE_ )
+    && (ptsz->has_kSZ_kSZ_gallens_hf != _TRUE_ )
 )
   return 0;
 
@@ -6681,24 +6692,69 @@ double sigma_crit_kappa =  pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_cr
 
 V->pvectsz[V->ptsz->index_lensing_Sigma_crit] =  sqrt(sigma_crit_lensmag*sigma_crit_kappa);
 
+// printf("%.5e %.5e %.5e\n",redshift_int_lensmag,sigma_crit_lensmag,sigma_crit_kappa);
+
   }
   else if (
       ((V->ptsz->has_gal_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_1h))
     ||((V->ptsz->has_gal_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_2h))
+    ||((V->ptsz->has_gallens_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_gallens_1h))
+    ||((V->ptsz->has_gallens_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_gallens_2h))
   )
   {
 
     evaluate_redshift_int_gallens_sources(V->pvectsz,V->ptsz);
-    double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_gallens_sources];
+    double redshift_int_sources = V->pvectsz[V->ptsz->index_W_gallens_sources];
     // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
-    V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_lensmag);
+    V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_sources);
     if (isnan(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])||isinf(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])){
-      printf("%.3e\n",redshift_int_lensmag);
+      printf("%.3e\n",redshift_int_sources);
       printf("nan or inf in sigmacrit\n");
       exit(0);
     }
   }
 
+  else if (
+    ((V->ptsz->has_gallens_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_lens_1h))
+    ||((V->ptsz->has_gallens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_lens_2h))
+  )
+  {
+
+    evaluate_redshift_int_gallens_sources(V->pvectsz,V->ptsz);
+    double redshift_int_sources = V->pvectsz[V->ptsz->index_W_gallens_sources];
+    // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+    double chi_star =  V->ptsz->chi_star;  // in Mpc/h
+    double sigma_crit_kappa =  pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)*chi_star/chi/(chi_star-chi);
+    double sigma_crit_gallens = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_sources);
+    V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = sqrt(sigma_crit_gallens*sigma_crit_kappa);
+
+
+    if (isnan(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])||isinf(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])){
+      printf("%.3e\n",redshift_int_sources);
+      printf("nan or inf in sigmacrit\n");
+      exit(0);
+    }
+  }
+
+  else if (
+    ((V->ptsz->has_kSZ_kSZ_gallens_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_1h_fft))
+    ||((V->ptsz->has_kSZ_kSZ_gallens_2h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_2h_fft))
+    ||((V->ptsz->has_kSZ_kSZ_gallens_3h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_3h_fft))
+  )
+  {
+
+    evaluate_redshift_int_gallens_sources(V->pvectsz,V->ptsz);
+    double redshift_int_sources = V->pvectsz[V->ptsz->index_W_gallens_sources];
+    // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+    V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_sources);
+
+
+    if (isnan(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])||isinf(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])){
+      printf("%.3e\n",redshift_int_sources);
+      printf("nan or inf in sigmacrit\n");
+      exit(0);
+    }
+  }
   else {
 
 // CMB lensing
@@ -7325,6 +7381,8 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
  || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
  || ((V->ptsz->has_gal_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_2h))
+ || ((V->ptsz->has_gallens_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_gallens_2h))
+ || ((V->ptsz->has_gallens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_lens_2h))
  || ((V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
  || ((V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
  || ((V->ptsz->has_lens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_2h))
@@ -9976,7 +10034,10 @@ if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
  || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)  && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)){
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_gallens_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_lens_2h)
+){
 
      double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
      double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
@@ -10009,7 +10070,10 @@ if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
  || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)
       && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)){
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_gallens_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_lens_2h)
+){
  pvectsz[ptsz->index_integral_over_m] = r*r;
  }
 else
@@ -10953,6 +11017,45 @@ struct Parameters_for_integrand_psi_b1gt{
 };
 
 
+
+struct Parameters_for_integrand_psi_b2kg{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+  double l;
+};
+
+
+
+struct Parameters_for_integrand_psi_b1kg{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+  double l;
+};
+
+
+struct Parameters_for_integrand_psi_b1kgt{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  double * pvecback;
+  double z;
+  double l1;
+  double l2;
+};
+
+
 struct Parameters_for_integrand_dydz{
   struct nonlinear * pnl;
   struct primordial * ppm;
@@ -11184,6 +11287,75 @@ double integrand_psi_b1g(double lnM_halo, void *p){
 }
 
 
+double integrand_psi_b1kg(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_psi_b1kg *V = ((struct Parameters_for_integrand_psi_b1kg *) p);
+
+    //double x=exp(ln_x);
+    double z = V->z;
+    double ell = V->l; // this is actually k
+
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
+
+      V->pvectsz[V->ptsz->index_has_galaxy] = 1;
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];
+
+      // V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
+      // V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;//ptsz->ell[index_l_3];
+      // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+      // double kl = (ell+0.5)/chi;
+      // V->pvectsz[ptsz->index_multipole_for_lensing_profile] = ell;
+      evaluate_lensing_profile(ell,V->pvectsz[V->ptsz->index_mass_for_matter_density],
+                                 V->pvectsz[V->ptsz->index_radius_for_matter_density],
+                                 V->pvectsz[V->ptsz->index_concentration_for_matter_density],
+                                 V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      double g = V->pvectsz[V->ptsz->index_lensing_profile];
+
+
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      double b1 = V->pvectsz[V->ptsz->index_halo_bias];
+      double result = hmf*b1*g;
+
+
+
+  return result;
+
+}
 
 
 double integrand_psi_b2g(double lnM_halo, void *p){
@@ -11244,6 +11416,77 @@ double integrand_psi_b2g(double lnM_halo, void *p){
                                  V->pvectsz[V->ptsz->index_concentration_for_galaxies],
                                  V->pvecback,V->pvectsz,V->pba,V->ptsz);
       double g = V->pvectsz[V->ptsz->index_galaxy_profile];
+
+      evaluate_halo_bias_b2(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      double b2 = V->pvectsz[V->ptsz->index_halo_bias_b2];
+
+
+      double result = hmf*b2*g;
+
+
+  return result;
+
+}
+
+
+double integrand_psi_b2kg(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_psi_b2kg *V = ((struct Parameters_for_integrand_psi_b2kg *) p);
+
+    //double x=exp(ln_x);
+    double z = V->z;
+    double ell = V->l;
+
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
+
+
+      V->pvectsz[V->ptsz->index_has_galaxy] = 1;
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];
+
+      // V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
+      // V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell;
+      // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+      // double kl = (ell+0.5)/chi;
+      evaluate_lensing_profile(ell,V->pvectsz[V->ptsz->index_mass_for_matter_density],
+                                 V->pvectsz[V->ptsz->index_radius_for_matter_density],
+                                 V->pvectsz[V->ptsz->index_concentration_for_matter_density],
+                                 V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      double g = V->pvectsz[V->ptsz->index_lensing_profile];
 
       evaluate_halo_bias_b2(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
       double b2 = V->pvectsz[V->ptsz->index_halo_bias_b2];
@@ -11483,6 +11726,90 @@ double integrand_psi_b1gt(double lnM_halo, void *p){
 }
 
 
+double integrand_psi_b1kgt(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_psi_b1kgt *V = ((struct Parameters_for_integrand_psi_b1kgt *) p);
+
+    //double x=exp(ln_x);
+    double z = V->z;
+    double ell1 = V->l1;
+    double ell2 = V->l2;
+
+    double M_halo = exp(lnM_halo);
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
+
+      V->pvectsz[V->ptsz->index_has_galaxy] = 1;
+      V->pvectsz[V->ptsz->index_has_electron_density] = 1;
+
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];
+
+      // V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
+      // V->pvectsz[V->ptsz->index_multipole_for_galaxy_profile] = ell1;
+      // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
+      // double kl = (ell1+0.5)/chi;
+      evaluate_lensing_profile(ell1,V->pvectsz[V->ptsz->index_mass_for_matter_density],
+                                 V->pvectsz[V->ptsz->index_radius_for_matter_density],
+                                 V->pvectsz[V->ptsz->index_concentration_for_matter_density],
+                                 V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      double g = V->pvectsz[V->ptsz->index_lensing_profile];
+
+
+
+      // V->pvectsz[V->ptsz->index_multipole_for_tau_profile] = ell2;
+
+      evaluate_tau_profile(ell2,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      double t = V->pvectsz[V->ptsz->index_tau_profile];
+
+
+
+
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      double b1 = V->pvectsz[V->ptsz->index_halo_bias];
+      double result = hmf*b1*g*t;
+      if (isnan(result)||isinf(result)){
+        printf("tab b1gt : z %.3e k3 %.4e k' %.4e\n",z,ell1,ell2);
+        exit(0);
+      }
+
+
+  return result;
+
+}
+
+
 
 
 int tabulate_psi_b1g(struct background * pba,
@@ -11624,6 +11951,156 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
        tstop = omp_get_wtime();
        if (ptsz->sz_verbose > 0)
          printf("In %s: time spent in parallel region b1g (loop over l's) = %e s for thread %d\n",
+                __func__,tstop-tstart,omp_get_thread_num());
+     #endif
+ free(pvecback);
+ free(pvectsz);
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+    }
+
+
+int tabulate_psi_b1kg(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_psi_b1kg_redshift,sizeof(double *)*ptsz->n_z_psi_b1kg,ptsz->error_message);
+class_alloc(ptsz->array_psi_b1kg_multipole,sizeof(double *)*ptsz->n_l_psi_b1kg,ptsz->error_message);
+
+class_alloc(ptsz->array_psi_b1kg_psi,sizeof(double *)*ptsz->n_l_psi_b1kg*ptsz->n_z_psi_b1kg,ptsz->error_message);
+
+
+int index_z, index_l;
+double r;
+double m_min,m_max;
+
+
+m_min = ptsz->M1SZ; // for the mass integral
+m_max = ptsz->M2SZ; // for the mass integral
+// m_min = ptsz->m_min_counter_terms;
+// m_max = ptsz->m_max_counter_terms;
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
+// printf("ptsz->n_z_psi_b1kg = %d\n",ptsz->n_z_psi_b1kg);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b1kg; index_z++)
+        {
+
+          ptsz->array_psi_b1kg_redshift[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_psi_b1kg-1.); // log(1+z)
+        }
+
+// parallelize ver l
+double l_min = 1.e-3;
+double l_max = 3e5;
+
+
+for (index_l=0; index_l<ptsz->n_l_psi_b1kg; index_l++)
+        {
+
+          ptsz->array_psi_b1kg_multipole[index_l] =
+                                      log(l_min)
+                                      +index_l*(log(l_max)-log(l_min))
+                                      /(ptsz->n_l_psi_b1kg-1.); // log(l)
+        }
+
+
+double * pvecback;
+double * pvectsz;
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,m_min,m_max)\
+private(tstart, tstop,index_z,index_l,pvecback,pvectsz,r) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+#pragma omp for schedule (dynamic)
+for (index_l=0; index_l<ptsz->n_l_psi_b1kg; index_l++)
+{
+#pragma omp flush(abort)
+
+double l = exp(ptsz->array_psi_b1kg_multipole[index_l]);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b1kg; index_z++)
+        {
+
+          int index_l_z = index_l * ptsz->n_z_psi_b1kg + index_z;
+
+
+          double z = exp(ptsz->array_psi_b1kg_redshift[index_z])-1.;
+
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_psi_b1kg V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+          V.l = l;
+
+          void * params = &V;
+          double epsrel=1e-3;
+          double epsabs=1e-100;
+
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_psi_b1kg,
+                                               params,
+                                               ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_psi_b1kg(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+          ptsz->array_psi_b1kg_psi[index_l_z] = log(r);
+       }
+     }
+     #ifdef _OPENMP
+       tstop = omp_get_wtime();
+       if (ptsz->sz_verbose > 0)
+         printf("In %s: time spent in parallel region b1kg (loop over l's) = %e s for thread %d\n",
                 __func__,tstop-tstart,omp_get_thread_num());
      #endif
  free(pvecback);
@@ -11784,6 +12261,158 @@ if (abort == _TRUE_) return _FAILURE_;
 //end of parallel region
 return _SUCCESS_;
     }
+
+
+
+
+int tabulate_psi_b2kg(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_psi_b2kg_redshift,sizeof(double *)*ptsz->n_z_psi_b2kg,ptsz->error_message);
+class_alloc(ptsz->array_psi_b2kg_multipole,sizeof(double *)*ptsz->n_l_psi_b2kg,ptsz->error_message);
+
+class_alloc(ptsz->array_psi_b2kg_psi,sizeof(double *)*ptsz->n_l_psi_b2kg*ptsz->n_z_psi_b2kg,ptsz->error_message);
+
+
+int index_z, index_l;
+double r;
+double m_min,m_max;
+
+
+m_min = ptsz->M1SZ; // for the mass integral
+m_max = ptsz->M2SZ; // for the mass integral
+// m_min = ptsz->m_min_counter_terms;
+// m_max = ptsz->m_max_counter_terms;
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
+
+for (index_z=0; index_z<ptsz->n_z_psi_b2kg; index_z++)
+        {
+
+          ptsz->array_psi_b2kg_redshift[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_psi_b2kg-1.); // log(1+z)
+        }
+
+// parallelize ver l
+double l_min = 1.e-3;
+double l_max = 3e5;
+
+
+for (index_l=0; index_l<ptsz->n_l_psi_b2kg; index_l++)
+        {
+
+          ptsz->array_psi_b2kg_multipole[index_l] =
+                                      log(l_min)
+                                      +index_l*(log(l_max)-log(l_min))
+                                      /(ptsz->n_l_psi_b2kg-1.); // log(l)
+        }
+
+
+double * pvecback;
+double * pvectsz;
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,m_min,m_max)\
+private(tstart, tstop,index_z,index_l,pvecback,pvectsz,r) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+#pragma omp for schedule (dynamic)
+for (index_l=0; index_l<ptsz->n_l_psi_b2kg; index_l++)
+{
+#pragma omp flush(abort)
+
+double l = exp(ptsz->array_psi_b2kg_multipole[index_l]);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b2kg; index_z++)
+        {
+
+          int index_l_z = index_l * ptsz->n_z_psi_b2kg + index_z;
+
+
+          double z = exp(ptsz->array_psi_b2kg_redshift[index_z])-1.;
+
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_psi_b2kg V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+          V.l = l;
+
+          void * params = &V;
+          double epsrel=1e-3;
+          double epsabs=1e-100;
+
+
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_psi_b2kg,
+                                               params,
+                                               ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b2min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_psi_b2kg(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias_b2];
+     r += bmin_umin;
+  }
+
+          ptsz->array_psi_b2kg_psi[index_l_z] = log(1.+r);
+       }
+     }
+     #ifdef _OPENMP
+       tstop = omp_get_wtime();
+       if (ptsz->sz_verbose > 0)
+         printf("In %s: time spent in parallel region b2kg (loop over l's) = %e s for thread %d\n",
+                __func__,tstop-tstart,omp_get_thread_num());
+     #endif
+ free(pvecback);
+ free(pvectsz);
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+    }
+
 
 
 
@@ -12275,6 +12904,183 @@ if (abort == _TRUE_) return _FAILURE_;
 //end of parallel region
 return _SUCCESS_;
     }
+
+
+
+
+int tabulate_psi_b1kgt(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_psi_b1kgt_redshift,sizeof(double *)*ptsz->n_z_psi_b1kgt,ptsz->error_message);
+class_alloc(ptsz->array_psi_b1kgt_multipole,sizeof(double *)*ptsz->n_l_psi_b1kgt,ptsz->error_message);
+
+class_alloc(ptsz->array_psi_b1kgt_psi,sizeof(double *)*ptsz->n_z_psi_b1kgt,ptsz->error_message);
+int index_z, index_l1,index_l2;
+for (index_z=0;index_z<ptsz->n_z_psi_b1kgt;index_z++){
+  class_alloc(ptsz->array_psi_b1kgt_psi[index_z],sizeof(double *)*ptsz->n_l_psi_b1kgt*ptsz->n_l_psi_b1kgt,ptsz->error_message);
+
+}
+
+
+
+double r;
+double m_min,m_max;
+
+
+m_min = ptsz->M1SZ; // for the mass integral
+m_max = ptsz->M2SZ; // for the mass integral
+// m_min = ptsz->m_min_counter_terms;
+// m_max = ptsz->m_max_counter_terms;
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
+// printf("ptsz->n_z_psi_b1g = %d\n",ptsz->n_z_psi_b1g);
+
+for (index_z=0; index_z<ptsz->n_z_psi_b1kgt; index_z++)
+        {
+
+          ptsz->array_psi_b1kgt_redshift[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_psi_b1kgt-1.); // log(1+z)
+        }
+
+// parallelize ver l
+double l_min = 1.e-3;
+double l_max = 1e3;
+
+int index_l;
+for (index_l=0; index_l<ptsz->n_l_psi_b1kgt; index_l++)
+        {
+
+          ptsz->array_psi_b1kgt_multipole[index_l] =
+                                      log(l_min)
+                                      +index_l*(log(l_max)-log(l_min))
+                                      /(ptsz->n_l_psi_b1kgt-1.); // log(l)
+        }
+
+
+double * pvecback;
+double * pvectsz;
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,m_min,m_max)\
+private(tstart, tstop,index_z,index_l1,index_l2,pvecback,pvectsz,r) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+// printf("doing well\n");
+
+#pragma omp for collapse(3)
+//#pragma omp for schedule (dynamic)
+for (index_z=0; index_z<ptsz->n_z_psi_b1kgt; index_z++)
+{
+//#pragma omp flush(abort)
+  for (index_l1=0; index_l1<ptsz->n_l_psi_b1kgt; index_l1++)
+  {
+    for (index_l2=0; index_l2<ptsz->n_l_psi_b1kgt; index_l2++)
+    {
+// #pragma omp flush(abort)
+
+
+          double l1 = exp(ptsz->array_psi_b1kgt_multipole[index_l1]);
+          double l2 = exp(ptsz->array_psi_b1kgt_multipole[index_l2]);
+
+          int index_l1_l2 = index_l2 * ptsz->n_l_psi_b1kgt + index_l1;
+
+
+          double z = exp(ptsz->array_psi_b1kgt_redshift[index_z])-1.;
+
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_psi_b1kgt V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+          V.l1 = l1;
+          V.l2 = l2;
+
+          void * params = &V;
+          double epsrel=1e-3;
+          double epsabs=1e-100;
+
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_psi_b1kgt,
+                                               params,
+                                               ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_psi_b1kgt(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+  if (r==0){
+    r = 1e-100;
+  }
+  if (r < 0. || isnan(r)||isinf(r)){
+    printf("tab b1kgt after int : z %.3e r %.3e k1 %.3e k2 %.3e\n",z,r,l1,l2);
+    // exit(0);
+  }
+          ptsz->array_psi_b1kgt_psi[index_z][index_l1_l2] = log(r);
+
+          // printf("ptsz->array_psi_b1t_psi[%d] = %.5e\n",index_l_z,r);
+
+       }
+     }
+   }
+     #ifdef _OPENMP
+       tstop = omp_get_wtime();
+       if (ptsz->sz_verbose > 0)
+         printf("In %s: time spent in parallel region b1kgt (loop over llz's) = %e s for thread %d\n",
+                __func__,tstop-tstart,omp_get_thread_num());
+     #endif
+ free(pvecback);
+ free(pvectsz);
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+    }
+
+
 
 
 
@@ -13716,6 +14522,14 @@ int tabulate_redshift_int_gallens_sources(struct tszspectrum * ptsz,
 if (
     ptsz->has_gal_gallens_2h
   + ptsz->has_gal_gallens_1h
+  + ptsz->has_gallens_gallens_2h
+  + ptsz->has_gallens_gallens_1h
+  + ptsz->has_gallens_lens_2h
+  + ptsz->has_gallens_lens_1h
+  + ptsz->has_kSZ_kSZ_gallens_1h_fft
+  + ptsz->has_kSZ_kSZ_gallens_2h_fft
+  + ptsz->has_kSZ_kSZ_gallens_3h_fft
+  + ptsz->has_kSZ_kSZ_gallens_hf
    == _FALSE_){
     // if (ptsz->sz_verbose>=1)
     // printf("-> Not tabulating Wz for lensing magnification\n");
@@ -15801,6 +16615,42 @@ double get_psi_b1g_at_k_and_z(double l_asked, double z_asked, struct tszspectrum
 }
 
 
+
+double get_psi_b1kg_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double l = log(l_asked);
+
+ if (z<ptsz->array_psi_b1kg_redshift[0])
+    return 0.;//z = ptsz->array_psi_b1kg_redshift[0];
+ if (z>ptsz->array_psi_b1kg_redshift[ptsz->n_z_psi_b1kg-1])
+    return 0.;//z = ptsz->array_psi_b1kg_redshift[ptsz->n_z_psi_b1kg-1];
+
+ if (l<ptsz->array_psi_b1kg_multipole[0])
+    return 0.;//l = ptsz->array_psi_b1kg_multipole[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (l>ptsz->array_psi_b1kg_multipole[ptsz->n_l_psi_b1kg-1])
+    return 0.;//l =  ptsz->array_psi_b1kg_multipole[ptsz->n_l_psi_b1kg-1];
+
+
+// printf("l=%.3e\n",l);
+
+ return exp(pwl_interp_2d(
+
+                          ptsz->n_z_psi_b1kg,
+                          ptsz->n_l_psi_b1kg,
+
+                          ptsz->array_psi_b1kg_redshift,
+                          ptsz->array_psi_b1kg_multipole,
+                          ptsz->array_psi_b1kg_psi,
+                          1,
+                          &z,
+                          &l));
+}
+
+
+
+
+
 double get_psi_b1t_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double l = log(l_asked);
@@ -15889,6 +16739,68 @@ double get_psi_b1gt_at_k1_k2_and_z(double l_asked,double l_asked2, double z_aske
 
 
 }
+
+
+
+
+double get_psi_b1kgt_at_k1_k2_and_z(double l_asked,double l_asked2, double z_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double l1 = log(l_asked);
+  double l2 = log(l_asked2);
+// printf("z=%.8e\n",z);
+ if (z<ptsz->array_psi_b1kgt_redshift[0])
+    z = ptsz->array_psi_b1kgt_redshift[0];
+ if (z>ptsz->array_psi_b1kgt_redshift[ptsz->n_z_psi_b1kgt-1])
+    z = ptsz->array_psi_b1kgt_redshift[ptsz->n_z_psi_b1kgt-1];
+
+ if (l1<ptsz->array_psi_b1kgt_multipole[0])
+    l1 = ptsz->array_psi_b1kgt_multipole[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (l1>ptsz->array_psi_b1kgt_multipole[ptsz->n_l_psi_b1kgt-1])
+    l1 =  ptsz->array_psi_b1kgt_multipole[ptsz->n_l_psi_b1kgt-1];
+
+ if (l2<ptsz->array_psi_b1kgt_multipole[0])
+    l2 = ptsz->array_psi_b1kgt_multipole[0];
+      // printf("dealing with mass conversion in hmf3\n");
+ if (l2>ptsz->array_psi_b1kgt_multipole[ptsz->n_l_psi_b1kgt-1])
+    l2 =  ptsz->array_psi_b1kgt_multipole[ptsz->n_l_psi_b1kgt-1];
+
+  // find the closest z's in the grid:
+  int id_z_low;
+  int id_z_up;
+  r8vec_bracket(ptsz->n_z_psi_b1kgt,ptsz->array_psi_b1kgt_redshift,z,&id_z_low,&id_z_up);
+
+
+ double ln_rho_low = pwl_interp_2d(ptsz->n_l_psi_b1kgt,
+                                  ptsz->n_l_psi_b1kgt,
+                                  ptsz->array_psi_b1kgt_multipole,
+                                  ptsz->array_psi_b1kgt_multipole,
+                                  ptsz->array_psi_b1kgt_psi[id_z_low-1],
+                                  1,
+                                  &l1,
+                                  &l2);
+
+ double ln_rho_up = pwl_interp_2d(ptsz->n_l_psi_b1kgt,
+                                  ptsz->n_l_psi_b1kgt,
+                                  ptsz->array_psi_b1kgt_multipole,
+                                  ptsz->array_psi_b1kgt_multipole,
+                                  ptsz->array_psi_b1kgt_psi[id_z_up-1],
+                                  1,
+                                  &l1,
+                                  &l2);
+ double ln_l_low = ptsz->array_psi_b1kgt_redshift[id_z_low-1];
+ double ln_l_up = ptsz->array_psi_b1kgt_redshift[id_z_up-1];
+ double result =  exp(ln_rho_low + ((z - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
+ if (isnan(result)||isinf(result)){
+   printf("get b1kgt : z %.3e l_asked %.4e k1 %.4e k2 %.4e ln_rho_low %.4e ln_rho_up %.4e\n",z,l_asked,exp(l1),exp(l2),ln_rho_low,ln_rho_up);
+   exit(0);
+ }
+ return result;
+
+
+}
+
+
 
 
 double get_dydz_at_z(double z_asked, struct tszspectrum * ptsz)
