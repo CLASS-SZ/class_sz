@@ -172,6 +172,12 @@ def run(args):
     kSZ_kSZ_gal_1h_fft = []
     kSZ_kSZ_gal_2h_fft = []
     kSZ_kSZ_gal_3h_fft = []
+    kSZ_kSZ_gallens_1h_fft = []
+    kSZ_kSZ_gallens_2h_fft = []
+    kSZ_kSZ_gallens_3h_fft = []
+    kSZ_kSZ_gallens_hf = []
+    cov_ll_kSZ_kSZ_gallens = []
+    cl_kSZ_kSZ_gallens_lensing_term = []
     kSZ_kSZ_tSZ_1h = []
     kSZ_kSZ_tSZ_2h = []
     kSZ_kSZ_tSZ_3h = []
@@ -441,7 +447,7 @@ def run(args):
             p_dict['mass_epsrel'] = 1.e-3
             #p_dict['halo occupation distribution'] = 'KFSW20'
 
-            p_dict['dlogell'] = 0.5 # 0.1
+            p_dict['dlogell'] = 0.1 # 0.1
             p_dict['use_bg_at_z_in_ksz2g_eff'] = 0
             # p_dict['dell'] = 100.
             # p_dict['dell'] = 100.
@@ -455,9 +461,11 @@ def run(args):
             p_dict['n_z_hmf_counter_terms'] = 100
 
             # p_dict['m_min_counter_terms'] = 1e8
-            p_dict['ksz_filter_file'] = path_to_class+'/sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt'
+            # p_dict['ksz_filter_file'] = path_to_class+'/sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt'
+            # p_dict['ksz_filter_file'] = path_to_class+'/sz_auxiliary_files/UNWISE_galaxy_distributions/planck_filter_in_num_filter_functions_l_fl_190122.txt'
+            #planck_filter_in_num_filter_functions_l_fl_190122.txt
             # print('setting ksz file')
-            # p_dict['ksz_filter_file'] = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/UNWISE_galaxy_distributions/AdvACT_kSZfilt_ellmax8000_smoothed_tapered_nosqrt_w1p5arcminbeam.txt'
+            p_dict['ksz_filter_file'] = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/UNWISE_galaxy_distributions/AdvACT_kSZfilt_ellmax8000_smoothed_tapered_nosqrt_w1p5arcminbeam.txt'
             p_dict['full_path_to_noise_curve_for_t_t'] = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/noise_curves/AdvACT_T_default_Nseasons4.0_NLFyrs2.0_noisecurves_deproj0_mask_16000_ell_TT_yy.txt'
             #p_dict['A10_file'] = "class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt"
 
@@ -640,7 +648,7 @@ def run(args):
         elif (args.plot_te_y_y == 'yes'):
             ax.set_ylabel(r'$\mathrm{T_e^{tSZ}} \quad [\mathrm{keV}]$',size=title_size)
         elif (args.plot_kSZ_kSZ_gal == 'yes'):
-            ax.set_ylabel(r'$\ell(\ell+1)C_\ell^\mathrm{^{kSZ^2-g}}/2\pi\quad [\mathrm{\mu K^2}]$',size=title_size)
+            ax.set_ylabel(r'$\ell(\ell+1)C_\ell^\mathrm{^{kSZ^2-X}}/2\pi\quad [\mathrm{\mu K^2}]$',size=title_size)
         # elif (args.plot_kSZ_kSZ_gal_2h == 'yes'):
         #     ax.set_ylabel(r'$\ell(\ell+1)C_\ell^\mathrm{^{kSZ^2-g\,(2h)}}/2\pi\quad [\mathrm{\mu K^2}]$',size=title_size)
         # elif (args.plot_kSZ_kSZ_gal_3h == 'yes'):
@@ -824,6 +832,9 @@ def run(args):
             or 'kSZ_kSZ_gal fft (1h)' in p_dict['output']
             or 'kSZ_kSZ_gal fft (2h)' in p_dict['output']
             or 'kSZ_kSZ_gal fft (3h)' in p_dict['output']
+            or 'kSZ_kSZ_gallens fft (1h)' in p_dict['output']
+            or 'kSZ_kSZ_gallens fft (2h)' in p_dict['output']
+            or 'kSZ_kSZ_gallens fft (3h)' in p_dict['output']
             or 'kSZ_kSZ_gal_2h' in p_dict['output']
             or 'kSZ_kSZ_gal_3h' in p_dict['output']
             or 'kSZ_kSZ_gal_hf' in p_dict['output']
@@ -900,7 +911,13 @@ def run(args):
                 kSZ_kSZ_tSZ_3h.append(R[:,61])
                 cov_ll_kSZ_kSZ_gal.append(R[:,62])
                 cl_kSZ_kSZ_gal_lensing_term.append(R[:,65])
-
+                # printf('collecting kSZ_kSZ_gallens ffts')
+                kSZ_kSZ_gallens_1h_fft.append(R[:,66])
+                kSZ_kSZ_gallens_2h_fft.append(R[:,67])
+                kSZ_kSZ_gallens_3h_fft.append(R[:,68])
+                cl_kSZ_kSZ_gallens_lensing_term.append(R[:,69])
+                kSZ_kSZ_gallens_hf.append(R[:,70])
+                cov_ll_kSZ_kSZ_gallens.append(R[:,75])
                 # r_dict[p_val] = L
 
                 #store value of Cl at ell=100
@@ -968,6 +985,12 @@ def run(args):
                     print(kSZ_kSZ_gal_2h[id_p])
                     print(kSZ_kSZ_gal_3h[id_p])
                     print(kSZ_kSZ_gal_hf[id_p])
+                    print(cl_kSZ_kSZ_gallens_lensing_term[id_p])
+                    print(cov_ll_kSZ_kSZ_gallens[id_p])
+                    print(kSZ_kSZ_gallens_1h_fft[id_p])
+                    print(kSZ_kSZ_gallens_2h_fft[id_p])
+                    print(kSZ_kSZ_gallens_3h_fft[id_p])
+                    print(kSZ_kSZ_gallens_hf[id_p])
                     fac =  (2.726e6)**2*multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi
                     if kSZ_kSZ_gal_1h[id_p].all() != 0:
                         ax.plot(multipoles[id_p],kSZ_kSZ_gal_1h[id_p]*fac,color='k',
@@ -1023,6 +1046,28 @@ def run(args):
                                 label = '3-halo',
                                 markersize = 3,
                             marker='o')
+
+                    if ('kSZ_kSZ_gallens fft (1h)' in p_dict['output']):
+                        ax.plot(multipoles[id_p],kSZ_kSZ_gallens_1h_fft[id_p]*fac,color='blue',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'gallens fft (1h)',
+                                markersize = 3,
+                            marker='o')
+                    if ('kSZ_kSZ_gallens fft (2h)' in p_dict['output']):
+                        ax.plot(multipoles[id_p],kSZ_kSZ_gallens_2h_fft[id_p]*fac,color='red',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'gallens fft (2h)',
+                                markersize = 3,
+                            marker='o')
+                    if ('kSZ_kSZ_gallens fft (3h)' in p_dict['output']):
+                        ax.plot(multipoles[id_p],kSZ_kSZ_gallens_3h_fft[id_p]*fac,color='magenta',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'gallens fft (3h)',
+                                markersize = 3,
+                            marker='o')
                     # if cl_kSZ_kSZ_gal_lensing_term[id_p].all() != 0:
                     if ('kSZ_kSZ_gal_lensing_term' in p_dict['output']):
                         ax.plot(multipoles[id_p],cl_kSZ_kSZ_gal_lensing_term[id_p]*fac,color='magenta',
@@ -1031,6 +1076,7 @@ def run(args):
                                 label = 'lensing term',
                                 markersize = 3,
                             marker='o')
+
                         # ax.plot(multipoles[id_p],-kSZ_kSZ_gal_3h[id_p]*fac,color='orange',
                         #         ls='--',alpha = 1.,
                         #         # label = val_label[id_p] + ' (3h)',
@@ -1086,17 +1132,17 @@ def run(args):
                     # #            np.c_[multipoles[id_p],kSZ_kSZ_gal_1h[id_p]*fac])
                     # #fac =  (2.726e6)**2*ell_ref*(ell_ref+1.)/2./np.pi
                     # #ax.plot(ell_ref,kSZ_kSZ_gal_1h_ref*fac,c='k',ls='--',label='ref',alpha=0.7)
-                    if id_p == N-1:
-                        fac = bgeff
-                        # ax.plot(ell_ref_sf_july,kSZ_kSZ_gal_1h_ref_sf_july*fac,c='r',ls='--',marker='o',label='Simone x bg_eff (July)',alpha=0.7)
-                        ax.plot(ell_ref_sf_august,kSZ_kSZ_gal_1h_ref_sf_august*fac,
-                        c='k',
-                        ls=':',
-                        marker='o',
-                        markersize = 2,
-                        markerfacecolor = 'r',
-                        label='previous computation (1605.02722)',
-                        alpha=0.7)
+                    # if id_p == N-1:
+                    #     fac = bgeff
+                    #     # ax.plot(ell_ref_sf_july,kSZ_kSZ_gal_1h_ref_sf_july*fac,c='r',ls='--',marker='o',label='Simone x bg_eff (July)',alpha=0.7)
+                    #     ax.plot(ell_ref_sf_august,kSZ_kSZ_gal_1h_ref_sf_august*fac,
+                    #     c='k',
+                    #     ls=':',
+                    #     marker='o',
+                    #     markersize = 2,
+                    #     markerfacecolor = 'r',
+                    #     label='previous computation (1605.02722)',
+                    #     alpha=0.7)
                     #ax.plot(multipoles[id_p],-kSZ_kSZ_gal_1h[id_p],color=col[id_p],ls='--',alpha = 1.,marker='o')
                         # np.savetxt("/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz_external_data_and_scripts/ksz2xunwise_hm_data/data_hm_bg_times_kSZ2g_sf_in_muk2_l_dllin_dlnonlin.txt",
                         #            np.c_[ell_ref_sf_july,kSZ_kSZ_gal_1h_ref_sf_july*fac,kSZ_kSZ_gal_1h_ref_sf_august*fac])
@@ -1445,11 +1491,11 @@ def run(args):
             ax.set_xscale('log')
             ax.set_yscale('log')
         elif (args.plot_kSZ_kSZ_gal == 'yes'):
-            # ax.set_xscale('log')
-            # ax.set_yscale('log')
-            ax.set_xscale('linear')
-            ax.set_yscale('linear')
-            ax.legend(loc=2,ncol = 1,frameon=True,fontsize=8)
+            ax.set_xscale('log')
+            ax.set_yscale('log')
+            # ax.set_xscale('linear')
+            # ax.set_yscale('linear')
+            ax.legend(loc=3,ncol = 1,frameon=True,fontsize=8)
         elif (args.plot_kSZ_kSZ_lensmag_1h == 'yes'):
             ax.set_xscale('log')
             ax.legend(loc=4,ncol = 1,frameon=True,fontsize=11)

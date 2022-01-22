@@ -546,6 +546,7 @@ if (ptsz->has_kSZ_kSZ_gallens_1h_fft
  || ptsz->has_kSZ_kSZ_gallens_2h_fft
  || ptsz->has_kSZ_kSZ_gallens_3h_fft
 ){
+
 tabulate_psi_b1kg(pba,pnl,ppm,ptsz);
 tabulate_psi_b2kg(pba,pnl,ppm,ptsz);
 tabulate_psi_b1kgt(pba,pnl,ppm,ptsz);
@@ -1479,7 +1480,12 @@ if(ptsz->has_kSZ_kSZ_gal_1h
 || ptsz->has_kSZ_kSZ_gal_3h_fft
 || ptsz->has_kSZ_kSZ_gal_covmat
 || ptsz->has_kSZ_kSZ_gal_lensing_term
+|| ptsz->has_kSZ_kSZ_gallens_1h_fft
+|| ptsz->has_kSZ_kSZ_gallens_2h_fft
+|| ptsz->has_kSZ_kSZ_gallens_3h_fft
+|| ptsz->has_kSZ_kSZ_gallens_covmat
 || ptsz->has_kSZ_kSZ_gallens_lensing_term
+|| ptsz->has_kSZ_kSZ_gallens_hf
 || ptsz->has_kSZ_kSZ_lensmag_1halo
 || ptsz->has_kSZ_kSZ_gal_2h
 || ptsz->has_kSZ_kSZ_gal_3h
@@ -2942,7 +2948,8 @@ int compute_sz(struct background * pba,
     || _kSZ_kSZ_lensmag_1halo_
     || _kSZ_kSZ_gal_2h_
     || _kSZ_kSZ_gal_3h_
-    || _kSZ_kSZ_gal_hf_){
+    || _kSZ_kSZ_gal_hf_
+    || _kSZ_kSZ_gallens_hf_){
      // loop over l1,l2 for each ell
      int index_ell_1 = 0;
      int index_theta_1 = 0;
@@ -2975,6 +2982,8 @@ int compute_sz(struct background * pba,
           printf("computing b_kSZ_kSZ_g_3h @ l3_id = %d and (th1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
          if (_kSZ_kSZ_gal_hf_)
           printf("computing b_kSZ_kSZ_g_hf @ l3_id = %d and (th1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
+         if (_kSZ_kSZ_gallens_hf_)
+          printf("computing b_kSZ_kSZ_kg_hf @ l3_id = %d and (th1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
          if (_kSZ_kSZ_lensmag_1halo_)
           printf("computing b_kSZ_kSZ_mu_1h @ l3_id = %d and (th1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
           }
@@ -3221,6 +3230,8 @@ exit(0);
   ptsz->cl_kSZ_kSZ_gal_3h[index_l] = cl_kSZ2_gal;
   else if(_kSZ_kSZ_gal_hf_)
   ptsz->cl_kSZ_kSZ_gal_hf[index_l] = cl_kSZ2_gal;
+  else if(_kSZ_kSZ_gallens_hf_)
+  ptsz->cl_kSZ_kSZ_gallens_hf[index_l] = cl_kSZ2_gal;
 
 
    }
@@ -3275,6 +3286,24 @@ exit(0);
    // if (1==0){
      int index_l = (int) Pvectsz[ptsz->index_multipole];
      ptsz->cl_kSZ_kSZ_gal_3h_fft[index_l] = Pvectsz[ptsz->index_integral]/(2.*_PI_)/(2.*_PI_);
+   }
+
+   if (_kSZ_kSZ_gallens_1h_fft_){
+   // if (1==0){
+     int index_l = (int) Pvectsz[ptsz->index_multipole];
+     ptsz->cl_kSZ_kSZ_gallens_1h_fft[index_l] = Pvectsz[ptsz->index_integral]/(2.*_PI_)/(2.*_PI_);
+   }
+
+   if (_kSZ_kSZ_gallens_2h_fft_){
+   // if (1==0){
+     int index_l = (int) Pvectsz[ptsz->index_multipole];
+     ptsz->cl_kSZ_kSZ_gallens_2h_fft[index_l] = Pvectsz[ptsz->index_integral]/(2.*_PI_)/(2.*_PI_);
+   }
+
+   if (_kSZ_kSZ_gallens_3h_fft_){
+   // if (1==0){
+     int index_l = (int) Pvectsz[ptsz->index_multipole];
+     ptsz->cl_kSZ_kSZ_gallens_3h_fft[index_l] = Pvectsz[ptsz->index_integral]/(2.*_PI_)/(2.*_PI_);
    }
 
 
@@ -4604,6 +4633,71 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
         pvectsz[ptsz->index_integrand] = integrand_projected_fields;
   }
 
+
+
+
+  else if (_kSZ_kSZ_gallens_1h_fft_){
+
+    double l_min = ptsz->l_min_samp_fftw;
+    double l_max = ptsz->l_max_samp_fftw; // this is a precision parameter
+        // tabulate the integrand in the "l" dimension:
+        const int N = ptsz->N_samp_fftw;
+        double k[N], Pk[N],Pko[N];
+        double lnk[N],lnpk[N];
+        int ik;
+        double fl;
+        double taul;
+        double l;
+        double m = exp(logM);
+
+        for (ik=0; ik<N; ik++){
+        k[ik] = exp(log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min)));
+        lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
+        l = k[ik];
+        fl = get_ksz_filter_at_l(l,ptsz);
+
+        // pvectsz[ptsz->index_multipole_for_tau_profile] = l;
+        evaluate_tau_profile((l+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+        taul = pvectsz[ptsz->index_tau_profile];
+        Pk[ik] = fl*taul;
+        Pko[ik] = fl*taul;
+        }
+
+        double r[N], xi[N];
+
+        xi2pk(N,k,Pk,r,xi,ptsz);
+        for (ik=0; ik<N; ik++){
+        // convolution:
+        xi[ik] = pow(xi[ik],2.);
+        }
+
+        pk2xi(N,r,xi,k,Pk,ptsz);
+
+        // evaluate at ell:
+        int index_l = (int) pvectsz[ptsz->index_multipole];
+        double ell = ptsz->ell[index_l];
+        double f_tau_f_tau = pwl_value_1d(N,lnk,Pk,log(ell));
+
+        // galaxy term:
+        double g; // this has 1/ng_bar
+        // pvectsz[ptsz->index_multipole_for_galaxy_profile] = ell;
+
+        double kp = (ell+0.5)/chi;
+        evaluate_lensing_profile(kp,m_delta_lensing,r_delta_lensing,c_delta_lensing,pvecback,pvectsz,pba,ptsz);
+        g =   pvectsz[ptsz->index_lensing_profile];
+
+
+        double dn = pvectsz[ptsz->index_hmf];
+        double integrand_projected_fields = dn*f_tau_f_tau*g;
+
+
+        if (isnan(integrand_projected_fields) || isinf(integrand_projected_fields)){
+        integrand_projected_fields = 0.;
+        }
+
+        pvectsz[ptsz->index_integrand] = integrand_projected_fields;
+  }
+
   else if (_kSZ_kSZ_gal_1h_){
 
    int index_theta_1 = (int) pvectsz[ptsz->index_multipole_1];
@@ -4756,6 +4850,105 @@ pk2xi(N,r,xi,k,Pk,ptsz);
    double kp = (ell+0.5)/chi;
    evaluate_galaxy_profile_2h(kp,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
    g =   pvectsz[ptsz->index_galaxy_profile];
+      // printf("ok3\n");
+   // double ell = l3;
+   double dn = pvectsz[ptsz->index_hmf];//get_dndlnM_at_z_and_M(z,m,ptsz);
+      // printf("ok4\n");
+   // for (ik=0; ik<N; ik++){
+
+   // lnpk[ik] = log(Pk[ik]);
+   // }
+   evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
+   double b1 = pvectsz[ptsz->index_halo_bias];
+   // printf("k = %.5e f_tau_f_tau = %.5e g = %.5e dn = %.5e b1 = %.5e\n",ell,f_tau_f_tau,g,dn,b1);
+   double integrand_projected_fields = dn*f_tau_f_tau*b1;
+
+
+
+
+
+// --> integrand wrt ln(1+z), ln(m)
+
+// printf("l = %.5e m = %.5e z = %.5e integrand = %.5e\n",ell,m,z,integrand_projected_fields);
+
+if (isnan(integrand_projected_fields) || isinf(integrand_projected_fields)){
+// printf("nans\n");
+integrand_projected_fields = 0.;
+}
+
+pvectsz[ptsz->index_integrand] = integrand_projected_fields;
+  }
+
+  else if (_kSZ_kSZ_gallens_2h_fft_){
+  // else if (1==0){
+// double l_min = 1e-2;
+// double l_max = 2e5; // this is a precision parameter
+double l_min = ptsz->l_min_samp_fftw;
+double l_max = ptsz->l_max_samp_fftw; // this is a precision parameter
+// tabulate the integrand in the "l" dimension:
+const int N = ptsz->N_samp_fftw;
+double k[N], Pk[N],Pko[N];
+double lnk[N],lnpk[N];
+int ik;
+double fl;
+double taul;
+double l;
+// double m = exp(logM);
+
+for (ik=0; ik<N; ik++){
+k[ik] = exp(log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min)));
+lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
+l = k[ik];
+fl = get_ksz_filter_at_l(l,ptsz);
+
+// pvectsz[ptsz->index_multipole_for_tau_profile] = l;//ptsz->ell_kSZ2_gal_multipole_grid[index_l_2];
+evaluate_tau_profile((l+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+taul = pvectsz[ptsz->index_tau_profile];//get_tau_profile_at_z_m_l(z,m,l,ptsz,pba);
+Pk[ik] = fl*taul;
+Pko[ik] = fl*taul;
+// if(l>3e3)
+//   printf("k = %.5e pk = %.5e\n",l,Pk[ik]);
+}
+
+double r[N], xi[N];
+
+// printf("\n\n####################\n");
+// printf("To position space:\n");
+// printf("####################\n\n");
+// pk2xi(N,k,Pk,r,xi,ptsz);
+xi2pk(N,k,Pk,r,xi,ptsz);
+for (ik=0; ik<N; ik++){
+// printf("r = %.5e xi = %.5e\n",r[ik],xi[ik]);
+// convolution:
+xi[ik] = pow(xi[ik],2.);
+}
+
+// printf("\n\n####################\n");
+// printf("Back to k space:\n");
+// printf("####################\n\n");
+pk2xi(N,r,xi,k,Pk,ptsz);
+// xi2pk(N,r,xi,k,Pk,ptsz);
+// xi2pk(N,r,xi,k,Pk,ptsz);
+
+// for (ik=0; ik<N; ik++){
+// // printf("k = %.5e pk rec = %.5e pk = %.5e\n",k[ik],Pk[ik],Pk[ik]/Pko[ik]);
+// lnpk[ik] = log(fabs(Pk[ik]));
+// }
+   // evaluate at ell:
+   int index_l = (int) pvectsz[ptsz->index_multipole];
+   double ell = ptsz->ell[index_l];
+   // printf("ok1\n");
+
+   // double f_tau_f_tau = exp(pwl_value_1d(N,lnk,lnpk,log(ell)));
+   double f_tau_f_tau = pwl_value_1d(N,lnk,Pk,log(ell));
+   // printf("ok2\n");
+   // galaxy term:
+   double g;// = get_galaxy_profile_at_z_m_l_1h(z,m,ell,ptsz,pba); // this has 1/ng_bar
+   // pvectsz[ptsz->index_multipole_for_galaxy_profile] = ell;//ptsz->ell[index_l_3];
+   // double chi = sqrt(pvectsz[ptsz->index_chi2]);
+   double kp = (ell+0.5)/chi;
+   evaluate_lensing_profile(kp,m_delta_lensing,r_delta_lensing,c_delta_lensing,pvecback,pvectsz,pba,ptsz);
+   g =   pvectsz[ptsz->index_lensing_profile];
       // printf("ok3\n");
    // double ell = l3;
    double dn = pvectsz[ptsz->index_hmf];//get_dndlnM_at_z_and_M(z,m,ptsz);
@@ -6437,10 +6630,13 @@ int evaluate_lensing_profile(double kl,
    // pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];  // multipole going into truncated nfw, unfortunate name
    double xout = ptsz->x_out_truncated_nfw_profile;
    // double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
-   double chi = sqrt(pvectsz[ptsz->index_chi2]);
+   // double chi = sqrt(pvectsz[ptsz->index_chi2]);
    // double k = (l+0.5)/chi;
-   double l = chi*kl-0.5;
-   result =  evaluate_truncated_nfw_profile(pvectsz[ptsz->index_z],kl,r_delta,c_delta,xout);
+   // double l = chi*kl-0.5;
+   // if (l<0.)
+   //  result = 1e-100;
+   // else
+    result =  evaluate_truncated_nfw_profile(pvectsz[ptsz->index_z],kl,r_delta,c_delta,xout);
 
 
 
@@ -6451,35 +6647,35 @@ int evaluate_lensing_profile(double kl,
   // (\kappa = l(l+1)\phi_l/2, see Hill & Spergel 1312.4525)
 
   int index_md = (int) pvectsz[ptsz->index_md];
-  if ( _gal_lens_2h_
-    || _gal_lens_1h_
-    || _gal_lensmag_1h_
-    || _gal_lensmag_2h_
-    || _gal_gallens_1h_
-    || _gal_gallens_2h_
-    || _kSZ_kSZ_gallens_1h_fft_
-    || _kSZ_kSZ_gallens_2h_fft_
-    || _kSZ_kSZ_gallens_3h_fft_
-    || _gallens_gallens_1h_
-    || _gallens_gallens_2h_
-    || _gallens_lens_1h_
-    || _gallens_lens_2h_
-    || _lensmag_lensmag_1h_
-    || _lensmag_lensmag_2h_
-    || _lens_lensmag_1h_
-    || _lens_lensmag_2h_
-    //|| _cib_lens_1h_
-    //|| _cib_lens_1h_
-    || _tSZ_lens_1h_
-    || _tSZ_lens_2h_
-    || _tSZ_lensmag_1h_
-    || _tSZ_lensmag_2h_
-    || _kSZ_kSZ_lensmag_1halo_
-    || _lens_lens_1h_
-    || _lens_lens_2h_)
+  // if ( _gal_lens_2h_
+  //   || _gal_lens_1h_
+  //   || _gal_lensmag_1h_
+  //   || _gal_lensmag_2h_
+  //   || _gal_gallens_1h_
+  //   || _gal_gallens_2h_
+  //   || _kSZ_kSZ_gallens_1h_fft_
+  //   || _kSZ_kSZ_gallens_2h_fft_
+  //   || _kSZ_kSZ_gallens_3h_fft_
+  //   || _gallens_gallens_1h_
+  //   || _gallens_gallens_2h_
+  //   || _gallens_lens_1h_
+  //   || _gallens_lens_2h_
+  //   || _lensmag_lensmag_1h_
+  //   || _lensmag_lensmag_2h_
+  //   || _lens_lensmag_1h_
+  //   || _lens_lensmag_2h_
+  //   //|| _cib_lens_1h_
+  //   //|| _cib_lens_1h_
+  //   || _tSZ_lens_1h_
+  //   || _tSZ_lens_2h_
+  //   || _tSZ_lensmag_1h_
+  //   || _tSZ_lensmag_2h_
+  //   || _kSZ_kSZ_lensmag_1halo_
+  //   || _lens_lens_1h_
+  //   || _lens_lens_2h_)
   lensing_normalisation = 1.; // kappa
-  else // phi
-  lensing_normalisation = 2./(l*(l+1.));
+  // else // phi
+  // lensing_normalisation = 2./(l*(l+1.));
 
 
   // double rho0;
