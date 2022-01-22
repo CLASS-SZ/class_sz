@@ -49,10 +49,14 @@
 #define _kSZ_kSZ_gallens_1h_fft_ ((ptsz->has_kSZ_kSZ_gallens_1h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gallens_1h_fft))
 #define _kSZ_kSZ_gallens_2h_fft_ ((ptsz->has_kSZ_kSZ_gallens_2h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gallens_2h_fft))
 #define _kSZ_kSZ_gallens_3h_fft_ ((ptsz->has_kSZ_kSZ_gallens_3h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gallens_3h_fft))
+#define _kSZ_kSZ_lens_1h_fft_ ((ptsz->has_kSZ_kSZ_lens_1h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lens_1h_fft))
+#define _kSZ_kSZ_lens_2h_fft_ ((ptsz->has_kSZ_kSZ_lens_2h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lens_2h_fft))
+#define _kSZ_kSZ_lens_3h_fft_ ((ptsz->has_kSZ_kSZ_lens_3h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lens_3h_fft))
 #define _kSZ_kSZ_gal_2h_ ((ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_2h))
 #define _kSZ_kSZ_gal_3h_ ((ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_3h))
 #define _kSZ_kSZ_gal_hf_ ((ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_hf))
 #define _kSZ_kSZ_gallens_hf_ ((ptsz->has_kSZ_kSZ_gallens_hf == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gallens_hf))
+#define _kSZ_kSZ_lens_hf_ ((ptsz->has_kSZ_kSZ_lens_hf == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lens_hf))
 #define _kSZ_kSZ_lensmag_1halo_ ((ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lensmag_1halo))
 #define _gal_gal_1h_ ((ptsz->has_gal_gal_1h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_1h))
 #define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
@@ -209,6 +213,12 @@ struct tszspectrum {
   double * cl_kSZ_kSZ_gallens_hf;
   double * cov_ll_kSZ_kSZ_gallens;
   double * cl_kSZ_kSZ_gallens_lensing_term;
+  double * cl_kSZ_kSZ_lens_1h_fft;
+  double * cl_kSZ_kSZ_lens_2h_fft;
+  double * cl_kSZ_kSZ_lens_3h_fft;
+  double * cl_kSZ_kSZ_lens_hf;
+  double * cov_ll_kSZ_kSZ_lens;
+  double * cl_kSZ_kSZ_lens_lensing_term;
   double * cl_kSZ_kSZ_gal_2h;
   double * cl_kSZ_kSZ_gal_3h;
   double * cl_kSZ_kSZ_gal_hf;
@@ -469,8 +479,10 @@ struct tszspectrum {
 
   int has_kSZ_kSZ_gal_covmat;
   int has_kSZ_kSZ_gallens_covmat;
+  int has_kSZ_kSZ_lens_covmat;
   int has_kSZ_kSZ_gal_lensing_term;
   int has_kSZ_kSZ_gallens_lensing_term;
+  int has_kSZ_kSZ_lens_lensing_term;
 
   int has_kSZ_kSZ_gal_hf;
   int index_md_kSZ_kSZ_gal_hf;
@@ -496,6 +508,27 @@ struct tszspectrum {
   int index_md_kSZ_kSZ_gallens_hf;
   int index_integrand_id_kSZ_kSZ_gallens_hf_first;
   int index_integrand_id_kSZ_kSZ_gallens_hf_last;
+
+  int has_kSZ_kSZ_lens_1h_fft;
+  int index_md_kSZ_kSZ_lens_1h_fft;
+  int index_integrand_id_kSZ_kSZ_lens_1h_fft_first;
+  int index_integrand_id_kSZ_kSZ_lens_1h_fft_last;
+
+  int has_kSZ_kSZ_lens_2h_fft;
+  int index_md_kSZ_kSZ_lens_2h_fft;
+  int index_integrand_id_kSZ_kSZ_lens_2h_fft_first;
+  int index_integrand_id_kSZ_kSZ_lens_2h_fft_last;
+
+  int has_kSZ_kSZ_lens_3h_fft;
+  int index_md_kSZ_kSZ_lens_3h_fft;
+  int index_integrand_id_kSZ_kSZ_lens_3h_fft_first;
+  int index_integrand_id_kSZ_kSZ_lens_3h_fft_last;
+
+  int has_kSZ_kSZ_lens_hf;
+  int index_md_kSZ_kSZ_lens_hf;
+  int index_integrand_id_kSZ_kSZ_lens_hf_first;
+  int index_integrand_id_kSZ_kSZ_lens_hf_last;
+
 
   int has_kSZ_kSZ_lensmag_1halo;
   int index_md_kSZ_kSZ_lensmag_1halo;
@@ -1930,6 +1963,22 @@ double radial_kernel_W_lensing_magnification_at_z(double * pvecback,
                                                   struct primordial * ppm,
                                                   struct nonlinear * pnl,
                                                   struct tszspectrum * ptsz);
+
+double radial_kernel_W_cmb_lensing_at_z(double z,
+                                        double * pvectsz,
+                                        struct background * pba,
+                                        struct tszspectrum * ptsz);
+
+double radial_kernel_W_galaxy_lensing_at_z(double z,
+                                           double * pvectsz,
+                                           struct background * pba,
+                                           struct tszspectrum * ptsz);
+
+double radial_kernel_W_galaxy_lensing_magnification_at_z(double z,
+                                                         double * pvectsz,
+                                                         struct background * pba,
+                                                         struct tszspectrum * ptsz);
+
 
 double evaluate_galaxy_number_counts( double * pvecback,
                                     double * pvectsz,

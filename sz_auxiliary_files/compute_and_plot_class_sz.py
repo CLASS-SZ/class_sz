@@ -178,6 +178,13 @@ def run(args):
     kSZ_kSZ_gallens_hf = []
     cov_ll_kSZ_kSZ_gallens = []
     cl_kSZ_kSZ_gallens_lensing_term = []
+    kSZ_kSZ_lens_1h_fft = []
+    kSZ_kSZ_lens_2h_fft = []
+    kSZ_kSZ_lens_3h_fft = []
+    kSZ_kSZ_lens_hf = []
+    cov_ll_kSZ_kSZ_lens = []
+    cl_kSZ_kSZ_lens_lensing_term = []
+
     kSZ_kSZ_tSZ_1h = []
     kSZ_kSZ_tSZ_2h = []
     kSZ_kSZ_tSZ_3h = []
@@ -428,7 +435,7 @@ def run(args):
             p_dict['bispectrum_lambda_3'] = 1.
             p_dict['pressure profile'] =  'B12'
 
-    if ("kSZ_kSZ_gal" in p_dict['output']):
+    if (("kSZ_kSZ_gal" in p_dict['output']) or ("kSZ_kSZ_lens" in p_dict['output'])):
             # p_dict['nfw_profile_epsabs'] = 1.e-6
             # p_dict['nfw_profile_epsrel'] = 1.e-10
             # p_dict['tol_background_integration'] = 1e-10
@@ -485,6 +492,7 @@ def run(args):
             # for hf comp. these next two params should be checked carefully.
             p_dict['k_per_decade_class_sz'] = 50 # at least 40?
             p_dict['k_per_decade_for_pk'] = 50 # at least 40?
+
 
             # 'k_min_for_pk_class_sz' : 0.001,
             # 'k_max_for_pk_class_sz' : 60.0,
@@ -835,6 +843,9 @@ def run(args):
             or 'kSZ_kSZ_gallens fft (1h)' in p_dict['output']
             or 'kSZ_kSZ_gallens fft (2h)' in p_dict['output']
             or 'kSZ_kSZ_gallens fft (3h)' in p_dict['output']
+            or 'kSZ_kSZ_lens fft (1h)' in p_dict['output']
+            or 'kSZ_kSZ_lens fft (2h)' in p_dict['output']
+            or 'kSZ_kSZ_lens fft (3h)' in p_dict['output']
             or 'kSZ_kSZ_gal_2h' in p_dict['output']
             or 'kSZ_kSZ_gal_3h' in p_dict['output']
             or 'kSZ_kSZ_gal_hf' in p_dict['output']
@@ -918,6 +929,12 @@ def run(args):
                 cl_kSZ_kSZ_gallens_lensing_term.append(R[:,69])
                 kSZ_kSZ_gallens_hf.append(R[:,70])
                 cov_ll_kSZ_kSZ_gallens.append(R[:,75])
+                kSZ_kSZ_lens_1h_fft.append(R[:,76])
+                kSZ_kSZ_lens_2h_fft.append(R[:,77])
+                kSZ_kSZ_lens_3h_fft.append(R[:,78])
+                cl_kSZ_kSZ_lens_lensing_term.append(R[:,79])
+                kSZ_kSZ_lens_hf.append(R[:,80])
+                cov_ll_kSZ_kSZ_lens.append(R[:,81])
                 # r_dict[p_val] = L
 
                 #store value of Cl at ell=100
@@ -986,11 +1003,17 @@ def run(args):
                     print(kSZ_kSZ_gal_3h[id_p])
                     print(kSZ_kSZ_gal_hf[id_p])
                     print(cl_kSZ_kSZ_gallens_lensing_term[id_p])
+                    print(cl_kSZ_kSZ_lens_lensing_term[id_p])
                     print(cov_ll_kSZ_kSZ_gallens[id_p])
                     print(kSZ_kSZ_gallens_1h_fft[id_p])
                     print(kSZ_kSZ_gallens_2h_fft[id_p])
                     print(kSZ_kSZ_gallens_3h_fft[id_p])
                     print(kSZ_kSZ_gallens_hf[id_p])
+                    print(cov_ll_kSZ_kSZ_lens[id_p])
+                    print(kSZ_kSZ_lens_1h_fft[id_p])
+                    print(kSZ_kSZ_lens_2h_fft[id_p])
+                    print(kSZ_kSZ_lens_3h_fft[id_p])
+                    print(kSZ_kSZ_lens_hf[id_p])
                     fac =  (2.726e6)**2*multipoles[id_p]*(multipoles[id_p]+1.)/2./np.pi
                     if kSZ_kSZ_gal_1h[id_p].all() != 0:
                         ax.plot(multipoles[id_p],kSZ_kSZ_gal_1h[id_p]*fac,color='k',
@@ -1068,6 +1091,28 @@ def run(args):
                                 label = 'gallens fft (3h)',
                                 markersize = 3,
                             marker='o')
+                    if ('kSZ_kSZ_lens fft (1h)' in p_dict['output']):
+                        ax.plot(multipoles[id_p],kSZ_kSZ_lens_1h_fft[id_p]*fac,color='blue',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'lens fft (1h)',
+                                markersize = 3,
+                            marker='o')
+                    if ('kSZ_kSZ_lens fft (2h)' in p_dict['output']):
+                        ax.plot(multipoles[id_p],kSZ_kSZ_lens_2h_fft[id_p]*fac,color='red',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'lens fft (2h)',
+                                markersize = 3,
+                            marker='o')
+                    if ('kSZ_kSZ_lens fft (3h)' in p_dict['output']):
+                        ax.plot(multipoles[id_p],kSZ_kSZ_lens_3h_fft[id_p]*fac,color='magenta',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'lens fft (3h)',
+                                markersize = 3,
+                            marker='o')
+
                     # if cl_kSZ_kSZ_gal_lensing_term[id_p].all() != 0:
                     if ('kSZ_kSZ_gal_lensing_term' in p_dict['output']):
                         ax.plot(multipoles[id_p],cl_kSZ_kSZ_gal_lensing_term[id_p]*fac,color='magenta',
