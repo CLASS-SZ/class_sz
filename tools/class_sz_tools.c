@@ -6843,16 +6843,10 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
 
   }
   else if ((V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf)) {
-  //
-  // int index_l_1 = (int) V->pvectsz[V->ptsz->index_multipole_1];
-  // int index_l_2 = (int) V->pvectsz[V->ptsz->index_multipole_2];
-  // int index_l_3 = (int) V->pvectsz[V->ptsz->index_multipole_3];
 
   int index_theta_1 = (int) V->pvectsz[V->ptsz->index_multipole_1];
   int index_l_2 = (int) V->pvectsz[V->ptsz->index_multipole_2];
   int index_l_3 = (int) V->pvectsz[V->ptsz->index_multipole_3];
-
-  // printf("index_l_1 = %d index_l_2 = %d index_l_3 = %d\n",index_theta_1,index_l_2,index_l_3);
 
 
   double l2 = exp(V->ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
@@ -6861,17 +6855,6 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   double ell_prime = l2;
   double theta_1 = V->ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
   double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
-  // double cos_theta_1 = V->ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
-  // double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos_theta_1);
-  // double l1 = sqrt(ell*ell+ell_prime*ell_prime-2.*ell*ell_prime*theta_1);
-
-
-  //
-  // double l1 = V->pvectsz[V->ptsz->index_ell_1];
-  // double l2 = V->pvectsz[V->ptsz->index_ell_2];
-  // double l3 = V->pvectsz[V->ptsz->index_ell_3];
-
-  // printf("l1 = %.3e l2 = %.3e l3 = %3.e\n",l1,l2,l3);
 
 
   double z = V->pvectsz[V->ptsz->index_z];
@@ -6881,246 +6864,45 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   double k2 = (l2+0.5)/d_A;
   double k3 = (l3+0.5)/d_A;
 
-//   double pk1,pk2,pk3;
-//
-//   // printf("k1 = %.3e k2 = %.3e k3 = %3.e\n",k1,k2,k3);
-//
-//
-//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l1; // l1,l2 or l3
-//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
-//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-//   double pk1_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-//
-//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l2; // l1,l2 or l3
-//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
-//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-//   double pk2_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-//
-//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l3; // l1,l2 or l3
-//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
-//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-//   double pk3_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-// //
-// // double * pk_ic2 = NULL;
-// // pk1 = 0.;
-// // nonlinear_pk_at_k_and_z(
-// //                                     V->pba,
-// //                                     V->ppm,
-// //                                     V->pnl,
-// //                                     pk_nonlinear,
-// //                                     k1*V->pba->h,
-// //                                     z,
-// //                                     V->pnl->index_pk_m,
-// //                                     &pk1, // number *out_pk_l
-// //                                     pk_ic2 // array out_pk_ic_l[index_ic_ic]
-// //                                   );
-// // // //now compute P(k) in units of h^-3 Mpc^3
-// // pk1 *= pow(V->pba->h,3.);
-// // pk1_c = pk1;
-// // // double pk2;
-// // //Input: wavenumber in 1/Mpc
-// // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-// // printf("pk1=%.3e  %.3e\n",pk1,pk1_c);
-// // class_call(nonlinear_pk_at_k_and_z(
-// //                                     V->pba,
-// //                                     V->ppm,
-// //                                     V->pnl,
-// //                                     pk_nonlinear,
-// //                                     k2*V->pba->h,
-// //                                     z,
-// //                                     V->pnl->index_pk_m,
-// //                                     &pk2, // number *out_pk_l
-// //                                     pk_ic // array out_pk_ic_l[index_ic_ic]
-// //                                   ),
-// //                                   V->pnl->error_message,
-// //                                   V->pnl->error_message);
-// // //now compute P(k) in units of h^-3 Mpc^3
-// // pk2 *= pow(V->pba->h,3.);
-// // // double pk3;
-// // //Input: wavenumber in 1/Mpc
-// // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-// // // printf("z=%.3e\n",z);
-// // class_call(nonlinear_pk_at_k_and_z(
-// //                                     V->pba,
-// //                                     V->ppm,
-// //                                     V->pnl,
-// //                                     pk_nonlinear,
-// //                                     k3*V->pba->h,
-// //                                     z,
-// //                                     V->pnl->index_pk_m,
-// //                                     &pk3, // number *out_pk_l
-// //                                     pk_ic // array out_pk_ic_l[index_ic_ic]
-// //                                   ),
-// //                                   V->pnl->error_message,
-// //                                   V->pnl->error_message);
-// // //now compute P(k) in units of h^-3 Mpc^3
-// // pk3 *= pow(V->pba->h,3.);
-//
-//
-//   // printf("pk1 = %.3e pk2 = %.3e pk3 = %3.e\n",pk1,pk2,pk3);
-//
-//
-//   double z_asked = log(1.+z);
-//   double R_asked = log(8./V->pba->h); //log(R) in Mpc
-//   double sigma8_at_z =  exp(pwl_interp_2d(
-//                              V->ptsz->n_arraySZ,
-//                              V->ptsz->ndimSZ,
-//                              V->ptsz->array_redshift,
-//                              V->ptsz->array_radius,
-//                              V->ptsz->array_sigma_at_z_and_R,
-//                              1,
-//                              &z_asked,
-//                              &R_asked));
-//
-//   double knl = get_knl_at_z(z,V->ptsz);
-//
-//   double n1 = get_nl_index_at_z_and_k(z,k1,V->ptsz,V->pnl);
-//   double n2 = get_nl_index_at_z_and_k(z,k2,V->ptsz,V->pnl);
-//   double n3 = get_nl_index_at_z_and_k(z,k3,V->ptsz,V->pnl);
-//
-//   // printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",n1,n2,n3);
-//   // printf("sigma8_at_z = %.3e \t knl = %.3e\n",sigma8_at_z,knl);
-//
-//   double f2_eff_12 =  bispectrum_f2_kernel_eff(k1,k2,k3,n1,n2,sigma8_at_z,knl);
-//   double f2_eff_23 =  bispectrum_f2_kernel_eff(k2,k3,k1,n2,n3,sigma8_at_z,knl);
-//   double f2_eff_31 =  bispectrum_f2_kernel_eff(k3,k1,k2,n3,n1,sigma8_at_z,knl);
-//   // printf("f2_eff_12 = %.3e \t f2_eff_23 = %.3e \t f2_eff_31 = %.3e\n",
-//   // f2_eff_12,
-//   // f2_eff_23,
-//   // f2_eff_31);
-//
-//   double b123 = 2.*pk1_c*pk2_c*f2_eff_12 + 2.*pk2_c*pk3_c*f2_eff_23 + 2.*pk3_c*pk1_c*f2_eff_31;
-//
-//
-//   double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
-//   double galaxy_normalisation = 1.;//H_over_c_in_h_over_Mpc; // here is normally also the bias but we take it out and multiply afterward
-//   //galaxy_normalisation *= pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.);///(1.+z);
-//   double sigmaT_over_mp = 8.305907197761162e-17 * pow(V->pba->h,2)/V->pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
-//   double a = 1. / (1. + z);
-//   double tau_fac = a*sigmaT_over_mp*V->pba->Omega0_b/V->ptsz->Omega_m_0/V->ptsz->mu_e*V->ptsz->f_free;
-//   double tau_normalisation =tau_fac
-//                             *pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,-2.)
-//                             *V->pvecback[V->pba->index_bg_Omega_m]*V->pvectsz[V->ptsz->index_Rho_crit];
-//                             // note: Omega_m*Rho_crit = rho_m(z)
-//
-//   // simone ferraro's reio implementation:
-//   // double ya = pow(1./a,1.5);//**1.5
-//   // double zre = 10.3 ;    // # reionization  redshift
-//   // double are = 1. / (1 + zre);
-//   // double yre = pow(1./are,1.5);//**1.5
-//   // double deltay = 7.56;
-//   // double xe = (0.5*(1.-tanh((ya-yre)/deltay)));
-//   // tau_normalisation *= pow(1. + z,3) * xe;
-//   double vrms2 = 1.;//get_vrms2_at_z(z,V->ptsz);
-//   double result_c = vrms2*tau_normalisation*tau_normalisation*galaxy_normalisation*b123;
-  // double result_calc;
-  // printf("okkk\n");
-  // double result_ev = 0.;
-  // class_call(evaluate_ttg_bispectrum_at_z_effective_approach(&result_ev,k1,k2,k3,z,V->ptsz,V->pba,V->pnl,V->ppm),
-  // V->ptsz->error_message,
-  // V->ptsz->error_message);
-  // class_call(evaluate_ttg_bispectrum_at_z_tree_level_PT(&result_ev,k1,k2,k3,z,V->ptsz,V->pba,V->pnl,V->ppm),
-  // V->ptsz->error_message,
-  // V->ptsz->error_message);
-  // result = result_ev;//get_ttg_bispectrum_at_z_effective_approach(k1,k2,k3,z,V->ptsz,V->pba,V->pnl,V->ppm);
   result = get_ttg_bispectrum_at_z_effective_approach(k1,k2,k3,z,V->ptsz,V->pba,V->pnl,V->ppm);
-  // printf("z = %.8e result = %.8e result_calc = %.8e\n",z,result,result_calc);
-  // printf("result = %.3e tau_norm = %.3e gal_norm = %.3e b123 = %.3e\n",
-  // result,
-  // tau_normalisation,
-  // galaxy_normalisation,
-  // b123);
 
-//
-//   if (isnan(result) || isinf(result) || result == 0.){
-//     // result = 1.e-300;
-//   // printf("z = %.3e b123 = %.3e\n",z,b123);
-//   printf("some problems @ k1 = %.8e k2 = %.8e k3 = %.8e\n",k1,k2,k3);
-//
-// double * pk_ic = NULL;
-// pk1 = 0.;
-// nonlinear_pk_at_k_and_z(
-//                                     V->pba,
-//                                     V->ppm,
-//                                     V->pnl,
-//                                     pk_nonlinear,
-//                                     k1*V->pba->h,
-//                                     z,
-//                                     V->pnl->index_pk_m,
-//                                     &pk1, // number *out_pk_l
-//                                     pk_ic // array out_pk_ic_l[index_ic_ic]
-//                                   );
-// // //now compute P(k) in units of h^-3 Mpc^3
-// pk1 *= pow(V->pba->h,3.);
-// printf("here with some problems @ pk1 = %.8e\n",pk1);
-// // pk1_c = pk1;
-// // double pk2;
-// //Input: wavenumber in 1/Mpc
-// //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-// // printf("pk1=%.3e  %.3e\n",pk1,pk1_c);
-// nonlinear_pk_at_k_and_z(
-//                                     V->pba,
-//                                     V->ppm,
-//                                     V->pnl,
-//                                     pk_nonlinear,
-//                                     k2*V->pba->h,
-//                                     z,
-//                                     V->pnl->index_pk_m,
-//                                     &pk2, // number *out_pk_l
-//                                     pk_ic // array out_pk_ic_l[index_ic_ic]
-//                                   );
-// //now compute P(k) in units of h^-3 Mpc^3
-// pk2 *= pow(V->pba->h,3.);
-// printf("here with some problems @ pk2 = %.8e\n",pk2);
-// // double pk3;
-// //Input: wavenumber in 1/Mpc
-// //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-// // printf("z=%.3e\n",z);
-// nonlinear_pk_at_k_and_z(
-//                                     V->pba,
-//                                     V->ppm,
-//                                     V->pnl,
-//                                     pk_nonlinear,
-//                                     k3*V->pba->h,
-//                                     z,
-//                                     V->pnl->index_pk_m,
-//                                     &pk3, // number *out_pk_l
-//                                     pk_ic // array out_pk_ic_l[index_ic_ic]
-//                                   );
-//
-// //now compute P(k) in units of h^-3 Mpc^3
-// pk3 *= pow(V->pba->h,3.);
-// printf("here with some problems @ pk3 = %.8e\n",pk3);
-//
-//
-//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l1; // l1,l2 or l3
-//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
-//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-//   pk1_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-//
-//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l2; // l1,l2 or l3
-//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
-//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-//   pk2_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-//
-//   V->pvectsz[V->ptsz->index_multipole_for_pk] = l3; // l1,l2 or l3
-//   V->pvectsz[V->ptsz->index_pk_for_halo_bias] = 0.;
-//   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-//   pk3_c = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-//
-//
-//   printf("k1 = %.3e k2 = %.3e k3 = %.3e b123 = %.3e res = %.3e ttg = %.3e pk1 = %.3e %.3e pk2 = %.3e %.3e pk3 = %.3e %.3e\n",k1,k2,k3,result_c,
-//   result,0.,//get_ttg_bispectrum_at_z_effective_approach(k1,k2,k3,z,V->ptsz,V->pba,V->pnl,V->ppm),
-// pk1,pk1_c,pk2,pk2_c,pk3,pk3_c);
-//   // printf("l1 = %.3e l2 = %.3e l3 = %.3e\n",l1,l2,l3);
-//   // printf("pk1 = %.3e pk2 = %.3e pk3 = %.3e\n",pk1,pk2,pk3);
-//   // printf("n1 = %.3e \t n2 = %.3e \t n3 = %.3e\n",n1,n2,n3);
-//   // printf("\n\n");
-//   exit(0);
-// }
+  double bg = 1.;
+  if (V->ptsz->use_bg_at_z_in_ksz2g_eff==1)
+    bg = get_mean_galaxy_bias_at_z(z,V->ptsz);
+  result *= bg;
 
 
   }
+
+  else if(
+    ((V->ptsz->has_kSZ_kSZ_gallens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_hf))
+  ||((V->ptsz->has_kSZ_kSZ_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_hf))
+  ) {
+
+  int index_theta_1 = (int) V->pvectsz[V->ptsz->index_multipole_1];
+  int index_l_2 = (int) V->pvectsz[V->ptsz->index_multipole_2];
+  int index_l_3 = (int) V->pvectsz[V->ptsz->index_multipole_3];
+
+
+  double l2 = exp(V->ptsz->ell_kSZ2_gal_multipole_grid[index_l_2]);
+  double l3 = V->ptsz->ell[index_l_3];
+  double ell = l3;
+  double ell_prime = l2;
+  double theta_1 = V->ptsz->theta_kSZ2_gal_theta_grid[index_theta_1];
+  double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
+
+
+  double z = V->pvectsz[V->ptsz->index_z];
+  double d_A = V->pvecback[V->pba->index_bg_ang_distance]*V->pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+
+  double k1 = (l1+0.5)/d_A;
+  double k2 = (l2+0.5)/d_A;
+  double k3 = (l3+0.5)/d_A;
+
+  result = get_ttg_bispectrum_at_z_effective_approach(k1,k2,k3,z,V->ptsz,V->pba,V->pnl,V->ppm);
+
+  }
+
   else if ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens)) {
 
   double delta_ell_lens =  delta_ell_lens_at_ell_and_z(V->pvecback,
@@ -7519,10 +7301,13 @@ if (
     ||((V->ptsz->has_kSZ_kSZ_lens_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_1h_fft))
     ||((V->ptsz->has_kSZ_kSZ_lens_2h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_2h_fft))
     ||((V->ptsz->has_kSZ_kSZ_lens_3h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_3h_fft))
+    ||((V->ptsz->has_kSZ_kSZ_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_hf))
 ){
 
 double Wg = radial_kernel_W_cmb_lensing_at_z(z,V->pvectsz,V->pba,V->ptsz);
 result *= Wg;
+
+
 }
 
 if(
@@ -7543,6 +7328,7 @@ if (
 ||((V->ptsz->has_kSZ_kSZ_gallens_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_1h_fft))
 ||((V->ptsz->has_kSZ_kSZ_gallens_2h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_2h_fft))
 ||((V->ptsz->has_kSZ_kSZ_gallens_3h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_3h_fft))
+||((V->ptsz->has_kSZ_kSZ_gallens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_hf))
 ){
 
 double Wg = radial_kernel_W_galaxy_lensing_at_z(z,V->pvectsz,V->pba,V->ptsz);
@@ -7557,7 +7343,15 @@ double Wg = radial_kernel_W_galaxy_lensing_at_z(z,V->pvectsz,V->pba,V->ptsz);
 result *= pow(Wg,2.);
 }
 
-
+if (
+  ((V->ptsz->has_kSZ_kSZ_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_hf))
+||((V->ptsz->has_kSZ_kSZ_gallens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_hf))
+){
+  // result *= 1./(pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/chi);
+  // result *= 1./(pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/chi/chi/chi);
+  double Omega_m = V->ptsz->Omega_m_0;
+  result *= 3.*pow(Omega_m,1.)*pow(V->pba->H0/V->pba->h,2)/2./chi*pow(1.+z,1.);
+}
 
 
 // multiply by velocity dispersion

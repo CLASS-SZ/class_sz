@@ -454,7 +454,7 @@ def run(args):
             p_dict['mass_epsrel'] = 1.e-3
             #p_dict['halo occupation distribution'] = 'KFSW20'
 
-            p_dict['dlogell'] = 0.1 # 0.1
+            p_dict['dlogell'] = 0.5 # 0.1
             p_dict['use_bg_at_z_in_ksz2g_eff'] = 0
             # p_dict['dell'] = 100.
             # p_dict['dell'] = 100.
@@ -843,9 +843,11 @@ def run(args):
             or 'kSZ_kSZ_gallens fft (1h)' in p_dict['output']
             or 'kSZ_kSZ_gallens fft (2h)' in p_dict['output']
             or 'kSZ_kSZ_gallens fft (3h)' in p_dict['output']
+            or 'kSZ_kSZ_gallens_hf' in p_dict['output']
             or 'kSZ_kSZ_lens fft (1h)' in p_dict['output']
             or 'kSZ_kSZ_lens fft (2h)' in p_dict['output']
             or 'kSZ_kSZ_lens fft (3h)' in p_dict['output']
+            or 'kSZ_kSZ_lens_hf' in p_dict['output']
             or 'kSZ_kSZ_gal_2h' in p_dict['output']
             or 'kSZ_kSZ_gal_3h' in p_dict['output']
             or 'kSZ_kSZ_gal_hf' in p_dict['output']
@@ -1091,6 +1093,18 @@ def run(args):
                                 label = 'gallens fft (3h)',
                                 markersize = 3,
                             marker='o')
+                    if ('kSZ_kSZ_gallens_hf' in p_dict['output']):
+                        ax.plot(multipoles[id_p],kSZ_kSZ_gallens_hf[id_p]*fac,
+                                color='pink',
+                                ls='-',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'gallens effective approach (class_sz)',
+                                markersize = 2,
+                                markerfacecolor = 'pink',
+                                markeredgecolor = 'k',
+                                marker='o')
+
+
                     if ('kSZ_kSZ_lens fft (1h)' in p_dict['output']):
                         ax.plot(multipoles[id_p],kSZ_kSZ_lens_1h_fft[id_p]*fac,color='blue',
                                 ls='-.',alpha = 1.,
@@ -1112,6 +1126,16 @@ def run(args):
                                 label = 'lens fft (3h)',
                                 markersize = 3,
                             marker='o')
+
+                    if ('kSZ_kSZ_lens_hf' in p_dict['output']):
+                        ax.plot(multipoles[id_p],kSZ_kSZ_lens_hf[id_p]*fac,color='pink',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'lens - effective approach (class_sz)',
+                                markersize = 2,
+                                markerfacecolor = 'pink',
+                                markeredgecolor = 'k',
+                                marker='o')
 
                     # if cl_kSZ_kSZ_gal_lensing_term[id_p].all() != 0:
                     if ('kSZ_kSZ_gal_lensing_term' in p_dict['output']):
@@ -1156,15 +1180,16 @@ def run(args):
                                 label = '1+2+3-halo')#,
                     # if kSZ_kSZ_gal_hf[id_p].all() != 0:
                     #     bgeff = 1.
-                    ax.plot(multipoles[id_p],kSZ_kSZ_gal_hf[id_p]*fac*bgeff,
-                            color='pink',
-                            ls='-',alpha = 1.,
-                            # label = val_label[id_p] + ' (3h)',
-                            label = 'new computation - effective approach (class_sz)',
-                            markersize = 2,
-                            markerfacecolor = 'pink',
-                            markeredgecolor = 'k',
-                            marker='o')
+                    if ('kSZ_kSZ_gal_hf' in p_dict['output']):
+                        ax.plot(multipoles[id_p],kSZ_kSZ_gal_hf[id_p]*fac*bgeff,
+                                color='pink',
+                                ls='-',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'gal new computation - effective approach (class_sz)',
+                                markersize = 2,
+                                markerfacecolor = 'pink',
+                                markeredgecolor = 'k',
+                                marker='o')
                     # # total = (kSZ_kSZ_gal_1h[id_p]+kSZ_kSZ_gal_2h[id_p]+kSZ_kSZ_gal_3h[id_p])*fac
                     # if (kSZ_kSZ_gal_1h[id_p]+kSZ_kSZ_gal_2h[id_p]+np.nan_to_num(kSZ_kSZ_gal_3h[id_p])).all() != 0:
                     #     ax.plot(multipoles[id_p],(kSZ_kSZ_gal_1h[id_p]+kSZ_kSZ_gal_2h[id_p]+np.nan_to_num(kSZ_kSZ_gal_3h[id_p]))*fac,color='red',
