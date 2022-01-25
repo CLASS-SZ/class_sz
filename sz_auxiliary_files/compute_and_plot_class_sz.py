@@ -1076,6 +1076,32 @@ def run(args):
                                 markersize = 3,
                             marker='o')
 
+                    if ('kSZ_kSZ_gal_covmat' in p_dict['output']):
+                        ax.errorbar(multipoles[id_p],np.abs(kSZ_kSZ_gal_1h_fft[id_p]*fac+kSZ_kSZ_gal_2h_fft[id_p]*fac+kSZ_kSZ_gal_3h_fft[id_p]*fac),
+                                yerr = np.sqrt(cov_ll_kSZ_kSZ_gal[id_p])*fac,
+                                color='grey',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = '1+2+3-halo')#,
+
+                    if ('kSZ_kSZ_gallens_covmat' in p_dict['output']):
+                        ax.errorbar(multipoles[id_p],np.abs(kSZ_kSZ_gallens_1h_fft[id_p]*fac+kSZ_kSZ_gallens_2h_fft[id_p]*fac+kSZ_kSZ_gallens_3h_fft[id_p]*fac),
+                                yerr = np.sqrt(cov_ll_kSZ_kSZ_gallens[id_p])*fac,
+                                color='grey',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'gallens 1+2+3-halo')#,
+
+                    if ('kSZ_kSZ_lens_covmat' in p_dict['output']):
+                        ax.errorbar(multipoles[id_p],np.abs(kSZ_kSZ_lens_1h_fft[id_p]*fac+kSZ_kSZ_lens_2h_fft[id_p]*fac+kSZ_kSZ_lens_3h_fft[id_p]*fac),
+                                yerr = np.sqrt(cov_ll_kSZ_kSZ_lens[id_p])*fac,
+                                color='grey',
+                                ls='-.',alpha = 1.,
+                                # label = val_label[id_p] + ' (3h)',
+                                label = 'lens 1+2+3-halo')#,
+
+
+
                     if ('kSZ_kSZ_gallens fft (1h)' in p_dict['output']):
                         ax.plot(multipoles[id_p],kSZ_kSZ_gallens_1h_fft[id_p]*fac,color='blue',
                                 ls='-.',alpha = 1.,
