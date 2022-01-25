@@ -297,6 +297,18 @@ cdef extern from "class.h":
         double * cl_kSZ_kSZ_gal_hf
         double * cl_kSZ_kSZ_gal_lensing_term
         double * cov_ll_kSZ_kSZ_gal
+        double * cl_kSZ_kSZ_gallens_1h_fft
+        double * cl_kSZ_kSZ_gallens_2h_fft
+        double * cl_kSZ_kSZ_gallens_3h_fft
+        double * cl_kSZ_kSZ_gallens_hf
+        double * cl_kSZ_kSZ_gallens_lensing_term
+        double * cov_ll_kSZ_kSZ_gallens
+        double * cl_kSZ_kSZ_lens_1h_fft
+        double * cl_kSZ_kSZ_lens_2h_fft
+        double * cl_kSZ_kSZ_lens_3h_fft
+        double * cl_kSZ_kSZ_lens_hf
+        double * cl_kSZ_kSZ_lens_lensing_term
+        double * cov_ll_kSZ_kSZ_lens
         double * cl_tSZ_lensmag_1h
         double * cl_tSZ_lensmag_2h
         double * cl_gal_gallens_1h

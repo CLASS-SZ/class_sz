@@ -1520,6 +1520,50 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_kSZ_kSZ_kg(self):
+        """
+        (class_sz) Return the 1-halo, 2-halo and 3-halo terms of kSZ x kSZ x kg power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['3h'] = []
+        cl['hf'] = []
+        cl['covmat'] = []
+        cl['lensing term'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['hf'].append(self.tsz.cl_kSZ_kSZ_gallens_hf[index])
+            cl['1h'].append(self.tsz.cl_kSZ_kSZ_gallens_1h_fft[index])
+            cl['2h'].append(self.tsz.cl_kSZ_kSZ_gallens_2h_fft[index])
+            cl['3h'].append(self.tsz.cl_kSZ_kSZ_gallens_3h_fft[index])
+            cl['lensing term'].append(self.tsz.cl_kSZ_kSZ_gallens_lensing_term[index])
+            cl['covmat'].append(self.tsz.cov_ll_kSZ_kSZ_gallens[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+    def cl_kSZ_kSZ_kcmb(self):
+        """
+        (class_sz) Return the 1-halo, 2-halo and 3-halo terms of kSZ x kSZ x kg power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['3h'] = []
+        cl['hf'] = []
+        cl['covmat'] = []
+        cl['lensing term'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['hf'].append(self.tsz.cl_kSZ_kSZ_lens_hf[index])
+            cl['1h'].append(self.tsz.cl_kSZ_kSZ_lens_1h_fft[index])
+            cl['2h'].append(self.tsz.cl_kSZ_kSZ_lens_2h_fft[index])
+            cl['3h'].append(self.tsz.cl_kSZ_kSZ_lens_3h_fft[index])
+            cl['lensing term'].append(self.tsz.cl_kSZ_kSZ_lens_lensing_term[index])
+            cl['covmat'].append(self.tsz.cov_ll_kSZ_kSZ_lens[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
 
 
     def cl_te_y_y(self):
