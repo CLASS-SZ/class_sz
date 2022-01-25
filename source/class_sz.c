@@ -469,12 +469,12 @@ if (ptsz->has_tSZ_gal_1h
  || ptsz->has_gal_lensmag_2h
  || ptsz->has_gal_gallens_1h
  || ptsz->has_gal_gallens_2h
- || ptsz->has_tSZ_lensmag_1h //not needed??
- || ptsz->has_tSZ_lensmag_2h //not needed??
- || ptsz->has_lensmag_lensmag_1h //not needed??
- || ptsz->has_lensmag_lensmag_2h //not needed??
- || ptsz->has_lens_lensmag_1h //not needed??
- || ptsz->has_lens_lensmag_2h //not needed??
+ // || ptsz->has_tSZ_lensmag_1h //not needed??
+ // || ptsz->has_tSZ_lensmag_2h //not needed??
+ // || ptsz->has_lensmag_lensmag_1h //not needed??
+ // || ptsz->has_lensmag_lensmag_2h //not needed??
+ // || ptsz->has_lens_lensmag_1h //not needed??
+ // || ptsz->has_lens_lensmag_2h //not needed??
 ){
 
 tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
@@ -1096,7 +1096,9 @@ ptsz->cov_ll_kSZ_kSZ_lens[i] *= 1./n_modes;
 
 
 
-if (ptsz->has_kSZ_kSZ_gal_lensing_term){
+if (ptsz->has_kSZ_kSZ_gal_lensing_term
+||  ptsz->has_kSZ_kSZ_gallens_lensing_term
+||  ptsz->has_kSZ_kSZ_lens_lensing_term){
 if (ptsz->sz_verbose > 0){
 printf("starting TTG lensing term computation.\n");
 }
@@ -1220,15 +1222,36 @@ index_lprime_theta += 1;
    void * params;
    params = &V;
 
-ptsz->cl_kSZ_kSZ_gal_lensing_term[i] = Integrate_using_Patterson_adaptive(0., 2.*_PI_,
+double r_lens = Integrate_using_Patterson_adaptive(0., 2.*_PI_,
                                             epsrel, epsabs,
                                             integrand_kSZ2_X_lensing_term,
                                             params,show_neval);
+
+if (ptsz->has_kSZ_kSZ_gal_lensing_term){
+ptsz->cl_kSZ_kSZ_gal_lensing_term[i] = r_lens;
 
 double cl_gk = (ptsz->cl_gal_lens_2h[i] + ptsz->cl_gal_lens_1h[i])
                 /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
 double cl_gp = 2./(ptsz->ell[i]*(ptsz->ell[i]+1.))*cl_gk;
 ptsz->cl_kSZ_kSZ_gal_lensing_term[i] *= -2./(2.*_PI_)/(2.*_PI_)*ptsz->ell[i]*cl_gp;
+}
+
+if (ptsz->has_kSZ_kSZ_gallens_lensing_term){
+ptsz->cl_kSZ_kSZ_gallens_lensing_term[i] = r_lens;
+double cl_gk = (ptsz->cl_gallens_lens_2h[i] + ptsz->cl_gallens_lens_1h[i])
+                /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
+double cl_gp = 2./(ptsz->ell[i]*(ptsz->ell[i]+1.))*cl_gk;
+ptsz->cl_kSZ_kSZ_gallens_lensing_term[i] *= -2./(2.*_PI_)/(2.*_PI_)*ptsz->ell[i]*cl_gp;
+}
+
+if (ptsz->has_kSZ_kSZ_lens_lensing_term){
+ptsz->cl_kSZ_kSZ_lens_lensing_term[i] = r_lens;
+double cl_gk = (ptsz->cl_lens_lens_2h[i] + ptsz->cl_lens_lens_1h[i])
+                /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
+double cl_gp = 2./(ptsz->ell[i]*(ptsz->ell[i]+1.))*cl_gk;
+ptsz->cl_kSZ_kSZ_lens_lensing_term[i] *= -2./(2.*_PI_)/(2.*_PI_)*ptsz->ell[i]*cl_gp;
+}
+
 
 free(integrand_l_lprime_phi);
 }
@@ -1873,12 +1896,12 @@ if (ptsz->has_tSZ_gal_1h
    || ptsz->has_gal_lensmag_2h
    || ptsz->has_gal_gallens_1h
    || ptsz->has_gal_gallens_2h
-   || ptsz->has_tSZ_lensmag_1h
-   || ptsz->has_tSZ_lensmag_2h
-   || ptsz->has_lensmag_lensmag_1h
-   || ptsz->has_lensmag_lensmag_2h
-   || ptsz->has_lens_lensmag_1h
-   || ptsz->has_lens_lensmag_2h
+   // || ptsz->has_tSZ_lensmag_1h
+   // || ptsz->has_tSZ_lensmag_2h
+   // || ptsz->has_lensmag_lensmag_1h
+   // || ptsz->has_lensmag_lensmag_2h
+   // || ptsz->has_lens_lensmag_1h
+   // || ptsz->has_lens_lensmag_2h
    ){
    free(ptsz->array_mean_galaxy_number_density);
 
@@ -12292,10 +12315,10 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       +ptsz->has_gal_gallens_2h
       +ptsz->has_tSZ_lensmag_1h
       +ptsz->has_tSZ_lensmag_2h
-      +ptsz->has_lensmag_lensmag_1h
-      +ptsz->has_lensmag_lensmag_2h
-      +ptsz->has_lens_lensmag_1h
-      +ptsz->has_lens_lensmag_2h
+      // +ptsz->has_lensmag_lensmag_1h
+      // +ptsz->has_lensmag_lensmag_2h
+      // +ptsz->has_lens_lensmag_1h
+      // +ptsz->has_lens_lensmag_2h
       +ptsz->has_gal_gal_2h != _FALSE_){
       ptsz->has_galaxy = 1;
 
