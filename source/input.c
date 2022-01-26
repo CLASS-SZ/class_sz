@@ -1762,6 +1762,7 @@ int input_read_parameters(
       class_read_double("z_max",ptsz->z2SZ);
 
 
+
       class_read_double("redshift_epsrel",ptsz->redshift_epsrel);
       class_read_double("redshift_epsabs",ptsz->redshift_epsabs);
 
@@ -3247,9 +3248,9 @@ int input_read_parameters(
      class_read_double("Power law index of SED at high frequency",ptsz->gamma_cib); // Power law index of SED at high frequency
      class_read_double("Redshift evolution of L − M normalisation",ptsz->delta_cib); // Redshift evolution of L − M normalisation
      class_read_double("Most efficient halo mass in Msun",ptsz->m_eff_cib); // Most efficient halo mass in Msun/h
-     class_read_double("Normalisation of L − M relation in [Jy MPc2/Msun/Hz]",ptsz->L0_cib); // Normalisation of L − M relation in [Jy MPc2/Msun/Hz]
+     class_read_double("Normalisation of L − M relation in [Jy MPc2/Msun]",ptsz->L0_cib); // Normalisation of L − M relation in [Jy MPc2/Msun]
      class_read_double("Size of of halo masses sourcing CIB emission",ptsz->sigma2_LM_cib); // Size of of halo masses sourcing CIB emission
-
+     class_read_double("z_obs (CIB)",ptsz->z_obs_cib);
 
       /* concentration parameter SZ */
       class_call(parser_read_string(pfc,"concentration parameter",&string1,&flag1,errmsg),
@@ -5751,12 +5752,12 @@ int input_default_params(
   ptsz->sn_cutoff = 5.;
   pcsz->sn_cutoff = 5.;
   //Redshift limits for the integration
-  ptsz->z1SZ = 1.e-8;
+  ptsz->z1SZ = 1.e-4;
   ptsz->z2SZ = 6.;
   ppt->z_max_pk = ptsz->z2SZ;
   psp->z_max_pk = ppt->z_max_pk;
 
-  ptsz->z1SZ_dndlnM = 1.e-8;
+  ptsz->z1SZ_dndlnM = 1.e-4;
   ptsz->z2SZ_dndlnM = 6.;
   ptsz->N_redshift_dndlnM = 50;
 
@@ -5892,6 +5893,7 @@ int input_default_params(
   ptsz->m_eff_cib = pow(10.,12.6); // Most efficient halo mass in Msun
   ptsz->L0_cib = 6.4e-8; // Normalisation of L − M relation in [Jy MPc2/Msun]
   ptsz->sigma2_LM_cib = 0.5; // Size of of halo masses sourcing CIB emission
+  ptsz->z_obs_cib = 1e-5;
 
   //# Table 1 of https://arxiv.org/pdf/1309.0382.pdf
   ptsz->has_cib_flux_cut  = 0;

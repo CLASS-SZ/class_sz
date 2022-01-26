@@ -1299,6 +1299,7 @@ double * steps_m;
   double L0_cib; // Normalisation of L − M relation
   double sigma2_LM_cib; // Size of of halo masses sourcing CIB emission
   int has_cib_flux_cut;
+  double z_obs_cib; 
 
   double nfw_profile_epsabs;
   double nfw_profile_epsrel;
@@ -2078,7 +2079,7 @@ double get_ttg_bispectrum_at_z_effective_approach(double k1_in_h_over_Mpc,
                                                      struct background * pba,
                                                      struct nonlinear * pnl,
                                                      struct primordial * ppm);
-                                                     
+
 
 double get_ttg_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,
                                                      double k2_in_h_over_Mpc,
