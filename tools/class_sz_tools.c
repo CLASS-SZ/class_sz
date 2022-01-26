@@ -14253,6 +14253,11 @@ for (index_nu=0; index_nu<ptsz->n_nu_L_sat; index_nu++)
       double lnMs_min = log(ptsz->M_min_HOD);
       double lnMs_max = logM;//log(1e11);
 
+      if (lnMs_max<=lnMs_min){
+      r = 0.;
+      }
+
+      else{
       double epsrel = ptsz->epsrel_L_sat;
       double epsabs = ptsz->epsabs_L_sat;
 
@@ -14271,6 +14276,7 @@ for (index_nu=0; index_nu<ptsz->n_nu_L_sat; index_nu++)
                                                epsrel, epsabs,
                                                integrand_patterson_L_sat,
                                                params,ptsz->patterson_show_neval);
+      }
 
           if (r==0.){
             r = 1e-100;
@@ -14429,7 +14435,7 @@ for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
       double z =   exp(ptsz->array_z_L_sat[index_z])-1.;
       double logM =   ptsz->array_m_L_sat[index_M];
 
-      double lnMs_min = log(1e10);
+      double lnMs_min = log(ptsz->M_min_HOD);
       double lnMs_max = logM;//log(1e11);
 
       double epsrel = ptsz->epsrel_L_sat;

@@ -13959,8 +13959,8 @@ if (isnan(Ls_nu)){
 }
 else if(_dcib0dz_){
 nu =  exp(ptsz->array_dcib0dz_nu[index_nu]);
-Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
-Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu,ptsz);
+Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu/(1.+ptsz->z_obs_cib),pvectsz,ptsz,pba);
+Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu/(1.+ptsz->z_obs_cib),ptsz);
 us = 1.;
 if (ptsz->has_cib_flux_cut == 1){
 L_nu = Lc_nu+Ls_nu;
