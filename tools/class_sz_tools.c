@@ -3882,6 +3882,11 @@ double get_pressure_profile_at_l_M_z(double l_asked, double m_asked, double z_as
   int n_z = ptsz->n_z_pressure_profile;
   r8vec_bracket(n_ell,ptsz->array_pressure_profile_ln_l,l,&id_l_low,&id_l_up);
 
+  if (m<ptsz->array_pressure_profile_ln_m[0])
+    return 0.;
+  if (m>ptsz->array_pressure_profile_ln_m[n_m-1])
+    return 0.;
+
   // interpolate 2d at l_low:
 
  double ln_rho_low = pwl_interp_2d(n_m,
@@ -3925,7 +3930,7 @@ int tabulate_pressure_profile_B12(struct background * pba,
  class_alloc(ptsz->array_pressure_profile_ln_l,sizeof(double *)*n_ell,ptsz->error_message);
 
  // array of masses:
- double ln_m_min = log(1e5);
+ double ln_m_min = log(1e8);
  double ln_m_max = log(1e17);
 
 
@@ -11404,7 +11409,7 @@ double integrand_dydz(double lnM_halo, void *p){
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
       V->pvectsz[V->ptsz->index_md] = V->ptsz->index_md_dydz;
-      V->pvectsz[V->ptsz->index_multipole_for_pressure_profile] = 1.;
+      // V->pvectsz[V->ptsz->index_multipole_for_pressure_profile] = 1.e2;
       evaluate_pressure_profile(V->pvecback,V->pvectsz,V->pba,V->ptsz);
 
 
@@ -13513,7 +13518,7 @@ for (index_z=0; index_z<ptsz->n_z_dydz; index_z++)
 
 
           void * params = &V;
-          double epsrel=1e-3;
+          double epsrel=1e-6;
           double epsabs=1e-100;
 
 
@@ -13523,15 +13528,20 @@ for (index_z=0; index_z<ptsz->n_z_dydz; index_z++)
                                                integrand_dydz,
                                                params,
                                                ptsz->patterson_show_neval);
+          r *= 1./pow(ptsz->Tcmb_gNU,1)/1.e6;
 
    if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
        double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-       double I0 = integrand_dydz(log(ptsz->m_min_counter_terms),params);
+       double I0 = integrand_dydz(log(ptsz->m_min_counter_terms),params)/pow(ptsz->Tcmb_gNU,1)/1.e6;
        double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
+       if (nmin_umin<0.){
+         printf("%.5e %.5e %.5e\n",nmin,I0,nmin_umin);
+         exit(0);
+       }
        r += nmin_umin;
   }
 
-          ptsz->array_dydz_at_z[index_z] = log(r/pow(ptsz->Tcmb_gNU,1)/1.e6);
+          ptsz->array_dydz_at_z[index_z] = log(r);
 
      }
      #ifdef _OPENMP
@@ -13657,7 +13667,7 @@ for (index_z=0; index_z<ptsz->n_z_dcib0dz; index_z++)
           V.index_nu = index_nu;
 
           void * params = &V;
-          double epsrel=1e-3;
+          double epsrel=1e-6;
           double epsabs=1e-100;
 
 
@@ -17191,9 +17201,11 @@ double get_dydz_at_z(double z_asked, struct tszspectrum * ptsz)
 
 
  if (z<ptsz->array_dydz_redshift[0])
-    z = ptsz->array_dydz_redshift[0];
+    return 0.;
+    // z = ptsz->array_dydz_redshift[0];
  if (z>ptsz->array_dydz_redshift[ptsz->n_z_dydz-1])
-    z = ptsz->array_dydz_redshift[ptsz->n_z_dydz-1];
+    return 0.;
+    // z = ptsz->array_dydz_redshift[ptsz->n_z_dydz-1];
 
 
 

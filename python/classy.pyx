@@ -2003,7 +2003,7 @@ cdef class Class:
         r = get_dydz_at_z(z,&self.tsz)
         return r
 
-    def get_mean_y(self,z):
+    def get_mean_y(self):
         r = self.tsz.y_monopole
         return r
 

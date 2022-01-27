@@ -4241,7 +4241,7 @@ double damping_1h_term;
      double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
      pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
                                        pvectsz[ptsz->index_hmf]
-                                       *pvectsz[ptsz->index_completeness]
+                                       //*pvectsz[ptsz->index_completeness]
                                        *pow(pressure_profile_at_ell,1.);
 
    }
@@ -6875,8 +6875,15 @@ int evaluate_pressure_profile(double * pvecback,
          double l_asked = pvectsz[ptsz->index_multipole_for_pressure_profile];
          // double m_asked = pvectsz[ptsz->index_m200m]; // in Msun/h
          double z_asked = pvectsz[ptsz->index_z];
-         double result_tabulated = get_pressure_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
-         result = result_tabulated;
+
+
+         if(log(l_asked)<ptsz->array_pressure_profile_ln_l[0] || _mean_y_ || _dydz_){
+           result = get_pressure_profile_at_l_M_z(exp(ptsz->array_pressure_profile_ln_l[0]),m_asked,z_asked,ptsz);
+         }
+         else{
+           double result_tabulated = get_pressure_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
+           result = result_tabulated;
+         }
          // printf("%.7e %.7e %.7e\n",result,result_tabulated,m_asked);
 
    }

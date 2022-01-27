@@ -34,8 +34,8 @@ class_sz_ptsz_parameter(n_m_density_profile,int,100)
 class_sz_ptsz_parameter(n_z_density_profile,int,100)
 
 class_sz_ptsz_parameter(n_ell_pressure_profile,int,50)
-class_sz_ptsz_parameter(n_m_pressure_profile,int,50)
-class_sz_ptsz_parameter(n_z_pressure_profile,int,50)
+class_sz_ptsz_parameter(n_m_pressure_profile,int,300)
+class_sz_ptsz_parameter(n_z_pressure_profile,int,300)
 
 class_sz_ptsz_parameter(n_z_psi_b1g,int,50)
 class_sz_ptsz_parameter(n_l_psi_b1g,int,50)

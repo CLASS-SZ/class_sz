@@ -5757,7 +5757,7 @@ int input_default_params(
   ppt->z_max_pk = ptsz->z2SZ;
   psp->z_max_pk = ppt->z_max_pk;
 
-  ptsz->z1SZ_dndlnM = 1.e-4;
+  ptsz->z1SZ_dndlnM = 5.e-3;
   ptsz->z2SZ_dndlnM = 6.;
   ptsz->N_redshift_dndlnM = 50;
 
