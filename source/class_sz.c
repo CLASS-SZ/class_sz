@@ -7011,6 +7011,8 @@ int evaluate_pressure_profile(double * pvecback,
 
      // link with class_sz: (283./0.5176/50.)=10.935085007727976
 
+     // (2.61....m500/r500) is the pressure normalization for the Battaglia pressure profile in eV/cm^3
+
 
 
 

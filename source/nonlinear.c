@@ -409,14 +409,24 @@ int nonlinear_pk_at_k_and_z(
 
   /** - first step: check that k is in valid range [0:kmax]
       (the test for z will be done when calling nonlinear_pk_linear_at_z()) */
-
-  class_test((k < 0.) || (k > exp(pnl->ln_k[pnl->k_size-1])),
-             pnl->error_message,
-             "k=%e out of bounds [%e:%e]",k,0.,exp(pnl->ln_k[pnl->k_size-1]));
+  // BB commented for class_sz interp
+  // class_test((k < 0.) || (k > exp(pnl->ln_k[pnl->k_size-1])),
+  //            pnl->error_message,
+  //            "k=%e out of bounds [%e:%e]",k,0.,exp(pnl->ln_k[pnl->k_size-1]));
   /** - deal with case k = 0 for which P(k) is set to zero
       (this non-physical result can be useful for interpolations) */
 
   if (k == 0.) {
+    *out_pk = 0.;
+
+    if (do_ic == _TRUE_) {
+      for (index_ic1_ic2=0; index_ic1_ic2<pnl->ic_ic_size; index_ic1_ic2++) {
+        out_pk_ic[index_ic1_ic2] = 0.;
+      }
+    }
+  }
+  //BB added for class_sz interp
+  else if ((k < 0.) || (k > exp(pnl->ln_k[pnl->k_size-1]))){
     *out_pk = 0.;
 
     if (do_ic == _TRUE_) {

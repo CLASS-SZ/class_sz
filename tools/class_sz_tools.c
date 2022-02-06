@@ -16165,8 +16165,8 @@ struct Parameters_for_nl_fitting_function{
   int abort;
 
   //Array of M in Msun/h
-  double logk_min = ptsz->ln_k_for_tSZ[0]; //in Msun/h
-  double logk_max = ptsz->ln_k_for_tSZ[ptsz->ln_k_size_for_tSZ-1]; //in Msun/h
+  double logk_min = ptsz->ln_k_for_tSZ[0]; //in Mpc/h
+  double logk_max = ptsz->ln_k_for_tSZ[ptsz->ln_k_size_for_tSZ-1]; //in Mpc/h
   int index_k;
 
   int index_z_k = 0;
