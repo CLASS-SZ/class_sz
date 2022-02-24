@@ -375,8 +375,9 @@ int pkl_to_knl (
                    double z ,
                    struct tszspectrum * ptsz);
 
-double get_f_tinker10_at_nu_and_z(double nu, double z, int hm_consistency, struct tszspectrum * ptsz);
+double get_f_tinker10_at_nu_and_z(double nu, double z, struct tszspectrum * ptsz);
 double get_T10_alpha_at_z(double z,struct tszspectrum * ptsz);
+double get_f_tinker08_at_nu_and_z(double nu, double z, struct tszspectrum * ptsz);
 
   int  MF_J01(double * result,
               double * lognu ,

@@ -737,6 +737,9 @@ if (ptsz->need_ksz_template){
    load_unbinned_nl_tt(ptsz);
  }
 
+ if (ptsz->need_lensing_noise){
+   load_nl_lensing_noise(ptsz);
+ }
 
 if (ptsz->has_kSZ_kSZ_gal_covmat
 ||  ptsz->has_kSZ_kSZ_gallens_covmat
@@ -837,38 +840,58 @@ clp_t2t2f = pwl_value_1d(N,l,cl_t2t2f,ptsz->ell[i]);
 
 
 if (ptsz->has_kSZ_kSZ_gal_covmat){
-  double cl_gg,cl_kSZ2g;
+  double cl_gg,nl_gg,cl_kSZ2g;
+
   cl_gg = (ptsz->cl_gal_gal_2h[i] + ptsz->cl_gal_gal_1h[i])
           /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
+
+  nl_gg = ptsz->cl_gal_gal_A_sn; //galaxy shot-noise
+
   cl_kSZ2g = ptsz->cl_kSZ_kSZ_gal_1h_fft[i]
             +ptsz->cl_kSZ_kSZ_gal_2h_fft[i]
             +ptsz->cl_kSZ_kSZ_gal_3h_fft[i];
-  ptsz->cov_ll_kSZ_kSZ_gal[i] = (clp_t2t2f*cl_gg+cl_kSZ2g*cl_kSZ2g)
+
+  ptsz->cov_ll_kSZ_kSZ_gal[i] = (clp_t2t2f*(cl_gg+nl_gg)+cl_kSZ2g*cl_kSZ2g)
                                 *1./(2.*ptsz->ell[i]+1.)
                                 /ptsz->f_sky;
 
 }
 
 if (ptsz->has_kSZ_kSZ_gallens_covmat){
-  double cl_kgkg,cl_kSZ2kg;
+  double cl_kgkg,nl_kgkg,cl_kSZ2kg;
+
   cl_kgkg = (ptsz->cl_gallens_gallens_2h[i] + ptsz->cl_gallens_gallens_1h[i])
           /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
+
+
+  double arcmin_to_radians = _PI_/(60.*180.);
+  nl_kgkg = ptsz->shape_noise_siggamma2/(ptsz->ns_gal_per_arcmin2/arcmin_to_radians/arcmin_to_radians);
+
   cl_kSZ2kg = ptsz->cl_kSZ_kSZ_gallens_1h_fft[i]
             +ptsz->cl_kSZ_kSZ_gallens_2h_fft[i]
             +ptsz->cl_kSZ_kSZ_gallens_3h_fft[i];
-  ptsz->cov_ll_kSZ_kSZ_gallens[i] = (clp_t2t2f*cl_kgkg+cl_kSZ2kg*cl_kSZ2kg)
+  ptsz->cov_ll_kSZ_kSZ_gallens[i] = (clp_t2t2f*(cl_kgkg+nl_kgkg)+cl_kSZ2kg*cl_kSZ2kg)
                                 *1./(2.*ptsz->ell[i]+1.)
                                 /ptsz->f_sky;
 }
 
 if (ptsz->has_kSZ_kSZ_lens_covmat){
-  double cl_kgkg,cl_kSZ2kg;
+
+  double cl_kgkg,nl_kcmb_kcmb,cl_kSZ2kg;
+
   cl_kgkg = (ptsz->cl_lens_lens_2h[i] + ptsz->cl_lens_lens_1h[i])
           /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
+
   cl_kSZ2kg = ptsz->cl_kSZ_kSZ_lens_1h_fft[i]
             +ptsz->cl_kSZ_kSZ_lens_2h_fft[i]
             +ptsz->cl_kSZ_kSZ_lens_3h_fft[i];
-  ptsz->cov_ll_kSZ_kSZ_lens[i] = (clp_t2t2f*cl_kgkg+cl_kSZ2kg*cl_kSZ2kg)
+
+  nl_kcmb_kcmb = pwl_value_1d(ptsz->lensing_noise_size,
+                              ptsz->l_lensing_noise,
+                              ptsz->nl_lensing_noise,
+                              ptsz->ell[i]);
+
+  ptsz->cov_ll_kSZ_kSZ_lens[i] = (clp_t2t2f*(cl_kgkg+nl_kcmb_kcmb)+cl_kSZ2kg*cl_kSZ2kg)
                                 *1./(2.*ptsz->ell[i]+1.)
                                 /ptsz->f_sky;
 }
@@ -1997,6 +2020,12 @@ if(ptsz->need_tt_noise){
   free(ptsz->unbinned_nl_tt_ell);
   free(ptsz->unbinned_nl_tt_n_ell);
 }
+
+if(ptsz->need_lensing_noise){
+  free(ptsz->nl_lensing_noise);
+  free(ptsz->l_lensing_noise);
+}
+
 
    if (ptsz->has_tSZ_gal_1h
       +ptsz->has_tSZ_gal_2h
@@ -4892,6 +4921,7 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 ////configurations::
 if (ptsz->bispec_conf_id!=0){
 double lambda1p  = fabs(k1p/k3p);
+// k1 = lambda1*k3
 double lambda2p  = fabs(k2p/k3p);
 double flag_conf = 0.;
 if (ptsz->bispec_conf_id==1){ // equi
@@ -5138,6 +5168,12 @@ pvectsz[ptsz->index_integrand] = integrand_projected_fields;
    double ell_prime = l2;
    double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
 
+   double k1p,k2p,k3p;
+   k1p = (l1+0.5)/chi;
+   k2p = (l2+0.5)/chi;
+   k3p = (l3+0.5)/chi;
+
+
     // g3 - t1t2
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
@@ -5245,6 +5281,47 @@ pvectsz[ptsz->index_integrand] = integrand_projected_fields;
     }
 
 
+////configurations::
+if (ptsz->bispec_conf_id!=0){
+double lambda1p  = fabs(k1p/k3p);
+// k1 = lambda1*k3
+double lambda2p  = fabs(k2p/k3p);
+double flag_conf = 0.;
+if (ptsz->bispec_conf_id==1){ // equi
+// just equilateral:
+if ((fabs(lambda1p-1.)<0.3) && (fabs(lambda2p-1.)<0.3)){
+flag_conf = 1.;
+}
+}
+else if (ptsz->bispec_conf_id==2){ //squeezed
+// // just flattened:
+// if ((fabs(lambda1p-(1.-lambda2p))<0.1)){
+// flag_conf = 1.;
+// }
+// just squeezed:
+if ((fabs(lambda1p)>3.) && (fabs(lambda2p)>3.) && fabs((lambda1p/lambda2p)-1.)<0.1){
+flag_conf = 1.;
+}
+}
+else if (ptsz->bispec_conf_id==3){ //anti-squeezed
+flag_conf = 1.;
+// // just flattened:
+// if ((fabs(lambda1p-(1.-lambda2p))<0.1)){
+// flag_conf = 1.;
+// }
+// just squeezed:
+if ((fabs(lambda1p)>3.) && (fabs(lambda2p)>3.) && fabs((lambda1p/lambda2p)-1.)<0.1){
+flag_conf = 0.;
+}
+}
+
+pvectsz[ptsz->index_integrand] *= flag_conf;
+////end configurations.
+}
+
+
+
+
     }
 
 
@@ -5261,7 +5338,10 @@ pvectsz[ptsz->index_integrand] = integrand_projected_fields;
    double ell_prime = l2;
    double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos(theta_1));
    // double l1 = sqrt(ell*ell+ell_prime*ell_prime+2.*ell*ell_prime*cos_theta_1);
-
+   double k1p,k2p,k3p;
+   k1p = (l1+0.5)/chi;
+   k2p = (l2+0.5)/chi;
+   k3p = (l3+0.5)/chi;
     // b1t1
     if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ptsz);
@@ -5332,6 +5412,46 @@ pvectsz[ptsz->index_integrand] = integrand_projected_fields;
     //printf("b2g3 ell = %.3e tau = %.3e\n",pvectsz[ptsz->index_multipole_for_galaxy_profile],galaxy_profile_at_ell_3);
 
       }
+
+
+////configurations::
+if (ptsz->bispec_conf_id!=0){
+double lambda1p  = fabs(k1p/k3p);
+// k1 = lambda1*k3
+double lambda2p  = fabs(k2p/k3p);
+double flag_conf = 0.;
+if (ptsz->bispec_conf_id==1){ // equi
+// just equilateral:
+if ((fabs(lambda1p-1.)<0.3) && (fabs(lambda2p-1.)<0.3)){
+flag_conf = 1.;
+}
+}
+else if (ptsz->bispec_conf_id==2){ //squeezed
+// // just flattened:
+// if ((fabs(lambda1p-(1.-lambda2p))<0.1)){
+// flag_conf = 1.;
+// }
+// just squeezed:
+if ((fabs(lambda1p)>3.) && (fabs(lambda2p)>3.) && fabs((lambda1p/lambda2p)-1.)<0.1){
+flag_conf = 1.;
+}
+}
+else if (ptsz->bispec_conf_id==3){ //anti-squeezed
+flag_conf = 1.;
+// // just flattened:
+// if ((fabs(lambda1p-(1.-lambda2p))<0.1)){
+// flag_conf = 1.;
+// }
+// just squeezed:
+if ((fabs(lambda1p)>3.) && (fabs(lambda2p)>3.) && fabs((lambda1p/lambda2p)-1.)<0.1){
+flag_conf = 0.;
+}
+}
+
+pvectsz[ptsz->index_integrand] *= flag_conf;
+////end configurations.
+}
+
 
     }
 
@@ -8441,7 +8561,7 @@ pvectsz[ptsz->index_m200c] = exp(logM);
 pvectsz[ptsz->index_r200c]  = pow(3.*pvectsz[ptsz->index_m200c]
                                   /(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
 
-pvectsz[ptsz->index_c200c] = get_c200c_at_m_and_z_B13(pvectsz[ptsz->index_m200c],z,pba,ptsz);
+pvectsz[ptsz->index_c200c] = get_c200c_at_m_and_z(pvectsz[ptsz->index_m200c],z,pba,ptsz);
 pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
 
     if (pvectsz[ptsz->index_has_200m] == 1){
@@ -8653,6 +8773,8 @@ if (pvectsz[ptsz->index_has_galaxy] == 1){
     m_delta_gal = pvectsz[ptsz->index_m200c];
     r_delta_gal = pvectsz[ptsz->index_r200c];
     c_delta_gal = pvectsz[ptsz->index_c200c];
+    // printf("setting galaxy's delta\n");
+    // printf("c_delta_gal = %.5e\n",c_delta_gal);
   }
   else if (ptsz->delta_def_galaxies == 2){
     m_delta_gal = pvectsz[ptsz->index_m500c];
@@ -14492,6 +14614,9 @@ c = get_c200c_at_m_and_z_D08(M,z);
 }
 else if (ptsz->concentration_parameter==6){
 c = get_c200c_at_m_and_z_B13(M,z,pba,ptsz);
+}
+else if (ptsz->concentration_parameter==7){
+c = 5.;
 }
 return  c;
                             }

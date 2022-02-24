@@ -2962,6 +2962,8 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   double y_eff;
   // y_eff = (pvectsz[ptsz->index_multipole_for_nfw_profile]+0.5)
   //            /pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile];
+
+  //ptsz->index_multipole_for_nfw_profile is k
   y_eff = pvectsz[ptsz->index_multipole_for_nfw_profile]*pvectsz[ptsz->index_r200c]*(1.+pvectsz[ptsz->index_z]);
 
   w0 = y_eff;
@@ -3589,6 +3591,7 @@ for (index_l=0;
      index_l<n_ell;
      index_l++)
 {
+  // this is k
   ptsz->array_profile_ln_l[index_l] = ln_ell_min
                                       +index_l*(ln_ell_max-ln_ell_min)
                                       /(n_ell-1.);
@@ -4928,6 +4931,131 @@ if (ptsz->sz_verbose >= 1)
   for (index_x=0; index_x<ptsz->unbinned_nl_yy_size; index_x++) {
     ptsz->unbinned_nl_yy_ell[index_x] = lnx[index_x];
     ptsz->unbinned_nl_yy_n_ell[index_x] = lnI[index_x];
+    //printf("z=%.3e phig=%.3e\n",ptsz->unbinned_nl_yy_ell[index_x],ptsz->unbinned_nl_yy_n_ell[index_x]);
+  };
+
+  //exit(0);
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  return _SUCCESS_;
+}
+
+
+
+int load_nl_lensing_noise(struct tszspectrum * ptsz)
+{
+
+
+
+if (ptsz->sz_verbose >= 1)
+  printf("-> loading the noise curve for CMB lensing\n");
+
+
+  class_alloc(ptsz->nl_lensing_noise,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->l_lensing_noise,sizeof(double *)*100,ptsz->error_message);
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+
+  /* Prepare the command */
+  /* If the command is just a "cat", no arguments need to be passed */
+  // if(strncmp("cat ", ptsz->command, 4) == 0)
+  // {
+  // sprintf(arguments, " ");
+  // }
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+  class_open(process,ptsz->cmb_lensing_noise_file, "r",ptsz->error_message);
+  if (ptsz->sz_verbose >= 1)
+    printf("-> File Name: %s\n",ptsz->cmb_lensing_noise_file);
+
+  //int il = 0;
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+    //printf("%d\n",il);
+    //il++;
+    sscanf(line, "%lf %lf ", &this_lnx, &this_lnI);
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  status = pclose(process);
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->lensing_noise_size = n_data;
+  /** Make room */
+
+  class_realloc(ptsz->nl_lensing_noise,
+                ptsz->nl_lensing_noise,
+                ptsz->lensing_noise_size*sizeof(double),
+                ptsz->error_message);
+  class_realloc(ptsz->l_lensing_noise,
+                ptsz->l_lensing_noise,
+                ptsz->lensing_noise_size*sizeof(double),
+                ptsz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<ptsz->lensing_noise_size; index_x++) {
+    ptsz->l_lensing_noise[index_x] = lnx[index_x];
+    ptsz->nl_lensing_noise[index_x] = lnI[index_x];
     //printf("z=%.3e phig=%.3e\n",ptsz->unbinned_nl_yy_ell[index_x],ptsz->unbinned_nl_yy_n_ell[index_x]);
   };
 
@@ -6385,12 +6513,12 @@ int MF_T10 (
             struct tszspectrum * ptsz
             )
 {
-  *result = get_f_tinker10_at_nu_and_z(exp(*lognu),z,ptsz->hm_consistency,ptsz);
+  *result = get_f_tinker10_at_nu_and_z(exp(*lognu),z,ptsz);
   return _SUCCESS_;
 }
 
 
-double get_f_tinker10_at_nu_and_z(double nu, double z, int hm_consistency, struct tszspectrum * ptsz){
+double get_f_tinker10_at_nu_and_z(double nu, double z,struct tszspectrum * ptsz){
   if(z>3.) z=3.;
 
   double alpha;
@@ -6437,21 +6565,50 @@ int MF_T08(
            struct tszspectrum * ptsz
            )
 {
-  double alphaT08 = pow(10.,-pow(0.75/log10(200./75.),1.2));
+  // double alphaT08 = pow(10.,-pow(0.75/log10(200./75.),1.2));
+  //
+  // double   Ap=0.186*pow(1.+z,-0.14);
+  // double   a=1.47*pow(1.+z,-0.06);
+  // double   b=2.57*pow(1.+z,-alphaT08);
+  // double   c=1.19;
+  // double   nu= exp(*lognu);
+  // double sigma= ptsz->delta_cSZ/sqrt(nu);
+  //
+  // *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
 
-  double   Ap=0.186*pow(1.+z,-0.14);
-  double   a=1.47*pow(1.+z,-0.06);
-  double   b=2.57*pow(1.+z,-alphaT08);
-  double   c=1.19;
-  double   nu= exp(*lognu);
-  double sigma= ptsz->delta_cSZ/sqrt(nu);
-
-  *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
+  *result = get_f_tinker08_at_nu_and_z(exp(*lognu),z,ptsz);
 
   return _SUCCESS_;
 }
 
 
+
+double get_f_tinker08_at_nu_and_z(double nu, double z,  struct tszspectrum * ptsz){
+
+  if(z>2.5) z=2.5; // see sec 4 of https://arxiv.org/pdf/0803.2706.pdf
+
+  double alphaT08 = pow(10.,-pow(0.75/log10(200./75.),1.2));
+
+  // double   Ap=0.186*pow(1.+z,-0.14);
+  // double   a=1.47*pow(1.+z,-0.06);
+  // double   b=2.57*pow(1.+z,-alphaT08);
+  // double   c=1.19;
+  //
+  // A_hmfcalc = 1.858659e-01
+  // a_hmfcalc = 1.466904
+  // b_hmfcalc = 2.571104
+  // c_hmfcalc = 1.193958
+
+  double   Ap=1.858659e-01*pow(1.+z,-0.14);
+  double   a=1.466904*pow(1.+z,-0.06);
+  double   b=2.571104*pow(1.+z,-alphaT08);
+  double   c=1.193958;
+  // double   nu= exp(*lognu);
+  double   sigma= ptsz->delta_cSZ/sqrt(nu);
+
+
+  return 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
+}
 
 //HMF Tinker et al 2008
 //@ M1600m

@@ -21,6 +21,20 @@ class_sz_string_parameter(ksz_template_file,"/sz_auxiliary_files/cl_ksz_bat.dat"
 class_sz_string_parameter(ksz_reio_template_file,"/sz_auxiliary_files/FBN_kSZ_PS_patchy.d.txt","ksz template file, reio contribution")
 
 
+class_sz_string_parameter(cmb_lensing_noise_file,"/sz_auxiliary_files/so_lensing_noise.dat","lensing noise file")
+//in this file:
+//from Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/noise_curves/nlkk_v3_1_0_deproj0_SENS2_fsky0p4_it_lT30-3000_lP30-5000.dat
+// column ells and N_lensing_MV (all)
+// columns in the original file
+//[ells, N_lensing_TT, N_lensing_TE, N_lensing_EE, N_lensing_TB, N_lensing_EB, N_lensing_Pol (EE+EB), N_lensing_MV (all), N_curl_TT, N_curl_TE, N_curl_EE, N_curl_TB, N_curl_EB, N_curl_Pol (EE+EB), N_curl_MV (all)]
+
+// other option for s4:
+// from https://cmb-s4.uchicago.edu/wiki/index.php/Survey_Performance_Expectations
+// kappa_deproj0_sens0_16000_lT30-3000_lP30-5000.dat
+// columns in the original file are :
+// ell, TT, TE, EE, TB, EB, EE+EB, TT+TE+EE+EB, TT (curl), TE (curl), EE (curl), TB (curl), EB (curl), EE+EB (curl), TT+TE+EE+EB (curl)
+
+
 class_sz_string_parameter(Planck_thetas_file,"/sz_auxiliary_files/SZ_thetas.txt","Planck_thetas_file")
 class_sz_string_parameter(SO_thetas_file,"/sz_auxiliary_files/so_3freqs_191121_thetas.txt","SO_thetas_file")
 class_sz_string_parameter(Planck_skyfracs_file,"/sz_auxiliary_files/SZ_skyfracs.txt","Planck_skyfracs_file")

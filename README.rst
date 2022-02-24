@@ -110,7 +110,7 @@ and **Cython** installed on your computer.
 
 Run the code with most of the power spectra output:
 
-    $ ./class class-sz_test.ini
+    $ ./class class_sz_test.ini
 
 Run the code with a simple tSZ computation:
 

@@ -1771,6 +1771,10 @@ int input_read_parameters(
 
       class_read_double("max redshift for cluster counts",pcsz->z_max);
 
+      class_read_double("shape_noise_siggamma2",ptsz->shape_noise_siggamma2);
+      class_read_double("ns_gal_per_arcmin2",ptsz->ns_gal_per_arcmin2);
+      class_read_double("cl_gal_gal_A_sn",ptsz->cl_gal_gal_A_sn);
+
 
       //Array size
       class_read_int("ndim_redshifts",ptsz->n_arraySZ);//number of z in the interpolation for sigma
@@ -2459,6 +2463,7 @@ int input_read_parameters(
         ppt->l_scalar_max = 10000;
         ptsz->need_ksz_template = 1;
         ptsz->need_tt_noise = 1;
+        ptsz->need_lensing_noise = 1;
 
       }
 
@@ -3271,6 +3276,8 @@ int input_read_parameters(
           ptsz->concentration_parameter=5; // Dutton and Maccio 2014 (https://arxiv.org/pdf/1402.7073.pdf)
         else  if ((strstr(string1,"B13") != NULL))
           ptsz->concentration_parameter=6; // https://arxiv.org/pdf/1112.5479.pdf
+        else  if ((strstr(string1,"fixed") != NULL))
+          ptsz->concentration_parameter=7; // https://arxiv.org/pdf/1112.5479.pdf
 
           }
 
@@ -5975,8 +5982,10 @@ int input_default_params(
 
 
   //Multplicity function Tinker 2010
-
-  ptsz->T10_alpha_fixed = 0;
+  // https://arxiv.org/pdf/1001.3162.pdf
+  // this is Table 4 of the T10 paper
+  // for Delta = 200
+  ptsz->T10_alpha_fixed = 0; // allpha is computed at each z.
   ptsz->alphaSZ = 0.368;
   ptsz->beta0SZ = 0.589;
   ptsz->gamma0SZ = 0.864;
@@ -6284,6 +6293,7 @@ int input_default_params(
   ptsz->need_sigma = 0;
   ptsz->need_ksz_template = 0;
   ptsz->need_tt_noise = 0;
+  ptsz->need_lensing_noise=0;
   ptsz->has_electron_pressure = 0;
   ptsz->has_electron_density = 0;
   ptsz->has_galaxy = 0;

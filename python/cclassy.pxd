@@ -311,8 +311,12 @@ cdef extern from "class.h":
         double * cov_ll_kSZ_kSZ_lens
         double * cl_tSZ_lensmag_1h
         double * cl_tSZ_lensmag_2h
+        double * cl_tSZ_lens_1h
+        double * cl_tSZ_lens_2h
         double * cl_gal_gallens_1h
         double * cl_gal_gallens_2h
+        double * cl_gallens_gallens_1h
+        double * cl_gallens_gallens_2h
         double * thetas_arcmin
         double * gamma_gal_gallens_1h
         double * gamma_gal_gallens_2h
@@ -623,8 +627,9 @@ cdef extern from "class.h":
 
     double get_mean_galaxy_bias_at_z(double z, void * ptsz)
 
-    double get_f_tinker10_at_nu_and_z(double nu, double z, int hm_consistency, void * ptsz)
-    double get_T10_alpha_at_z(double z,void * ptsz);
+    double get_f_tinker10_at_nu_and_z(double nu, double z,void * ptsz)
+    double get_T10_alpha_at_z(double z,void * ptsz)
+    double get_f_tinker08_at_nu_and_z(double nu, double z, void * ptsz)
 
     double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                              double m_asked,
@@ -657,6 +662,7 @@ cdef extern from "class.h":
 
     double get_c200m_at_m_and_z_D08(double M, double z)
     double get_c200c_at_m_and_z_D08(double M, double z)
+    double get_c200c_at_m_and_z_B13(double M, double z, void * ba, void * tsz)
 
     double m_nfw(double x)
 

@@ -269,6 +269,7 @@ struct tszspectrum {
 
   int need_ksz_template;
   int need_tt_noise;
+  int need_lensing_noise;
 
 
   int integrate_wrt_mvir;
@@ -1042,6 +1043,10 @@ struct tszspectrum {
   double * sky_averaged_ylims;
 
 
+  double shape_noise_siggamma2;
+  double ns_gal_per_arcmin2;
+  double cl_gal_gal_A_sn;
+
   int experiment;
   //SO completeness
   double * SO_thetas;
@@ -1060,6 +1065,10 @@ struct tszspectrum {
   double * l_unwise_filter;
   double * f_unwise_filter;
   int unwise_filter_size;
+
+  double * nl_lensing_noise;
+  double * l_lensing_noise;
+  int lensing_noise_size;
 
   double * l_ksz_template;
   double * cl_ksz_template;
@@ -1299,7 +1308,7 @@ double * steps_m;
   double L0_cib; // Normalisation of L − M relation
   double sigma2_LM_cib; // Size of of halo masses sourcing CIB emission
   int has_cib_flux_cut;
-  double z_obs_cib; 
+  double z_obs_cib;
 
   double nfw_profile_epsabs;
   double nfw_profile_epsrel;
@@ -1799,6 +1808,8 @@ double evaluate_pk_halofit_over_pk_linear_at_ell_plus_one_half_over_chi(double *
                                                                      struct nonlinear * pnl,
                                                                      struct tszspectrum * ptsz);
 int load_cl_ksz_template(struct tszspectrum * ptsz);
+
+int load_nl_lensing_noise(struct tszspectrum * ptsz);
 
 
   int initialise_and_allocate_memory(struct tszspectrum * ptsz);
