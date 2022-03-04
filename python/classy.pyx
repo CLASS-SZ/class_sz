@@ -1202,6 +1202,7 @@ cdef class Class:
 
         return D_A
 
+
     def scale_independent_growth_factor(self, z):
         """
         scale_independent_growth_factor(z)
@@ -1988,6 +1989,12 @@ cdef class Class:
         (SZ) Return the foreground A_cib coefficient
         """
         return self.tsz.A_cib
+
+    def A_sn(self):
+        """
+        (SZ) Return the foreground A_cib coefficient
+        """
+        return self.tsz.cl_gal_gal_A_sn
 
 
     def A_ir(self):

@@ -1057,6 +1057,7 @@ struct tszspectrum {
   double * SO_skyfrac;
   int  SO_RMS_size;
 
+  double csat_over_cdm;
   //INPUT PARAMETERS
   int nlSZ;
   int n_ell_independent_integrals;

@@ -253,6 +253,7 @@ cdef extern from "class.h":
         int n_arraySZ_for_integral
         double M1SZ
         double M2SZ
+        double cl_gal_gal_A_sn
         double * array_m_dndlnM
         int n_m_dndlnM
         double P0GNFW

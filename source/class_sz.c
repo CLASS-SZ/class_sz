@@ -8784,7 +8784,7 @@ if (pvectsz[ptsz->index_has_galaxy] == 1){
 
   pvectsz[ptsz->index_mass_for_galaxies] = m_delta_gal;
   pvectsz[ptsz->index_radius_for_galaxies] = r_delta_gal;
-  pvectsz[ptsz->index_concentration_for_galaxies] = c_delta_gal;
+  pvectsz[ptsz->index_concentration_for_galaxies] = ptsz->csat_over_cdm*c_delta_gal;
  }// end galaxies
 
 

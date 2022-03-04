@@ -1774,6 +1774,7 @@ int input_read_parameters(
       class_read_double("shape_noise_siggamma2",ptsz->shape_noise_siggamma2);
       class_read_double("ns_gal_per_arcmin2",ptsz->ns_gal_per_arcmin2);
       class_read_double("cl_gal_gal_A_sn",ptsz->cl_gal_gal_A_sn);
+      class_read_double("csat_over_cdm",ptsz->csat_over_cdm);
 
 
       //Array size
@@ -6320,6 +6321,9 @@ int input_default_params(
   ptsz->f_free  = 1.; //  Ionization state of Helium (0.86 = neutral, 0.93 = singly ionized, 1 = completely ionized for Y_p = 0.24)
   ptsz->f_b_gas  = -1.;
   ptsz->mu_e = 1.14;
+
+  ptsz->csat_over_cdm = 1.;
+  ptsz->cl_gal_gal_A_sn = 0.;
 
   //HOD
   ptsz->M_min_HOD = pow(10,11.5); //Msun/h

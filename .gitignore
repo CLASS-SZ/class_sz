@@ -176,7 +176,7 @@ notebooks/advact_unwise_ttg_fb_Aalpha_Abeta_160122.npy
 sz_auxiliary_files/simo_kSZ_bispectrum_unWISE2020.py
 test_pk.dat
 test_tk.dat
-notebooks/class_sz_planck_act_cib-cross-auto.ipynb
+#notebooks/class_sz_planck_act_cib-cross-auto.ipynb
 notebooks/class_sz_planck_act_cib-cross-auto.npy
 notebooks/class_sz_planck_act_cib-cross-auto.npz
 notebooks/class_sz_planck_act_cib-cross-auto_w220.npy
