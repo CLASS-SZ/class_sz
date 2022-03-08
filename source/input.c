@@ -2722,6 +2722,9 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+
+        class_read_double("effective_galaxy_bias",ptsz->effective_galaxy_bias);
+        class_read_double("use_bg_eff_in_ksz2g_eff",ptsz->use_bg_eff_in_ksz2g_eff);
         // ptsz->need_hmf = 1;
       }
 
@@ -5730,6 +5733,10 @@ int input_default_params(
   //ptsz->hod_model=-1;
   ptsz->effective_temperature=0;
   ptsz->create_ref_trispectrum_for_cobaya=0;
+
+
+  ptsz->effective_galaxy_bias = 1.;
+  ptsz->use_bg_eff_in_ksz2g_eff = 0;
   // sprintf(ptsz->path_to_ref_trispectrum_for_cobaya,"output/");
   // sprintf(ptsz->append_name_cobaya_ref,"for_cobaya");
   // sprintf(ptsz->full_path_to_noise_curve_for_y_y,"sz_auxiliary_files/my_noise_curve_yxy.txt");
@@ -5737,6 +5744,8 @@ int input_default_params(
   ptsz->nl_yy_is_binned = 0;
 
   pcsz->redshift_for_dndm = 1.e-5;
+
+
 
 
 
@@ -5754,7 +5763,7 @@ int input_default_params(
 
   ptsz->use_hod = 1;
   ptsz->galaxy_sample = 0; // WIxSC
-  ptsz->unwise_galaxy_sample_id = 0; // red
+  ptsz->unwise_galaxy_sample_id = -1; // red
   //ptsz->unwise_m_min_cut = 1e10; // Msun/h
 
   ptsz->sn_cutoff = 5.;

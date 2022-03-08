@@ -842,14 +842,25 @@ clp_t2t2f = pwl_value_1d(N,l,cl_t2t2f,ptsz->ell[i]);
 if (ptsz->has_kSZ_kSZ_gal_covmat){
   double cl_gg,nl_gg,cl_kSZ2g;
 
+  if ((ptsz->has_gal_gal_hf==1) && ((ptsz->has_gal_gal_2h+ptsz->has_gal_gal_1h)==0)){
+  cl_gg = (ptsz->cl_gal_gal_hf[i])
+          /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
+  }
+  else{
   cl_gg = (ptsz->cl_gal_gal_2h[i] + ptsz->cl_gal_gal_1h[i])
           /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
+  }
 
   nl_gg = ptsz->cl_gal_gal_A_sn; //galaxy shot-noise
 
-  cl_kSZ2g = ptsz->cl_kSZ_kSZ_gal_1h_fft[i]
-            +ptsz->cl_kSZ_kSZ_gal_2h_fft[i]
-            +ptsz->cl_kSZ_kSZ_gal_3h_fft[i];
+  if ((ptsz->has_kSZ_kSZ_gal_hf==1) && ((ptsz->has_kSZ_kSZ_gal_3h+ptsz->has_kSZ_kSZ_gal_2h+ptsz->has_kSZ_kSZ_gal_1h)==0)){
+  cl_kSZ2g = ptsz->cl_kSZ_kSZ_gal_hf[i];
+    }
+  else{
+    cl_kSZ2g = ptsz->cl_kSZ_kSZ_gal_1h_fft[i]
+              +ptsz->cl_kSZ_kSZ_gal_2h_fft[i]
+              +ptsz->cl_kSZ_kSZ_gal_3h_fft[i];
+  }
 
   ptsz->cov_ll_kSZ_kSZ_gal[i] = (clp_t2t2f*(cl_gg+nl_gg)+cl_kSZ2g*cl_kSZ2g)
                                 *1./(2.*ptsz->ell[i]+1.)
@@ -7662,6 +7673,9 @@ int evaluate_effective_galaxy_bias(double * pvecback,
     b = 3.29;
   }
 
+  else{
+    b = ptsz->effective_galaxy_bias;
+  }
 
 
    pvectsz[ptsz->index_halo_bias] = b;

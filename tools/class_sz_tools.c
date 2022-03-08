@@ -7029,8 +7029,12 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
   result = get_ttg_bispectrum_at_z_effective_approach(k1,k2,k3,z,V->ptsz,V->pba,V->pnl,V->ppm);
 
   double bg = 1.;
-  if (V->ptsz->use_bg_at_z_in_ksz2g_eff==1)
+  if (V->ptsz->use_bg_at_z_in_ksz2g_eff==1){
     bg = get_mean_galaxy_bias_at_z(z,V->ptsz);
+  }
+  else if (V->ptsz->use_bg_eff_in_ksz2g_eff==1){
+    bg = V->ptsz->effective_galaxy_bias;
+  }
   result *= bg;
 
 

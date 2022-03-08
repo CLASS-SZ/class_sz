@@ -325,6 +325,7 @@ cdef extern from "class.h":
         double * cl_kSZ_kSZ_2h
         double * cl_gal_gal_1h
         double * cl_gal_gal_2h
+        double * cl_gal_gal_hf
         double * cl_gal_lens_1h
         double * cl_gal_lens_2h
         double * cl_lens_lens_1h

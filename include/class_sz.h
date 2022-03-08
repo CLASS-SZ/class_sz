@@ -1015,6 +1015,10 @@ struct tszspectrum {
   double M1_prime_HOD_factor;
   double cvir_tau_profile_factor;
 
+
+  double effective_galaxy_bias;
+  int use_bg_eff_in_ksz2g_eff;
+
   int hm_consistency;
   int check_consistency_conditions;
 
