@@ -202,6 +202,7 @@ struct tszspectrum {
   double * cl_isw_tsz;
   double * cl_isw_auto;
   double * cov_ll_kSZ_kSZ_gal;
+  double * cl_t2t2f;
   double * cl_kSZ_kSZ_gal_lensing_term;
   double * cl_kSZ_kSZ_gal_1h;
   double * cl_kSZ_kSZ_gal_1h_fft;

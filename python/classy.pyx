@@ -1623,6 +1623,17 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_t2t2f(self):
+        cl = {}
+        cl['ell'] = []
+        cl['t2t2f'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['ell'].append(self.tsz.ell[index])
+            cl['t2t2f'].append(self.tsz.cl_t2t2f[index])
+        return cl
+
+
+
     def cl_gg(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of gxg power spectrum
