@@ -14385,7 +14385,7 @@ double integrand_patterson_L_sat(double lnM_sub, void *p){
   double M_host = V->M_host;
 
   double L_gal_at_nu = evaluate_galaxy_luminosity(z, M_sub, nu, V->ptsz);
-  double dNdlnMs = subhalo_hmf_dndlnMs(M_host,M_sub);
+  double dNdlnMs = subhalo_hmf_dndlnMs(M_host,M_sub,V->ptsz);
   double result = L_gal_at_nu*dNdlnMs;
 
 

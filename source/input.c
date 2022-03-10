@@ -3506,6 +3506,20 @@ int input_read_parameters(
 class_read_int("truncate_wrt_rvir",ptsz->truncate_wrt_rvir);
 class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_m200c_conversion);
 
+      /* mass function */
+      class_call(parser_read_string(pfc,"sub_halo_mass_function",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+     if (flag1 == _TRUE_) {
+        if ((strstr(string1,"TW10") != NULL)){
+        ptsz->SHMF=1;
+        }
+        else  if ((strstr(string1,"JvdB14") != NULL)){
+        ptsz->SHMF=2;
+        }
+      }
+
+
       /* mass function SZ */
       class_call(parser_read_string(pfc,"mass function",&string1,&flag1,errmsg),
                  errmsg,
@@ -6024,6 +6038,7 @@ int input_default_params(
   ptsz->pk_nonlinear_for_vrms2 = 0;
 
   ptsz->MF = 8; //Tinker et al 2008 @ M200c
+  ptsz->SHMF = 1;
 
   //////////////////////////////////
   //Integration method and parameters (mass)

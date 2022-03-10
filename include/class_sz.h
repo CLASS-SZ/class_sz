@@ -1248,6 +1248,7 @@ struct tszspectrum {
   //3:Jenkins 2001 (J01)
   //4:Tinker 2008 (T08)
   //5:Tinker 2008 interpolated @ M500 (T08@M500)
+  int SHMF;
 
   //Precision Parameters For qromb_sz_integrand
   int K;
@@ -2049,7 +2050,7 @@ double evaluate_phi_cib(double z, struct tszspectrum * ptsz);
 double evaluate_sed_cib(double z, double nu, struct tszspectrum * ptsz);
 double evaluate_dust_temperature(double z, struct tszspectrum * ptsz);
 double evaluate_galaxy_luminosity(double z, double M, double nu, struct tszspectrum * ptsz);
-double subhalo_hmf_dndlnMs(double M_host,double M_sub);
+double subhalo_hmf_dndlnMs(double M_host,double M_sub,struct tszspectrum * ptsz);
 
 double integrand_kSZ2_X_at_theta(double ell_prime, void *p);
 double integrand_kSZ2_X(double theta, void *p);

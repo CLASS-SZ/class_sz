@@ -14264,9 +14264,25 @@ return result =  nc*L_gal;
 //                                       }
 
 
-double subhalo_hmf_dndlnMs(double M_host,double M_sub){
+double subhalo_hmf_dndlnMs(double M_host,double M_sub,struct tszspectrum * ptsz){
+if (ptsz->SHMF==1){
 // Subhalo mass function: Equation 12 of https://iopscience.iop.org/article/10.1088/0004-637X/719/1/88/pdf
-  return 0.30*pow(M_sub/M_host,-0.7)*exp(-9.9*pow(M_sub/M_host,2.5));
+return 0.30*pow(M_sub/M_host,-0.7)*exp(-9.9*pow(M_sub/M_host,2.5));
+}
+else if (ptsz->SHMF==2){
+// eq 3.9 in 2001.08787
+// F. Jiang and F. C. van den Bosch, Generating merger trees for dark matter haloes: a comparison of
+// methods, MNRAS 440 (2014) 193 [1311.5225].
+double g1,a1,g2,a2,b,x;
+g1 = 0.13;
+a1 = -0.83;
+g2 =  1.33;
+a2 = -0.02;
+b = 5.67;
+x = 1.19;
+double mr = M_sub/M_host;
+return (g1*pow(mr,a1)+g2*pow(mr,a2))*exp(-b*pow(mr,x));
+}
 }
 
 
