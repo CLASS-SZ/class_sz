@@ -3260,6 +3260,12 @@ int input_read_parameters(
      class_read_double("Normalisation of L − M relation in [Jy MPc2/Msun]",ptsz->L0_cib); // Normalisation of L − M relation in [Jy MPc2/Msun]
      class_read_double("Size of of halo masses sourcing CIB emission",ptsz->sigma2_LM_cib); // Size of of halo masses sourcing CIB emission
      class_read_double("z_obs (CIB)",ptsz->z_obs_cib);
+     class_read_double("z_plateau_cib",ptsz->z_plateau_cib);
+     class_read_double("M_min_subhalo_in_Msun",ptsz->M_min_subhalo_in_Msun);
+
+     class_read_int("use_redshift_dependent_M_min",ptsz->use_redshift_dependent_M_min);
+     class_read_int("use_nc_1_for_all_halos_cib_HOD",ptsz->use_nc_1_for_all_halos_cib_HOD);
+
 
       /* concentration parameter SZ */
       class_call(parser_read_string(pfc,"concentration parameter",&string1,&flag1,errmsg),
@@ -5253,6 +5259,7 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
   // class_read_string("sBBN_file",ppr->sBBN_file);
   class_read_string("ksz_filter_file",ptsz->ksz_filter_file);
   class_read_string("full_path_to_dndz_gal",ptsz->full_path_to_dndz_gal);
+  class_read_string("full_path_to_redshift_dependent_M_min",ptsz->full_path_to_redshift_dependent_M_min);
   class_read_string("full_path_to_source_dndz_gal",ptsz->full_path_to_source_dndz_gal);
   // printf("-> File Name: %s\n",ptsz->ksz_filter_file);
   // exit(0);
@@ -5911,6 +5918,10 @@ int input_default_params(
   ptsz->L0_cib = 6.4e-8; // Normalisation of L − M relation in [Jy MPc2/Msun]
   ptsz->sigma2_LM_cib = 0.5; // Size of of halo masses sourcing CIB emission
   ptsz->z_obs_cib = 1e-5;
+  ptsz->z_plateau_cib = 1e100; // see 5.2.1 of https://arxiv.org/pdf/1208.5049.pdf
+  ptsz->M_min_subhalo_in_Msun = 0;
+  ptsz->use_redshift_dependent_M_min = 0;
+  ptsz->use_nc_1_for_all_halos_cib_HOD = 0;
 
   //# Table 1 of https://arxiv.org/pdf/1309.0382.pdf
   ptsz->has_cib_flux_cut  = 0;

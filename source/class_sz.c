@@ -741,6 +741,7 @@ if (ptsz->need_ksz_template){
    load_nl_lensing_noise(ptsz);
  }
 
+
 if (ptsz->has_kSZ_kSZ_gal_covmat
 ||  ptsz->has_kSZ_kSZ_gallens_covmat
 ||  ptsz->has_kSZ_kSZ_lens_covmat){
@@ -2037,6 +2038,11 @@ if(ptsz->need_tt_noise){
 if(ptsz->need_lensing_noise){
   free(ptsz->nl_lensing_noise);
   free(ptsz->l_lensing_noise);
+}
+
+if(ptsz->use_redshift_dependent_M_min){
+  free(ptsz->M_min_of_z_z);
+  free(ptsz->M_min_of_z_M_min);
 }
 
 
@@ -6785,9 +6791,24 @@ if  (ell <= ptsz->l_unwise_filter[0] || ell >= ptsz->l_unwise_filter[ptsz->unwis
   fl = 0.;
 else
   fl = pwl_value_1d(ptsz->unwise_filter_size,
-                          ptsz->l_unwise_filter,
-                          ptsz->f_unwise_filter,
-                          ell);
+                    ptsz->l_unwise_filter,
+                    ptsz->f_unwise_filter,
+                    ell);
+return fl;
+                           }
+
+double get_M_min_of_z(double ell,
+                      struct tszspectrum * ptsz){
+double fl;
+if  (ell <= ptsz->M_min_of_z_z[0])
+  fl = ptsz->M_min_of_z_M_min[0];
+else if  (ell >= ptsz->M_min_of_z_z[ptsz->M_min_of_z_size-1])
+  fl = ptsz->M_min_of_z_M_min[ptsz->M_min_of_z_size-1];
+else
+  fl = pwl_value_1d(ptsz->M_min_of_z_size,
+                    ptsz->M_min_of_z_z,
+                    ptsz->M_min_of_z_M_min,
+                    ell);
 return fl;
                            }
 
@@ -12294,6 +12315,9 @@ int select_multipole_array(struct tszspectrum * ptsz)
 
 
 int initialise_and_allocate_memory(struct tszspectrum * ptsz){
+  if (ptsz->use_redshift_dependent_M_min){
+    load_M_min_of_z(ptsz);
+  }
 
    ptsz->Omega_survey = 4.*_PI_*ptsz->f_sky;
    if (ptsz->hm_consistency == 1){
@@ -14199,40 +14223,45 @@ double nc;
 if (M_halo>=ptsz->M_min_HOD) nc = 1.;
 else nc = 0.;
 
+if (ptsz->use_nc_1_for_all_halos_cib_HOD == 1){
+  nc = 1.;
+}
+
 return result =  nc*L_gal;
                                       }
 
-double Luminosity_of_satellite_galaxies(double z,
-                                        double M_halo,
-                                        double nu,
-                                        struct tszspectrum * ptsz,
-                                        struct background * pba){
-
-double result = 0.;
-double lnMs_min = log(1e6);
-double lnMs_max = log(1e11);
-double dlnM = (lnMs_max - lnMs_min)/10.;
-
-double L_sat = 0.;
-double L_gal;
-double lnMs = lnMs_min;
-double M_sub;
-double M_host =  M_halo;
-double dNdlnMs;
-while (lnMs<lnMs_max){
-M_sub = exp(lnMs);
-L_gal = evaluate_galaxy_luminosity(z, M_sub, nu, ptsz);
-//printf("Lgal = %.3e\n",L_gal);
-
-
-dNdlnMs = subhalo_hmf_dndlnMs(M_host,M_sub);
-L_sat += L_gal*dNdlnMs;
-lnMs += dlnM;
-}
-result = L_sat;
-//printf("%.3e\n",result);
-return result;
-                                      }
+// Old stuff not used
+// double Luminosity_of_satellite_galaxies(double z,
+//                                         double M_halo,
+//                                         double nu,
+//                                         struct tszspectrum * ptsz,
+//                                         struct background * pba){
+//
+// double result = 0.;
+// double lnMs_min = log(1e6);
+// double lnMs_max = log(1e11);
+// double dlnM = (lnMs_max - lnMs_min)/10.;
+//
+// double L_sat = 0.;
+// double L_gal;
+// double lnMs = lnMs_min;
+// double M_sub;
+// double M_host =  M_halo;
+// double dNdlnMs;
+// while (lnMs<lnMs_max){
+// M_sub = exp(lnMs);
+// L_gal = evaluate_galaxy_luminosity(z, M_sub, nu, ptsz);
+// //printf("Lgal = %.3e\n",L_gal);
+//
+//
+// dNdlnMs = subhalo_hmf_dndlnMs(M_host,M_sub);
+// L_sat += L_gal*dNdlnMs;
+// lnMs += dlnM;
+// }
+// result = L_sat;
+// //printf("%.3e\n",result);
+// return result;
+//                                       }
 
 
 double subhalo_hmf_dndlnMs(double M_host,double M_sub){
@@ -14254,6 +14283,8 @@ return result;
 double evaluate_phi_cib(double z, struct tszspectrum * ptsz){
 // eq. 31 of MM20
 double result = pow(1.+z,ptsz->delta_cib);
+if (z>ptsz->z_plateau_cib)
+  result = pow(1.+z,0.);
 return result;
                                       }
 

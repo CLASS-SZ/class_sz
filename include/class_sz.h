@@ -1072,6 +1072,10 @@ struct tszspectrum {
   double * f_unwise_filter;
   int unwise_filter_size;
 
+  double * M_min_of_z_z;
+  double * M_min_of_z_M_min;
+  int M_min_of_z_size;
+
   double * nl_lensing_noise;
   double * l_lensing_noise;
   int lensing_noise_size;
@@ -1315,6 +1319,10 @@ double * steps_m;
   double sigma2_LM_cib; // Size of of halo masses sourcing CIB emission
   int has_cib_flux_cut;
   double z_obs_cib;
+  double z_plateau_cib;
+  double M_min_subhalo_in_Msun;
+  int use_nc_1_for_all_halos_cib_HOD;
+  int use_redshift_dependent_M_min;
 
   double nfw_profile_epsabs;
   double nfw_profile_epsrel;
@@ -1727,6 +1735,9 @@ double get_tau_profile_at_z_m_l(double z,
 
 double get_ksz_filter_at_l(double l,
                            struct tszspectrum * ptsz);
+
+double get_M_min_of_z(double l,
+                      struct tszspectrum * ptsz);
 
   int write_output_to_files_ell_indep_ints(struct nonlinear * pnl,
                                            struct background * pba,

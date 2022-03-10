@@ -5986,6 +5986,117 @@ printf("-> Loading cosmos dndz unwise\n");
 }
 
 
+int load_M_min_of_z(struct tszspectrum * ptsz)
+{
+
+  if (ptsz->sz_verbose >= 1)
+    printf("-> loading the minimal mass vs redshift\n");
+
+
+  class_alloc(ptsz->M_min_of_z_z,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->M_min_of_z_M_min,sizeof(double *)*100,ptsz->error_message);
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+  class_open(process,ptsz->full_path_to_redshift_dependent_M_min, "r",ptsz->error_message);
+  printf("-> File Name: %s\n",ptsz->full_path_to_redshift_dependent_M_min);
+
+
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+    sscanf(line, "%lf %lf", &this_lnx, &this_lnI);
+    //printf("lnx = %e\n",this_lnx);
+
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  // status = pclose(process);
+  status = fclose(process);
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->M_min_of_z_size = n_data;
+  /** Make room */
+
+  class_realloc(ptsz->M_min_of_z_z,
+                ptsz->M_min_of_z_z,
+                ptsz->M_min_of_z_size*sizeof(double),
+                ptsz->error_message);
+  class_realloc(ptsz->M_min_of_z_M_min,
+                ptsz->M_min_of_z_M_min,
+                ptsz->M_min_of_z_size*sizeof(double),
+                ptsz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<ptsz->M_min_of_z_size; index_x++) {
+    ptsz->M_min_of_z_z[index_x] = lnx[index_x];
+    ptsz->M_min_of_z_M_min[index_x] = lnI[index_x];
+  };
+
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  return _SUCCESS_;
+}
+
 
 
 int load_ksz_filter(struct tszspectrum * ptsz)
@@ -7739,6 +7850,11 @@ double integrand_patterson_test(double logM, void *p){
   else {
     m_min = ptsz->M1SZ;
     m_max = ptsz->M2SZ;
+
+    if (ptsz->use_redshift_dependent_M_min){
+      m_min = get_M_min_of_z(pvectsz[ptsz->index_z],ptsz);
+      // printf("z = %.3e m_min = %.3e\n",pvectsz[ptsz->index_z],m_min);
+    }
   }
 
   struct Parameters_for_integrand_patterson V;
@@ -14420,9 +14536,13 @@ for (index_nu=0; index_nu<ptsz->n_nu_L_sat; index_nu++)
 
       double z =   exp(ptsz->array_z_L_sat[index_z])-1.;
       double logM =   ptsz->array_m_L_sat[index_M];
-
-
-      double lnMs_min = log(ptsz->M_min_HOD);
+      double lnMs_min;
+      if (ptsz->M_min_subhalo_in_Msun>0.){
+      lnMs_min = log(ptsz->M_min_subhalo_in_Msun);
+      }
+      else{
+      lnMs_min = log(ptsz->M_min_HOD);
+      }
       double lnMs_max = logM;//log(1e11);
 
       if (lnMs_max<=lnMs_min){
