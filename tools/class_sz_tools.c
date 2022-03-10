@@ -6833,7 +6833,8 @@ double erf_compl(double y,
                  double sn,
                  double q){
   //Completeness with error function
-  double arg = (y - q * sn)/(sqrt(2.) * sn);
+  // double arg = (y - q * sn)/(sqrt(2.) * sn);
+  double arg = (sqrt(pow(y/sn,2.)+0.) - q )/(sqrt(2.));
   double erf_compl = (erf(arg) + 1.)/2.;
   return erf_compl;
 }
