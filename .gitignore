@@ -182,3 +182,4 @@ notebooks/class_sz_planck_act_cib-cross-auto.npz
 notebooks/class_sz_planck_act_cib-cross-auto_w220.npy
 sz_auxiliary_files/noise_curves/nlkk_v3_1_0_deproj0_SENS2_fsky0p4_it_lT30-3000_lP30-5000.dat
 sz_auxiliary_files/noise_curves/kappa_deproj0_sens0_16000_lT30-3000_lP30-5000.dat
+notebooks/I0_many_nus.png

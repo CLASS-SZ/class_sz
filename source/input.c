@@ -3266,6 +3266,13 @@ int input_read_parameters(
      class_read_int("use_redshift_dependent_M_min",ptsz->use_redshift_dependent_M_min);
      class_read_int("use_nc_1_for_all_halos_cib_HOD",ptsz->use_nc_1_for_all_halos_cib_HOD);
 
+     class_read_int("use scale dependent bias (from non Gaussianity)",ptsz->has_ng_in_bh);
+     class_read_double("fNL",ptsz->fNL);
+     if(ptsz->has_ng_in_bh){
+       ppt->has_density_transfers=_TRUE_;
+       ppt->has_perturbations = _TRUE_;
+     }
+
 
       /* concentration parameter SZ */
       class_call(parser_read_string(pfc,"concentration parameter",&string1,&flag1,errmsg),
@@ -5820,15 +5827,15 @@ int input_default_params(
   ptsz->n_m_dndlnM = 500;
 
 
-  ptsz->M1SZ_L_sat = 1.e9;
-  ptsz->M2SZ_L_sat = 1.e17;
-  ptsz->z1SZ_L_sat = 1.e-3;
-  ptsz->z2SZ_L_sat = 6.;
-  ptsz->n_z_L_sat = 101;
-  ptsz->n_m_L_sat = 102;
-  ptsz->n_nu_L_sat = 103;
-  ptsz->epsabs_L_sat = 1e-15;
-  ptsz->epsrel_L_sat = 1e-6;
+  // ptsz->M1SZ_L_sat = 1.e9;
+  // ptsz->M2SZ_L_sat = 1.e17;
+  // ptsz->z1SZ_L_sat = 1.e-3;
+  // ptsz->z2SZ_L_sat = 6.;
+  // ptsz->n_z_L_sat = 101;
+  // ptsz->n_m_L_sat = 102;
+  // ptsz->n_nu_L_sat = 103;
+  // ptsz->epsabs_L_sat = 1e-15;
+  // ptsz->epsrel_L_sat = 1e-6;
 
   ptsz->convert_cls_to_gamma = 0;
 
@@ -5936,6 +5943,8 @@ int input_default_params(
   ptsz->M_min_subhalo_in_Msun = 0;
   ptsz->use_redshift_dependent_M_min = 0;
   ptsz->use_nc_1_for_all_halos_cib_HOD = 0;
+
+  ptsz->fNL = 0.;
 
   //# Table 1 of https://arxiv.org/pdf/1309.0382.pdf
   ptsz->has_cib_flux_cut  = 0;
@@ -6207,6 +6216,7 @@ int input_default_params(
   ptsz->has_knl = _FALSE_;
   ptsz->has_nl_index = _FALSE_;
   ptsz->has_sigma2_hsv = _FALSE_;
+  ptsz->has_ng_in_bh = _FALSE_;
 
   ptsz->index_md_hmf = 0;
   ptsz->index_md_mean_y = 1;

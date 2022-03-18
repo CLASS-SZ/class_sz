@@ -6857,6 +6857,7 @@ return Delta_c;
 struct Parameters_for_integrand_redshift{
   struct nonlinear * pnl;
   struct primordial * ppm;
+  struct perturbs * ppt;
   struct tszspectrum * ptsz;
   struct background * pba;
   double * pvecback;
@@ -7214,6 +7215,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
                                               V->pba,
                                               V->pnl,
                                               V->ppm,
+                                              V->ppt,
                                               V->ptsz);
 
   result = delta_ell_isw*delta_ell_y;
@@ -7375,6 +7377,7 @@ result = W_lens*W_lens;
                                  V->pba,
                                  V->pnl,
                                  V->ppm,
+                                 V->ppt,
                                  V->ptsz);
 
 
@@ -7724,6 +7727,7 @@ if  (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
 int integrate_over_redshift(struct background * pba,
                             struct nonlinear * pnl,
                             struct primordial * ppm,
+                            struct perturbs * ppt,
                             struct tszspectrum * ptsz,
                             double * Pvecback,
                             double * Pvectsz)
@@ -7737,6 +7741,7 @@ int integrate_over_redshift(struct background * pba,
   struct Parameters_for_integrand_redshift V;
   V.pnl = pnl;
   V.ppm = ppm;
+  V.ppt = ppt;
   V.ptsz = ptsz;
   V.pba = pba;
   V.pvectsz = Pvectsz;
@@ -7789,6 +7794,7 @@ struct Parameters_for_integrand_patterson{
   struct primordial * ppm;
   struct tszspectrum * ptsz;
   struct background * pba;
+  struct perturbs * ppt;
   double * pvecback;
   double * pvectsz;
 };
@@ -7805,6 +7811,7 @@ double integrand_patterson_test(double logM, void *p){
                                         V->pba,
                                         V->ppm,
                                         V->pnl,
+                                        V->ppt,
                                         V->ptsz);
 
   return result;
@@ -7819,6 +7826,7 @@ double integrand_patterson_test(double logM, void *p){
                              struct background * pba,
                              struct nonlinear * pnl,
                              struct primordial * ppm,
+                             struct perturbs * ppt,
                              struct tszspectrum * ptsz)
 {
 
@@ -7861,6 +7869,7 @@ double integrand_patterson_test(double logM, void *p){
   struct Parameters_for_integrand_patterson V;
   V.pnl = pnl;
   V.ppm = ppm;
+  V.ppt = ppt;
   V.ptsz = ptsz;
   V.pba = pba;
   V.pvectsz = pvectsz;
@@ -11103,6 +11112,7 @@ struct Parameters_for_integrand_mean_galaxy_bias{
   struct primordial * ppm;
   struct tszspectrum * ptsz;
   struct background * pba;
+  struct perturbs * ppt;
   double * pvectsz;
   double * pvecback;
   double z;
@@ -11170,7 +11180,7 @@ double integrand_mean_galaxy_bias(double lnM_halo, void *p){
       // }
       nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD,V->ptsz,V->pba);
       ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],nc,M0,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
-      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ppt,V->ptsz);
       double result = hmf*V->pvectsz[V->ptsz->index_halo_bias]*(ns+nc);
 
   return result;
@@ -11351,9 +11361,10 @@ return _SUCCESS_;
 
 
 int tabulate_mean_galaxy_bias(struct background * pba,
-                                        struct nonlinear * pnl,
-                                        struct primordial * ppm,
-                                        struct tszspectrum * ptsz){
+                              struct nonlinear * pnl,
+                              struct primordial * ppm,
+                              struct perturbs * ppt,
+                              struct tszspectrum * ptsz){
 
 class_alloc(ptsz->array_mean_galaxy_bias,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
 
@@ -11392,11 +11403,12 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
 
 
           // at each z, perform the mass integral
-          struct Parameters_for_integrand_mean_galaxy_number V;
+          struct Parameters_for_integrand_mean_galaxy_bias V;
           V.pnl = pnl;
           V.ppm = ppm;
           V.ptsz = ptsz;
           V.pba = pba;
+          V.ppt = ppt;
           V.pvectsz = pvectsz;
           V.pvecback = pvecback;
           V.z = z;
@@ -11443,6 +11455,7 @@ struct Parameters_for_integrand_hmf_counter_terms_b1min{
   struct primordial * ppm;
   struct tszspectrum * ptsz;
   struct background * pba;
+  struct perturbs * ppt;
   double * pvectsz;
   double * pvecback;
   double z;
@@ -11501,7 +11514,7 @@ double integrand_hmf_counter_terms_b1min(double lnM_halo, void *p){
 
       double result = hmf*M_halo/rho_cb;
 
-      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ppt,V->ptsz);
       double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       result *= b1;
 
@@ -11542,6 +11555,7 @@ struct Parameters_for_integrand_psi_b2g{
 struct Parameters_for_integrand_psi_b1g{
   struct nonlinear * pnl;
   struct primordial * ppm;
+  struct perturbs * ppt;
   struct tszspectrum * ptsz;
   struct background * pba;
   double * pvectsz;
@@ -11554,6 +11568,7 @@ struct Parameters_for_integrand_psi_b1g{
 struct Parameters_for_integrand_psi_b1t{
   struct nonlinear * pnl;
   struct primordial * ppm;
+  struct perturbs * ppt;
   struct tszspectrum * ptsz;
   struct background * pba;
   double * pvectsz;
@@ -11566,6 +11581,7 @@ struct Parameters_for_integrand_psi_b1t{
 struct Parameters_for_integrand_psi_b1gt{
   struct nonlinear * pnl;
   struct primordial * ppm;
+  struct perturbs * ppt;
   struct tszspectrum * ptsz;
   struct background * pba;
   double * pvectsz;
@@ -11593,6 +11609,7 @@ struct Parameters_for_integrand_psi_b2kg{
 struct Parameters_for_integrand_psi_b1kg{
   struct nonlinear * pnl;
   struct primordial * ppm;
+  struct perturbs * ppt;
   struct tszspectrum * ptsz;
   struct background * pba;
   double * pvectsz;
@@ -11605,6 +11622,7 @@ struct Parameters_for_integrand_psi_b1kg{
 struct Parameters_for_integrand_psi_b1kgt{
   struct nonlinear * pnl;
   struct primordial * ppm;
+  struct perturbs * ppt;
   struct tszspectrum * ptsz;
   struct background * pba;
   double * pvectsz;
@@ -11836,7 +11854,7 @@ double integrand_psi_b1g(double lnM_halo, void *p){
       double g = V->pvectsz[V->ptsz->index_galaxy_profile];
 
 
-      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ppt,V->ptsz);
       double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       double result = hmf*b1*g;
 
@@ -11927,7 +11945,7 @@ double integrand_psi_b1kg(double lnM_halo, void *p){
       }
 
 
-      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ppt,V->ptsz);
       double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       double result = hmf*b1*g;
 
@@ -12225,7 +12243,7 @@ double integrand_psi_b1t(double lnM_halo, void *p){
       // double rhom =  V->pvectsz[V->ptsz->index_density_profile];
 
 
-      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ppt,V->ptsz);
       double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       double result = hmf*b1*t;
       // double result = hmf*b1*rhom;
@@ -12306,7 +12324,7 @@ double integrand_psi_b1gt(double lnM_halo, void *p){
 
 
 
-      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ppt,V->ptsz);
       double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       double result = hmf*b1*g*t;
       if (isnan(result)||isinf(result)){
@@ -12402,7 +12420,7 @@ double integrand_psi_b1kgt(double lnM_halo, void *p){
 
 
 
-      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+      evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ppt,V->ptsz);
       double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       double result = hmf*b1*g*t;
       if (isnan(result)||isinf(result)){
@@ -12421,6 +12439,7 @@ double integrand_psi_b1kgt(double lnM_halo, void *p){
 int tabulate_psi_b1g(struct background * pba,
                     struct nonlinear * pnl,
                     struct primordial * ppm,
+                    struct perturbs * ppt,
                     struct tszspectrum * ptsz){
 
 class_alloc(ptsz->array_psi_b1g_redshift,sizeof(double *)*ptsz->n_z_psi_b1g,ptsz->error_message);
@@ -12523,6 +12542,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1g; index_z++)
           struct Parameters_for_integrand_psi_b1g V;
           V.pnl = pnl;
           V.ppm = ppm;
+          V.ppt = ppt;
           V.ptsz = ptsz;
           V.pba = pba;
           V.pvectsz = pvectsz;
@@ -12571,6 +12591,7 @@ return _SUCCESS_;
 int tabulate_psi_b1kg(struct background * pba,
                     struct nonlinear * pnl,
                     struct primordial * ppm,
+                    struct perturbs * ppt,
                     struct tszspectrum * ptsz){
 if(ptsz->sz_verbose>0){
   printf("->tabulating psi b1kg\n");
@@ -12677,6 +12698,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1kg; index_z++)
           struct Parameters_for_integrand_psi_b1kg V;
           V.pnl = pnl;
           V.ppm = ppm;
+          V.ppt = ppt;
           V.ptsz = ptsz;
           V.pba = pba;
           V.pvectsz = pvectsz;
@@ -13199,6 +13221,7 @@ return _SUCCESS_;
 int tabulate_psi_b1t(struct background * pba,
                     struct nonlinear * pnl,
                     struct primordial * ppm,
+                    struct perturbs * ppt,
                     struct tszspectrum * ptsz){
 
 class_alloc(ptsz->array_psi_b1t_redshift,sizeof(double *)*ptsz->n_z_psi_b1t,ptsz->error_message);
@@ -13301,6 +13324,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1t; index_z++)
           struct Parameters_for_integrand_psi_b1t V;
           V.pnl = pnl;
           V.ppm = ppm;
+          V.ppt = ppt;
           V.ptsz = ptsz;
           V.pba = pba;
           V.pvectsz = pvectsz;
@@ -13356,6 +13380,7 @@ return _SUCCESS_;
 int tabulate_psi_b1gt(struct background * pba,
                     struct nonlinear * pnl,
                     struct primordial * ppm,
+                    struct perturbs * ppt,
                     struct tszspectrum * ptsz){
 
 class_alloc(ptsz->array_psi_b1gt_redshift,sizeof(double *)*ptsz->n_z_psi_b1gt,ptsz->error_message);
@@ -13470,6 +13495,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1gt; index_z++)
           struct Parameters_for_integrand_psi_b1gt V;
           V.pnl = pnl;
           V.ppm = ppm;
+          V.ppt = ppt;
           V.ptsz = ptsz;
           V.pba = pba;
           V.pvectsz = pvectsz;
@@ -13531,6 +13557,7 @@ return _SUCCESS_;
 int tabulate_psi_b1kgt(struct background * pba,
                     struct nonlinear * pnl,
                     struct primordial * ppm,
+                    struct perturbs * ppt,
                     struct tszspectrum * ptsz){
 
 class_alloc(ptsz->array_psi_b1kgt_redshift,sizeof(double *)*ptsz->n_z_psi_b1kgt,ptsz->error_message);
@@ -13645,6 +13672,7 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1kgt; index_z++)
           struct Parameters_for_integrand_psi_b1kgt V;
           V.pnl = pnl;
           V.ppm = ppm;
+          V.ppt = ppt;
           V.ptsz = ptsz;
           V.pba = pba;
           V.pvectsz = pvectsz;
@@ -13989,6 +14017,7 @@ return _SUCCESS_;
 int tabulate_hmf_counter_terms_b1min(struct background * pba,
                                     struct nonlinear * pnl,
                                     struct primordial * ppm,
+                                    struct perturbs * ppt,
                                     struct tszspectrum * ptsz){
 
 class_alloc(ptsz->array_hmf_counter_terms_b1min,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
@@ -14027,6 +14056,7 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
           struct Parameters_for_integrand_hmf_counter_terms_b1min V;
           V.pnl = pnl;
           V.ppm = ppm;
+          V.ppt = ppt;
           V.ptsz = ptsz;
           V.pba = pba;
           V.pvectsz = pvectsz;
@@ -14411,6 +14441,8 @@ if (
     == _FALSE_
     )
 return 0;
+
+// printf("ptsz->n_nu_L_sat = %d %d\n",ptsz->n_nu_L_sat,ptsz->n_z_psi_b1gt);
 
 class_alloc(ptsz->array_L_sat_at_M_z_nu,sizeof(double *)*ptsz->n_nu_L_sat,ptsz->error_message);
 int index_nu, index_M,index_z;

@@ -83,7 +83,7 @@ class_sz_ptsz_parameter( epsabs_L_sat, double, 1e-15);
 class_sz_ptsz_parameter( epsrel_L_sat, double, 1e-6);
 class_sz_ptsz_parameter(n_z_L_sat , int,101);
 class_sz_ptsz_parameter(n_m_L_sat , int,102);
-class_sz_ptsz_parameter(n_nu_L_sat, int, 103);
+class_sz_ptsz_parameter(n_nu_L_sat,int,103);
 
 class_sz_ptsz_parameter(use_bg_at_z_in_ksz2g_eff, int, 0);
 class_sz_ptsz_parameter(use_fdndz_for_ksz2g_eff, int, 0);

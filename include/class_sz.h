@@ -260,6 +260,11 @@ struct tszspectrum {
   double M_min_ng_bar;
   double M_max_ng_bar;
 
+
+  int index_d_tot;
+  int index_phi;
+  int number_of_titles;
+
   int need_m200m_to_m200c;
   int need_m200c_to_m200m;
   int need_m200m_to_m500c;
@@ -418,6 +423,8 @@ struct tszspectrum {
   int has_bk_ttg_at_z_hf;
 
   int has_mean_galaxy_bias;
+  int has_ng_in_bh;
+  double fNL;
 
   int has_mean_y;
   int index_md_mean_y;
@@ -1658,6 +1665,7 @@ int szpowerspectrum_init(struct background * pba,
   int compute_sz(struct background * pba,
                  struct nonlinear * pnl,
                  struct primordial * ppm,
+                 struct perturbs * ppt,
                  struct tszspectrum * ptsz,
                  double * pvecback,
                  double * Pvectsz);
@@ -1672,6 +1680,7 @@ int szpowerspectrum_init(struct background * pba,
                               struct background * pba,
                               struct primordial * ppm,
                               struct nonlinear * pnl,
+                              struct perturbs * ppt,
                               struct tszspectrum * ptsz);
 
   double delta_ell_lens_at_ell_and_z( double * pvecback,
@@ -1770,6 +1779,7 @@ double get_M_min_of_z(double l,
                          struct background * pba,
                          struct primordial * ppm,
                          struct nonlinear * pnl,
+                         struct perturbs * ppt,
                          struct tszspectrum * ptsz);
 
   int evaluate_halo_bias_b2(double * pvecback,
@@ -2225,13 +2235,20 @@ double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
 
 
 double get_second_order_bias_at_z_and_nu(double z,
-                                     double nu,
-                                     struct tszspectrum * ptsz,
-                                     struct background * pba);
+                                         double nu,
+                                         struct tszspectrum * ptsz,
+                                         struct background * pba);
 
 double get_first_order_bias_at_z_and_nu(double z,
                                          double nu,
                                          struct tszspectrum * ptsz);
+
+double get_ng_bias_contribution_at_z_and_k(double z,
+                                           double k,
+                                           double nu,
+                                           struct background * pba,
+                                           struct perturbs * ppt,
+                                           struct tszspectrum * ptsz);
 
 double get_vrms2_at_z(double z,
                       struct tszspectrum * ptsz);
