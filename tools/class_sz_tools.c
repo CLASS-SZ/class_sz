@@ -11050,6 +11050,164 @@ int read_SO_noise(struct tszspectrum * ptsz){
     }
 
 
+int tabulate_ng_bias_contribution_at_z_and_k(struct background * pba,
+                                             struct perturbs * ppt,
+                                             struct tszspectrum * ptsz){
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+int index_z;
+ptsz->nz_ng_bias = 200; // set in parser
+
+
+
+int index_md=ppt->index_md_scalars;
+int index_k;
+
+// double k_min = ppt->k[index_md][0]/pba->h;
+// double k_max = ppt->k[ppt->k_size[index_md]-1]/pba->h;
+ptsz->nk_ng_bias = ppt->k_size[index_md];
+
+
+class_alloc(ptsz->array_ln_1pz_ng_bias,sizeof(double *)*ptsz->nz_ng_bias,ptsz->error_message);
+class_alloc(ptsz->array_ln_k_ng_bias,sizeof(double *)*ptsz->nk_ng_bias,ptsz->error_message);
+
+class_alloc(ptsz->array_ln_ng_bias_at_z_and_k,
+            sizeof(double *)*ptsz->nk_ng_bias*ptsz->nz_ng_bias,
+            ptsz->error_message);
+
+
+for (index_z=0; index_z<ptsz->nz_ng_bias; index_z++)
+{
+      ptsz->array_ln_1pz_ng_bias[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->nz_ng_bias-1.); // log(1+z)
+}
+for (index_k=0; index_k<ptsz->nk_ng_bias; index_k++)
+{
+      ptsz->array_ln_k_ng_bias[index_k] = log(ppt->k[index_md][index_k]/pba->h);
+}
+
+
+// int index_z_k = 0;
+double fNL = ptsz->fNL;
+// double bh = get_first_order_bias_at_z_and_nu(z,nu,ptsz);
+double beta_f = 2.*ptsz->delta_cSZ; // multiply by (bh-1.) in the "get functoion"
+double alpha_k = 1.;
+
+
+// start collecting transfer functions
+double * data;
+int size_data;
+int number_of_titles = ptsz->number_of_titles;
+
+int index_d_tot = ptsz->index_d_tot;
+int index_phi = ptsz->index_phi;
+
+size_data = number_of_titles*ppt->k_size[index_md];
+
+double tstart, tstop;
+int abort;
+
+///////////////////////////////////////////////
+//Parallelization of Sigma2(R,z) computation
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppt,z_min,z_max,beta_f,fNL,size_data,number_of_titles,index_d_tot,index_phi)\
+private(tstart, tstop,index_k,index_z,data) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+if (ppt->ic_size[index_md] != 1){
+  printf("Please run with only one type of initial conditions to avoid confusion in class_sz.\n");
+  exit(0);
+}
+
+class_alloc_parallel(data, sizeof(double)*ppt->ic_size[index_md]*size_data, ptsz->error_message);
+
+#pragma omp for collapse(2)
+for (index_z=0; index_z<ptsz->nz_ng_bias; index_z++)
+{
+for (index_k=0; index_k<ptsz->nk_ng_bias; index_k++)
+  {
+
+
+
+  int index_z_k = index_k * ptsz->nz_ng_bias + index_z;
+
+
+
+      double z =   exp(ptsz->array_ln_1pz_ng_bias[index_z])-1.;
+      double kp =  exp(ptsz->array_ln_k_ng_bias[index_k]);
+
+      perturb_output_data(pba,
+                          ppt,
+                          class_format,
+                          z,
+                          number_of_titles,
+                          data);
+
+
+      double alpha_kp = data[index_k*number_of_titles+index_d_tot]/data[index_k*number_of_titles+index_phi];
+
+  if (isnan(alpha_kp)||isinf(alpha_kp)){
+      printf("alpha_kp = %.5e den = %.5e num = %.5e k = %.5e z = %.5e\n",
+             alpha_kp,
+             data[index_k*number_of_titles+index_phi],
+             data[index_k*number_of_titles+index_d_tot],
+             kp,
+             z
+           );
+      exit(0);
+      }
+  else{
+      if (alpha_kp>0){
+        printf("alpha>0\n");
+        exit(0);
+      }
+      ptsz->array_ln_ng_bias_at_z_and_k[index_z_k] = log(-fNL*beta_f/alpha_kp);
+      }
+
+
+  }
+}
+
+#ifdef _OPENMP
+  tstop = omp_get_wtime();
+  if (ptsz->sz_verbose > 0)
+    printf("In %s: time spent in parallel region (loop over zk's) = %e s for thread %d\n",
+           __func__,tstop-tstart,omp_get_thread_num());
+#endif
+
+
+free(data);
+}
+
+
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+
+return _SUCCESS_;
+                                             }
+
+
 //Tabulate vrms2 as functions of redshift
  int tabulate_vrms2_from_pk(struct background * pba,
                             struct nonlinear * pnl,

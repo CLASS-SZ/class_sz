@@ -331,6 +331,13 @@ if (ptsz->sz_verbose>1)
   // printf("tabulating dndlnM quantities -1\n");
 
 
+  if (ptsz->need_ng_bias){
+    if (ptsz->sz_verbose>1)
+       printf("-> Tabulating scale dependent bias...\n");
+    tabulate_ng_bias_contribution_at_z_and_k(pba,ppt,ptsz);
+  }
+  // exit(0);
+
 
 if (ptsz->need_hmf != 0){
   if (ptsz->sz_verbose>10)
@@ -410,9 +417,6 @@ if (
 
   load_normalized_source_dndz(ptsz);
 }
-
-
-
 
    if (ptsz->has_tSZ_gal_1h
     || ptsz->has_tSZ_gal_2h
@@ -529,7 +533,6 @@ if (ptsz->has_tSZ_gal_1h
 tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
 }
 
-
 if (ptsz->has_mean_galaxy_bias)
 {
   tabulate_mean_galaxy_bias(pba,pnl,ppm,ppt,ptsz);
@@ -579,7 +582,6 @@ if (ptsz->has_dydz){
   tabulate_dydz(pba,pnl,ppm,ptsz);
   // printf("%.8e\n",get_dydz_at_z(1.,ptsz));
 }
-
 
 
 // tabulate lensing magnificaion integral, only when requested
@@ -1809,6 +1811,11 @@ free(ptsz->l_ksz_template);
 free(ptsz->cl_ksz_template);
 }
 
+if (ptsz->need_ng_bias){
+free(ptsz->array_ln_1pz_ng_bias);
+free(ptsz->array_ln_k_ng_bias);
+free(ptsz->array_ln_ng_bias_at_z_and_k);
+}
 
 
 if (electron_pressure_comps != _FALSE_){
@@ -7760,6 +7767,47 @@ int evaluate_effective_galaxy_bias(double * pvecback,
    return _SUCCESS_;
 }
 
+
+double get_scale_dependent_bias_at_z_and_k(double z_asked,
+                                           double k_asked,
+                                           double bh,
+                                           struct tszspectrum *ptsz){
+  double z = log(1.+z_asked);
+  double k = log(k_asked);
+
+  double result;
+
+ if (z<ptsz->array_ln_1pz_ng_bias[0]){
+// z = ptsz->array_ln_1pz_ng_bias[0];
+result = 0.;
+ }
+else if (z>ptsz->array_ln_1pz_ng_bias[ptsz->nz_ng_bias-1]){
+    // z = ptsz->array_ln_1pz_ng_bias[ptsz->nz_ng_bias-1];
+result = 0.;
+}
+else if (k<ptsz->array_ln_k_ng_bias[0]){
+    // k = ptsz->array_ln_k_ng_bias[0];
+result = 0.;
+}
+else if (k>ptsz->array_ln_k_ng_bias[ptsz->nk_ng_bias-1]){
+    // k =  ptsz->array_ln_k_ng_bias[ptsz->nk_ng_bias-1];
+result = 0.;
+  }
+else{
+
+ result = exp(pwl_interp_2d(ptsz->nz_ng_bias,
+                          ptsz->nk_ng_bias,
+                          ptsz->array_ln_1pz_ng_bias,
+                          ptsz->array_ln_k_ng_bias,
+                          ptsz->array_ln_ng_bias_at_z_and_k,
+                          1,
+                          &z,
+                          &k))*(bh-1.);
+}
+return result;
+}
+
+
 double get_ng_bias_contribution_at_z_and_k(double z,
                                            double k,
                                            double bh,
@@ -7884,7 +7932,7 @@ if (lp>0){
 array_ln_alpha_k[index_k] = log(-alpha_kp);
 }
 
-array_ln_alpha_k[index_k] = log(10);
+// array_ln_alpha_k[index_k] = log(10);
 
 array_ln_k[index_k] = log(kp);
 
@@ -7924,7 +7972,9 @@ b_ng = fNL*beta_f/alpha_k;
 free(array_ln_alpha_k);
 free(array_ln_k);
 // printf("z k bng = %.5e %.5e %.5e\n",z,k,b_ng);
-// printf("z = %.5e fNL = %.5e beta_f = %.5e k = %.5e alpha_k = %.5e b_ng = %,5e\n",z,fNL,beta_f,k,alpha_k,b_ng);
+
+double bng_int = get_scale_dependent_bias_at_z_and_k(z,k,bh,ptsz);
+printf("z = %.5e fNL = %.5e beta_f = %.5e k = %.5e alpha_k = %.5e b_ng = %.5e b_ng (interp.) = %.5e\n",z,fNL,beta_f,k,alpha_k,b_ng,bng_int);
 // exit(0);
 return b_ng;
 
@@ -8027,7 +8077,8 @@ int evaluate_halo_bias(double * pvecback,
       kl = (ptsz->ell[index_l]+0.5)/d_A;
      }
 
-    bng = get_ng_bias_contribution_at_z_and_k(z,kl,bh,pba,ppt,ptsz);
+    // bng = get_ng_bias_contribution_at_z_and_k(z,kl,bh,pba,ppt,ptsz);
+    bng = get_scale_dependent_bias_at_z_and_k(z,kl,bh,ptsz);
     pvectsz[ptsz->index_halo_bias] += bng;
   }
 

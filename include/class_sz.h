@@ -273,6 +273,13 @@ struct tszspectrum {
   int need_m200c_to_m500c;
   int need_m500c_to_m200c;
 
+  int need_ng_bias;
+  int nz_ng_bias;
+  int nk_ng_bias;
+  double * array_ln_1pz_ng_bias;
+  double * array_ln_k_ng_bias;
+  double * array_ln_ng_bias_at_z_and_k;
+
   int need_ksz_template;
   int need_tt_noise;
   int need_lensing_noise;
@@ -2245,10 +2252,16 @@ double get_first_order_bias_at_z_and_nu(double z,
 
 double get_ng_bias_contribution_at_z_and_k(double z,
                                            double k,
-                                           double nu,
+                                           double bh,
                                            struct background * pba,
                                            struct perturbs * ppt,
                                            struct tszspectrum * ptsz);
+
+double get_scale_dependent_bias_at_z_and_k(double z,
+                                           double k,
+                                           double bh,
+                                           struct tszspectrum *ptsz);
+
 
 double get_vrms2_at_z(double z,
                       struct tszspectrum * ptsz);

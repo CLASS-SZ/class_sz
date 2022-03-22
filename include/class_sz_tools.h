@@ -537,6 +537,12 @@ int tabulate_hmf_counter_terms_nmin(struct background * pba,
                                     struct nonlinear * pnl,
                                     struct primordial * ppm,
                                     struct tszspectrum * ptsz);
+
+int tabulate_ng_bias_contribution_at_z_and_k(struct background * pba,
+                                             struct perturbs * ppt,
+                                             struct tszspectrum * ptsz);
+
+
 int tabulate_hmf_counter_terms_b1min(struct background * pba,
                                     struct nonlinear * pnl,
                                     struct primordial * ppm,

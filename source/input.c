@@ -3271,6 +3271,7 @@ int input_read_parameters(
      if(ptsz->has_ng_in_bh){
        ppt->has_density_transfers=_TRUE_;
        ppt->has_perturbations = _TRUE_;
+       ptsz->need_ng_bias = 1;
      }
 
 
@@ -6217,6 +6218,7 @@ int input_default_params(
   ptsz->has_nl_index = _FALSE_;
   ptsz->has_sigma2_hsv = _FALSE_;
   ptsz->has_ng_in_bh = _FALSE_;
+  ptsz->need_ng_bias = 0;
 
   ptsz->index_md_hmf = 0;
   ptsz->index_md_mean_y = 1;
