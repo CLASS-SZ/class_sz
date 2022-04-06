@@ -2326,34 +2326,15 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
-      if ((strstr(string1,"kSZ_kSZ_gal_covmat") != NULL) ) {
-        ppt->has_scalars = _TRUE_;
-        ppt->has_cl_cmb_temperature = _TRUE_;
-        ppt->has_cl_cmb_lensing_potential = _TRUE_;
-        ppt->has_cls = _TRUE_;
-        ple->has_lensed_cls = _TRUE_;
-        ptsz->has_gal_gal_1h = _TRUE_;
-        ptsz->has_gal_gal_2h = _TRUE_;
-        ptsz->has_kSZ_kSZ_gal_covmat =_TRUE_;
-        ppt->has_density_transfers=_TRUE_;
-        ppt->has_pk_matter = _TRUE_;
-        ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
-        ptsz->need_hmf = 1;
-        ppt->l_scalar_max = 10000;
-        ptsz->need_ksz_template = 1;
-        ptsz->need_tt_noise = 1;
 
-      }
 
 
       if ((strstr(string1,"kSZ_kSZ_gal_lensing_term") != NULL) ) {
         ppt->has_scalars = _TRUE_;
         ppt->has_cl_cmb_temperature = _TRUE_;
         ppt->has_cls = _TRUE_;
-        ptsz->has_gal_lens_1h = _TRUE_;
-        ptsz->has_gal_lens_2h = _TRUE_;
+        // ptsz->has_gal_lens_1h = _TRUE_;
+        // ptsz->has_gal_lens_2h = _TRUE_;
         ptsz->has_kSZ_kSZ_gal_lensing_term =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
@@ -2723,10 +2704,43 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
 
-        class_read_double("effective_galaxy_bias",ptsz->effective_galaxy_bias);
-        class_read_double("use_bg_eff_in_ksz2g_eff",ptsz->use_bg_eff_in_ksz2g_eff);
+
         // ptsz->need_hmf = 1;
       }
+
+        class_read_double("effective_galaxy_bias",ptsz->effective_galaxy_bias);
+        class_read_double("use_bg_eff_in_ksz2g_eff",ptsz->use_bg_eff_in_ksz2g_eff);
+
+
+      if ((strstr(string1,"kSZ_kSZ_gal_covmat") != NULL) ) {
+        ppt->has_scalars = _TRUE_;
+        ppt->has_cl_cmb_temperature = _TRUE_;
+        ppt->has_cl_cmb_lensing_potential = _TRUE_;
+        ppt->has_cls = _TRUE_;
+        ple->has_lensed_cls = _TRUE_;
+        // ptsz->has_gal_gal_1h = _TRUE_;
+        // ptsz->has_gal_gal_2h = _TRUE_;
+        ptsz->has_kSZ_kSZ_gal_covmat =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+        ppt->l_scalar_max = 10000;
+        ptsz->need_ksz_template = 1;
+        ptsz->need_tt_noise = 1;
+
+      }
+
+      if (ptsz->has_kSZ_kSZ_gal_covmat ==_TRUE_){
+        if ((ptsz->has_gal_gal_hf== _FALSE_) && ((ptsz->has_gal_gal_1h+ptsz->has_gal_gal_2h)==_FALSE_) ){
+          printf("you need to request computation of gal gal to get the covmat.\n");
+          exit(0);
+        }
+      }
+
+
 
       if ((strstr(string1,"gal_lens_1h") != NULL) ) {
         ptsz->has_gal_lens_1h =_TRUE_;
@@ -3662,6 +3676,7 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
 
 
       class_read_string("UNWISE_dndz_file",ptsz->UNWISE_dndz_file);
+      class_read_string("UNWISE_fdndz_file",ptsz->UNWISE_dndz_file);
       // class_read_string("path_to_class",ptsz->path_to_class);
       class_read_string("SO_thetas_file",ptsz->SO_thetas_file);
       class_read_string("SO_skyfracs_file",ptsz->SO_skyfracs_file);

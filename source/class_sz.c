@@ -1320,6 +1320,17 @@ ptsz->cl_kSZ_kSZ_gal_lensing_term[i] = r_lens;
 
 double cl_gk = (ptsz->cl_gal_lens_2h[i] + ptsz->cl_gal_lens_1h[i])
                 /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
+
+if ((ptsz->has_gal_lens_1h == _FALSE_) && (ptsz->has_gal_lens_2h == _FALSE_)){
+  cl_gk = (ptsz->cl_gal_lens_hf[i] + ptsz->cl_gal_lens_hf[i])
+                  /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
+}
+else{
+  cl_gk = (ptsz->cl_gal_lens_2h[i] + ptsz->cl_gal_lens_1h[i])
+                  /(ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_));
+
+}
+
 double cl_gp = 2./(ptsz->ell[i]*(ptsz->ell[i]+1.))*cl_gk;
 ptsz->cl_kSZ_kSZ_gal_lensing_term[i] *= -2./(2.*_PI_)/(2.*_PI_)*ptsz->ell[i]*cl_gp;
 }
@@ -7727,40 +7738,40 @@ int evaluate_effective_galaxy_bias(double * pvecback,
   double z = pvectsz[ptsz->index_z];
   int index_md = (int) pvectsz[ptsz->index_md];
 
-  // blue sample
-  if (ptsz->unwise_galaxy_sample_id==3){
-
-    if (_gal_gal_hf_ || _gal_lensmag_hf_)
-    b = 1.74;
-    else if (_gal_lens_hf_)
-    //b = 0.8+1.2*z;
-    b = 1.56;
-
-  }
-
-  // green (two greens, depending on the min halo mass cut)
-  else if (ptsz->unwise_galaxy_sample_id==2 || ptsz->unwise_galaxy_sample_id==1){
-
-    if (_gal_gal_hf_ || _gal_lensmag_hf_)
-    b = 2.44;
-    else if (_gal_lens_hf_)
-    //b = gsl_max(1.6*z*z, 1.);
-    b = 2.23;
-  }
-
-  // red
-  else if (ptsz->unwise_galaxy_sample_id==0){
-
-    if (_gal_gal_hf_ || _gal_lensmag_hf_)
-    b = 3.47;
-    else if (_gal_lens_hf_)
-    //b = gsl_max(2.*pow(z,1.5),1.);
-    b = 3.29;
-  }
-
-  else{
+  // // blue sample
+  // if (ptsz->unwise_galaxy_sample_id==3){
+  //
+  //   if (_gal_gal_hf_ || _gal_lensmag_hf_)
+  //   b = 1.74;
+  //   else if (_gal_lens_hf_)
+  //   //b = 0.8+1.2*z;
+  //   b = 1.56;
+  //
+  // }
+  //
+  // // green (two greens, depending on the min halo mass cut)
+  // else if (ptsz->unwise_galaxy_sample_id==2 || ptsz->unwise_galaxy_sample_id==1){
+  //
+  //   if (_gal_gal_hf_ || _gal_lensmag_hf_)
+  //   b = 2.44;
+  //   else if (_gal_lens_hf_)
+  //   //b = gsl_max(1.6*z*z, 1.);
+  //   b = 2.23;
+  // }
+  //
+  // // red
+  // else if (ptsz->unwise_galaxy_sample_id==0){
+  //
+  //   if (_gal_gal_hf_ || _gal_lensmag_hf_)
+  //   b = 3.47;
+  //   else if (_gal_lens_hf_)
+  //   //b = gsl_max(2.*pow(z,1.5),1.);
+  //   b = 3.29;
+  // }
+  //
+  // else{
     b = ptsz->effective_galaxy_bias;
-  }
+  // }
 
 
    pvectsz[ptsz->index_halo_bias] = b;
@@ -10143,10 +10154,9 @@ double get_mean_galaxy_bias_at_z(
    double z_asked = log(1.+z);
 
    if (z<exp(ptsz->array_redshift[0])-1.)
-      z_asked = ptsz->array_redshift[0];
+      return 0.;
    if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
-      z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
-
+      return 0.;
 
     return exp(pwl_value_1d(ptsz->n_arraySZ,
                             ptsz->array_redshift,
