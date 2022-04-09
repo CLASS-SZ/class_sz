@@ -21,7 +21,7 @@ class_sz_string_parameter(ksz_template_file,"/sz_auxiliary_files/cl_ksz_bat.dat"
 class_sz_string_parameter(ksz_reio_template_file,"/sz_auxiliary_files/FBN_kSZ_PS_patchy.d.txt","ksz template file, reio contribution")
 
 
-class_sz_string_parameter(cmb_lensing_noise_file,"/sz_auxiliary_files/so_lensing_noise.dat","lensing noise file")
+class_sz_string_parameter(cmb_lensing_noise_file,"cmb_lensing_noise_file","cmb_lensing_noise_file")
 //in this file:
 //from Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/sz_auxiliary_files/noise_curves/nlkk_v3_1_0_deproj0_SENS2_fsky0p4_it_lT30-3000_lP30-5000.dat
 // column ells and N_lensing_MV (all)

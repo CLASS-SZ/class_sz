@@ -628,7 +628,8 @@ int tabulate_psi_b1kgt(struct background * pba,
 
 double get_psi_b1kgt_at_k1_k2_and_z(double l1_asked, double l2_asked, double z_asked, struct tszspectrum * ptsz);
 
-
+double get_lensing_noise_at_ell(double l,
+                                struct tszspectrum * ptsz);
 
 #ifdef __cplusplus
 }

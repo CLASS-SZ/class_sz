@@ -3388,9 +3388,12 @@ int input_read_parameters(
       class_read_double("sigma_log10M_HOD",ptsz->sigma_log10M_HOD);
       class_read_double("rho_y_gal",ptsz->rho_y_gal);
 
-
-      class_read_double("x_out_truncated_nfw_profile_satellite_galaxies",ptsz->x_out_truncated_nfw_profile_satellite_galaxies);
       class_read_double("x_out_truncated_nfw_profile",ptsz->x_out_truncated_nfw_profile);
+      class_read_double("x_out_truncated_nfw_profile_satellite_galaxies",ptsz->x_out_truncated_nfw_profile_satellite_galaxies);
+
+      // printf("xout sat = %.5e\n",ptsz->x_out_truncated_nfw_profile_satellite_galaxies);
+      // printf("xout nfw = %.5e\n",ptsz->x_out_truncated_nfw_profile);
+      // exit(0);
 
       class_read_double("cvir_tau_profile_factor",ptsz->cvir_tau_profile_factor);
       // class_read_double("x_out_nfw_profile",ptsz->x_out_nfw_profile);
@@ -3416,8 +3419,13 @@ int input_read_parameters(
         }
 
       }
-      class_read_string("full path to noise curve for tt",ptsz->full_path_to_noise_curve_for_t_t);
+      // class_read_string("full_path_to_noise_curve_for_t_t",ptsz->full_path_to_noise_curve_for_t_t);
+        // printf("-> File Name: %s\n",ptsz->full_path_to_noise_curve_for_t_t);
+
       // class_read_int("nl_yy_is_binned",ptsz->nl_yy_is_binned);
+      // if (ptsz->sz_verbose >= 1)
+
+
 
       /* temperature mass relation SZ */
       class_call(parser_read_string(pfc,"temperature mass relation",&string1,&flag1,errmsg),
@@ -5299,6 +5307,8 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
   class_read_string("full_path_to_redshift_dependent_M_min",ptsz->full_path_to_redshift_dependent_M_min);
   class_read_string("full_path_to_source_dndz_gal",ptsz->full_path_to_source_dndz_gal);
   // printf("-> File Name: %s\n",ptsz->ksz_filter_file);
+  class_read_string("cmb_lensing_noise_file",ptsz->cmb_lensing_noise_file);
+  // printf("-> File Name: %s\n",ptsz->cmb_lensing_noise_file);
   // exit(0);
   class_read_string("A10_file",ptsz->A10_file);
   class_read_string("P13_file",ptsz->P13_file);
@@ -6386,6 +6396,7 @@ int input_default_params(
 
   ptsz->csat_over_cdm = 1.;
   ptsz->cl_gal_gal_A_sn = 0.;
+  ptsz->shape_noise_siggamma2 = 0.3;
 
   //HOD
   ptsz->M_min_HOD = pow(10,11.5); //Msun/h

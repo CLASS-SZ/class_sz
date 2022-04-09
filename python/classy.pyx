@@ -2026,6 +2026,9 @@ cdef class Class:
     def get_te_of_m500c_at_z_arnaud(self,m,z):
         return get_te_of_m500c_at_z_arnaud(m,z,&self.ba,&self.tsz)
 
+    def get_lensing_noise_at_ell(self,l):
+        return get_lensing_noise_at_ell(l,&self.tsz)
+
     def get_te_of_m500c_at_z_lee(self,m,z):
         return get_te_of_m500c_at_z_lee(m,z,&self.ba,&self.tsz)
 

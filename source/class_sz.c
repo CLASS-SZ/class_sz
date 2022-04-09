@@ -951,10 +951,8 @@ if (ptsz->has_kSZ_kSZ_lens_covmat){
             +ptsz->cl_kSZ_kSZ_lens_2h_fft[i]
             +ptsz->cl_kSZ_kSZ_lens_3h_fft[i];
 
-  nl_kcmb_kcmb = pwl_value_1d(ptsz->lensing_noise_size,
-                              ptsz->l_lensing_noise,
-                              ptsz->nl_lensing_noise,
-                              ptsz->ell[i]);
+  nl_kcmb_kcmb = get_lensing_noise_at_ell(ptsz->ell[i],ptsz);
+  // printf("i=%d l=%.5e nli=%.5e\n",i,ptsz->ell[i],nl_kcmb_kcmb);
 
   ptsz->cov_ll_kSZ_kSZ_lens[i] = (clp_t2t2f*(cl_kgkg+nl_kcmb_kcmb)+cl_kSZ2kg*cl_kSZ2kg)
                                 *1./(2.*ptsz->ell[i]+1.)
@@ -9494,7 +9492,7 @@ pk3 *= pow(pba->h,3.);
 
   free(pvecback);
   // tau_normalisation = 1.;
-  double bg = get_mean_galaxy_bias_at_z(z,ptsz);
+  double bg = 1.;//get_mean_galaxy_bias_at_z(z,ptsz);
   double vrms2 = get_vrms2_at_z(z,ptsz);
   result = bg*tau_normalisation*tau_normalisation*b123*vrms2;
   return result;

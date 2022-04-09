@@ -2940,7 +2940,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   // double r200c = pvectsz[ptsz->index_r200c]; //in Mpc/h
   // double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
   // xout = 50.*rvir/rs; // as in hmvec (default 20, but set to 50 in example file)
-  double xout = 5.; // as in hmvec (default 20, but set to 50 in example file)
+  double xout = 5.; // as in hmvec (default 20, but set to 50 in example file) // is this value ok?
 
   c_nfw = 1.;
 
@@ -4692,7 +4692,8 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
       printf("-> Openning the pressure profile file for A10\n");
     //class_open(process,"sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt", "r",ptsz->error_message);
     class_open(process,ptsz->A10_file, "r",ptsz->error_message);
-    printf("-> File Name: %s\n",ptsz->A10_file);
+    if (ptsz->sz_verbose > 0)
+      printf("-> File Name: %s\n",ptsz->A10_file);
     // printf("-> File Name: %s\n",ppr->sBBN_file);
 
   }
@@ -4943,6 +4944,22 @@ if (ptsz->sz_verbose >= 1)
 }
 
 
+double get_lensing_noise_at_ell(double l,
+                                struct tszspectrum * ptsz){
+double nl_kcmb_kcmb;
+if (l<ptsz->l_lensing_noise[0])
+  nl_kcmb_kcmb = 0.;
+else if (l>ptsz->l_lensing_noise[ptsz->lensing_noise_size-1])
+  nl_kcmb_kcmb = 1e100;
+
+else  nl_kcmb_kcmb = pwl_value_1d(ptsz->lensing_noise_size,
+                              ptsz->l_lensing_noise,
+                              ptsz->nl_lensing_noise,
+                              l);
+return nl_kcmb_kcmb;
+}
+
+
 
 int load_nl_lensing_noise(struct tszspectrum * ptsz)
 {
@@ -4986,7 +5003,8 @@ if (ptsz->sz_verbose >= 1)
   /** 2. Launch the command and retrieve the output */
   /* Launch the process */
   char Filepath[_ARGUMENT_LENGTH_MAX_];
-
+  if (ptsz->sz_verbose >= 1)
+    printf("-> File Name: %s\n",ptsz->cmb_lensing_noise_file);
   class_open(process,ptsz->cmb_lensing_noise_file, "r",ptsz->error_message);
   if (ptsz->sz_verbose >= 1)
     printf("-> File Name: %s\n",ptsz->cmb_lensing_noise_file);
@@ -5031,7 +5049,7 @@ if (ptsz->sz_verbose >= 1)
   }
 
   /* Close the process */
-  status = pclose(process);
+  status = fclose(process);
   class_test(status != 0.,
              ptsz->error_message,
              "The attempt to launch the external command was unsuccessful. "
@@ -5056,10 +5074,13 @@ if (ptsz->sz_verbose >= 1)
   for (index_x=0; index_x<ptsz->lensing_noise_size; index_x++) {
     ptsz->l_lensing_noise[index_x] = lnx[index_x];
     ptsz->nl_lensing_noise[index_x] = lnI[index_x];
+
+    // printf("%.5e %.5e\n",ptsz->l_lensing_noise[index_x],ptsz->nl_lensing_noise[index_x]);
+
     //printf("z=%.3e phig=%.3e\n",ptsz->unbinned_nl_yy_ell[index_x],ptsz->unbinned_nl_yy_n_ell[index_x]);
   };
 
-  //exit(0);
+  // exit(0);
   /** Release the memory used locally */
   free(lnx);
   free(lnI);
@@ -6020,7 +6041,8 @@ int load_M_min_of_z(struct tszspectrum * ptsz)
   char Filepath[_ARGUMENT_LENGTH_MAX_];
 
   class_open(process,ptsz->full_path_to_redshift_dependent_M_min, "r",ptsz->error_message);
-  printf("-> File Name: %s\n",ptsz->full_path_to_redshift_dependent_M_min);
+  if (ptsz->sz_verbose >= 1)
+    printf("-> File Name: %s\n",ptsz->full_path_to_redshift_dependent_M_min);
 
 
   /* Read output and store it */
@@ -6133,7 +6155,8 @@ int load_ksz_filter(struct tszspectrum * ptsz)
   char Filepath[_ARGUMENT_LENGTH_MAX_];
 
   class_open(process,ptsz->ksz_filter_file, "r",ptsz->error_message);
-  printf("-> File Name: %s\n",ptsz->ksz_filter_file);
+  if (ptsz->sz_verbose >= 1)
+    printf("-> File Name: %s\n",ptsz->ksz_filter_file);
 
 
   /* Read output and store it */

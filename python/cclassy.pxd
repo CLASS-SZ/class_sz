@@ -622,6 +622,9 @@ cdef extern from "class.h":
                                              void * pba,
                                              void * ptsz)
 
+    double get_lensing_noise_at_ell(double l,
+                                    void * ptsz)
+
     double evaluate_truncated_nfw_profile(double z,
                                           double k,
                                           double r_delta,
