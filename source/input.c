@@ -3388,6 +3388,10 @@ int input_read_parameters(
       class_read_double("sigma_log10M_HOD",ptsz->sigma_log10M_HOD);
       class_read_double("rho_y_gal",ptsz->rho_y_gal);
 
+
+      class_read_double("x_out_truncated_density_profile (electrons)",ptsz->x_out_truncated_nfw_profile_electrons);
+      // class_read_double("x_out_truncated_density_profile",ptsz->x_out_truncated_density_profile);
+
       class_read_double("x_out_truncated_nfw_profile",ptsz->x_out_truncated_nfw_profile);
       class_read_double("x_out_truncated_nfw_profile_satellite_galaxies",ptsz->x_out_truncated_nfw_profile_satellite_galaxies);
 
@@ -3402,6 +3406,8 @@ int input_read_parameters(
 
       class_read_int("hm_consistency",ptsz->hm_consistency);
       class_read_int("T10_alpha_fixed",ptsz->T10_alpha_fixed);
+
+
       class_read_int("check_consistency_conditions",ptsz->check_consistency_conditions);
 
 
@@ -3698,6 +3704,8 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
       class_read_int("sz_verbose",ptsz->sz_verbose);
       class_read_double("f_free",ptsz->f_free);
       class_read_double("f_b_gas",ptsz->f_b_gas);
+
+      class_read_int("compute_ksz2ksz2",ptsz->compute_ksz2ksz2);
 
       class_call(parser_read_string(pfc,"write sz results to files",&string1,&flag1,errmsg),
                  errmsg,
@@ -5770,7 +5778,9 @@ int input_default_params(
   ptsz->M_min_HOD_mass_factor_unwise = 1.;
   ptsz->M0_HOD = 0.; //DES-like HOD see https://arxiv.org/pdf/2106.08438.pdf
 
-  ptsz->x_out_truncated_nfw_profile = 1.;
+  ptsz->x_out_truncated_density_profile = 1.; // the numerical one.
+  ptsz->x_out_truncated_nfw_profile = 1.; //the analytical one
+  ptsz->x_out_truncated_nfw_profile_electrons = 1.; //the analytical one
   ptsz->x_out_truncated_nfw_profile_satellite_galaxies =1.;
   // ptsz->x_out_nfw_profile = 2.5;
   ptsz->cvir_tau_profile_factor =  1.;
@@ -5791,6 +5801,7 @@ int input_default_params(
 
   ptsz->effective_galaxy_bias = 1.;
   ptsz->use_bg_eff_in_ksz2g_eff = 0;
+  ptsz->compute_ksz2ksz2  = 0;
   // sprintf(ptsz->path_to_ref_trispectrum_for_cobaya,"output/");
   // sprintf(ptsz->append_name_cobaya_ref,"for_cobaya");
   // sprintf(ptsz->full_path_to_noise_curve_for_y_y,"sz_auxiliary_files/my_noise_curve_yxy.txt");

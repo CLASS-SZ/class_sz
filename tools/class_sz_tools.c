@@ -799,6 +799,182 @@ int zbrent_pkl_to_knl(
 }
 
 
+//Root finding algorithm
+//for the nonlinear scale
+int zbrent_m_to_xout(
+              double x1,
+              double x2,
+              double tol,
+              double fa,
+              double fb,
+              double * knl,
+              double z,
+              double m,
+              double rd,
+              struct tszspectrum * ptsz,
+              struct background * pba,
+              struct nonlinear * pnl,
+              struct primordial * ppm
+              )
+{
+  int iter;
+  int ITMAX = 100;
+
+  double a;
+  double b;
+  double c;
+  double d;
+  double e;
+  double min1;
+  double min2;
+  double fc;
+  double p;
+  double q;
+  double r;
+  double tol1;
+  double s;
+  double xm;
+  double EPS2;
+
+  double knl_test;
+
+
+
+
+  EPS2=3.e-8;
+  a =x1;
+  b =x2;
+
+
+  // knl_test = exp(a);
+
+
+  class_call(
+             m_to_xout(
+                        a,
+                        &fa,
+                        z,
+                        m,
+                        rd,
+                        ptsz,
+                        pba,
+                        pnl,
+                        ppm
+                        ),
+             ptsz->error_message,
+             ptsz->error_message);
+
+  // knl_test = exp(b);
+
+
+  class_call(
+             m_to_xout(
+                    b,
+                    &fb,
+                    z,
+                    m,
+                    rd,
+                    ptsz,
+                    pba,
+                    pnl,
+                    ppm
+                    ),
+             ptsz->error_message,
+             ptsz->error_message);
+
+
+  if ((fb)*(fa) > 0.0)  {
+    printf("Root must be bracketed in ZBRENT\n");
+    return _FAILURE_;
+  }
+
+  fc=fb;
+
+  for (iter=1;iter<=ITMAX;iter++) {
+    if ((fb)*(fc) > 0.0) {
+      c=a;
+      fc=fa;
+      e=d=b-a;
+    }
+
+    if (fabs(fc) < fabs(fb)) {
+      a=b;
+      b=c;
+      c=a;
+      fa=fb;
+      fb=fc;
+      fc=fa;
+    }
+    tol1=2.0*(EPS2)*fabs(b)+0.5*tol;
+    xm=0.5*(c-b);
+    if (fabs(xm) <= tol1 || fb == 0.0)  {
+      *knl = b;
+
+
+      return _SUCCESS_;
+    }
+
+    if (fabs(e) >= tol1 && fabs(fa) > fabs(fb)) {
+      s=fb/(fa);
+      if (a == c) {
+        p=2.0*(xm)*(s);
+        q=1.0-s;
+      }
+      else {
+        q=fa/(fc);
+        r=fb/(fc);
+        p=s*(2.0*(xm)*(q)*(q-r)-(b-a)*(r-1.0));
+        q=(q-1.0)*(r-1.0)*(s-1.0);
+      }
+      if (p > 0.0)  q = -q;
+      p=fabs(p);
+      min1=3.0*(xm)*(q)-fabs(tol1*(q));
+      min2=fabs(e*(q));
+      if (2.0*(p) < (min1 < min2 ? min1 : min2))
+      {
+        e=d;
+        d=p/(q);
+      }
+      else {
+        d=xm;
+        e=d;
+      }
+    }
+    else {
+      d=xm;
+      e=d;
+    }
+    a=b;
+    fa=fb;
+    if (fabs(d) > tol1)
+      b += d;
+    else
+      b += (xm > 0.0 ? fabs(tol1) : -fabs(tol1));
+
+
+
+    class_call(
+               m_to_xout(
+                      b,
+                      &fb,
+                      z,
+                      m,
+                      rd,
+                      ptsz,
+                      pba,
+                      pnl,
+                      ppm
+                      ),
+               ptsz->error_message,
+               ptsz->error_message);
+  }
+
+  printf("Max. num. of ite. exceeded in ZBRENT\n");
+
+  return _FAILURE_;
+}
+
+
 
 
 //This routine reads the tabulated
@@ -1457,6 +1633,196 @@ int pkl_to_knl (
 }
 
 
+
+struct Parameters_for_integrand_m_to_xout{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  // struct perturbs * ppt;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  // double * pvecback;
+  // double * pvectsz;
+  //double * llprime_grid;
+  double m;
+  double z;
+  double rd;
+};
+
+
+double integrand_m_to_xout(double x, void *p){
+
+struct Parameters_for_integrand_m_to_xout *V = ((struct Parameters_for_integrand_m_to_xout *) p);
+
+double r = 0.;
+double cd = 1.;
+// double rd = pow(3.*m/(4.*_PI_*200.*rho_crit),1./3.);
+double rs = V->rd/cd;
+r = 4.*_PI_*pow(rs,3.)*get_gas_profile_at_x_M_z_b16_200c(x,
+                                               V->m,
+                                               V->z,
+                                               V->ptsz->A_rho0,
+                                               V->ptsz->A_alpha,
+                                               V->ptsz->A_beta,
+                                               V->ptsz->alpha_m_rho0,
+                                               V->ptsz->alpha_m_alpha,
+                                               V->ptsz->alpha_m_beta,
+                                               V->ptsz->alpha_z_rho0,
+                                               V->ptsz->alpha_z_alpha,
+                                               V->ptsz->alpha_z_beta,
+                                               V->ptsz->gamma_B16,
+                                               V->ptsz->xc_B16,
+                                               V->pba,
+                                               V->ptsz)*pow(x,2);
+
+
+return r;
+}
+
+//Routine used for
+//finding the non-linear scale
+int m_to_xout (
+            double xout,
+            double * mRES,
+            double z,
+            double m,
+            double rd,
+            struct tszspectrum * ptsz,
+            struct background * pba,
+            struct nonlinear * pnl,
+            struct primordial * ppm
+            )
+{
+
+  struct Parameters_for_integrand_m_to_xout V;
+  V.pnl = pnl;
+  V.ppm = ppm;
+  V.ptsz = ptsz;
+  V.pba = pba;
+  V.m = m;
+  V.z = z;
+  V.rd = rd;
+  // V.pvectsz = Pvectsz;
+  // V.pvecback = Pvecback;
+
+  void * params = &V;
+
+
+  double epsrel= ptsz->m_to_xout_epsrel;
+  double epsabs= ptsz->m_to_xout_epsabs;
+  int show_neval = ptsz->patterson_show_neval;
+  //integral of density profile.
+  double m_profile = Integrate_using_Patterson_adaptive(1e-5, xout,
+                                                        epsrel, epsabs,
+                                                        integrand_m_to_xout,
+                                                        params,show_neval);
+
+
+  *mRES =m_profile-ptsz->f_b_gas*m;
+
+  return _SUCCESS_;
+}
+
+
+
+
+int tabulate_m_to_xout(struct background * pba,
+                       struct nonlinear * pnl,
+                       struct primordial * ppm,
+                       struct tszspectrum * ptsz){
+
+class_alloc(ptsz->array_m_to_xout_redshift,sizeof(double *)*ptsz->n_z_m_to_xout,ptsz->error_message);
+class_alloc(ptsz->array_m_to_xout_mass,sizeof(double *)*ptsz->n_mass_m_to_xout,ptsz->error_message);
+class_alloc(ptsz->array_m_to_xout_at_z_m,sizeof(double *)*ptsz->n_z_m_to_xout*ptsz->n_mass_m_to_xout,ptsz->error_message);
+
+
+double r;
+double m_min,m_max;
+m_min = ptsz->M1SZ; // for the mass integral
+m_max = ptsz->M2SZ; // for the mass integral
+int index_m;
+for (index_m=0; index_m<ptsz->n_mass_m_to_xout; index_m++)
+        {
+
+          ptsz->array_m_to_xout_mass[index_m] =
+                                      log(m_min)
+                                      +index_m*(log(m_max)-log(m_min))
+                                      /(ptsz->n_mass_m_to_xout-1.); // log(nu)
+        }
+
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+int index_z;
+for (index_z=0; index_z<ptsz->n_z_m_to_xout; index_z++)
+        {
+
+          ptsz->array_m_to_xout_redshift[index_z] =
+                                                  log(1.+z_min)
+                                                  +index_z*(log(1.+z_max)-log(1.+z_min))
+                                                  /(ptsz->n_z_m_to_xout-1.); // log(1+z)
+        }
+
+
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,m_min,m_max)\
+private(tstart, tstop,index_z,index_m,r) \
+num_threads(number_of_threads)
+{
+
+  #pragma omp for collapse(2)
+  for (index_z=0; index_z<ptsz->n_z_m_to_xout; index_z++)
+  {
+    for (index_m=0; index_m<ptsz->n_mass_m_to_xout; index_m++)
+    {
+
+  #ifdef _OPENMP
+    tstart = omp_get_wtime();
+  #endif
+
+double xout_var; // in multiples of 200c
+double z = exp(ptsz->array_m_to_xout_redshift[index_z])-1.;;
+double m = exp(ptsz->array_m_to_xout_mass[index_m]);
+
+int index_z_m = index_m * ptsz->n_z_m_to_xout + index_z;
+
+solve_m_to_xout(&r,
+                 z,
+                 m,
+                 ptsz,
+                 pba,
+                 pnl,
+                 ppm);
+
+// printf("z = %.5e m=%.5e xout = %.5e\n",z,m,r);
+  ptsz->array_m_to_xout_at_z_m[index_z_m] = r;
+}
+}
+
+#ifdef _OPENMP
+  tstop = omp_get_wtime();
+  if (ptsz->sz_verbose > 0)
+    printf("In %s: time spent in parallel region (loop over z m's) = %e s for thread %d\n",
+           __func__,tstop-tstart,omp_get_thread_num());
+#endif
+}
+if (abort == _TRUE_) return _FAILURE_;
+}
+
 //Routine used for
 //the conversion between
 //the viral mass and the overdensity mass
@@ -1674,6 +2040,208 @@ int solve_pkl_to_knl(
 
   return _SUCCESS_;
 }
+
+
+
+//Routine used for
+//the cut-off radius of the gnfw profile
+int solve_m_to_xout(
+                    double * result,
+                    double z,
+                    double m,
+                    struct tszspectrum * ptsz,
+                    struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm
+                    )
+{
+
+
+
+/// get rhoc and rd
+
+double * pvecback;
+double * pvectsz;
+
+double tau;
+int first_index_back = 0;
+
+class_alloc(pvecback,
+            pba->bg_size*sizeof(double),
+            ptsz->error_message);
+
+class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+ int i;
+ for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+class_call(background_tau_of_z(pba,z,&tau),
+           pba->error_message,
+           pba->error_message);
+
+class_call(background_at_tau(pba,
+                             tau,
+                             pba->long_info,
+                             pba->inter_normal,
+                             &first_index_back,
+                             pvecback),
+           pba->error_message,
+           pba->error_message);
+
+
+
+
+// pvectsz[ptsz->index_z] = z;
+pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                *pow(_Mpc_over_m_,1)
+                                *pow(_c_,2)
+                                *pvecback[pba->index_bg_rho_crit]
+                                /pow(pba->h,2);
+
+double rho_crit = pvectsz[ptsz->index_Rho_crit];
+double delta = 200.;//*pvecback[pba->index_bg_Omega_m];
+double c_delta = get_c200c_at_m_and_z(m,z,pba,ptsz);
+double rd = pow(3.*m/(4.*_PI_*delta*rho_crit),1./3.); //in units of h^-1 Mpc
+
+
+free(pvecback);
+free(pvectsz);
+/////
+
+
+
+  double  mDEL;
+  double  var;
+
+  double  lTEST;
+
+  double  fa;
+  double  fb;
+  double  m1;
+  double  m2;
+  double  mLO;
+  double  mUP;
+  double  logMDEL;
+
+
+
+  // int  i;
+  int iMAX = 50;
+
+  double * mTEST;
+  class_alloc(mTEST,
+              iMAX*sizeof( double ),
+              ptsz->error_message);
+
+
+
+  mTEST[0] = 1.;
+
+ // printf("res 0 ini : %.3e\n",lTEST);
+  class_call(
+             m_to_xout(
+                    mTEST[0],
+                    &lTEST,
+                    z,
+                    m,
+                    rd,
+                    ptsz,
+                    pba,
+                    pnl,
+                    ppm
+                    ),
+             ptsz->error_message,
+             ptsz->error_message
+             );
+ // printf("res 0 : %.3e\n",lTEST);
+ //exit(0);
+
+  if (lTEST <= 0.) {
+    for (i=1;i<iMAX;i++ ) {
+
+      mTEST[i] = 2.*mTEST[i-1];
+
+      class_call(
+                 m_to_xout(
+                        mTEST[i],
+                        &lTEST,
+                        z,
+                        m,
+                        rd,
+                        ptsz,
+                        pba,
+                        pnl,
+                        ppm
+                        ),
+                 ptsz->error_message,
+                 ptsz->error_message
+                 );
+
+      if (lTEST > 0.)
+      {
+        m1 = mTEST[i];
+        m2 = mTEST[i-1];
+        break;
+      }
+    }
+  }
+  else
+  {
+    for (i=1;i<iMAX;i++ )
+    {
+      mTEST[i] = mTEST[i-1]/2.;
+
+      class_call(
+                 m_to_xout(
+                        mTEST[i],
+                        &lTEST,
+                        z,
+                        m,
+                        rd,
+                        ptsz,
+                        pba,
+                        pnl,
+                        ppm
+                        ),
+                 ptsz->error_message,
+                 ptsz->error_message);
+
+      if(lTEST < 0.)
+      {
+        m1 = mTEST[i];
+        m2 = mTEST[i-1];
+        break;
+      }
+    }
+  }
+
+  mLO=MIN(m1,m2);
+  mUP=MAX(m1,m2);
+
+  class_call(zbrent_m_to_xout(
+                               mLO,
+                               mUP,
+                               1.e-4,
+                               fa,
+                               fb,
+                               &logMDEL,
+                               z,
+                               m,
+                               rd,
+                               ptsz,
+                               pba,
+                               pnl,
+                               ppm
+                               ),
+             ptsz->error_message,
+             ptsz->error_message);
+
+  mDEL = logMDEL;
+  *result = mDEL;
+
+  free(mTEST);
+  return _SUCCESS_;
+}
+
 
 
 
@@ -2940,8 +3508,11 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   // double r200c = pvectsz[ptsz->index_r200c]; //in Mpc/h
   // double rs = pvectsz[ptsz->index_rs]; //in Mpc/h
   // xout = 50.*rvir/rs; // as in hmvec (default 20, but set to 50 in example file)
-  double xout = 5.; // as in hmvec (default 20, but set to 50 in example file) // is this value ok?
+  double xout = ptsz->x_out_truncated_nfw_profile_electrons; // as in hmvec (default 20, but set to 50 in example file) // is this value ok?
 
+  if (ptsz->use_xout_in_density_profile_from_enclosed_mass){
+    xout = get_m_to_xout_at_z_and_m(pvectsz[ptsz->index_z],pvectsz[ptsz->index_m200c],ptsz);
+  }
   c_nfw = 1.;
 
 
@@ -3502,15 +4073,7 @@ if (l<ptsz->array_profile_ln_l[0])
  double result = exp(ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
 
 if (ptsz->normalize_gas_density_profile == 1){
-  double norm = exp(pwl_interp_2d(
-                                 n_z,
-                                 n_m,
-                                 ptsz->array_profile_ln_1pz,
-                                 ptsz->array_profile_ln_m,
-                                 ptsz->array_profile_ln_rho_at_lnl_lnM_z[0],
-                                 1,
-                                 &z,
-                                 &m))/exp(m)/ptsz->f_b_gas;
+  double norm = get_normalization_gas_density_profile(z_asked,m_asked,ptsz)/ptsz->f_b_gas;
   result *= 1./norm;
 }
 
@@ -3522,6 +4085,39 @@ if (ptsz->normalize_gas_density_profile == 1){
 
 
 }
+
+
+double get_normalization_gas_density_profile(double z_asked, double m_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double m = log(m_asked);
+
+  double result = 0.;
+  if (z<ptsz->array_profile_ln_1pz[0]){
+    result = 0.;
+  }
+  else if (z>ptsz->array_profile_ln_1pz[ptsz->n_z_density_profile-1]){
+    result = 0.;
+  }
+  else if (m<ptsz->array_profile_ln_m[0]){
+    result = 0.;
+  }
+  else if (m>ptsz->array_profile_ln_m[ptsz->n_m_density_profile-1]){
+    result = 0.;
+  }
+  else{
+    result = exp(pwl_interp_2d(ptsz->n_z_density_profile,
+                          ptsz->n_m_density_profile,
+                          ptsz->array_profile_ln_1pz,
+                          ptsz->array_profile_ln_m,
+                          ptsz->array_profile_ln_rho_at_lnl_lnM_z[0],
+                          1,
+                          &z,
+                          &m))/exp(m);
+  }
+  return result;
+}
+
+
 
 
 
@@ -3563,7 +4159,7 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
  // array of multipoles:
 
  double ln_ell_min = log(ptsz->k_min_gas_density_profile);
- double ln_ell_max = log(5e2);
+ double ln_ell_max = log(ptsz->k_max_gas_density_profile);
  int n_ell = ptsz->n_ell_density_profile;
  int n_m = ptsz->n_m_density_profile;
  int n_z = ptsz->n_z_density_profile;
@@ -3780,7 +4376,8 @@ for (index_z=0;
  result *= tau_normalisation;
  if (result<=0 || isnan(result) || isinf(result)){
  printf("In tab gas: k %.4e z %.8e rt %.8e mt %.8e res = %.4e\n",ell,pvectsz[ptsz->index_z],pvectsz[ptsz->index_r200c],pvectsz[ptsz->index_m200c],result);
- // exit(0);
+ printf("check precision and input parameters?\n");
+ exit(0);
 }
 }
 else if (ptsz->tau_profile == 0){ // truncated nfw profile
@@ -3814,7 +4411,7 @@ else if (ptsz->tau_profile == 0){ // truncated nfw profile
     r_delta = pow(3.*m_delta/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.);
     c_delta = get_c500c_at_m_and_z(m_delta,z,pba,ptsz);
   }
-   double xout = 1.;//ptsz->x_out_truncated_nfw_profile;
+   double xout = ptsz->x_out_truncated_nfw_profile_electrons;
 
 
 
@@ -17713,6 +18310,35 @@ double get_dydz_at_z(double z_asked, struct tszspectrum * ptsz)
 }
 
 
+double get_m_to_xout_at_z_and_m(double z_asked, double m_asked, struct tszspectrum * ptsz)
+{
+  double z = log(1.+z_asked);
+  double m = log(m_asked);
+
+ if (z<ptsz->array_m_to_xout_redshift[0])
+    z = ptsz->array_m_to_xout_redshift[0];
+ if (z>ptsz->array_m_to_xout_redshift[ptsz->n_z_m_to_xout-1])
+    z = ptsz->array_m_to_xout_redshift[ptsz->n_z_m_to_xout-1];
+
+ if (m<ptsz->array_m_to_xout_mass[0])
+    m = ptsz->array_m_to_xout_mass[0];
+
+ if (m>ptsz->array_m_to_xout_mass[ptsz->n_mass_m_to_xout-1])
+    m =  ptsz->array_m_to_xout_mass[ptsz->n_mass_m_to_xout-1];
+
+
+
+
+ return pwl_interp_2d(ptsz->n_z_m_to_xout,
+                          ptsz->n_mass_m_to_xout,
+                          ptsz->array_m_to_xout_redshift,
+                          ptsz->array_m_to_xout_mass,
+                          ptsz->array_m_to_xout_at_z_m,
+                          1,
+                          &z,
+                          &m);
+
+}
 
 
 double get_dcib0dz_at_z_and_nu(double z_asked, double nu_asked, struct tszspectrum * ptsz)

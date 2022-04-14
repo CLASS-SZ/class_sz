@@ -81,9 +81,14 @@ class_sz_ptsz_parameter(z1SZ_L_sat, double, 1.e-5);
 class_sz_ptsz_parameter(z2SZ_L_sat, double, 6.);
 class_sz_ptsz_parameter( epsabs_L_sat, double, 1e-15);
 class_sz_ptsz_parameter( epsrel_L_sat, double, 1e-6);
+
 class_sz_ptsz_parameter(n_z_L_sat , int,101);
 class_sz_ptsz_parameter(n_m_L_sat , int,102);
 class_sz_ptsz_parameter(n_nu_L_sat,int,103);
+
+class_sz_ptsz_parameter(use_xout_in_density_profile_from_enclosed_mass , int,0);
+class_sz_ptsz_parameter(n_z_m_to_xout , int,101);
+class_sz_ptsz_parameter(n_mass_m_to_xout , int,102);
 
 class_sz_ptsz_parameter(use_bg_at_z_in_ksz2g_eff, int, 0);
 class_sz_ptsz_parameter(use_fdndz_for_ksz2g_eff, int, 0);
@@ -98,6 +103,7 @@ class_sz_ptsz_parameter(N_samp_fftw,int,150)
 class_sz_ptsz_parameter(l_min_samp_fftw,double,1e-12)
 class_sz_ptsz_parameter(l_max_samp_fftw,double,1e9)
 class_sz_ptsz_parameter(k_min_gas_density_profile,double,1e-4)
+class_sz_ptsz_parameter(k_max_gas_density_profile,double,1e1)
 class_sz_ptsz_parameter(normalize_gas_density_profile,int,0)
 
 class_sz_ptsz_parameter(ell_min_kSZ2_gal_multipole_grid,double,2)
@@ -112,6 +118,9 @@ class_sz_ptsz_parameter(m_max_counter_terms,double,1e17)
 
 class_sz_ptsz_parameter(mass_epsrel_ngbar,double,1e-6)
 class_sz_ptsz_parameter(mass_epsabs_ngbar,double,1e-40)
+
+class_sz_ptsz_parameter(m_to_xout_epsrel,double,1e-6)
+class_sz_ptsz_parameter(m_to_xout_epsabs,double,1e-40)
 
 
 // class_sz_ptsz_parameter(n_m_dndlnM,int,200)

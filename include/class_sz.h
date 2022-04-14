@@ -1025,7 +1025,8 @@ struct tszspectrum {
 
   double M_min_HOD_mass_factor_unwise;
   double x_out_truncated_nfw_profile;
-  double x_out_nfw_profile;
+  double x_out_truncated_nfw_profile_electrons;
+  double x_out_truncated_density_profile;
   double M_min_HOD_satellite_mass_factor_unwise;
   double M1_prime_HOD_factor;
   double cvir_tau_profile_factor;
@@ -1149,6 +1150,8 @@ struct tszspectrum {
   int n_k;
   int n_z_dndlnM;
   int n_m_dndlnM;
+
+  int compute_ksz2ksz2;
 
   // int n_z_L_sat;
   // int n_m_L_sat;
@@ -1565,9 +1568,12 @@ double * steps_m;
   double * array_m_L_sat;
   double * array_z_L_sat;
   double * array_nu_L_sat;
+
   double ** array_L_sat_at_M_z_nu;
   double ** array_L_sat_at_z_and_M_at_nu;
   //double * array_L_sat_at_z_and_M_at_nu_prime;
+
+
 
   double * array_z_W_lensmag;
   double * array_W_lensmag;
@@ -1628,6 +1634,11 @@ double * steps_m;
   double * array_dcib0dz_nu;
   double * array_dcib0dz_redshift;
   double * array_dcib0dz_at_z_nu;
+
+
+  double * array_m_to_xout_mass;
+  double * array_m_to_xout_redshift;
+  double * array_m_to_xout_at_z_m;
 
 
   double * array_dydz_redshift;

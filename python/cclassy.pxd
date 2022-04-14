@@ -666,6 +666,13 @@ cdef extern from "class.h":
                                          double m_asked,
                                          void * ptsz)
 
+    double get_normalization_gas_density_profile(double z_asked,
+                                                 double m_asked,
+                                                 void * ptsz)
+    double get_m_to_xout_at_z_and_m(double z_asked,
+                                    double m_asked,
+                                    void * ptsz)
+
     double get_c200m_at_m_and_z_D08(double M, double z)
     double get_c200c_at_m_and_z_D08(double M, double z)
     double get_c200c_at_m_and_z_B13(double M, double z, void * ba, void * tsz)

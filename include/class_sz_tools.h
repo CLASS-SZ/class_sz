@@ -20,6 +20,48 @@ extern "C" {
 #endif
 
 
+int m_to_xout (
+            double xout,
+            double * mRES,
+            double z,
+            double m,
+            double rd,
+            struct tszspectrum * ptsz,
+            struct background * pba,
+            struct nonlinear * pnl,
+            struct primordial * ppm
+          );
+
+int solve_m_to_xout(
+                    double * result,
+                    double z,
+                    double m,
+                    struct tszspectrum * ptsz,
+                    struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm
+                  );
+
+int zbrent_m_to_xout(
+              double x1,
+              double x2,
+              double tol,
+              double fa,
+              double fb,
+              double * knl,
+              double z,
+              double m,
+              double rd,
+              struct tszspectrum * ptsz,
+              struct background * pba,
+              struct nonlinear * pnl,
+              struct primordial * ppm
+            );
+
+int tabulate_m_to_xout(struct background * pba,
+                       struct nonlinear * pnl,
+                       struct primordial * ppm,
+                       struct tszspectrum * ptsz);
 
 double integrate_over_m_at_z(double * pvecback,
                            double * pvectsz,
@@ -141,6 +183,7 @@ double delta_to_delta_prime_nfw(
                    );
 
 
+ double get_m_to_xout_at_z_and_m(double z_asked, double m_asked, struct tszspectrum * ptsz);
  double evaluate_cvir_of_mvir(double mvir,
                              double z,
                              struct tszspectrum * ptsz,
@@ -181,6 +224,8 @@ double delta_to_delta_prime_nfw(
   double get_m500c_to_m200c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl);
   double get_nl_index_at_z_and_k_no_wiggles(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl);
+
+  double get_normalization_gas_density_profile(double z_asked, double m_asked, struct tszspectrum * ptsz);
 
   double get_completeness_at_z_and_M(double z_asked, double m_asked, double * completeness_2d_to_1d, struct tszspectrum * ptsz);
   double get_detection_proba_at_y_and_theta(double y_asked, double th_asked, double * erfs_2d_to_1d, struct tszspectrum * ptsz);

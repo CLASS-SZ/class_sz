@@ -225,6 +225,7 @@ while( pch != NULL ) {
 
 
 
+
    // exit(0);
    if (ptsz->sz_verbose>1)
     printf("-> allocating class_sz memory...\n");
@@ -302,12 +303,17 @@ while( pch != NULL ) {
     }
    //exit(0);
    external_pressure_profile_init(ppr,ptsz);
+
+if (ptsz->MF==1){
    // load alpha(z) normalisation for Tinker et al 2010 HMF
+   if (ptsz->T10_alpha_fixed==0){
    if (ptsz->sz_verbose>1)
     printf("-> loading alpha(z) for Tinker al 2010 HMF...\n");
    load_T10_alpha_norm(ptsz);
    if (ptsz->sz_verbose>1)
     printf("-> alpha(z) for Tinker al HMF loaded.\n");
+   }
+}
 
    if (ptsz->has_dndlnM == 1
     || ptsz->has_sz_counts
@@ -389,6 +395,7 @@ if (ptsz->sz_verbose>1)
 if (ptsz->sz_verbose>1)
   printf("-> knl tabulated.\n");
  }
+
    // printf("tabulating dndlnM quantities 1\n");
 
    if (ptsz->has_nl_index){
@@ -399,6 +406,19 @@ if (ptsz->sz_verbose>1)
     printf("-> nl index tabulated.\n");
  }
    // printf("tabulating dndlnM quantities\n");
+
+if (ptsz->use_xout_in_density_profile_from_enclosed_mass){
+if (ptsz->sz_verbose>1)
+  printf("-> tabulating xout for Battaglia density profile.\n");
+tabulate_m_to_xout(pba,pnl,ppm,ptsz);
+if (ptsz->sz_verbose>1)
+  printf("-> xout for Battaglia density profile tabulated.\n");
+
+// test:
+// double xout_test = get_m_to_xout_at_z_and_m(5.22863,6.12609e11,ptsz);
+// printf("%.5e\n",xout_test);
+}
+
 
    // exit(0);
 if (
@@ -852,25 +872,41 @@ cl_noise_fft[i] = cl_noise_fft[i]*1e-12/pba->T_cmb/pba->T_cmb;
 Fl_bl = get_ksz_filter_at_l(l[i],ptsz);
 
 
-if (l[i]<l_lensed[0])
-  cl_tt_lensed_fft[i] = 0.;
-if (l[i]>l_lensed[ple->l_lensed_max-3])
-  cl_tt_lensed_fft[i] = 0.;
+double result_ttf;
+if (ptsz->compute_ksz2ksz2==1){
+result_ttf = Fl_bl*Fl_bl*(cl_ksz_fft[i])*sqrt(2./(2.*_PI_)/(2.*_PI_)); // divide by 2pi^2 and multiply by 2 -- see formula
 
-if (l[i]<ptsz->l_ksz_template[0])
-  cl_ksz_fft[i] = 0.;
-if (l[i]>ptsz->l_ksz_template[ptsz->ksz_template_size-1])
-  cl_ksz_fft[i] = 0.;
+}
+else{
+result_ttf = Fl_bl*Fl_bl*(cl_tt_lensed_fft[i]+cl_ksz_fft[i]+cl_noise_fft[i])*sqrt(2./(2.*_PI_)/(2.*_PI_)); // divide by 2pi^2 and multiply by 2 -- see formula
+}
 
-if (l[i]<ptsz->unbinned_nl_tt_ell[0])
-  cl_noise_fft[i] = 0.;
-if (l[i]>ptsz->unbinned_nl_tt_ell[ptsz->unbinned_nl_tt_size-1])
-  cl_noise_fft[i] = 0.;
+if (l[i]<l_lensed[0]){
+  result_ttf =0.;
+  cl_tt_lensed_fft[i] = 0.;}
+if (l[i]>l_lensed[ple->l_lensed_max-3]){
+  result_ttf =0.;
+  cl_tt_lensed_fft[i] = 0.;}
 
+if (l[i]<ptsz->l_ksz_template[0]){
+  result_ttf =0.;
+  cl_ksz_fft[i] = 0.;}
+if (l[i]>ptsz->l_ksz_template[ptsz->ksz_template_size-1]){
+  result_ttf =0.;
+  cl_ksz_fft[i] = 0.;}
+
+if (l[i]<ptsz->unbinned_nl_tt_ell[0]){
+  result_ttf =0.;
+  cl_noise_fft[i] = 0.;}
+if (l[i]>ptsz->unbinned_nl_tt_ell[ptsz->unbinned_nl_tt_size-1]){
+  result_ttf =0.;
+  cl_noise_fft[i] = 0.;}
+
+
+cl_ttf[i] = result_ttf;
 
 // cl_noise_fft[i] = Delta_t2*exp(theta_fwhm*theta_fwhm*l[i]*l[i]/8./log(2.));
 
-cl_ttf[i] = Fl_bl*Fl_bl*(cl_tt_lensed_fft[i]+cl_ksz_fft[i]+cl_noise_fft[i])*sqrt(2./(2.*_PI_)/(2.*_PI_)); // divide by 2pi^2 and multiply by 2 -- see formula
 // if (i<10)
 // printf(" l = %.3e cl tt = %.8e  ksz = %.8e flbl = %.8e ttf = %.8e\n",l[i],cl_tt_lensed_fft[i],cl_ksz_fft[i],Fl_bl,cl_ttf[i]);
 // lensing_cl_at_l(ple,l[i])
@@ -1857,6 +1893,12 @@ if (ptsz->has_dcib0dz){
    free(ptsz->array_dcib0dz_at_z_nu);
    }
 
+if(ptsz->use_xout_in_density_profile_from_enclosed_mass){
+  free(ptsz->array_m_to_xout_redshift);
+  free(ptsz->array_m_to_xout_mass);
+  free(ptsz->array_m_to_xout_at_z_m);
+}
+
 if (ptsz->has_dydz){
    free(ptsz->array_dydz_redshift);
    free(ptsz->array_dydz_at_z);
@@ -2177,8 +2219,12 @@ free(ptsz->bk_ttg_at_z_3h);
 //
 
   // if (ptsz->MF==1 && ptsz->hm_consistency==2){
+  if (ptsz->MF==1){
+  if (ptsz->T10_alpha_fixed==0){
     free(ptsz->T10_ln1pz);
     free(ptsz->T10_lnalpha);
+  }
+}
   // }
 if (ptsz->concentration_parameter == 4){
   free(ptsz->CM_redshift);
@@ -2274,7 +2320,7 @@ int load_cl_ksz_template(struct tszspectrum * ptsz)
 {
 
   if (ptsz->sz_verbose >= 1)
-    printf("-> loading the ksz template for cl^kSZ2_gal (covmat)\n");
+    printf("-> loading the ksz template\n");
 
 
   class_alloc(ptsz->l_ksz_template,sizeof(double *)*100,ptsz->error_message);

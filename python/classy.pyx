@@ -2095,6 +2095,12 @@ cdef class Class:
     def get_m200m_to_m200c_at_z_and_M(self,z_asked,m_asked):
         return get_m200m_to_m200c_at_z_and_M(z_asked,m_asked,&self.tsz)
 
+    def get_normalization_gas_density_profile(self,z_asked,m_asked):
+        return get_normalization_gas_density_profile(z_asked,m_asked,&self.tsz)
+
+    def get_m_to_xout_at_z_and_m(self,z_asked,m_asked):
+        return get_m_to_xout_at_z_and_m(z_asked,m_asked,&self.tsz)
+
     def get_c200m_at_m_and_z_D08(self,M,z):
         return get_c200m_at_m_and_z_D08(M,z)
 
