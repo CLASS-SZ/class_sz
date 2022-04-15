@@ -7735,6 +7735,7 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
     result *= V->pvectsz[V->ptsz->index_halo_bias]*V->pvectsz[V->ptsz->index_halo_bias];
 
 
+    // printf("b=%.5e pk=%.5e\n",V->pvectsz[V->ptsz->index_halo_bias],pk1);
 
   }
   else if ((V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf)) {

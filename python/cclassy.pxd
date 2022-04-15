@@ -327,6 +327,7 @@ cdef extern from "class.h":
         double * cl_gal_gal_1h
         double * cl_gal_gal_2h
         double * cl_gal_gal_hf
+        double * cl_gal_lens_hf
         double * cl_gal_lens_1h
         double * cl_gal_lens_2h
         double * cl_lens_lens_1h
@@ -356,10 +357,13 @@ cdef extern from "class.h":
         double * pk_bb_at_z_2h
         double * cl_gal_lensmag_1h
         double * cl_gal_lensmag_2h
+        double * cl_gal_lensmag_hf
         double * cl_lens_lensmag_1h
         double * cl_lens_lensmag_2h
+        double * cl_lens_lensmag_hf
         double * cl_lensmag_lensmag_1h
         double * cl_lensmag_lensmag_2h
+        double * cl_lensmag_lensmag_hf
         double ** tllprime_sz
         double * cov_Y_N_mass_bin_edges
         double * cov_N_N
@@ -609,6 +613,12 @@ cdef extern from "class.h":
                   double * pk_tot_out,
                   double * pk_cb_tot_out,
                   int nonlinear)
+
+    double get_scale_dependent_bias_at_z_and_k(double z_asked,
+                                               double k_asked,
+                                               double bh,
+                                               void * ptsz)
+
 
     double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
                                              double m_asked,

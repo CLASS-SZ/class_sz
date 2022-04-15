@@ -7818,7 +7818,21 @@ int evaluate_effective_galaxy_bias(double * pvecback,
   // }
 
 
+
    pvectsz[ptsz->index_halo_bias] = b;
+
+if (ptsz->has_ng_in_bh){
+  double bng = 0.;
+  int index_l = (int) pvectsz[ptsz->index_multipole];
+  double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+  double kl = (ptsz->ell[index_l]+0.5)/d_A;
+  double bh=b;
+  bng = get_scale_dependent_bias_at_z_and_k(z,kl,bh,ptsz);
+  pvectsz[ptsz->index_halo_bias] += bng;
+}
+
+
+
    return _SUCCESS_;
 }
 
