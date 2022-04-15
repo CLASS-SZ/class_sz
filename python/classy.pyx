@@ -1918,7 +1918,7 @@ cdef class Class:
         for index in range(self.tsz.nlSZ):
             cl['1h'].append(self.tsz.cl_lensmag_lensmag_1h[index])
             cl['2h'].append(self.tsz.cl_lensmag_lensmag_2h[index])
-            cl['2h'].append(self.tsz.cl_lensmag_lensmag_hf[index])
+            cl['hf'].append(self.tsz.cl_lensmag_lensmag_hf[index])
             cl['ell'].append(self.tsz.ell[index])
         return cl
 

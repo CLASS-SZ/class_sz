@@ -2056,6 +2056,8 @@ int solve_m_to_xout(
                     )
 {
 
+  // printf("z = %.5e m=%.5e xout = %.5e\n",z,m,r);
+  // printf("z = %.5e m=%.5e\n",z,m);
 
 
 /// get rhoc and rd
