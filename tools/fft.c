@@ -889,7 +889,7 @@ void pk2xi(int N, const double k[], const double pk[], double r[], double xi[], 
 
 void xi2pk(int N, const double r[], const double xi[], double k[], double pk[], struct tszspectrum * ptsz) {
     // static const double TwoPiCubed = 8*M_PI*M_PI*M_PI;
-    static const double TwoPiCubed = pow(2.*M_PI,2.);///2./pow(2.*M_PI,-3)/4./pow(M_PI,3);
+    double TwoPiCubed = pow(2.*M_PI,2.);///2./pow(2.*M_PI,-3)/4./pow(M_PI,3);
     // fftlog_ComputeXiLM(0, 2, N, r, xi, k, pk, ptsz);
     fftlog_ComputeXiLM(0, 1, N, r, xi, k, pk, ptsz);
     int j;
@@ -904,7 +904,7 @@ void cl2gamma(int N, const double k[], const double pk[], double r[], double xi[
 
 void gamma2cl(int N, const double r[], const double xi[], double k[], double pk[], struct tszspectrum * ptsz) {
     // static const double TwoPiCubed = 8*M_PI*M_PI*M_PI;
-    static const double TwoPiCubed = pow(2.*M_PI,2.);///2./pow(2.*M_PI,-3)/4./pow(M_PI,3);
+    double TwoPiCubed = pow(2.*M_PI,2.);///2./pow(2.*M_PI,-3)/4./pow(M_PI,3);
     // fftlog_ComputeXiLM(0, 2, N, r, xi, k, pk, ptsz);
     fftlog_ComputeXiLM_cl2gamma(0, 1, N, r, xi, k, pk, ptsz);
     int j;

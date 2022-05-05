@@ -4366,6 +4366,9 @@ for (index_z=0;
   // pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c];
 
  double result_int;
+ // here needed to be commented
+ // it gave seg fault in Ola's laptop
+ // fix was to remove the class_call_parallel
  class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int),
                      ptsz->error_message,
                      ptsz->error_message);
@@ -11837,14 +11840,14 @@ return _SUCCESS_;
                             struct primordial * ppm,
                             struct tszspectrum * ptsz){
 
-double z_min,z_max;
-if (ptsz->need_sigma==0){
-  class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
-  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
-  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
-  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
-  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
-}
+// double z_min,z_max;
+// if (ptsz->need_sigma==0){
+//   class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+//   double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+//   // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
+//   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+//   // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
+// }
 
 
 
@@ -11862,12 +11865,12 @@ int index_z;
 
     for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
     {
-      if (ptsz->need_sigma== 0){
-      ptsz->array_redshift[index_z] =
-                                      log(1.+z_min)
-                                      +index_z*(log(1.+z_max)-log(1.+z_min))
-                                      /(ptsz->n_arraySZ-1.); // log(1+z)
-                                    }
+      // if (ptsz->need_sigma== 0){
+      // ptsz->array_redshift[index_z] =
+      //                                 log(1.+z_min)
+      //                                 +index_z*(log(1.+z_max)-log(1.+z_min))
+      //                                 /(ptsz->n_arraySZ-1.); // log(1+z)
+      //                               }
 
             spectra_vrms2(pba,
                           ppm,
@@ -15649,7 +15652,7 @@ if (ptsz->need_sigma == 0)
   double ** array_sigma_at_z_and_R;
   double ** array_dsigma2dR_at_z_and_R;
 
-class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+// class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
 class_alloc(ptsz->array_radius,sizeof(double *)*ptsz->ndimSZ,ptsz->error_message);
 
 
@@ -15729,10 +15732,10 @@ num_threads(number_of_threads)
 
     for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
     {
-      ptsz->array_redshift[index_z] =
-                                      log(1.+z_min)
-                                      +index_z*(log(1.+z_max)-log(1.+z_min))
-                                      /(ptsz->n_arraySZ-1.); // log(1+z)
+      // ptsz->array_redshift[index_z] =
+      //                                 log(1.+z_min)
+      //                                 +index_z*(log(1.+z_max)-log(1.+z_min))
+      //                                 /(ptsz->n_arraySZ-1.); // log(1+z)
 
 
   if (ptsz->need_sigma == 1){

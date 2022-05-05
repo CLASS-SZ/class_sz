@@ -181,6 +181,29 @@ int szpowerspectrum_init(
 
    show_preamble_messages(pba,pth,pnl,ppm,ptsz);
 
+   if (ptsz->need_sigma == 1
+    || ptsz->has_vrms2){
+
+
+      double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+      // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
+      double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+      int index_z;
+
+      class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+
+      for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
+      {
+        ptsz->array_redshift[index_z] =
+                                        log(1.+z_min)
+                                        +index_z*(log(1.+z_max)-log(1.+z_min))
+                                        /(ptsz->n_arraySZ-1.); // log(1+z)
+
+                                      }
+                                    }
+
+
+
    tabulate_sigma_and_dsigma_from_pk(pba,pnl,ppm,ptsz);
 
 
@@ -386,6 +409,8 @@ if (ptsz->sz_verbose>1)
    printf("-> Velocity dispersion tabulated.\n");
  }
 
+//  printf("get_vrms2_at_z = %.5e\n",get_vrms2_at_z(0.3,ptsz));
+// exit(0);
    // printf("tabulating dndlnM quantities 0\n");
 
    if (ptsz->has_knl){
