@@ -1725,7 +1725,6 @@ int input_read_parameters(
 
       /** (sz) SZ parameters */
 
-
       //BB: read SZ parameters from ini file
       class_read_int("nlSZ",ptsz->nlSZ);
       class_read_int("convert_cls_to_gamma",ptsz->convert_cls_to_gamma);
@@ -3516,7 +3515,6 @@ int input_read_parameters(
 
 
 
-
      else if (ptsz->pressure_profile==4){
        //Battaglia et al pressure profile [arXiv:1109.3711]
 
@@ -3554,7 +3552,6 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
         ptsz->SHMF=2;
         }
       }
-
 
       /* mass function SZ */
       class_call(parser_read_string(pfc,"mass function",&string1,&flag1,errmsg),
@@ -3701,7 +3698,7 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
       class_read_string("root",ptsz->root);
       class_read_string("root",pcsz->root);
 
-      class_read_int("sz_verbose",ptsz->sz_verbose);
+      class_read_int("class_sz_verbose",ptsz->sz_verbose);
       class_read_double("f_free",ptsz->f_free);
       class_read_double("f_b_gas",ptsz->f_b_gas);
 

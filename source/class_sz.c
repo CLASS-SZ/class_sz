@@ -432,6 +432,7 @@ if (ptsz->sz_verbose>1)
  }
    // printf("tabulating dndlnM quantities\n");
 
+if (ptsz->has_electron_density == 1){
 if (ptsz->use_xout_in_density_profile_from_enclosed_mass){
 if (ptsz->sz_verbose>1)
   printf("-> tabulating xout for Battaglia density profile.\n");
@@ -443,7 +444,7 @@ if (ptsz->sz_verbose>1)
 // double xout_test = get_m_to_xout_at_z_and_m(5.22863,6.12609e11,ptsz);
 // printf("%.5e\n",xout_test);
 }
-
+}
 
    // exit(0);
 if (

@@ -3514,6 +3514,8 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
 
   if (ptsz->use_xout_in_density_profile_from_enclosed_mass){
     xout = get_m_to_xout_at_z_and_m(pvectsz[ptsz->index_z],pvectsz[ptsz->index_m200c],ptsz);
+
+    // printf("xout = %.5e\n",xout);
   }
   c_nfw = 1.;
 
@@ -3525,7 +3527,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 3000;
+  int size_w = 20000;
   w = gsl_integration_workspace_alloc(size_w);
 
 
@@ -4366,24 +4368,25 @@ for (index_z=0;
   // pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c];
 
  double result_int;
- // here needed to be commented
- // it gave seg fault in Ola's laptop
- // fix was to remove the class_call_parallel
- class_call_parallel(two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int),
-                     ptsz->error_message,
-                     ptsz->error_message);
+
+
+two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int);
 
 
  result = result_int;
  double tau_normalisation = 1.;
  tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_r200c],3);
+ // printf("In tab gas: k %.4e z %.8e rt %.8e mt %.8e res = %.4e\n",ell,pvectsz[ptsz->index_z],pvectsz[ptsz->index_r200c],pvectsz[ptsz->index_m200c],result);
+
+
+ if (result<=0 || isnan(result) || isinf(result)){
+ // printf("ERROR: In tab gas: k %.4e z %.8e rt %.8e mt %.8e res = %.4e\n",ell,pvectsz[ptsz->index_z],pvectsz[ptsz->index_r200c],pvectsz[ptsz->index_m200c],result);
+ // printf("check precision and input parameters?\n");
+ // exit(0);
+ result = 1e-200;
+}
 
  result *= tau_normalisation;
- if (result<=0 || isnan(result) || isinf(result)){
- printf("In tab gas: k %.4e z %.8e rt %.8e mt %.8e res = %.4e\n",ell,pvectsz[ptsz->index_z],pvectsz[ptsz->index_r200c],pvectsz[ptsz->index_m200c],result);
- printf("check precision and input parameters?\n");
- exit(0);
-}
 }
 else if (ptsz->tau_profile == 0){ // truncated nfw profile
    //
@@ -6642,9 +6645,9 @@ int load_M_min_of_z(struct tszspectrum * ptsz)
   /* Launch the process */
   char Filepath[_ARGUMENT_LENGTH_MAX_];
 
-  class_open(process,ptsz->full_path_to_redshift_dependent_M_min, "r",ptsz->error_message);
   if (ptsz->sz_verbose >= 1)
     printf("-> File Name: %s\n",ptsz->full_path_to_redshift_dependent_M_min);
+  class_open(process,ptsz->full_path_to_redshift_dependent_M_min, "r",ptsz->error_message);
 
 
   /* Read output and store it */
