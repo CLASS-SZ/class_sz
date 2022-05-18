@@ -83,6 +83,7 @@
 #define _lens_lensmag_hf_ ((ptsz->has_lens_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_lens_lensmag_hf))
 #define _lens_lens_1h_ ((ptsz->has_lens_lens_1h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_1h))
 #define _lens_lens_2h_ ((ptsz->has_lens_lens_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_2h))
+#define _lens_lens_hf_ ((ptsz->has_lens_lens_hf == _TRUE_) && (index_md == ptsz->index_md_lens_lens_hf))
 #define _tSZ_gal_1h_ ((ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_1h))
 #define _tSZ_gal_2h_ ((ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_2h))
 #define _tSZ_cib_1h_ ((ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_cib_1h))
@@ -162,6 +163,7 @@ struct tszspectrum {
   double * cl_gal_gal_2h;
   double * cl_gal_gal_hf;
   double * cl_gal_lens_hf;
+  double * cl_lens_lens_hf;
   double * cl_gal_lens_2h;
   double * cl_gal_lens_1h;
   double * cl_gal_lensmag_hf;
@@ -608,6 +610,11 @@ struct tszspectrum {
   int index_md_gal_lens_hf;
   int index_integrand_id_gal_lens_hf_first;
   int index_integrand_id_gal_lens_hf_last;
+
+  int has_lens_lens_hf;
+  int index_md_lens_lens_hf;
+  int index_integrand_id_lens_lens_hf_first;
+  int index_integrand_id_lens_lens_hf_last;
 
 
   int has_gal_lens_2h;

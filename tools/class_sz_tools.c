@@ -3527,7 +3527,7 @@ int two_dim_ft_nfw_profile(struct tszspectrum * ptsz,
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 20000;
+  int size_w = 20000; // was 3000... not sure if it matters
   w = gsl_integration_workspace_alloc(size_w);
 
 
@@ -7974,29 +7974,38 @@ else if ((V->ptsz->has_lens_lensmag_hf == _TRUE_) && (index_md == V->ptsz->index
 
   }
 
-else if (
-  ((V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_2h))
-  || ((V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_1h))
-){
+  // Halofit approach
+else if ((V->ptsz->has_lens_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_hf))
+{
+  int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
+  double l = V->ptsz->ell[index_l];
+  double pk1 = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+  result = pk1;
+  }
 
-
-if (index_md == V->ptsz->index_md_lens_lens_1h) {
-  result = 0.;
-}
-else {
-  double W_lens =  radial_kernel_W_lensing_at_z(V->pvecback,
-                                                  V->pvectsz,
-                                                  V->pba,
-                                                  V->ppm,
-                                                  V->pnl,
-                                                  V->ptsz);
-// this is needed only in  the approximate calculation
-// for the exact calculation in halo model, this comes out of Sigma_crit
-result = W_lens*W_lens;
-
-}
-
-}
+// else if (
+//   ((V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_2h))
+//   || ((V->ptsz->use_hod == 0) && (V->ptsz->has_lens_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_1h))
+// ){
+//
+//
+// if (index_md == V->ptsz->index_md_lens_lens_1h) {
+//   result = 0.;
+// }
+// else {
+//   double W_lens =  radial_kernel_W_lensing_at_z(V->pvecback,
+//                                                   V->pvectsz,
+//                                                   V->pba,
+//                                                   V->ppm,
+//                                                   V->pnl,
+//                                                   V->ptsz);
+// // this is needed only in  the approximate calculation
+// // for the exact calculation in halo model, this comes out of Sigma_crit
+// result = W_lens*W_lens;
+//
+// }
+//
+// }
 
   // then quantities that require mass integration
   else {
@@ -8223,6 +8232,7 @@ result *= Wg;
 if(
   ((V->ptsz->has_lens_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_1h))
 ||((V->ptsz->has_lens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_2h))
+||((V->ptsz->has_lens_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_hf))
 ){
 double Wg = radial_kernel_W_cmb_lensing_at_z(z,V->pvectsz,V->pba,V->ptsz);
 result *= pow(Wg,2.);
@@ -8263,6 +8273,10 @@ if (
   result *= 3.*pow(Omega_m,1.)*pow(V->pba->H0/V->pba->h,2)/2./chi*pow(1.+z,1.);
 }
 
+if (((V->ptsz->has_lens_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_hf))){
+  double Omega_m = V->ptsz->Omega_m_0;
+  result *= pow(3.*pow(Omega_m,1.)*pow(V->pba->H0/V->pba->h,2)/2./chi*pow(1.+z,1.),2.);
+}
 
 // multiply by velocity dispersion
 if (

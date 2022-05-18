@@ -2771,6 +2771,18 @@ int input_read_parameters(
         // ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"lens_lens_hf") != NULL) ) {
+        ptsz->has_lens_lens_hf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        // ptsz->need_hmf = 1;
+      }
+
+
+
       if ((strstr(string1,"gal_lensmag_hf") != NULL) ) {
         ptsz->has_gal_lensmag_hf =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -5032,6 +5044,7 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
       + ptsz->has_gal_lens_1h
       + ptsz->has_gal_lens_2h
       + ptsz->has_gal_lens_hf
+      + ptsz->has_lens_lens_hf
       + ptsz->has_gal_lensmag_1h
       + ptsz->has_gal_lensmag_2h
       + ptsz->has_gal_gallens_1h
@@ -6156,6 +6169,7 @@ int input_default_params(
   ptsz->has_gal_lens_1h = _FALSE_;
   ptsz->has_gal_lens_2h = _FALSE_;
   ptsz->has_gal_lens_hf = _FALSE_;
+  ptsz->has_lens_lens_hf = _FALSE_;
   ptsz->has_gal_lensmag_1h = _FALSE_;
   ptsz->has_gal_lensmag_2h = _FALSE_;
   ptsz->has_gal_gallens_1h = _FALSE_;
@@ -6351,6 +6365,8 @@ int input_default_params(
   ptsz->index_md_kSZ_kSZ_lens_2h_fft = 87;
   ptsz->index_md_kSZ_kSZ_lens_3h_fft = 88;
   ptsz->index_md_kSZ_kSZ_lens_hf = 89;
+
+  ptsz->index_md_lens_lens_hf = 90;
 
   ptsz->integrate_wrt_mvir = 0;
   ptsz->integrate_wrt_m500c = 0;
