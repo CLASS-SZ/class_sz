@@ -748,6 +748,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 
 printf("-> Starting main parallel block 5.\n");
        Pvectsz[ptsz->index_integrand_id] = index_integrand;
+printf("-> Starting main parallel block 5b.\n");
        // class_call_parallel(compute_sz(pba,
        //                                pnl,
        //                                ppm,
@@ -3441,144 +3442,7 @@ exit(0);
     cl_kSZ2_gal = r;
 
    free(b_l1_l2_l_1d);
-   // free(ln_ell);
 
-
-
-//
-//     double **b_l1_l2_l;
-//
-//     class_alloc(b_l1_l2_l,
-//                 ptsz->N_kSZ2_gal_theta_grid*sizeof(double *),
-//                 ptsz->error_message);
-//
-//
-//                 for (index_theta_1=0;
-//                      index_theta_1<ptsz->N_kSZ2_gal_theta_grid;
-//                      index_theta_1++)
-//                 {
-//                   class_alloc(b_l1_l2_l[index_theta_1],
-//                               ptsz->N_kSZ2_gal_multipole_grid*sizeof(double),
-//                               ptsz->error_message);
-//                 }
-//
-//
-//
-//      for (index_theta_1=0;index_theta_1<ptsz->N_kSZ2_gal_theta_grid;index_theta_1++){
-//        for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
-//
-//          if (_kSZ_kSZ_gal_1h_)
-//           printf("computing b_kSZ_kSZ_g_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
-//          if (_kSZ_kSZ_gal_2h_)
-//           printf("computing b_kSZ_kSZ_g_2h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
-//          if (_kSZ_kSZ_gal_3h_)
-//           printf("computing b_kSZ_kSZ_g_3h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
-//          if (_kSZ_kSZ_gal_hf_)
-//           printf("computing b_kSZ_kSZ_g_hf @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
-//          if (_kSZ_kSZ_lensmag_1halo_)
-//           printf("computing b_kSZ_kSZ_mu_1h @ l3_id = %d and (l1,l2) = (%d,%d)\n", index_ell_3, index_theta_1, index_ell_2);
-//
-//           Pvectsz[ptsz->index_multipole_1] = index_theta_1;
-//           Pvectsz[ptsz->index_multipole_2] = index_ell_2;
-//           Pvectsz[ptsz->index_multipole_3] = index_ell_3;
-//
-//           class_call(integrate_over_redshift(pba,
-//                                              pnl,
-//                                              ppm,
-//                                              ptsz,
-//                                              Pvecback,
-//                                              Pvectsz),
-//                           ptsz->error_message,
-//                           ptsz->error_message);
-//
-//        b_l1_l2_l[index_theta_1][index_ell_2] = Pvectsz[ptsz->index_integral];
-//
-//        }
-//      }
-//
-//
-//
-//    // put bispectrum in 1d format for 2d interpolation
-//    double * b_l1_l2_l_1d;
-//    double * ln_ell;
-//    class_alloc(b_l1_l2_l_1d,
-//                sizeof(double *)*ptsz->N_kSZ2_gal_theta_grid*ptsz->N_kSZ2_gal_multipole_grid,
-//                ptsz->error_message);
-//    class_alloc(ln_ell,
-//                sizeof(double *)*ptsz->N_kSZ2_gal_multipole_grid,
-//                ptsz->error_message);
-//    int index_l1_l2 = 0;
-//    for (index_ell_2=0;index_ell_2<ptsz->N_kSZ2_gal_multipole_grid;index_ell_2++){
-//             //if (index_theta_1==0){
-//        ln_ell[index_ell_2] = log(ptsz->ell_kSZ2_gal_multipole_grid[index_ell_2]);
-//      //}
-//    for (index_theta_1=0;index_theta_1<ptsz->N_kSZ2_gal_theta_grid;index_theta_1++){
-//
-//      b_l1_l2_l_1d[index_l1_l2] = b_l1_l2_l[index_theta_1][index_ell_2];
-//
-//
-// double db = b_l1_l2_l_1d[index_l1_l2];
-// if (isnan(db) || isinf(db)){
-//   // db = 0.;
-// if (isnan(db))
-// printf("found nan in grid of b_l1_l2_l_1d\n");
-// if (isinf(db))
-// printf("found inf in grid of b_l1_l2_l_1d\n");
-// printf("id_theta = %d \t id_l2 = %d \n",index_theta_1,index_ell_2);
-//
-// printf("\n\n");
-// exit(0);
-// }
-//
-// index_l1_l2 += 1;
-//
-//
-//      }
-//    }
-//
-//
-//    for (index_theta_1=0;
-//         index_theta_1<ptsz->N_kSZ2_gal_theta_grid;
-//         index_theta_1++)
-//    {
-//      free(b_l1_l2_l[index_theta_1]);
-//    }
-//    free(b_l1_l2_l);
-//
-//    // now we integrate the bispectrum to compute power spectrum
-//    double cl_kSZ2_gal = 0.;
-//
-//    struct Parameters_for_integrand_kSZ2_X V;
-//    V.pnl= pnl;
-//    V.ppm= ppm;
-//    V.ptsz = ptsz;
-//    V.pba = pba;
-//    V.Pvecback = Pvecback;
-//    V.Pvectsz = Pvectsz;
-//    V.ln_ell = ln_ell;
-//    V.index_ell_3 = index_ell_3;
-//    V.b_l1_l2_l_1d = b_l1_l2_l_1d;
-//    void * params;
-//
-//    double r; //result of the integral
-//    double epsrel= 1.e-6;//ptsz->redshift_epsrel;//ptsz->patterson_epsrel;
-//    double epsabs= 1.e-50;//ptsz->redshift_epsabs;//ptsz->patterson_epsabs;
-//    int show_neval = 0;//ptsz->patterson_show_neval;
-//
-//     params = &V;
-//
-//     // integral is symmetric (triangular configurations):
-//     // int(0,2*PI) = 2*int(0,PI)
-//     r = 2.*Integrate_using_Patterson_adaptive(0., _PI_,
-//                                             epsrel, epsabs,
-//                                             integrand_kSZ2_X,
-//                                             params,show_neval);
-//
-//
-//     cl_kSZ2_gal = r;
-//
-//    free(b_l1_l2_l_1d);
-//    free(ln_ell);
 
    int index_l = index_ell_3;
    // double cl_kSZ2_gal = 0.;
