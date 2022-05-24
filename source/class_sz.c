@@ -1966,6 +1966,8 @@ if (ptsz->has_dydz){
 
 
 if (ptsz->need_m200c_to_m200m){
+
+if (ptsz->sz_verbose>1) printf("-> freeing m200c_to_m200m.\n");
    free(ptsz->array_m_m200c_to_m200m);
    free(ptsz->array_ln_1pz_m200c_to_m200m);
    free(ptsz->array_m200c_to_m200m_at_z_and_M);
@@ -2020,6 +2022,9 @@ if (ptsz->need_sigma == 1
 
 if (ptsz->need_sigma == 1 ){
    //free(ptsz->array_redshift);
+
+if (ptsz->sz_verbose>1) printf("-> freeing sigma(M,r).\n");
+
    free(ptsz->array_radius);
 
    free(ptsz->array_sigma_at_z_and_R);
@@ -2204,11 +2209,13 @@ if(ptsz->need_tt_noise){
 }
 
 if(ptsz->need_lensing_noise){
+if (ptsz->sz_verbose>1) printf("-> freeing lensing noise.\n");
   free(ptsz->nl_lensing_noise);
   free(ptsz->l_lensing_noise);
 }
 
 if(ptsz->use_redshift_dependent_M_min){
+if (ptsz->sz_verbose>1) printf("-> freeing redshift_dependent_M_min.\n");
   free(ptsz->M_min_of_z_z);
   free(ptsz->M_min_of_z_M_min);
 }
@@ -2241,7 +2248,10 @@ if(ptsz->use_redshift_dependent_M_min){
       +ptsz->has_sz_2halo
       != 0){
 if (ptsz->pressure_profile == 0 || ptsz->pressure_profile == 2 )
-{  free(ptsz->PP_lnx);
+{
+
+if (ptsz->sz_verbose>1) printf("-> freeing pressure profile.\n");
+   free(ptsz->PP_lnx);
    free(ptsz->PP_lnI);
    free(ptsz->PP_d2lnI);}
 
@@ -2261,7 +2271,7 @@ if( ptsz->has_pk_at_z_1h
    + ptsz->has_bk_ttg_at_z_3h
 
     >= _TRUE_){
-
+if (ptsz->sz_verbose>1) printf("-> freeing pk's and bk's.\n");
 free(ptsz->k_for_pk_hm);
 free(ptsz->pk_at_z_1h);
 free(ptsz->pk_at_z_2h);
@@ -2281,10 +2291,13 @@ free(ptsz->bk_ttg_at_z_3h);
   // if (ptsz->MF==1 && ptsz->hm_consistency==2){
   if (ptsz->MF==1){
   if (ptsz->T10_alpha_fixed==0){
+if (ptsz->sz_verbose>1) printf("-> freeing HMF alpha (T10).\n");
     free(ptsz->T10_ln1pz);
     free(ptsz->T10_lnalpha);
   }
 }
+
+if (ptsz->sz_verbose>1) printf("-> freeing c-m relation.\n");
   // }
 if (ptsz->concentration_parameter == 4){
   free(ptsz->CM_redshift);
@@ -2298,13 +2311,14 @@ if (ptsz->concentration_parameter == 4){
   free(ptsz->ln_x_for_pp);
   free(ptsz->x_for_pp);
 
+if (ptsz->sz_verbose>1) printf("-> freeing cluster counts.\n");
 if (ptsz->has_sz_counts == 1){
   free(ptsz->steps_z);
   free(ptsz->steps_m);
   free(ptsz->erfs_2d_to_1d_y_array);
 }
 
-
+if (ptsz->sz_verbose>1) printf("-> freeing more kSZ2X.\n");
 if ( ptsz->has_kSZ_kSZ_gal_1h_fft
   || ptsz->has_kSZ_kSZ_gal_2h_fft
   || ptsz->has_kSZ_kSZ_gal_3h_fft
@@ -2325,7 +2339,7 @@ if ( ptsz->has_kSZ_kSZ_gal_1h_fft
   free(ptsz->array_psi_b1t_psi);
 }
 
-
+if (ptsz->sz_verbose>1) printf("-> freeing more kSZ2X.\n");
 if ( ptsz->has_kSZ_kSZ_gal_1h_fft
   || ptsz->has_kSZ_kSZ_gal_2h_fft
   || ptsz->has_kSZ_kSZ_gal_3h_fft
@@ -2347,6 +2361,7 @@ if ( ptsz->has_kSZ_kSZ_gal_1h_fft
   free(ptsz->array_psi_b1gt_psi);
 }
 
+  if (ptsz->sz_verbose>1) printf("-> freeing more kSZ2X.\n");
 if ( ptsz->has_kSZ_kSZ_gallens_1h_fft
   || ptsz->has_kSZ_kSZ_gallens_2h_fft
   || ptsz->has_kSZ_kSZ_gallens_3h_fft
