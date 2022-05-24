@@ -1808,6 +1808,7 @@ if(ptsz->has_kSZ_kSZ_gal_1h
   free(ptsz->array_profile_ln_m);
   free(ptsz->array_profile_ln_1pz);
 
+if (ptsz->sz_verbose>1) printf("-> freeing density profile.\n");
  int n_ell = ptsz->n_ell_density_profile; //hard coded
  int index_l;
 for (index_l=0;
@@ -1819,6 +1820,7 @@ for (index_l=0;
 free(ptsz->array_profile_ln_rho_at_lnl_lnM_z); //here jump
 }
 
+if (ptsz->sz_verbose>1) printf("-> freeing more kSZ2X.\n");
 
 if (ptsz->has_kSZ_kSZ_lensmag_1halo
 || ptsz->has_lensmag_lensmag_1h
@@ -1836,6 +1838,8 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
   free(ptsz->array_z_W_lensmag);
 }
 
+if (ptsz->sz_verbose>1) printf("-> freeing kappa_g n(z).\n");
+
 if (
  ptsz->has_gal_gallens_1h
 || ptsz->has_gal_gallens_2h
@@ -1848,7 +1852,7 @@ if (
   free(ptsz->array_z_W_gallens_sources);
 }
 
-
+if (ptsz->sz_verbose>1) printf("-> freeing cib.\n");
 if (ptsz->has_cib_cib_1h
   ||ptsz->has_cib_cib_2h
   ||ptsz->has_cib_monopole
