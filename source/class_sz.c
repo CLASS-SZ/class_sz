@@ -2038,6 +2038,9 @@ if (ptsz->sz_verbose>1) printf("-> freeing sigma(M,r).\n");
    free(ptsz->array_dsigma2dR_at_z_and_R);
  }
 
+
+if (ptsz->sz_verbose>1) printf("-> freeing flag 1.\n");
+
 if (ptsz->has_kSZ_kSZ_gal_1h_fft
    || ptsz->has_kSZ_kSZ_gal_2h_fft
    || ptsz->has_kSZ_kSZ_gal_3h_fft
@@ -2087,6 +2090,8 @@ if (ptsz->has_nl_index){
   free(ptsz->array_nl_index_at_z_and_k_no_wiggles);
 }
 
+
+if (ptsz->sz_verbose>1) printf("-> freeing flag 2.\n");
 if (ptsz->has_tSZ_gal_1h
    || ptsz->has_tSZ_gal_2h
 
@@ -2183,7 +2188,7 @@ if (ptsz->has_tSZ_gal_1h
    }
   }
 
-
+if (ptsz->sz_verbose>1) printf("-> freeing flag 3.\n");
 if (
     ptsz->has_gal_gallens_1h
    || ptsz->has_gal_gallens_2h
@@ -2202,7 +2207,7 @@ if (
   }
 
 
-
+if (ptsz->sz_verbose>1) printf("-> freeing flag 4.\n");
 if (ptsz->include_noise_cov_y_y==1){
    free(ptsz->unbinned_nl_yy_ell);
    free(ptsz->unbinned_nl_yy_n_ell);
