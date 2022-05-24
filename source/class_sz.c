@@ -1960,12 +1960,13 @@ if (ptsz->has_dcib0dz){
    free(ptsz->array_dcib0dz_at_z_nu);
    }
 
+if (ptsz->sz_verbose>1) printf("-> freeing xout.\n");
 if(ptsz->use_xout_in_density_profile_from_enclosed_mass){
   free(ptsz->array_m_to_xout_redshift);
   free(ptsz->array_m_to_xout_mass);
   free(ptsz->array_m_to_xout_at_z_m);
 }
-
+if (ptsz->sz_verbose>1) printf("-> freeing dydz.\n");
 if (ptsz->has_dydz){
    free(ptsz->array_dydz_redshift);
    free(ptsz->array_dydz_at_z);
