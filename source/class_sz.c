@@ -13089,7 +13089,8 @@ if (ptsz->need_hmf){
 
 
    //quantities that are specified for each integrand
-   ptsz->index_multipole_for_lensing_profile = 0;
+   ptsz->index_integrand_id = 0;
+   ptsz->index_multipole_for_lensing_profile = ptsz->index_integrand_id + 1;
    ptsz->index_characteristic_multipole_for_nfw_profile = ptsz->index_multipole_for_lensing_profile + 1;
    ptsz->index_multipole_for_nfw_profile = ptsz->index_characteristic_multipole_for_nfw_profile + 1;
    ptsz->index_multipole_for_tau_profile = ptsz->index_multipole_for_nfw_profile + 1;
