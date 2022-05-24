@@ -1929,6 +1929,7 @@ free(ptsz->array_ln_ng_bias_at_z_and_k);
 
 
 if (electron_pressure_comps != _FALSE_){
+if (ptsz->sz_verbose>1) printf("-> freeing pressure.\n");
 if (ptsz->pressure_profile == 3){
    free(ptsz->array_profile_ln_l_over_ls);
    free(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls);
@@ -1951,6 +1952,7 @@ for (index_l=0;
 }
 }
 
+if (ptsz->sz_verbose>1) printf("-> freeing miscellaneous.\n");
 
 if (ptsz->has_dcib0dz){
    free(ptsz->array_dcib0dz_redshift);
