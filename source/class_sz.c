@@ -1577,7 +1577,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
   }
 
 
-  if (ptsz->sz_verbose>1) printf("-> freeing l and cl's.\n");
+  if (ptsz->sz_verbose>10) printf("-> freeing l and cl's.\n");
 
    free(ptsz->ell);
    free(ptsz->cl_sz_1h);
@@ -1730,7 +1730,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->erfs_2d_to_1d_th_array);
 
  }
-  if (ptsz->sz_verbose>1) printf("-> freeing kSZ2X.\n");
+  if (ptsz->sz_verbose>10) printf("-> freeing kSZ2X.\n");
 
 if( ptsz->has_kSZ_kSZ_gal_1h
  || ptsz->has_kSZ_kSZ_gal_2h
@@ -1808,7 +1808,7 @@ if(ptsz->has_kSZ_kSZ_gal_1h
   free(ptsz->array_profile_ln_m);
   free(ptsz->array_profile_ln_1pz);
 
-if (ptsz->sz_verbose>1) printf("-> freeing density profile.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing density profile.\n");
  int n_ell = ptsz->n_ell_density_profile; //hard coded
  int index_l;
 for (index_l=0;
@@ -1820,7 +1820,7 @@ for (index_l=0;
 free(ptsz->array_profile_ln_rho_at_lnl_lnM_z); //here jump
 }
 
-if (ptsz->sz_verbose>1) printf("-> freeing more kSZ2X.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing more kSZ2X.\n");
 
 if (ptsz->has_kSZ_kSZ_lensmag_1halo
 || ptsz->has_lensmag_lensmag_1h
@@ -1838,7 +1838,7 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
   free(ptsz->array_z_W_lensmag);
 }
 
-if (ptsz->sz_verbose>1) printf("-> freeing kappa_g n(z).\n");
+if (ptsz->sz_verbose>10) printf("-> freeing kappa_g n(z).\n");
 
 if (
  ptsz->has_gal_gallens_1h
@@ -1852,7 +1852,7 @@ if (
   free(ptsz->array_z_W_gallens_sources);
 }
 
-if (ptsz->sz_verbose>1) printf("-> freeing cib.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing cib.\n");
 if (ptsz->has_cib_cib_1h
   ||ptsz->has_cib_cib_2h
   ||ptsz->has_cib_monopole
@@ -1929,7 +1929,7 @@ free(ptsz->array_ln_ng_bias_at_z_and_k);
 
 
 if (electron_pressure_comps != _FALSE_){
-if (ptsz->sz_verbose>1) printf("-> freeing pressure.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing pressure.\n");
 if (ptsz->pressure_profile == 3){
    free(ptsz->array_profile_ln_l_over_ls);
    free(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls);
@@ -1952,7 +1952,7 @@ for (index_l=0;
 }
 }
 
-if (ptsz->sz_verbose>1) printf("-> freeing miscellaneous.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing miscellaneous.\n");
 
 if (ptsz->has_dcib0dz){
    free(ptsz->array_dcib0dz_redshift);
@@ -1961,23 +1961,23 @@ if (ptsz->has_dcib0dz){
    }
 
 if (ptsz->has_electron_density == 1){
-if (ptsz->sz_verbose>1) printf("-> freeing xout.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing xout.\n");
 if(ptsz->use_xout_in_density_profile_from_enclosed_mass){
   free(ptsz->array_m_to_xout_redshift);
   free(ptsz->array_m_to_xout_mass);
   free(ptsz->array_m_to_xout_at_z_m);
 }
 }
-if (ptsz->sz_verbose>1) printf("-> freeing dydz.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing dydz.\n");
 if (ptsz->has_dydz){
    free(ptsz->array_dydz_redshift);
    free(ptsz->array_dydz_at_z);
    }
-if (ptsz->sz_verbose>1) printf("-> freeing flag 12.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing flag 12.\n");
 
 if (ptsz->need_m200c_to_m200m){
 
-if (ptsz->sz_verbose>1) printf("-> freeing m200c_to_m200m.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing m200c_to_m200m.\n");
    free(ptsz->array_m_m200c_to_m200m);
    free(ptsz->array_ln_1pz_m200c_to_m200m);
    free(ptsz->array_m200c_to_m200m_at_z_and_M);
@@ -2010,7 +2010,7 @@ if (ptsz->need_m500c_to_m200c){
   free(ptsz->array_m500c_to_m200c_at_z_and_M);
   }
 
-if (ptsz->sz_verbose>1) printf("-> freeing flag 11.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing flag 11.\n");
 
  int index_z;
    for (index_z = 0; index_z<ptsz->N_redshift_dndlnM;index_z ++){
@@ -2033,7 +2033,7 @@ if (ptsz->need_sigma == 1
 if (ptsz->need_sigma == 1 ){
    //free(ptsz->array_redshift);
 
-if (ptsz->sz_verbose>1) printf("-> freeing sigma(M,r).\n");
+if (ptsz->sz_verbose>10) printf("-> freeing sigma(M,r).\n");
 
    free(ptsz->array_radius);
 
@@ -2042,7 +2042,7 @@ if (ptsz->sz_verbose>1) printf("-> freeing sigma(M,r).\n");
  }
 
 
-if (ptsz->sz_verbose>1) printf("-> freeing flag 1.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing flag 1.\n");
 
 if (ptsz->has_kSZ_kSZ_gal_1h_fft
    || ptsz->has_kSZ_kSZ_gal_2h_fft
@@ -2094,7 +2094,7 @@ if (ptsz->has_nl_index){
 }
 
 
-if (ptsz->sz_verbose>1) printf("-> freeing flag 2.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing flag 2.\n");
 if (ptsz->has_tSZ_gal_1h
    || ptsz->has_tSZ_gal_2h
 
@@ -2191,7 +2191,7 @@ if (ptsz->has_tSZ_gal_1h
    }
   }
 
-if (ptsz->sz_verbose>1) printf("-> freeing flag 3.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing flag 3.\n");
 if (
     ptsz->has_gal_gallens_1h
    || ptsz->has_gal_gallens_2h
@@ -2210,7 +2210,7 @@ if (
   }
 
 
-if (ptsz->sz_verbose>1) printf("-> freeing flag 4.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing flag 4.\n");
 if (ptsz->include_noise_cov_y_y==1){
    free(ptsz->unbinned_nl_yy_ell);
    free(ptsz->unbinned_nl_yy_n_ell);
@@ -2224,13 +2224,13 @@ if(ptsz->need_tt_noise){
 }
 
 if(ptsz->need_lensing_noise){
-if (ptsz->sz_verbose>1) printf("-> freeing lensing noise.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing lensing noise.\n");
   free(ptsz->nl_lensing_noise);
   free(ptsz->l_lensing_noise);
 }
 
 if(ptsz->use_redshift_dependent_M_min){
-if (ptsz->sz_verbose>1) printf("-> freeing redshift_dependent_M_min.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing redshift_dependent_M_min.\n");
   free(ptsz->M_min_of_z_z);
   free(ptsz->M_min_of_z_M_min);
 }
@@ -2265,7 +2265,7 @@ if (ptsz->sz_verbose>1) printf("-> freeing redshift_dependent_M_min.\n");
 if (ptsz->pressure_profile == 0 || ptsz->pressure_profile == 2 )
 {
 
-if (ptsz->sz_verbose>1) printf("-> freeing pressure profile.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing pressure profile.\n");
    free(ptsz->PP_lnx);
    free(ptsz->PP_lnI);
    free(ptsz->PP_d2lnI);}
@@ -2286,7 +2286,7 @@ if( ptsz->has_pk_at_z_1h
    + ptsz->has_bk_ttg_at_z_3h
 
     >= _TRUE_){
-if (ptsz->sz_verbose>1) printf("-> freeing pk's and bk's.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing pk's and bk's.\n");
 free(ptsz->k_for_pk_hm);
 free(ptsz->pk_at_z_1h);
 free(ptsz->pk_at_z_2h);
@@ -2306,13 +2306,13 @@ free(ptsz->bk_ttg_at_z_3h);
   // if (ptsz->MF==1 && ptsz->hm_consistency==2){
   if (ptsz->MF==1){
   if (ptsz->T10_alpha_fixed==0){
-if (ptsz->sz_verbose>1) printf("-> freeing HMF alpha (T10).\n");
+if (ptsz->sz_verbose>10) printf("-> freeing HMF alpha (T10).\n");
     free(ptsz->T10_ln1pz);
     free(ptsz->T10_lnalpha);
   }
 }
 
-if (ptsz->sz_verbose>1) printf("-> freeing c-m relation.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing c-m relation.\n");
   // }
 if (ptsz->concentration_parameter == 4){
   free(ptsz->CM_redshift);
@@ -2326,14 +2326,14 @@ if (ptsz->concentration_parameter == 4){
   free(ptsz->ln_x_for_pp);
   free(ptsz->x_for_pp);
 
-if (ptsz->sz_verbose>1) printf("-> freeing cluster counts.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing cluster counts.\n");
 if (ptsz->has_sz_counts == 1){
   free(ptsz->steps_z);
   free(ptsz->steps_m);
   free(ptsz->erfs_2d_to_1d_y_array);
 }
 
-if (ptsz->sz_verbose>1) printf("-> freeing more kSZ2X.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing more kSZ2X.\n");
 if ( ptsz->has_kSZ_kSZ_gal_1h_fft
   || ptsz->has_kSZ_kSZ_gal_2h_fft
   || ptsz->has_kSZ_kSZ_gal_3h_fft
@@ -2354,7 +2354,7 @@ if ( ptsz->has_kSZ_kSZ_gal_1h_fft
   free(ptsz->array_psi_b1t_psi);
 }
 
-if (ptsz->sz_verbose>1) printf("-> freeing more kSZ2X.\n");
+if (ptsz->sz_verbose>10) printf("-> freeing more kSZ2X.\n");
 if ( ptsz->has_kSZ_kSZ_gal_1h_fft
   || ptsz->has_kSZ_kSZ_gal_2h_fft
   || ptsz->has_kSZ_kSZ_gal_3h_fft
@@ -2376,7 +2376,7 @@ if ( ptsz->has_kSZ_kSZ_gal_1h_fft
   free(ptsz->array_psi_b1gt_psi);
 }
 
-  if (ptsz->sz_verbose>1) printf("-> freeing more kSZ2X.\n");
+  if (ptsz->sz_verbose>10) printf("-> freeing more kSZ2X.\n");
 if ( ptsz->has_kSZ_kSZ_gallens_1h_fft
   || ptsz->has_kSZ_kSZ_gallens_2h_fft
   || ptsz->has_kSZ_kSZ_gallens_3h_fft
