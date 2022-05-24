@@ -694,6 +694,7 @@ if (ptsz->sz_verbose>0)
 
    abort = _FALSE_;
 
+printf("-> Starting main parallel block 2.\n");
 
 /* number of threads (always one if no openmp) */
 int number_of_threads= 1;
@@ -710,6 +711,8 @@ int number_of_threads= 1;
 int id;
 omp_lock_t lock;
 
+printf("-> Starting main parallel block 3.\n");
+
 #pragma omp parallel \
    shared(abort,pba,ptsz,ppm,pnl,lock)\
    private(tstart,tstop,Pvectsz,Pvecback,index_integrand,id)\
@@ -720,6 +723,7 @@ omp_lock_t lock;
 	   tstart = omp_get_wtime();
 #endif
 
+printf("-> Starting main parallel block 4.\n");
 	   class_alloc_parallel(Pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
        int i;
        for(i = 0; i<ptsz->tsz_size;i++) Pvectsz[i] = 0.;
