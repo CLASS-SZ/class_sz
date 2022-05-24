@@ -746,7 +746,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 	     {
 #pragma omp flush(abort)
 
-
+printf("-> Starting main parallel block 5.\n");
        Pvectsz[ptsz->index_integrand_id] = index_integrand;
        class_call_parallel(compute_sz(pba,
                                       pnl,
@@ -2559,7 +2559,7 @@ int compute_sz(struct background * pba,
 
 
 
-
+printf("-> Starting main parallel block 6.\n");
    int index_integrand = (int) Pvectsz[ptsz->index_integrand_id];
 
 
