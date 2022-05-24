@@ -723,7 +723,7 @@ printf("-> Starting main parallel block 3.\n");
 	   tstart = omp_get_wtime();
 #endif
 
-printf("-> Starting main parallel block 4.\n");
+printf("-> Starting main parallel block 4 tsz_size: %d. ptsz->number_of_integrands: %d\n",ptsz->tsz_size,ptsz->number_of_integrands);
 	   class_alloc_parallel(Pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
        int i;
        for(i = 0; i<ptsz->tsz_size;i++) Pvectsz[i] = 0.;
@@ -746,7 +746,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 	     {
 #pragma omp flush(abort)
 
-printf("-> Starting main parallel block 5.\n");
+printf("-> Starting main parallel block 5 ptsz->index_integrand_id=%d.\n",ptsz->index_integrand_id);
        Pvectsz[ptsz->index_integrand_id] = index_integrand;
 printf("-> Starting main parallel block 5b.\n");
        // class_call_parallel(compute_sz(pba,
