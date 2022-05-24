@@ -13124,7 +13124,7 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
  //   ptsz->has_200m = 1;
  // }
 
-
+if (ptsz->need_hmf){
   if (ptsz->integrate_wrt_m200m == 1 && ptsz->has_500c == 1)
     ptsz->need_m200m_to_m500c = 1;
 
@@ -13134,12 +13134,13 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
   if (ptsz->integrate_wrt_m200c == 1 && ptsz->has_200m == 1)
     ptsz->need_m200c_to_m200m = 1;
 
-  if (ptsz->integrate_wrt_m200c == 1 && ptsz->has_500c == 1)
+  if (ptsz->integrate_wrt_m200c == 1 && ptsz->has_500c == 1){
     ptsz->need_m200c_to_m500c = 1;
+  }
 
   if (ptsz->integrate_wrt_m500c == 1 && ptsz->has_200c == 1)
     ptsz->need_m500c_to_m200c = 1;
-
+}
 
    class_alloc(ptsz->ln_x_for_pp, ptsz->ln_x_size_for_pp*sizeof(double),ptsz->error_message);
    int i;
