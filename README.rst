@@ -146,6 +146,12 @@ The notebook is here:
 https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_plots_and_tutorial.ipynb
 
 
+Some tips to run on computer clsters
+------------------------------
+
+Module load, module show to get gsl and fftw. 
+
+
 
 GSL library
 ------------------------------
