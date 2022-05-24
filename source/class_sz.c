@@ -748,15 +748,24 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 
 printf("-> Starting main parallel block 5.\n");
        Pvectsz[ptsz->index_integrand_id] = index_integrand;
-       class_call_parallel(compute_sz(pba,
+       // class_call_parallel(compute_sz(pba,
+       //                                pnl,
+       //                                ppm,
+       //                                ppt,
+       //                                ptsz,
+       //                                Pvecback,
+       //                                Pvectsz),
+       //                               ptsz->error_message,
+       //                               ptsz->error_message);
+                          compute_sz(pba,
                                       pnl,
                                       ppm,
                                       ppt,
                                       ptsz,
                                       Pvecback,
-                                      Pvectsz),
-                                     ptsz->error_message,
-                                     ptsz->error_message);
+                                      Pvectsz);
+
+
 
           }
 #ifdef _OPENMP
