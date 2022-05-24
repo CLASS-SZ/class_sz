@@ -1970,7 +1970,7 @@ if (ptsz->has_dydz){
    free(ptsz->array_dydz_redshift);
    free(ptsz->array_dydz_at_z);
    }
-
+if (ptsz->sz_verbose>1) printf("-> freeing flag 12.\n");
 
 if (ptsz->need_m200c_to_m200m){
 
@@ -2007,7 +2007,7 @@ if (ptsz->need_m500c_to_m200c){
   free(ptsz->array_m500c_to_m200c_at_z_and_M);
   }
 
-
+if (ptsz->sz_verbose>1) printf("-> freeing flag 11.\n");
 
  int index_z;
    for (index_z = 0; index_z<ptsz->N_redshift_dndlnM;index_z ++){
