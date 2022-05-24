@@ -678,6 +678,9 @@ tabulate_psi_b1t(pba,pnl,ppm,ppt,ptsz);
 tabulate_psi_b2t(pba,pnl,ppm,ptsz);
 }
 
+if (ptsz->sz_verbose>0)
+  printf("-> Starting main parallel block.\n");
+
    double * Pvecback;
    double * Pvectsz;
    // double * b_l1_l2_l_1d;
