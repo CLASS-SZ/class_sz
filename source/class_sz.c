@@ -1577,6 +1577,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
   }
 
 
+  if (ptsz->sz_verbose>1) printf("-> freeing l and cl's.\n");
 
    free(ptsz->ell);
    free(ptsz->cl_sz_1h);
@@ -1729,7 +1730,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->erfs_2d_to_1d_th_array);
 
  }
-
+  if (ptsz->sz_verbose>1) printf("-> freeing kSZ2X.\n");
 
 if( ptsz->has_kSZ_kSZ_gal_1h
  || ptsz->has_kSZ_kSZ_gal_2h
