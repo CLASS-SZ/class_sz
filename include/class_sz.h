@@ -1427,6 +1427,7 @@ double * steps_m;
   short sz_verbose; /**< flag regulating the amount of information sent to standard output (none if set to zero) */
   short write_sz;  //do we need SZ quatitiies vs redshift? */
 
+  int use_planck_binned_proba;
   double bin_z_min_cluster_counts;
   double bin_z_max_cluster_counts;
   double bin_dz_cluster_counts;

@@ -1820,6 +1820,7 @@ int input_read_parameters(
       class_read_int("mass_dependent_bias",ptsz->mass_dependent_bias);
 
       class_read_int("experiment",ptsz->experiment);
+      class_read_int("use_planck_binned_proba",ptsz->use_planck_binned_proba);
       class_read_double("bin_z_min_cluster_counts",ptsz->bin_z_min_cluster_counts);
       class_read_double("bin_z_max_cluster_counts",ptsz->bin_z_max_cluster_counts);
       class_read_double("bin_dz_cluster_counts",ptsz->bin_dz_cluster_counts);
@@ -6011,6 +6012,7 @@ int input_default_params(
   ptsz->bin_z_max_cluster_counts = 1.;
   ptsz->bin_dz_cluster_counts = 0.1;
 
+  ptsz->use_planck_binned_proba = 0;
 
 
   ptsz->bin_dlog10_snr = 0.25;
@@ -6041,7 +6043,9 @@ int input_default_params(
   ptsz->ystar_ym = -0.186; //-0.186 ref. value in SZ_plus_priors.ini (cosmomc)
   ptsz->alpha_ym = 1.78; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
   // ptsz->ystar_ym = pow(10.,-0.19)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
-  ptsz->sigmaM_ym = 0.173; //innatura logsee tab 1 of planck cc 2015 paper
+  ptsz->sigmaM_ym = 0.173; //in natural log, see tab 1 of planck cc 2015 paper
+  //0.173/np.log(10.) = 0.075, in szcounts.f90. But it's wrong. It should be in natural log. 
+
   ptsz->beta_ym = 0.66;
   ptsz->thetastar = 6.997;
   ptsz->alpha_theta = 1./3.;

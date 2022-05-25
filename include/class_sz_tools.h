@@ -453,6 +453,12 @@ double get_f_tinker08_at_nu_and_z(double nu, double z, struct tszspectrum * ptsz
                       double sn,
                       double q);
 
+double erf_compl_nicola(double y,
+                        double sn,
+                        double q,
+                        double ymin,
+                        double ymax);
+
   //coding number count likelihood
   double erf_compl(double y,
                    double sn,

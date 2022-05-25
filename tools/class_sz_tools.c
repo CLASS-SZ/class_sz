@@ -7456,6 +7456,26 @@ double next_z(double z_i, double dz, struct tszspectrum * ptsz){
   return next_z;
 }
 
+double erf_compl_nicola(double y,
+                        double sn,
+                        double q,
+                        double ymin,
+                        double ymax){
+  //Completeness with error function
+  // double arg = (y - q * sn)/(sqrt(2.) * sn);
+  double arg1;
+  double ylim;
+  ylim = ymax;
+  arg1 = (y/sn-ylim)/(sqrt(2.));
+  double arg2;
+  if (ymin>q) ylim = ymin;
+  else ylim = q;
+  arg2 = (y/sn-ylim)/(sqrt(2.));
+  double erf_compl = (erf(arg2) - erf(arg1))/2.;
+  return erf_compl;
+}
+
+
 
 double erf_compl(double y,
                  double sn,

@@ -261,7 +261,10 @@ if (pcsz->has_completeness == 1){
           double y2 = ptsz->ylims[index_patches][l2];
           double y = y1 + (y2-y1)/(th2-th1)*(thp-th1);
 
-          double c2 = erf_compl(yp,y,ptsz->sn_cutoff);
+          double c2;
+
+          if (ptsz->use_planck_binned_proba == 1){
+          c2 = erf_compl(yp,y,ptsz->sn_cutoff);
           c2 *= erf_compl(yp,y,y_min);
           c2 *= (1.-erf_compl(yp,y,y_max));
 
@@ -278,6 +281,10 @@ if (pcsz->has_completeness == 1){
             c2 *= erf_compl(yp,y,y_min);
 
 
+          }}
+
+          else {
+            c2 = erf_compl_nicola(yp,y,ptsz->sn_cutoff,y_min,y_max);
           }
 
           // completeness_2d[index_m][index_z] += c2*ptsz->skyfracs[index_patches];
@@ -355,10 +362,14 @@ if (pcsz->has_completeness == 1){
 
           double c2;
 
+          if (ptsz->use_planck_binned_proba == 1){
           if (index_y==0)  {c2=erf_compl(y0,y1,ptsz->sn_cutoff)*(1.-erf_compl(y0,y1,y_max));}
           else if (index_y==pcsz->Nbins_y) {c2=erf_compl(y0,y1,y_min)*erf_compl(y0,y1,ptsz->sn_cutoff);}
           else {c2=erf_compl(y0,y1,ptsz->sn_cutoff)*erf_compl(y0,y1,y_min)*(1.-erf_compl(y0,y1,y_max));}
-
+          }
+          else{
+            c2 = erf_compl_nicola(y0,y1,ptsz->sn_cutoff,y_min,y_max);
+          }
           erfs[index1][index2]=erfs[index1][index2]+c2*ptsz->skyfracs[index_patches];
 
           erfs_2d_to_1d[index_th_y] += c2*ptsz->skyfracs[index_patches];
