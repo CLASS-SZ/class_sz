@@ -209,7 +209,7 @@ int index_m_z = 0;
   else{
 
   y_min = pow(10., pcsz->logy[index_y] - ptsz->bin_dlog10_snr_last_bin/2.);
-  y_max = pow(10., pcsz->logy[index_y] + ptsz->bin_dlog10_snr_last_bin/2.);
+  y_max = 1e100;//pow(10., pcsz->logy[index_y] + ptsz->bin_dlog10_snr_last_bin/2.);
 }
 
   if (ptsz->sz_verbose > 3){
@@ -694,7 +694,7 @@ if (ptsz->sz_verbose > 0){
   double total_counts = 0.;
   for (j=0;j<pcsz->Nbins_z;j++){
     if (j== 0) {
-        printf("snr (mid)\t");
+        printf("snr (mid) in %d bins\t",pcsz->Nbins_y+1);
         for (i=0;i<pcsz->Nbins_y+1;i++){
           printf("y=%.3e\t",pow(10,pcsz->logy[i]));
         }
