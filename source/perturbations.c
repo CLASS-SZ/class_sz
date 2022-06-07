@@ -227,6 +227,7 @@ int perturb_output_data(
           class_store_double(dataptr,tk[ppt->index_tp_delta_g],ppt->has_source_delta_g,storeidx);
           class_store_double(dataptr,tk[ppt->index_tp_delta_b],ppt->has_source_delta_b,storeidx);
           class_store_double(dataptr,tk[ppt->index_tp_delta_cdm],ppt->has_source_delta_cdm,storeidx);
+          class_store_double(dataptr,tk[ppt->index_tp_delta_m],ppt->has_source_delta_cdm,storeidx);
           class_store_double(dataptr,tk[ppt->index_tp_delta_idm_dr],ppt->has_source_delta_idm_dr,storeidx);
           class_store_double(dataptr,tk[ppt->index_tp_delta_fld],ppt->has_source_delta_fld,storeidx);
           class_store_double(dataptr,tk[ppt->index_tp_delta_ur],ppt->has_source_delta_ur,storeidx);
@@ -320,6 +321,7 @@ int perturb_output_titles(
       class_store_columntitle(titles,"d_g",_TRUE_);
       class_store_columntitle(titles,"d_b",_TRUE_);
       class_store_columntitle(titles,"d_cdm",pba->has_cdm);
+      class_store_columntitle(titles,"d_m",_TRUE_);
       class_store_columntitle(titles,"d_idm_dr",pba->has_idm_dr);
       class_store_columntitle(titles,"d_fld",pba->has_fld);
       class_store_columntitle(titles,"d_ur",pba->has_ur);
@@ -1142,6 +1144,7 @@ int perturb_indices(
         ppt->has_source_delta_tot = _TRUE_;
         ppt->has_source_delta_g = _TRUE_;
         ppt->has_source_delta_b = _TRUE_;
+        ppt->has_source_delta_m = _TRUE_;
         if (pba->has_cdm == _TRUE_)
           ppt->has_source_delta_cdm = _TRUE_;
         if (pba->has_dcdm == _TRUE_)

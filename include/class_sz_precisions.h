@@ -88,6 +88,7 @@ class_sz_ptsz_parameter(n_m_L_sat , int,102);
 class_sz_ptsz_parameter(n_nu_L_sat,int,103);
 
 class_sz_ptsz_parameter(use_xout_in_density_profile_from_enclosed_mass , int,0);
+class_sz_ptsz_parameter(tabulate_rhob_xout_at_m_and_z , int,0);
 class_sz_ptsz_parameter(n_z_m_to_xout , int,101);
 class_sz_ptsz_parameter(n_mass_m_to_xout , int,102);
 

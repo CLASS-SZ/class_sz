@@ -236,7 +236,7 @@ while( pch != NULL ) {
       // printf( "%s\n",pch );
       // strcpy(string1,pch);
       // printf( "%s\n",string1 );
-      if (strstr(pch,"d_tot") != 0)
+      if (strstr(pch,"d_m") != 0)
         ptsz->index_d_tot = idp;
       if (strstr(pch,"phi") != 0)
         ptsz->index_phi = idp;
@@ -433,7 +433,7 @@ if (ptsz->sz_verbose>1)
  }
    // printf("tabulating dndlnM quantities\n");
 
-if (ptsz->has_electron_density == 1){
+if (ptsz->has_electron_density == 1 || ptsz->tabulate_rhob_xout_at_m_and_z == 1){
 if (ptsz->use_xout_in_density_profile_from_enclosed_mass){
 if (ptsz->sz_verbose>1)
   printf("-> tabulating xout for Battaglia density profile.\n");
@@ -1960,7 +1960,7 @@ if (ptsz->has_dcib0dz){
    free(ptsz->array_dcib0dz_at_z_nu);
    }
 
-if (ptsz->has_electron_density == 1){
+if (ptsz->has_electron_density == 1 || ptsz->tabulate_rhob_xout_at_m_and_z ==  1){
 if (ptsz->sz_verbose>10) printf("-> freeing xout.\n");
 if(ptsz->use_xout_in_density_profile_from_enclosed_mass){
   free(ptsz->array_m_to_xout_redshift);
@@ -6057,6 +6057,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
                                           *galaxy_profile_at_ell_1
                                           *galaxy_profile_at_ell_1
                                           *damping_1h_term;
+
+  // printf("hmf = %.5e ug = %.5e\n",pvectsz[ptsz->index_hmf],galaxy_profile_at_ell_1);
    }
 
    else if (_gal_gal_2h_){
@@ -12798,7 +12800,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
           ptsz->has_200c = 1;
           ptsz->delta_def_electron_density = 1;
           }
-      else if (ptsz->tau_profile == 0){
+      else if (ptsz->tau_profile == 0){ // nfw profile
         if (ptsz->delta_def_electron_density == 0){
           ptsz->has_200m = 1;
         }
@@ -14120,6 +14122,7 @@ evaluate_galaxy_number_counts_fdndz(pvecback,pvectsz,pba,ptsz);
 }
 else{
 evaluate_galaxy_number_counts(pvecback,pvectsz,pba,ptsz);
+// printf("ng = %.5e\n",pvectsz[ptsz->index_phi_galaxy_counts]);
 }
 //evaluate_galaxy_number_counts_fdndz(V->pvecback,V->pvectsz,V->pba,V->ptsz);
 

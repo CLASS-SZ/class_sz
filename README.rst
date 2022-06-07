@@ -146,12 +146,17 @@ The notebook is here:
 https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_plots_and_tutorial.ipynb
 
 
-Some tips to run on computer clsters
+Some tips to run on computer clusters
 ------------------------------
 
-Module load, module show to get gsl and fftw. 
+Module load, module show to get gsl and fftw.
+At NERC/Cori, the code works with gsl/2.7. (There seems to be a problematic behavior during job submission with gsl/2.5.)
 
-
+Mpi4py needs to be correctly installed. Follow:
+https://cobaya.readthedocs.io/en/latest/installation.html#mpi-parallelization-optional-but-encouraged
+You may need to activate an environment to run the install comment.
+To make sure you use the same openmpi compiler, example:
+env MPICC=/global/common/software/m3169/cori/openmpi/4.1.2/intel/bin/mpicc python -m pip install mpi4py
 
 GSL library
 ------------------------------

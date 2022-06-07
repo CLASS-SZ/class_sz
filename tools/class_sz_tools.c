@@ -1680,7 +1680,7 @@ return r;
 
 //Routine used for
 //finding the non-linear scale
-int m_to_xout (
+int m_to_xout(
             double xout,
             double * mRES,
             double z,
@@ -4079,6 +4079,7 @@ if (l<ptsz->array_profile_ln_l[0])
 if (ptsz->normalize_gas_density_profile == 1){
   double norm = get_normalization_gas_density_profile(z_asked,m_asked,ptsz)/ptsz->f_b_gas;
   result *= 1./norm;
+  // printf("norm = %.5e\n",norm);
 }
 
  if (isnan(result) || isinf(result)){
@@ -6151,7 +6152,7 @@ if (ptsz->sz_verbose>=1){
     //if (ptsz->unwise_galaxy_sample_id == 3)
     //this_lnI = this_lnI;
 
-    // printf("lnx = %e\n",this_lnx);
+    // printf("lnx = %e\n",this_lnI);
                                     }
 
   // WIxSC and "other": just two column files
@@ -6607,6 +6608,10 @@ printf("-> Loading cosmos dndz unwise\n");
   /** Release the memory used locally */
   free(lnx);
   free(lnI);
+
+    if (ptsz->sz_verbose > 0){
+      printf("-> Cosmos dndz file for unWISE galaxies loaded.\n");
+    }
 
   return _SUCCESS_;
 }
@@ -7472,6 +7477,8 @@ double erf_compl_nicola(double y,
   else ylim = q;
   arg2 = (y/sn-ylim)/(sqrt(2.));
   double erf_compl = (erf(arg2) - erf(arg1))/2.;
+
+  if (ymax<q) erf_compl = 1e-100;
   return erf_compl;
 }
 
@@ -7709,7 +7716,7 @@ double integrand_redshift(double ln1pz, void *p){
 
 
 
-if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
+if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
      || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
      || ((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h))
      || ((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
@@ -7739,6 +7746,8 @@ if (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_g
     ) {
 
  V->pvectsz[V->ptsz->index_mean_galaxy_number_density] = evaluate_mean_galaxy_number_density_at_z(z,V->ptsz);
+ // printf("z = %.5e ng = %.5e\n",z,V->pvectsz[V->ptsz->index_mean_galaxy_number_density]);
+
 }
 
 
@@ -11748,7 +11757,7 @@ for (index_z=0; index_z<ptsz->nz_ng_bias; index_z++)
 }
 for (index_k=0; index_k<ptsz->nk_ng_bias; index_k++)
 {
-      ptsz->array_ln_k_ng_bias[index_k] = log(ppt->k[index_md][index_k]/pba->h);
+      ptsz->array_ln_k_ng_bias[index_k] = log(ppt->k[index_md][index_k]/pba->h); // in h/Mpc
 }
 
 
@@ -11823,12 +11832,44 @@ for (index_k=0; index_k<ptsz->nk_ng_bias; index_k++)
       perturb_output_data(pba,
                           ppt,
                           class_format,
-                          z,
+                          0.,
                           number_of_titles,
                           data);
 
-
+      // eq. 2 of this: https://arxiv.org/pdf/1810.13424.pdf
       double alpha_kp = data[index_k*number_of_titles+index_d_tot]/data[index_k*number_of_titles+index_phi];
+      double om0 = ptsz->Omega_m_0;
+      // _c_ in m/s
+      double c_in_km_per_s = _c_/1000.;
+      double k_in_invMpc = kp*pba->h;
+
+
+      double * pvecback;
+      double tau;
+      int first_index_back = 0;
+      class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+      class_call_parallel(background_tau_of_z(pba,z,&tau),
+                 pba->error_message,
+                 pba->error_message);
+
+      class_call_parallel(background_at_tau(pba,
+                                   tau,
+                                   pba->long_info,
+                                   pba->inter_normal,
+                                   &first_index_back,
+                                   pvecback),
+                 pba->error_message,
+                 pba->error_message);
+
+    double D = pvecback[pba->index_bg_D];
+    free(pvecback);
+
+    double D_normalized = D*5.*om0/2.;
+
+    double tk = alpha_kp*3.*om0*pow(100.*pba->h/c_in_km_per_s/k_in_invMpc,2.)/2./D_normalized;
+
 
   if (isnan(alpha_kp)||isinf(alpha_kp)){
       printf("alpha_kp = %.5e den = %.5e num = %.5e k = %.5e z = %.5e\n",
@@ -11845,7 +11886,12 @@ for (index_k=0; index_k<ptsz->nk_ng_bias; index_k++)
         printf("alpha>0\n");
         exit(0);
       }
-      ptsz->array_ln_ng_bias_at_z_and_k[index_z_k] = log(-fNL*beta_f/alpha_kp);
+
+      double res = fNL*3.*om0*pow(100.*pba->h/c_in_km_per_s/k_in_invMpc,2.)/tk/D_normalized*ptsz->delta_cSZ;
+
+      // ptsz->array_ln_ng_bias_at_z_and_k[index_z_k] = log(fNL*beta_f/alpha_kp);
+      // ptsz->array_ln_ng_bias_at_z_and_k[index_z_k] = log(res*tk*D_normalized);
+      ptsz->array_ln_ng_bias_at_z_and_k[index_z_k] = log(-tk);
       }
 
 
@@ -17460,6 +17506,8 @@ double pkl1,pkl2;
 
   index_z_k += 1;
     }
+
+    // printf("zk loop done.\n");
 
   // int i;
   // int index_num;
