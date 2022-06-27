@@ -135,6 +135,9 @@ struct tszspectrum {
   int use_hod; // Eq. 15 or 16 of KA20
   int unwise_galaxy_sample_id;
   int galaxy_sample;
+
+
+  int no_b2;
   //double unwise_m_min_cut;
 
   double sn_cutoff;

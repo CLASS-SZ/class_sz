@@ -1887,6 +1887,8 @@ int input_read_parameters(
       class_read_double("phi0SZ",ptsz->phi0SZ);
       class_read_double("eta0SZ",ptsz->eta0SZ);
 
+      class_read_int("no_b2",ptsz->no_b2);
+
       //Multplicity function Bocquet 2015
 
       class_read_double("Ap0",ptsz->Ap0);
@@ -3200,6 +3202,15 @@ int input_read_parameters(
           pnl->has_pk_cb = _TRUE_;
           pnl->has_pk_m = _TRUE_;
           ptsz->need_sigma = 1;
+          }
+      if ((strstr(string1,"tabulate_rhob_xout_at_m_and_z") != NULL) ) {
+          ptsz->tabulate_rhob_xout_at_m_and_z = 1;
+          // ppt->has_density_transfers=_TRUE_;
+          // ppt->has_pk_matter = _TRUE_;
+          // ppt->has_perturbations = _TRUE_;
+          // pnl->has_pk_cb = _TRUE_;
+          // pnl->has_pk_m = _TRUE_;
+          // ptsz->need_sigma = 1;
           }
       class_call(parser_read_string(pfc,"include_ssc",&string1,&flag1,errmsg),
                    errmsg,
@@ -6044,7 +6055,7 @@ int input_default_params(
   ptsz->alpha_ym = 1.78; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
   // ptsz->ystar_ym = pow(10.,-0.19)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
   ptsz->sigmaM_ym = 0.173; //in natural log, see tab 1 of planck cc 2015 paper
-  //0.173/np.log(10.) = 0.075, in szcounts.f90. But it's wrong. It should be in natural log. 
+  //0.173/np.log(10.) = 0.075, in szcounts.f90. But it's wrong. It should be in natural log.
 
   ptsz->beta_ym = 0.66;
   ptsz->thetastar = 6.997;
@@ -6087,6 +6098,8 @@ int input_default_params(
 
   ptsz->phi0SZ = -0.729;
   ptsz->eta0SZ = -0.243;
+
+  ptsz->no_b2 = 0;
 
   //Multplicity function Bocquet 2015
 

@@ -11231,9 +11231,11 @@ if (ptsz->check_consistency_conditions == 1){
 
   // r_m_b1g3 = 1.;
   //
-  // r_m_b2g3 = 0.;
-  // r_m_b2t2 = 0.;
-  // r_m_b2t1 = 0.;
+  if (ptsz->no_b2){
+  r_m_b2g3 = 0.;
+  r_m_b2t2 = 0.;
+  r_m_b2t1 = 0.;
+}
 
 
 

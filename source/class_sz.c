@@ -128,7 +128,8 @@ int szpowerspectrum_init(
       + ptsz->need_m500c_to_m200c
       + ptsz->need_m200m_to_m500c
       + ptsz->need_m200m_to_m200c
-      + ptsz->need_m200c_to_m200m;
+      + ptsz->need_m200c_to_m200m
+      + ptsz->tabulate_rhob_xout_at_m_and_z;
   int electron_pressure_comps = ptsz->has_sz_ps
       + ptsz->has_mean_y
       + ptsz->has_dydz
@@ -162,6 +163,9 @@ int szpowerspectrum_init(
 
    else
    {
+     if (ptsz->sz_verbose > 0)
+        printf("->Class_sz computations. Initialization.\n");
+
 
 // printf("entering szp module");
     ptsz->ln_k_size_for_tSZ = (int)(log(ptsz->k_max_for_pk_in_tSZ
@@ -179,9 +183,7 @@ int szpowerspectrum_init(
 
 
 
-
    show_preamble_messages(pba,pth,pnl,ppm,ptsz);
-
    if (ptsz->need_sigma == 1
     || ptsz->has_vrms2){
 
@@ -431,10 +433,11 @@ if (ptsz->sz_verbose>1)
 if (ptsz->sz_verbose>1)
     printf("-> nl index tabulated.\n");
  }
-   // printf("tabulating dndlnM quantities\n");
 
+
+// printf("-> tabulating xout for Battaglia density profile %d.\n",ptsz->tabulate_rhob_xout_at_m_and_z);
 if (ptsz->has_electron_density == 1 || ptsz->tabulate_rhob_xout_at_m_and_z == 1){
-if (ptsz->use_xout_in_density_profile_from_enclosed_mass){
+if (ptsz->use_xout_in_density_profile_from_enclosed_mass || ptsz->tabulate_rhob_xout_at_m_and_z){
 if (ptsz->sz_verbose>1)
   printf("-> tabulating xout for Battaglia density profile.\n");
 tabulate_m_to_xout(pba,pnl,ppm,ptsz);
@@ -446,6 +449,7 @@ if (ptsz->sz_verbose>1)
 // printf("%.5e\n",xout_test);
 }
 }
+
 
    // exit(0);
 if (
@@ -1540,7 +1544,8 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_isw_tsz
       + ptsz->has_isw_auto
       + ptsz->has_dndlnM
-      + ptsz->has_sz_counts;
+      + ptsz->has_sz_counts
+      + ptsz->tabulate_rhob_xout_at_m_and_z;
 
 
   int mass_conversions = ptsz->need_m200m_to_m200c
@@ -8333,6 +8338,10 @@ if (z>3.) z=3.;
 
   // K. Hoffmann, J. Bel and E. Gaztanaga 2015
   // 2(1+a2)(ε1 +E1)+ε2 +E2
+  // if (ptsz->no_b2){
+  //   return 0.;
+  // }
+  // else{
   double a2 = -17./21.;
   //νf(ν) = A[1+(bν)^a]ν^d*e^(−cν/2),
   double a = -ptsz->phi0SZ*pow(1.+z,-0.08);
@@ -8344,6 +8353,7 @@ if (z>3.) z=3.;
   double E1 = -2.*a/(delta_c*(pow(b*nu,-a)+1.));
   double E2 = E1*(-2.*a+2.*c*nu-4.*d+1.)/delta_c;
   return 2.*(1.+a2)*(epsilon_1+E1)+epsilon_2+E2;
+// }
   // return 0.;
                                      }
 
@@ -11448,7 +11458,6 @@ int show_preamble_messages(struct background * pba,
    class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
 
 
-
       class_call(background_tau_of_z(pba,
                                      0.0, //TBC: z1SZ?
                                      &tau
@@ -11489,8 +11498,8 @@ int show_preamble_messages(struct background * pba,
       else OmegaM = 1-pba->Omega0_fld;
 
 
+   if ( pnl->has_pk_m == _TRUE_)
       ptsz->Sigma8OmegaM_SZ = pnl->sigma8[pnl->index_pk_m]*pow(OmegaM/0.28,3./8.);
-
       //quantities at surface of last scattering
       // conformal distance to redshift of last scattering in Mpc/h
       ptsz->chi_star = pth->ra_star*pba->h;
@@ -11593,15 +11602,16 @@ if   (ptsz->has_sz_ps
          printf("->h = %e\n",pba->h);
          printf("->OmegaM (all except DE/Lambda) = %e\n",OmegaM);
          printf("->OmegaL = %e\n",1.-OmegaM);
-         printf("->sigma8 = %e\n",pnl->sigma8[pnl->index_pk_m]);
+         if ( pnl->has_pk_m == _TRUE_)
+            printf("->sigma8 = %e\n",pnl->sigma8[pnl->index_pk_m]);
          printf("->Bias B = %e\n",ptsz->HSEbias);printf("->Bias b = %e\n",1.-1./ptsz->HSEbias);
       }
 
-
-
+   if ( pnl->has_pk_m == _TRUE_){
   ptsz->sigma8_Pcb = pnl->sigma8[pnl->index_pk_cb];
    if (ptsz->sz_verbose > 0)
       printf("->sigma8_cb= %e\n",ptsz->sigma8_Pcb);
+    }
 
    //compute T_cmb*gNU at 150GHz
    double frequency_in_Hz = 150.0e9;
