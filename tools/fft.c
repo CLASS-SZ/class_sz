@@ -751,7 +751,8 @@ void compute_u_coefficients(int N, double mu, double q, double L, double kcrc, d
     if(q == 0) {
         double x = (mu+1)/2;
         double lnr, phi;
-        for(int m = 0; m <= N/2; m++) {
+        int m;
+        for(m = 0; m <= N/2; m++) {
             lngamma_4(x, m*y, &lnr, &phi);
             u[m] = polar(1.0,m*t + 2*phi);
         }
