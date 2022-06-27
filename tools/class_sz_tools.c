@@ -11777,6 +11777,7 @@ int number_of_titles = ptsz->number_of_titles;
 
 int index_d_tot = ptsz->index_d_tot;
 int index_phi = ptsz->index_phi;
+int index_psi = ptsz->index_psi;
 
 size_data = number_of_titles*ppt->k_size[index_md];
 
@@ -11834,16 +11835,23 @@ for (index_k=0; index_k<ptsz->nk_ng_bias; index_k++)
       perturb_output_data(pba,
                           ppt,
                           class_format,
-                          0.,
+                          0., // z_pk....
                           number_of_titles,
                           data);
 
-      // eq. 2 of this: https://arxiv.org/pdf/1810.13424.pdf
-      double alpha_kp = data[index_k*number_of_titles+index_d_tot]/data[index_k*number_of_titles+index_phi];
+      // eq. 3 of this: https://arxiv.org/pdf/1810.13424.pdf
+      // double alpha_kp = data[index_k*number_of_titles+index_d_tot]/data[index_k*number_of_titles+index_phi];
+      //
+      // double alpha_kp0 = data[0*number_of_titles+index_d_tot]/data[0*number_of_titles+index_phi];
+
       double om0 = ptsz->Omega_m_0;
+
+      double tk_phi_plus_psi = (data[index_k*number_of_titles+index_phi]+data[index_k*number_of_titles+index_psi])
+                                /(data[0*number_of_titles+index_phi]+data[0*number_of_titles+index_psi]);
       // _c_ in m/s
       double c_in_km_per_s = _c_/1000.;
       double k_in_invMpc = kp*pba->h;
+      // double k0_in_invMpc = exp(ptsz->array_ln_k_ng_bias[0])*pba->h;
 
 
       double * pvecback;
@@ -11870,31 +11878,31 @@ for (index_k=0; index_k<ptsz->nk_ng_bias; index_k++)
 
     double D_normalized = D*5.*om0/2.;
 
-    double tk = alpha_kp*3.*om0*pow(100.*pba->h/c_in_km_per_s/k_in_invMpc,2.)/2./D_normalized;
+    // double tk = alpha_kp*3.*om0*pow(100.*pba->h/c_in_km_per_s/k_in_invMpc,2.)/2./D_normalized;
+    // double tk0 = alpha_kp0*3.*om0*pow(100.*pba->h/c_in_km_per_s/k0_in_invMpc,2.)/2./D_normalized;
 
-
-  if (isnan(alpha_kp)||isinf(alpha_kp)){
-      printf("alpha_kp = %.5e den = %.5e num = %.5e k = %.5e z = %.5e\n",
-             alpha_kp,
+  if (isnan(tk_phi_plus_psi)||isinf(tk_phi_plus_psi) || (tk_phi_plus_psi==0)){
+      printf("alpha_kp = %.5e phi = %.5e psi = %.5e k = %.5e z = %.5e\n",
+             tk_phi_plus_psi,
              data[index_k*number_of_titles+index_phi],
-             data[index_k*number_of_titles+index_d_tot],
+             data[index_k*number_of_titles+index_psi],
              kp,
              z
            );
       exit(0);
       }
-  else{
-      if (alpha_kp>0){
-        printf("alpha>0\n");
-        exit(0);
-      }
+  // else{
+  //     if (alpha_kp>0){
+  //       printf("alpha>0\n");
+  //       exit(0);
+  //     }
 
-      double res = fNL*3.*om0*pow(100.*pba->h/c_in_km_per_s/k_in_invMpc,2.)/tk/D_normalized*ptsz->delta_cSZ;
+      double res = fNL*3.*om0*pow(100.*pba->h/c_in_km_per_s/k_in_invMpc,2.)/tk_phi_plus_psi/D_normalized*ptsz->delta_cSZ;
 
       // ptsz->array_ln_ng_bias_at_z_and_k[index_z_k] = log(fNL*beta_f/alpha_kp);
       // ptsz->array_ln_ng_bias_at_z_and_k[index_z_k] = log(res*tk*D_normalized);
-      ptsz->array_ln_ng_bias_at_z_and_k[index_z_k] = log(-tk);
-      }
+      ptsz->array_ln_ng_bias_at_z_and_k[index_z_k] = log(res);
+      // }
 
 
   }

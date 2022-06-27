@@ -3212,6 +3212,12 @@ int input_read_parameters(
           // pnl->has_pk_m = _TRUE_;
           // ptsz->need_sigma = 1;
           }
+      if ((strstr(string1,"scale_dependent_bias") != NULL) ) {
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        ptsz->need_ng_bias = 1;
+      }
+
       class_call(parser_read_string(pfc,"include_ssc",&string1,&flag1,errmsg),
                    errmsg,
                    errmsg);

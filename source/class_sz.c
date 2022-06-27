@@ -129,7 +129,8 @@ int szpowerspectrum_init(
       + ptsz->need_m200m_to_m500c
       + ptsz->need_m200m_to_m200c
       + ptsz->need_m200c_to_m200m
-      + ptsz->tabulate_rhob_xout_at_m_and_z;
+      + ptsz->tabulate_rhob_xout_at_m_and_z
+      + ptsz->need_ng_bias;
   int electron_pressure_comps = ptsz->has_sz_ps
       + ptsz->has_mean_y
       + ptsz->has_dydz
@@ -219,6 +220,7 @@ int index_md;
 int index_title;
 int index_d_tot;
 int index_phi;
+int index_psi;
 
 class_call(perturb_output_titles(pba,ppt,class_format,titles),
            ptsz->error_message,
@@ -242,6 +244,8 @@ while( pch != NULL ) {
         ptsz->index_d_tot = idp;
       if (strstr(pch,"phi") != 0)
         ptsz->index_phi = idp;
+      if (strstr(pch,"psi") != 0)
+        ptsz->index_psi = idp;
       pch = strtok(NULL,"\t");
       idp+=1;
    }
@@ -1545,7 +1549,8 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_isw_auto
       + ptsz->has_dndlnM
       + ptsz->has_sz_counts
-      + ptsz->tabulate_rhob_xout_at_m_and_z;
+      + ptsz->tabulate_rhob_xout_at_m_and_z
+      + ptsz->need_ng_bias;
 
 
   int mass_conversions = ptsz->need_m200m_to_m200c
@@ -7849,179 +7854,179 @@ else{
 return result;
 }
 
-
-double get_ng_bias_contribution_at_z_and_k(double z,
-                                           double k,
-                                           double bh,
-                                           struct background * pba,
-                                           struct perturbs * ppt,
-                                           struct tszspectrum * ptsz){
-
-double fNL = ptsz->fNL;
-// double bh = get_first_order_bias_at_z_and_nu(z,nu,ptsz);
-double beta_f = 2.*ptsz->delta_cSZ*(bh-1.);
-double alpha_k = 1.;
-
-
-// start collecting transfer functions
-char titles[_MAXTITLESTRINGLENGTH_]={0};
-double * data;
-int size_data;
-int number_of_titles = ptsz->number_of_titles;
-int index_md;
-int index_title;
-int index_d_tot = ptsz->index_d_tot;
-int index_phi = ptsz->index_phi;
-
-// class_call(perturb_output_titles(pba,ppt,class_format,titles),
-//            ptsz->error_message,
-//            ptsz->error_message);
 //
-// // printf("ok titles diones\n");
+// double get_ng_bias_contribution_at_z_and_k(double z,
+//                                            double k,
+//                                            double bh,
+//                                            struct background * pba,
+//                                            struct perturbs * ppt,
+//                                            struct tszspectrum * ptsz){
 //
-// number_of_titles = get_number_of_titles(titles);
-// // printf("number_of_titles  = %d %s\n",
-// // number_of_titles,
-// // titles);
-// char *pch;
-// pch = strtok(titles,"\t");
-// int id = 0;
+// double fNL = ptsz->fNL;
+// // double bh = get_first_order_bias_at_z_and_nu(z,nu,ptsz);
+// double beta_f = 2.*ptsz->delta_cSZ*(bh-1.);
+// double alpha_k = 1.;
 //
-// while( pch != NULL ) {
-//       // printf( "%s\n",pch );
-//       // strcpy(string1,pch);
-//       // printf( "%s\n",string1 );
-//       if (strstr(pch,"d_tot") != 0)
-//         index_d_tot = id;
-//       if (strstr(pch,"phi") != 0)
-//         index_phi = id;
-//       pch = strtok(NULL,"\t");
-//       id+=1;
-//    }
-
-// printf("index_d_tot = %d index_phi = %d\n",
-//       index_d_tot,index_phi);
-// exit(0);
 //
-// for (index_title=0; index_title<number_of_titles; index_title++){
-// printf("title %s\n",pch);
+// // start collecting transfer functions
+// char titles[_MAXTITLESTRINGLENGTH_]={0};
+// double * data;
+// int size_data;
+// int number_of_titles = ptsz->number_of_titles;
+// int index_md;
+// int index_title;
+// int index_d_tot = ptsz->index_d_tot;
+// int index_phi = ptsz->index_phi;
+//
+// // class_call(perturb_output_titles(pba,ppt,class_format,titles),
+// //            ptsz->error_message,
+// //            ptsz->error_message);
+// //
+// // // printf("ok titles diones\n");
+// //
+// // number_of_titles = get_number_of_titles(titles);
+// // // printf("number_of_titles  = %d %s\n",
+// // // number_of_titles,
+// // // titles);
+// // char *pch;
+// // pch = strtok(titles,"\t");
+// // int id = 0;
+// //
+// // while( pch != NULL ) {
+// //       // printf( "%s\n",pch );
+// //       // strcpy(string1,pch);
+// //       // printf( "%s\n",string1 );
+// //       if (strstr(pch,"d_tot") != 0)
+// //         index_d_tot = id;
+// //       if (strstr(pch,"phi") != 0)
+// //         index_phi = id;
+// //       pch = strtok(NULL,"\t");
+// //       id+=1;
+// //    }
+//
+// // printf("index_d_tot = %d index_phi = %d\n",
+// //       index_d_tot,index_phi);
+// // exit(0);
+// //
+// // for (index_title=0; index_title<number_of_titles; index_title++){
+// // printf("title %s\n",pch);
+// // }
+//
+// // printf("finnished printing titles\n");
+//
+// index_md=ppt->index_md_scalars;
+// size_data = number_of_titles*ppt->k_size[index_md];
+//
+// if (ppt->ic_size[index_md] != 1){
+//   printf("Please run with only one type of initial conditions to avoid confusion in class_sz.\n");
+//   exit(0);
 // }
-
-// printf("finnished printing titles\n");
-
-index_md=ppt->index_md_scalars;
-size_data = number_of_titles*ppt->k_size[index_md];
-
-if (ppt->ic_size[index_md] != 1){
-  printf("Please run with only one type of initial conditions to avoid confusion in class_sz.\n");
-  exit(0);
-}
-
-class_alloc(data, sizeof(double)*ppt->ic_size[index_md]*size_data, ptsz->error_message);
-// z = 1.;
-perturb_output_data(pba,
-                    ppt,
-                    class_format,
-                    z,
-                    number_of_titles,
-                    data);
-
-int index_k;
-double alpha_kp;
-double kp;
-double * array_ln_alpha_k;
-double * array_ln_k;
-class_alloc(array_ln_alpha_k,sizeof(double *)*ppt->k_size[index_md],ptsz->error_message);
-class_alloc(array_ln_k,sizeof(double *)*ppt->k_size[index_md],ptsz->error_message);
-// printf("starting loop k_size = %d\n",ppt->k_size[index_md]);
-for (index_k=0; index_k<ppt->k_size[index_md]; index_k++){
-// index_title = index_d_tot;
-// printf("d_tot k = %.5e h/Mpc data = %.5e\n",
-// ppt->k[index_md][index_tau]/pba->h,
-// data[index_tau*number_of_titles+index_title]);
-// index_title = index_phi;
-// printf("phi k = %.5e h/Mpc data = %.5e\n",
-// ppt->k[index_md][index_tau]/pba->h,
-// data[index_tau*number_of_titles+index_title]);
-kp = ppt->k[index_md][index_k]/pba->h;
-alpha_kp = data[index_k*number_of_titles+index_d_tot]/data[index_k*number_of_titles+index_phi];
-
-// printf("%d %d %d %d %d %d\n",
-// index_k*number_of_titles+index_d_tot,
-// index_k*number_of_titles+index_phi,
-// size_data,
-// index_k,
-// index_d_tot,
-// index_phi
-// );
-double lp = data[index_k*number_of_titles+index_d_tot]/data[index_k*number_of_titles+index_phi];
-
-if (isnan(alpha_kp)||isinf(alpha_kp)){
-  printf("alpha_kp = %.5e den = %.5e num = %.5e k = %.5e z = %.5e\n",
-         alpha_kp,
-         data[index_k*number_of_titles+index_phi],
-         data[index_k*number_of_titles+index_d_tot],
-         kp,
-         z
-       );
-  exit(0);
-}
-else{
-if (lp>0){
-  printf("alpha>0\n");
-  exit(0);
-}
-array_ln_alpha_k[index_k] = log(-alpha_kp);
-}
-
-// array_ln_alpha_k[index_k] = log(10);
-
-array_ln_k[index_k] = log(kp);
-
-// printf("alpha k = %.5e h/Mpc data = %.5e\n",
-// array_ln_k[index_k],
-// array_ln_alpha_k[index_k]);
-// printf("\n");
-
-
-}
-
-
-
-// exit(0);
-
-free(data);
-
-
-
-
-
-double b_ng;
-
-if ((log(k)<array_ln_k[0]) || (log(k)>array_ln_k[ppt->k_size[index_md]-1])){
-  if (ptsz->sz_verbose>3)
-    printf("k outside interpolation assigning bng=0\n");
-  b_ng = 0.;
-}
-else{
-alpha_k =  exp(pwl_value_1d(ppt->k_size[index_md],
-                            array_ln_k,
-                            array_ln_alpha_k,
-                            log(k)));
-b_ng = fNL*beta_f/alpha_k;
-    }
-
-free(array_ln_alpha_k);
-free(array_ln_k);
-// printf("z k bng = %.5e %.5e %.5e\n",z,k,b_ng);
-
-double bng_int = get_scale_dependent_bias_at_z_and_k(z,k,bh,ptsz);
-printf("z = %.5e fNL = %.5e beta_f = %.5e k = %.5e alpha_k = %.5e b_ng = %.5e b_ng (interp.) = %.5e\n",z,fNL,beta_f,k,alpha_k,b_ng,bng_int);
-// exit(0);
-return b_ng;
-
-                                           }
-
+//
+// class_alloc(data, sizeof(double)*ppt->ic_size[index_md]*size_data, ptsz->error_message);
+// // z = 1.;
+// perturb_output_data(pba,
+//                     ppt,
+//                     class_format,
+//                     z,
+//                     number_of_titles,
+//                     data);
+//
+// int index_k;
+// double alpha_kp;
+// double kp;
+// double * array_ln_alpha_k;
+// double * array_ln_k;
+// class_alloc(array_ln_alpha_k,sizeof(double *)*ppt->k_size[index_md],ptsz->error_message);
+// class_alloc(array_ln_k,sizeof(double *)*ppt->k_size[index_md],ptsz->error_message);
+// // printf("starting loop k_size = %d\n",ppt->k_size[index_md]);
+// for (index_k=0; index_k<ppt->k_size[index_md]; index_k++){
+// // index_title = index_d_tot;
+// // printf("d_tot k = %.5e h/Mpc data = %.5e\n",
+// // ppt->k[index_md][index_tau]/pba->h,
+// // data[index_tau*number_of_titles+index_title]);
+// // index_title = index_phi;
+// // printf("phi k = %.5e h/Mpc data = %.5e\n",
+// // ppt->k[index_md][index_tau]/pba->h,
+// // data[index_tau*number_of_titles+index_title]);
+// kp = ppt->k[index_md][index_k]/pba->h;
+// alpha_kp = data[index_k*number_of_titles+index_d_tot]/data[index_k*number_of_titles+index_phi];
+//
+// // printf("%d %d %d %d %d %d\n",
+// // index_k*number_of_titles+index_d_tot,
+// // index_k*number_of_titles+index_phi,
+// // size_data,
+// // index_k,
+// // index_d_tot,
+// // index_phi
+// // );
+// double lp = data[index_k*number_of_titles+index_d_tot]/data[index_k*number_of_titles+index_phi];
+//
+// if (isnan(alpha_kp)||isinf(alpha_kp)){
+//   printf("alpha_kp = %.5e den = %.5e num = %.5e k = %.5e z = %.5e\n",
+//          alpha_kp,
+//          data[index_k*number_of_titles+index_phi],
+//          data[index_k*number_of_titles+index_d_tot],
+//          kp,
+//          z
+//        );
+//   exit(0);
+// }
+// else{
+// if (lp>0){
+//   printf("alpha>0\n");
+//   exit(0);
+// }
+// array_ln_alpha_k[index_k] = log(-alpha_kp);
+// }
+//
+// // array_ln_alpha_k[index_k] = log(10);
+//
+// array_ln_k[index_k] = log(kp);
+//
+// // printf("alpha k = %.5e h/Mpc data = %.5e\n",
+// // array_ln_k[index_k],
+// // array_ln_alpha_k[index_k]);
+// // printf("\n");
+//
+//
+// }
+//
+//
+//
+// // exit(0);
+//
+// free(data);
+//
+//
+//
+//
+//
+// double b_ng;
+//
+// if ((log(k)<array_ln_k[0]) || (log(k)>array_ln_k[ppt->k_size[index_md]-1])){
+//   if (ptsz->sz_verbose>3)
+//     printf("k outside interpolation assigning bng=0\n");
+//   b_ng = 0.;
+// }
+// else{
+// alpha_k =  exp(pwl_value_1d(ppt->k_size[index_md],
+//                             array_ln_k,
+//                             array_ln_alpha_k,
+//                             log(k)));
+// b_ng = fNL*beta_f/alpha_k;
+//     }
+//
+// free(array_ln_alpha_k);
+// free(array_ln_k);
+// // printf("z k bng = %.5e %.5e %.5e\n",z,k,b_ng);
+//
+// double bng_int = get_scale_dependent_bias_at_z_and_k(z,k,bh,ptsz);
+// printf("z = %.5e fNL = %.5e beta_f = %.5e k = %.5e alpha_k = %.5e b_ng = %.5e b_ng (interp.) = %.5e\n",z,fNL,beta_f,k,alpha_k,b_ng,bng_int);
+// // exit(0);
+// return b_ng;
+//
+//                                            }
+//
 
 
 

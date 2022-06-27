@@ -269,6 +269,7 @@ struct tszspectrum {
 
   int index_d_tot;
   int index_phi;
+  int index_psi;
   int number_of_titles;
 
   int need_m200m_to_m200c;
