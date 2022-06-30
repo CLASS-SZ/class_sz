@@ -1319,6 +1319,7 @@ struct tszspectrum {
   double A_ym;
   double B_ym;
   double C_ym;
+  double m_pivot_ym;
 
   double alpha_theta;
   int y_m_relation;

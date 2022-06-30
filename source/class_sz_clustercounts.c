@@ -241,7 +241,7 @@ if (pcsz->has_completeness == 1){
 
         // if not planck, apply the mismatch function with C correction
         if (ptsz->experiment == 1){
-          double m_pivot = 3.e14*0.7;
+          double m_pivot = ptsz->m_pivot_ym;//*0.7;
           double m_over_m_pivot_500c = mp/m_pivot;
           thp = thp*pow(m_over_m_pivot_500c,ptsz->C_ym);
         }

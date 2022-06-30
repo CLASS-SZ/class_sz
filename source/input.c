@@ -1872,6 +1872,7 @@ int input_read_parameters(
       class_read_double("A_ym",ptsz->A_ym);
       class_read_double("B_ym",ptsz->B_ym);
       class_read_double("C_ym",ptsz->C_ym);
+      class_read_double("m_pivot_ym [Msun/h]",ptsz->m_pivot_ym);
 
       //For the computation of sigma2
       class_read_int("ndim_masses",ptsz->ndimSZ);
