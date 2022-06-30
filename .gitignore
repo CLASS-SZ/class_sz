@@ -212,3 +212,5 @@ class_sz_test_ola.ini
 class_sz_test_mat.ini
 class_sz_test_mat.ini
 sz_auxiliary_files/noise_curves/advact_lensing_noise.dat
+python/dist/classy_sz-2.9.4-py3.8-macosx-10.9-x86_64.egg
+python/classy_sz.egg-info/PKG-INFO
