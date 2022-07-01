@@ -4015,8 +4015,10 @@ result = rho0*rho_crit*p_x*f_b;
 return result;
 }
 
+double get_HI_density_profile_at_k_M_z(double k_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
 
-
+return 0.;
+}
 
 double get_gas_density_profile_at_k_M_z(double l_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
@@ -8056,6 +8058,8 @@ if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at
  || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))
  || ((V->ptsz->has_pk_bb_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_bb_at_z_1h))
  || ((V->ptsz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_bb_at_z_2h))
+ || ((V->ptsz->has_pk_HI_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_HI_at_z_1h))
+ || ((V->ptsz->has_pk_HI_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_HI_at_z_2h))
  || ((V->ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_1h))
  || ((V->ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_2h))
  || ((V->ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_3h))
@@ -8068,7 +8072,9 @@ kl = V->ptsz->k_for_pk_hm[index_k];
 
 if (((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
  || ((V->ptsz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_bb_at_z_2h))
- || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))){
+ || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))
+ || ((V->ptsz->has_pk_HI_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_HI_at_z_2h))
+){
    result *= get_pk_lin_at_k_and_z(kl,z,V->pba,V->ppm,V->pnl,V->ptsz);
    // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
    // result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
@@ -8433,6 +8439,8 @@ if(_pk_at_z_1h_
 || _pk_gg_at_z_2h_
 || _pk_bb_at_z_1h_
 || _pk_bb_at_z_2h_
+|| _pk_HI_at_z_1h_
+|| _pk_HI_at_z_2h_
 || _bk_at_z_1h_
 || _bk_at_z_2h_
 || _bk_at_z_3h_
@@ -11272,6 +11280,7 @@ if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_bb_at_z_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_HI_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
@@ -11286,6 +11295,11 @@ if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
      double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
      double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
      r += bmin_umin;
+     if (isnan(bmin_umin)){
+      printf("nan in concistency condition bmin = %.5e n = %.5e I0 = %.5e b = %.5e.\n",
+    bmin,pvectsz[ptsz->index_hmf],I0,pvectsz[ptsz->index_halo_bias]);
+      exit(0);
+    }
     }
 // all of the 1-halo cases
 else {
@@ -11307,6 +11321,7 @@ if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_bb_at_z_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_HI_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
@@ -17972,13 +17987,13 @@ double get_completeness_at_z_and_M(double z_asked, double m_asked, double * comp
   double m = log(m_asked);
   // printf("z = %.3e m = %.3e logm = %.4e mmin = %.4e mmax = %,4e\n",z_asked,m_asked,m,ptsz->steps_m[0],ptsz->steps_m[ptsz->nsteps_m-1]);
   if (m < ptsz->steps_m[0])
-    m = ptsz->steps_m[0];
+    return 1e-100;//m = ptsz->steps_m[0];
   if (m > ptsz->steps_m[ptsz->nsteps_m-1])
-    m = ptsz->steps_m[ptsz->nsteps_m-1];
+    return 1e-100;//m = ptsz->steps_m[ptsz->nsteps_m-1];
   if (z < ptsz->steps_z[0])
-    z = ptsz->steps_z[0];
+    return 1e-100;//z = ptsz->steps_z[0];
   if (z > ptsz->steps_z[ptsz->nsteps_z-1])
-    z = ptsz->steps_z[ptsz->nsteps_z-1];
+    return 1e-100;//z = ptsz->steps_z[ptsz->nsteps_z-1];
  return exp(pwl_interp_2d(ptsz->nsteps_m,
                           ptsz->nsteps_z,
                           ptsz->steps_m,
@@ -18478,15 +18493,15 @@ double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum 
   double m = log(m_asked);
 
  if (z<ptsz->array_z_dndlnM[0])
-    z = ptsz->array_z_dndlnM[0];
+      return 1e-100;//z = ptsz->array_z_dndlnM[0];
  if (z>ptsz->array_z_dndlnM[ptsz->n_z_dndlnM-1])
-    z = ptsz->array_z_dndlnM[ptsz->n_z_dndlnM-1];
+      return 1e-100;//z = ptsz->array_z_dndlnM[ptsz->n_z_dndlnM-1];
 
  if (m<ptsz->array_m_dndlnM[0])
-    m = ptsz->array_m_dndlnM[0];
+    return 1e-100;//m = ptsz->array_m_dndlnM[0];
 
  if (m>ptsz->array_m_dndlnM[ptsz->n_m_dndlnM-1])
-    m =  ptsz->array_m_dndlnM[ptsz->n_m_dndlnM-1];
+      return 1e-100;//m =  ptsz->array_m_dndlnM[ptsz->n_m_dndlnM-1];
 
 
  return exp(pwl_interp_2d(ptsz->n_z_dndlnM,
@@ -18675,6 +18690,7 @@ double Eh = pvecback[pba->index_bg_H]/pba->H0;
 double d_A = pvecback[pba->index_bg_ang_distance]*pba->h;
 double mp_bias = m/ptsz->HSEbias;
 double thetastar2 = ptsz->thetastar * pow(H0/70.,-2./3.);
+// below the pivot mass should always be 3e14*h, that fixes the theta_star normalisation
 double theta500_for_mp_at_zp =  thetastar2 * pow(mp_bias/3.e14* (100./H0),ptsz->alpha_theta);
 theta500_for_mp_at_zp *=    pow(Eh,-2./3) *pow(100.*d_A/(500.0*H0),-1.);
 double thp = theta500_for_mp_at_zp;
@@ -18757,11 +18773,12 @@ if (ptsz->y_m_relation == 1){
           f_rel = 1.;
         }
         else{
-          double t = -0.00848*pow(mp_bias/(3.e14*70./(pba->h*100.))*Eh,-0.585);
+          double t = -0.00848*pow(mp_bias/(ptsz->m_pivot_ym*70./(pba->h*100.))*Eh,-0.585);
           f_rel = 1. + 3.79*t -28.2*t*t;
         }
 
-        yp = A*pow(Eh,2.)*pow(mp_bias/(3.e14*pba->h),1.+B)*f_rel;
+
+        yp = A*pow(Eh,2.)*pow(mp_bias/(ptsz->m_pivot_ym*pba->h),1.+B)*f_rel;
 
         // double a = -1.29389e-01;
         // double b = 9.991387e-01;
@@ -18780,7 +18797,7 @@ else if (ptsz->y_m_relation == 0){
         double ystar2 = pow(10.,ptsz->ystar_ym)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
 
         ystar2 *=  pow(H0/70.,-2.+ptsz->alpha_ym);
-        double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/3.e14* (100./H0),ptsz->alpha_ym);
+        double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/ptsz->m_pivot_ym* (100./H0),ptsz->alpha_ym);
         y500_for_mp_at_zp *=   pow(Eh,ptsz->beta_ym) *pow(100.*d_A/(500.0*H0),-2.);
 
 

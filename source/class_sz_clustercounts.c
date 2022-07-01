@@ -241,7 +241,7 @@ if (pcsz->has_completeness == 1){
 
         // if not planck, apply the mismatch function with C correction
         if (ptsz->experiment == 1){
-          double m_pivot = ptsz->m_pivot_ym;//*0.7;
+          double m_pivot = ptsz->m_pivot_ym*pba->h;// 1. convert to msun/h //not that it used to be *0.7 as in hasselfield paper.
           double m_over_m_pivot_500c = mp/m_pivot;
           thp = thp*pow(m_over_m_pivot_500c,ptsz->C_ym);
         }
@@ -411,7 +411,7 @@ if (pcsz->has_completeness == 1){
 
         // if not planck, apply the mismatch function with C correction
         if (ptsz->experiment == 1){
-          double m_pivot = 3.e14*0.7;
+          double m_pivot = ptsz->m_pivot_ym*pba->h;
           double m_over_m_pivot_500c = mp/m_pivot;
           thp = thp*pow(m_over_m_pivot_500c,ptsz->C_ym);
         }
@@ -526,9 +526,16 @@ if (pcsz->has_completeness == 1){
 // exit(0);
 
 
-        if (int_comp > fsky) int_comp=fsky;
-        if (int_comp <= 0. || isinf(int_comp) || isnan(int_comp)) int_comp=1.e-300;
-
+        if (int_comp > fsky) {
+          printf("int_comp larger than fsky.\n");
+          int_comp=fsky;
+        }
+        if (int_comp <= 0. || isinf(int_comp) || isnan(int_comp)) {
+        if (int_comp <= 0.) printf("int_comp<0.\n");
+        if (isinf(int_comp) <= 0.) printf("int_comp=infty.\n");
+        if (isnan(int_comp) <= 0.) printf("comp=nan.\n");
+        int_comp=1.e-300;
+}
 
         // completeness_2d[index_m][index_z] =int_comp;
         completeness_2d_to_1d[index_m_z] = log(int_comp);

@@ -19,6 +19,8 @@
 #define _pk_gg_at_z_2h_ ((ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_gg_at_z_2h))
 #define _pk_bb_at_z_1h_ ((ptsz->has_pk_bb_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_bb_at_z_1h))
 #define _pk_bb_at_z_2h_ ((ptsz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_bb_at_z_2h))
+#define _pk_HI_at_z_1h_ ((ptsz->has_pk_HI_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_HI_at_z_1h))
+#define _pk_HI_at_z_2h_ ((ptsz->has_pk_HI_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_HI_at_z_2h))
 #define _bk_at_z_1h_ ((ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_1h))
 #define _bk_at_z_2h_ ((ptsz->has_bk_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_2h))
 #define _bk_at_z_3h_ ((ptsz->has_bk_at_z_3h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_3h))
@@ -156,6 +158,8 @@ struct tszspectrum {
   double * pk_gg_at_z_2h;
   double * pk_bb_at_z_1h;
   double * pk_bb_at_z_2h;
+  double * pk_HI_at_z_1h;
+  double * pk_HI_at_z_2h;
   double * bk_at_z_1h;
   double * bk_at_z_2h;
   double * bk_at_z_3h;
@@ -261,6 +265,10 @@ struct tszspectrum {
   int delta_def_electron_pressure;
   int delta_def_electron_density;
 
+
+  int delta_def_HI_pressure;
+  int delta_def_HI_density;
+
   int bispec_conf_id;
 
   double M_min_ng_bar;
@@ -299,6 +307,7 @@ struct tszspectrum {
 
   int has_electron_pressure;
   int has_electron_density;
+  int has_HI_density;
   int has_galaxy;
   int has_matter_density;
   int has_lensing;
@@ -319,6 +328,7 @@ struct tszspectrum {
 
   int index_has_electron_pressure;
   int index_has_electron_density;
+  int index_has_HI_density;
   int index_has_galaxy;
   int index_has_matter_density;
   int index_has_lensing;
@@ -379,6 +389,17 @@ struct tszspectrum {
   int index_md_pk_bb_at_z_2h;
   int index_integrand_id_pk_bb_at_z_2h_first;
   int index_integrand_id_pk_bb_at_z_2h_last;
+
+  int has_pk_HI_at_z_1h;
+  int index_md_pk_HI_at_z_1h;
+  int index_integrand_id_pk_HI_at_z_1h_first;
+  int index_integrand_id_pk_HI_at_z_1h_last;
+
+  int has_pk_HI_at_z_2h;
+  int index_md_pk_HI_at_z_2h;
+  int index_integrand_id_pk_HI_at_z_2h_first;
+  int index_integrand_id_pk_HI_at_z_2h_last;
+
 
 
   int has_pk_gg_at_z_1h;
@@ -894,16 +915,22 @@ struct tszspectrum {
   int  index_mass_for_matter_density;
   int  index_mass_for_electron_pressure;
   int  index_mass_for_electron_density;
+  int  index_mass_for_HI_pressure;
+  int  index_mass_for_HI_density;
   int  index_concentration_for_galaxies;
   int  index_concentration_for_cib;
   int  index_concentration_for_matter_density;
   int  index_concentration_for_electron_pressure;
   int  index_concentration_for_electron_density;
+  int  index_concentration_for_HI_pressure;
+  int  index_concentration_for_HI_density;
   int  index_radius_for_galaxies;
   int  index_radius_for_cib;
   int  index_radius_for_matter_density;
   int  index_radius_for_electron_pressure;
   int  index_radius_for_electron_density;
+  int  index_radius_for_HI_pressure;
+  int  index_radius_for_HI_density;
   int  index_r500c;
   int  index_Rh;
   int  index_mf;

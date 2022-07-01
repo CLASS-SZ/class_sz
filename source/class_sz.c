@@ -41,6 +41,8 @@ int szpowerspectrum_init(
       + ptsz->has_pk_gg_at_z_2h
       + ptsz->has_pk_bb_at_z_1h
       + ptsz->has_pk_bb_at_z_2h
+      + ptsz->has_pk_HI_at_z_1h
+      + ptsz->has_pk_HI_at_z_2h
       + ptsz->has_bk_at_z_1h
       + ptsz->has_bk_at_z_2h
       + ptsz->has_bk_at_z_3h
@@ -1480,6 +1482,8 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_pk_gg_at_z_2h
       + ptsz->has_pk_bb_at_z_1h
       + ptsz->has_pk_bb_at_z_2h
+      + ptsz->has_pk_HI_at_z_1h
+      + ptsz->has_pk_HI_at_z_2h
       + ptsz->has_bk_at_z_1h
       + ptsz->has_bk_at_z_2h
       + ptsz->has_bk_at_z_3h
@@ -1590,7 +1594,11 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
   if (ptsz->sz_verbose>10) printf("-> freeing l and cl's.\n");
 
    free(ptsz->ell);
+   if (ptsz->sz_verbose>10) printf("-> freeing l and cl's sz\n");
+
    free(ptsz->cl_sz_1h);
+   if (ptsz->sz_verbose>10) printf("-> freeing l and cl's isw_lens\n");
+
    free(ptsz->frequencies_for_cib);
    free(ptsz->cib_monopole);
    free(ptsz->cl_isw_lens);
@@ -1606,6 +1614,8 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->cl_gal_lensmag_2h);
    free(ptsz->cl_gal_gallens_1h);
    free(ptsz->cl_gal_gallens_2h);
+   if (ptsz->sz_verbose>10) printf("-> freeing l and cl's gallens_gallens\n");
+
    free(ptsz->cl_gallens_gallens_1h);
    free(ptsz->cl_gallens_gallens_2h);
    free(ptsz->cl_gallens_lens_1h);
@@ -1626,7 +1636,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->cl_lens_lensmag_hf);
    free(ptsz->cl_tSZ_gal_1h);
    free(ptsz->cl_tSZ_gal_2h);
-
+  if (ptsz->sz_verbose>10) printf("-> freeing l and cl's cib.\n");
    int index_nu;
    int index_nu_prime;
    for (index_nu=0;index_nu<ptsz->cib_frequency_list_num;index_nu++){
@@ -2288,6 +2298,8 @@ if( ptsz->has_pk_at_z_1h
    + ptsz->has_pk_gg_at_z_2h
    + ptsz->has_pk_bb_at_z_1h
    + ptsz->has_pk_bb_at_z_2h
+   + ptsz->has_pk_HI_at_z_1h
+   + ptsz->has_pk_HI_at_z_2h
    + ptsz->has_bk_at_z_1h
    + ptsz->has_bk_at_z_2h
    + ptsz->has_bk_at_z_3h
@@ -2304,6 +2316,8 @@ free(ptsz->pk_gg_at_z_1h);
 free(ptsz->pk_gg_at_z_2h);
 free(ptsz->pk_bb_at_z_1h);
 free(ptsz->pk_bb_at_z_2h);
+free(ptsz->pk_HI_at_z_1h);
+free(ptsz->pk_HI_at_z_2h);
 free(ptsz->bk_at_z_1h);
 free(ptsz->bk_at_z_2h);
 free(ptsz->bk_at_z_3h);
@@ -2935,6 +2949,18 @@ int compute_sz(struct background * pba,
          Pvectsz[ptsz->index_has_electron_density] = 1;
          Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_bb_at_z_2h_first);
          if (ptsz->sz_verbose > 0) printf("computing pk_bb^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
+       }
+     else if (index_integrand>=ptsz->index_integrand_id_pk_HI_at_z_1h_first && index_integrand <= ptsz->index_integrand_id_pk_HI_at_z_1h_last && ptsz->has_pk_HI_at_z_1h){
+        Pvectsz[ptsz->index_md] = ptsz->index_md_pk_HI_at_z_1h;
+        Pvectsz[ptsz->index_has_HI_density] = 1;
+        Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_HI_at_z_1h_first);
+        if (ptsz->sz_verbose > 0) printf("computing pk_HI^1h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
+      }
+      else if (index_integrand>=ptsz->index_integrand_id_pk_HI_at_z_2h_first && index_integrand <= ptsz->index_integrand_id_pk_HI_at_z_2h_last && ptsz->has_pk_HI_at_z_2h){
+         Pvectsz[ptsz->index_md] = ptsz->index_md_pk_HI_at_z_2h;
+         Pvectsz[ptsz->index_has_HI_density] = 1;
+         Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_HI_at_z_2h_first);
+         if (ptsz->sz_verbose > 0) printf("computing pk_HI^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
        }
      else if (index_integrand>=ptsz->index_integrand_id_bk_at_z_1h_first && index_integrand <= ptsz->index_integrand_id_bk_at_z_1h_last && ptsz->has_bk_at_z_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_bk_at_z_1h;
@@ -3751,6 +3777,18 @@ if (_pk_bb_at_z_2h_){
 
 }
 
+ if (_pk_HI_at_z_1h_){
+  int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
+  ptsz->pk_HI_at_z_1h[index_k] = Pvectsz[ptsz->index_integral];
+
+}
+
+if (_pk_HI_at_z_2h_){
+ int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
+ ptsz->pk_HI_at_z_2h[index_k] = Pvectsz[ptsz->index_integral];
+
+}
+
  if (_bk_at_z_1h_){
   int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
   ptsz->bk_at_z_1h[index_k] = Pvectsz[ptsz->index_integral];
@@ -4300,6 +4338,7 @@ double integrand_at_m_and_z(double logM,
    double r_delta_lensing, c_delta_lensing, m_delta_lensing;
    double r_delta_cib, c_delta_cib, m_delta_cib;
    double r_delta_electron_density, c_delta_electron_density, m_delta_electron_density; //(ksz)
+   double r_delta_HI_density, c_delta_HI_density, m_delta_HI_density; //(HI)
 
    m_delta_gal = pvectsz[ptsz->index_mass_for_galaxies];
    r_delta_gal = pvectsz[ptsz->index_radius_for_galaxies];
@@ -4312,6 +4351,10 @@ double integrand_at_m_and_z(double logM,
    m_delta_electron_density = pvectsz[ptsz->index_mass_for_electron_density];
    r_delta_electron_density = pvectsz[ptsz->index_radius_for_electron_density];
    c_delta_electron_density = pvectsz[ptsz->index_concentration_for_electron_density];
+
+   m_delta_HI_density = pvectsz[ptsz->index_mass_for_HI_density];
+   r_delta_HI_density = pvectsz[ptsz->index_radius_for_HI_density];
+   c_delta_HI_density = pvectsz[ptsz->index_concentration_for_HI_density];
 
    m_delta_matter = pvectsz[ptsz->index_mass_for_matter_density];
    r_delta_matter = pvectsz[ptsz->index_radius_for_matter_density];
@@ -4340,6 +4383,8 @@ double integrand_at_m_and_z(double logM,
     || _pk_gg_at_z_2h_
     || _pk_bb_at_z_1h_
     || _pk_bb_at_z_2h_
+    || _pk_HI_at_z_1h_
+    || _pk_HI_at_z_2h_
     || _bk_at_z_1h_
     || _bk_at_z_2h_
     || _bk_at_z_3h_
@@ -5705,6 +5750,28 @@ pvectsz[ptsz->index_integrand] *= flag_conf;
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                       *pvectsz[ptsz->index_halo_bias]
                                       *gas_profile_at_k_1
+                                      *pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,-1);
+   }
+
+  else if (_pk_HI_at_z_1h_){
+
+    double HI_profile_at_k_1 = get_HI_density_profile_at_k_M_z(kl,m_delta_HI_density,z,ptsz);
+    // printf("%.5e %.5e %.5e\n",pvectsz[ptsz->index_hmf],HI_profile_at_k_1,damping_1h_term);
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *HI_profile_at_k_1
+                                      *HI_profile_at_k_1
+                                      *pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,-2)
+                                      *damping_1h_term;
+   }
+
+  else if (_pk_HI_at_z_2h_){
+
+    double HI_profile_at_k_1 = get_HI_density_profile_at_k_M_z(kl,m_delta_HI_density,z,ptsz);
+    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
+
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *HI_profile_at_k_1
                                       *pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,-1);
    }
 
@@ -8110,6 +8177,8 @@ int evaluate_halo_bias(double * pvecback,
      || _pk_gg_at_z_2h_
      || _pk_bb_at_z_1h_
      || _pk_bb_at_z_2h_
+     || _pk_HI_at_z_1h_
+     || _pk_HI_at_z_2h_
      || _bk_at_z_1h_
      || _bk_at_z_2h_
      || _bk_at_z_3h_
@@ -8749,6 +8818,15 @@ if (pvectsz[ptsz->index_has_electron_density] == 1){
     pvectsz[ptsz->index_has_500c] = 1;
 }
 
+if (pvectsz[ptsz->index_has_HI_density] == 1){
+  if (ptsz->delta_def_HI_density == 0)
+    pvectsz[ptsz->index_has_200m] = 1;
+  else if (ptsz->delta_def_HI_density == 1)
+    pvectsz[ptsz->index_has_200c] = 1;
+  else if (ptsz->delta_def_HI_density == 2)
+    pvectsz[ptsz->index_has_500c] = 1;
+}
+
 if (pvectsz[ptsz->index_has_electron_pressure] == 1){
   if (ptsz->delta_def_electron_pressure == 0)
     pvectsz[ptsz->index_has_200m] = 1;
@@ -9053,7 +9131,7 @@ pvectsz[ptsz->index_c500c] = get_c500c_at_m_and_z(pvectsz[ptsz->index_m500c],z,p
    double r_delta_lensing, c_delta_lensing, m_delta_lensing;
    double r_delta_cib, c_delta_cib, m_delta_cib;
    double r_delta_electron_density, c_delta_electron_density, m_delta_electron_density; //(ksz)
-
+   double r_delta_HI_density, c_delta_HI_density, m_delta_HI_density;
 
 
 if (pvectsz[ptsz->index_has_electron_pressure] == 1){
@@ -9102,6 +9180,31 @@ if (pvectsz[ptsz->index_has_electron_density] == 1){
   pvectsz[ptsz->index_concentration_for_electron_density] = c_delta_electron_density;
 
  }// end electron density
+
+if (pvectsz[ptsz->index_has_HI_density] == 1){
+  if (ptsz->delta_def_HI_density == 0){
+    m_delta_HI_density = pvectsz[ptsz->index_m200m];
+    r_delta_HI_density = pvectsz[ptsz->index_r200m];
+    c_delta_HI_density = pvectsz[ptsz->index_c200m];
+  }
+  else if (ptsz->delta_def_HI_density == 1){
+    m_delta_HI_density = pvectsz[ptsz->index_m200c];
+    r_delta_HI_density = pvectsz[ptsz->index_r200c];
+    c_delta_HI_density = pvectsz[ptsz->index_c200c];
+  }
+  else if (ptsz->delta_def_HI_density == 2){
+    m_delta_HI_density = pvectsz[ptsz->index_m500c];
+    r_delta_HI_density = pvectsz[ptsz->index_r500c];
+    c_delta_HI_density = pvectsz[ptsz->index_c500c];
+  }
+
+  pvectsz[ptsz->index_mass_for_HI_density] = m_delta_HI_density;
+  pvectsz[ptsz->index_radius_for_HI_density] = r_delta_HI_density;
+  pvectsz[ptsz->index_concentration_for_HI_density] = c_delta_HI_density;
+
+}// end HI density
+
+
 
 // matter density
 if (pvectsz[ptsz->index_has_matter_density] == 1 || pvectsz[ptsz->index_has_lensing] == 1){
@@ -11155,6 +11258,8 @@ if ((ptsz->has_pk_at_z_1h
   +  ptsz->has_pk_gg_at_z_2h
   +  ptsz->has_pk_bb_at_z_1h
   +  ptsz->has_pk_bb_at_z_2h
+  +  ptsz->has_pk_HI_at_z_1h
+  +  ptsz->has_pk_HI_at_z_2h
   >= _TRUE_) && ptsz->write_sz>0){
       sprintf(Filepath,
                   "%s%s%s",
@@ -11173,7 +11278,9 @@ if ((ptsz->has_pk_at_z_1h
       ptsz->pk_gg_at_z_1h[index_k],
       ptsz->pk_gg_at_z_2h[index_k],
       ptsz->pk_bb_at_z_1h[index_k],
-      ptsz->pk_bb_at_z_2h[index_k]
+      ptsz->pk_bb_at_z_2h[index_k],
+      ptsz->pk_HI_at_z_1h[index_k],
+      ptsz->pk_HI_at_z_2h[index_k]
     );
     }
       fclose(fp);
@@ -12284,6 +12391,35 @@ printf("ell = %e\t\t cl_lens_lensmag (hf) = %e \n",ptsz->ell[index_l],ptsz->cl_l
 }
 }
 
+if (ptsz->has_pk_HI_at_z_1h){
+printf("\n\n");
+printf("#######################################\n");
+printf("HI x HI power spectrum (1h):\n");
+printf("#######################################\n");
+printf("\n");
+int index_k;
+printf("ptsz->n_k_for_pk_hm = %d\n",ptsz->n_k_for_pk_hm);
+for (index_k=0;index_k<ptsz->n_k_for_pk_hm;index_k++){
+
+printf("k = %e [h/Mpc]\t\t pk_HI (1h) = %e  [Mpc/h]^3\n",ptsz->k_for_pk_hm[index_k],ptsz->pk_HI_at_z_1h[index_k]);
+}
+}
+
+if (ptsz->has_pk_HI_at_z_2h){
+printf("\n\n");
+printf("#######################################\n");
+printf("HI x HI power spectrum (2h):\n");
+printf("#######################################\n");
+printf("\n");
+int index_k;
+for (index_k=0;index_k<ptsz->n_k_for_pk_hm;index_k++){
+
+printf("k = %e [h/Mpc]\t\t pk_HI (2h) = %e  [Mpc/h]^3\n",ptsz->k_for_pk_hm[index_k],ptsz->pk_HI_at_z_2h[index_k]);
+}
+}
+
+
+
 if (ptsz->has_kSZ_kSZ_1h){
 printf("\n\n");
 printf("########################################################################\n");
@@ -12984,6 +13120,23 @@ if (
 
   }
 
+if (ptsz->has_pk_HI_at_z_1h
+   +ptsz->has_pk_HI_at_z_2h){
+     ptsz->has_HI_density = 1;
+
+     if (ptsz->delta_def_HI_density == 0){
+       ptsz->has_200m = 1;
+     }
+     else if (ptsz->delta_def_HI_density == 1){
+       ptsz->has_200c = 1;
+     }
+     else if (ptsz->delta_def_HI_density == 2){
+       ptsz->has_500c = 1;
+     }
+
+
+   }
+
 
 if (ptsz->has_kSZ_kSZ_lensmag_1halo
   +ptsz->has_gal_lens_1h
@@ -13218,7 +13371,8 @@ if (ptsz->need_hmf){
 
    ptsz->index_has_electron_pressure = ptsz->index_integrate_wrt_m200m + 1;
    ptsz->index_has_electron_density = ptsz->index_has_electron_pressure + 1;
-   ptsz->index_has_galaxy = ptsz->index_has_electron_density + 1;
+   ptsz->index_has_HI_density = ptsz->index_has_electron_density + 1;
+   ptsz->index_has_galaxy = ptsz->index_has_HI_density + 1;
    ptsz->index_has_matter_density = ptsz->index_has_galaxy + 1;
    ptsz->index_has_lensing = ptsz->index_has_matter_density + 1;
    ptsz->index_has_cib = ptsz->index_has_lensing + 1;
@@ -13302,6 +13456,8 @@ if (ptsz->need_hmf){
      + ptsz->has_pk_gg_at_z_2h
      + ptsz->has_pk_bb_at_z_1h
      + ptsz->has_pk_bb_at_z_2h
+     + ptsz->has_pk_HI_at_z_1h
+     + ptsz->has_pk_HI_at_z_2h
      + ptsz->has_bk_at_z_1h
      + ptsz->has_bk_at_z_2h
      + ptsz->has_bk_at_z_3h
@@ -13313,6 +13469,7 @@ if (ptsz->need_hmf){
      class_alloc(ptsz->k_for_pk_hm,
                        10*sizeof(double),
                        ptsz->error_message);
+    // printf("%.5e %.5e %.5e\n",ptsz->k_max_for_pk_hm,ptsz->k_min_for_pk_hm,ptsz->dlnk_for_pk_hm);
      ptsz->n_k_for_pk_hm = (int)((log(ptsz->k_max_for_pk_hm) - log(ptsz->k_min_for_pk_hm))/ptsz->dlnk_for_pk_hm) + 1;
 
      class_realloc(ptsz->k_for_pk_hm,
@@ -13327,6 +13484,8 @@ if (ptsz->need_hmf){
    class_alloc(ptsz->pk_gg_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    class_alloc(ptsz->pk_bb_at_z_1h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    class_alloc(ptsz->pk_bb_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
+   class_alloc(ptsz->pk_HI_at_z_1h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
+   class_alloc(ptsz->pk_HI_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    for (i=0;i<ptsz->n_k_for_pk_hm;i++){
     ptsz->k_for_pk_hm[i] = exp(log(ptsz->k_min_for_pk_hm)+i*ptsz->dlnk_for_pk_hm);
     ptsz->pk_at_z_1h[i] = 0.;
@@ -13335,6 +13494,8 @@ if (ptsz->need_hmf){
     ptsz->pk_gg_at_z_2h[i] = 0.;
     ptsz->pk_bb_at_z_1h[i] = 0.;
     ptsz->pk_bb_at_z_2h[i] = 0.;
+    ptsz->pk_HI_at_z_1h[i] = 0.;
+    ptsz->pk_HI_at_z_2h[i] = 0.;
    }
 
    class_alloc(ptsz->bk_at_z_1h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
@@ -13732,6 +13893,15 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
    ptsz->index_integrand_id_pk_bb_at_z_2h_last = ptsz->index_integrand_id_pk_bb_at_z_2h_first + ptsz->n_k_for_pk_hm - 1;
    last_index_integrand_id =  ptsz->index_integrand_id_pk_bb_at_z_2h_last;
  }
+
+   if(ptsz->has_pk_HI_at_z_1h+ptsz->has_pk_HI_at_z_2h >= _TRUE_){
+   ptsz->index_integrand_id_pk_HI_at_z_1h_first = last_index_integrand_id + 1;
+   ptsz->index_integrand_id_pk_HI_at_z_1h_last = ptsz->index_integrand_id_pk_HI_at_z_1h_first + ptsz->n_k_for_pk_hm - 1;
+   ptsz->index_integrand_id_pk_HI_at_z_2h_first = ptsz->index_integrand_id_pk_HI_at_z_1h_last + 1;
+   ptsz->index_integrand_id_pk_HI_at_z_2h_last = ptsz->index_integrand_id_pk_HI_at_z_2h_first + ptsz->n_k_for_pk_hm - 1;
+   last_index_integrand_id =  ptsz->index_integrand_id_pk_HI_at_z_2h_last;
+ }
+
    if(ptsz->has_bk_at_z_1h+ptsz->has_bk_at_z_2h +ptsz->has_bk_at_z_3h >= _TRUE_){
    ptsz->index_integrand_id_bk_at_z_1h_first = last_index_integrand_id + 1;
    ptsz->index_integrand_id_bk_at_z_1h_last = ptsz->index_integrand_id_bk_at_z_1h_first + ptsz->n_k_for_pk_hm - 1;

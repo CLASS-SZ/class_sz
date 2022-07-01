@@ -1872,7 +1872,7 @@ int input_read_parameters(
       class_read_double("A_ym",ptsz->A_ym);
       class_read_double("B_ym",ptsz->B_ym);
       class_read_double("C_ym",ptsz->C_ym);
-      class_read_double("m_pivot_ym [Msun/h]",ptsz->m_pivot_ym);
+      class_read_double("m_pivot_ym [Msun]",ptsz->m_pivot_ym);
 
       //For the computation of sigma2
       class_read_int("ndim_masses",ptsz->ndimSZ);
@@ -2139,6 +2139,28 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
+
+      if ((strstr(string1,"pk_HI_at_z_1h") != NULL) ) {
+        ptsz->has_pk_HI_at_z_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"pk_HI_at_z_2h") != NULL) ) {
+        ptsz->has_pk_HI_at_z_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+
 
       if ((strstr(string1,"pk_at_z_1h") != NULL) ) {
         ptsz->has_pk_at_z_1h =_TRUE_;
@@ -5003,6 +5025,8 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
       + ptsz->has_pk_gg_at_z_2h
       + ptsz->has_pk_bb_at_z_1h
       + ptsz->has_pk_bb_at_z_2h
+      + ptsz->has_pk_HI_at_z_1h
+      + ptsz->has_pk_HI_at_z_2h
       + ptsz->has_bk_at_z_1h
       + ptsz->has_bk_at_z_2h
       + ptsz->has_bk_at_z_3h
@@ -6092,6 +6116,9 @@ int input_default_params(
   ptsz->k_max_for_pk_in_tSZ = 1.e1; //#default 5
 
   ptsz->z_for_pk_hm = 1.;
+  ptsz->k_min_for_pk_hm = 1e-2;
+  ptsz->k_min_for_pk_hm = 1e1;
+  ptsz->dlnk_for_pk_hm = 0.1;
 
 
   //Multplicity function Tinker 2010
@@ -6223,6 +6250,8 @@ int input_default_params(
   ptsz->has_pk_gg_at_z_2h = _FALSE_;
   ptsz->has_pk_bb_at_z_1h = _FALSE_;
   ptsz->has_pk_bb_at_z_2h = _FALSE_;
+  ptsz->has_pk_HI_at_z_1h = _FALSE_;
+  ptsz->has_pk_HI_at_z_2h = _FALSE_;
   ptsz->has_bk_at_z_1h = _FALSE_;
   ptsz->has_bk_at_z_2h = _FALSE_;
   ptsz->has_bk_at_z_3h = _FALSE_;
@@ -6417,6 +6446,7 @@ int input_default_params(
   ptsz->need_lensing_noise=0;
   ptsz->has_electron_pressure = 0;
   ptsz->has_electron_density = 0;
+  ptsz->has_HI_density = 0;
   ptsz->has_galaxy = 0;
   ptsz->has_matter_density = 0;
   ptsz->has_lensing = 0;

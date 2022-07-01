@@ -574,6 +574,10 @@ int tabulate_mean_galaxy_number_density(struct background * pba,
                                         struct primordial * ppm,
                                         struct tszspectrum * ptsz);
 
+
+double get_HI_density_profile_at_k_M_z(double k_asked, double m_asked, double z_asked, struct tszspectrum * ptsz);
+
+
 double get_gas_density_profile_at_k_M_z(double l_asked,
                                     double m_asked,
                                     double z_asked,
