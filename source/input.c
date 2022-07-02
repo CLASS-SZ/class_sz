@@ -6097,6 +6097,8 @@ int input_default_params(
   ptsz->A_ym = 4.95e-5;
   ptsz->C_ym = -0.025;
 
+  ptsz->m_pivot_ym = 3e14;
+
   ptsz->temperature_mass_relation=0;
 
   //For the computation of sigma2
