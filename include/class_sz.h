@@ -347,6 +347,7 @@ struct tszspectrum {
   int create_ref_trispectrum_for_cobaya;
 
 
+  int use_m500c_in_ym_relation;
   //int has_sz_te_y_y;
   int has_sz_cov_N_Cl;
 

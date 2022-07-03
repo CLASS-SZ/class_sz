@@ -252,15 +252,26 @@ if (pcsz->has_completeness == 1){
 
         //compute_theta_and_y_at_z_and_m
         double mp= exp(pcsz->steps_m[index_m]);
+
+        double m500c = 0.;
+        double m_ym = mp;
+
+
+
         if (ptsz->integrate_wrt_m200m == 1){
-          mp = get_m200m_to_m500c_at_z_and_M(zp,mp,ptsz);
+          m500c = get_m200m_to_m500c_at_z_and_M(zp,mp,ptsz);
         }
         if (ptsz->integrate_wrt_m200c == 1){
-          mp = get_m200c_to_m500c_at_z_and_M(zp,mp,ptsz);
+          m500c = get_m200c_to_m500c_at_z_and_M(zp,mp,ptsz);
         }
         //
-        double yp = get_y_at_m_and_z(mp,zp,ptsz,pba);
-        double thp = get_theta_at_m_and_z(mp,zp,ptsz,pba);
+
+        if (ptsz->use_m500c_in_ym_relation == 1){
+        m_ym = m500c;
+        }
+
+        double yp = get_y_at_m_and_z(m_ym,zp,ptsz,pba);
+        double thp = get_theta_at_m_and_z(m500c,zp,ptsz,pba);
         //Planck
 
         // if not planck, apply the mismatch function with C correction
