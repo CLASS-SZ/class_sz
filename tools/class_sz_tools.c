@@ -4037,7 +4037,7 @@ double get_gas_density_profile_at_k_M_z(double l_asked, double m_asked, double z
 
 if (l<ptsz->array_profile_ln_l[0])
     return 0.;//l = ptsz->array_profile_ln_l[0];
- if (l>ptsz->array_profile_ln_l[ptsz->n_ell_density_profile-1])
+ if (l>ptsz->array_profile_ln_l[ptsz->n_k_density_profile-1])
     return 0.;//l =  ptsz->array_profile_ln_l[ptsz->n_ell_density_profile-1];
 
 
@@ -4046,7 +4046,7 @@ if (l<ptsz->array_profile_ln_l[0])
   // find the closest l's in the grid:
   int id_l_low;
   int id_l_up;
-  int n_ell = ptsz->n_ell_density_profile;
+  int n_ell = ptsz->n_k_density_profile;
   int n_m = ptsz->n_m_density_profile;
   int n_z = ptsz->n_z_density_profile;
   r8vec_bracket(n_ell,ptsz->array_profile_ln_l,l,&id_l_low,&id_l_up);
@@ -4148,6 +4148,8 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 + ptsz->has_kSZ_kSZ_2h
 + ptsz->has_pk_bb_at_z_1h
 + ptsz->has_pk_bb_at_z_2h
++ ptsz->has_pk_em_at_z_1h
++ ptsz->has_pk_em_at_z_2h
 + ptsz->has_kSZ_kSZ_tSZ_3h
 + ptsz->has_bk_ttg_at_z_1h
 + ptsz->has_bk_ttg_at_z_2h
@@ -4167,7 +4169,7 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 
  double ln_ell_min = log(ptsz->k_min_gas_density_profile);
  double ln_ell_max = log(ptsz->k_max_gas_density_profile);
- int n_ell = ptsz->n_ell_density_profile;
+ int n_ell = ptsz->n_k_density_profile;
  int n_m = ptsz->n_m_density_profile;
  int n_z = ptsz->n_z_density_profile;
 
@@ -8058,6 +8060,8 @@ if( ((V->ptsz->has_pk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at
  || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))
  || ((V->ptsz->has_pk_bb_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_bb_at_z_1h))
  || ((V->ptsz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_bb_at_z_2h))
+ || ((V->ptsz->has_pk_em_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_em_at_z_1h))
+ || ((V->ptsz->has_pk_em_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_em_at_z_2h))
  || ((V->ptsz->has_pk_HI_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_HI_at_z_1h))
  || ((V->ptsz->has_pk_HI_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_HI_at_z_2h))
  || ((V->ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_bk_at_z_1h))
@@ -8072,6 +8076,7 @@ kl = V->ptsz->k_for_pk_hm[index_k];
 
 if (((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
  || ((V->ptsz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_bb_at_z_2h))
+ || ((V->ptsz->has_pk_em_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_em_at_z_2h))
  || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))
  || ((V->ptsz->has_pk_HI_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_HI_at_z_2h))
 ){
@@ -8439,6 +8444,8 @@ if(_pk_at_z_1h_
 || _pk_gg_at_z_2h_
 || _pk_bb_at_z_1h_
 || _pk_bb_at_z_2h_
+|| _pk_em_at_z_1h_
+|| _pk_em_at_z_2h_
 || _pk_HI_at_z_1h_
 || _pk_HI_at_z_2h_
 || _bk_at_z_1h_
@@ -11261,6 +11268,49 @@ if (ptsz->check_consistency_conditions == 1){
 
   }
 
+  else if((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_em_at_z_2h){
+
+  double r_m_1;
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_1 += bmin_umin;
+
+  }
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+  double r_m_2;
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_2 += bmin_umin;
+
+  }
+
+r = r_m_1*r_m_2;
+  }
+
+
 
   else {
   r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
@@ -11280,6 +11330,7 @@ if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_bb_at_z_2h)
+ // || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_em_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_HI_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
@@ -11321,6 +11372,7 @@ if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_bb_at_z_2h)
+ // || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_em_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_HI_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)

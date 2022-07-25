@@ -19,6 +19,8 @@
 #define _pk_gg_at_z_2h_ ((ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_gg_at_z_2h))
 #define _pk_bb_at_z_1h_ ((ptsz->has_pk_bb_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_bb_at_z_1h))
 #define _pk_bb_at_z_2h_ ((ptsz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_bb_at_z_2h))
+#define _pk_em_at_z_1h_ ((ptsz->has_pk_em_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_em_at_z_1h))
+#define _pk_em_at_z_2h_ ((ptsz->has_pk_em_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_em_at_z_2h))
 #define _pk_HI_at_z_1h_ ((ptsz->has_pk_HI_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_HI_at_z_1h))
 #define _pk_HI_at_z_2h_ ((ptsz->has_pk_HI_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_HI_at_z_2h))
 #define _bk_at_z_1h_ ((ptsz->has_bk_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_bk_at_z_1h))
@@ -158,6 +160,8 @@ struct tszspectrum {
   double * pk_gg_at_z_2h;
   double * pk_bb_at_z_1h;
   double * pk_bb_at_z_2h;
+  double * pk_em_at_z_1h;
+  double * pk_em_at_z_2h;
   double * pk_HI_at_z_1h;
   double * pk_HI_at_z_2h;
   double * bk_at_z_1h;
@@ -390,6 +394,17 @@ struct tszspectrum {
   int index_md_pk_bb_at_z_2h;
   int index_integrand_id_pk_bb_at_z_2h_first;
   int index_integrand_id_pk_bb_at_z_2h_last;
+
+  int has_pk_em_at_z_1h;
+  int index_md_pk_em_at_z_1h;
+  int index_integrand_id_pk_em_at_z_1h_first;
+  int index_integrand_id_pk_em_at_z_1h_last;
+
+  int has_pk_em_at_z_2h;
+  int index_md_pk_em_at_z_2h;
+  int index_integrand_id_pk_em_at_z_2h_first;
+  int index_integrand_id_pk_em_at_z_2h_last;
+
 
   int has_pk_HI_at_z_1h;
   int index_md_pk_HI_at_z_1h;
@@ -1553,7 +1568,7 @@ double * steps_m;
 
   int truncate_wrt_rvir;
 
-
+  int no_tt_noise_in_kSZ2X_cov;
 
   double * CM_redshift;
   double * CM_logM;

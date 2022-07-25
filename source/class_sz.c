@@ -41,6 +41,8 @@ int szpowerspectrum_init(
       + ptsz->has_pk_gg_at_z_2h
       + ptsz->has_pk_bb_at_z_1h
       + ptsz->has_pk_bb_at_z_2h
+      + ptsz->has_pk_em_at_z_1h
+      + ptsz->has_pk_em_at_z_2h
       + ptsz->has_pk_HI_at_z_1h
       + ptsz->has_pk_HI_at_z_2h
       + ptsz->has_bk_at_z_1h
@@ -915,7 +917,13 @@ for (i=0;i<N;i++){
 l[i] = exp(log(l_min)+i/(N-1.)*(log(l_max)-log(l_min)));
 cl_tt_lensed_fft[i] = pwl_value_1d(ple->l_lensed_max-2,l_lensed,cl_tt_lensed,l[i]);
 cl_ksz_fft[i] = pwl_value_1d(ptsz->ksz_template_size,ptsz->l_ksz_template,ptsz->cl_ksz_template,l[i]);
+
+if (ptsz->no_tt_noise_in_kSZ2X_cov){
+cl_noise_fft[i] = 1e-100;
+}
+else{
 cl_noise_fft[i] = pwl_value_1d(ptsz->unbinned_nl_tt_size,ptsz->unbinned_nl_tt_ell,ptsz->unbinned_nl_tt_n_ell,l[i]);
+}
 
 cl_ksz_fft[i] = cl_ksz_fft[i]/l[i]/(l[i]+1.)*2.*_PI_*1e-12/pba->T_cmb/pba->T_cmb;
 cl_noise_fft[i] = cl_noise_fft[i]*1e-12/pba->T_cmb/pba->T_cmb;
@@ -1482,6 +1490,8 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_pk_gg_at_z_2h
       + ptsz->has_pk_bb_at_z_1h
       + ptsz->has_pk_bb_at_z_2h
+      + ptsz->has_pk_em_at_z_1h
+      + ptsz->has_pk_em_at_z_2h
       + ptsz->has_pk_HI_at_z_1h
       + ptsz->has_pk_HI_at_z_2h
       + ptsz->has_bk_at_z_1h
@@ -1818,6 +1828,8 @@ if(ptsz->has_kSZ_kSZ_gal_1h
 || ptsz->has_kSZ_kSZ_tSZ_3h
 || ptsz->has_pk_bb_at_z_1h
 || ptsz->has_pk_bb_at_z_2h
+|| ptsz->has_pk_em_at_z_1h
+|| ptsz->has_pk_em_at_z_2h
 || ptsz->has_bk_ttg_at_z_1h
 || ptsz->has_bk_ttg_at_z_2h
 || ptsz->has_bk_ttg_at_z_3h
@@ -1829,7 +1841,7 @@ if(ptsz->has_kSZ_kSZ_gal_1h
   free(ptsz->array_profile_ln_1pz);
 
 if (ptsz->sz_verbose>10) printf("-> freeing density profile.\n");
- int n_ell = ptsz->n_ell_density_profile; //hard coded
+ int n_ell = ptsz->n_k_density_profile; //hard coded
  int index_l;
 for (index_l=0;
      index_l<n_ell;
@@ -2298,6 +2310,8 @@ if( ptsz->has_pk_at_z_1h
    + ptsz->has_pk_gg_at_z_2h
    + ptsz->has_pk_bb_at_z_1h
    + ptsz->has_pk_bb_at_z_2h
+   + ptsz->has_pk_em_at_z_1h
+   + ptsz->has_pk_em_at_z_2h
    + ptsz->has_pk_HI_at_z_1h
    + ptsz->has_pk_HI_at_z_2h
    + ptsz->has_bk_at_z_1h
@@ -2316,6 +2330,8 @@ free(ptsz->pk_gg_at_z_1h);
 free(ptsz->pk_gg_at_z_2h);
 free(ptsz->pk_bb_at_z_1h);
 free(ptsz->pk_bb_at_z_2h);
+free(ptsz->pk_em_at_z_1h);
+free(ptsz->pk_em_at_z_2h);
 free(ptsz->pk_HI_at_z_1h);
 free(ptsz->pk_HI_at_z_2h);
 free(ptsz->bk_at_z_1h);
@@ -2949,6 +2965,20 @@ int compute_sz(struct background * pba,
          Pvectsz[ptsz->index_has_electron_density] = 1;
          Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_bb_at_z_2h_first);
          if (ptsz->sz_verbose > 0) printf("computing pk_bb^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
+       }
+     else if (index_integrand>=ptsz->index_integrand_id_pk_em_at_z_1h_first && index_integrand <= ptsz->index_integrand_id_pk_em_at_z_1h_last && ptsz->has_pk_em_at_z_1h){
+        Pvectsz[ptsz->index_md] = ptsz->index_md_pk_em_at_z_1h;
+        Pvectsz[ptsz->index_has_electron_density] = 1;
+        Pvectsz[ptsz->index_has_matter_density] = 1;
+        Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_em_at_z_1h_first);
+        if (ptsz->sz_verbose > 0) printf("computing pk_bb^1h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
+      }
+      else if (index_integrand>=ptsz->index_integrand_id_pk_em_at_z_2h_first && index_integrand <= ptsz->index_integrand_id_pk_em_at_z_2h_last && ptsz->has_pk_em_at_z_2h){
+         Pvectsz[ptsz->index_md] = ptsz->index_md_pk_em_at_z_2h;
+         Pvectsz[ptsz->index_has_electron_density] = 1;
+         Pvectsz[ptsz->index_has_matter_density] = 1;
+         Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_em_at_z_2h_first);
+         if (ptsz->sz_verbose > 0) printf("computing pk_em^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
        }
      else if (index_integrand>=ptsz->index_integrand_id_pk_HI_at_z_1h_first && index_integrand <= ptsz->index_integrand_id_pk_HI_at_z_1h_last && ptsz->has_pk_HI_at_z_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_pk_HI_at_z_1h;
@@ -3777,6 +3807,18 @@ if (_pk_bb_at_z_2h_){
 
 }
 
+ if (_pk_em_at_z_1h_){
+  int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
+  ptsz->pk_em_at_z_1h[index_k] = Pvectsz[ptsz->index_integral];
+
+}
+
+if (_pk_em_at_z_2h_){
+ int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
+ ptsz->pk_em_at_z_2h[index_k] = Pvectsz[ptsz->index_integral];
+
+}
+
  if (_pk_HI_at_z_1h_){
   int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
   ptsz->pk_HI_at_z_1h[index_k] = Pvectsz[ptsz->index_integral];
@@ -4383,6 +4425,8 @@ double integrand_at_m_and_z(double logM,
     || _pk_gg_at_z_2h_
     || _pk_bb_at_z_1h_
     || _pk_bb_at_z_2h_
+    || _pk_em_at_z_1h_
+    || _pk_em_at_z_2h_
     || _pk_HI_at_z_1h_
     || _pk_HI_at_z_2h_
     || _bk_at_z_1h_
@@ -5751,6 +5795,44 @@ pvectsz[ptsz->index_integrand] *= flag_conf;
                                       *pvectsz[ptsz->index_halo_bias]
                                       *gas_profile_at_k_1
                                       *pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,-1);
+   }
+
+  else if (_pk_em_at_z_1h_){
+
+    double gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,ptsz);
+
+    evaluate_matter_density_profile(kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *density_profile_at_k_1
+                                      *gas_profile_at_k_1
+                                      *ptsz->f_free
+                                      *pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,-1)
+                                      *damping_1h_term;
+   }
+
+  else if (_pk_em_at_z_2h_){
+ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
+    double gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,ptsz);
+    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
+
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *gas_profile_at_k_1
+                                      *ptsz->f_free
+                                      *pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,-1);
+                                    }
+if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
+    evaluate_matter_density_profile(kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
+    double density_profile_at_k_1 = pvectsz[ptsz->index_density_profile];
+    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *density_profile_at_k_1;
+
+}
+
    }
 
   else if (_pk_HI_at_z_1h_){
@@ -8177,6 +8259,8 @@ int evaluate_halo_bias(double * pvecback,
      || _pk_gg_at_z_2h_
      || _pk_bb_at_z_1h_
      || _pk_bb_at_z_2h_
+     || _pk_em_at_z_1h_
+     || _pk_em_at_z_2h_
      || _pk_HI_at_z_1h_
      || _pk_HI_at_z_2h_
      || _bk_at_z_1h_
@@ -11258,6 +11342,8 @@ if ((ptsz->has_pk_at_z_1h
   +  ptsz->has_pk_gg_at_z_2h
   +  ptsz->has_pk_bb_at_z_1h
   +  ptsz->has_pk_bb_at_z_2h
+  +  ptsz->has_pk_em_at_z_1h
+  +  ptsz->has_pk_em_at_z_2h
   +  ptsz->has_pk_HI_at_z_1h
   +  ptsz->has_pk_HI_at_z_2h
   >= _TRUE_) && ptsz->write_sz>0){
@@ -11271,7 +11357,7 @@ if ((ptsz->has_pk_at_z_1h
 
       int index_k;
       for (index_k=0;index_k<ptsz->n_k_for_pk_hm;index_k++){
-      fprintf(fp,"%.4e\t%.4e\t%.4e\t%.4e\t%.4e\t%.4e\t%.4e\n",
+      fprintf(fp,"%.4e\t%.4e\t%.4e\t%.4e\t%.4e\t%.4e\t%.4e\t%.4e\t%.4e\t%.4e\t%.4e\n",
       ptsz->k_for_pk_hm[index_k],
       ptsz->pk_at_z_1h[index_k],
       ptsz->pk_at_z_2h[index_k],
@@ -11280,7 +11366,9 @@ if ((ptsz->has_pk_at_z_1h
       ptsz->pk_bb_at_z_1h[index_k],
       ptsz->pk_bb_at_z_2h[index_k],
       ptsz->pk_HI_at_z_1h[index_k],
-      ptsz->pk_HI_at_z_2h[index_k]
+      ptsz->pk_HI_at_z_2h[index_k],
+      ptsz->pk_em_at_z_1h[index_k],
+      ptsz->pk_em_at_z_2h[index_k]
     );
     }
       fclose(fp);
@@ -13065,8 +13153,11 @@ if (ptsz->has_gal_cib_1h
 
   }
 
-if (ptsz->has_pk_at_z_1h
+if (
+  ptsz->has_pk_at_z_1h
   +ptsz->has_pk_at_z_2h
+  +ptsz->has_pk_em_at_z_1h
+  +ptsz->has_pk_em_at_z_2h
   +ptsz->has_bk_at_z_1h
   +ptsz->has_bk_at_z_2h
   +ptsz->has_bk_at_z_3h
@@ -13092,6 +13183,8 @@ if (
   +ptsz->has_bk_ttg_at_z_3h
   +ptsz->has_pk_bb_at_z_1h
   +ptsz->has_pk_bb_at_z_2h
+  +ptsz->has_pk_em_at_z_1h
+  +ptsz->has_pk_em_at_z_2h
   // +ptsz->has_bk_at_z_hf
   )
   {
@@ -13456,6 +13549,8 @@ if (ptsz->need_hmf){
      + ptsz->has_pk_gg_at_z_2h
      + ptsz->has_pk_bb_at_z_1h
      + ptsz->has_pk_bb_at_z_2h
+     + ptsz->has_pk_em_at_z_1h
+     + ptsz->has_pk_em_at_z_2h
      + ptsz->has_pk_HI_at_z_1h
      + ptsz->has_pk_HI_at_z_2h
      + ptsz->has_bk_at_z_1h
@@ -13484,6 +13579,8 @@ if (ptsz->need_hmf){
    class_alloc(ptsz->pk_gg_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    class_alloc(ptsz->pk_bb_at_z_1h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    class_alloc(ptsz->pk_bb_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
+   class_alloc(ptsz->pk_em_at_z_1h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
+   class_alloc(ptsz->pk_em_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    class_alloc(ptsz->pk_HI_at_z_1h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    class_alloc(ptsz->pk_HI_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    for (i=0;i<ptsz->n_k_for_pk_hm;i++){
@@ -13494,6 +13591,8 @@ if (ptsz->need_hmf){
     ptsz->pk_gg_at_z_2h[i] = 0.;
     ptsz->pk_bb_at_z_1h[i] = 0.;
     ptsz->pk_bb_at_z_2h[i] = 0.;
+    ptsz->pk_em_at_z_1h[i] = 0.;
+    ptsz->pk_em_at_z_2h[i] = 0.;
     ptsz->pk_HI_at_z_1h[i] = 0.;
     ptsz->pk_HI_at_z_2h[i] = 0.;
    }
@@ -13892,6 +13991,14 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
    ptsz->index_integrand_id_pk_bb_at_z_2h_first = ptsz->index_integrand_id_pk_bb_at_z_1h_last + 1;
    ptsz->index_integrand_id_pk_bb_at_z_2h_last = ptsz->index_integrand_id_pk_bb_at_z_2h_first + ptsz->n_k_for_pk_hm - 1;
    last_index_integrand_id =  ptsz->index_integrand_id_pk_bb_at_z_2h_last;
+ }
+
+   if(ptsz->has_pk_em_at_z_1h+ptsz->has_pk_em_at_z_2h >= _TRUE_){
+   ptsz->index_integrand_id_pk_em_at_z_1h_first = last_index_integrand_id + 1;
+   ptsz->index_integrand_id_pk_em_at_z_1h_last = ptsz->index_integrand_id_pk_em_at_z_1h_first + ptsz->n_k_for_pk_hm - 1;
+   ptsz->index_integrand_id_pk_em_at_z_2h_first = ptsz->index_integrand_id_pk_em_at_z_1h_last + 1;
+   ptsz->index_integrand_id_pk_em_at_z_2h_last = ptsz->index_integrand_id_pk_em_at_z_2h_first + ptsz->n_k_for_pk_hm - 1;
+   last_index_integrand_id =  ptsz->index_integrand_id_pk_em_at_z_2h_last;
  }
 
    if(ptsz->has_pk_HI_at_z_1h+ptsz->has_pk_HI_at_z_2h >= _TRUE_){

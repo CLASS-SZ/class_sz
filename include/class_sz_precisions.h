@@ -46,7 +46,7 @@ class_sz_string_parameter(Planck_ylims_file,"/sz_auxiliary_files/SZ_ylims.txt","
 class_sz_string_parameter(SO_ylims_file,"/sz_auxiliary_files/so_3freqs_191121_ylims.txt","SO_ylims_file")
 
 
-class_sz_ptsz_parameter(n_ell_density_profile,int,100)
+class_sz_ptsz_parameter(n_k_density_profile,int,100)
 class_sz_ptsz_parameter(n_m_density_profile,int,100)
 class_sz_ptsz_parameter(n_z_density_profile,int,100)
 

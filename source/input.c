@@ -2141,6 +2141,27 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"pk_em_at_z_1h") != NULL) ) {
+        ptsz->has_pk_em_at_z_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"pk_em_at_z_2h") != NULL) ) {
+        ptsz->has_pk_em_at_z_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+
       if ((strstr(string1,"pk_HI_at_z_1h") != NULL) ) {
         ptsz->has_pk_HI_at_z_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -3593,7 +3614,7 @@ int input_read_parameters(
      }
 class_read_int("truncate_wrt_rvir",ptsz->truncate_wrt_rvir);
 class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_m200c_conversion);
-
+class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       /* mass function */
       class_call(parser_read_string(pfc,"sub_halo_mass_function",&string1,&flag1,errmsg),
                  errmsg,
@@ -5026,6 +5047,8 @@ class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_
       + ptsz->has_pk_gg_at_z_2h
       + ptsz->has_pk_bb_at_z_1h
       + ptsz->has_pk_bb_at_z_2h
+      + ptsz->has_pk_em_at_z_1h
+      + ptsz->has_pk_em_at_z_2h
       + ptsz->has_pk_HI_at_z_1h
       + ptsz->has_pk_HI_at_z_2h
       + ptsz->has_bk_at_z_1h
@@ -5979,6 +6002,7 @@ int input_default_params(
   //Hydrostatic Equilibrium Mass Bias, Piffaretti & Valdarnini [arXiv:0808.1111]
 
    ptsz->truncate_wrt_rvir = 1;
+   ptsz->no_tt_noise_in_kSZ2X_cov = 0;
   // battaglia pressure profile:
   ptsz->gamma_B12 = -0.3;
   ptsz->alpha_B12 = 1.;
@@ -6254,6 +6278,8 @@ int input_default_params(
   ptsz->has_pk_gg_at_z_2h = _FALSE_;
   ptsz->has_pk_bb_at_z_1h = _FALSE_;
   ptsz->has_pk_bb_at_z_2h = _FALSE_;
+  ptsz->has_pk_em_at_z_1h = _FALSE_;
+  ptsz->has_pk_em_at_z_2h = _FALSE_;
   ptsz->has_pk_HI_at_z_1h = _FALSE_;
   ptsz->has_pk_HI_at_z_2h = _FALSE_;
   ptsz->has_bk_at_z_1h = _FALSE_;
@@ -6424,6 +6450,9 @@ int input_default_params(
   ptsz->index_md_kSZ_kSZ_lens_hf = 89;
 
   ptsz->index_md_lens_lens_hf = 90;
+
+  ptsz->index_md_pk_em_at_z_1h = 91;
+  ptsz->index_md_pk_em_at_z_2h = 92;
 
   ptsz->integrate_wrt_mvir = 0;
   ptsz->integrate_wrt_m500c = 0;
