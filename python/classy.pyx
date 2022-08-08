@@ -1447,6 +1447,18 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_sz_at_nu_in_GHz_in_microK2(self,nu_in_GHz):
+        frequency_in_Hz = nu_in_GHz*1e9
+        T_cmb = self.T_cmb()
+        _h_P_=6.62606896e-34
+        _k_B_=1.3806504e-23
+        Tcmb_gNU = T_cmb*((_h_P_*frequency_in_Hz/(_k_B_*T_cmb))*(1./np.tanh((_h_P_*frequency_in_Hz/(_k_B_*T_cmb))/2.))-4.)
+        r = {}
+        r['ell'] = np.asarray(self.cl_sz()['ell'])
+        r['1h'] = np.asarray(self.cl_sz()['1h'])*Tcmb_gNU**2.
+        r['2h'] = np.asarray(self.cl_sz()['2h'])*Tcmb_gNU**2.
+        return r
+
     def get_volume_dVdzdOmega_at_z(self,z):
         return get_volume_at_z(z,&self.ba)
 

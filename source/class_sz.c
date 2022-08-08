@@ -1406,6 +1406,7 @@ double r_lens = Integrate_using_Patterson_adaptive(0., 2.*_PI_,
                                             epsrel, epsabs,
                                             integrand_kSZ2_X_lensing_term,
                                             params,show_neval);
+// printf("r_lens = %.5e\n",r_lens);
 
 if (ptsz->has_kSZ_kSZ_gal_lensing_term){
 ptsz->cl_kSZ_kSZ_gal_lensing_term[i] = r_lens;
@@ -1454,7 +1455,8 @@ else{
 
 
 
-double cl_kp = pow(2./(ptsz->ell[i]*(ptsz->ell[i]+1.)),1.)*cl_kp;
+double cl_kp = pow(2./(ptsz->ell[i]*(ptsz->ell[i]+1.)),1.)*cl_kk;
+// printf("cl_kSZ_kSZ_lens_lensing_term[i] = %.5e cl_kp = %.5e\n",ptsz->cl_kSZ_kSZ_lens_lensing_term[i],cl_kp);
 ptsz->cl_kSZ_kSZ_lens_lensing_term[i] *= -2./(2.*_PI_)/(2.*_PI_)*ptsz->ell[i]*cl_kp;
 }
 
