@@ -182,6 +182,7 @@ double delta_to_delta_prime_nfw(
                      double * dRES
                    );
 
+ double get_planck_sigma_at_theta500(double theta500, struct tszspectrum * ptsz);
 
  double get_m_to_xout_at_z_and_m(double z_asked, double m_asked, struct tszspectrum * ptsz);
  double evaluate_cvir_of_mvir(double mvir,

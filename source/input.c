@@ -1919,6 +1919,8 @@ int input_read_parameters(
 
         }
 
+      class_read_int("load_Planck_noise_map",ptsz->has_completeness_for_ps_SZ);
+
       class_read_double("signal-to-noise cut-off for survey cluster completeness",ptsz->sn_cutoff);
       class_read_double("signal-to-noise cut-off for survey cluster completeness",pcsz->sn_cutoff);
 

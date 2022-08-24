@@ -17966,7 +17966,17 @@ return _SUCCESS_;
 
 
 
-
+double get_planck_sigma_at_theta500(double theta500, struct tszspectrum * ptsz){
+  if ((theta500>ptsz->thetas[ptsz->nthetas-1]) || (theta500<ptsz->thetas[0])){
+    return 1e200;
+  }
+  else{
+  return pwl_value_1d(ptsz->nthetas,
+                      ptsz->thetas,
+                      ptsz->sky_averaged_ylims,
+                      theta500);
+                    }
+}
 
 double get_knl_at_z(double z, struct tszspectrum * ptsz){
    double z_asked = log(1.+z);

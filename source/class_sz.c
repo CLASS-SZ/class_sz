@@ -1467,13 +1467,13 @@ free(integrand_l_lprime_phi);
 }
 
    if (ptsz->sz_verbose>1) show_results(pba,pnl,ppm,ptsz);
- //   if (ptsz->write_sz>0 || ptsz->create_ref_trispectrum_for_cobaya){
- //
- //   write_output_to_files_cl(pnl,pba,ppm,ptsz);
- //   write_output_to_files_ell_indep_ints(pnl,pba,ptsz);
- //   write_redshift_dependent_quantities(pba,ptsz);
- //
- // }
+   if (ptsz->write_sz>0 || ptsz->create_ref_trispectrum_for_cobaya){
+
+   write_output_to_files_cl(pnl,pba,ppm,ptsz);
+   write_output_to_files_ell_indep_ints(pnl,pba,ptsz);
+   write_redshift_dependent_quantities(pba,ptsz);
+
+ }
    return _SUCCESS_;
 }
 

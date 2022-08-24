@@ -629,6 +629,8 @@ cdef extern from "class.h":
                                              void * pba,
                                              void * ptsz)
 
+    double get_planck_sigma_at_theta500(double theta500, void * ptsz)
+
     double get_gas_profile_at_x_M_z_nfw_200c(double x_asked,
                                              double m_asked,
                                              double z_asked,

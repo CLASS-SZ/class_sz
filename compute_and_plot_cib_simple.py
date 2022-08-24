@@ -24,8 +24,8 @@ import pyccl as ccl
 
 do_ccl_comparison = 'yes'
 # path_to_ccl = '/Users/boris/Work/CCL/'
-freq_cib_1 = 353.
-freq_cib_2 = 353.
+freq_cib_1 = 857.
+freq_cib_2 = 857.
 # table 1 of https://arxiv.org/pdf/1309.0382.pdf
 #1: freq GHz 2: Flux cut mJy
 # 100 - 400
@@ -35,8 +35,8 @@ freq_cib_2 = 353.
 # 545 - 350
 # 857 - 710
 # 3000  - 1000
-cib_Snu_1 = 315.
-cib_Snu_2 = 315.
+cib_Snu_1 = 710.
+cib_Snu_2 = 710.
 
 
 
@@ -230,7 +230,7 @@ def run(args):
     p_dict['Power law index of SED at high frequency'] = 1.7
     p_dict['Redshift evolution of L − M normalisation'] = 3.6
     p_dict['Most efficient halo mass in Msun'] = pow(10.,12.6)
-    p_dict['Normalisation of L − M relation in [Jy MPc2/Msun/Hz]'] = 6.4e-8
+    p_dict['Normalisation of L − M relation in [Jy MPc2/Msun]'] = 6.4e-8
     p_dict['Size of of halo masses sourcing CIB emission'] = 0.5
     p_dict['has_cib_flux_cut'] = 1
 
@@ -253,7 +253,7 @@ def run(args):
         p_dict["Frequency_id nu for cib in GHz (to save in file)"] = 0
         p_dict["Frequency_id nu^prime for cib in GHz (to save in file)"] = 1
     # verbose paramete of class_sz
-    p_dict['sz_verbose'] = 2
+    p_dict['class_sz_verbose'] = 2
     p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
     p_dict['write sz results to files'] = 'yes' # this writes  PS and f(z)
     # precision parameters

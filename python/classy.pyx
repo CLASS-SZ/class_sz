@@ -2283,6 +2283,8 @@ cdef class Class:
     def get_gas_profile_at_x_M_z_nfw_200c(self,r_asked,m_asked,z_asked):
         return get_gas_profile_at_x_M_z_nfw_200c(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
 
+    def get_planck_sigma_at_theta500(self, theta500):
+        return get_planck_sigma_at_theta500(theta500, &self.tsz)
 
     def get_second_order_bias_at_z_and_nu(self,z,nu):
         return get_second_order_bias_at_z_and_nu(z,nu,&self.tsz,&self.ba)
