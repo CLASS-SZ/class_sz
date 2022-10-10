@@ -214,3 +214,7 @@ class_sz_test_mat.ini
 sz_auxiliary_files/noise_curves/advact_lensing_noise.dat
 python/dist/classy_sz-2.9.4-py3.8-macosx-10.9-x86_64.egg
 python/classy_sz.egg-info/PKG-INFO
+notebooks/nq_dr5.jpeg
+notebooks/nz_dr5.jpeg
+notebooks/planck_like_websky_clusters_qle6_hseB1d7_240822.csv
+notebooks/planck_like_websky_clusters_qle6_hseB1d7_thetaextrap_240822.csv

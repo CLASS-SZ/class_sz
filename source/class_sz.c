@@ -9521,6 +9521,7 @@ pvectsz[ptsz->index_lognu] = log(get_nu_at_z_and_m(exp(z_asked)-1.,m_for_hmf,pts
                       ptsz->error_message,
                       ptsz->error_message
                       );
+    // exit(0);
    }
 
 
@@ -15298,7 +15299,7 @@ double evaluate_truncated_nfw_profile(//double * pvecback,
 {
 
 //double z = pvectsz[ptsz->index_z];
-
+// c_delta = 5.;
 double q = k*r_delta/c_delta*(1.+z); // uk -> 1 when q->0
 double denominator = m_nfw(xout*c_delta); //normalization
 

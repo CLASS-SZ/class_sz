@@ -5411,6 +5411,10 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
   free(lnI);
   free(d2lnI);
 
+   if (ptsz->sz_verbose>1)
+   printf("-> pressure profile loaded.\n");
+
+
   return _SUCCESS_;
 }
 
@@ -7116,6 +7120,32 @@ int MF_T08_m500(
               1*sizeof(double),
               ptsz->error_message);
 
+  if (ptsz->no_spline_in_tinker == 1){
+    // printf("interpolating without splines.\n");
+
+    *Ap0 = pwl_value_1d(9,
+                       delta_mean_tab,
+                       A_tab,
+                       delta_mean);
+
+    *a0 = pwl_value_1d(9,
+                       delta_mean_tab,
+                       aa_tab,
+                       delta_mean);
+    *b0 = pwl_value_1d(9,
+                       delta_mean_tab,
+                       b_tab,
+                       delta_mean);
+    *c0 = pwl_value_1d(9,
+                       delta_mean_tab,
+                       c_tab,
+                       delta_mean);
+
+
+  }
+  else{
+
+    // printf("interpolating with splines.\n");
   splint(delta_mean_tab,
          A_tab,
          d2_A_tab,
@@ -7143,6 +7173,9 @@ int MF_T08_m500(
          9,
          delta_mean,
          c0);
+
+  // printf("interpolation done %.5e.\n",c0);
+  }
 
   double alphaT08 =
   pow(10.,-pow(0.75/log10(pow(10.,delta_mean)/75.),1.2));
@@ -17967,8 +18000,29 @@ return _SUCCESS_;
 
 
 double get_planck_sigma_at_theta500(double theta500, struct tszspectrum * ptsz){
-  if ((theta500>ptsz->thetas[ptsz->nthetas-1]) || (theta500<ptsz->thetas[0])){
-    return 1e200;
+  double y;
+  int l1,l2;
+  double th1,th2;
+
+  if ((theta500<ptsz->thetas[0])){
+       l1 = 0;
+       l2 = 1;
+       th1 = ptsz->thetas[l1];
+       th2 = ptsz->thetas[l2];
+    double y1 = ptsz->sky_averaged_ylims[l1];
+    double y2 = ptsz->sky_averaged_ylims[l2];
+    double y = y1 + (y2-y1)/(th2-th1)*(theta500-th1);
+    return y;
+  }
+  else if ((theta500>ptsz->thetas[ptsz->nthetas-1])){
+      l1 = ptsz->nthetas - 1;
+      l2 = ptsz->nthetas - 2;
+      th1 = ptsz->thetas[l1];
+      th2 = ptsz->thetas[l2];
+    double y1 = ptsz->sky_averaged_ylims[l1];
+    double y2 = ptsz->sky_averaged_ylims[l2];
+    double y = y1 + (y2-y1)/(th2-th1)*(theta500-th1);
+    return y;
   }
   else{
   return pwl_value_1d(ptsz->nthetas,
