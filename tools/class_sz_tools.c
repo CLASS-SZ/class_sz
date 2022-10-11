@@ -15419,6 +15419,13 @@ if (
     )
 return 0;
 
+if (ptsz->sz_verbose>-1){
+  printf("Tabulating Lsat.\n");
+  printf("n_nu_L_sat = %d\n",ptsz->n_nu_L_sat);
+  printf("nu_min = %.4e\n",ptsz->freq_min);
+  printf("nu_max = %.4e\n",ptsz->freq_max);
+}
+
 // printf("ptsz->n_nu_L_sat = %d %d\n",ptsz->n_nu_L_sat,ptsz->n_z_psi_b1gt);
 
 class_alloc(ptsz->array_L_sat_at_M_z_nu,sizeof(double *)*ptsz->n_nu_L_sat,ptsz->error_message);
@@ -18936,26 +18943,48 @@ double  get_L_sat_at_z_M_nu(double z_asked, double m_asked, double nu_asked, str
   double m = log(m_asked);
   double nu = log(nu_asked);
 
+  // printf("nu asked = %.3e\n",nu_asked);
+  // exit(0);
+
 
   // double z = log(1.+z_asked);
   // double m = log(m_asked);
-   if (z<ptsz->array_z_L_sat[0])
+   if (z<ptsz->array_z_L_sat[0]){
       z = ptsz->array_z_L_sat[0];
+      printf("redshift min out pf range in Lsat");
+      exit(0);
+    }
         // printf("dealing with mass conversion in hmf\n");
-   if (z>ptsz->array_z_L_sat[ptsz->n_z_L_sat-1])
+   if (z>ptsz->array_z_L_sat[ptsz->n_z_L_sat-1]){
       z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
 
-   if (m<ptsz->array_m_L_sat[0])
-    m = ptsz->array_m_L_sat[0];
-      // printf("dealing with mass conversion in hmf\n");
-   if (m>ptsz->array_m_L_sat[ptsz->n_m_L_sat-1])
-      m =  ptsz->array_m_L_sat[ptsz->n_m_L_sat-1];
+      printf("redshift max out pf range in Lsat");
+      exit(0);
+    }
 
-   if (nu<ptsz->array_nu_L_sat[0])
-    nu = ptsz->array_nu_L_sat[0];
+   if (m<ptsz->array_m_L_sat[0]){
+    m = ptsz->array_m_L_sat[0];
+      printf("mass min out pf range in Lsat");
+      exit(0);
+  }
       // printf("dealing with mass conversion in hmf\n");
-   if (nu>ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1])
+   if (m>ptsz->array_m_L_sat[ptsz->n_m_L_sat-1]){
+      m =  ptsz->array_m_L_sat[ptsz->n_m_L_sat-1];
+      printf("mass max out of range in Lsat");
+      exit(0);
+    }
+
+   if (nu<ptsz->array_nu_L_sat[0]){
+    nu = ptsz->array_nu_L_sat[0];
+      printf("freq min out pf range in Lsat");
+      exit(0);
+  }
+      // printf("dealing with mass conversion in hmf\n");
+   if (nu>ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1]){
       nu =  ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1];
+      printf("freq max out pf range in Lsat");
+      exit(0);
+    }
 
   // if (ptsz->tau_profile == 1){
   // find the closest l's in the grid:
@@ -18998,7 +19027,7 @@ double  get_L_sat_at_z_M_nu(double z_asked, double m_asked, double nu_asked, str
 
 
 
-
+// not used :
 double get_L_sat_at_z_and_M_at_nu(double z_asked,
                                   double m_asked,
                                   int index_nu,

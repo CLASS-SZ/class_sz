@@ -14830,7 +14830,8 @@ if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu]){
 }
 // cross terms
 else {
-nu = ptsz->frequencies_for_cib[index_nu];
+// nu = ptsz->frequencies_for_cib[index_nu];
+nu = ptsz->cib_frequency_list[index_nu];
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu,pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu,ptsz);
 if (ptsz->has_cib_flux_cut == 1){

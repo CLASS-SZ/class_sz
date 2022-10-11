@@ -180,7 +180,7 @@ def run(args):
     # 'M500' is Tinker et al 2008 @ M500
     # 'T10' is Tinker et al 2010 @ m200_mean
 
-    p_dict['mass function'] = 'T10'
+    p_dict['mass function'] = 'T08M200c'
     p_dict['concentration parameter'] = 'D08'
     p_dict['delta for cib'] = '200m'
     p_dict['hm_consistency'] = 1
@@ -206,19 +206,20 @@ def run(args):
 
 
     # mass bounds
-    p_dict['M_min'] = 1e8*p_dict['h']
+    p_dict['M_min'] = 1e10*p_dict['h']
     p_dict['M_max'] = 1e16*p_dict['h']
 
     # redshift bounds
-    p_dict['z_min'] = 0.07
+    p_dict['z_min'] = 1e-5
     p_dict['z_max'] = 6. # fiducial for MM20 : 6
 
     p_dict['freq_min'] = 10.
     p_dict['freq_max'] = 5e4 # fiducial for MM20 : 6
+    p_dict['n_nu_L_sat'] = 200
 
     # HOD parameters for CIB
     p_dict['M_min_HOD'] = pow(10.,10)
-    p_dict['M1_prime_HOD'] =pow(10.,125.1536196)*p_dict['h']
+    # p_dict['M1_prime_HOD'] =pow(10.,125.1536196)*p_dict['h']
 
 
 
@@ -233,7 +234,7 @@ def run(args):
     p_dict['Most efficient halo mass in Msun'] = pow(10.,12.6)
     p_dict['Normalisation of L − M relation in [Jy MPc2/Msun]'] = 6.4e-8
     p_dict['Size of of halo masses sourcing CIB emission'] = 0.5
-    p_dict['has_cib_flux_cut'] = 1
+    p_dict['has_cib_flux_cut'] = 0
 
     # List of frequency bands for cib
     if freq_cib_1 == freq_cib_2:
@@ -254,7 +255,7 @@ def run(args):
         p_dict["Frequency_id nu for cib in GHz (to save in file)"] = 0
         p_dict["Frequency_id nu^prime for cib in GHz (to save in file)"] = 1
     # verbose paramete of class_sz
-    p_dict['class_sz_verbose'] = 2
+    p_dict['class_sz_verbose'] = 10
     p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
     p_dict['write sz results to files'] = 'yes' # this writes  PS and f(z)
     # precision parameters
@@ -287,6 +288,7 @@ def run(args):
     p_dict['alphaGNFW']  = 1.33
     p_dict['betaGNFW']  = 4.13
     p_dict['B'] = 1.25
+    p_dict['x_outSZ'] = 4.
 
 
 
@@ -477,13 +479,13 @@ def run(args):
             elif (args.plot_tSZ_cib == 'yes'):
                 print(tSZ_cib_1h[id_p])
                 print(tSZ_cib_2h[id_p])
-                ax.plot(multipoles[id_p],(tSZ_cib_2h[id_p])*1e-6,color='r',ls='--',alpha = 1.,
+                ax.plot(multipoles[id_p],(tSZ_cib_2h[id_p]),color='r',ls='--',alpha = 1.,
                 marker =  'o',markersize = 2,
                 label = 'class_sz (2-halo)')
-                ax.plot(multipoles[id_p],(tSZ_cib_1h[id_p])*1e-6,color='k',ls='--',alpha = 1.,
+                ax.plot(multipoles[id_p],(tSZ_cib_1h[id_p]),color='k',ls='--',alpha = 1.,
                 marker =  '*',markersize = 1,
                 label = 'class_sz (1-halo)')
-                ax.plot(multipoles[id_p],(tSZ_cib_1h[id_p]+tSZ_cib_2h[id_p])*1e-6,color='grey',ls='-',alpha = 1.,
+                ax.plot(multipoles[id_p],(tSZ_cib_1h[id_p]+tSZ_cib_2h[id_p]),color='grey',ls='-',alpha = 1.,
                 marker =  '*',markersize = 1,
                 label = 'class_sz (1+2-halo)')
 
