@@ -15419,7 +15419,7 @@ if (
     )
 return 0;
 
-if (ptsz->sz_verbose>-1){
+if (ptsz->sz_verbose>1){
   printf("Tabulating Lsat.\n");
   printf("n_nu_L_sat = %d\n",ptsz->n_nu_L_sat);
   printf("nu_min = %.4e\n",ptsz->freq_min);
@@ -18950,39 +18950,39 @@ double  get_L_sat_at_z_M_nu(double z_asked, double m_asked, double nu_asked, str
   // double z = log(1.+z_asked);
   // double m = log(m_asked);
    if (z<ptsz->array_z_L_sat[0]){
-      z = ptsz->array_z_L_sat[0];
-      printf("redshift min out pf range in Lsat");
+      // z = ptsz->array_z_L_sat[0];
+      printf("redshift min out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->array_z_L_sat[0]);
       exit(0);
     }
         // printf("dealing with mass conversion in hmf\n");
    if (z>ptsz->array_z_L_sat[ptsz->n_z_L_sat-1]){
-      z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
+      // z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
 
-      printf("redshift max out pf range in Lsat");
+      printf("redshift max out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->array_z_L_sat[ptsz->n_z_L_sat-1]);
       exit(0);
     }
 
    if (m<ptsz->array_m_L_sat[0]){
-    m = ptsz->array_m_L_sat[0];
-      printf("mass min out pf range in Lsat");
+    // m = ptsz->array_m_L_sat[0];
+      printf("mass min out of range in Lsat asked %.3e bound %.3e.\n",m,ptsz->array_m_L_sat[0]);
       exit(0);
   }
       // printf("dealing with mass conversion in hmf\n");
    if (m>ptsz->array_m_L_sat[ptsz->n_m_L_sat-1]){
-      m =  ptsz->array_m_L_sat[ptsz->n_m_L_sat-1];
-      printf("mass max out of range in Lsat");
+      // m =  ptsz->array_m_L_sat[ptsz->n_m_L_sat-1];
+      printf("mass max out of range in Lsat asked %.3e bound %.3e.\n",m,ptsz->array_m_L_sat[ptsz->n_m_L_sat-1]);
       exit(0);
     }
 
    if (nu<ptsz->array_nu_L_sat[0]){
-    nu = ptsz->array_nu_L_sat[0];
-      printf("freq min out pf range in Lsat");
+    // nu = ptsz->array_nu_L_sat[0];
+      printf("freq min out of range in Lsat asked %.8e bound %.8e.\n",exp(nu),exp(ptsz->array_nu_L_sat[0]));
       exit(0);
   }
       // printf("dealing with mass conversion in hmf\n");
    if (nu>ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1]){
-      nu =  ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1];
-      printf("freq max out pf range in Lsat");
+      // nu =  ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1];
+      printf("freq max out of range in Lsat asked %.3e bound %.3e.\n",exp(nu),exp(ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1]));
       exit(0);
     }
 

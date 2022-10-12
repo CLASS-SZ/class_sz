@@ -6056,7 +6056,7 @@ int input_default_params(
   ptsz->m_eff_cib = pow(10.,12.6); // Most efficient halo mass in Msun
   ptsz->L0_cib = 6.4e-8; // Normalisation of L − M relation in [Jy MPc2/Msun]
   ptsz->sigma2_LM_cib = 0.5; // Size of of halo masses sourcing CIB emission
-  ptsz->z_obs_cib = 1e-5;
+  ptsz->z_obs_cib = 0.;
   ptsz->z_plateau_cib = 1e100; // see 5.2.1 of https://arxiv.org/pdf/1208.5049.pdf
   ptsz->M_min_subhalo_in_Msun = 0;
   ptsz->use_redshift_dependent_M_min = 0;

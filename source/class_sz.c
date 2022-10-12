@@ -14795,6 +14795,8 @@ if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu]){
 }
 else if(_cib_monopole_){
 nu = ptsz->frequencies_for_cib[index_nu];
+// printf("nu = %.8e\n",nu);
+// exit(0);
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu/(1.+ptsz->z_obs_cib),pvectsz,ptsz,pba);
 Ls_nu = get_L_sat_at_z_M_nu(z,M_halo,nu/(1.+ptsz->z_obs_cib),ptsz);
 us = 1.;
