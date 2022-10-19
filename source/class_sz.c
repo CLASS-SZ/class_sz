@@ -10634,7 +10634,7 @@ int write_redshift_dependent_quantities(struct background * pba,
   double rvir = evaluate_rvir_of_mvir(mvir,delc,rhoc,ptsz);
 
   double cvir = evaluate_cvir_of_mvir(mvir,z,ptsz,pba);// 5.72*pow(mvir/1e14,-0.081)/pow(1.+z_asked,0.71);
-  double mdel;
+  double mdel = 1.;
 
   ///double rs = rvir/cvir;
 
@@ -10642,14 +10642,14 @@ int write_redshift_dependent_quantities(struct background * pba,
   double delrho_prime = 500.*rhoc; //500c
 
 
-  class_call(mVIR_to_mDEL(mvir,
-                         rvir,
-                         cvir,
-                         delrho,
-                         &mdel,
-                         ptsz),
-                  ptsz->error_message,
-                  ptsz->error_message);
+  // class_call(mVIR_to_mDEL(mvir,
+  //                        rvir,
+  //                        cvir,
+  //                        delrho,
+  //                        &mdel,
+  //                        ptsz),
+  //                 ptsz->error_message,
+  //                 ptsz->error_message);
 
   mvir_over_m200d = mvir/mdel;
 
@@ -10658,30 +10658,30 @@ int write_redshift_dependent_quantities(struct background * pba,
 
 
 
-  class_call(mDEL_to_mVIR(mdel,
-                         delrho,
-                         delc,
-                         rhoc,
-                         z,
-                         &mvir_recovered,
-                         ptsz,
-                         pba),
-                  ptsz->error_message,
-                  ptsz->error_message);
+  // class_call(mDEL_to_mVIR(mdel,
+  //                        delrho,
+  //                        delc,
+  //                        rhoc,
+  //                        z,
+  //                        &mvir_recovered,
+  //                        ptsz,
+  //                        pba),
+  //                 ptsz->error_message,
+  //                 ptsz->error_message);
 
 
-  double mdel_prime;
-  class_call(mDEL_to_mDELprime(mdel,
-                         delrho,
-                         delrho_prime,
-                         delc,
-                         rhoc,
-                         z,
-                         &mdel_prime,
-                         ptsz,
-                         pba),
-                  ptsz->error_message,
-                  ptsz->error_message);
+  double mdel_prime = 1.;
+  // class_call(mDEL_to_mDELprime(mdel,
+  //                        delrho,
+  //                        delrho_prime,
+  //                        delc,
+  //                        rhoc,
+  //                        z,
+  //                        &mdel_prime,
+  //                        ptsz,
+  //                        pba),
+  //                 ptsz->error_message,
+  //                 ptsz->error_message);
   mvir_over_mvir_recovered = mvir/mvir_recovered;
 
   double cvir_fac = 1.;
@@ -10690,7 +10690,7 @@ int write_redshift_dependent_quantities(struct background * pba,
   double delta= 2.5;
   double delta_prime;
 
-  delta_prime = delta_to_delta_prime_nfw(delta,cvir,cvir_prime,ptsz);
+  delta_prime = 1.;//delta_to_delta_prime_nfw(delta,cvir,cvir_prime,ptsz);
 
 
   fprintf(fp,"%.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e \t %.5e\t %.5e\t %.5e\t %.5e\t %.5e\t %.5e\n",

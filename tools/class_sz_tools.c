@@ -17823,7 +17823,7 @@ double nod_2_y = (array_nl_index_at_z_and_k[index_z][lnx_zeros[id_zero_next+2]] 
       // }
 
       // else{
-      if (nl_exact<array_nl_no_wiggles_interp & (ptsz->ln_k_for_tSZ[index_k] >ptsz->ln_k_for_tSZ[lnx_zeros[id_zero]] - (nod_2_x-nod_1_x)))
+      if ((nl_exact<array_nl_no_wiggles_interp) & (ptsz->ln_k_for_tSZ[index_k] >ptsz->ln_k_for_tSZ[lnx_zeros[id_zero]] - (nod_2_x-nod_1_x)))
       array_nl_no_wiggles = array_nl_no_wiggles_interp;
       else
       array_nl_no_wiggles = nl_exact;

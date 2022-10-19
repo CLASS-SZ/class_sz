@@ -215,6 +215,27 @@ In my case the modif looks like this:
 
   extra_link_args=['-lgomp','-lgsl','-lgslcblas','**-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/**']
 
+New Mac OS with M1 chip
+----------------------
+
+We advise installing fftw, gsl, openmp with anaconda, i.e., conda forge etc..
+
+LD_LIBRARY_PATH becomes DYLD_LIBRARY_PATH, hence, export with:
+DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/anaconda3/lib
+export DYLD_LIBRARY_PATH
+
+
+In Makefile:
+CC = clang
+PYTHON ?= /set/path/to/anaconda3/python
+OPTFLAG = -O4 -ffast-math -arch x86_64
+OMPFLAG   = -Xclang -fopenmp
+LDFLAG += -lomp
+INCLUDES =  -I../include -I/usr/local/include/ -I/path/to/anaconda3/include/
+$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/path/to/anaconda3/lib/ -lgsl -lgslcblas -lfftw3 -lm
+
+In setup.py:
+extra_link_args=['-lomp','-lgsl','-lfftw3','-lgslcblas'])
 
 Compiler - GCC version
 ------------------------------

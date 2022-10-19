@@ -9,13 +9,15 @@ import os.path as osp
 
 # Recover the gcc compiler
 GCCPATH_STRING = sbp.Popen(
-    ['gcc-11', '-print-libgcc-file-name'],
+    # ['gcc-11', '-print-libgcc-file-name'],
+    ['gcc', '-print-libgcc-file-name'],
     stdout=sbp.PIPE).communicate()[0]
 GCCPATH = osp.normpath(osp.dirname(GCCPATH_STRING)).decode()
 
 liblist = ["class"]
 MVEC_STRING = sbp.Popen(
-    ['gcc-11', '-lmvec'],
+    # ['gcc-11', '-lmvec'],
+    ['gcc', '-lmvec'],
     stderr=sbp.PIPE).communicate()[1]
 if b"mvec" not in MVEC_STRING:
     liblist += ["mvec","m"]
@@ -41,7 +43,9 @@ classy_ext = Extension("classy_sz", [os.path.join(classy_folder, "classy.pyx")],
                            library_dirs=[root_folder, GCCPATH],
                            #extra_link_args=['-lgomp','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/','-L/Users/boris/gsl-2.6/lib/','-lgsl','-lgslcblas'])
                            #extra_link_args=['-lgomp','-L/Users/boris/gsl-2.6/lib/','-lgsl','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/'])
-                           extra_link_args=['-lgomp','-lgsl','-lfftw3','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/']) # BB
+                           # extra_link_args=['-lgomp','-lgsl','-lfftw3','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/']) # BB
+                           extra_link_args=['-lomp','-lgsl','-lfftw3','-lgslcblas']) # BB
+
                            #extra_link_args=['-lgomp','-lgsl','-lfftw3_omp','-lfftw3','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/']) # BB
                            # extra_link_args=['-lgomp','-L/home/runner/work/SOLikeT/SOLikeT/gsl-2.6/lib','-lgsl','-lgslcblas'])
 
