@@ -34,6 +34,7 @@ int szpowerspectrum_init(
 
   int all_comps = ptsz->has_sz_ps
       + ptsz->has_hmf
+      + ptsz->has_n5k
       // + ptsz->has_pk_at_z_1h
       + ptsz->has_pk_at_z_1h
       + ptsz->has_pk_at_z_2h
@@ -674,6 +675,42 @@ tabulate_psi_b1kg(pba,pnl,ppm,ppt,ptsz);
 tabulate_psi_b2kg(pba,pnl,ppm,ptsz);
 tabulate_psi_b1kgt(pba,pnl,ppm,ppt,ptsz);
 }
+
+if (ptsz->has_n5k){
+  load_n5k_pk_zk(ptsz);
+  load_n5k_cl_K1(ptsz);
+  load_n5k_z_of_chi(ptsz);
+  // load_n5k_cl_K2(ptsz);
+  // double pk_interp = get_n5k_pk_at_z_and_k(3.428571428571428381e+00,9.329304026284677320e+01,ptsz);
+  // printf("%.5e\n",pk_interp);
+  // double K1_interp = get_n5k_cl_K1_at_chi(6.565659574734836212e+01,ptsz);
+  // printf("%.5e\n",K1_interp);
+  // double z_interp = get_n5k_z_of_chi(33.,ptsz);
+  // printf("%.5e\n",z_interp);
+  tabulate_n5k_F1(pba,pnl,ppm,ptsz);
+  int index_l;
+  printf("\n");
+  // printf("ell\n");
+  // for (index_l=0; index_l<ptsz->n_l_n5k; index_l++){
+  //
+  //   printf("%d,\n",ptsz->array_n5k_F1_l[index_l]);
+  // }
+  printf("\n");
+  printf("cls\n");
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+  FILE *fp;
+
+  sprintf(Filepath,"%s%s%s",ptsz->root,"n5k_F",".txt");
+  fp=fopen(Filepath, "w");
+  // char Filepath[_ARGUMENT_LENGTH_MAX_];
+  for (index_l=0; index_l<ptsz->n_l_n5k; index_l++){
+
+    fprintf(fp,"%.5e\n",ptsz->array_n5k_F1_F[index_l]);
+  }
+  fclose(fp);
+
+}
+exit(0);
 
 if (ptsz->has_kSZ_kSZ_gal_1h_fft
  || ptsz->has_kSZ_kSZ_gal_2h_fft
@@ -2090,7 +2127,8 @@ if (ptsz->has_kSZ_kSZ_gal_1h_fft
    || ptsz->has_kSZ_kSZ_lens_2h_fft
    || ptsz->has_kSZ_kSZ_lens_3h_fft
    || ptsz->has_kSZ_kSZ_lens_covmat
-   || ptsz->convert_cls_to_gamma){
+   || ptsz->convert_cls_to_gamma
+   || ptsz->has_n5k){
   fftw_destroy_plan(ptsz->forward_plan);
   fftw_destroy_plan(ptsz->reverse_plan);
 }
@@ -2394,6 +2432,19 @@ if ( ptsz->has_kSZ_kSZ_gal_1h_fft
   free(ptsz->array_psi_b1t_redshift);
   free(ptsz->array_psi_b1t_multipole);
   free(ptsz->array_psi_b1t_psi);
+}
+
+if (ptsz->has_n5k){
+  free(ptsz->array_n5k_F1_F);
+  free(ptsz->array_n5k_F1_k);
+  free(ptsz->array_n5k_F1_l);
+  free(ptsz->n5k_pk_z);
+  free(ptsz->n5k_pk_k);
+  free(ptsz->n5k_pk_pk);
+  free(ptsz->n5k_cl_K1_K1);
+  free(ptsz->n5k_cl_K1_chi);
+  free(ptsz->n5k_z_of_chi_z);
+  free(ptsz->n5k_z_of_chi_chi);
 }
 
 if (ptsz->sz_verbose>10) printf("-> freeing more kSZ2X.\n");
@@ -13067,7 +13118,9 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
   ||  ptsz->has_kSZ_kSZ_lens_2h_fft
   ||  ptsz->has_kSZ_kSZ_lens_3h_fft
   ||  ptsz->has_kSZ_kSZ_lens_covmat
-  ||  ptsz->convert_cls_to_gamma){
+  ||  ptsz->convert_cls_to_gamma
+  ||  ptsz->has_n5k){
+    if(ptsz->sz_verbose>1) printf("constructing fftw plan\n");
     // ptsz->N_samp_fftw = 100;
     fftw_complex* a_tmp;
     fftw_complex* b_tmp;

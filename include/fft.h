@@ -143,7 +143,7 @@ void gamma2cl(int N,  const double r[],  const double xi[], double k[], double p
  *   r[0] = 1/k[N-1], ..., r[N-1] = 1/k[0]. */
 void fftlog_ComputeXiLM(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[], struct tszspectrum * ptsz);
 void fftlog_ComputeXiLM_cl2gamma(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[], struct tszspectrum * ptsz);
-
+void fftlog_ComputeXiLMsloz(int l, int m, int N, const double k[], const double pk[], double r[], double xi[],struct tszspectrum * ptsz);
 
 #include <complex.h>
 

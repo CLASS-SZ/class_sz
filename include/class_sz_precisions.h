@@ -78,6 +78,8 @@ class_sz_ptsz_parameter(n_l_psi_b2kg,int,50)
 class_sz_ptsz_parameter(n_z_psi_b1t,int,80)
 class_sz_ptsz_parameter(n_l_psi_b1t,int,80)
 
+class_sz_ptsz_parameter(n_k_n5k,int,50)
+class_sz_ptsz_parameter(n_l_n5k,int,103)
 
 class_sz_ptsz_parameter(M1SZ_L_sat, double, 1.e9);
 class_sz_ptsz_parameter(M2SZ_L_sat, double, 1.e17);

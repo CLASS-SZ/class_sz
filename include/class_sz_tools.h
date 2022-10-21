@@ -657,6 +657,18 @@ int tabulate_psi_b2t(struct background * pba,
 double get_psi_b2t_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
 
 
+int tabulate_n5k_F1(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct tszspectrum * ptsz);
+
+double get_n5k_pk_at_z_and_k(double z_asked, double k_asked, struct tszspectrum * ptsz);
+int load_n5k_pk_zk(struct tszspectrum * ptsz);
+int load_n5k_cl_K1(struct tszspectrum * ptsz);
+double get_n5k_cl_K1_at_chi(double chi,struct tszspectrum * ptsz);
+
+int load_n5k_z_of_chi(struct tszspectrum * ptsz);
+double get_n5k_z_of_chi(double chi,struct tszspectrum * ptsz);
 
 int tabulate_psi_b1t(struct background * pba,
                     struct nonlinear * pnl,

@@ -65,6 +65,7 @@
 #define _kSZ_kSZ_lensmag_1halo_ ((ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lensmag_1halo))
 #define _gal_gal_1h_ ((ptsz->has_gal_gal_1h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_1h))
 #define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
+#define _n5k_ ((ptsz->has_n5k == _TRUE_) && (index_md == ptsz->index_md_n5k))
 #define _gal_gal_hf_ ((ptsz->has_gal_gal_hf == _TRUE_) && (index_md == ptsz->index_md_gal_gal_hf))
 #define _gal_lens_2h_ ((ptsz->has_gal_lens_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_2h))
 #define _gal_lens_hf_ ((ptsz->has_gal_lens_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lens_hf))
@@ -647,6 +648,9 @@ struct tszspectrum {
   int index_md_gal_gal_hf;
   int index_integrand_id_gal_gal_hf_first;
   int index_integrand_id_gal_gal_hf_last;
+
+  int has_n5k;
+  int index_md_n5k;
 
   int has_gal_lens_hf;
   int index_md_gal_lens_hf;
@@ -1660,6 +1664,25 @@ double * steps_m;
   double * array_hmf_counter_terms_b1min;
   double * array_hmf_counter_terms_b2min;
   ErrorMsg error_message; /**< zone for writing error messages */
+
+
+  double * array_n5k_F1_F;
+  double * array_n5k_F1_k;
+  int * array_n5k_F1_l;
+
+  double * n5k_pk_z;
+  double * n5k_pk_k;
+  double * n5k_pk_pk;
+  int n5k_pk_z_size;
+  int n5k_pk_k_size;
+
+  double * n5k_cl_K1_K1;
+  double * n5k_cl_K1_chi;
+  int n5k_cl_K1_size;
+
+  double * n5k_z_of_chi_z;
+  double * n5k_z_of_chi_chi;
+  int n5k_z_of_chi_size;
 
 
   double * array_psi_b2t_redshift;

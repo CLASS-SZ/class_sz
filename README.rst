@@ -228,7 +228,7 @@ export DYLD_LIBRARY_PATH
 In Makefile:
 CC = clang
 PYTHON ?= /set/path/to/anaconda3/python
-OPTFLAG = -O4 -ffast-math -arch x86_64
+OPTFLAG = -O4 -ffast-math # dont use: -arch x86_64
 OMPFLAG   = -Xclang -fopenmp
 LDFLAG += -lomp
 INCLUDES =  -I../include -I/usr/local/include/ -I/path/to/anaconda3/include/

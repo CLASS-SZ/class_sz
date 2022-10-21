@@ -3265,6 +3265,14 @@ int input_read_parameters(
         ptsz->need_ng_bias = 1;
       }
 
+      if ((strstr(string1,"n5k") != NULL) ) {
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->has_n5k = _TRUE_;
+      }
+
       class_call(parser_read_string(pfc,"include_ssc",&string1,&flag1,errmsg),
                    errmsg,
                    errmsg);
@@ -5110,6 +5118,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       + ptsz->has_gal_gal_1h
       + ptsz->has_gal_gal_2h
       + ptsz->has_gal_gal_hf
+      + ptsz->has_n5k
       + ptsz->has_gal_lens_1h
       + ptsz->has_gal_lens_2h
       + ptsz->has_gal_lens_hf
@@ -6247,6 +6256,7 @@ int input_default_params(
   ptsz->has_gal_gal_1h = _FALSE_;
   ptsz->has_gal_gal_2h = _FALSE_;
   ptsz->has_gal_gal_hf = _FALSE_;
+  ptsz->has_n5k = _FALSE_;
   ptsz->has_gal_lens_1h = _FALSE_;
   ptsz->has_gal_lens_2h = _FALSE_;
   ptsz->has_gal_lens_hf = _FALSE_;
