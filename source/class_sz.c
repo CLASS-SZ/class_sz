@@ -710,7 +710,7 @@ if (ptsz->has_n5k){
   fclose(fp);
 
 }
-exit(0);
+// exit(0);
 
 if (ptsz->has_kSZ_kSZ_gal_1h_fft
  || ptsz->has_kSZ_kSZ_gal_2h_fft
