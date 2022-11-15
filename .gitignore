@@ -219,3 +219,14 @@ notebooks/nz_dr5.jpeg
 notebooks/planck_like_websky_clusters_qle6_hseB1d7_240822.csv
 notebooks/planck_like_websky_clusters_qle6_hseB1d7_thetaextrap_240822.csv
 python/dist/classy_sz-2.9.4-py3.9-macosx-11.0-arm64.egg
+sz_auxiliary_files/cls_mdpl2_v0.7_cib_planck_217ghz.dat
+sz_auxiliary_files/cls_mdpl2_v0.7_cib_planck_217ghz_nomask.dat
+python/dist/classy_sz-2.9.4-py3.9-macosx-10.9-x86_64.egg
+*.egg
+notebooks/colcorr_plc.png
+notebooks/yxk.ipynb
+act_extended_act_plus_planck_wbp_less353545_cov_april22_mtsz_logspaced_051122.input.yaml
+act_extended_act_plus_planck_wbp_less353545_cov_april22_mtsz_logspaced_051122.updated.yaml
+notebooks/websky_cib_and_tszxcib-summary_and_examples-compare_with_dr4_model.ipynb
+python/dist/classy_sz-2.9.4-py3.9-macosx-10.9-x86_64.egg
+python/dist/classy_sz-2.9.4-py3.9-macosx-10.9-x86_64.egg

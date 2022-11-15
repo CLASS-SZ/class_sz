@@ -25,8 +25,8 @@ import pyccl as ccl
 # do_ccl_comparison = 'yes'
 do_ccl_comparison = 'no'
 # path_to_ccl = '/Users/boris/Work/CCL/'
-freq_cib_1 = 545.
-freq_cib_2 = 545.
+freq_cib_1 = 217.
+freq_cib_2 = 217.
 # table 1 of https://arxiv.org/pdf/1309.0382.pdf
 #1: freq GHz 2: Flux cut mJy
 # 100 - 400
@@ -36,8 +36,8 @@ freq_cib_2 = 545.
 # 545 - 350
 # 857 - 710
 # 3000  - 1000
-cib_Snu_1 = 710.
-cib_Snu_2 = 710.
+cib_Snu_1 = 225.
+cib_Snu_2 = 225.
 
 
 

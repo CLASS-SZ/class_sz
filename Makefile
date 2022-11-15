@@ -80,6 +80,7 @@ CCFLAG += -D__CLASSDIR__='"$(MDIR)"'
 # where to find include files *.h
 #INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/gsl-2.6/include/
 INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/miniconda/include
+# INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/opt/anaconda3/include -I/opt/homebrew/include
 
 # automatically add external programs if needed. First, initialize to blank.
 EXTERNAL =
@@ -161,6 +162,7 @@ libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
 class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
 	#$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm -L/home/runner/work/SOLikeT/SOLikeT/gsl-2.6/lib -lgsl -lgslcblas
 	 $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/Users/boris/miniconda/lib -lgsl -lgslcblas -lfftw3 -lm
+	 # $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/Users/boris/opt/anaconda3/lib -L/opt/homebrew/lib -lgsl -lgslcblas -lfftw3 -lm
 	 # $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -lgsl -lgslcblas -lm
 
 test_loops: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(TEST_LOOPS)

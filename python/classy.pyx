@@ -1016,7 +1016,7 @@ cdef class Class:
         return pk_at_k_z, k, z
 
     # Gives sigma(R,z) for a given (R,z)
-    def sigma(self,double R,double z):
+    def sigma(self,double R,double z, h_units = False):
         """
         Gives sigma (total matter) for a given R and z
         (R is the radius in units of Mpc, so if R=8/h this will be the usual sigma8(z)
@@ -1107,6 +1107,44 @@ cdef class Class:
                  raise CosmoSevereError(self.sp.error_message)
 
         return window_nfw
+
+
+    #################################
+    # gives an estimation of f(z)*sigma8(z) at the scale of 8 h/Mpc, computed as (d sigma8/d ln a)
+    def effective_f_sigma8(self, z, z_step=0.1):
+        """
+        effective_f_sigma8(z)
+
+        Returns the time derivative of sigma8(z) computed as (d sigma8/d ln a)
+
+        Parameters
+        ----------
+        z : float
+                Desired redshift
+        z_step : float
+                Default step used for the numerical two-sided derivative. For z < z_step the step is reduced progressively down to z_step/10 while sticking to a double-sided derivative. For z< z_step/10 a single-sided derivative is used instead.
+
+        Returns
+        -------
+        (d ln sigma8/d ln a)(z) (dimensionless)
+        """
+
+        # we need d sigma8/d ln a = - (d sigma8/dz)*(1+z)
+
+        # if possible, use two-sided derivative with default value of z_step
+        if z >= z_step:
+            return (self.sigma(8/self.h(),z-z_step,h_units=True)-self.sigma(8/self.h(),z+z_step,h_units=True))/(2.*z_step)*(1+z)
+        else:
+            # if z is between z_step/10 and z_step, reduce z_step to z, and then stick to two-sided derivative
+            if (z > z_step/10.):
+                z_step = z
+                return (self.sigma(8/self.h(),z-z_step,h_units=True)-self.sigma(8/self.h(),z+z_step,h_units=True))/(2.*z_step)*(1+z)
+            # if z is between 0 and z_step/10, use single-sided derivative with z_step/10
+            else:
+                z_step /=10
+                return (self.sigma(8/self.h(),z,h_units=True)-self.sigma(8/self.h(),z+z_step,h_units=True))/z_step*(1+z)
+
+
 
     def age(self):
         self.compute(["background"])

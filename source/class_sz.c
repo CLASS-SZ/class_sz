@@ -835,6 +835,13 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
      }
 // printf("printing results\n");
 
+// double z=1.;
+// double m200m_pivot = 3e14*0.7;
+//
+// double r = get_m200m_to_m500c_at_z_and_M(z,m200m_pivot,ptsz)/m200m_pivot;
+// printf("r = %.5e\n",r);
+// exit(0);
+
 
   if ( (ptsz->has_gal_gallens_1h || ptsz->has_gal_gallens_2h) && ptsz->convert_cls_to_gamma){
 
@@ -7733,8 +7740,8 @@ double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double x,
   // hasselfield et al 2013:
    double C_pressure = 1.65*pow(pba->h/0.7,2)
                        *pow(Eh,8./3.)
-                       *pow(m/(3.e14*0.7),2./3.)
-                       *pow(m/(3.e14*0.7),0.22/(1.+8.*pow(x,3.)));
+                       *pow(m/(3.e14*0.7),2./3.);
+                       // *pow(m/(3.e14*0.7),0.22/(1.+8.*pow(x,3.))); hasselfield et al has this part!
 
 
    //A10:

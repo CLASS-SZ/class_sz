@@ -19327,6 +19327,9 @@ double get_dndlnM_at_z_and_M(double z_asked, double m_asked, struct tszspectrum 
 double get_m200m_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
+  // printf("ok\n");
+
+
  return exp(pwl_interp_2d(ptsz->n_z_dndlnM,
                           ptsz->n_m_dndlnM,
                           ptsz->array_ln_1pz_m200m_to_m500c,
@@ -19335,6 +19338,7 @@ double get_m200m_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszs
                           1,
                           &z,
                           &m));
+// return 0.;
 }
 
 
