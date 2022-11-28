@@ -238,9 +238,9 @@ int index_m_z = 0;
 
 if (pcsz->has_completeness == 1){
   if (ptsz->sigmaM_ym == 0.){
-    // if (ptsz->sz_verbose>0){
-    //   printf("--> No scatter in ym relation.\n");
-    // }
+    if (ptsz->sz_verbose>0){
+      printf("--> No scatter in ym relation.\n");
+    }
     int index_m_z = 0;
 
 // for (index_m=0;index_m<pcsz->nsteps_m;index_m++){
@@ -265,12 +265,29 @@ if (pcsz->has_completeness == 1){
           m500c = get_m200c_to_m500c_at_z_and_M(zp,mp,ptsz);
         }
         //
+        if (ptsz->integrate_wrt_m500c == 1){
+          m500c = mp;
+        }
 
         if (ptsz->use_m500c_in_ym_relation == 1){
         m_ym = m500c;
         }
 
+        // printf("m_ym = %.5e\n",m_ym);
+        // exit(0);
+        // zp = 1.00000e-05;
         double yp = get_y_at_m_and_z(m_ym,zp,ptsz,pba);
+
+        // if (index_y == 2  && index_z == 0 && index_m == 0){
+        // printf("\n");
+        // printf("\n");
+        // printf("m_ym = %.5e zp = %.5e yp = %.5e\n",m_ym,zp,yp);
+        // printf("\n");
+        // printf("\n");
+        // exit(0);
+        // }
+
+
         double thp = get_theta_at_m_and_z(m500c,zp,ptsz,pba);
         //Planck
 
@@ -311,6 +328,13 @@ if (pcsz->has_completeness == 1){
           c2 *= erf_compl(yp,y,y_min);
           c2 *= (1.-erf_compl(yp,y,y_max));
 
+          // if (index_y == 2 && index_patches == 0 && index_z == 0 && index_m == 0){
+          // printf("\n");
+          // printf("mp = %.5e zp = %.5e yp = %.5e y = %.5e c2 = %.5e\n",mp,zp,yp,y,c2);
+          // printf("\n");
+          // exit(0);
+          // }
+
 
           if (index_y == 0){
             c2 = erf_compl(yp,y,ptsz->sn_cutoff);
@@ -330,14 +354,14 @@ if (pcsz->has_completeness == 1){
             c2 = erf_compl_nicola(yp,y,ptsz->sn_cutoff,y_min,y_max);
           }
 
-          completeness_2d[index_m][index_z] += c2*ptsz->skyfracs[index_patches]/fsky;
+          completeness_2d[index_m][index_z] += c2*ptsz->skyfracs[index_patches];///fsky;
           // printf("%d\n",index_patches);
 
-          completeness_2d_to_1d[index_m_z] += c2*ptsz->skyfracs[index_patches];
+          // completeness_2d_to_1d[index_m_z] += c2*ptsz->skyfracs[index_patches];
           // completeness_2d_to_1d[index_m_z] += 1.*ptsz->skyfracs[index_patches];
 
         } // end loop patches
-        completeness_2d_to_1d[index_m_z] = log(completeness_2d_to_1d[index_m_z]);
+        // completeness_2d_to_1d[index_m_z] = log(completeness_2d_to_1d[index_m_z]);
         index_m_z += 1;
 
         if (completeness_2d[index_m][index_z]>1.) completeness_2d[index_m][index_z] = 1.;
@@ -427,11 +451,11 @@ if (pcsz->has_completeness == 1){
           }
           erfs[index1][index2]=erfs[index1][index2]+c2*ptsz->skyfracs[index_patches];
 
-          erfs_2d_to_1d[index_th_y] += c2*ptsz->skyfracs[index_patches];
+          // erfs_2d_to_1d[index_th_y] += c2*ptsz->skyfracs[index_patches]/fsky;
 
 
         } //end loop patches
-        erfs_2d_to_1d[index_th_y] = log(erfs_2d_to_1d[index_th_y]);
+        // erfs_2d_to_1d[index_th_y] = log(erfs_2d_to_1d[index_th_y]);
         index_th_y += 1;
       } //end loop y
     } //end loop thetas
@@ -592,7 +616,7 @@ if (pcsz->has_completeness == 1){
         int_comp=1.e-300;
 }
 
-        // completeness_2d[index_m][index_z] =int_comp;
+        completeness_2d[index_m][index_z] =int_comp;
         completeness_2d_to_1d[index_m_z] = log(int_comp);
         // printf("c = %.4e %.4e\n",completeness_2d_to_1d[index_m_z],int_comp);
         index_m_z += 1;
@@ -633,20 +657,20 @@ if (pcsz->has_completeness == 1){
 // }
 
 
-struct Parameters_for_integrand_cluster_counts_redshift V;
-  V.ptsz = ptsz;
-  V.pba = pba;
-  V.completeness_2d_to_1d = completeness_2d_to_1d;
-
-  void * params = &V;
+// struct Parameters_for_integrand_cluster_counts_redshift V;
+//   V.ptsz = ptsz;
+//   V.pba = pba;
+//   V.completeness_2d_to_1d = completeness_2d_to_1d;
+//
+//   void * params = &V;
   double r; //result of the integral
-
-  double epsrel = ptsz->redshift_epsrel_cluster_counts;
-  double epsabs = ptsz->redshift_epsabs_cluster_counts;
-  //int show_neval = ptsz->patterson_show_neval;
-
-  double z_min = z_bin_min;
-  double z_max = z_bin_max;
+//
+//   double epsrel = ptsz->redshift_epsrel_cluster_counts;
+//   double epsabs = ptsz->redshift_epsabs_cluster_counts;
+//   //int show_neval = ptsz->patterson_show_neval;
+//
+//   double z_min = z_bin_min;
+//   double z_max = z_bin_max;
 
 
   // r=Integrate_using_Patterson_adaptive(z_min,
@@ -691,8 +715,9 @@ for (index_z_steps_z = index_z_steps_z_min;index_z_steps_z<index_z_steps_z_max+1
     double cp = completeness_2d[index_m][index_z_steps_z];
     double fpp = get_volume_at_z(zpp,pba)*get_dndlnM_at_z_and_M(zpp,mp,ptsz);
     double cpp = completeness_2d[index_m][index_z_steps_z+1];
-    // printf("index_y =  %d cp = %.5e\n",index_y,cp);
- r+= 0.5*fsky*(fp*cp+fpp*cpp)*pcsz->dlnM*(zpp-zp);
+if (ptsz->sz_verbose>3)
+    printf("index_y =  %d cp = %.5e fp = %.5e zp = %.5e  zpp = %.5e  mp = %.5e\n",index_y,cp, fp, zp, zpp, mp);
+ r+= 0.5*(fp*cp+fpp*cpp)*pcsz->dlnM*(zpp-zp);
   }
 }
 
@@ -1012,7 +1037,7 @@ if (ptsz->sz_verbose>3){
   pcsz->z_max = ptsz->bin_z_max_cluster_counts;
   pcsz->dz = ptsz->bin_dz_cluster_counts;
 
-  pcsz->Nbins_z =floor((pcsz->z_max - pcsz->z_0)/pcsz->dz) -1;;
+  pcsz->Nbins_z =floor((pcsz->z_max - pcsz->z_0)/pcsz->dz); // BB commented to match planck cc: "-1";
 
 // printf("%d\n",pcsz->Nbins_z);
 // exit(0);
@@ -1029,13 +1054,17 @@ if (ptsz->sz_verbose>3){
 
 
   double z_max = pcsz->z_max;//pcsz->z_center[pcsz->Nbins_z-1] + 0.5*pcsz->dz;
-  double z_i = pcsz->z_0 + 0.5*pcsz->dz;
+  double z_i = pcsz->z_0;//commented to match planck cc: + 0.5*pcsz->dz;
   pcsz->nsteps_z = 0;
+
+// if (ptsz->sz_verbose>3)
+//   printf("zmax = %.5e\n",z_max);
+
   while (z_i < z_max) {
     z_i = next_z(z_i,binz,ptsz);
     pcsz->nsteps_z += 1;
   }
-  pcsz->nsteps_z += -2;
+  //commented to match planck cc: pcsz->nsteps_z += -2;
 
   ptsz->nsteps_z = pcsz->nsteps_z;
 
@@ -1050,7 +1079,7 @@ if (ptsz->sz_verbose>3){
               ptsz->nsteps_z*sizeof(double *),
               ptsz->error_message);
 
-  z_i = pcsz->z_0+ 0.5*pcsz->dz;;
+  z_i = pcsz->z_0;// commented to match planck cc: + 0.5*pcsz->dz;;
 
   for(index_z = 0; index_z<pcsz->nsteps_z; index_z++){
     pcsz->steps_z[index_z] = z_i;
@@ -1070,6 +1099,7 @@ if (ptsz->sz_verbose>3){
       printf("%e\n",pcsz->steps_z[index_z]);
     }
 }
+// exit(0);
   //grid for y
   //# y bin parameters
   //# Logymin corresponds to log10 of S/N_min (5 or 6)

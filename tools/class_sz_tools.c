@@ -5267,6 +5267,8 @@ int spectra_sigma_for_tSZ(
   int i;
 
   double k,W,x;
+  double t;
+
 
 
   i=0;
@@ -5284,8 +5286,13 @@ int spectra_sigma_for_tSZ(
 
   for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
     k=exp(ptsz->ln_k_for_tSZ[i]);
+    t = 1./(1.+k);
     if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
     x=k*R;
+
+    if (x<0.01)
+      W = 1.-x*x/10.;
+    else
     W=3./x/x/x*(sin(x)-x*cos(x));
 
     /*
@@ -5308,8 +5315,8 @@ int spectra_sigma_for_tSZ(
                                      pnl->error_message);
 
 
-    array_for_sigma[i*index_num+index_k]=k;
-    array_for_sigma[i*index_num+index_y]=k*k*pk*W*W;
+    array_for_sigma[i*index_num+index_k]=t;
+    array_for_sigma[i*index_num+index_y]=k*k*k*pk*W*W/(t*(1.-t));
   }
 
 
@@ -5326,9 +5333,10 @@ int spectra_sigma_for_tSZ(
              pnl->error_message,
              pnl->error_message);
 
-  class_call(array_integrate_all_spline(array_for_sigma,
+  class_call(array_integrate_all_trapzd_or_spline(array_for_sigma,
                                         index_num,
                                         ptsz->ln_k_size_for_tSZ,
+                                        0,
                                         index_k,
                                         index_y,
                                         index_ddy,
@@ -5337,10 +5345,73 @@ int spectra_sigma_for_tSZ(
              pnl->error_message,
              pnl->error_message);
 
+
+  double sigmat = *sigma;
+
+  //
+  // for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
+  //   k=exp(ptsz->ln_k_for_tSZ[i]);
+  //   if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
+  //   x=k*R;
+  //   W=3./x/x/x*(sin(x)-x*cos(x));
+  //
+  //   /*
+  //   class_call(spectra_pk_at_k_and_z(pba,ppm,psp,k,z,&pk,pk_ic),
+  //              psp->error_message,
+  //              psp->error_message);*/
+  //
+  //    class_call(nonlinear_pk_at_k_and_z(
+  //                                      pba,
+  //                                      ppm,
+  //                                      pnl,
+  //                                      pk_linear,
+  //                                      k,
+  //                                      z,
+  //                                      pnl->index_pk_m,
+  //                                      &pk, // number *out_pk_l
+  //                                      pk_ic // array out_pk_ic_l[index_ic_ic]
+  //                                    ),
+  //                                    pnl->error_message,
+  //                                    pnl->error_message);
+  //
+  //
+  //   array_for_sigma[i*index_num+index_k]=k;
+  //   array_for_sigma[i*index_num+index_y]=k*k*pk*W*W;
+  // }
+  //
+  //
+  //
+  //
+  // class_call(array_spline(array_for_sigma,
+  //                         index_num,
+  //                         ptsz->ln_k_size_for_tSZ,
+  //                         index_k,
+  //                         index_y,
+  //                         index_ddy,
+  //                         _SPLINE_EST_DERIV_,
+  //                         pnl->error_message),
+  //            pnl->error_message,
+  //            pnl->error_message);
+  //
+  // class_call(array_integrate_all_trapzd_or_spline(array_for_sigma,
+  //                                       index_num,
+  //                                       ptsz->ln_k_size_for_tSZ,
+  //                                       0,
+  //                                       index_k,
+  //                                       index_y,
+  //                                       index_ddy,
+  //                                       sigma,
+  //                                       pnl->error_message),
+  //            pnl->error_message,
+  //            pnl->error_message);
+  //
+  // // printf("sigma t = %.5e n = %.5e\n",sigmat,*sigma);
+
   free(array_for_sigma);
 
 
-  *sigma = sqrt(*sigma/(2.*_PI_*_PI_));
+  // *sigma = sqrt(*sigma/(2.*_PI_*_PI_));
+  *sigma = sqrt(-sigmat/(2.*_PI_*_PI_));
 
   return _SUCCESS_;
 
@@ -5370,7 +5441,7 @@ int spectra_sigma_prime(
   int index_ddy;
   int i;
 
-  double k,W,x,W_prime;
+  double k,W,x,W_prime,t;
 
 
 
@@ -5389,10 +5460,17 @@ int spectra_sigma_prime(
 
   for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
     k=exp(ptsz->ln_k_for_tSZ[i]);
+    t = 1./(1.+k);
     if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
     x=k*R;
+    if (x<0.01) {
+      W = 1.-x*x/10.;
+      W_prime = -0.2*x;
+    }
+    else {
     W=3./x/x/x*(sin(x)-x*cos(x));
     W_prime=3./x/x*sin(x)-9./x/x/x/x*(sin(x)-x*cos(x));
+    }
 
     //class_call(spectra_pk_at_k_and_z(pba,ppm,psp,k,z,&pk,pk_ic),
     //           psp->error_message,
@@ -5413,8 +5491,8 @@ int spectra_sigma_prime(
                                     pnl->error_message);
 
 
-    array_for_sigma[i*index_num+index_k]=k;
-    array_for_sigma[i*index_num+index_y]=k*k*pk*k*2.*W*W_prime;
+    array_for_sigma[i*index_num+index_k]=t;//k;
+    array_for_sigma[i*index_num+index_y]=k*k*k*pk*2.*k*W*W_prime/(t*(1.-t));//k*k*pk*k*2.*W*W_prime;
   }
 
   class_call(array_spline(array_for_sigma,
@@ -5428,9 +5506,10 @@ int spectra_sigma_prime(
              pnl->error_message,
              pnl->error_message);
 
-  class_call(array_integrate_all_spline(array_for_sigma,
+  class_call(array_integrate_all_trapzd_or_spline(array_for_sigma,
                                         index_num,
                                         ptsz->ln_k_size_for_tSZ,
+                                        0,
                                         index_k,
                                         index_y,
                                         index_ddy,
@@ -5443,7 +5522,7 @@ int spectra_sigma_prime(
 
 
 
-  *sigma_prime = *sigma_prime/(2.*_PI_*_PI_);
+  *sigma_prime = -*sigma_prime/(2.*_PI_*_PI_);
 
   return _SUCCESS_;
 
@@ -7496,7 +7575,7 @@ int MF_T08_m500(
                 )
 {
   //T08@m500
-  if(z>3.) z=3.;
+  // if(z>3.) z=3.; // ccl doesnt have this.. commenting for now.
   double om0 = ptsz->Omega_m_0;
   double ol0 = 1.-ptsz->Omega_m_0;
   double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0);
@@ -7706,18 +7785,18 @@ int MF_T08_m500(
   double   b=*b0*pow(1.+z,-alphaT08);
   double   c=*c0;
   double   nu= exp(*lognu);
-  double sigma= 1.6865/sqrt(nu);
+  double sigma= ptsz->delta_cSZ/sqrt(nu);
 
   free(Ap0);
   free(a0);
   free(b0);
   free(c0);
 
-  //sigma = 1.;
+  // sigma = .1;
 
   *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
-  //*result = 0.5*(Ap*(pow(1.0/b,-a)+1.)*exp(-c/pow(1.0,2.)));
-
+  // *result = 0.5*(Ap*(pow(1.0/b,-a)+1.)*exp(-c/pow(1.0,2.)));
+  // *result = 0.5;
   return _SUCCESS_;
 }
 
@@ -7859,36 +7938,38 @@ double get_f_tinker10_at_nu_and_z(double nu, double z,struct tszspectrum * ptsz)
 
 
 
-//HMF Tinker et al 2008
-//@ M200m
-int MF_T08(
-           double * result,
-           double * lognu ,
-           double z ,
-           struct tszspectrum * ptsz
-           )
-{
-  // double alphaT08 = pow(10.,-pow(0.75/log10(200./75.),1.2));
-  //
-  // double   Ap=0.186*pow(1.+z,-0.14);
-  // double   a=1.47*pow(1.+z,-0.06);
-  // double   b=2.57*pow(1.+z,-alphaT08);
-  // double   c=1.19;
-  // double   nu= exp(*lognu);
-  // double sigma= ptsz->delta_cSZ/sqrt(nu);
-  //
-  // *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
-
-  *result = get_f_tinker08_at_nu_and_z(exp(*lognu),z,ptsz);
-
-  return _SUCCESS_;
-}
+// //HMF Tinker et al 2008
+// //@ M200m
+// ---> deprecated: all done in the one that we interpolate
+// int MF_T08(
+//            double * result,
+//            double * lognu ,
+//            double z ,
+//            struct tszspectrum * ptsz
+//            )
+// {
+//   // double alphaT08 = pow(10.,-pow(0.75/log10(200./75.),1.2));
+//   //
+//   // double   Ap=0.186*pow(1.+z,-0.14);
+//   // double   a=1.47*pow(1.+z,-0.06);
+//   // double   b=2.57*pow(1.+z,-alphaT08);
+//   // double   c=1.19;
+//   // double   nu= exp(*lognu);
+//   // double sigma= ptsz->delta_cSZ/sqrt(nu);
+//   //
+//   // *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
+//
+//   *result = get_f_tinker08_at_nu_and_z(exp(*lognu),z,ptsz);
+//
+//   return _SUCCESS_;
+// }
 
 
 
 double get_f_tinker08_at_nu_and_z(double nu, double z,  struct tszspectrum * ptsz){
 
   if(z>2.5) z=2.5; // see sec 4 of https://arxiv.org/pdf/0803.2706.pdf
+  // this is not in CCL
 
   double alphaT08 = pow(10.,-pow(0.75/log10(200./75.),1.2));
 
@@ -16506,7 +16587,7 @@ if (ptsz->need_sigma == 0)
 // printf("tabulating sigma\n");
 
    // bounds array of radii for sigma computations:
-   ptsz->logR1SZ = log(pow(3.*0.1*1e0/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
+   ptsz->logR1SZ = log(pow(3.*0.1*1e9/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
    ptsz->logR2SZ = log(pow(3.*10.*1e17/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.));
 
 
@@ -16606,10 +16687,13 @@ num_threads(number_of_threads)
   //                      ptsz->error_message);
 
 
-#pragma omp for schedule (dynamic)
+// #pragma omp for schedule (dynamic)
+#pragma omp for collapse(2)
   for (index_R=0; index_R<ptsz->ndimSZ; index_R++)
   {
-#pragma omp flush(abort)
+  for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
+  {
+// #pragma omp flush(abort)
 
     double sigma_var,dsigma_var;
     ptsz->array_radius[index_R] =
@@ -16617,8 +16701,8 @@ num_threads(number_of_threads)
                                 +index_R*(logR_max-logR_min)
                                 /(ptsz->ndimSZ-1.); //log(R)
 
-    for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
-    {
+    // for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
+    // {
       // ptsz->array_redshift[index_z] =
       //                                 log(1.+z_min)
       //                                 +index_z*(log(1.+z_max)-log(1.+z_min))
@@ -16716,7 +16800,7 @@ for (index_R=0; index_R<ptsz->ndimSZ; index_R++)
     // exp(ptsz->array_redshift[index_z])-1.,
     // ptsz->array_sigma_at_z_and_R[index_z_R]);
     ptsz->array_dsigma2dR_at_z_and_R[index_z_R]=array_dsigma2dR_at_z_and_R[index_z][index_R];
-    double dsigma = ptsz->array_sigma_at_z_and_R[index_z_R];
+    double dsigma = ptsz->array_dsigma2dR_at_z_and_R[index_z_R];
     if (isnan(sigma+dsigma) || isinf(sigma+dsigma) ){
      printf("z=%.3e R=%.3e sigma=%.3e dsigma2dR=%.3e\n",exp(ptsz->array_redshift[index_z]),exp(ptsz->array_radius[index_R]),sigma,dsigma);
      exit(0);
@@ -16989,6 +17073,10 @@ int tabulate_dndlnM(struct background * pba,
   // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
   double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
   // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
+
+  if (ptsz->sz_verbose>10){
+  printf("tabulating dndlnM between z_min=%.5e and z_max=%.5e\n",z_min,z_max);
+}
   int index_z;
 
   double tstart, tstop;

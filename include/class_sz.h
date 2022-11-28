@@ -145,6 +145,7 @@ struct tszspectrum {
   int no_b2;
   //double unwise_m_min_cut;
 
+  int cib_nu0_norm;
   double sn_cutoff;
 
   double f_sky;

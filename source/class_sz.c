@@ -196,7 +196,7 @@ int szpowerspectrum_init(
 
       double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
       // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
-      double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+      double z_max = 1.0001*r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
       int index_z;
 
       class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
@@ -379,8 +379,9 @@ if (ptsz->sz_verbose>1)
   }
   // exit(0);
 
+  // printf("ok for now...\n");
 
-if (ptsz->need_hmf != 0){
+if ((ptsz->need_hmf != 0) && (ptsz->hm_consistency==1)){
   if (ptsz->sz_verbose>10)
       printf("counter terms nmin\n");
    tabulate_hmf_counter_terms_nmin(pba,pnl,ppm,ptsz);
@@ -389,7 +390,7 @@ if (ptsz->need_hmf != 0){
    tabulate_hmf_counter_terms_b1min(pba,pnl,ppm,ppt,ptsz);
    if (ptsz->sz_verbose>10)
    printf("counter terms b1 min done\n");
-   if (ptsz->hm_consistency==1){
+   // if (ptsz->hm_consistency==1){
    ptsz->hm_consistency_counter_terms_done = 0;
    // tabulate_hmf_counter_terms_nmin(pba,pnl,ppm,ptsz);
    // tabulate_hmf_counter_terms_b1min(pba,pnl,ppm,ptsz);
@@ -410,8 +411,9 @@ if (ptsz->need_hmf != 0){
       ptsz->array_hmf_counter_terms_b2min[index_z],b2_min);
     }
   }
-  }
+  // }
 }
+
 
    if (ptsz->has_vrms2){
 if (ptsz->sz_verbose>1)
@@ -432,6 +434,7 @@ if (ptsz->sz_verbose>1)
 if (ptsz->sz_verbose>1)
   printf("-> knl tabulated.\n");
  }
+
 
    // printf("tabulating dndlnM quantities 1\n");
 
@@ -711,6 +714,7 @@ if (ptsz->has_n5k){
 
 }
 // exit(0);
+
 
 if (ptsz->has_kSZ_kSZ_gal_1h_fft
  || ptsz->has_kSZ_kSZ_gal_2h_fft
@@ -2151,11 +2155,12 @@ if (ptsz->has_dndlnM == 1
    free(ptsz->array_dndlnM_at_z_and_M);
  }
 if (ptsz->need_hmf == 1){
+  if (ptsz->hm_consistency == 1){
 free(ptsz->array_hmf_counter_terms_nmin);
 free(ptsz->array_redshift_hmf_counter_terms);
 free(ptsz->array_hmf_counter_terms_b1min);
 
-if (ptsz->hm_consistency == 1){
+
   // free(ptsz->array_hmf_counter_terms_nmin);
   // free(ptsz->array_redshift_hmf_counter_terms);
    // free(ptsz->array_hmf_counter_terms_b1min);
@@ -8380,16 +8385,30 @@ double get_sigma_at_z_and_m(double z,
    double R_asked = log(rh/pba->h);
 
 
- if (z_asked<ptsz->array_redshift[0])
-    z_asked = ptsz->array_redshift[0];
- if (z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1])
-    z_asked = ptsz->array_redshift[ptsz->n_arraySZ-1];
+ if (z_asked<ptsz->array_redshift[0]){
+    // z_asked = ptsz->array_redshift[0];
+printf("get_sigm: z_asked<ptsz->array_redshift[0].. check bounds.\n");
+exit(0);
+  }
+ if (z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1]){
+    // z_asked = ptsz->array_redshift[ptsz->n_arraySZ-1];
+printf("get_sigm: z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1].. check bounds.\n");
+printf("z_asked = %.15e ptsz->array_redshift[ptsz->n_arraySZ-1] = %.15e\n",exp(z_asked)-1.,exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.);
+exit(0);
+  }
 
- if (R_asked<ptsz->array_radius[0])
-    R_asked = ptsz->array_radius[0];
+ if (R_asked<ptsz->array_radius[0]){
+    // R_asked = ptsz->array_radius[0];
+printf("get_sigm: R_asked<ptsz->array_radius[0].. check bounds.\n");
+exit(0);
+  }
       // printf("dealing with mass conversion in hmf3\n");
- if (R_asked>ptsz->array_radius[ptsz->ndimSZ-1])
-    R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
+ if (R_asked>ptsz->array_radius[ptsz->ndimSZ-1]){
+   // R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
+printf("get_sigm: R_asked>ptsz->array_radius[ptsz->ndimSZ-1].. check bounds.\n");
+exit(0);
+ }
+
 
 
    double sigma = exp(pwl_interp_2d(ptsz->n_arraySZ,
@@ -8430,16 +8449,40 @@ double get_dlnsigma_dlnR_at_z_and_m(double z,
    double R_asked = log(rh/pba->h); // in Mpc
 
 
- if (z_asked<ptsz->array_redshift[0])
-    z_asked = ptsz->array_redshift[0];
- if (z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1])
-    z_asked = ptsz->array_redshift[ptsz->n_arraySZ-1];
+ // if (z_asked<ptsz->array_redshift[0])
+ //    z_asked = ptsz->array_redshift[0];
+ // if (z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1])
+ //    z_asked = ptsz->array_redshift[ptsz->n_arraySZ-1];
+ //
+ // if (R_asked<ptsz->array_radius[0])
+ //    R_asked = ptsz->array_radius[0];
+ //      // printf("dealing with mass conversion in hmf3\n");
+ // if (R_asked>ptsz->array_radius[ptsz->ndimSZ-1])
+ //    R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
 
- if (R_asked<ptsz->array_radius[0])
-    R_asked = ptsz->array_radius[0];
+ if (z_asked<ptsz->array_redshift[0]){
+    // z_asked = ptsz->array_redshift[0];
+printf("get_dlnsigm: z_asked<ptsz->array_redshift[0].. check bounds.\n");
+exit(0);
+  }
+ if (z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1]){
+    // z_asked = ptsz->array_redshift[ptsz->n_arraySZ-1];
+printf("get_dlnsigm: z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1].. check bounds.\n");
+exit(0);
+  }
+
+ if (R_asked<ptsz->array_radius[0]){
+    // R_asked = ptsz->array_radius[0];
+printf("get_dlnsigm: R_asked<ptsz->array_radius[0].. check bounds.\n");
+exit(0);
+  }
       // printf("dealing with mass conversion in hmf3\n");
- if (R_asked>ptsz->array_radius[ptsz->ndimSZ-1])
-    R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
+ if (R_asked>ptsz->array_radius[ptsz->ndimSZ-1]){
+   // R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
+printf("get_dlnsigm: R_asked>ptsz->array_radius[ptsz->ndimSZ-1].. check bounds.\n");
+exit(0);
+ }
+
 
 
    double sigma =  pwl_interp_2d(
@@ -9553,16 +9596,35 @@ pvectsz[ptsz->index_lognu] = log(get_nu_at_z_and_m(exp(z_asked)-1.,m_for_hmf,pts
    //HMF evaluation:
    //Tinker et al 2008
    else if (ptsz->MF==4) {
+       double zz = z;
+       // if(z>3.) zz=3.;
+       double om0 = ptsz->Omega_m_0;
+       double ol0 = 1.-ptsz->Omega_m_0;
+       double Omega_m_z = om0*pow(1.+zz,3.)/(om0*pow(1.+zz,3.)+ ol0);
       class_call(
-                      MF_T08(
-                                 &pvectsz[ptsz->index_mf],
-                                 &pvectsz[ptsz->index_lognu],
-                                 z,
-                                 ptsz
-                                 ),
+                      // MF_T08(
+                      //            &pvectsz[ptsz->index_mf],
+                      //            &pvectsz[ptsz->index_lognu],
+                      //            z,
+                      //            ptsz
+                      //            ),
+                      // ptsz->error_message,
+                      // ptsz->error_message
+                      // );
+
+                      MF_T08_m500(
+                                        &pvectsz[ptsz->index_mf],
+                                        &pvectsz[ptsz->index_lognu],
+                                        z,
+                                        200.*Omega_m_z,
+                                        ptsz
+                                        ),
                       ptsz->error_message,
                       ptsz->error_message
                       );
+
+
+
    }
 
    //HMF evaluation:
@@ -12073,6 +12135,20 @@ int index_l;
 for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
 printf("ell = %e\t\t cl_kSZ_kSZ_gal_hf (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_kSZ_kSZ_gal_hf[index_l]);
+}
+}
+
+
+if (ptsz->has_tSZ_tSZ_tSZ_1halo){
+printf("\n\n");
+printf("###################################################\n");
+printf("1-halo tsz bispectrum:\n");
+printf("###################################################\n");
+printf("\n");
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t bl_tSZ_tSZ_tSZ (1h) = %e \n",ptsz->ell[index_l],ptsz->b_tSZ_tSZ_tSZ_1halo[index_l]);
 }
 }
 
@@ -15051,6 +15127,9 @@ if (z>ptsz->z_plateau_cib)
 return result;
                                       }
 
+
+/// this agrees with FMC but may be different from the Websky model,
+/// in websky the normalization seeem to not depend on z.
 double evaluate_sed_cib(double z, double nu, struct tszspectrum * ptsz){
 double result = 0.;
 double Td = evaluate_dust_temperature(z,ptsz);
@@ -15064,6 +15143,7 @@ double kb = 1.38064852e-23; //#m2 kg s-2 K-1
 double clight = 299792458.;
 nu0 = 1e-9*kb*Td/hplanck*(3.+ptsz->beta_cib+ptsz->gamma_cib+gsl_sf_lambert_W0(x));
 
+if (ptsz->cib_nu0_norm == 1){
 //printf("nu=%.3e, nu0 = %.3e\n",nu,nu0);
 if (nu>=nu0){
 result = pow(nu/nu0,-ptsz->gamma_cib);
@@ -15074,8 +15154,32 @@ double B_nu_at_Td = (2.*hplanck/clight/clight)*pow(nu*1e9,3.)
 double B_nu0_at_Td = (2.*hplanck/clight/clight)*pow(nu0*1e9,3.)
                     /(exp(hplanck*nu0*1e9/kb/Td)-1.);
 result = pow(nu/nu0,ptsz->beta_cib)*B_nu_at_Td/B_nu0_at_Td;
-}
 
+}
+}
+else{
+  // double z_fid = 0.
+  // double Td_fid = evaluate_dust_temperature(z_fid,ptsz);
+  // double nu0_fid;
+  // // double x = -(3.+ptsz->beta_cib+ptsz->gamma_cib)*exp(-(3.+ptsz->beta_cib+ptsz->gamma_cib));
+  // // double hplanck=6.62607004e-34; //#m2 kg / s
+  // // double kb = 1.38064852e-23; //#m2 kg s-2 K-1
+  // // double clight = 299792458.;
+  // nu0 = 1e-9*kb*Td_fid/hplanck*(3.+ptsz->beta_cib+ptsz->gamma_cib+gsl_sf_lambert_W0(x));
+  if (nu>=nu0){
+
+  result = pow(nu,-ptsz->gamma_cib);
+  }
+  else{
+    double B_nu_at_Td = (2.*hplanck/clight/clight)*pow(nu*1e9,3.)
+                        /(exp(hplanck*nu*1e9/kb/Td)-1.);
+    // double B_nu0_at_Td = (2.*hplanck/clight/clight)*pow(nu0*1e9,3.)
+    //                     /(exp(hplanck*nu0*1e9/kb/Td)-1.);
+    result = pow(nu,ptsz->beta_cib)*B_nu_at_Td/pow(Td,4.+ptsz->beta_cib);
+
+  }
+
+}
 
 //printf("nu0=%.6e\n",nu0);
 //exit(0);

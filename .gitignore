@@ -230,3 +230,8 @@ act_extended_act_plus_planck_wbp_less353545_cov_april22_mtsz_logspaced_051122.up
 notebooks/websky_cib_and_tszxcib-summary_and_examples-compare_with_dr4_model.ipynb
 python/dist/classy_sz-2.9.4-py3.9-macosx-10.9-x86_64.egg
 python/dist/classy_sz-2.9.4-py3.9-macosx-10.9-x86_64.egg
+python/dist/classy_sz-2.9.4-py3.9-macosx-10.9-x86_64.egg
+python/dist/classy_sz-2.9.4-py3.9-macosx-10.9-x86_64.egg
+*.egg
+*.egg
+python/dist/*

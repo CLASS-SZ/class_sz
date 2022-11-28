@@ -1759,7 +1759,8 @@ int input_read_parameters(
       //Redshift limits for the integration
       class_read_double("z_min",ptsz->z1SZ);
       class_read_double("z_max",ptsz->z2SZ);
-
+      ptsz->z1SZ_dndlnM = ptsz->z1SZ;
+      ptsz->z2SZ_dndlnM = ptsz->z2SZ;
 
 
       class_read_double("redshift_epsrel",ptsz->redshift_epsrel);
@@ -1785,8 +1786,7 @@ int input_read_parameters(
       class_read_double("M_max",ptsz->M2SZ);
       ptsz->M1SZ_dndlnM = ptsz->M1SZ;
       ptsz->M2SZ_dndlnM = ptsz->M2SZ;
-      ptsz->z1SZ_dndlnM = ptsz->z1SZ;
-      ptsz->z2SZ_dndlnM = ptsz->z2SZ;
+
 
       ptsz->M_min_ng_bar = ptsz->M1SZ;
       ptsz->M_max_ng_bar = ptsz->M2SZ;
@@ -3364,6 +3364,7 @@ int input_read_parameters(
      class_read_int("use_redshift_dependent_M_min",ptsz->use_redshift_dependent_M_min);
      class_read_int("use_nc_1_for_all_halos_cib_HOD",ptsz->use_nc_1_for_all_halos_cib_HOD);
 
+     class_read_int("cib_nu0_norm",ptsz->cib_nu0_norm);
      class_read_int("use scale dependent bias (from non Gaussianity)",ptsz->has_ng_in_bh);
      class_read_double("fNL",ptsz->fNL);
      if(ptsz->has_ng_in_bh){
@@ -5875,7 +5876,7 @@ int input_default_params(
   ptsz->M1_prime_HOD_factor = 15.;
   ptsz->M_min_HOD_satellite_mass_factor_unwise = 0.1;
 
-  ptsz->hm_consistency = 1; //0: nothing 1: counter terms 2: alpha(z)
+  ptsz->hm_consistency = 0; //0: nothing 1: counter terms 2: alpha(z)
   ptsz->check_consistency_conditions = 0;
   ptsz->damping_1h_term = 1;
 
@@ -6069,6 +6070,7 @@ int input_default_params(
   ptsz->z_plateau_cib = 1e100; // see 5.2.1 of https://arxiv.org/pdf/1208.5049.pdf
   ptsz->M_min_subhalo_in_Msun = 0;
   ptsz->use_redshift_dependent_M_min = 0;
+  ptsz->cib_nu0_norm = 1;
   ptsz->use_nc_1_for_all_halos_cib_HOD = 0;
 
   ptsz->fNL = 0.;
@@ -6150,13 +6152,13 @@ int input_default_params(
   ptsz->delta_cSZ = (3./20.)*pow(12.*_PI_,2./3.);
 
 
-  ptsz->k_per_decade_for_tSZ = 20.; //#default 40
-  ptsz->k_min_for_pk_in_tSZ = 1.e-3; //#default 1.e-3
+  ptsz->k_per_decade_for_tSZ = 50.; //#default 40
+  ptsz->k_min_for_pk_in_tSZ = 1.e-2; //#default 1.e-3
   ptsz->k_max_for_pk_in_tSZ = 1.e1; //#default 5
 
   ptsz->z_for_pk_hm = 1.;
   ptsz->k_min_for_pk_hm = 1e-2;
-  ptsz->k_min_for_pk_hm = 1e1;
+  ptsz->k_max_for_pk_hm = 1e1;
   ptsz->dlnk_for_pk_hm = 0.1;
 
 
