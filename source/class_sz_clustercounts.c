@@ -570,11 +570,14 @@ if (pcsz->has_completeness == 1){
           //double arg=((lny+pcsz->dlny-mu)/(sqrt(2.)*ptsz->sigmaM_ym));
           double arg=((ptsz->erfs_2d_to_1d_y_array[k+1]-mu)/(sqrt(2.)*ptsz->sigmaM_ym));
           double py=(win0*fac/y0*exp(-arg0*arg0)+win*fac/y*exp(-arg*arg))*0.5;
-
+          // if (fabs(py)<1e-100)
+          //   py = 0.;
           //lny=lny+pcsz->dlny;
 
           int_comp=int_comp+py*dy;
-          // printf("k = %d int_comp15 = %e\n",k,int_comp);
+          // if (py*dy<0)
+          // printf("k = %d int_comp15 = %.5e py = %.5e dy = %.5e win0 = %.5e win = %.5e th1 = %.5e th2 = %.5e thp = %.5e\n",k,int_comp,py,dy,win0,win,th1,th2,thp);
+          //
           }
         // }
 //
@@ -610,9 +613,11 @@ if (pcsz->has_completeness == 1){
           int_comp=fsky;
         }
         if (int_comp <= 0. || isinf(int_comp) || isnan(int_comp)) {
-        if (int_comp <= 0.) printf("int_comp<0.\n");
+          if (ptsz->sz_verbose>1){
+        if (int_comp <= 0.) printf("int_comp<0 thp = %.5e th2 = %.5e mp = %.5e zp = %.5e\n",thp,th2,mp,zp);
         if (isinf(int_comp)) printf("int_comp=infty.\n");
         if (isnan(int_comp)) printf("comp=nan.\n");
+      }
         int_comp=1.e-300;
 }
 
@@ -745,101 +750,101 @@ if (ptsz->sz_verbose>3)
 
 
 
-double integrand_cluster_counts_mass(double lnm, void *p){
-  double result = 0.;
-  struct Parameters_for_integrand_cluster_counts_mass *V = ((struct Parameters_for_integrand_cluster_counts_mass *) p);
-
-          double m_asked = exp(lnm);
-          double f1 = get_volume_at_z(V->z,V->pba)*get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz);
-          double c1 = get_completeness_at_z_and_M(V->z,m_asked,V->completeness_2d_to_1d,V->ptsz);
-          // if (pcsz->has_completeness == 0){
-          //   c1 = 1.;
-          // }
-          if (isnan(get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz))){
-            printf("z = %.3e volume = %.3e dn = %.3e c = %.3e\n",V->z,get_volume_at_z(V->z,V->pba),get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz),c1);
-            exit(0);
-            }
-  result = f1*c1;
-  return result;
-}
-
-
-
-double integrand_cluster_counts_completeness(double lny, void *p){
-  double result = 0.;
-  struct Parameters_for_integrand_cluster_counts_completeness *V = ((struct Parameters_for_integrand_cluster_counts_completeness *) p);
-
-          double y_asked = exp(lny);
-          double win = get_detection_proba_at_y_and_theta(y_asked,V->theta,V->erfs_2d_to_1d,V->ptsz);
-
-          // double ekl1 = get_detection_proba_at_y_and_theta(y_asked,V->theta1,V->erfs_2d_to_1d,V->ptsz);
-          // double ekl2 = get_detection_proba_at_y_and_theta(y_asked,V->theta2,V->erfs_2d_to_1d,V->ptsz);
-          // double win = ekl1+(ekl2-ekl1)/(V->theta2-V->theta1)*(V->theta-V->theta1);
-
-          double mu = log(V->y);
-          double arg=((lny-mu)/(sqrt(2.)*V->ptsz->sigmaM_ym));
-          double fac =1./sqrt(2.*_PI_*pow(V->ptsz->sigmaM_ym,2));
-
-
-  result = win*fac*exp(-arg*arg);
-  return result;
-}
+// double integrand_cluster_counts_mass(double lnm, void *p){
+//   double result = 0.;
+//   struct Parameters_for_integrand_cluster_counts_mass *V = ((struct Parameters_for_integrand_cluster_counts_mass *) p);
+//
+//           double m_asked = exp(lnm);
+//           double f1 = get_volume_at_z(V->z,V->pba)*get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz);
+//           double c1 = get_completeness_at_z_and_M(V->z,m_asked,V->completeness_2d_to_1d,V->ptsz);
+//           // if (pcsz->has_completeness == 0){
+//           //   c1 = 1.;
+//           // }
+//           if (isnan(get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz))){
+//             printf("z = %.3e volume = %.3e dn = %.3e c = %.3e\n",V->z,get_volume_at_z(V->z,V->pba),get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz),c1);
+//             exit(0);
+//             }
+//   result = f1*c1;
+//   return result;
+// }
 
 
 
-
-double integrand_cluster_counts_redshift(double z, void *p){
-  double result = 0.;
-  struct Parameters_for_integrand_cluster_counts_redshift *W = ((struct Parameters_for_integrand_cluster_counts_redshift *) p);
-
-struct Parameters_for_integrand_cluster_counts_mass V;
-  V.ptsz = W->ptsz;
-  V.pba = W->pba;
-  V.z = z;
-  V.completeness_2d_to_1d = W->completeness_2d_to_1d;
-
-  void * params = &V;
-  double r; //result of the integral
-
-  double epsrel = W->ptsz->mass_epsrel_cluster_counts;
-  double epsabs = W->ptsz->mass_epsabs_cluster_counts;
-  //int show_neval = ptsz->patterson_show_neval;
-  //
-  // double m_min = W->ptsz->M1SZ;
-  // double m_max = W->ptsz->M2SZ;
-  //
-  double m_min = exp(W->ptsz->steps_m[0]);
-  double m_max = exp(W->ptsz->steps_m[W->ptsz->nsteps_m-1]);
-  // printf("m_min = %.5e, m_max = %.5e epsrel = %.5e epsabs = %.5e\n",m_min,m_max,epsrel,epsabs);
-  //
-  r=Integrate_using_Patterson_adaptive(log(m_min),
-                                       log(m_max),
-                                       epsrel, epsabs,
-                                       integrand_cluster_counts_mass,
-                                       params,0); // 0 is show neval
-
-
- // gsl_function F;
- // double result_gsl, error;
- // F.function = &integrand_cluster_counts_mass;
- // F.params = params;
- // int n_subintervals_gsl = 0;
- // gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
- //
- // size_t neval;
- // double xin = log(m_min);
- // double xout = log(m_max);
- // gsl_integration_romberg(&F,xin,xout,epsabs,epsrel,&result_gsl,&neval,w);
- // gsl_integration_romberg_free(w);
-// printf("result_gsl = %.5e r = %.5e\n",result_gsl,r);
+// double integrand_cluster_counts_completeness(double lny, void *p){
+//   double result = 0.;
+//   struct Parameters_for_integrand_cluster_counts_completeness *V = ((struct Parameters_for_integrand_cluster_counts_completeness *) p);
+//
+//           double y_asked = exp(lny);
+//           double win = get_detection_proba_at_y_and_theta(y_asked,V->theta,V->erfs_2d_to_1d,V->ptsz);
+//
+//           // double ekl1 = get_detection_proba_at_y_and_theta(y_asked,V->theta1,V->erfs_2d_to_1d,V->ptsz);
+//           // double ekl2 = get_detection_proba_at_y_and_theta(y_asked,V->theta2,V->erfs_2d_to_1d,V->ptsz);
+//           // double win = ekl1+(ekl2-ekl1)/(V->theta2-V->theta1)*(V->theta-V->theta1);
+//
+//           double mu = log(V->y);
+//           double arg=((lny-mu)/(sqrt(2.)*V->ptsz->sigmaM_ym));
+//           double fac =1./sqrt(2.*_PI_*pow(V->ptsz->sigmaM_ym,2));
+//
+//
+//   result = win*fac*exp(-arg*arg);
+//   return result;
+// }
 
 
 
-  // result = result_gsl;
-  result = r;
-  // result = result_gsl;
-  return result;
-}
+//
+// double integrand_cluster_counts_redshift(double z, void *p){
+//   double result = 0.;
+//   struct Parameters_for_integrand_cluster_counts_redshift *W = ((struct Parameters_for_integrand_cluster_counts_redshift *) p);
+//
+// struct Parameters_for_integrand_cluster_counts_mass V;
+//   V.ptsz = W->ptsz;
+//   V.pba = W->pba;
+//   V.z = z;
+//   V.completeness_2d_to_1d = W->completeness_2d_to_1d;
+//
+//   void * params = &V;
+//   double r; //result of the integral
+//
+//   double epsrel = W->ptsz->mass_epsrel_cluster_counts;
+//   double epsabs = W->ptsz->mass_epsabs_cluster_counts;
+//   //int show_neval = ptsz->patterson_show_neval;
+//   //
+//   // double m_min = W->ptsz->M1SZ;
+//   // double m_max = W->ptsz->M2SZ;
+//   //
+//   double m_min = exp(W->ptsz->steps_m[0]);
+//   double m_max = exp(W->ptsz->steps_m[W->ptsz->nsteps_m-1]);
+//   // printf("m_min = %.5e, m_max = %.5e epsrel = %.5e epsabs = %.5e\n",m_min,m_max,epsrel,epsabs);
+//   //
+//   r=Integrate_using_Patterson_adaptive(log(m_min),
+//                                        log(m_max),
+//                                        epsrel, epsabs,
+//                                        integrand_cluster_counts_mass,
+//                                        params,0); // 0 is show neval
+//
+//
+//  // gsl_function F;
+//  // double result_gsl, error;
+//  // F.function = &integrand_cluster_counts_mass;
+//  // F.params = params;
+//  // int n_subintervals_gsl = 0;
+//  // gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (n_subintervals_gsl);
+//  //
+//  // size_t neval;
+//  // double xin = log(m_min);
+//  // double xout = log(m_max);
+//  // gsl_integration_romberg(&F,xin,xout,epsabs,epsrel,&result_gsl,&neval,w);
+//  // gsl_integration_romberg_free(w);
+// // printf("result_gsl = %.5e r = %.5e\n",result_gsl,r);
+//
+//
+//
+//   // result = result_gsl;
+//   result = r;
+//   // result = result_gsl;
+//   return result;
+// }
 
 
 
@@ -1205,8 +1210,8 @@ int find_theta_bin(struct tszspectrum * ptsz, double thp, int * l_array, double 
   double th1,th2;
 
   if (thp > ptsz->theta_bin_max){
-    l1 = ptsz->nthetas - 1;
-    l2 = ptsz->nthetas - 2;
+    l1 = ptsz->nthetas - 2;
+    l2 = ptsz->nthetas - 1;
     th1 = ptsz->thetas[l1];
     th2 = ptsz->thetas[l2];
     //printf("above\n");
