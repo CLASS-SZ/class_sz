@@ -343,7 +343,7 @@ if (pcsz->has_completeness == 1){
 
           }
 
-          if (index_y == pcsz->Nbins_y){
+          if (index_y == pcsz->Nbins_y-1){
             c2 = erf_compl(yp,y,ptsz->sn_cutoff) ;
             c2 *= erf_compl(yp,y,y_min);
 
@@ -443,7 +443,7 @@ if (pcsz->has_completeness == 1){
 
           if (ptsz->use_planck_binned_proba == 1){
           if (index_y==0)  {c2=erf_compl(y0,y1,ptsz->sn_cutoff)*(1.-erf_compl(y0,y1,y_max));}
-          else if (index_y==pcsz->Nbins_y) {c2=erf_compl(y0,y1,y_min)*erf_compl(y0,y1,ptsz->sn_cutoff);}
+          else if (index_y==pcsz->Nbins_y-1) {c2=erf_compl(y0,y1,y_min)*erf_compl(y0,y1,ptsz->sn_cutoff);}
           else {c2=erf_compl(y0,y1,ptsz->sn_cutoff)*erf_compl(y0,y1,y_min)*(1.-erf_compl(y0,y1,y_max));}
           }
           else{

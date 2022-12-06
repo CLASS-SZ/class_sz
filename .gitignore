@@ -235,3 +235,5 @@ python/dist/classy_sz-2.9.4-py3.9-macosx-10.9-x86_64.egg
 *.egg
 *.egg
 python/dist/*
+sz_auxiliary_files/cls_mdpl2_v0.7_cib_planck_143ghz.dat
+sz_auxiliary_files/cls_mdpl2_v0.7_cib_planck_143ghz_nomask.dat

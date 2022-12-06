@@ -5191,7 +5191,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
   /** (f) parameter related to the non-linear spectra computation */
 
   class_call(parser_read_string(pfc,
-                                "non linear",
+                                "non_linear",
                                 &(string1),
                                 &(flag1),
                                 errmsg),

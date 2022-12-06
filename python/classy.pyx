@@ -2615,7 +2615,7 @@ cdef class Class:
             z_center.append(self.csz.z_center[index_z])
             z_edges.append(self.csz.z_center[index_z]-0.5*self.csz.dz)
             dndzdy_index_z = []
-            for index_y in range(self.csz.Nbins_y +1):
+            for index_y in range(self.csz.Nbins_y):
                 dndzdy_index_z.append(self.csz.dNdzdy_theoretical[index_z][index_y])
             dndzdy.append(dndzdy_index_z)
 
@@ -2624,9 +2624,9 @@ cdef class Class:
         for index_y in range(self.csz.Nbins_y):
             log10y_center.append(self.csz.logy[index_y])
             log10y_edges.append(self.csz.logy[index_y]-0.5*self.csz.dlogy)
-        log10y_center.append(self.csz.logy[self.csz.Nbins_y])
-        log10y_edges.append(self.csz.logy[self.csz.Nbins_y]-0.5*self.tsz.bin_dlog10_snr_last_bin)
-        log10y_edges.append(self.csz.logy[self.csz.Nbins_y]+0.5*self.tsz.bin_dlog10_snr_last_bin)
+        #log10y_center.append(self.csz.logy[self.csz.Nbins_y-1])
+        #log10y_edges.append(self.csz.logy[self.csz.Nbins_y-1]-0.5*self.tsz.bin_dlog10_snr_last_bin)
+        log10y_edges.append(self.csz.logy[self.csz.Nbins_y-1]+0.5*self.csz.dlogy)
         return {'dndzdy':dndzdy,'z_center':z_center,'z_edges':z_edges,'log10y_center':log10y_center,'log10y_edges':log10y_edges}
 
 
