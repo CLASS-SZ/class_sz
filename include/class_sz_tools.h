@@ -481,6 +481,8 @@ double erf_compl_nicola(double y,
 
   int read_Planck_noise_map(struct tszspectrum * ptsz);
 
+  int read_sz_catalog(struct tszspectrum * ptsz);
+
   int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                         struct nonlinear * pnl,
                                         struct primordial * ppm,

@@ -106,6 +106,7 @@
 #define _isw_tsz_ ((ptsz->has_isw_tsz == _TRUE_) && (index_md == ptsz->index_md_isw_tsz))
 #define _isw_auto_ ((ptsz->has_isw_auto == _TRUE_) && (index_md == ptsz->index_md_isw_auto))
 #define _dndlnM_ ((ptsz->has_dndlnM == _TRUE_) && (index_md == ptsz->index_md_dndlnM))
+#define _szrates_ ((ptsz->has_sz_rates == _TRUE_) && (index_md == ptsz->index_md_szrates))
 #define _tSZ_tSZ_tSZ_1halo_ ((ptsz->has_tSZ_tSZ_tSZ_1halo == _TRUE_) && (index_md == ptsz->index_md_tSZ_tSZ_tSZ_1halo))
 #define _kSZ_kSZ_1h_ ((ptsz->has_kSZ_kSZ_1h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_1h))
 #define _kSZ_kSZ_2h_ ((ptsz->has_kSZ_kSZ_2h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_2h))
@@ -149,6 +150,8 @@ struct tszspectrum {
   double sn_cutoff;
 
   double f_sky;
+  double fsky_from_skyfracs;
+  double szunbinned_loglike;
   double Omega_survey;
 
   double chi_star; //comoving distance to the surface of last scattering [Mpc/h]
@@ -214,6 +217,7 @@ struct tszspectrum {
   double ** cl_lens_cib_2h;
   double * cl_tSZ_lens_1h;
   double * cl_tSZ_lens_2h;
+  double * szrate;
   double * cl_isw_lens;
   double * cl_isw_tsz;
   double * cl_isw_auto;
@@ -382,6 +386,11 @@ struct tszspectrum {
   int index_integrand_id_cov_N_N_hsv_first;
   int index_integrand_id_cov_N_N_hsv_last;
 
+
+  int has_sz_rates;
+  int index_md_szrates;
+  int index_integrand_id_szrates_first;
+  int index_integrand_id_szrates_last;
 
   int has_hmf;
   int index_md_hmf;
@@ -967,6 +976,7 @@ struct tszspectrum {
   int  index_characteristic_multipole_for_nfw_profile;
   int  index_r200c;
   int  index_multipole;
+  int  index_szrate;
   int  index_multipole_prime;
   int  index_mass_bin_1;
   int  index_mass_bin_2;
@@ -1122,6 +1132,10 @@ struct tszspectrum {
   double ** ylims;
   double * sky_averaged_ylims;
 
+  //SZ catalog
+  double * szcat_z;
+  double * szcat_snr;
+  int  szcat_size;
 
   double shape_noise_siggamma2;
   double ns_gal_per_arcmin2;

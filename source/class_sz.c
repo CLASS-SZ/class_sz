@@ -129,6 +129,7 @@ int szpowerspectrum_init(
       + ptsz->has_dndlnM
       + ptsz->has_vrms2
       + ptsz->has_sz_counts
+      + ptsz->has_sz_rates
       + ptsz->need_m200c_to_m500c
       + ptsz->need_m500c_to_m200c
       + ptsz->need_m200m_to_m500c
@@ -259,7 +260,20 @@ while( pch != NULL ) {
 
 
 
+   if (ptsz->has_sz_rates  == 1){
+      read_sz_catalog(ptsz);
 
+      if (ptsz->sz_verbose>1){
+        int icat = 0;
+        int imissz = 0;
+        printf("szcat: got %d lines.\n",ptsz->szcat_size);
+        for (icat=0;icat<ptsz->szcat_size;icat++){
+            if (ptsz->sz_verbose>3) printf("szcat z = %.3e \t snr = %.3e\n",ptsz->szcat_z[icat],ptsz->szcat_snr[icat]);
+          if (ptsz->szcat_z[icat]<= 0) imissz += 1;
+        }
+        printf("szcat: got %d objects with missing redshift.\n",imissz);
+      }
+    }
 
    // exit(0);
    if (ptsz->sz_verbose>1)
@@ -270,8 +284,10 @@ while( pch != NULL ) {
 
 
 
-   if ((ptsz->has_completeness_for_ps_SZ == 1)  || (ptsz->has_sz_counts  == 1))
+   if ((ptsz->has_completeness_for_ps_SZ == 1)  || (ptsz->has_sz_counts  == 1)){
       read_Planck_noise_map(ptsz);
+    }
+    // exit(0);
 
    if (ptsz->concentration_parameter == 4)
       read_Zhao_CM_init(ptsz);
@@ -352,6 +368,7 @@ if (ptsz->MF==1){
 
    if (ptsz->has_dndlnM == 1
     || ptsz->has_sz_counts
+    || ptsz->has_sz_rates
     || ptsz->has_kSZ_kSZ_gal_1h
     || ptsz->has_kSZ_kSZ_gal_1h_fft
     || ptsz->has_kSZ_kSZ_gal_2h_fft
@@ -821,7 +838,7 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 #ifdef _OPENMP
       tstop = omp_get_wtime();
       if (ptsz->sz_verbose > 0)
-         printf("In %s: time spent in parallel region (loop over the halo model integrals) = %e s for thread %d\n",
+         printf("In %s: time spent in parallel region (loop over class_sz integrals) = %e s for thread %d\n",
                    __func__,tstop-tstart,omp_get_thread_num());
 
 
@@ -845,6 +862,17 @@ for (index_integrand=0;index_integrand<ptsz->number_of_integrands;index_integran
 // double r = get_m200m_to_m500c_at_z_and_M(z,m200m_pivot,ptsz)/m200m_pivot;
 // printf("r = %.5e\n",r);
 // exit(0);
+
+
+if (ptsz->has_sz_rates){
+  ptsz->szunbinned_loglike = - ptsz->hmf_int*4.*_PI_*ptsz->fsky_from_skyfracs;
+  int index_rate;
+  for (index_rate=0;index_rate<ptsz->szcat_size;index_rate++){
+    ptsz->szunbinned_loglike += log(ptsz->szrate[index_rate]);
+  // printf("cluster id = %d\trate = %.4e \n",index_rate,ptsz->szrate[index_rate]);
+  }
+  if (ptsz->sz_verbose >= 1 ) printf("loglike unbinned cc = %.3e\n",ptsz->szunbinned_loglike);
+}
 
 
   if ( (ptsz->has_gal_gallens_1h || ptsz->has_gal_gallens_2h) && ptsz->convert_cls_to_gamma){
@@ -1613,6 +1641,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_isw_auto
       + ptsz->has_dndlnM
       + ptsz->has_sz_counts
+      + ptsz->has_sz_rates
       + ptsz->tabulate_rhob_xout_at_m_and_z
       + ptsz->need_ng_bias;
 
@@ -1726,6 +1755,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->cl_lens_lens_hf);
    free(ptsz->cl_tSZ_lens_1h);
    free(ptsz->cl_tSZ_lens_2h);
+   free(ptsz->szrate);
    free(ptsz->cl_kSZ_kSZ_gal_1h);
    free(ptsz->cl_kSZ_kSZ_gal_1h_fft);
    free(ptsz->cl_kSZ_kSZ_gal_2h_fft);
@@ -1794,9 +1824,12 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
 
 // printf("free 1\n");
 
+
    if ((ptsz->has_completeness_for_ps_SZ == 1)  || (ptsz->has_sz_counts  == 1)){
    free(ptsz->thetas);
    free(ptsz->skyfracs);
+   free(ptsz->szcat_z);
+   free(ptsz->szcat_snr);
 
    int index_patches;
    for (index_patches=0;
@@ -2722,6 +2755,14 @@ int compute_sz(struct background * pba,
       Pvectsz[ptsz->index_md] = ptsz->index_md_hmf;
       if (ptsz->sz_verbose > 0) printf("computing hmf int\n");
    }
+   else if (index_integrand>=ptsz->index_integrand_id_szrates_first && index_integrand <= ptsz->index_integrand_id_szrates_last && ptsz->has_sz_rates){
+      Pvectsz[ptsz->index_md] = ptsz->index_md_szrates;
+
+      Pvectsz[ptsz->index_szrate] = (double) (index_integrand - ptsz->index_integrand_id_szrates_first);
+
+      if (ptsz->sz_verbose > 1) printf("computing szrates @ cluster id = %.0f\n",Pvectsz[ptsz->index_szrate]);
+    }
+
    else if (index_integrand == ptsz->index_integrand_id_mean_y && ptsz->has_mean_y) {
       Pvectsz[ptsz->index_md] = ptsz->index_md_mean_y;
       Pvectsz[ptsz->index_has_electron_pressure] = 1;
@@ -4399,6 +4440,12 @@ if (_isw_auto_){
                                /(2*_PI_); //dimensionnless
 }
 
+
+if (_szrates_){
+  int index_rate = (int) Pvectsz[ptsz->index_szrate];
+  ptsz->szrate[index_rate] = Pvectsz[ptsz->index_integral];
+}
+
 return _SUCCESS_;
 }
 
@@ -4416,8 +4463,19 @@ double integrand_at_m_and_z(double logM,
                              struct tszspectrum * ptsz)
     {
 
+   int index_md = (int) pvectsz[ptsz->index_md];
+
+   int index_l = (int) pvectsz[ptsz->index_multipole];
+
+
+
+
 
    double z = pvectsz[ptsz->index_z];
+
+
+
+
    double chi = sqrt(pvectsz[ptsz->index_chi2]);
 
    //collect the necessary overdensity masses
@@ -4425,7 +4483,7 @@ double integrand_at_m_and_z(double logM,
    do_mass_conversions(logM,z,pvecback,pvectsz,pba,ptsz);
 
 
-
+  // printf("mhmf = %.3e m500c = %.3e m = %.3e z=%.3e\n",pvectsz[ptsz->index_mass_for_hmf],pvectsz[ptsz->index_m500c],exp(logM),z);
    //Return the HMF - dn/dlogM in units of h^3 Mpc^-3
    //result stored in pvectsz[ptsz->index_hmf]
 
@@ -4475,11 +4533,10 @@ double integrand_at_m_and_z(double logM,
    r_delta_cib = pvectsz[ptsz->index_radius_for_cib];
    c_delta_cib = pvectsz[ptsz->index_concentration_for_cib];
 
-   evaluate_completeness(pvecback,pvectsz,pba,ptsz);
+   // evaluate_completeness(pvecback,pvectsz,pba,ptsz);
+   pvectsz[ptsz->index_completeness] = 1.;
 
-   int index_md = (int) pvectsz[ptsz->index_md];
 
-   int index_l = (int) pvectsz[ptsz->index_multipole];
 
    // double z = pvectsz[ptsz->index_z];
    double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
@@ -4518,13 +4575,64 @@ double damping_1h_term;
    }
 
 
+   if (_szrates_){
+   int index_szrate = (int) pvectsz[ptsz->index_szrate];
+     if (ptsz->sz_verbose>10)
+   printf("computing integrand at m = %.3e and z = %..3e for rate id = %d.\n",exp(logM),z,index_szrate);
+   double thetap = get_theta_at_m_and_z(pvectsz[ptsz->index_m500c],z,ptsz,pba);
+   double yp = get_y_at_m_and_z(pvectsz[ptsz->index_m500c],z,ptsz,pba);
+   double noisep;
+   if ((thetap < ptsz->thetas[0]) || (thetap > ptsz->thetas[ptsz->nthetas-1])){
+     noisep = 1e100;
+   }
+   else {
+   noisep = pwl_value_1d(ptsz->nthetas,
+                                ptsz->thetas,
+                                ptsz->sky_averaged_ylims,
+                                thetap);
+   }
+   double snrp = yp/noisep;
+   if (ptsz->sz_verbose>10) printf("predicted snr = %.3e cat snr = %.3e.\n",snrp,ptsz->szcat_snr[index_szrate]);
+   double arg = snrp - ptsz->szcat_snr[index_szrate];
+   double prate = 1./sqrt(2.*_PI_)*exp(-arg*arg);
+   pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]*prate;
 
+
+ }
 
 
    if (_hmf_){
 
-      pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
-                                       *pvectsz[ptsz->index_completeness];
+
+// printf("z=%.3e m=%.3e\n",z,pvectsz[ptsz->index_m500c]);
+
+   double thetap = get_theta_at_m_and_z(pvectsz[ptsz->index_m500c],z,ptsz,pba);
+   double ypp = get_y_at_m_and_z(pvectsz[ptsz->index_m500c],z,ptsz,pba);
+   double noisep;
+   double prate;
+   if ((thetap < ptsz->thetas[0]) || (thetap > ptsz->thetas[ptsz->nthetas-1])){
+     prate = 0.;
+   }
+   else {
+   noisep = pwl_value_1d(ptsz->nthetas,
+                                ptsz->thetas,
+                                ptsz->sky_averaged_ylims,
+                                thetap);
+
+  double snrp = ypp/noisep;
+
+  double arg = (snrp - ptsz->sn_cutoff)/sqrt(2.);
+    prate = (erf(arg) + 1.)/2.;
+
+
+      // printf("z=%.3e m=%.3e noisep = %.3e snrp = %.3e prate = %.3e\n",z,pvectsz[ptsz->index_m500c],noisep,snrp,prate);
+   }
+
+
+   pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                     *prate;
+
+  return  pvectsz[ptsz->index_integrand];
    }
 
 
@@ -7825,12 +7933,14 @@ int evaluate_completeness(double * pvecback,
 
     double comp_at_M_and_z = 0.;
 
+printf("check units of dA!!.\n");
+exit(0);
 
     if (ptsz->has_completeness_for_ps_SZ == 1){
 
     comp_at_M_and_z = 0.;
 
-    double mp_bias = pvectsz[ptsz->index_m500]; //biased mass = M/B
+    double mp_bias = pvectsz[ptsz->index_m500c]/ptsz->HSEbias; //biased mass = M/B
     //double redshift = pvectsz[ptsz->index_z];
 
     //printf("mass m500 = %e\n",mp_bias);
@@ -7937,7 +8047,13 @@ int evaluate_completeness(double * pvecback,
     double c2 = erf_compl_ps(yp,y,sn_cutoff);
     comp_at_M_and_z =  c2;
 
+// printf("completensess = %.3e\n",c2); // BB debug
+//
+// pvectsz[ptsz->index_completeness] = c2; // BB debug
+//    return _SUCCESS_; // BB debug
+
     }
+
 
    if (ptsz->which_ps_sz == 0)
       pvectsz[ptsz->index_completeness] = 1.;
@@ -7950,7 +8066,9 @@ int evaluate_completeness(double * pvecback,
 
       pvectsz[ptsz->index_completeness] = (1.-comp_at_M_and_z);
       //printf("completensess = %.3e\n",pvectsz[ptsz->index_completeness]); // BB debug
-}
+        }
+
+
    return _SUCCESS_;
 }
 
@@ -12058,8 +12176,15 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
  if (ptsz->has_mean_y)
    printf("mean_y =  %e \n",ptsz->y_monopole);
 if (ptsz->has_hmf){
+  printf("\n\n");
+  printf("######################################################\n");
+  printf("total number of halos (accounting for completeness):\n");
+  printf("######################################################\n");
+  printf("\n");
+
    printf("N_tot =  %e (per steradian)\n",ptsz->hmf_int);
-   printf("N_tot =  %e (full-sky)\n",ptsz->hmf_int*3.046174198e-4*41253.0);
+   printf("N_tot =  %e (full-sky)\n",ptsz->hmf_int*4.*_PI_); // 1deg2 = 3.046174198e-4 sr
+   printf("N_tot =  %e (fsky_from_skyfracs = %.3e)\n",ptsz->hmf_int*4.*_PI_*ptsz->fsky_from_skyfracs,ptsz->fsky_from_skyfracs);
  }
 
 if (ptsz->has_kSZ_kSZ_gal_1h){
@@ -12354,6 +12479,23 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
 printf("ell = %e\t\t cl_y_kappa (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_tSZ_lens_2h[index_l]);
 }
+}
+
+if (ptsz->has_sz_rates){
+printf("\n\n");
+printf("########################################\n");
+printf("sz rates:\n");
+printf("########################################\n");
+printf("\n");
+// int index_rate;
+// for (index_rate=0;index_rate<ptsz->szcat_size;index_rate++){
+//
+// printf("cluster id = %d\trate = %.4e \n",index_rate,ptsz->szrate[index_rate]);
+// }
+
+printf("cluster id = %d\trate = %.4e \n",0,ptsz->szrate[0]);
+printf("cluster id = %d\trate = %.4e \n",ptsz->szcat_size-1,ptsz->szrate[ptsz->szcat_size-1]);
+
 }
 
 // if (ptsz->has_gal_cib_1h){
@@ -13420,6 +13562,9 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
    ptsz->has_500c = 1;
  }
 
+ if (ptsz->has_sz_rates == _TRUE_){
+   ptsz->has_500c = 1;
+ }
 
  // if (ptsz->has_cib
  //  +  ptsz->has_cib_monopole
@@ -13807,6 +13952,7 @@ if (ptsz->need_hmf){
    class_alloc(ptsz->cl_lens_lens_hf,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_tSZ_lens_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_tSZ_lens_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   class_alloc(ptsz->szrate,sizeof(double *)*ptsz->szcat_size,ptsz->error_message);
    class_alloc(ptsz->cl_kSZ_kSZ_gal_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cov_ll_kSZ_kSZ_gal,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_t2t2f,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
@@ -13849,6 +13995,11 @@ if (ptsz->need_hmf){
    for (index_z = 0; index_z<ptsz->N_redshift_dndlnM;index_z ++)
    {
      class_alloc(ptsz->dndlnM_at_z_and_M[index_z],(ptsz->N_mass_dndlnM)*sizeof(double),ptsz->error_message);
+   }
+
+   int irate;
+   for (irate = 0; irate < ptsz->szcat_size ; irate++){
+     ptsz->szrate[irate] = 0.;
    }
 
    class_alloc(ptsz->tllprime_sz,ptsz->nlSZ*sizeof(double *),ptsz->error_message);
@@ -14116,6 +14267,13 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
    ptsz->index_integrand_id_pk_at_z_2h_last = ptsz->index_integrand_id_pk_at_z_2h_first + ptsz->n_k_for_pk_hm - 1;
    last_index_integrand_id =  ptsz->index_integrand_id_pk_at_z_2h_last;
  }
+
+   if(ptsz->has_sz_rates >= _TRUE_){
+   ptsz->index_integrand_id_szrates_first = last_index_integrand_id + 1;
+   ptsz->index_integrand_id_szrates_last = ptsz->index_integrand_id_szrates_first + ptsz->szcat_size - 1;
+   last_index_integrand_id =  ptsz->index_integrand_id_szrates_last;
+ }
+
    if(ptsz->has_pk_gg_at_z_1h+ptsz->has_pk_gg_at_z_2h >= _TRUE_){
    ptsz->index_integrand_id_pk_gg_at_z_1h_first = last_index_integrand_id + 1;
    ptsz->index_integrand_id_pk_gg_at_z_1h_last = ptsz->index_integrand_id_pk_gg_at_z_1h_first + ptsz->n_k_for_pk_hm - 1;

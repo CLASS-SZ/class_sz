@@ -21,7 +21,7 @@ int szcount_init(struct background * pba,
   // ptsz->sz_verbose = ptsz->sz_verbose;
   // ptsz->has_sz_counts = _FALSE_;
   pcsz->has_sz_counts = ptsz->has_sz_counts;
-  if (ptsz->has_sz_counts == _FALSE_)
+  if (ptsz->has_sz_counts == _FALSE_ || ptsz->has_sz_rates == _TRUE_)
   {
     if (ptsz->sz_verbose > 0)
       printf("->No SZ cluster counts requested. SZ cluster counts module skipped.\n");
@@ -318,6 +318,11 @@ if (pcsz->has_completeness == 1){
                                          ptsz->thetas,
                                          ptsz->ylims[index_patches],
                                          thp);
+          // double y_interp = pwl_value_1d(ptsz->nthetas,
+          //                                ptsz->thetas,
+          //                                ptsz->sky_averaged_ylims,
+          //                                thp); // ~5% difference
+
           double y = y_interp;
           // printf("y = %.5e y_interp = %.5e r = %.5e\n",y,y_interp,y/y_interp);
 
@@ -613,15 +618,15 @@ if (pcsz->has_completeness == 1){
           int_comp=fsky;
         }
         if (int_comp <= 0. || isinf(int_comp) || isnan(int_comp)) {
-          if (ptsz->sz_verbose>1){
-        if (int_comp <= 0.) printf("int_comp<0 thp = %.5e th2 = %.5e mp = %.5e zp = %.5e\n",thp,th2,mp,zp);
+          if (ptsz->sz_verbose>3){
+        if (int_comp <= 0.) printf("int_comp<0 thp = %.5e th2 = %.5e mp = %.5e zp = %.5e\n",thp,th2,mp,zp); // This is not problematic. I forgot why. theta just too large i think.
         if (isinf(int_comp)) printf("int_comp=infty.\n");
         if (isnan(int_comp)) printf("comp=nan.\n");
       }
         int_comp=1.e-300;
 }
 
-        completeness_2d[index_m][index_z] =int_comp;
+        completeness_2d[index_m][index_z] = int_comp;
         completeness_2d_to_1d[index_m_z] = log(int_comp);
         // printf("c = %.4e %.4e\n",completeness_2d_to_1d[index_m_z],int_comp);
         index_m_z += 1;
@@ -727,15 +732,15 @@ if (ptsz->sz_verbose>3)
 }
 
 
-      // pcsz->dNdzdy_theoretical[index_z][index_y]=4.*_PI_*SUM2;
-      if (ptsz->has_completeness == 0){
-
-      fsky = ptsz->sky_area_deg2/41253.;
-      pcsz->dNdzdy_theoretical[index_z][index_y]=4.*_PI_*fsky*r;
-      }
-      else{
       pcsz->dNdzdy_theoretical[index_z][index_y]=4.*_PI_*r;
-    }
+    //   if (ptsz->has_completeness == 0){
+    //
+    //   fsky = ptsz->sky_area_deg2/41253.;
+    //   pcsz->dNdzdy_theoretical[index_z][index_y]=4.*_PI_*fsky*r;
+    //   }
+    //   else{
+    //   pcsz->dNdzdy_theoretical[index_z][index_y]=4.*_PI_*r;
+    // }
     //
      }//end loop z bins for lkl
 

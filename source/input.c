@@ -2091,6 +2091,7 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
+        // ptsz->has_completeness_for_ps_SZ = 1;
       }
       if ((strstr(string1,"mean_y") != NULL) ) {
         ptsz->has_mean_y =_TRUE_;
@@ -3187,6 +3188,22 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_500c = 1;
+
+      }
+
+      if ((strstr(string1,"sz_unbinned_cluster_counts") != NULL) ) {
+        // printf("counts\n");
+        ptsz->has_sz_counts =_TRUE_;
+        ptsz->has_sz_rates =_TRUE_;
+        ptsz->has_hmf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+        ptsz->has_500c = 1;
+        // ptsz->has_completeness_for_ps_SZ = 1;
 
       }
 
@@ -5051,6 +5068,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
 
     if (ptsz->has_sz_ps
       + ptsz->has_sz_counts
+      + ptsz->has_sz_rates
       + ptsz->has_hmf
       + ptsz->has_pk_at_z_1h
       + ptsz->has_pk_at_z_2h
@@ -5987,6 +6005,8 @@ int input_default_params(
   ptsz->x_size_for_pp = 2000;
 
   ptsz->f_sky = 1.; // full sky
+  ptsz->fsky_from_skyfracs = 1.;
+  ptsz->szunbinned_loglike = -1000.;
   ptsz->Omega_survey = 4.*_PI_*ptsz->f_sky;
 
   // integration_method_pressure_profile
@@ -6251,6 +6271,7 @@ int input_default_params(
 
   //ptsz->has_tszspectrum = _FALSE_;
   ptsz->has_sz_counts = _FALSE_;
+  ptsz->has_sz_rates = _FALSE_;
   ptsz->has_isw_lens = _FALSE_;
   ptsz->has_isw_tsz = _FALSE_;
   ptsz->has_isw_auto = _FALSE_;
@@ -6467,6 +6488,8 @@ int input_default_params(
 
   ptsz->index_md_pk_em_at_z_1h = 91;
   ptsz->index_md_pk_em_at_z_2h = 92;
+  ptsz->index_md_szrates = 93;
+  ptsz->index_md_pk_HI_at_z_2h = 94;
 
   ptsz->integrate_wrt_mvir = 0;
   ptsz->integrate_wrt_m500c = 0;

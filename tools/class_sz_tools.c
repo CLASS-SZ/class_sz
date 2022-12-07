@@ -8678,7 +8678,7 @@ else if ((V->ptsz->has_lens_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md
 
   // then quantities that require mass integration
   else {
-  // printf("integrating over mass\n");
+  // printf("integrating over mass at z = %.3e\n",z);
   result = integrate_over_m_at_z(V->pvecback,
                                  V->pvectsz,
                                  V->pba,
@@ -8686,6 +8686,12 @@ else if ((V->ptsz->has_lens_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md
                                  V->ppm,
                                  V->ppt,
                                  V->ptsz);
+
+if ((V->ptsz->has_hmf == _TRUE_) && (index_md == V->ptsz->index_md_hmf)){
+ // printf("returning integrated obver mass, intm = %.3e\n",result);
+ result *= (1.+V->pvectsz[V->ptsz->index_z])*get_volume_at_z(V->pvectsz[V->ptsz->index_z],V->pba);
+ return result;
+}
 
 
 // if computing 3d matter power spectrum P(k) of bispectrum:
@@ -8744,6 +8750,12 @@ if (((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at
 
    return result;
  }
+
+ if ((V->ptsz->has_sz_rates == _TRUE_) && (index_md == V->ptsz->index_md_szrates)){
+   // if (V->ptsz->sz_verbose>0) printf("finnished mass integration for szrates.\n");
+   return result;
+ }
+
 
 
   // exit(0);
@@ -9019,8 +9031,8 @@ if  (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
 // else{
 
   // finally multiply by volume element Chi^2 dChi
-  result *= V->pvectsz[V->ptsz->index_chi2];
-  // printf("multiplying by volume\n");
+  // result *= V->pvectsz[V->ptsz->index_chi2];
+
 
   // integrate w.r.t ln(1+z); dz =  (1+z)dln(1+z)
   // volume element in units h^-3 Mpc^3
@@ -9030,8 +9042,12 @@ if  (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
   // dChi = (c/H) *(1+z) dln(1+z) ---> this is used
   // dChi = (c/H) dz
   // d/dchi = H/c d/dz
-  double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
-  result = (1.+V->pvectsz[V->ptsz->index_z])*result/H_over_c_in_h_over_Mpc;
+  // double H_over_c_in_h_over_Mpc = V->pvecback[V->pba->index_bg_H]/V->pba->h;
+  //
+  // printf("multiplying by volume %.3e %.3e\n",V->pvectsz[V->ptsz->index_chi2]/H_over_c_in_h_over_Mpc, get_volume_at_z(V->pvectsz[V->ptsz->index_z],V->pba));
+  // result = (1.+V->pvectsz[V->ptsz->index_z])*result/H_over_c_in_h_over_Mpc;
+
+  result *= (1.+V->pvectsz[V->ptsz->index_z])*get_volume_at_z(V->pvectsz[V->ptsz->index_z],V->pba);
 
   if (isnan(result)||isinf(result)){
   printf("nan or inf in integrand redshift 1h\n");
@@ -9073,6 +9089,8 @@ int integrate_over_redshift(struct background * pba,
   double epsabs= ptsz->redshift_epsabs;
   int show_neval = ptsz->patterson_show_neval;
 
+
+// hhere put the things that do not need integration over z:
   int index_md = (int) Pvectsz[ptsz->index_md];
 if(_pk_at_z_1h_
 || _pk_at_z_2h_
@@ -9094,9 +9112,21 @@ if(_pk_at_z_1h_
 {
   r = integrand_redshift(log(1. + ptsz->z_for_pk_hm),params);
 }
+else if ( _szrates_ )
+{
+  if (ptsz->sz_verbose > 10) printf("evaluating rate at z = %.3e.\n",ptsz->szcat_z[(int)Pvectsz[ptsz->index_szrate]]);
+  if (ptsz->szcat_z[(int)Pvectsz[ptsz->index_szrate]] <= 0){
+    r = 1.; // contrinbutes to nothing to the lkl. since we take sum of ln(rates).
+}
+else {
+  r = integrand_redshift(log(1. + ptsz->szcat_z[(int)Pvectsz[ptsz->index_szrate]]),params);
+
+ if (r == 0.) r = 1e-300; // when snr cat is too high the integral becomes too small.
+}
+}
 else{
 
-  // printf("er = %.4e ea = %.4e\n",epsrel,epsabs);
+  // printf("z_min = %.4e z_max  = %.4e\n",z_min,z_max);
   r = Integrate_using_Patterson_adaptive(log(1. + z_min), log(1. + z_max),
                                          epsrel, epsabs,
                                          integrand_redshift,
@@ -11946,9 +11976,23 @@ if (ptsz->check_consistency_conditions == 1){
 r = r_m_1*r_m_2;
   }
 
+// dont apply halo model consistency
+else if(((int) pvectsz[ptsz->index_md] == ptsz->index_md_szrates)
+|| ((int) pvectsz[ptsz->index_md] == ptsz->index_md_hmf)
+){
+  // if (ptsz->sz_verbose>0) printf("starting mass integral for szrate id = %d.\n", (int)pvectsz[ptsz->index_szrate]);
+  // printf("integrating over mass m_min = %.3e m_max = %.3e\n",m_min,m_max);
+  r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                       epsrel, epsabs,
+                                       integrand_patterson_test,
+                                       params,ptsz->patterson_show_neval);
 
+
+// printf("found r = %.5e\n",r);
+}
 
   else {
+
   r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                        epsrel, epsabs,
                                        integrand_patterson_test,
@@ -12019,12 +12063,13 @@ if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_gallens_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_lens_2h)
 ){
+  // printf("squaring result\n");
  pvectsz[ptsz->index_integral_over_m] = r*r;
  }
 else
 pvectsz[ptsz->index_integral_over_m] = r;
 
-
+// printf("pvectsz[ptsz->index_integral_over_m] = %.3e\n",pvectsz[ptsz->index_integral_over_m]);
 
 //}
 
@@ -12286,6 +12331,9 @@ for (index_patches=0;
      index_patches<ptsz->nskyfracs;
      index_patches++)
      sum_skyfracs += ptsz->skyfracs[index_patches];
+     if (ptsz->sz_verbose >= 1){
+       printf("sum_skyfracs =  %.3e\n",sum_skyfracs);}
+      ptsz->fsky_from_skyfracs = sum_skyfracs;
 
 for (index_thetas = 0; index_thetas<ptsz->nthetas; index_thetas ++){
   ptsz->sky_averaged_ylims[index_thetas] = 0.;
@@ -12425,6 +12473,74 @@ int read_SO_noise(struct tszspectrum * ptsz){
 
     return  _SUCCESS_;
     }
+
+
+int read_sz_catalog(struct tszspectrum * ptsz){
+
+      char line[_LINE_LENGTH_MAX_];
+      FILE *process;
+      int n_data_guess, n_data = 0;
+      //double *thetas = NULL,
+      double *tmp = NULL;
+      double this_lnx,this_lny,this_lnz;
+      int status;
+
+      n_data = 0;
+      n_data_guess = 100;
+      ptsz->szcat_z   = (double *)malloc(n_data_guess*sizeof(double));
+      ptsz->szcat_snr   = (double *)malloc(n_data_guess*sizeof(double));
+
+      // char Filepath[_ARGUMENT_LENGTH_MAX_];
+      // sprintf(Filepath,
+      //         "%s%s",
+      //         // "%s%s%s",
+      //         "cat ",
+      //         // ptsz->path_to_class,
+      //         "/sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt");
+      //
+      // process = popen(Filepath, "r");
+      class_open(process,"sz_auxiliary_files/SZ_cat.txt", "r",ptsz->error_message);
+
+      while (fgets(line, sizeof(line)-1, process) != NULL) {
+        sscanf(line, "%lf %lf %lf", &this_lnx, &this_lny, &this_lnz);
+
+        if((n_data+1) > n_data_guess) {
+          n_data_guess *= 2;
+          tmp = (double *)realloc(ptsz->szcat_z,   n_data_guess*sizeof(double));
+          class_test(tmp == NULL,
+                     ptsz->error_message,
+                     "Error allocating memory to read szcat_z.\n");
+          ptsz->szcat_z = tmp;
+          tmp = (double *)realloc(ptsz->szcat_snr,   n_data_guess*sizeof(double));
+          class_test(tmp == NULL,
+                     ptsz->error_message,
+                     "Error allocating memory to read szcat_snr.\n");
+          ptsz->szcat_snr = tmp;
+        };
+
+
+        /* Store */
+        ptsz->szcat_z[n_data]   = this_lnx;
+        ptsz->szcat_snr[n_data]   = this_lnz;
+        n_data++;
+      }
+
+      // status = pclose(process);
+      status = fclose(process);
+      class_test(status != 0.,
+                 ptsz->error_message,
+                 "The attempt to launch the external command was unsuccessful. "
+                 "Try doing it by hand to check for errors.");
+
+      ptsz->szcat_size = n_data;
+
+      ///////////////////////////end read Q file
+
+
+  return  _SUCCESS_;
+  }
+
+
 
 
 int tabulate_ng_bias_contribution_at_z_and_k(struct background * pba,
