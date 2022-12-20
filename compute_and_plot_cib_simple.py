@@ -1,5 +1,5 @@
 # To compute cib x cib:
-# $ python compute_and_plot_cib_simple.py -param_name 'h' -p_val '[0.6711]' -output 'cib_cib_1h,cib_cib_2h' -plot_cib_cib yes -save_figure yes -mode run
+# $ python compute_and_plot_cib_simple.py -param_name 'h' -p_val '[0.6711]' -output 'cib_cib_1h,cib_cib_2h,cib_shotnoise' -plot_cib_cib yes -save_figure yes -mode run
 # To compute tSZ x CIB
 # $ python compute_and_plot_cib_simple.py -param_name 'h' -p_val '[0.6711]' -output 'tSZ_cib_1h,tSZ_cib_2h' -plot_tSZ_cib yes -save_figure yes -mode run
 # To compute lens x CIB
@@ -25,8 +25,8 @@ import pyccl as ccl
 # do_ccl_comparison = 'yes'
 do_ccl_comparison = 'no'
 # path_to_ccl = '/Users/boris/Work/CCL/'
-freq_cib_1 = 217.
-freq_cib_2 = 217.
+freq_cib_1 = 353.
+freq_cib_2 = 353.
 # table 1 of https://arxiv.org/pdf/1309.0382.pdf
 #1: freq GHz 2: Flux cut mJy
 # 100 - 400
@@ -36,8 +36,8 @@ freq_cib_2 = 217.
 # 545 - 350
 # 857 - 710
 # 3000  - 1000
-cib_Snu_1 = 225.
-cib_Snu_2 = 225.
+cib_Snu_1 = 315.
+cib_Snu_2 = 315.
 
 
 
@@ -171,6 +171,7 @@ def run(args):
     tSZ_cib_2h = []
     lens_cib_1h = []
     lens_cib_2h = []
+    cib_shotnoise = []
 
 
     #build parameter file into dictionnary
@@ -183,7 +184,8 @@ def run(args):
     p_dict['mass function'] = 'T10'
     p_dict['concentration parameter'] = 'D08'
     p_dict['delta for cib'] = '200m'
-    p_dict['hm_consistency'] = 1
+    # p_dict['hm_consistency'] = 0
+    # p_dict['T10_alpha_fixed'] = 0
     p_dict['damping_1h_term'] = 0
 
 
@@ -213,8 +215,8 @@ def run(args):
     p_dict['z_min'] = 0.07
     p_dict['z_max'] = 6. # fiducial for MM20 : 6
 
-    p_dict['freq_min'] = 10.
-    p_dict['freq_max'] = 5e4 # fiducial for MM20 : 6
+    p_dict['freq_min'] = 2e1
+    p_dict['freq_max'] = 4e3 # fiducial for MM20 : 6
 
     # HOD parameters for CIB
     p_dict['M_min_HOD'] = pow(10.,10)
@@ -452,27 +454,37 @@ def run(args):
             cib_cib_2h.append(R[:,32])
             lens_cib_1h.append(R[:,34])
             lens_cib_2h.append(R[:,35])
+            cib_shotnoise.append(R[:,82])
+            # print('shot noise:',R[:,82])
 
 
             if (args.plot_cib_cib == 'yes'):
                 print('plotting cibxcib')
-                ax.plot(ell_MM20,cl_cib_cib_1h_MM20,label='MM20-1h')
-                ax.plot(ell_MM20,cl_cib_cib_2h_MM20,ls='-',label='MM20-2h')
+                lp = np.asarray(ell_MM20)
+                facl = lp*(lp+1.)/2./np.pi
+                ax.plot(ell_MM20,cl_cib_cib_1h_MM20/facl,label='MM20-1h')
+                ax.plot(ell_MM20,cl_cib_cib_2h_MM20/facl,ls='-',label='MM20-2h')
                 print(cib_cib_1h[id_p])
                 print(cib_cib_2h[id_p])
                 # print('ok')
                 print(multipoles[id_p])
-                ax.plot(multipoles[id_p],(cib_cib_2h[id_p]),color='r',ls='--',alpha = 1.,
+                lp = np.asarray(multipoles[id_p])
+                facl = lp*(lp+1.)/2./np.pi
+                ax.plot(multipoles[id_p],np.asarray((cib_cib_2h[id_p]))/facl,color='r',ls='--',alpha = 1.,
                 marker =  'o',markersize = 2,
                 label = 'class_sz (2-halo)')
                 # print('ok')
-                ax.plot(multipoles[id_p],(cib_cib_1h[id_p]),color='k',ls='--',alpha = 1.,
+                ax.plot(multipoles[id_p],np.asarray((cib_cib_1h[id_p]))/facl,color='k',ls='--',alpha = 1.,
                 marker =  '*',markersize = 1,
                 label = 'class_sz (1-halo)')
                 # print('ok')
-                ax.plot(multipoles[id_p],(cib_cib_1h[id_p]+cib_cib_2h[id_p]),color='grey',ls='-',alpha = 1.,
+                ax.plot(multipoles[id_p],np.asarray((cib_cib_1h[id_p]+cib_cib_2h[id_p]))/facl,color='grey',ls='-',alpha = 1.,
                 marker =  '*',markersize = 1,
                 label = 'class_sz (1+2-halo)')
+
+                ax.plot(multipoles[id_p],np.asarray((cib_shotnoise[id_p])),color='red',ls='-',alpha = 1.,
+                marker =  '*',markersize = 1,
+                label = 'class_sz (shotnoise)')
 
             elif (args.plot_tSZ_cib == 'yes'):
                 print(tSZ_cib_1h[id_p])

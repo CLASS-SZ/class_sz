@@ -245,6 +245,7 @@ cdef extern from "class.h":
         double A_cn
         double A_ir
         double A_rs
+        double szunbinned_loglike
         double Sigma8OmegaM_SZ
         int nlSZ
         double z1SZ
@@ -281,6 +282,7 @@ cdef extern from "class.h":
         double sigma8_Pcb
         double * frequencies_for_cib
         double * cib_monopole
+        double * cib_shotnoise
         double y_monopole
         int n_frequencies_for_cib
         double * ell
@@ -351,6 +353,9 @@ cdef extern from "class.h":
         double * bk_ttg_at_z_1h
         double * bk_ttg_at_z_2h
         double * bk_ttg_at_z_3h
+        double * b_tSZ_tSZ_tSZ_1halo
+        double * b_tSZ_tSZ_tSZ_2h
+        double * b_tSZ_tSZ_tSZ_3h
         double * k_for_pk_hm
         double * pk_gg_at_z_1h
         double * pk_gg_at_z_2h

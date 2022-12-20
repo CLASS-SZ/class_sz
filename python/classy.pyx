@@ -1808,6 +1808,22 @@ cdef class Class:
             cl['k'].append(self.tsz.k_for_pk_hm[index])
         return cl
 
+    def b_yyy(self):
+        """
+        (class_sz) Return the 1-halo, 2-halo and 3-halo terms of tsz bispectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['3h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.b_tSZ_tSZ_tSZ_1halo[index])
+            cl['2h'].append(self.tsz.b_tSZ_tSZ_tSZ_2h[index])
+            cl['3h'].append(self.tsz.b_tSZ_tSZ_tSZ_3h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
     def pk_gg_at_z_hm(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of 3d P(k) gg power spectrum
@@ -1876,6 +1892,19 @@ cdef class Class:
         for index in range(self.tsz.n_frequencies_for_cib):
             cl['nu'].append(self.tsz.frequencies_for_cib[index])
             cl['I0'].append(self.tsz.cib_monopole[index])
+        return cl
+
+    def cib_shotnoise(self):
+        """
+        (class_sz) Return the cib shotnoise as a function of frequency
+        """
+        cl = {}
+        cl['nu'] = []
+        cl['shotnoise'] = []
+        for id_nu1 in range(self.tsz.cib_frequency_list_num):
+            nu1 = self.tsz.cib_frequency_list[id_nu1]
+            cl['nu'].append(nu1)
+            cl['shotnoise'].append(self.tsz.cib_shotnoise[id_nu1])
         return cl
 
     def cl_cib_cib(self):
@@ -2598,6 +2627,8 @@ cdef class Class:
     def get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(self,z,m,x):
         return get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(z,m,x,&self.ba,&self.tsz)
 
+    def szunbinned_loglike(self):
+        return self.tsz.szunbinned_loglike
 
     def dndzdy_theoretical(self):
         """

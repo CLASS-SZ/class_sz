@@ -669,6 +669,10 @@ int load_n5k_pk_zk(struct tszspectrum * ptsz);
 int load_n5k_cl_K1(struct tszspectrum * ptsz);
 double get_n5k_cl_K1_at_chi(double chi,struct tszspectrum * ptsz);
 
+
+int load_cib_Snu(struct tszspectrum * ptsz);
+double get_cib_Snu_z_and_nu(double z_asked, double nu_asked, struct tszspectrum * ptsz);
+
 int load_n5k_z_of_chi(struct tszspectrum * ptsz);
 double get_n5k_z_of_chi(double chi,struct tszspectrum * ptsz);
 
