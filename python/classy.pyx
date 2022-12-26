@@ -474,6 +474,21 @@ cdef class Class:
         # following functions are only to output the desired numbers
         return
 
+    def compute_class_sz(self,pdict_to_update):
+        for k,v in pdict_to_update.items():
+          if k == 'fNL':
+            self.tsz.fNL = pdict_to_update['fNL']
+
+        if szpowerspectrum_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+        &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
+            self.struct_cleanup()
+            raise CosmoComputationError(self.tsz.error_message)
+        self.computed = True
+        return
+
+
+
+
     def raw_cl(self, lmax=-1, nofail=False):
         """
         raw_cl(lmax=-1, nofail=False)
