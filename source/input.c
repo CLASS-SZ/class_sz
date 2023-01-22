@@ -1870,6 +1870,12 @@ int input_read_parameters(
       class_read_double("beta_ym",ptsz->beta_ym);
       class_read_double("sigmaM_ym",ptsz->sigmaM_ym);
 
+
+      // class_read_double("ystar_nika2",ptsz->ystar_nika2);
+      // class_read_double("alpha_nika2",ptsz->alpha_nika2);
+      // class_read_double("beta_nika2",ptsz->beta_nika2);
+      // class_read_double("sigmaM_nika2",ptsz->sigmaM_nika2);
+
       class_read_double("alpha_thm",ptsz->alpha_theta);
 
       class_read_double("A_ym",ptsz->A_ym);
@@ -3423,6 +3429,11 @@ int input_read_parameters(
      class_read_int("cib_nu0_norm",ptsz->cib_nu0_norm);
      class_read_int("use scale dependent bias (from non Gaussianity)",ptsz->has_ng_in_bh);
      class_read_double("fNL",ptsz->fNL);
+
+     // FMcC edit: read in p_fNL parameter
+     // class_read_double("p_fNL",ptsz->p_fNL);
+     // end FMcC edit
+
      if(ptsz->has_ng_in_bh){
        ppt->has_density_transfers=_TRUE_;
        ppt->has_perturbations = _TRUE_;

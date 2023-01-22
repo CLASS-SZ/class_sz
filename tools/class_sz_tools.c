@@ -20369,6 +20369,22 @@ else if (ptsz->y_m_relation == 0){
 
 }
 
+else if (ptsz->y_m_relation == 2){
+
+        // double ystar2 = pow(10.,ptsz->ystar_ym)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
+        //
+        // ystar2 *=  pow(H0/70.,-2.+ptsz->alpha_ym);
+        // double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/ptsz->m_pivot_ym* (100./H0),ptsz->alpha_ym);
+        // y500_for_mp_at_zp *=   pow(Eh,ptsz->beta_ym) *pow(100.*d_A/(500.0*H0),-2.);
+        //
+        //
+        // yp = y500_for_mp_at_zp;
+        // NIKA2
+
+
+
+}
+
 free(pvecback);
 
 return yp;
