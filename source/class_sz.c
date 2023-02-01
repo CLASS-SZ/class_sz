@@ -8764,9 +8764,9 @@ exit(0);
 
 
 double get_dlnsigma_dlnR_at_z_and_m(double z,
-                            double m,
-                            struct tszspectrum * ptsz,
-                            struct background * pba){
+                                    double m,
+                                    struct tszspectrum * ptsz,
+                                    struct background * pba){
 
   double rh;
   if (ptsz->HMF_prescription_NCDM == 0) //Matter

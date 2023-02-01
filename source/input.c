@@ -5087,7 +5087,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       ppt->z_max_pk = param1;
     }
     else {
-      ppt->z_max_pk = 0.;
+      // ppt->z_max_pk = 0.; //class_sz modif
 
       if ((ppt->has_pk_matter == _TRUE_) || (ppt->has_density_transfers == _TRUE_) || (ppt->has_velocity_transfers == _TRUE_)) {
         for (i=0; i<pop->z_pk_num; i++) {
