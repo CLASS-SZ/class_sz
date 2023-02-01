@@ -3767,6 +3767,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
         ptsz->delta_def_electron_density = 2;
         ptsz->delta_def_electron_pressure = 2;
       }
+      // m200c is the default 
       // if (ptsz->integrate_wrt_m200c == 1){
       //   ptsz->integrate_wrt_mvir = 0;
       //   ptsz->integrate_wrt_m200m = 0;

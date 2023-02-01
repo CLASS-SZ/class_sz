@@ -7676,19 +7676,30 @@ int evaluate_pressure_profile(double * pvecback,
    }
    //custom gNFW pressure profile
    else if(ptsz->pressure_profile == 3){
-   if (ptsz->mass_dependent_bias == 1)
+    // double l_delta = 0.;
+   if (ptsz->mass_dependent_bias == 1 && ptsz->delta_def_electron_pressure == 2){
       ptsz->HSEbias = 1./(0.8/(1.+ ptsz->Ap*pow(pvectsz[ptsz->index_m500]/3.e14,ptsz->alpha_b)));
-
-
   //m500 X-ray for the pressure profiles A10 and P13
    pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m500c]/ptsz->HSEbias;
    // printf("m500 = %.3e\n",pvectsz[ptsz->index_m500]);
-
    //r500 X-ray for the pressure profiles A10 and P13
    pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
    // printf("r500 = %.3e\n",pvectsz[ptsz->index_r500]);
-
    pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
+   // l_delta = pvectsz[ptsz->index_l500];
+ }
+ else if (ptsz->delta_def_electron_pressure == 1){ // 200c
+   pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m200c];
+   // printf("m500 = %.3e\n",pvectsz[ptsz->index_m500]);
+   //r500 X-ray for the pressure profiles A10 and P13
+   pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+   // printf("r500 = %.3e\n",pvectsz[ptsz->index_r500]);
+   pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
+ }
+ else{
+   printf("This delta definition for electron pressure is not implemented yet.\n");
+   exit(0);
+ }
 
       lnx_asked = log((pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500]);
 
@@ -13534,7 +13545,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
         ptsz->delta_def_electron_pressure = 2;
       }
       else if (ptsz->pressure_profile == 3){ // Custom. GNFW
-        ptsz->delta_def_electron_pressure  = 2;
+        // ptsz->delta_def_electron_pressure  = 2;
         if (ptsz->delta_def_electron_pressure == 2){
           ptsz->has_500c = 1;
         }
