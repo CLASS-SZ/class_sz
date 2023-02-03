@@ -8600,9 +8600,15 @@ double get_first_order_bias_at_z_and_nu(double z,
 
   if (z>3.) z = 3.;
 
+  // double om0 = ptsz->Omega_m_0;
+  // double ol0 = 1.-ptsz->Omega_m_0;
+  // double Omega_m_at_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0);
   double om0 = ptsz->Omega_m_0;
-  double ol0 = 1.-ptsz->Omega_m_0;
-  double Omega_m_at_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0);
+  double or0 = ptsz->Omega_r_0;
+  double ol0 = 1.-om0-or0;
+  double Omega_m_at_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.));
+
+// Omega_m_0
 
    //Tinker et al 2008 @ M1600-mean
    if (ptsz->MF==6)
@@ -8757,13 +8763,13 @@ exit(0);
 
 
    double sigma = exp(pwl_interp_2d(ptsz->n_arraySZ,
-                     ptsz->ndimSZ,
-                     ptsz->array_redshift,
-                     ptsz->array_radius,
-                     ptsz->array_sigma_at_z_and_R,
-                     1,
-                     &z_asked,
-                     &R_asked));
+                                    ptsz->ndimSZ,
+                                    ptsz->array_redshift,
+                                    ptsz->array_radius,
+                                    ptsz->array_sigma_at_z_and_R,
+                                    1,
+                                    &z_asked,
+                                    &R_asked));
   if (isnan(sigma) || isinf(sigma)){
     printf("failed interpolation of sigma.\n");
     printf("z=%.8e zmin=%.8e m=%.8e\n",z,ptsz->array_redshift[0],m);
@@ -9943,9 +9949,13 @@ pvectsz[ptsz->index_lognu] = log(get_nu_at_z_and_m(exp(z_asked)-1.,m_for_hmf,pts
    else if (ptsz->MF==4) {
        double zz = z;
        // if(z>3.) zz=3.;
+       // double om0 = ptsz->Omega_m_0;
+       // double ol0 = 1.-ptsz->Omega_m_0;
+       // double Omega_m_z = om0*pow(1.+zz,3.)/(om0*pow(1.+zz,3.)+ ol0);
        double om0 = ptsz->Omega_m_0;
-       double ol0 = 1.-ptsz->Omega_m_0;
-       double Omega_m_z = om0*pow(1.+zz,3.)/(om0*pow(1.+zz,3.)+ ol0);
+       double or0 = ptsz->Omega_r_0;
+       double ol0 = 1.-om0-or0;
+       double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.));
       class_call(
                       // MF_T08(
                       //            &pvectsz[ptsz->index_mf],
@@ -12154,6 +12164,7 @@ int show_preamble_messages(struct background * pba,
 
 
       ptsz->Omega_m_0 = pvecback[pba->index_bg_Omega_m];
+      ptsz->Omega_r_0 = pvecback[pba->index_bg_Omega_r];
 
       ptsz->Omega_ncdm_0 = ptsz->Omega_m_0
       -pba->Omega0_b

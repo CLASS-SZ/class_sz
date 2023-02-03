@@ -7812,8 +7812,9 @@ int MF_T08_m500(
   //T08@m500
   // if(z>3.) z=3.; // ccl doesnt have this.. commenting for now.
   double om0 = ptsz->Omega_m_0;
-  double ol0 = 1.-ptsz->Omega_m_0;
-  double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0);
+  double or0 = ptsz->Omega_r_0;
+  double ol0 = 1.-om0-or0;
+  double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.));
   double  delta_mean = delta_crit/Omega_m_z;
 
   delta_mean = log10(delta_mean);
@@ -8015,6 +8016,11 @@ int MF_T08_m500(
 
   double alphaT08 =
   pow(10.,-pow(0.75/log10(pow(10.,delta_mean)/75.),1.2));
+  // note in ccl this is written slighlty diff:
+  // def _pd(self, ld):
+  //     return 10.**(-(0.75/(ld - 1.8750612633))**1.2)
+  // where 1.8750612633=np.log10(75)
+
   double   Ap=*Ap0*pow(1.+z,-0.14);
   double   a=*a0*pow(1.+z,-0.06);
   double   b=*b0*pow(1.+z,-alphaT08);
@@ -8027,11 +8033,13 @@ int MF_T08_m500(
   free(b0);
   free(c0);
 
-  // sigma = .1;
+  // sigma = .15;
 
   *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
   // *result = 0.5*(Ap*(pow(1.0/b,-a)+1.)*exp(-c/pow(1.0,2.)));
   // *result = 0.5;
+  // *result = 0.5*exp(-1./pow(sigma,2));
+  // *result = 0.5*sigma;
   return _SUCCESS_;
 }
 

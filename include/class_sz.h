@@ -1506,6 +1506,7 @@ double * steps_m;
   double D_0;
   double D_z1SZ;
   double Omega_m_0;
+  double Omega_r_0;
   double Omega_ncdm_0;
   double Omega0_b;
 

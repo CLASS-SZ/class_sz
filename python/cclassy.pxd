@@ -267,6 +267,7 @@ cdef extern from "class.h":
         double HSEbias
         double mu_e
         double Omega_m_0
+        double Omega_r_0
         double f_free
         int  ndimSZ
         int nbins_M

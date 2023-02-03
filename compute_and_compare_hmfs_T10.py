@@ -77,7 +77,7 @@ def run(args):
     "P_k_max_1/Mpc": 50.,
     # "z_max_pk": 1./0.01-1.,
 
-    "non linear": "none",
+    "non_linear": "hmcode",
 
     # 'mass function':'T08M200c',
     # 'mass function':'T08',
@@ -85,15 +85,15 @@ def run(args):
     # 'mass function':'M500',
     'T10_alpha_fixed':1,
 
-    'M_min':1e11,
-    'M_max':1e15,
+    'M_min':1e14,
+    'M_max':1e16,
     'ndim_masses':400,
     'n_m_dndlnM':400,
 
 
 
     'z_min':0.,
-    'z_max': 6.,
+    'z_max': 3.,
     'n_z_dndlnM':400,
     'ndim_redshifts':400,
 
@@ -122,8 +122,8 @@ def run(args):
 
 
 
-    zp = 1.
-    Masses = np.geomspace(1e11,1e15,300)
+    zp = 1.5
+    Masses = np.geomspace(1e14,1e16,300)
     dndm = 1./Masses*np.vectorize(M.get_dndlnM_at_z_and_M)(zp,Masses)
     sigM = np.vectorize(M.get_sigma_at_z_and_m)(zp,Masses)
     print('class_sz sigM:',sigM)

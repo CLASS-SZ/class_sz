@@ -2235,6 +2235,11 @@ cdef class Class:
     def get_mu_e(self):
         return self.tsz.mu_e
 
+    def get_Omega_m_0(self):
+        return self.tsz.Omega_m_0
+    def get_Omega_r_0(self):
+        return self.tsz.Omega_r_0
+
     def get_m_nfw(self,x):
         return m_nfw(x)
 
