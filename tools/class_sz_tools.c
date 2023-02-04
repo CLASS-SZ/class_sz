@@ -6085,6 +6085,194 @@ if (ptsz->sz_verbose >= 1)
 
 
 
+
+int load_normalized_dndz_ngal(struct tszspectrum * ptsz)
+{
+
+
+
+if (ptsz->sz_verbose > 0)
+  printf("-> [ngal] loading ngal normalized redshift kernels.\n");
+
+
+
+  // class_alloc(ptsz->n5k_cl_K1_chi,sizeof(double *)*100,ptsz->error_message);
+  // class_alloc(ptsz->n5k_cl_K1_K1,sizeof(double *)*100,ptsz->error_message);
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  class_alloc(ptsz->normalized_dndz_ngal_z,
+              sizeof(double **)*ptsz->galaxy_samples_list_num,
+              ptsz->error_message);
+  class_alloc(ptsz->normalized_dndz_ngal_phig,
+              sizeof(double **)*ptsz->galaxy_samples_list_num,
+              ptsz->error_message);
+  class_alloc(ptsz->normalized_dndz_ngal_size,
+              sizeof(int *)*ptsz->galaxy_samples_list_num,
+              ptsz->error_message);
+
+  int index_g;
+  for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+
+  class_alloc(ptsz->normalized_dndz_ngal_z[index_g],sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->normalized_dndz_ngal_phig[index_g],sizeof(double *)*100,ptsz->error_message);
+}
+
+if (ptsz->sz_verbose>0)
+  printf("-> [ngal] galaxy redshift kernel arrays allocated. Starting filling them.\n");
+
+
+
+for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+
+  /* Prepare the command */
+  /* If the command is just a "cat", no arguments need to be passed */
+  // if(strncmp("cat ", ptsz->command, 4) == 0)
+  // {
+  // sprintf(arguments, " ");
+  // }
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  // char Filepath[_ARGUMENT_LENGTH_MAX_];
+  // if (ptsz->sz_verbose >= 1)
+  //   printf("-> File Name: %s\n",ptsz->cmb_lensing_noise_file);
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+  sprintf(Filepath,"%s%d%s",
+          ptsz->full_path_and_prefix_to_dndz_ngal,
+          ptsz->galaxy_samples_list[index_g],
+          ".txt");
+  if (ptsz->sz_verbose >= 1)
+  printf("-> [ngal] kernel file name for sample %d: %s\n",index_g,Filepath);
+  class_open(process,Filepath, "r",ptsz->error_message);
+  if (ptsz->sz_verbose >= 1)
+    printf("-> [ngal] kernel file for sample %d opened successfully\n");
+
+  // exit(0);
+
+  //int il = 0;
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+
+    //il++;
+    sscanf(line, "%lf %lf ", &this_lnx, &this_lnI);
+
+    // printf("%lf %lf\n",this_lnx,this_lnI);
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the file.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the file.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  status = fclose(process);
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->normalized_dndz_ngal_size[index_g] = n_data;
+
+// }
+//
+// printf("reallocating1\n");
+// printf("reallocating\n");
+// printf("reallocating\n");
+// printf("reallocating3\n");
+
+// for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+  /** Make room */
+  if (ptsz->sz_verbose >= 1)
+    printf("-> [ngal]reallocating %d with size %d\n",index_g,ptsz->normalized_dndz_ngal_size[index_g]);
+  class_realloc(ptsz->normalized_dndz_ngal_z[index_g],
+                ptsz->normalized_dndz_ngal_z[index_g],
+                ptsz->normalized_dndz_ngal_size[index_g]*sizeof(double),
+                ptsz->error_message);
+  // printf("reallocating ngal z done\n");
+
+  class_realloc(ptsz->normalized_dndz_ngal_phig[index_g],
+                ptsz->normalized_dndz_ngal_phig[index_g],
+                ptsz->normalized_dndz_ngal_size[index_g]*sizeof(double),
+                ptsz->error_message);
+  // printf("reallocating done\n");
+// }
+// exit(0);
+
+
+  // /** Store them */
+  for (index_x=0; index_x<ptsz->normalized_dndz_ngal_size[index_g]; index_x++) {
+    ptsz->normalized_dndz_ngal_z[index_g][index_x] = lnx[index_x];
+    ptsz->normalized_dndz_ngal_phig[index_g][index_x] = lnI[index_x];
+
+
+  if (ptsz->sz_verbose >= 1)
+    printf("-> [ngal] kernel sample %d z = %.3e phig = %.3e\n",
+           index_g,
+           ptsz->normalized_dndz_ngal_z[index_g][index_x],
+           ptsz->normalized_dndz_ngal_phig[index_g][index_x]);
+
+    // printf("%.5e %.5e\n",ptsz->l_lensing_noise[index_x],ptsz->nl_lensing_noise[index_x]);
+
+    //printf("z=%.3e phig=%.3e\n",ptsz->unbinned_nl_yy_ell[index_x],ptsz->unbinned_nl_yy_n_ell[index_x]);
+  }
+
+  // exit(0);
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+}
+
+  return _SUCCESS_;
+}
+
+
+
+
+
+
 int load_n5k_z_of_chi(struct tszspectrum * ptsz)
 {
 
@@ -6999,7 +7187,7 @@ if (ptsz->sz_verbose>=1){
     // printf("lnx = %e\n",this_lnI);
                                     }
 
-  // WIxSC and "other": just two column files
+  // WIxSC and "other": just two columns files
   else if ((ptsz->galaxy_sample == 0) || (ptsz->galaxy_sample == 2)){
 
     sscanf(line, "%lf %lf ", &this_lnx, &this_lnI);
@@ -8658,6 +8846,26 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
     // printf("b=%.5e pk=%.5e\n",V->pvectsz[V->ptsz->index_halo_bias],pk1);
 
   }
+  else if ((V->ptsz->has_ngal_ngal_hf == _TRUE_) && (index_md == V->ptsz->index_md_ngal_ngal_hf)) {
+    int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
+    double l = V->ptsz->ell[index_l];
+    // V->pvectsz[V->ptsz->index_multipole_for_pk] = l; // l1,l2 or l3
+    // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+    // double pk1 = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+    double pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+    result = pk1;
+    int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
+    int index_g_prime = (int) V->pvectsz[V->ptsz->index_ngal_prime_for_galaxy_profile];
+    evaluate_effective_galaxy_bias_ngal(index_g,V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+    double bg = V->pvectsz[V->ptsz->index_halo_bias];
+    evaluate_effective_galaxy_bias_ngal(index_g_prime,V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+    double bg_prime =  V->pvectsz[V->ptsz->index_halo_bias];
+    result *= bg*bg_prime;
+
+
+    // printf("b=%.5e pk=%.5e\n",V->pvectsz[V->ptsz->index_halo_bias],pk1);
+
+  }
   else if ((V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf)) {
 
   int index_theta_1 = (int) V->pvectsz[V->ptsz->index_multipole_1];
@@ -9010,6 +9218,7 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_cib_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_cib_cib_2h))
  || ((V->ptsz->has_kSZ_kSZ_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_2h))
  || ((V->ptsz->has_tSZ_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_2h))
+ || ((V->ptsz->has_ngal_ngal_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_ngal_2h))
  || ((V->ptsz->has_gal_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_2h))
  || ((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
  || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
@@ -9110,6 +9319,22 @@ if ( ((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_
 // multiply by radial kernel for galaxies (squared for gxg quantities)
 double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
 result *= pow(Wg/V->pvectsz[V->ptsz->index_chi2],2.);
+}
+
+
+if ( ((V->ptsz->has_ngal_ngal_1h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_ngal_1h))
+   ||((V->ptsz->has_ngal_ngal_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_ngal_2h))
+   ||((V->ptsz->has_ngal_ngal_hf == _TRUE_) && (index_md == V->ptsz->index_md_ngal_ngal_hf))
+  ){
+// multiply by radial kernel for galaxies (squared for gxg quantities)
+
+int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
+int index_g_prime = (int) V->pvectsz[V->ptsz->index_ngal_prime_for_galaxy_profile];
+
+
+double Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+double Wg_galprime = radial_kernel_W_galaxy_ngal_at_z(index_g_prime,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+result *= Wg*Wg_galprime*pow(1/V->pvectsz[V->ptsz->index_chi2],2.);
 }
 
 // lensing magification needs lensing kernel:
@@ -9633,6 +9858,64 @@ double integrand_patterson_test(double logM, void *p){
                                            params,ptsz->patterson_show_neval);
   r = r_m_1*r_m_2;
                                      }
+
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_ngal_ngal_2h )){
+
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Y' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+ int index_g = (int) pvectsz[ptsz->index_ngal_for_galaxy_profile];
+ int index_g_prime = (int) pvectsz[ptsz->index_ngal_prime_for_galaxy_profile];
+if (index_g_prime == index_g){
+  r_m_2 = r_m_1;
+}
+else{
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('cib' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_patterson_test,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+}
+
+
+
+  r = r_m_1*r_m_2;
+                                     }
+
 
   else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_cib_2h )){
 
@@ -12526,57 +12809,57 @@ else if(((int) pvectsz[ptsz->index_md] == ptsz->index_md_szrates)
 // printf("found r = %.5e\n",r);
 }
 
-  else {
-
+else {
+// here we treat all the 1-halo terms and also the 2halo terms that are auto
   r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                        epsrel, epsabs,
                                        integrand_patterson_test,
                                        params,ptsz->patterson_show_neval);
 
-// halo model consistency:
+        // halo model consistency:
 
-if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
-  && (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N_hsv){
-  if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
- // autocorrelation 2-halo cases (correlation of same fields).
- if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_2h)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_bb_at_z_2h)
- // || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_em_at_z_2h)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_HI_at_z_2h)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
- || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)  && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_gallens_2h)
- || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_lens_2h)
-){
+        if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
+          && (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N_hsv){
+          if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+         // autocorrelation 2-halo cases (correlation of same fields).
+         if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_2h)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_bb_at_z_2h)
+         // || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_em_at_z_2h)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_HI_at_z_2h)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
+         || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)  && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_gallens_2h)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_lens_2h)
+        ){
 
-     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
-     double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
-     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-     r += bmin_umin;
-     if (isnan(bmin_umin)){
-      printf("nan in concistency condition bmin = %.5e n = %.5e I0 = %.5e b = %.5e.\n",
-    bmin,pvectsz[ptsz->index_hmf],I0,pvectsz[ptsz->index_halo_bias]);
-      exit(0);
-    }
-    }
-// all of the 1-halo cases
-else {
-       double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-       double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
-       double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
-       r += nmin_umin;
-       }
-     }
+             double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+             double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+             double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+             double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+             r += bmin_umin;
+             if (isnan(bmin_umin)){
+              printf("nan in concistency condition bmin = %.5e n = %.5e I0 = %.5e b = %.5e.\n",
+            bmin,pvectsz[ptsz->index_hmf],I0,pvectsz[ptsz->index_halo_bias]);
+              exit(0);
+            }
+            }
+        // all of the 1-halo cases
+        else {
+               double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+               double I0 = integrand_patterson_test(log(ptsz->m_min_counter_terms),params);
+               double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
+               r += nmin_umin;
+               }
+             }
 
-                                   }
+                                           }
   }
 
 
@@ -13496,6 +13779,9 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
 
       double result = hmf*(ns+nc);
 
+
+
+
   return result;
 
 }
@@ -13588,6 +13874,121 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
 
 return _SUCCESS_;
     }
+
+
+
+
+int tabulate_mean_galaxy_number_density_ngal(struct background * pba,
+                                             struct nonlinear * pnl,
+                                             struct primordial * ppm,
+                                             struct tszspectrum * ptsz){
+
+if (ptsz->sz_verbose>0){
+  printf("-> [ngal] starting tabulation of mean galaxy number density.\n");
+}
+class_alloc(ptsz->array_mean_galaxy_number_density_ngal,sizeof(double **)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+int index_g;
+for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+ class_alloc(ptsz->array_mean_galaxy_number_density_ngal[index_g],sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+}
+
+if (ptsz->sz_verbose>0)
+  printf("-> [ngal] mean galaxy number density array allocated.\n");
+int index_z;
+double r;
+double m_min,m_max;
+
+// here we should always integrate over the full mass range,
+// since this is a normalization term
+//
+// if (ptsz->hm_consistency == 0){
+//   m_min = 1e10; // this has to be the same as the minimal mass at which the counter terms are tabulated
+//   m_max = 1e16; // this has to be the same as the maximal mass at which the counter terms are tabulated
+// }
+// else{
+for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+
+  if (ptsz->sz_verbose>0)
+    printf("-> [ngal] starting computation for sample %d.\n",index_g);
+
+m_min = ptsz->M_min_ng_bar;
+m_max = ptsz->M_max_ng_bar;
+// }
+
+double * pvecback;
+double * pvectsz;
+
+
+ class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+
+
+
+ pvectsz[ptsz->index_has_galaxy] = 1;
+ if (ptsz->delta_def_galaxies == 0)
+   pvectsz[ptsz->index_has_200m] = 1;
+ else if (ptsz->delta_def_galaxies == 1)
+   pvectsz[ptsz->index_has_200c] = 1;
+ else if (ptsz->delta_def_galaxies == 2)
+   pvectsz[ptsz->index_has_500c] = 1;
+
+for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
+        {
+
+
+          double z = exp(ptsz->array_redshift[index_z])-1.;
+
+
+          // at each z, perform the mass integral
+          struct Parameters_for_integrand_mean_galaxy_number V;
+          V.pnl = pnl;
+          V.ppm = ppm;
+          V.ptsz = ptsz;
+          V.pba = pba;
+          V.pvectsz = pvectsz;
+          V.pvecback = pvecback;
+          V.z = z;
+
+          void * params = &V;
+          double epsrel=ptsz->mass_epsrel_ngbar;
+          double epsabs=ptsz->mass_epsabs_ngbar;
+
+          r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_mean_galaxy_number,
+                                               params,ptsz->patterson_show_neval);
+
+
+
+        // here we always impose the consistency condition.
+        // add counter terms:
+         double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+         double I0 = integrand_mean_galaxy_number(log(m_min),params);
+         double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
+         r += nmin_umin;
+
+
+          ptsz->array_mean_galaxy_number_density_ngal[index_g][index_z] = log(r);
+
+
+        if (ptsz->sz_verbose>3){
+          printf("-> [ngal] ngbar for sample %d at z = %.3e is %.3e.\n",index_g,z,r);
+        }
+
+       }
+ free(pvecback);
+ free(pvectsz);
+ // exit(0);
+}
+
+return _SUCCESS_;
+    }
+
+
+
 
 
 

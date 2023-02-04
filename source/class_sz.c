@@ -104,6 +104,9 @@ int szpowerspectrum_init(
       + ptsz->has_gal_cib_2h
       + ptsz->has_cib_cib_1h
       + ptsz->has_cib_cib_2h
+      + ptsz->has_ngal_ngal_1h
+      + ptsz->has_ngal_ngal_2h
+      + ptsz->has_ngal_ngal_hf
       + ptsz->has_gal_gal_1h
       + ptsz->has_gal_gal_2h
       + ptsz->has_gal_gal_hf
@@ -562,6 +565,13 @@ if(ptsz->galaxy_sample==1){
 }
 }
 
+if (ptsz->has_ngal_ngal_1h
+  + ptsz->has_ngal_ngal_2h
+  + ptsz->has_ngal_ngal_hf
+){
+ load_normalized_dndz_ngal(ptsz);
+}
+
 if (ptsz->has_kSZ_kSZ_gal_1h
  || ptsz->has_kSZ_kSZ_gal_1h_fft
  || ptsz->has_kSZ_kSZ_gal_2h_fft
@@ -622,6 +632,12 @@ if (ptsz->has_tSZ_gal_1h
 ){
 
 tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
+}
+
+if (ptsz->has_ngal_ngal_1h
+   +ptsz->has_ngal_ngal_2h
+ ){
+  tabulate_mean_galaxy_number_density_ngal(pba,pnl,ppm,ptsz);
 }
 
 if (ptsz->has_mean_galaxy_bias)
@@ -1563,7 +1579,8 @@ free(integrand_l_lprime_phi);
    write_output_to_files_cl(pnl,pba,ppm,ptsz);
    write_output_to_files_ell_indep_ints(pnl,pba,ptsz);
    write_redshift_dependent_quantities(pba,ptsz);
-
+   if (ptsz->sz_verbose>1)
+      printf("done writing things.\n");
  }
    return _SUCCESS_;
 }
@@ -1630,6 +1647,9 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_lens_cib_2h
       + ptsz->has_gal_cib_1h
       + ptsz->has_gal_cib_2h
+      + ptsz->has_ngal_ngal_1h
+      + ptsz->has_ngal_ngal_2h
+      + ptsz->has_ngal_ngal_hf
       + ptsz->has_cib_cib_1h
       + ptsz->has_cib_cib_2h
       + ptsz->has_gal_gal_1h
@@ -1764,12 +1784,77 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
      free(ptsz->cl_gal_cib_1h[index_nu]);
      free(ptsz->cl_gal_cib_2h[index_nu]);
    }
+    if (ptsz->has_cib_cib_1h
+      + ptsz->has_cib_cib_2h
+      + ptsz->has_cib_shotnoise
+      + ptsz->has_tSZ_cib_1h
+      + ptsz->has_tSZ_cib_2h
+      + ptsz->has_gal_cib_1h
+      + ptsz->has_gal_cib_2h
+      + ptsz->has_lens_cib_1h
+      + ptsz->has_lens_cib_2h
+      != _FALSE_){
+    free(ptsz->cib_frequency_list);
+      }
+
+
+  if (ptsz->sz_verbose>10) printf("-> freeing l and cl's ngals.\n");
+   int index_g;
+   int index_g_prime;
+   for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+       for (index_g_prime=0;index_g_prime<ptsz->galaxy_samples_list_num;index_g_prime++){
+         free(ptsz->cl_ngal_ngal_1h[index_g][index_g_prime]);
+         free(ptsz->cl_ngal_ngal_2h[index_g][index_g_prime]);
+         free(ptsz->cl_ngal_ngal_hf[index_g][index_g_prime]);
+       }
+     free(ptsz->cl_ngal_ngal_1h[index_g]);
+     free(ptsz->cl_ngal_ngal_2h[index_g]);
+     free(ptsz->cl_ngal_ngal_hf[index_g]);
+   }
+
+   if (ptsz->has_ngal_ngal_1h
+     + ptsz->has_ngal_ngal_2h
+     + ptsz->has_ngal_ngal_hf
+   ){
+     for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+       if (ptsz->has_ngal_ngal_1h
+         + ptsz->has_ngal_ngal_2h)
+         free(ptsz->array_mean_galaxy_number_density_ngal[index_g]);
+       free(ptsz->normalized_dndz_ngal_z[index_g]);
+       free(ptsz->normalized_dndz_ngal_phig[index_g]);
+     }
+     if (ptsz->has_ngal_ngal_1h
+       + ptsz->has_ngal_ngal_2h)
+       free(ptsz->array_mean_galaxy_number_density_ngal);
+     free(ptsz->normalized_dndz_ngal_z);
+     free(ptsz->normalized_dndz_ngal_phig);
+
+     free(ptsz->galaxy_samples_list);
+
+    if (ptsz->has_ngal_ngal_hf)
+      free(ptsz->effective_galaxy_bias_ngal);
+    if (ptsz->has_ngal_ngal_1h
+        + ptsz->has_ngal_ngal_2h){
+          free(ptsz->sigma_log10M_HOD_ngal);//[index_g] = 1.;
+          free(ptsz->alpha_s_HOD_ngal);//[index_g] = 1.;
+          free(ptsz->M1_prime_HOD_ngal);//[index_g] = 1.;
+          free(ptsz->M_min_HOD_ngal);//[index_g] = 1e11;
+          free(ptsz->M0_HOD_ngal);//[index_g] = 1e11;
+          free(ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal);//[index_g] = 1.;
+          free(ptsz->f_cen_HOD_ngal);//[index_g] = 1.;
+        }
+}
+
+
    free(ptsz->cl_tSZ_cib_1h);
    free(ptsz->cl_tSZ_cib_2h);
    free(ptsz->cl_lens_cib_1h);
    free(ptsz->cl_lens_cib_2h);
    free(ptsz->cl_gal_cib_1h);
    free(ptsz->cl_gal_cib_2h);
+   free(ptsz->cl_ngal_ngal_1h);
+   free(ptsz->cl_ngal_ngal_2h);
+   free(ptsz->cl_ngal_ngal_hf);
    free(ptsz->cl_cib_cib_1h);
    free(ptsz->cl_cib_cib_2h);
    free(ptsz->cl_lens_lens_1h);
@@ -3428,7 +3513,65 @@ int compute_sz(struct background * pba,
                                           Pvectsz[ptsz->index_frequency_prime_for_cib_profile],
                                           Pvectsz[ptsz->index_multipole]);
        }
-       else if (index_integrand>=ptsz->index_integrand_id_cib_cib_2h_first && index_integrand <= ptsz->index_integrand_id_cib_cib_2h_last && ptsz->has_cib_cib_2h){
+      else if (index_integrand>=ptsz->index_integrand_id_ngal_ngal_1h_first && index_integrand <= ptsz->index_integrand_id_ngal_ngal_1h_last && ptsz->has_ngal_ngal_1h){
+         Pvectsz[ptsz->index_md] = ptsz->index_md_ngal_ngal_1h;
+         int index_multipole_ngal1_ngal2 = (int) (index_integrand - ptsz->index_integrand_id_ngal_ngal_1h_first);
+         int index_multipole = index_multipole_ngal1_ngal2 % ptsz->nlSZ;
+         int index_ngal1_ngal2 = index_multipole_ngal1_ngal2 / ptsz->nlSZ;
+         int n = (-1.+sqrt(1. + 4.*2.*index_ngal1_ngal2))/2.;
+         int index_ngal1 = floor(n);
+         int index_ngal2 = index_ngal1_ngal2 -index_ngal1*(index_ngal1+1)/2;
+         Pvectsz[ptsz->index_ngal_for_galaxy_profile] = (double) index_ngal1;
+         Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile] = (double) index_ngal2;
+         //int index_multipole = (int) (index_integrand - ptsz->index_integrand_id_cib_cib_1h_first);
+         Pvectsz[ptsz->index_multipole] = (double) index_multipole;
+         Pvectsz[ptsz->index_has_galaxy] = 1;
+         if (ptsz->sz_verbose > 0) printf("computing cl^ngal-ngal_1h @ ngal_id = %.0f, ngal_prime_id = %.0f, ell_id = %.0f\n",
+                                          Pvectsz[ptsz->index_ngal_for_galaxy_profile],
+                                          Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile],
+                                          Pvectsz[ptsz->index_multipole]);
+       }
+
+      else if (index_integrand>=ptsz->index_integrand_id_ngal_ngal_2h_first && index_integrand <= ptsz->index_integrand_id_ngal_ngal_2h_last && ptsz->has_ngal_ngal_2h){
+         Pvectsz[ptsz->index_md] = ptsz->index_md_ngal_ngal_2h;
+         int index_multipole_ngal1_ngal2 = (int) (index_integrand - ptsz->index_integrand_id_ngal_ngal_2h_first);
+         int index_multipole = index_multipole_ngal1_ngal2 % ptsz->nlSZ;
+         int index_ngal1_ngal2 = index_multipole_ngal1_ngal2 / ptsz->nlSZ;
+         int n = (-1.+sqrt(1. + 4.*2.*index_ngal1_ngal2))/2.;
+         int index_ngal1 = floor(n);
+         int index_ngal2 = index_ngal1_ngal2 -index_ngal1*(index_ngal1+1)/2;
+         Pvectsz[ptsz->index_ngal_for_galaxy_profile] = (double) index_ngal1;
+         Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile] = (double) index_ngal2;
+         //int index_multipole = (int) (index_integrand - ptsz->index_integrand_id_cib_cib_1h_first);
+         Pvectsz[ptsz->index_multipole] = (double) index_multipole;
+         Pvectsz[ptsz->index_has_galaxy] = 1;
+         if (ptsz->sz_verbose > 0) printf("computing cl^ngal-ngal_2h @ ngal_id = %.0f, ngal_prime_id = %.0f, ell_id = %.0f\n",
+                                          Pvectsz[ptsz->index_ngal_for_galaxy_profile],
+                                          Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile],
+                                          Pvectsz[ptsz->index_multipole]);
+       }
+
+      else if (index_integrand>=ptsz->index_integrand_id_ngal_ngal_hf_first && index_integrand <= ptsz->index_integrand_id_ngal_ngal_hf_last && ptsz->has_ngal_ngal_hf){
+         Pvectsz[ptsz->index_md] = ptsz->index_md_ngal_ngal_hf;
+         int index_multipole_ngal1_ngal2 = (int) (index_integrand - ptsz->index_integrand_id_ngal_ngal_hf_first);
+         int index_multipole = index_multipole_ngal1_ngal2 % ptsz->nlSZ;
+         int index_ngal1_ngal2 = index_multipole_ngal1_ngal2 / ptsz->nlSZ;
+         int n = (-1.+sqrt(1. + 4.*2.*index_ngal1_ngal2))/2.;
+         int index_ngal1 = floor(n);
+         int index_ngal2 = index_ngal1_ngal2 -index_ngal1*(index_ngal1+1)/2;
+         Pvectsz[ptsz->index_ngal_for_galaxy_profile] = (double) index_ngal1;
+         Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile] = (double) index_ngal2;
+         //int index_multipole = (int) (index_integrand - ptsz->index_integrand_id_cib_cib_1h_first);
+         Pvectsz[ptsz->index_multipole] = (double) index_multipole;
+         // Pvectsz[ptsz->index_has_galaxy] = 1;
+         if (ptsz->sz_verbose > 0) printf("computing cl^ngal-ngal_hf @ ngal_id = %.0f, ngal_prime_id = %.0f, ell_id = %.0f\n",
+                                          Pvectsz[ptsz->index_ngal_for_galaxy_profile],
+                                          Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile],
+                                          Pvectsz[ptsz->index_multipole]);
+       }
+
+
+      else if (index_integrand>=ptsz->index_integrand_id_cib_cib_2h_first && index_integrand <= ptsz->index_integrand_id_cib_cib_2h_last && ptsz->has_cib_cib_2h){
           //Pvectsz[ptsz->index_md] = ptsz->index_md_cib_cib_2h;
           //Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_cib_cib_2h_first);
          Pvectsz[ptsz->index_md] = ptsz->index_md_cib_cib_2h;
@@ -4394,12 +4537,63 @@ if (_gal_cib_2h_){
 int index_l = (int) Pvectsz[ptsz->index_multipole];
 int index_cib1 = (int) Pvectsz[ptsz->index_frequency_for_cib_profile];
 ptsz->cl_gal_cib_2h[index_cib1][index_l] = Pvectsz[ptsz->index_integral]
-                                            *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
-                                            /(2*_PI_);
+                                           *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                                           /(2*_PI_);
 //printf("ell = %.3e and cl_yg = %.3e\n",ptsz->ell[index_l],ptsz->cl_tSZ_gal_1h[index_l]);
 
 }
 
+
+// Collect ngalxngal 1-halo at each multipole:
+// [l(l+1)/2pi]*cl
+if (_ngal_ngal_1h_){
+ int index_l = (int) Pvectsz[ptsz->index_multipole];
+ int index_ngal1 = (int) Pvectsz[ptsz->index_ngal_for_galaxy_profile];
+ int index_ngal2 = (int) Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile];
+
+ ptsz->cl_ngal_ngal_1h[index_ngal1][index_ngal2][index_l] = Pvectsz[ptsz->index_integral]
+                                                            *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                                                            /(2*_PI_);
+
+ ptsz->cl_ngal_ngal_1h[index_ngal2][index_ngal1][index_l] = ptsz->cl_ngal_ngal_1h[index_ngal1][index_ngal2][index_l];
+
+ //printf("ell = %.3e and cl_yg = %.3e\n",ptsz->ell[index_l],ptsz->cl_tSZ_gal_1h[index_l]);
+
+}
+
+// Collect ngalxngal 1-halo at each multipole:
+// [l(l+1)/2pi]*cl
+if (_ngal_ngal_2h_){
+ int index_l = (int) Pvectsz[ptsz->index_multipole];
+ int index_ngal1 = (int) Pvectsz[ptsz->index_ngal_for_galaxy_profile];
+ int index_ngal2 = (int) Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile];
+
+ ptsz->cl_ngal_ngal_2h[index_ngal1][index_ngal2][index_l] = Pvectsz[ptsz->index_integral]
+                                                            *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                                                            /(2*_PI_);
+
+ ptsz->cl_ngal_ngal_2h[index_ngal2][index_ngal1][index_l] = ptsz->cl_ngal_ngal_2h[index_ngal1][index_ngal2][index_l];
+
+ //printf("ell = %.3e and cl_yg = %.3e\n",ptsz->ell[index_l],ptsz->cl_tSZ_gal_1h[index_l]);
+
+}
+
+// Collect ngalxngal 1-halo at each multipole:
+// [l(l+1)/2pi]*cl
+if (_ngal_ngal_hf_){
+ int index_l = (int) Pvectsz[ptsz->index_multipole];
+ int index_ngal1 = (int) Pvectsz[ptsz->index_ngal_for_galaxy_profile];
+ int index_ngal2 = (int) Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile];
+
+ ptsz->cl_ngal_ngal_hf[index_ngal1][index_ngal2][index_l] = Pvectsz[ptsz->index_integral]
+                                                            *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                                                            /(2*_PI_);
+
+ ptsz->cl_ngal_ngal_hf[index_ngal2][index_ngal1][index_l] = ptsz->cl_ngal_ngal_hf[index_ngal1][index_ngal2][index_l];
+
+ //printf("ell = %.3e and cl_yg = %.3e\n",ptsz->ell[index_l],ptsz->cl_tSZ_gal_1h[index_l]);
+
+}
 
 
 
@@ -6596,8 +6790,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
   else if (_gal_gal_1h_){
 
-    int index_l = (int) pvectsz[ptsz->index_multipole];
-    pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l];
+    // int index_l = (int) pvectsz[ptsz->index_multipole];
+    // pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l];
     evaluate_galaxy_profile_1h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
     double galaxy_profile_at_ell_1 = pvectsz[ptsz->index_galaxy_profile];
 
@@ -6611,8 +6805,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
    else if (_gal_gal_2h_){
 
-     int index_l = (int) pvectsz[ptsz->index_multipole];
-     pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l];
+     // int index_l = (int) pvectsz[ptsz->index_multipole];
+     // pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l];
      evaluate_galaxy_profile_2h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
      double galaxy_profile_at_ell_1 = pvectsz[ptsz->index_galaxy_profile];
 
@@ -6903,6 +7097,42 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
                                                *pvectsz[ptsz->index_halo_bias];
 
                 }
+
+
+  else if (_ngal_ngal_1h_){
+
+    // int index_l = (int) pvectsz[ptsz->index_multipole];
+    // pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l];
+
+
+    // evaluate_galaxy_profile_1h(m_delta_cib,r_delta_cib,c_delta_cib,pvecback,pvectsz,pba,ptsz);
+    evaluate_galaxy_profile_ngal(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
+
+    double ngal_profile_at_ell_1 = pvectsz[ptsz->index_galaxy_profile];
+
+        pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                          *ngal_profile_at_ell_1
+                                          *ngal_profile_at_ell_1
+                                          *damping_1h_term;
+   }
+
+  else if (_ngal_ngal_2h_){
+
+    // int index_l = (int) pvectsz[ptsz->index_multipole];
+    // pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l];
+
+
+    // evaluate_galaxy_profile_1h(m_delta_cib,r_delta_cib,c_delta_cib,pvecback,pvectsz,pba,ptsz);
+    evaluate_galaxy_profile_ngal(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
+    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
+
+    double ngal_profile_at_ell_1 = pvectsz[ptsz->index_galaxy_profile];
+
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *ngal_profile_at_ell_1;
+   }
+
 
 
 
@@ -8294,6 +8524,42 @@ exit(0);
       pvectsz[ptsz->index_completeness] = (1.-comp_at_M_and_z);
       //printf("completensess = %.3e\n",pvectsz[ptsz->index_completeness]); // BB debug
         }
+
+
+   return _SUCCESS_;
+}
+
+
+
+
+int evaluate_effective_galaxy_bias_ngal(
+                                   int index_g,
+                                   double * pvecback,
+                                   double * pvectsz,
+                                   struct background * pba,
+                                   struct primordial * ppm,
+                                   struct nonlinear * pnl,
+                                   struct tszspectrum * ptsz)
+{
+
+
+  double b;
+  double z = pvectsz[ptsz->index_z];
+  int index_md = (int) pvectsz[ptsz->index_md];
+
+    b = ptsz->effective_galaxy_bias_ngal[index_g];
+    pvectsz[ptsz->index_halo_bias] = b;
+
+if (ptsz->has_ng_in_bh){
+  double bng = 0.;
+  int index_l = (int) pvectsz[ptsz->index_multipole];
+  double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+  double kl = (ptsz->ell[index_l]+0.5)/d_A;
+  double bh=b;
+  bng = get_scale_dependent_bias_at_z_and_k(z,kl,bh,ptsz);
+  pvectsz[ptsz->index_halo_bias] += bng;
+}
+
 
 
    return _SUCCESS_;
@@ -10826,6 +11092,33 @@ return vrms2/3./pow(_c_*1e-3,2.);
 
 
 
+
+// evaluate normalisation of galaxy terms, i.e., ng_bar
+double evaluate_mean_galaxy_number_density_at_z_ngal(
+                   double z,
+                   int index_g,
+                   struct tszspectrum * ptsz)
+  {
+
+   // double z = pvectsz[ptsz->index_z];
+   double z_asked = log(1.+z);
+
+   if (z<exp(ptsz->array_redshift[0])-1.)
+      z_asked = ptsz->array_redshift[0];
+   if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
+      z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
+
+
+    return exp(pwl_value_1d(ptsz->n_arraySZ,
+                            ptsz->array_redshift,
+                            ptsz->array_mean_galaxy_number_density_ngal[index_g],
+                            z_asked));
+   //pvectsz[ptsz->index_mean_galaxy_number_density] = 1.; // debug BB
+
+// return _SUCCESS_;
+}
+
+
 // evaluate normalisation of galaxy terms, i.e., ng_bar
 double evaluate_mean_galaxy_number_density_at_z(
                    double z,
@@ -11105,10 +11398,16 @@ int write_redshift_dependent_quantities(struct background * pba,
   double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
   double delc = Delta_c_of_Omega_m(omega);
 
+
+
   double mvir = pow(10.,14); //m200m for M=10^{13.5} Msun/h
   double rvir = evaluate_rvir_of_mvir(mvir,delc,rhoc,ptsz);
 
-  double cvir = evaluate_cvir_of_mvir(mvir,z,ptsz,pba);// 5.72*pow(mvir/1e14,-0.081)/pow(1.+z_asked,0.71);
+  double cvir;
+    if (ptsz->need_hmf) // some relations require sigma
+      cvir = evaluate_cvir_of_mvir(mvir,z,ptsz,pba);// 5.72*pow(mvir/1e14,-0.081)/pow(1.+z_asked,0.71);
+    else
+      cvir = -1;
   double mdel = 1.;
 
   ///double rs = rvir/cvir;
@@ -11174,6 +11473,7 @@ int write_redshift_dependent_quantities(struct background * pba,
  }
 
  fclose(fp);
+
  //exit(0);
  if (ptsz->has_cib_cib_1h){
  sprintf(Filepath,"%s%s%s",ptsz->root,"","cib.txt");
@@ -13199,6 +13499,63 @@ printf("ell = %e\t\t cl_cib_cib (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_cib_ci
 }
 }
 
+if (ptsz->has_ngal_ngal_1h){
+printf("\n\n");
+printf("#######################################\n");
+printf("gal[n] x gal[n] power spectrum 1-halo term:\n");
+printf("#######################################\n");
+printf("\n");
+int index_l;
+int index_g;
+int index_g_prime;
+for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+    for (index_g_prime=0;index_g_prime<ptsz->galaxy_samples_list_num;index_g_prime++){
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_ngal[%d]_ngal[%d] (1h) = %e \n",ptsz->ell[index_l],index_g,index_g_prime,ptsz->cl_ngal_ngal_1h[index_g][index_g_prime][index_l]);
+}
+}
+}
+}
+
+if (ptsz->has_ngal_ngal_2h){
+printf("\n\n");
+printf("#######################################\n");
+printf("gal[n] x gal[n] power spectrum 2-halo term:\n");
+printf("#######################################\n");
+printf("\n");
+int index_l;
+int index_g;
+int index_g_prime;
+for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+    for (index_g_prime=0;index_g_prime<ptsz->galaxy_samples_list_num;index_g_prime++){
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_ngal[%d]_ngal[%d] (2h) = %e \n",ptsz->ell[index_l],index_g,index_g_prime,ptsz->cl_ngal_ngal_2h[index_g][index_g_prime][index_l]);
+}
+}
+}
+}
+
+if (ptsz->has_ngal_ngal_hf){
+printf("\n\n");
+printf("#######################################\n");
+printf("gal[n] x gal[n] power spectrum halofit method:\n");
+printf("#######################################\n");
+printf("\n");
+int index_l;
+int index_g;
+int index_g_prime;
+for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+    for (index_g_prime=0;index_g_prime<ptsz->galaxy_samples_list_num;index_g_prime++){
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_ngal[%d]_ngal[%d] (hf) = %e \n",ptsz->ell[index_l],index_g,index_g_prime,ptsz->cl_ngal_ngal_hf[index_g][index_g_prime][index_l]);
+}
+}
+}
+}
+
 if (ptsz->has_cib_cib_2h){
 printf("\n\n");
 printf("#######################################\n");
@@ -13483,6 +13840,13 @@ int select_multipole_array(struct tszspectrum * ptsz)
         ptsz->ell[index_l] = ptsz->ell_plc_no_low_ell[index_l];
    }
 
+   if (ptsz->sz_verbose>0){
+     printf("\n");
+     printf("-> If angular power spectra requested:\n");
+     printf("-> Number of multipoles computed by class_sz = %d\n", ptsz->nlSZ);
+     printf("\n");
+   }
+
 
    free(ptsz->ell_trispectrum);
    free(ptsz->ell_plc);
@@ -13665,6 +14029,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       //+ptsz->has_kSZ_kSZ_gal_hf
       +ptsz->has_kSZ_kSZ_lensmag_1halo
       +ptsz->has_gal_gal_1h
+      +ptsz->has_ngal_ngal_1h
+      +ptsz->has_ngal_ngal_2h
       // +ptsz->has_gal_gal_hf
       +ptsz->has_gal_lens_1h
       +ptsz->has_gal_lens_2h
@@ -14025,7 +14391,9 @@ if (ptsz->need_hmf){
    ptsz->index_cib_profile = ptsz->index_multipole_for_cib_profile + 1;
    ptsz->index_frequency_for_cib_profile = ptsz->index_cib_profile + 1;
    ptsz->index_frequency_prime_for_cib_profile = ptsz->index_frequency_for_cib_profile + 1;
-   ptsz->index_multipole_3 =  ptsz->index_frequency_prime_for_cib_profile + 1;
+   ptsz->index_ngal_for_galaxy_profile = ptsz->index_frequency_prime_for_cib_profile + 1;
+   ptsz->index_ngal_prime_for_galaxy_profile = ptsz->index_ngal_for_galaxy_profile + 1;
+   ptsz->index_multipole_3 =  ptsz->index_ngal_prime_for_galaxy_profile + 1;
    ptsz->index_W_lensmag = ptsz->index_multipole_3 + 1;
    ptsz->index_c200m = ptsz->index_W_lensmag + 1;
    ptsz->index_r200m = ptsz->index_c200m + 1;
@@ -14116,6 +14484,28 @@ if (ptsz->need_hmf){
    printf("-> [cib] cib_dim = %d\n",ptsz->cib_dim);
    //exit(0);
    }
+
+
+   if ((ptsz->has_ngal_ngal_1h
+       +ptsz->has_ngal_ngal_2h
+       +ptsz->has_ngal_ngal_hf)
+     != _FALSE_){
+   if (ptsz->sz_verbose>=1)
+   printf("-> [ngal] number of galaxy samples = %d\n",ptsz->galaxy_samples_list_num);
+   int index_ngal;
+   if (ptsz->sz_verbose>=1){
+   for (index_ngal = 0; index_ngal < ptsz->galaxy_samples_list_num; index_ngal++)
+   {
+     printf("-> [ngal] sample %d has id #%d\n",index_ngal, ptsz->galaxy_samples_list[index_ngal]);
+   }
+   }
+
+   ptsz->ngal_dim = ptsz->galaxy_samples_list_num*(ptsz->galaxy_samples_list_num+1)/2*ptsz->nlSZ;
+   if (ptsz->sz_verbose>=1)
+   printf("-> [ngal] ngal_dim = %d\n",ptsz->ngal_dim);
+   //exit(0);
+   }
+
 
 
    if (ptsz->has_pk_at_z_1h
@@ -14454,6 +14844,34 @@ if (ptsz->need_hmf){
    }
 
 
+   class_alloc(ptsz->cl_ngal_ngal_1h,sizeof(double ***)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+   class_alloc(ptsz->cl_ngal_ngal_2h,sizeof(double ***)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+   class_alloc(ptsz->cl_ngal_ngal_hf,sizeof(double ***)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+
+   int index_g;
+   int index_g_prime;
+   for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+     class_alloc(ptsz->cl_ngal_ngal_1h[index_g],sizeof(double **)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+     class_alloc(ptsz->cl_ngal_ngal_2h[index_g],sizeof(double **)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+     class_alloc(ptsz->cl_ngal_ngal_hf[index_g],sizeof(double **)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+     // class_alloc(ptsz->cl_cib_cib_2h[index_g],sizeof(double **)*ptsz->cib_frequency_list_num,ptsz->error_message);
+     // ptsz->cib_shotnoise[index_g] = 0.;
+        for (index_g_prime=0;index_g_prime<ptsz->galaxy_samples_list_num;index_g_prime++){
+          class_alloc(ptsz->cl_ngal_ngal_1h[index_g][index_g_prime],sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+          class_alloc(ptsz->cl_ngal_ngal_2h[index_g][index_g_prime],sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+          class_alloc(ptsz->cl_ngal_ngal_hf[index_g][index_g_prime],sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+          // class_alloc(ptsz->cl_cib_cib_2h[index_g][index_g_prime],sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+                  for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+     ptsz->cl_ngal_ngal_1h[index_g][index_g_prime][index_l] = 0.;
+     ptsz->cl_ngal_ngal_2h[index_g][index_g_prime][index_l] = 0.;
+     ptsz->cl_ngal_ngal_hf[index_g][index_g_prime][index_l] = 0.;
+     // ptsz->cl_cib_cib_2h[index_g][index_g_prime][index_l] = 0.;
+   }
+   }
+   }
+
+
+
    class_alloc(ptsz->cl_tSZ_cib_1h,sizeof(double **)*ptsz->cib_frequency_list_num,ptsz->error_message);
    class_alloc(ptsz->cl_tSZ_cib_2h,sizeof(double **)*ptsz->cib_frequency_list_num,ptsz->error_message);
    class_alloc(ptsz->cl_lens_cib_1h,sizeof(double **)*ptsz->cib_frequency_list_num,ptsz->error_message);
@@ -14720,7 +15138,13 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
    ptsz->index_integrand_id_gal_cib_1h_last = ptsz->index_integrand_id_gal_cib_1h_first + ptsz->nlSZ*ptsz->cib_frequency_list_num - 1;
    ptsz->index_integrand_id_cib_cib_1h_first = ptsz->index_integrand_id_gal_cib_1h_last + 1;
    ptsz->index_integrand_id_cib_cib_1h_last = ptsz->index_integrand_id_cib_cib_1h_first + ptsz->cib_dim - 1;
-   ptsz->index_integrand_id_tSZ_cib_2h_first = ptsz->index_integrand_id_cib_cib_1h_last + 1;
+   ptsz->index_integrand_id_ngal_ngal_1h_first = ptsz->index_integrand_id_cib_cib_1h_last + 1;
+   ptsz->index_integrand_id_ngal_ngal_1h_last = ptsz->index_integrand_id_ngal_ngal_1h_first + ptsz->ngal_dim - 1;
+   ptsz->index_integrand_id_ngal_ngal_2h_first = ptsz->index_integrand_id_ngal_ngal_1h_last+ 1;
+   ptsz->index_integrand_id_ngal_ngal_2h_last = ptsz->index_integrand_id_ngal_ngal_2h_first + ptsz->ngal_dim - 1;
+   ptsz->index_integrand_id_ngal_ngal_hf_first = ptsz->index_integrand_id_ngal_ngal_2h_last + 1;
+   ptsz->index_integrand_id_ngal_ngal_hf_last = ptsz->index_integrand_id_ngal_ngal_hf_first + ptsz->ngal_dim - 1;
+   ptsz->index_integrand_id_tSZ_cib_2h_first = ptsz->index_integrand_id_ngal_ngal_hf_last + 1;
    ptsz->index_integrand_id_tSZ_cib_2h_last = ptsz->index_integrand_id_tSZ_cib_2h_first + ptsz->nlSZ*ptsz->cib_frequency_list_num - 1;
    ptsz->index_integrand_id_lens_cib_2h_first = ptsz->index_integrand_id_tSZ_cib_2h_last + 1;
    ptsz->index_integrand_id_lens_cib_2h_last = ptsz->index_integrand_id_lens_cib_2h_first + ptsz->nlSZ*ptsz->cib_frequency_list_num - 1;
@@ -15036,6 +15460,40 @@ double result = H_over_c_in_h_over_Mpc*phi_galaxy_at_z;
 return result;
 }
 
+
+double radial_kernel_W_galaxy_ngal_at_z( int index_g,
+                                         double * pvecback,
+                                         double * pvectsz,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz){
+
+double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
+
+double z_asked  = pvectsz[ptsz->index_z];
+double phig = 0.;
+
+if(z_asked<ptsz->normalized_dndz_ngal_z[index_g][0])
+   phig = 1e-100;
+else if (z_asked>ptsz->normalized_dndz_ngal_z[index_g][ptsz->normalized_dndz_ngal_size[index_g]-1])
+   phig = 1e-100;
+else  phig =  pwl_value_1d(ptsz->normalized_dndz_ngal_size[index_g],
+                         ptsz->normalized_dndz_ngal_z[index_g],
+                         ptsz->normalized_dndz_ngal_phig[index_g],
+                         z_asked);
+
+//  normalized galaxy redshift distribution in the bin:
+// double phi_galaxy_at_z = pvectsz[ptsz->index_phi_galaxy_counts];
+//double phi_galaxy_at_z = 1.; // BB debug
+// H_over_c_in_h_over_Mpc = dz/dChi
+// phi_galaxy_at_z = dng/dz normalized
+double result = H_over_c_in_h_over_Mpc*phig;
+
+
+return result;
+}
+
+
+
 double evaluate_galaxy_number_counts( double * pvecback,
                                       double * pvectsz,
                                       struct background * pba,
@@ -15073,7 +15531,7 @@ double get_source_galaxy_number_counts(double z,
      phig = 1e-100;
   else if (z_asked>ptsz->normalized_source_dndz_z[ptsz->normalized_source_dndz_size-1])
      phig = 1e-100;
-else  phig =  pwl_value_1d(ptsz->normalized_source_dndz_size,
+  else  phig =  pwl_value_1d(ptsz->normalized_source_dndz_size,
                            ptsz->normalized_source_dndz_z,
                            ptsz->normalized_source_dndz_phig,
                            z_asked);
@@ -15956,6 +16414,132 @@ us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
 double ug_at_ell;
 
 ug_at_ell  = (1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us);
+
+pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
+
+}
+
+
+
+
+
+int evaluate_galaxy_profile_ngal(
+                            double kl,
+                            double m_delta,
+                            double r_delta,
+                            double c_delta,
+                            double * pvecback,
+                            double * pvectsz,
+                            struct background * pba,
+                            struct tszspectrum * ptsz){
+
+
+
+
+double M_halo;
+
+M_halo = m_delta; // Msun_over_h
+int index_md = (int) pvectsz[ptsz->index_md];
+int index_g = (int) pvectsz[ptsz->index_ngal_for_galaxy_profile];
+int index_g_prime = (int) pvectsz[ptsz->index_ngal_prime_for_galaxy_profile];
+
+double z = pvectsz[ptsz->index_z];
+double ng_bar;
+double nc;
+double ns;
+double us;
+
+double M_min;
+double M0;
+double M1_prime;
+double sigma_log10M;
+double alpha_s_HOD = ptsz->alpha_s_HOD_ngal[index_g];
+double f_cen_HOD = ptsz->f_cen_HOD_ngal[index_g];
+
+double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g];
+
+M_min = ptsz->M_min_HOD_ngal[index_g];
+M1_prime = ptsz->M1_prime_HOD_ngal[index_g];
+sigma_log10M = ptsz->sigma_log10M_HOD_ngal[index_g];
+M0 = ptsz->M0_HOD_ngal[index_g];
+
+double ng_bar_galprime;
+double nc_galprime;
+double ns_galprime;
+double us_galprime;
+
+double M_min_galprime;
+double M0_galprime;
+double M1_prime_galprime;
+double sigma_log10M_galprime;
+
+double alpha_s_HOD_galprime = ptsz->alpha_s_HOD_ngal[index_g_prime];
+double f_cen_HOD_galprime = ptsz->f_cen_HOD_ngal[index_g_prime];
+
+double xout_galprime = ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g_prime];
+
+M_min_galprime = ptsz->M_min_HOD_ngal[index_g_prime];
+M1_prime_galprime = ptsz->M1_prime_HOD_ngal[index_g_prime];
+sigma_log10M_galprime = ptsz->sigma_log10M_HOD_ngal[index_g_prime];
+M0_galprime = ptsz->M0_HOD_ngal[index_g_prime];
+
+
+// if (index_g_prime == index_g){
+
+
+
+// }
+
+
+
+double ug_at_ell;
+
+// 1-halo terms
+if (_ngal_ngal_1h_){
+  nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,f_cen_HOD,ptsz,pba);
+  ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,alpha_s_HOD,M1_prime,ptsz,pba);
+  us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
+  ng_bar = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g,ptsz);
+if (index_g_prime == index_g){
+  ug_at_ell  = (1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us);
+}
+else{
+  // printf("doing cross\n");
+  // exit(0);
+  ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,ptsz);
+  nc_galprime = HOD_mean_number_of_central_galaxies(z,M_halo,M_min_galprime,sigma_log10M_galprime,f_cen_HOD_galprime,ptsz,pba);
+  ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,ptsz,pba);
+  us_galprime = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout_galprime);
+
+  ug_at_ell  = sqrt((1./ng_bar)*(nc+ns*us)*(1./ng_bar_galprime)*(nc_galprime+ns_galprime*us_galprime));
+}
+}
+if (_ngal_ngal_2h_){
+  // if (index_g_prime == index_g){
+  //   nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,f_cen_HOD,ptsz,pba);
+  //   ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,alpha_s_HOD,M1_prime,ptsz,pba);
+  //   us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
+  //   ng_bar = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g,ptsz);
+  //   ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+  // }
+  // else{
+    if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
+    nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,f_cen_HOD,ptsz,pba);
+    ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,alpha_s_HOD,M1_prime,ptsz,pba);
+    us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
+    ng_bar = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g,ptsz);
+    ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+    }
+    if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
+    ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,ptsz);
+    nc_galprime = HOD_mean_number_of_central_galaxies(z,M_halo,M_min_galprime,sigma_log10M_galprime,f_cen_HOD_galprime,ptsz,pba);
+    ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,ptsz,pba);
+    us_galprime = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout_galprime);
+    ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,ptsz);
+    ug_at_ell  = (1./ng_bar_galprime)*(nc_galprime+ns_galprime*us_galprime);
+    }
+  // }
+}
 
 pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
 

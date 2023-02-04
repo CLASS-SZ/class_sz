@@ -206,6 +206,7 @@ double delta_to_delta_prime_nfw(
   int load_rho_nfw_profile(struct tszspectrum * ptsz);
   int load_T10_alpha_norm(struct tszspectrum * ptsz);
   int load_normalized_dndz(struct tszspectrum * ptsz);
+  int load_normalized_dndz_ngal(struct tszspectrum * ptsz);
   int load_normalized_source_dndz(struct tszspectrum * ptsz);
   int load_normalized_fdndz(struct tszspectrum * ptsz);
   int load_normalized_cosmos_dndz(struct tszspectrum * ptsz);
@@ -576,6 +577,12 @@ int tabulate_mean_galaxy_number_density(struct background * pba,
                                         struct nonlinear * pnl,
                                         struct primordial * ppm,
                                         struct tszspectrum * ptsz);
+
+int tabulate_mean_galaxy_number_density_ngal(struct background * pba,
+                                             struct nonlinear * pnl,
+                                             struct primordial * ppm,
+                                             struct tszspectrum * ptsz);
+
 
 
 double get_HI_density_profile_at_k_M_z(double k_asked, double m_asked, double z_asked, struct tszspectrum * ptsz);

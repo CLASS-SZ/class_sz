@@ -97,6 +97,9 @@
 #define _tSZ_cib_2h_ ((ptsz->has_tSZ_cib_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_cib_2h))
 #define _gal_cib_1h_ ((ptsz->has_gal_cib_1h == _TRUE_) && (index_md == ptsz->index_md_gal_cib_1h))
 #define _gal_cib_2h_ ((ptsz->has_gal_cib_2h == _TRUE_) && (index_md == ptsz->index_md_gal_cib_2h))
+#define _ngal_ngal_1h_ ((ptsz->has_ngal_ngal_1h == _TRUE_) && (index_md == ptsz->index_md_ngal_ngal_1h))
+#define _ngal_ngal_2h_ ((ptsz->has_ngal_ngal_2h == _TRUE_) && (index_md == ptsz->index_md_ngal_ngal_2h))
+#define _ngal_ngal_hf_ ((ptsz->has_ngal_ngal_hf == _TRUE_) && (index_md == ptsz->index_md_ngal_ngal_hf))
 #define _cib_cib_1h_ ((ptsz->has_cib_cib_1h == _TRUE_) && (index_md == ptsz->index_md_cib_cib_1h))
 #define _cib_cib_2h_ ((ptsz->has_cib_cib_2h == _TRUE_) && (index_md == ptsz->index_md_cib_cib_2h))
 #define _lens_cib_1h_ ((ptsz->has_lens_cib_1h == _TRUE_) && (index_md == ptsz->index_md_lens_cib_1h))
@@ -209,6 +212,9 @@ struct tszspectrum {
   double * cl_lens_lens_2h;
   double * cl_tSZ_gal_1h;
   double * cl_tSZ_gal_2h;
+  double *** cl_ngal_ngal_1h;
+  double *** cl_ngal_ngal_2h;
+  double *** cl_ngal_ngal_hf;
   double *** cl_cib_cib_1h;
   double *** cl_cib_cib_2h;
   double ** cl_tSZ_cib_1h;
@@ -854,6 +860,20 @@ struct tszspectrum {
   int index_integrand_id_cib_shotnoise_first;
   int index_integrand_id_cib_shotnoise_last;
 
+  int has_ngal_ngal_1h;
+  int index_md_ngal_ngal_1h;
+  int index_integrand_id_ngal_ngal_1h_first;
+  int index_integrand_id_ngal_ngal_1h_last;
+
+  int has_ngal_ngal_2h;
+  int index_md_ngal_ngal_2h;
+  int index_integrand_id_ngal_ngal_2h_first;
+  int index_integrand_id_ngal_ngal_2h_last;
+
+  int has_ngal_ngal_hf;
+  int index_md_ngal_ngal_hf;
+  int index_integrand_id_ngal_ngal_hf_first;
+  int index_integrand_id_ngal_ngal_hf_last;
 
   int has_cib_cib_1h;
   int index_md_cib_cib_1h;
@@ -1043,6 +1063,10 @@ struct tszspectrum {
   int index_multipole_for_truncated_nfw_profile;
   int index_galaxy_profile;
 
+  int index_ngal_for_galaxy_profile;
+  int index_ngal_prime_for_galaxy_profile;
+
+
   int index_multipole_for_cib_profile;
   int index_frequency_for_cib_profile;
   int index_frequency_prime_for_cib_profile;
@@ -1112,6 +1136,14 @@ struct tszspectrum {
   double sigma_log10M_HOD;
   double alpha_s_HOD;
   double M1_prime_HOD;
+
+  double * M_min_HOD_ngal;
+  double * M0_HOD_ngal;
+  double * sigma_log10M_HOD_ngal;
+  double * alpha_s_HOD_ngal;
+  double * M1_prime_HOD_ngal;
+
+
   double rho_y_gal;
 
   int M0_Mmin_flag;
@@ -1126,6 +1158,8 @@ struct tszspectrum {
 
 
   double effective_galaxy_bias;
+  double * effective_galaxy_bias_ngal;
+
   int use_bg_eff_in_ksz2g_eff;
 
   int hm_consistency;
@@ -1389,6 +1423,11 @@ struct tszspectrum {
   double pressure_profile_epsrel;
   double nu_y_dist_GHz;
 
+
+  int * galaxy_samples_list;
+  int galaxy_samples_list_num;
+  int ngal_dim;
+
   int cib_frequency_list_num;
   int cib_dim;
   double * cib_frequency_list;
@@ -1536,7 +1575,10 @@ double * steps_m;
   double log10_snr_max;
 
   double x_out_truncated_nfw_profile_satellite_galaxies;
+  double * x_out_truncated_nfw_profile_satellite_galaxies_ngal;
+
   double f_cen_HOD;
+  double * f_cen_HOD_ngal;
   double Delta_z_lens;
   double Delta_z_source;
 
@@ -1595,7 +1637,11 @@ double * steps_m;
   double * normalized_dndz_z;
   double * normalized_dndz_phig;
 
+  double ** normalized_dndz_ngal_z;
+  double ** normalized_dndz_ngal_phig;
+
   int normalized_dndz_size;
+  int * normalized_dndz_ngal_size;
 
   double * normalized_fdndz_z;
   double * normalized_fdndz_phig;
@@ -1701,6 +1747,8 @@ double * steps_m;
   double * array_sigma2_hsv_at_z;
 
   double * array_mean_galaxy_number_density;
+  double ** array_mean_galaxy_number_density_ngal;
+
   double * array_mean_galaxy_bias;
 
   // int n_z_hmf_counter_terms;
@@ -1940,6 +1988,14 @@ double get_M_min_of_z(double l,
                             struct nonlinear * pnl,
                             struct tszspectrum * ptsz);
 
+ int evaluate_effective_galaxy_bias_ngal(int index_g,
+                                         double * pvecback,
+                                         double * pvectsz,
+                                         struct background * pba,
+                                         struct primordial * ppm,
+                                         struct nonlinear * pnl,
+                                         struct tszspectrum * ptsz);
+
  int evaluate_effective_galaxy_bias(double * pvecback,
                                     double * pvectsz,
                                     struct background * pba,
@@ -2039,10 +2095,15 @@ int tabulate_pressure_profile_gNFW(struct background * pba,
                                    struct tszspectrum * ptsz);
 
 int tabulate_pressure_profile_B12(struct background * pba,
-                                   struct tszspectrum * ptsz);
+                                  struct tszspectrum * ptsz);
 
 double evaluate_mean_galaxy_number_density_at_z(double z,
-                                             struct tszspectrum * ptsz);
+                                                struct tszspectrum * ptsz);
+
+double evaluate_mean_galaxy_number_density_at_z_ngal(double z,
+                                                     int index_g,
+                                                     struct tszspectrum * ptsz);
+
 double get_mean_galaxy_bias_at_z(double z,
                                  struct tszspectrum * ptsz);
 
@@ -2081,6 +2142,17 @@ int evaluate_galaxy_profile_1h(double kl,
                                double * pvectsz,
                                struct background * pba,
                                struct tszspectrum * ptsz);
+
+int evaluate_galaxy_profile_ngal(double kl,
+                               double m_delta,
+                               double r_delta,
+                               double c_delta,
+                               double * pvecback,
+                               double * pvectsz,
+                               struct background * pba,
+                               struct tszspectrum * ptsz);
+
+
 int evaluate_galaxy_profile_2h(double kl,
                                double m_delta,
                                double r_delta,
@@ -2140,6 +2212,12 @@ double radial_kernel_W_galaxy_at_z( double * pvecback,
                                     double * pvectsz,
                                     struct background * pba,
                                     struct tszspectrum * ptsz);
+
+double radial_kernel_W_galaxy_ngal_at_z(  int index_g,
+                                          double * pvecback,
+                                          double * pvectsz,
+                                          struct background * pba,
+                                          struct tszspectrum * ptsz);
 
 double radial_kernel_W_lensing_at_z(double * pvecback,
                                     double * pvectsz,

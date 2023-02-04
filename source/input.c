@@ -2694,6 +2694,25 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"ngal_ngal_1h") != NULL) ) {
+        ptsz->has_ngal_ngal_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"ngal_ngal_2h") != NULL) ) {
+        ptsz->has_ngal_ngal_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
 
 
       if ((strstr(string1,"cib_cib_1h") != NULL) ) {
@@ -2796,6 +2815,20 @@ int input_read_parameters(
 
         // ptsz->need_hmf = 1;
       }
+
+      if ((strstr(string1,"ngal_ngal_hf") != NULL) ) {
+        ptsz->has_ngal_ngal_hf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+
+        // class_read_double("effective_galaxy_bias",ptsz->effective_galaxy_bias);
+
+      }
+
+
 
         class_read_double("effective_galaxy_bias",ptsz->effective_galaxy_bias);
         class_read_double("use_bg_eff_in_ksz2g_eff",ptsz->use_bg_eff_in_ksz2g_eff);
@@ -3395,14 +3428,73 @@ int input_read_parameters(
       + ptsz->has_lens_cib_2h
       != _FALSE_){
     class_read_list_of_doubles("cib_frequency_list_in_GHz",ptsz->cib_frequency_list,ptsz->cib_frequency_list_num);
-
   }
+
+
     class_read_int("has_cib_flux_cut",ptsz->has_cib_flux_cut);
     if (ptsz->has_cib_flux_cut != _FALSE_){
       class_read_list_of_doubles("cib_Snu_cutoff_list [mJy]",ptsz->cib_Snu_cutoff_list_in_mJy,ptsz->cib_frequency_list_num);
     }
 
+    class_read_int("galaxy_samples_list_num",ptsz->galaxy_samples_list_num);
+    if ((ptsz->has_ngal_ngal_1h
+      +  ptsz->has_ngal_ngal_2h
+      +  ptsz->has_ngal_ngal_hf
+    )
+      != _FALSE_){
+    class_read_list_of_integers("galaxy_samples_list",ptsz->galaxy_samples_list,ptsz->galaxy_samples_list_num);
 
+    if (ptsz->has_ngal_ngal_hf){
+    class_alloc(ptsz->effective_galaxy_bias_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    int index_g;
+    for (index_g = 0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+      char input_param_name[_ARGUMENT_LENGTH_MAX_];
+      sprintf(input_param_name,"%s%d","effective_galaxy_bias_ngal_",index_g);
+      class_read_double(input_param_name,ptsz->effective_galaxy_bias_ngal[index_g]);
+        }
+    }
+
+    if (ptsz->has_ngal_ngal_1h
+      + ptsz->has_ngal_ngal_2h){
+
+    class_alloc(ptsz->sigma_log10M_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->alpha_s_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->M1_prime_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->M_min_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->M0_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->f_cen_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+
+    int index_g;
+    for (index_g = 0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+        char input_param_name[_ARGUMENT_LENGTH_MAX_];
+        ptsz->sigma_log10M_HOD_ngal[index_g] = 1.;
+        ptsz->alpha_s_HOD_ngal[index_g] = 1.;
+        ptsz->M1_prime_HOD_ngal[index_g] = 1.;
+        ptsz->M_min_HOD_ngal[index_g] = 1e11;
+        ptsz->M0_HOD_ngal[index_g] = 1e11;
+        ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g] = 1.;
+        ptsz->f_cen_HOD_ngal[index_g] = 1.;
+        sprintf(input_param_name,"%s%d","sigma_log10M_HOD_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->sigma_log10M_HOD_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","alpha_s_HOD_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->alpha_s_HOD_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","M1_prime_HOD_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->M1_prime_HOD_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","M_min_HOD_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->M_min_HOD_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","M0_HOD_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->M0_HOD_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","x_out_truncated_nfw_profile_satellite_galaxies_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","f_cen_HOD_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->f_cen_HOD_ngal[index_g]);
+
+
+          }
+      }
+
+  }
 
 
      // Table 1  of MM20
@@ -3767,7 +3859,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
         ptsz->delta_def_electron_density = 2;
         ptsz->delta_def_electron_pressure = 2;
       }
-      // m200c is the default 
+      // m200c is the default
       // if (ptsz->integrate_wrt_m200c == 1){
       //   ptsz->integrate_wrt_mvir = 0;
       //   ptsz->integrate_wrt_m200m = 0;
@@ -5187,6 +5279,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       + ptsz->has_lens_cib_1h
       + ptsz->has_lens_cib_2h
       + ptsz->has_cib_cib_1h
+      + ptsz->has_ngal_ngal_1h
       + ptsz->has_cib_cib_2h
       + ptsz->has_gal_gal_1h
       + ptsz->has_gal_gal_2h
@@ -5473,6 +5566,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
   // class_read_string("sBBN_file",ppr->sBBN_file);
   class_read_string("ksz_filter_file",ptsz->ksz_filter_file);
   class_read_string("full_path_to_dndz_gal",ptsz->full_path_to_dndz_gal);
+  class_read_string("full_path_and_prefix_to_dndz_ngal",ptsz->full_path_and_prefix_to_dndz_ngal);
   class_read_string("full_path_to_redshift_dependent_M_min",ptsz->full_path_to_redshift_dependent_M_min);
   class_read_string("full_path_to_source_dndz_gal",ptsz->full_path_to_source_dndz_gal);
   // printf("-> File Name: %s\n",ptsz->ksz_filter_file);
@@ -6365,6 +6459,7 @@ int input_default_params(
   ptsz->has_gal_cib_2h = _FALSE_;
   ptsz->has_lens_cib_1h = _FALSE_;
   ptsz->has_lens_cib_2h = _FALSE_;
+  ptsz->has_ngal_ngal_1h = _FALSE_;
   ptsz->has_cib_cib_1h = _FALSE_;
   ptsz->has_cib_cib_2h = _FALSE_;
   ptsz->has_pk_at_z_1h = _FALSE_;
@@ -6558,6 +6653,7 @@ int input_default_params(
   ptsz->index_md_tSZ_tSZ_tSZ_3h = 96;
 
   ptsz->index_md_cib_shotnoise= 97;
+  ptsz->index_md_ngal_ngal_1h = 98;
 
   ptsz->integrate_wrt_mvir = 0;
   ptsz->integrate_wrt_m500c = 0;

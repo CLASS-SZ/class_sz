@@ -120,6 +120,10 @@ def run(args):
     print('ccl hmf time:',end-start)
 
 
+    # zp = np.linspace(0.,3.,100)
+    # Masses = np.geomspace(1e14,1e16,300)
+    # print(np.vectorize(hmfs.get_mass_function)(cosmo, Masses/cosmology['h'], 1./(1.+zp)))
+    # exit(0)
 
 
 
@@ -164,6 +168,9 @@ def run(args):
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_xlabel(r'$m$',size=title_size)
+
+
+
 
 
     for zp in [1e-3,0.5,1.,1.5,2.]:
