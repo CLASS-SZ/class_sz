@@ -1944,7 +1944,7 @@ cdef class Class:
                 cl_cib[str(int(nu1))+'x'+str(int(nu2))] = cl
         return cl_cib
 
-    def cl_ngal_ngal(self):
+    def cl_galn_galn(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of gal x gal power spectrum
         """
@@ -1968,6 +1968,26 @@ cdef class Class:
                 cl_gg[str(int(nu1))+'x'+str(int(nu2))] = cl
         return cl_gg
 
+    def cl_galn_lens(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of gal x lens power spectrum
+        """
+        cl_gk = {}
+
+        for id_nu1 in range(self.tsz.galaxy_samples_list_num):
+            nu1 = self.tsz.galaxy_samples_list[id_nu1]
+            cl = {}
+            cl['ell'] = []
+            cl['1h'] = []
+            cl['2h'] = []
+            cl['hf'] = []
+            for index in range(self.tsz.nlSZ):
+                cl['1h'].append(self.tsz.cl_ngal_lens_1h[id_nu1][index])
+                cl['2h'].append(self.tsz.cl_ngal_lens_2h[id_nu1][index])
+                cl['hf'].append(self.tsz.cl_ngal_lens_hf[id_nu1][index])
+                cl['ell'].append(self.tsz.ell[index])
+            cl_gk[str(int(nu1))] = cl
+        return cl_gk
 
 
     def cl_tSZ_cib(self):

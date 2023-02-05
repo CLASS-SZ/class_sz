@@ -2694,7 +2694,7 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
-      if ((strstr(string1,"ngal_ngal_1h") != NULL) ) {
+      if ((strstr(string1,"galn_galn_1h") != NULL) ) {
         ptsz->has_ngal_ngal_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
@@ -2704,7 +2704,7 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
-      if ((strstr(string1,"ngal_ngal_2h") != NULL) ) {
+      if ((strstr(string1,"galn_galn_2h") != NULL) ) {
         ptsz->has_ngal_ngal_2h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
@@ -2816,7 +2816,7 @@ int input_read_parameters(
         // ptsz->need_hmf = 1;
       }
 
-      if ((strstr(string1,"ngal_ngal_hf") != NULL) ) {
+      if ((strstr(string1,"galn_galn_hf") != NULL) ) {
         ptsz->has_ngal_ngal_hf =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
@@ -2862,6 +2862,37 @@ int input_read_parameters(
         }
       }
 
+
+
+      if ((strstr(string1,"galn_lens_1h") != NULL) ) {
+        ptsz->has_ngal_lens_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"galn_lens_2h") != NULL) ) {
+        ptsz->has_ngal_lens_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"galn_lens_hf") != NULL) ) {
+        ptsz->has_ngal_lens_hf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        // ptsz->need_hmf = 1;
+      }
 
 
       if ((strstr(string1,"gal_lens_1h") != NULL) ) {
@@ -3440,22 +3471,37 @@ int input_read_parameters(
     if ((ptsz->has_ngal_ngal_1h
       +  ptsz->has_ngal_ngal_2h
       +  ptsz->has_ngal_ngal_hf
+      +  ptsz->has_ngal_lens_1h
+      +  ptsz->has_ngal_lens_2h
+      +  ptsz->has_ngal_lens_hf
     )
       != _FALSE_){
     class_read_list_of_integers("galaxy_samples_list",ptsz->galaxy_samples_list,ptsz->galaxy_samples_list_num);
 
-    if (ptsz->has_ngal_ngal_hf){
+    if (ptsz->has_ngal_ngal_hf
+       +ptsz->has_ngal_lens_hf){
     class_alloc(ptsz->effective_galaxy_bias_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     int index_g;
+    // printf("reading effective bias.\n");
+
     for (index_g = 0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+      // printf("reading effective bias %d.\n",index_g);
       char input_param_name[_ARGUMENT_LENGTH_MAX_];
       sprintf(input_param_name,"%s%d","effective_galaxy_bias_ngal_",index_g);
       class_read_double(input_param_name,ptsz->effective_galaxy_bias_ngal[index_g]);
+      // printf("reading effective bias %.3e.\n",ptsz->effective_galaxy_bias_ngal[index_g]);
+      // if (ptsz->sz_verbose>1)
+        // printf("reading effective bias b[%d] = %.3e\n",index_g,ptsz->effective_galaxy_bias_ngal[index_g]);
+
         }
+    // exit(0);
     }
 
     if (ptsz->has_ngal_ngal_1h
-      + ptsz->has_ngal_ngal_2h){
+      + ptsz->has_ngal_ngal_2h
+      + ptsz->has_ngal_lens_1h
+      + ptsz->has_ngal_lens_2h
+    ){
 
     class_alloc(ptsz->sigma_log10M_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     class_alloc(ptsz->alpha_s_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
@@ -5280,6 +5326,11 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       + ptsz->has_lens_cib_2h
       + ptsz->has_cib_cib_1h
       + ptsz->has_ngal_ngal_1h
+      + ptsz->has_ngal_ngal_2h
+      + ptsz->has_ngal_ngal_hf
+      + ptsz->has_ngal_lens_1h
+      + ptsz->has_ngal_lens_2h
+      + ptsz->has_ngal_lens_hf
       + ptsz->has_cib_cib_2h
       + ptsz->has_gal_gal_1h
       + ptsz->has_gal_gal_2h
@@ -6460,6 +6511,11 @@ int input_default_params(
   ptsz->has_lens_cib_1h = _FALSE_;
   ptsz->has_lens_cib_2h = _FALSE_;
   ptsz->has_ngal_ngal_1h = _FALSE_;
+  ptsz->has_ngal_ngal_2h = _FALSE_;
+  ptsz->has_ngal_ngal_hf = _FALSE_;
+  ptsz->has_ngal_lens_1h = _FALSE_;
+  ptsz->has_ngal_lens_2h = _FALSE_;
+  ptsz->has_ngal_lens_hf = _FALSE_;
   ptsz->has_cib_cib_1h = _FALSE_;
   ptsz->has_cib_cib_2h = _FALSE_;
   ptsz->has_pk_at_z_1h = _FALSE_;
@@ -6653,7 +6709,14 @@ int input_default_params(
   ptsz->index_md_tSZ_tSZ_tSZ_3h = 96;
 
   ptsz->index_md_cib_shotnoise= 97;
+
   ptsz->index_md_ngal_ngal_1h = 98;
+  ptsz->index_md_ngal_ngal_2h = 99;
+  ptsz->index_md_ngal_ngal_hf = 100;
+
+  ptsz->index_md_ngal_lens_1h = 101;
+  ptsz->index_md_ngal_lens_2h = 102;
+  ptsz->index_md_ngal_lens_hf = 103;
 
   ptsz->integrate_wrt_mvir = 0;
   ptsz->integrate_wrt_m500c = 0;

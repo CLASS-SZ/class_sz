@@ -340,6 +340,9 @@ cdef extern from "class.h":
         double *** cl_ngal_ngal_1h
         double *** cl_ngal_ngal_2h
         double *** cl_ngal_ngal_hf
+        double ** cl_ngal_lens_1h
+        double ** cl_ngal_lens_2h
+        double ** cl_ngal_lens_hf
         double *** cl_cib_cib_2h
         double **  cl_tSZ_cib_1h
         double **  cl_tSZ_cib_2h
