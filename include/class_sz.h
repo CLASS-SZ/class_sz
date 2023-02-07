@@ -125,7 +125,7 @@
 //#define _tSZ_trispectrum_ ((ptsz->has_sz_trispec == _TRUE_))
 //#define _tSZ_2halo_ ((ptsz->has_sz_2halo == _TRUE_))
 //#define _tSZ_te_y_y_ ((ptsz->has_sz_te_y_y == _TRUE_))
-#define _cov_N_Cl_ ((ptsz->has_sz_cov_N_Cl == _TRUE_))
+// #define _cov_N_Cl_ ((ptsz->has_sz_cov_N_Cl == _TRUE_))
 
 
 

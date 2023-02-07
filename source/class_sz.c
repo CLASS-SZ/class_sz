@@ -14118,7 +14118,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
    if (ptsz->has_sz_ps
       +ptsz->has_sz_2halo
       +ptsz->has_sz_te_y_y
-      +ptsz->has_sz_cov_N_Cl
+      // +ptsz->has_sz_cov_N_Cl
       +ptsz->has_sz_cov_Y_N
       +ptsz->has_sz_cov_Y_N_next_order
       +ptsz->has_sz_cov_Y_Y_ssc
@@ -14571,21 +14571,21 @@ if (ptsz->need_hmf){
    ptsz->index_md = ptsz->index_multipole_prime +1;
    ptsz->index_Rho_crit = ptsz->index_md +1;
    ptsz->index_Delta_c  = ptsz->index_Rho_crit +1;
-   ptsz->index_rVIR  = ptsz->index_Delta_c +1;
-   ptsz->index_cVIR  = ptsz->index_rVIR +1;
-   ptsz->index_mVIR  = ptsz->index_cVIR +1;
-   ptsz->index_m500  = ptsz->index_mVIR +1;
-   ptsz->index_r500  = ptsz->index_m500 +1;
-   ptsz->index_l500  = ptsz->index_r500 +1;
-   ptsz->index_m200  = ptsz->index_l500 +1;
-   ptsz->index_m200m  = ptsz->index_m200 +1;
+   ptsz->index_rVIR = ptsz->index_Delta_c +1;
+   ptsz->index_cVIR = ptsz->index_rVIR +1;
+   ptsz->index_mVIR = ptsz->index_cVIR +1;
+   ptsz->index_m500 = ptsz->index_mVIR +1;
+   ptsz->index_r500 = ptsz->index_m500 +1;
+   ptsz->index_l500 = ptsz->index_r500 +1;
+   ptsz->index_m200 = ptsz->index_l500 +1;
+   ptsz->index_m200m = ptsz->index_m200 +1;
    ptsz->index_m1600m  = ptsz->index_m200m +1;
    ptsz->index_m180m  = ptsz->index_m1600m +1;
    ptsz->index_mass_for_hmf  = ptsz->index_m180m +1;
-   ptsz->index_m500c  = ptsz->index_mass_for_hmf +1;
-   ptsz->index_r500c  = ptsz->index_m500c +1;
-   ptsz->index_Rh  = ptsz->index_r500c +1;
-   ptsz->index_mf  = ptsz->index_Rh +1;
+   ptsz->index_m500c = ptsz->index_mass_for_hmf +1;
+   ptsz->index_r500c = ptsz->index_m500c +1;
+   ptsz->index_Rh = ptsz->index_r500c +1;
+   ptsz->index_mf = ptsz->index_Rh +1;
    ptsz->index_dlognudlogRh  = ptsz->index_mf +1;
    ptsz->index_lognu  = ptsz->index_dlognudlogRh +1;
    ptsz->index_dlogSigma2dlogRh  = ptsz->index_lognu +1;
@@ -14695,6 +14695,10 @@ if (ptsz->need_hmf){
 
   ptsz->index_W_gallens_sources = ptsz->index_radius_for_electron_density + 1;
   ptsz->index_szrate = ptsz->index_W_gallens_sources +1;
+
+  ptsz->index_mass_for_HI_density = ptsz->index_szrate +1;
+  ptsz->index_radius_for_HI_density = ptsz->index_mass_for_HI_density +1;
+  ptsz->index_concentration_for_HI_density = ptsz->index_radius_for_HI_density+1;
    //final size of pvecsz vector
   ptsz->tsz_size  = ptsz->index_szrate + 1;
 
