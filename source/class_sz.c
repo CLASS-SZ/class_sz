@@ -1809,6 +1809,14 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       }
 
 
+      if (ptsz->has_ngal_ngal_1h
+        + ptsz->has_ngal_ngal_2h
+        + ptsz->has_ngal_ngal_hf
+        + ptsz->has_ngal_lens_1h
+        + ptsz->has_ngal_lens_2h
+        + ptsz->has_ngal_lens_hf
+      ){
+
   if (ptsz->sz_verbose>10) printf("-> freeing l and cl's ngals.\n");
    int index_g;
    int index_g_prime;
@@ -1826,6 +1834,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
      free(ptsz->cl_ngal_lens_hf[index_g]);
 
    }
+ }
 
    if (ptsz->has_ngal_ngal_1h
      + ptsz->has_ngal_ngal_2h
@@ -1834,6 +1843,8 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
      + ptsz->has_ngal_lens_2h
      + ptsz->has_ngal_lens_hf
    ){
+     int index_g;
+     int index_g_prime;
      for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
        if (ptsz->has_ngal_ngal_1h
          + ptsz->has_ngal_ngal_2h
@@ -1877,12 +1888,20 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->cl_lens_cib_2h);
    free(ptsz->cl_gal_cib_1h);
    free(ptsz->cl_gal_cib_2h);
+   if (ptsz->has_ngal_ngal_1h
+     + ptsz->has_ngal_ngal_2h
+     + ptsz->has_ngal_ngal_hf
+     + ptsz->has_ngal_lens_1h
+     + ptsz->has_ngal_lens_2h
+     + ptsz->has_ngal_lens_hf
+   ){
    free(ptsz->cl_ngal_ngal_1h);
    free(ptsz->cl_ngal_ngal_2h);
    free(ptsz->cl_ngal_ngal_hf);
    free(ptsz->cl_ngal_lens_1h);
    free(ptsz->cl_ngal_lens_2h);
    free(ptsz->cl_ngal_lens_hf);
+ }
    free(ptsz->cl_cib_cib_1h);
    free(ptsz->cl_cib_cib_2h);
    free(ptsz->cl_lens_lens_1h);
@@ -1890,7 +1909,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
    free(ptsz->cl_lens_lens_hf);
    free(ptsz->cl_tSZ_lens_1h);
    free(ptsz->cl_tSZ_lens_2h);
-   free(ptsz->szrate);
+   // free(ptsz->szrate);
    free(ptsz->cl_kSZ_kSZ_gal_1h);
    free(ptsz->cl_kSZ_kSZ_gal_1h_fft);
    free(ptsz->cl_kSZ_kSZ_gal_2h_fft);
@@ -1961,6 +1980,9 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
 
 // printf("free 1\n");
 
+  if (ptsz->has_sz_rates){
+    free(ptsz->szrate);
+  }
 
    if ((ptsz->has_completeness_for_ps_SZ == 1)  || (ptsz->has_sz_counts  == 1)){
    free(ptsz->thetas);
@@ -14858,7 +14880,8 @@ if (ptsz->need_hmf){
    class_alloc(ptsz->cl_lens_lens_hf,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_tSZ_lens_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_tSZ_lens_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
-   class_alloc(ptsz->szrate,sizeof(double *)*ptsz->szcat_size,ptsz->error_message);
+   if (ptsz->has_sz_rates)
+    class_alloc(ptsz->szrate,sizeof(double *)*ptsz->szcat_size,ptsz->error_message);
    class_alloc(ptsz->cl_kSZ_kSZ_gal_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cov_ll_kSZ_kSZ_gal,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_t2t2f,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
@@ -15067,6 +15090,13 @@ if (ptsz->need_hmf){
    }
    }
 
+   if (ptsz->has_ngal_ngal_1h
+     + ptsz->has_ngal_ngal_2h
+     + ptsz->has_ngal_ngal_hf
+     + ptsz->has_ngal_lens_1h
+     + ptsz->has_ngal_lens_2h
+     + ptsz->has_ngal_lens_hf
+   ){
 
    class_alloc(ptsz->cl_ngal_ngal_1h,sizeof(double ***)*ptsz->galaxy_samples_list_num,ptsz->error_message);
    class_alloc(ptsz->cl_ngal_ngal_2h,sizeof(double ***)*ptsz->galaxy_samples_list_num,ptsz->error_message);
@@ -15107,6 +15137,7 @@ if (ptsz->need_hmf){
                    }
    }
    }
+ }
 
 
 
