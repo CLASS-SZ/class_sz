@@ -4215,6 +4215,10 @@ double get_HI_density_profile_at_k_M_z(double k_asked, double m_asked, double z_
 return 0.;
 }
 
+
+
+
+
 double get_gas_density_profile_at_k_M_z(double l_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
@@ -4287,6 +4291,433 @@ if (ptsz->normalize_gas_density_profile == 1){
 
 
 }
+
+
+
+// 
+//
+// // Tabulate 2-halo term of density profile on a [z - ln_M - ln_r] grid
+// // this is the tau profile for kSZ
+// int tabulate_gas_density_profile_2h(struct background * pba,
+//                                     struct tszspectrum * ptsz){
+//
+// if (ptsz->has_kSZ_kSZ_lensmag_1halo
+// + ptsz->has_kSZ_kSZ_gal_1h_fft
+// + ptsz->has_kSZ_kSZ_gal_2h_fft
+// + ptsz->has_kSZ_kSZ_gal_3h_fft
+// + ptsz->has_kSZ_kSZ_gal_1h
+// + ptsz->has_kSZ_kSZ_gal_2h
+// + ptsz->has_kSZ_kSZ_gal_3h
+// + ptsz->has_kSZ_kSZ_tSZ_1h
+// + ptsz->has_kSZ_kSZ_tSZ_2h
+// + ptsz->has_kSZ_kSZ_1h
+// + ptsz->has_kSZ_kSZ_2h
+// + ptsz->has_pk_bb_at_z_1h
+// + ptsz->has_pk_bb_at_z_2h
+// + ptsz->has_pk_em_at_z_1h
+// + ptsz->has_pk_em_at_z_2h
+// + ptsz->has_kSZ_kSZ_tSZ_3h
+// + ptsz->has_bk_ttg_at_z_1h
+// + ptsz->has_bk_ttg_at_z_2h
+// + ptsz->has_bk_ttg_at_z_3h
+// + ptsz->has_kSZ_kSZ_gallens_1h_fft
+// + ptsz->has_kSZ_kSZ_gallens_2h_fft
+// + ptsz->has_kSZ_kSZ_gallens_3h_fft
+// + ptsz->has_kSZ_kSZ_lens_1h_fft
+// + ptsz->has_kSZ_kSZ_lens_2h_fft
+// + ptsz->has_kSZ_kSZ_lens_3h_fft
+// == _FALSE_
+// )
+//   return 0;
+//
+//
+//  // array of multipoles:
+//
+//  double ln_ell_min = log(ptsz->r_min_gas_density_profile);
+//  double ln_ell_max = log(ptsz->r_max_gas_density_profile);
+//  int n_ell = ptsz->n_k_density_profile;
+//  int n_m = ptsz->n_m_density_profile;
+//  int n_z = ptsz->n_z_density_profile;
+//
+//  class_alloc(ptsz->array_profile_ln_r,sizeof(double *)*n_ell,ptsz->error_message);
+//
+//  // array of masses:
+//  double ln_m_min = log(5e8);
+//  double ln_m_max = log(1e16);
+//
+//
+//  class_alloc(ptsz->array_profile_ln_m,sizeof(double *)*n_m,ptsz->error_message);
+//
+//
+//  // array of redshifts:
+//  double ln_1pz_min = log(1.+ptsz->z1SZ);
+//  double ln_1pz_max = log(1.+ptsz->z2SZ);
+//
+//
+//  class_alloc(ptsz->array_profile_ln_1pz,sizeof(double *)*n_z,ptsz->error_message);
+// int index_m_z;
+//
+// int index_l;
+// for (index_l=0;
+//      index_l<n_ell;
+//      index_l++)
+// {
+//   // this is k
+//   ptsz->array_profile_ln_r[index_l] = ln_ell_min
+//                                       +index_l*(ln_ell_max-ln_ell_min)
+//                                       /(n_ell-1.);
+// }
+//
+// int index_m;
+// for (index_m=0;
+//      index_m<n_m;
+//      index_m++)
+// {
+//   ptsz->array_profile_ln_m[index_m] = ln_m_min
+//                                       +index_m*(ln_m_max-ln_m_min)
+//                                       /(n_m-1.);
+// }
+//
+// int index_z;
+// for (index_z=0;
+//      index_z<n_z;
+//      index_z++)
+// {
+//   ptsz->array_profile_ln_1pz[index_z] = ln_1pz_min
+//                                    +index_z*(ln_1pz_max-ln_1pz_min)
+//                                    /(n_z-1.);
+// }
+//
+//
+// class_alloc(ptsz->array_profile_ln_rho_at_lnr_lnM_z,n_ell*sizeof(double *),ptsz->error_message);
+// for (index_l=0;
+//      index_l<n_ell;
+//      index_l++)
+// {
+// class_alloc(ptsz->array_profile_ln_rho_at_lnr_lnM_z[index_l],n_m*n_z*sizeof(double *),ptsz->error_message);
+// index_m_z = 0;
+// for (index_m=0;
+//      index_m<n_m;
+//      index_m++){
+//
+// for (index_z=0;
+//      index_z<n_z;
+//      index_z++)
+// {
+//   ptsz->array_profile_ln_rho_at_lnr_lnM_z[index_l][index_m_z] = log(1e-100); // initialize with super small number
+//   index_m_z += 1;
+// }
+//
+//      }
+// }
+//
+// int has_ksz_bkp = ptsz->has_kSZ_kSZ_gal_1h;
+// ptsz->has_kSZ_kSZ_gal_1h = _TRUE_; //pretend we need the tau_profile
+//
+// //Parallelization of profile computation
+// /* initialize error management flag */
+//
+//
+// int abort;
+// double tstart, tstop;
+// abort = _FALSE_;
+// /* beginning of parallel region */
+//
+// int number_of_threads= 1;
+// #ifdef _OPENMP
+// #pragma omp parallel
+//   {
+//     number_of_threads = omp_get_num_threads();
+//   }
+// #endif
+//
+// #pragma omp parallel \
+// shared(abort,\
+// ptsz,pba)\
+// private(tstart, tstop,index_l,index_z,index_m,index_m_z) \
+// num_threads(number_of_threads)
+// {
+//
+// #ifdef _OPENMP
+//   tstart = omp_get_wtime();
+// #endif
+//
+// #pragma omp for schedule (dynamic)
+// for (index_l=0;
+//      index_l<n_ell;
+//      index_l++)
+// {
+// #pragma omp flush(abort)
+// double * pvectsz;
+// double * pvecback;
+//
+// class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+// class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+// int index_pvectsz;
+// for (index_pvectsz=0;
+//      index_pvectsz<ptsz->tsz_size;
+//      index_pvectsz++){
+//        pvectsz[index_pvectsz] = 0.; // set everything to 0.
+//      }
+// index_m_z = 0;
+// for (index_m=0;
+//      index_m<n_m;
+//      index_m++){
+// for (index_z=0;
+//      index_z<n_z;
+//      index_z++){
+//
+//
+//
+//
+//   double z = exp(ptsz->array_profile_ln_1pz[index_z])-1.;
+//   double lnM = ptsz->array_profile_ln_m[index_m];
+//   double ell = exp(ptsz->array_profile_ln_r[index_l]);
+//
+//
+//   double tau;
+//   int first_index_back = 0;
+//
+//
+//   class_call_parallel(background_tau_of_z(pba,z,&tau),
+//              pba->error_message,
+//              pba->error_message);
+//
+//   class_call_parallel(background_at_tau(pba,
+//                                tau,
+//                                pba->long_info,
+//                                pba->inter_normal,
+//                                &first_index_back,
+//                                pvecback),
+//              pba->error_message,
+//              pba->error_message);
+//
+//
+//   // fill relevant entries
+//   pvectsz[ptsz->index_z] = z;
+//
+//   pvectsz[ptsz->index_multipole_for_nfw_profile] = ell;
+//   pvectsz[ptsz->index_md] = 0; // avoid the if condition in rho_nfw for the pk mode computation
+//
+//   pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+//                                 *pow(_Mpc_over_m_,1)
+//                                 *pow(_c_,2)
+//                                 *pvecback[pba->index_bg_rho_crit]
+//                                 /pow(pba->h,2);
+//   pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+//   double omega = pvecback[pba->index_bg_Omega_m];
+//   pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+//
+//
+//   double result;
+//
+//
+//   // pvectsz[ptsz->index_has_electron_density] = 1;
+//   // do_mass_conversions(lnM,z,pvecback,pvectsz,pba,ptsz);
+//
+//  // only  do the integration of Battaglia profile
+//  // nfw has an analytical formula
+//  if (ptsz->tau_profile == 1){
+//   pvectsz[ptsz->index_m200c] = exp(lnM);
+//   // class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
+//   //                                  200.*(pvectsz[ptsz->index_Rho_crit]),
+//   //                                  pvectsz[ptsz->index_Delta_c],
+//   //                                  pvectsz[ptsz->index_Rho_crit],
+//   //                                  z,
+//   //                                  &pvectsz[ptsz->index_mVIR],
+//   //                                  ptsz,
+//   //                                  pba),
+//   //                 ptsz->error_message,
+//   //                 ptsz->error_message);
+//  //
+//  //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
+//   // pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+//
+//   pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+//   pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
+//   pvectsz[ptsz->index_characteristic_multipole_for_nfw_profile] = pvectsz[ptsz->index_l200c];
+//   // pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c];
+//
+//  double result_int;
+//
+//
+// two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int);
+//
+//
+//  result = result_int;
+//  double tau_normalisation = 1.;
+//  tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_r200c],3);
+//  // printf("In tab gas: k %.4e z %.8e rt %.8e mt %.8e res = %.4e\n",ell,pvectsz[ptsz->index_z],pvectsz[ptsz->index_r200c],pvectsz[ptsz->index_m200c],result);
+//
+//
+//  if (result<=0 || isnan(result) || isinf(result)){
+//  // printf("ERROR: In tab gas: k %.4e z %.8e rt %.8e mt %.8e res = %.4e\n",ell,pvectsz[ptsz->index_z],pvectsz[ptsz->index_r200c],pvectsz[ptsz->index_m200c],result);
+//  // printf("check precision and input parameters?\n");
+//  // exit(0);
+//  result = 1e-200;
+// }
+//
+//  result *= tau_normalisation;
+// }
+// else if (ptsz->tau_profile == 0){ // truncated nfw profile
+//    //
+//    // pvectsz[ptsz->index_m200c] = exp(lnM);
+//    // pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+//    // pvectsz[ptsz->index_c200c] = get_c200c_at_m_and_z(pvectsz[ptsz->index_m200c],z,pba,ptsz);
+//    //
+//    // double r_delta = pvectsz[ptsz->index_r200c];
+//    // double c_delta = pvectsz[ptsz->index_c200c];
+//    // double m_delta = pvectsz[ptsz->index_m200c];
+//
+//    double r_delta;// = pvectsz[ptsz->index_radius_for_electron_density];
+//    double c_delta;// = pvectsz[ptsz->index_concentration_for_electron_density];
+//    double m_delta;// = pvectsz[ptsz->index_mass_for_electron_density];
+//    // printf("de = %d\n",ptsz->delta_def_electron_density);
+//    // exit(0);
+//
+//   if (ptsz->delta_def_electron_density == 0){
+//     m_delta = exp(lnM);
+//     r_delta = pow(3.*m_delta/(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]*pvectsz[ptsz->index_Rho_crit]),1./3.);
+//     c_delta = get_c200m_at_m_and_z(m_delta,z,pba,ptsz);
+//   }
+//   else if (ptsz->delta_def_electron_density == 1){
+//     m_delta = exp(lnM);
+//     r_delta = pow(3.*m_delta/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+//     c_delta = get_c200c_at_m_and_z(m_delta,z,pba,ptsz);
+//   }
+//   else if (ptsz->delta_def_electron_density == 2){
+//     m_delta = exp(lnM);
+//     r_delta = pow(3.*m_delta/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+//     c_delta = get_c500c_at_m_and_z(m_delta,z,pba,ptsz);
+//   }
+//    double xout = ptsz->x_out_truncated_nfw_profile_electrons;
+//
+//
+//
+//    // pvectsz[ptsz->index_rs] = r_delta/c_delta;
+//
+//   // pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_nfw_profile];
+//   // double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
+//   double chi = sqrt(pvectsz[ptsz->index_chi2]);
+//   double k = ell;
+//    result =  evaluate_truncated_nfw_profile(pvectsz[ptsz->index_z],k,r_delta,c_delta,xout);
+//    //result *= 1.;//m_delta;///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3));
+//    double f_b = ptsz->f_b_gas;//pba->Omega0_b/ptsz->Omega_m_0;
+//    result *= f_b*m_delta;//*pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,-1);
+//
+//     if (isnan(result) || isinf(result)){
+//     printf("z %.8e rt %.8e ct %.8e mt %.8e\n",pvectsz[ptsz->index_z],r_delta,c_delta,m_delta);
+//     exit(0);
+//   }
+//    // double tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_rs],3);
+//    // result *= tau_normalisation;
+//  }
+//
+//   ptsz->array_profile_ln_rho_at_lnr_lnM_z[index_l][index_m_z] = log(result);
+//   // printf("l = %.8e m = %.8e z = %.8e lnrho = %.8e\n",ell,exp(lnM),z,log(result));
+//
+//   index_m_z += 1;
+//      }
+//
+//
+//      }
+//
+//      free(pvectsz);
+//      free(pvecback);
+// }
+//
+// #ifdef _OPENMP
+//   tstop = omp_get_wtime();
+//   if (ptsz->sz_verbose > 0)
+//     printf("In %s: time spent in tab profile parallel region (loop over ell's) = %e s for thread %d\n",
+//            __func__,tstop-tstart,omp_get_thread_num());
+// #endif
+// }
+// if (abort == _TRUE_) return _FAILURE_;
+// //end of parallel region
+//
+// // restore initial state:
+// ptsz->has_kSZ_kSZ_gal_1h = has_ksz_bkp;
+//                                       }
+//
+//
+
+
+
+
+// double get_gas_density_profile_2h_at_r_M_z(double l_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
+//   double z = log(1.+z_asked);
+//   double m = log(m_asked);
+//   double l = log(l_asked);
+//
+//    if (z<ptsz->array_profile_ln_1pz[0])
+//     return 0.;//z = ptsz->array_profile_ln_1pz[0];
+//  if (z>ptsz->array_profile_ln_1pz[ptsz->n_z_density_profile-1])
+//     return 0.;//z = ptsz->array_profile_ln_1pz[ptsz->n_z_density_profile-1];
+//
+//  if (m<ptsz->array_profile_ln_m[0])
+//     return 0.;//m = ptsz->array_profile_ln_m[0];
+//  if (m>ptsz->array_profile_ln_m[ptsz->n_m_density_profile-1])
+//     return 0.;//m =  ptsz->array_profile_ln_m[ptsz->n_m_density_profile-1];
+//
+// if (l<ptsz->array_profile_ln_r[0])
+//     return 0.;//l = ptsz->array_profile_ln_l[0];
+//  if (l>ptsz->array_profile_ln_r[ptsz->n_r_density_profile-1])
+//     return 0.;//l =  ptsz->array_profile_ln_l[ptsz->n_ell_density_profile-1];
+//
+//
+//
+//   // if (ptsz->tau_profile == 1){
+//   // find the closest l's in the grid:
+//   int id_l_low;
+//   int id_l_up;
+//   int n_ell = ptsz->n_k_density_profile;
+//   int n_m = ptsz->n_m_density_profile;
+//   int n_z = ptsz->n_z_density_profile;
+//   r8vec_bracket(n_ell,ptsz->array_profile_ln_l,l,&id_l_low,&id_l_up);
+//
+//   // interpolate 2d at l_low:
+//
+//  double ln_rho_low = pwl_interp_2d(
+//                                 n_z,
+//                                 n_m,
+//
+//                                 ptsz->array_profile_ln_1pz,
+//                                 ptsz->array_profile_ln_m,
+//                                 ptsz->array_profile_ln_rho_at_lnl_lnM_z[id_l_low-1],
+//                                 1,
+//                                 &z,
+//                                 &m);
+//
+//  double ln_rho_up = pwl_interp_2d(
+//                                 n_z,
+//                                 n_m,
+//                                 ptsz->array_profile_ln_1pz,
+//                                 ptsz->array_profile_ln_m,
+//                                 ptsz->array_profile_ln_rho_at_lnl_lnM_z[id_l_up-1],
+//                                 1,
+//                                 &z,
+//                                 &m);
+//  double ln_l_low = ptsz->array_profile_ln_l[id_l_low-1];
+//  double ln_l_up = ptsz->array_profile_ln_l[id_l_up-1];
+//
+//  double result = exp(ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low));
+//
+// if (ptsz->normalize_gas_density_profile == 1){
+//   double norm = get_normalization_gas_density_profile(z_asked,m_asked,ptsz)/ptsz->f_b_gas;
+//   result *= 1./norm;
+//   // printf("norm = %.5e\n",norm);
+// }
+//
+//  if (isnan(result) || isinf(result)){
+//  printf("in get gas: z %.8e m %.8e l %.8e  ln_rho_low  %.8e ln_rho_low  %.8e id_l_low %d\n",z_asked,m_asked,l_asked,ln_rho_low,ln_rho_up,id_l_low);
+//  exit(0);
+// }
+//  return result;
+//
+//
+// }
+
 
 
 double get_normalization_gas_density_profile(double z_asked, double m_asked, struct tszspectrum * ptsz){

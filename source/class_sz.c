@@ -2078,6 +2078,7 @@ if(ptsz->has_kSZ_kSZ_gal_1h
 || ptsz->has_kSZ_kSZ_lensmag_1halo
 
 ){
+  // free(ptsz->array_profile_ln_r);
   free(ptsz->array_profile_ln_l);
   free(ptsz->array_profile_ln_m);
   free(ptsz->array_profile_ln_1pz);

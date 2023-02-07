@@ -1725,6 +1725,7 @@ double * steps_m;
   double * array_pressure_profile_ln_1pz;
 
   double ** array_profile_ln_rho_at_lnl_lnM_z;
+  double * array_profile_ln_r;
   double * array_profile_ln_l;
   double * array_profile_ln_m;
   double * array_profile_ln_1pz;
