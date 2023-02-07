@@ -14694,8 +14694,9 @@ if (ptsz->need_hmf){
   ptsz->index_radius_for_electron_density = ptsz->index_radius_for_electron_pressure + 1;
 
   ptsz->index_W_gallens_sources = ptsz->index_radius_for_electron_density + 1;
+  ptsz->index_szrate = ptsz->index_W_gallens_sources +1;
    //final size of pvecsz vector
-   ptsz->tsz_size  = ptsz->index_W_gallens_sources + 1;
+  ptsz->tsz_size  = ptsz->index_szrate + 1;
 
 
 //
