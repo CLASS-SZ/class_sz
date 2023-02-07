@@ -15408,7 +15408,16 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
    ptsz->index_integrand_id_gal_cib_1h_last = ptsz->index_integrand_id_gal_cib_1h_first + ptsz->nlSZ*ptsz->cib_frequency_list_num - 1;
    ptsz->index_integrand_id_cib_cib_1h_first = ptsz->index_integrand_id_gal_cib_1h_last + 1;
    ptsz->index_integrand_id_cib_cib_1h_last = ptsz->index_integrand_id_cib_cib_1h_first + ptsz->cib_dim - 1;
-   ptsz->index_integrand_id_ngal_ngal_1h_first = ptsz->index_integrand_id_cib_cib_1h_last + 1;
+
+   last_index_integrand_id = ptsz->index_integrand_id_cib_cib_1h_last;
+   if (ptsz->has_ngal_ngal_1h
+     + ptsz->has_ngal_ngal_2h
+     + ptsz->has_ngal_ngal_hf
+     + ptsz->has_ngal_lens_1h
+     + ptsz->has_ngal_lens_2h
+     + ptsz->has_ngal_lens_hf
+   ){
+   ptsz->index_integrand_id_ngal_ngal_1h_first = last_index_integrand_id + 1;
    ptsz->index_integrand_id_ngal_ngal_1h_last = ptsz->index_integrand_id_ngal_ngal_1h_first + ptsz->ngal_dim - 1;
    ptsz->index_integrand_id_ngal_ngal_2h_first = ptsz->index_integrand_id_ngal_ngal_1h_last+ 1;
    ptsz->index_integrand_id_ngal_ngal_2h_last = ptsz->index_integrand_id_ngal_ngal_2h_first + ptsz->ngal_dim - 1;
@@ -15422,7 +15431,9 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
    ptsz->index_integrand_id_ngal_lens_hf_first = ptsz->index_integrand_id_ngal_lens_2h_last + 1;
    ptsz->index_integrand_id_ngal_lens_hf_last = ptsz->index_integrand_id_ngal_lens_hf_first + ptsz->nlSZ*ptsz->galaxy_samples_list_num - 1;
 
-   ptsz->index_integrand_id_tSZ_cib_2h_first = ptsz->index_integrand_id_ngal_lens_hf_last + 1;
+   last_index_integrand_id = ptsz->index_integrand_id_ngal_lens_hf_last;
+}
+   ptsz->index_integrand_id_tSZ_cib_2h_first = last_index_integrand_id + 1;
    ptsz->index_integrand_id_tSZ_cib_2h_last = ptsz->index_integrand_id_tSZ_cib_2h_first + ptsz->nlSZ*ptsz->cib_frequency_list_num - 1;
    ptsz->index_integrand_id_lens_cib_2h_first = ptsz->index_integrand_id_tSZ_cib_2h_last + 1;
    ptsz->index_integrand_id_lens_cib_2h_last = ptsz->index_integrand_id_lens_cib_2h_first + ptsz->nlSZ*ptsz->cib_frequency_list_num - 1;
