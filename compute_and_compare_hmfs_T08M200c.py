@@ -97,15 +97,15 @@ def run(args):
 
     'z_min':0.,
     'z_max': 3.,
-    'n_z_dndlnM':100,
-    'ndim_redshifts':100,
+    'n_z_dndlnM':200,
+    'ndim_redshifts':200,
 
     'no_spline_in_tinker' : 1, # ccl doesnt have splines... its interp 1d only.
     # # 'HMF_prescription_NCDM' : 'CDM',
     'HMF_prescription_NCDM' : 'CDM',
 
     # these params determin how many k's when we compute sigma
-    'k_per_decade_class_sz':150.,
+    'k_per_decade_class_sz':50.,
     'k_min_for_pk_class_sz':1e-5,
     'k_max_for_pk_class_sz':50.
 
@@ -140,7 +140,7 @@ def run(args):
     title_size = 15
     legend_size = 13
     handle_length = 1.5
-    fig, (ax1,ax2) = plt.subplots(1,2,figsize=(7,5))
+    fig, (ax1,ax2) = plt.subplots(1,2,figsize=(10,5))
     ax = ax1
     ax.tick_params(axis = 'x',which='both',length=5,direction='in', pad=10)
     ax.tick_params(axis = 'y',which='both',length=5,direction='in', pad=5)
@@ -205,10 +205,10 @@ def run(args):
         print('hmf ccl:',(nm/np.log(10)/cosmology['h']**3/Masses))
         print('hmf ratio:',dndm/(nm/np.log(10)/cosmology['h']**3/Masses))
 
-        ax1.plot(Masses,100.*(dndm/(nm/np.log(10)/cosmology['h']**3/Masses)-1.), label='class_sz/ccl in percents')
+        ax1.plot(Masses,100.*(dndm/(nm/np.log(10)/cosmology['h']**3/Masses)-1.), label='class_sz/ccl in percents z=%.2e'%zp)
 
-        ax2.plot(Masses,dndm, label='class_sz')
-        ax2.plot(Masses,(nm/np.log(10)/cosmology['h']**3/Masses), label='ccl',ls='--')
+        ax2.plot(Masses,dndm, label='class_sz z=%.2e'%zp)
+        ax2.plot(Masses,(nm/np.log(10)/cosmology['h']**3/Masses), label='ccl z=%.2e'%zp,ls='--')
 
     ax1.legend()
 

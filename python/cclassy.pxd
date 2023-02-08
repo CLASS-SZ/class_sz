@@ -370,6 +370,7 @@ cdef extern from "class.h":
         double * pk_gg_at_z_2h
         double * pk_bb_at_z_1h
         double * pk_bb_at_z_2h
+        double * pk_b_at_z_2h
         double * pk_em_at_z_1h
         double * pk_em_at_z_2h
         double * cl_gal_lensmag_1h
@@ -637,6 +638,12 @@ cdef extern from "class.h":
                                                double bh,
                                                void * ptsz)
 
+
+    double get_rho_2h_at_r_and_m_and_z(double r_asked,
+                                       double m_asked,
+                                       double z_asked,
+                                       void * ptsz,
+                                       void * pba)
 
     double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
                                              double m_asked,

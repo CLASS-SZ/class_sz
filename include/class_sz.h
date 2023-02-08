@@ -19,6 +19,7 @@
 #define _pk_gg_at_z_2h_ ((ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_gg_at_z_2h))
 #define _pk_bb_at_z_1h_ ((ptsz->has_pk_bb_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_bb_at_z_1h))
 #define _pk_bb_at_z_2h_ ((ptsz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_bb_at_z_2h))
+#define _pk_b_at_z_2h_ ((ptsz->has_pk_b_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_b_at_z_2h))
 #define _pk_em_at_z_1h_ ((ptsz->has_pk_em_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_em_at_z_1h))
 #define _pk_em_at_z_2h_ ((ptsz->has_pk_em_at_z_2h == _TRUE_) && (index_md == ptsz->index_md_pk_em_at_z_2h))
 #define _pk_HI_at_z_1h_ ((ptsz->has_pk_HI_at_z_1h == _TRUE_) && (index_md == ptsz->index_md_pk_HI_at_z_1h))
@@ -173,6 +174,7 @@ struct tszspectrum {
   double * pk_gg_at_z_2h;
   double * pk_bb_at_z_1h;
   double * pk_bb_at_z_2h;
+  double * pk_b_at_z_2h;
   double * pk_em_at_z_1h;
   double * pk_em_at_z_2h;
   double * pk_HI_at_z_1h;
@@ -421,6 +423,11 @@ struct tszspectrum {
   int index_md_pk_bb_at_z_2h;
   int index_integrand_id_pk_bb_at_z_2h_first;
   int index_integrand_id_pk_bb_at_z_2h_last;
+
+  int has_pk_b_at_z_2h;
+  int index_md_pk_b_at_z_2h;
+  int index_integrand_id_pk_b_at_z_2h_first;
+  int index_integrand_id_pk_b_at_z_2h_last;
 
   int has_pk_em_at_z_1h;
   int index_md_pk_em_at_z_1h;
@@ -1696,6 +1703,10 @@ double * steps_m;
   double * CM_logC;
 
 
+  // double * array_profile_2h_ln_1pz;
+  double * array_profile_ln_rho_2h_at_k_and_z;
+  double * array_profile_rho_2h_at_r_and_z;
+
   double * array_m_m200m_to_m200c;
   double * array_ln_1pz_m200m_to_m200c;
   double * array_m200m_to_m200c_at_z_and_M;
@@ -1724,9 +1735,9 @@ double * steps_m;
   double * array_pressure_profile_ln_m;
   double * array_pressure_profile_ln_1pz;
 
-  double ** array_profile_ln_rho_at_lnl_lnM_z;
+  double ** array_profile_ln_rho_at_lnk_lnM_z;
   double * array_profile_ln_r;
-  double * array_profile_ln_l;
+  double * array_profile_ln_k;
   double * array_profile_ln_m;
   double * array_profile_ln_1pz;
 
@@ -2110,8 +2121,7 @@ int write_redshift_dependent_quantities(struct background * pba,
 //                         struct background * pba,
 //                         struct tszspectrum * ptsz);
 
-int tabulate_gas_density_profile(struct background * pba,
-                             struct tszspectrum * ptsz);
+
 
 
 int tabulate_pressure_profile_gNFW(struct background * pba,
@@ -2567,6 +2577,19 @@ double get_pressure_P_over_P_delta_at_x_gnfw_500c(double x_asked,
                                                       double c500,
                                                       struct background * pba,
                                                       struct tszspectrum * tsz);
+
+
+struct Parameters_for_integrand_gas_density_profile_2h{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  struct perturbs * ppt;
+  double * pvecback;
+  double * pvectsz;
+  double z;
+  double k;
+};
 
 struct Parameters_for_integrand_kSZ2_X_at_theta{
 struct nonlinear * pnl;

@@ -42,6 +42,7 @@ int szpowerspectrum_init(
       + ptsz->has_pk_gg_at_z_2h
       + ptsz->has_pk_bb_at_z_1h
       + ptsz->has_pk_bb_at_z_2h
+      + ptsz->has_pk_b_at_z_2h
       + ptsz->has_pk_em_at_z_1h
       + ptsz->has_pk_em_at_z_2h
       + ptsz->has_pk_HI_at_z_1h
@@ -770,6 +771,77 @@ if (ptsz->has_n5k){
 }
 // exit(0);
 
+
+if (ptsz->has_pk_b_at_z_2h){
+tabulate_gas_density_profile_2h(pba,pnl,ppm,ppt,ptsz);
+// double k_test = 0.36e-1;
+// double z_test = 1.51;
+// double rho_test = get_rho_2h_at_k_and_z(k_test,z_test,ptsz);
+// printf("k_test = %.3e, z_test = %.3e, rho_test = %.8e\n",
+//         k_test,z_test,rho_test);
+//
+// k_test =  2.42013e-01;
+// z_test = 3.00000e+00;
+// rho_test = get_rho_2h_at_k_and_z(k_test,z_test,ptsz);
+// printf("k_test = %.5e, z_test = %.5e, rho_test = %.8e\n",
+//         k_test,z_test,rho_test);
+
+
+tabulate_gas_density_profile_2h_fft_at_z_and_r(pba,pnl,ppm,ptsz);
+
+
+// double r_test =  2.42013e-01;
+// double z_test = 1.20000e+00;
+// double m_test = 3.5e13;
+// double rho_test = get_rho_2h_at_r_and_m_and_z(r_test,m_test,z_test,ptsz,pba);
+//
+// printf("r_test = %.5e, z_test = %.5e, rho_test = %.8e\n",
+//         r_test,z_test,rho_test);
+
+// double k_min = ptsz->k_min_samp_fftw;
+// double k_max = ptsz->k_max_samp_fftw; // this is a precision parameter
+// // tabulate the integrand in the "l" dimension:
+// const int N = ptsz->N_samp_fftw;
+//
+//
+// class_alloc(ptsz->array_profile_rho_2h_at_r_and_z,
+//             N*ptsz->n_z_density_profile*sizeof(double),
+//             ptsz->error_message);
+// class_alloc(ptsz->array_profile_ln_r,
+//             N*sizeof(double),
+//             ptsz->error_message);
+//
+// int index_z;
+// for (index_z=0; index_z<ptsz->n_z_density_profile; index_z++){
+//   double z = exp(ptsz->array_profile_ln_1pz[index_z])-1.;
+//   double k[N], Pk1[N];
+//   int index_k;
+//   for (index_k=0; index_k<N; index_k++)
+//   {
+//
+//     k[index_k] = exp(log(k_min)+index_k/(N-1.)*(log(k_max)-log(k_min)));
+//     Pk1[index_k] = get_rho_2h_at_k_and_z(k[index_k],z,ptsz);
+//     Pk1[index_k] *= get_pk_lin_at_k_and_z(k[index_k],z,pba,ppm,pnl,ptsz);
+//     printf("z = %.3e k = %.5e pk1 = %.5e\n",z,k[index_k],Pk1[index_k]);
+//   }
+//
+//   double rp[N], xi1[N];
+//   xi2pk(N,k,Pk1,rp,xi1,ptsz);
+//   printf("\n##############\n");
+//
+//   for (index_k=0; index_k<N; index_k++){
+//     int index_k_z = index_k * ptsz->n_z_density_profile + index_z;
+//     ptsz->array_profile_rho_2h_at_r_and_z[index_k_z] = xi1[index_k];
+//     ptsz->array_profile_ln_r[index_k] = log(rp[index_k]);
+//     printf("z = %.3e r = %.5e xi1 = %.5e\n",z,rp[index_k],xi1[index_k]);
+//    }
+//
+//
+// }
+
+// int index_k_z = index_k * n_z + index_z;
+// exit(0);
+}
 
 if (ptsz->has_kSZ_kSZ_gal_1h_fft
  || ptsz->has_kSZ_kSZ_gal_2h_fft
@@ -1608,6 +1680,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_pk_gg_at_z_2h
       + ptsz->has_pk_bb_at_z_1h
       + ptsz->has_pk_bb_at_z_2h
+      + ptsz->has_pk_b_at_z_2h
       + ptsz->has_pk_em_at_z_1h
       + ptsz->has_pk_em_at_z_2h
       + ptsz->has_pk_HI_at_z_1h
@@ -2070,6 +2143,7 @@ if(ptsz->has_kSZ_kSZ_gal_1h
 || ptsz->has_kSZ_kSZ_tSZ_3h
 || ptsz->has_pk_bb_at_z_1h
 || ptsz->has_pk_bb_at_z_2h
+|| ptsz->has_pk_b_at_z_2h
 || ptsz->has_pk_em_at_z_1h
 || ptsz->has_pk_em_at_z_2h
 || ptsz->has_bk_ttg_at_z_1h
@@ -2078,10 +2152,16 @@ if(ptsz->has_kSZ_kSZ_gal_1h
 || ptsz->has_kSZ_kSZ_lensmag_1halo
 
 ){
-  // free(ptsz->array_profile_ln_r);
-  free(ptsz->array_profile_ln_l);
+
+  free(ptsz->array_profile_ln_k);
   free(ptsz->array_profile_ln_m);
   free(ptsz->array_profile_ln_1pz);
+
+
+  free(ptsz->array_profile_ln_rho_2h_at_k_and_z);
+  free(ptsz->array_profile_rho_2h_at_r_and_z);
+  free(ptsz->array_profile_ln_r);
+
 
 if (ptsz->sz_verbose>10) printf("-> freeing density profile.\n");
  int n_ell = ptsz->n_k_density_profile; //hard coded
@@ -2090,9 +2170,9 @@ for (index_l=0;
      index_l<n_ell;
      index_l++)
 {
-  free(ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l]);
+  free(ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l]);
 }
-free(ptsz->array_profile_ln_rho_at_lnl_lnM_z); //here jump
+free(ptsz->array_profile_ln_rho_at_lnk_lnM_z); //here jump
 }
 
 if (ptsz->sz_verbose>10) printf("-> freeing more kSZ2X.\n");
@@ -2335,6 +2415,7 @@ if (ptsz->has_kSZ_kSZ_gal_1h_fft
    || ptsz->has_kSZ_kSZ_lens_3h_fft
    || ptsz->has_kSZ_kSZ_lens_covmat
    || ptsz->convert_cls_to_gamma
+   || ptsz->has_pk_b_at_z_2h
    || ptsz->has_n5k){
   fftw_destroy_plan(ptsz->forward_plan);
   fftw_destroy_plan(ptsz->reverse_plan);
@@ -2560,6 +2641,7 @@ if( ptsz->has_pk_at_z_1h
    + ptsz->has_pk_gg_at_z_2h
    + ptsz->has_pk_bb_at_z_1h
    + ptsz->has_pk_bb_at_z_2h
+   + ptsz->has_pk_b_at_z_2h
    + ptsz->has_pk_em_at_z_1h
    + ptsz->has_pk_em_at_z_2h
    + ptsz->has_pk_HI_at_z_1h
@@ -2580,6 +2662,7 @@ free(ptsz->pk_gg_at_z_1h);
 free(ptsz->pk_gg_at_z_2h);
 free(ptsz->pk_bb_at_z_1h);
 free(ptsz->pk_bb_at_z_2h);
+free(ptsz->pk_b_at_z_2h);
 free(ptsz->pk_em_at_z_1h);
 free(ptsz->pk_em_at_z_2h);
 free(ptsz->pk_HI_at_z_1h);
@@ -2592,6 +2675,8 @@ free(ptsz->bk_ttg_at_z_2h);
 free(ptsz->bk_ttg_at_z_3h);
 }
 //
+
+
 
   // if (ptsz->MF==1 && ptsz->hm_consistency==2){
   if (ptsz->MF==1){
@@ -3263,6 +3348,12 @@ int compute_sz(struct background * pba,
          Pvectsz[ptsz->index_has_electron_density] = 1;
          Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_bb_at_z_2h_first);
          if (ptsz->sz_verbose > 0) printf("computing pk_bb^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
+       }
+      else if (index_integrand>=ptsz->index_integrand_id_pk_b_at_z_2h_first && index_integrand <= ptsz->index_integrand_id_pk_b_at_z_2h_last && ptsz->has_pk_b_at_z_2h){
+         Pvectsz[ptsz->index_md] = ptsz->index_md_pk_b_at_z_2h;
+         Pvectsz[ptsz->index_has_electron_density] = 1;
+         Pvectsz[ptsz->index_k_for_pk_hm] = (double) (index_integrand - ptsz->index_integrand_id_pk_b_at_z_2h_first);
+         if (ptsz->sz_verbose > 0) printf("computing pk_b^2h @ k_id = %.0f\n",Pvectsz[ptsz->index_k_for_pk_hm]);
        }
      else if (index_integrand>=ptsz->index_integrand_id_pk_em_at_z_1h_first && index_integrand <= ptsz->index_integrand_id_pk_em_at_z_1h_last && ptsz->has_pk_em_at_z_1h){
         Pvectsz[ptsz->index_md] = ptsz->index_md_pk_em_at_z_1h;
@@ -4218,7 +4309,11 @@ if (_pk_bb_at_z_2h_){
  ptsz->pk_bb_at_z_2h[index_k] = Pvectsz[ptsz->index_integral];
 
 }
+if (_pk_b_at_z_2h_){
+ int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
+ ptsz->pk_b_at_z_2h[index_k] = Pvectsz[ptsz->index_integral];
 
+}
  if (_pk_em_at_z_1h_){
   int index_k = (int) Pvectsz[ptsz->index_k_for_pk_hm];
   ptsz->pk_em_at_z_1h[index_k] = Pvectsz[ptsz->index_integral];
@@ -4941,6 +5036,7 @@ double integrand_at_m_and_z(double logM,
     || _pk_gg_at_z_2h_
     || _pk_bb_at_z_1h_
     || _pk_bb_at_z_2h_
+    || _pk_b_at_z_2h_
     || _pk_em_at_z_1h_
     || _pk_em_at_z_2h_
     || _pk_HI_at_z_1h_
@@ -6508,6 +6604,18 @@ pvectsz[ptsz->index_integrand] *= flag_conf;
                                       *gas_profile_at_k_1
                                       *pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,-1);
    }
+
+  else if (_pk_b_at_z_2h_){
+
+    double gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,ptsz);
+    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
+
+    pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                      *pvectsz[ptsz->index_halo_bias]
+                                      *gas_profile_at_k_1
+                                      *pow((pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0,0);
+   }
+
 
   else if (_pk_em_at_z_1h_){
 
@@ -9120,6 +9228,7 @@ int evaluate_halo_bias(double * pvecback,
      || _pk_gg_at_z_2h_
      || _pk_bb_at_z_1h_
      || _pk_bb_at_z_2h_
+     || _pk_b_at_z_2h_
      || _pk_em_at_z_1h_
      || _pk_em_at_z_2h_
      || _pk_HI_at_z_1h_
@@ -12300,6 +12409,7 @@ if ((ptsz->has_pk_at_z_1h
   +  ptsz->has_pk_gg_at_z_2h
   +  ptsz->has_pk_bb_at_z_1h
   +  ptsz->has_pk_bb_at_z_2h
+  // +  ptsz->has_pk_bb_at_z_2h
   +  ptsz->has_pk_em_at_z_1h
   +  ptsz->has_pk_em_at_z_2h
   +  ptsz->has_pk_HI_at_z_1h
@@ -14236,6 +14346,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
   ||  ptsz->has_kSZ_kSZ_lens_3h_fft
   ||  ptsz->has_kSZ_kSZ_lens_covmat
   ||  ptsz->convert_cls_to_gamma
+  ||  ptsz->has_pk_b_at_z_2h
   ||  ptsz->has_n5k){
     if(ptsz->sz_verbose>1) printf("constructing fftw plan\n");
     // ptsz->N_samp_fftw = 100;
@@ -14361,6 +14472,7 @@ if (
   +ptsz->has_bk_ttg_at_z_3h
   +ptsz->has_pk_bb_at_z_1h
   +ptsz->has_pk_bb_at_z_2h
+  +ptsz->has_pk_b_at_z_2h
   +ptsz->has_pk_em_at_z_1h
   +ptsz->has_pk_em_at_z_2h
   // +ptsz->has_bk_at_z_hf
@@ -14766,6 +14878,7 @@ if (ptsz->need_hmf){
      + ptsz->has_pk_gg_at_z_2h
      + ptsz->has_pk_bb_at_z_1h
      + ptsz->has_pk_bb_at_z_2h
+     + ptsz->has_pk_b_at_z_2h
      + ptsz->has_pk_em_at_z_1h
      + ptsz->has_pk_em_at_z_2h
      + ptsz->has_pk_HI_at_z_1h
@@ -14796,6 +14909,7 @@ if (ptsz->need_hmf){
    class_alloc(ptsz->pk_gg_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    class_alloc(ptsz->pk_bb_at_z_1h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    class_alloc(ptsz->pk_bb_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
+   class_alloc(ptsz->pk_b_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    class_alloc(ptsz->pk_em_at_z_1h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    class_alloc(ptsz->pk_em_at_z_2h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
    class_alloc(ptsz->pk_HI_at_z_1h,sizeof(double *)*ptsz->n_k_for_pk_hm,ptsz->error_message);
@@ -14808,6 +14922,7 @@ if (ptsz->need_hmf){
     ptsz->pk_gg_at_z_2h[i] = 0.;
     ptsz->pk_bb_at_z_1h[i] = 0.;
     ptsz->pk_bb_at_z_2h[i] = 0.;
+    ptsz->pk_b_at_z_2h[i] = 0.;
     ptsz->pk_em_at_z_1h[i] = 0.;
     ptsz->pk_em_at_z_2h[i] = 0.;
     ptsz->pk_HI_at_z_1h[i] = 0.;
@@ -15291,6 +15406,13 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
    ptsz->index_integrand_id_pk_bb_at_z_2h_last = ptsz->index_integrand_id_pk_bb_at_z_2h_first + ptsz->n_k_for_pk_hm - 1;
    last_index_integrand_id =  ptsz->index_integrand_id_pk_bb_at_z_2h_last;
  }
+
+ if(ptsz->has_pk_b_at_z_2h >= _TRUE_){
+ ptsz->index_integrand_id_pk_b_at_z_2h_first = last_index_integrand_id + 1;
+ ptsz->index_integrand_id_pk_b_at_z_2h_last = ptsz->index_integrand_id_pk_b_at_z_2h_first + ptsz->n_k_for_pk_hm - 1;
+ last_index_integrand_id =  ptsz->index_integrand_id_pk_b_at_z_2h_last;
+}
+
 
    if(ptsz->has_pk_em_at_z_1h+ptsz->has_pk_em_at_z_2h >= _TRUE_){
    ptsz->index_integrand_id_pk_em_at_z_1h_first = last_index_integrand_id + 1;

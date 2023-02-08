@@ -1853,6 +1853,18 @@ cdef class Class:
             cl['k'].append(self.tsz.k_for_pk_hm[index])
         return cl
 
+    def pk_b_at_z_2h(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of 3d P(k) bb power spectrum
+        """
+        cl = {}
+        cl['k'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.n_k_for_pk_hm):
+            cl['2h'].append(self.tsz.pk_b_at_z_2h[index])
+            cl['k'].append(self.tsz.k_for_pk_hm[index])
+        return cl
+
     def pk_bb_at_z_hm(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of 3d P(k) bb power spectrum
@@ -2250,6 +2262,10 @@ cdef class Class:
         #        tau_normalization =  self.ba.Omega0_b/self.tsz.Omega_m_0/self.tsz.mu_e*self.tsz.f_free
         #    elif (self.tsz.tau_profile == 1): # nfw case
         return tau_normalization*get_gas_density_profile_at_k_M_z(l_asked,m_asked,z_asked,&self.tsz)
+
+    def get_rho_2h_at_r_and_m_and_z(self,r_asked,m_asked,z_asked):
+        return get_rho_2h_at_r_and_m_and_z(r_asked,m_asked,z_asked,&self.tsz,&self.ba)
+
 
     def get_r_delta_of_m_delta_at_z(self,delta,m_delta,z):
         return (m_delta*3./4./np.pi/delta/self.get_rho_crit_at_z(z))**(1./3.)
