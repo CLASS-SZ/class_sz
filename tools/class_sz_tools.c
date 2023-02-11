@@ -4360,6 +4360,10 @@ double integrand_gas_pressure_profile_2h(double lnM_halo, void *p){
 
       // here we need to convert back to P rather than yl:
       double conv_pe_to_y;
+      // double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283./0.5176; //1./0.5176=1.932=(5Xh+3)/2(Xh+1) with Xh = 0.76 and Pth=1.932Pe
+      // (Xh is the primodial hydrogen mass fraction)
+      // more accurate version (see explanation below):
+      // in units of Mpc^-1*micro Kelvins
       double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283.2980000259841/0.5176*V->pba->T_cmb/2.725;
 
       conv_pe_to_y =  sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb // here Tcmb is in muK
