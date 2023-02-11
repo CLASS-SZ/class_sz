@@ -392,8 +392,10 @@ int pkl_to_knl (
 
 
 
-  int plc_gnfw (double * plc_gnfw_x,
+  int p_gnfw (double * p_gnfw_x,
                 double x ,
+                double kl,
+
                 double * pvectsz,
                 struct background * pba,
                 struct tszspectrum * ptsz);
@@ -512,7 +514,8 @@ double erf_compl_nicola(double y,
   int read_SO_noise(struct tszspectrum * ptsz);
 
 
-  int two_dim_ft_pressure_profile(struct tszspectrum * ptsz,
+  int two_dim_ft_pressure_profile(double kl,
+                                  struct tszspectrum * ptsz,
                                   struct background * pba,
                                   double * pvectsz,
                                   double * result) ;
@@ -522,7 +525,7 @@ double erf_compl_nicola(double y,
                               double * pvectsz,
                               double * result) ;
 
-double integrand_patterson_test(double logM, void *p);
+double integrand_mass(double logM, void *p);
 double integrand_sigma2_hsv(double lnk, void *p);
 double nl_fitting_function(double lnk,void *p);
 double Delta_c_of_Omega_m(double Omega_m);
@@ -597,12 +600,23 @@ double get_rho_2h_at_r_and_m_and_z(double r_asked,
                                    struct tszspectrum * ptsz,
                                    struct background * pba);
 
+double get_gas_pressure_2h_at_k_and_z(double k_asked,
+                                      double z_asked,
+                                      struct tszspectrum * ptsz);
+
+double get_gas_pressure_2h_at_r_and_m_and_z(double r_asked,
+                                            double m_asked,
+                                            double z_asked,
+                                            struct tszspectrum * ptsz,
+                                            struct background * pba);
+
+
 double get_gas_density_profile_at_k_M_z(double l_asked,
                                     double m_asked,
                                     double z_asked,
                                     struct tszspectrum * ptsz);
 
-double get_pressure_profile_at_l_M_z(double l_asked,
+double get_gas_pressure_profile_at_k_m_z(double l_asked,
                                     double m_asked,
                                     double z_asked,
                                     struct tszspectrum * ptsz);
@@ -646,6 +660,17 @@ int tabulate_gas_density_profile_2h(struct background * pba,
                                     struct tszspectrum * ptsz);
 
 int tabulate_gas_density_profile_2h_fft_at_z_and_r(struct background * pba,
+                                                   struct nonlinear * pnl,
+                                                   struct primordial * ppm,
+                                                   struct tszspectrum * ptsz);
+
+int tabulate_gas_pressure_profile_2h(struct background * pba,
+                                    struct nonlinear * pnl,
+                                    struct primordial * ppm,
+                                    struct perturbs * ppt,
+                                    struct tszspectrum * ptsz);
+
+int tabulate_gas_pressure_profile_2h_fft_at_z_and_r(struct background * pba,
                                                    struct nonlinear * pnl,
                                                    struct primordial * ppm,
                                                    struct tszspectrum * ptsz);

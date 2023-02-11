@@ -2267,6 +2267,20 @@ cdef class Class:
         return get_rho_2h_at_r_and_m_and_z(r_asked,m_asked,z_asked,&self.tsz,&self.ba)
 
 
+    def get_P_delta_at_m_and_z_b12(self,m_asked,z_asked):
+        # this is in ev/cm3, see https://arxiv.org/pdf/2202.02275.pdf
+        # return get_P_delta_at_m_and_z_b12(r_asked,m_asked,z_asked,&self.tsz,&self.ba)
+        r200c = self.get_r_delta_of_m_delta_at_z(200,m_asked,z_asked)
+        f_b =  self.get_f_b()
+        Eh = self.Hubble(z_asked)/self.Hubble(0)
+        P200 = m_asked/r200c*f_b*2.61051e-18*(100.*self.ba.h*Eh)**2.
+        return P200
+
+
+    def get_gas_pressure_2h_at_r_and_m_and_z(self,r_asked,m_asked,z_asked):
+        return get_gas_pressure_2h_at_r_and_m_and_z(r_asked,m_asked,z_asked,&self.tsz,&self.ba)
+
+
     def get_r_delta_of_m_delta_at_z(self,delta,m_delta,z):
         return (m_delta*3./4./np.pi/delta/self.get_rho_crit_at_z(z))**(1./3.)
 

@@ -639,11 +639,23 @@ cdef extern from "class.h":
                                                void * ptsz)
 
 
+    double get_P_delta_at_m_and_z_b12(double m_asked,
+                                       double z_asked,
+                                       void * ptsz,
+                                       void * pba)
+
     double get_rho_2h_at_r_and_m_and_z(double r_asked,
                                        double m_asked,
                                        double z_asked,
                                        void * ptsz,
                                        void * pba)
+
+    double get_gas_pressure_2h_at_r_and_m_and_z(double r_asked,
+                                                double m_asked,
+                                                double z_asked,
+                                                void * ptsz,
+                                                void * pba)
+
 
     double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
                                              double m_asked,

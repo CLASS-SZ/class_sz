@@ -43,6 +43,7 @@ int szpowerspectrum_init(
       + ptsz->has_pk_bb_at_z_1h
       + ptsz->has_pk_bb_at_z_2h
       + ptsz->has_pk_b_at_z_2h
+      + ptsz->has_gas_pressure_profile_2h
       + ptsz->has_pk_em_at_z_1h
       + ptsz->has_pk_em_at_z_2h
       + ptsz->has_pk_HI_at_z_1h
@@ -149,6 +150,7 @@ int szpowerspectrum_init(
       + ptsz->need_ng_bias;
   int electron_pressure_comps = ptsz->has_sz_ps
       + ptsz->has_mean_y
+      + ptsz->has_gas_pressure_profile_2h
       + ptsz->has_dydz
       + ptsz->has_sz_2halo
       + ptsz->has_sz_trispec
@@ -484,18 +486,18 @@ if (ptsz->sz_verbose>1)
 
 // printf("-> tabulating xout for Battaglia density profile %d.\n",ptsz->tabulate_rhob_xout_at_m_and_z);
 if (ptsz->has_electron_density == 1 || ptsz->tabulate_rhob_xout_at_m_and_z == 1){
-if (ptsz->use_xout_in_density_profile_from_enclosed_mass || ptsz->tabulate_rhob_xout_at_m_and_z){
-if (ptsz->sz_verbose>1)
-  printf("-> tabulating xout for Battaglia density profile.\n");
-tabulate_m_to_xout(pba,pnl,ppm,ptsz);
-if (ptsz->sz_verbose>1)
-  printf("-> xout for Battaglia density profile tabulated.\n");
+      if (ptsz->use_xout_in_density_profile_from_enclosed_mass || ptsz->tabulate_rhob_xout_at_m_and_z){
+      if (ptsz->sz_verbose>1)
+        printf("-> tabulating xout for Battaglia density profile.\n");
+      tabulate_m_to_xout(pba,pnl,ppm,ptsz);
+      if (ptsz->sz_verbose>1)
+        printf("-> xout for Battaglia density profile tabulated.\n");
 
-// test:
-// double xout_test = get_m_to_xout_at_z_and_m(5.22863,6.12609e11,ptsz);
-// printf("%.5e\n",xout_test);
-}
-}
+      // test:
+      // double xout_test = get_m_to_xout_at_z_and_m(5.22863,6.12609e11,ptsz);
+      // printf("%.5e\n",xout_test);
+      }
+  }
 
 
    // exit(0);
@@ -564,9 +566,9 @@ load_normalized_dndz(ptsz);
 //     }
 //unwise
 if(ptsz->galaxy_sample==1){
-  load_normalized_fdndz(ptsz);
-  load_normalized_cosmos_dndz(ptsz);
-}
+      load_normalized_fdndz(ptsz);
+      load_normalized_cosmos_dndz(ptsz);
+    }
 }
 
 if (ptsz->has_ngal_ngal_1h
@@ -653,11 +655,14 @@ if (ptsz->has_mean_galaxy_bias)
 {
   tabulate_mean_galaxy_bias(pba,pnl,ppm,ppt,ptsz);
 }
+
+
+// printf("-> start tabulation of gas pressure profile  444.\n");
  // tabulate density, only when requested (e.g., kSZ)
  tabulate_gas_density_profile(pba,ptsz);
 
 //  if (ptsz->check_consistency_conditions == 1){
-//  printf("checking normalization of profile\n");
+ // printf("checking normalization of profile\n");
 //  // the normalization of the profile should be m_delta in the limit k->0.
 //  result = get_gas_density_profile_at_k_M_z(k,m_asked,z_asked,ptsz);
 //
@@ -681,11 +686,14 @@ if (ptsz->has_mean_galaxy_bias)
 
  // tabulate pressure profile for gnFW
   // printf("tab \n");
+  // printf("-> start tabulation of gas pressure profile.\n");
+  // printf("electron_pressure_comps = %d\n",electron_pressure_comps);
 if (electron_pressure_comps != _FALSE_){
+  // printf("-> start tabulation of gas pressure profile.\n");
  if (ptsz->pressure_profile == 3)
- tabulate_pressure_profile_gNFW(pba,ptsz);
+ tabulate_gas_pressure_profile_gNFW(pba,ptsz);
  else if (ptsz->pressure_profile == 4)
- tabulate_pressure_profile_B12(pba,ptsz);
+ tabulate_gas_pressure_profile_B12(pba,ptsz);
 }
 
 
@@ -770,7 +778,29 @@ if (ptsz->has_n5k){
 
 }
 // exit(0);
+  // printf("-> start tabulation of gas pressure profile2h. %d\n",ptsz->has_gas_pressure_profile_2h);
+if (ptsz->has_gas_pressure_profile_2h){
+// printf("-> starting tabulation of pressure profile 2h\n");
 
+tabulate_gas_pressure_profile_2h(pba,pnl,ppm,ppt,ptsz);
+// double k_test = 0.36e-1;
+// double z_test = 1.51;
+// double rho_test = get_gas_pressure_2h_at_k_and_z(k_test,z_test,ptsz);
+// printf("k_test = %.3e, z_test = %.3e, rho_test = %.8e\n",
+//         k_test,z_test,rho_test);
+// printf("-> starting tabulation of pressure profile fft 2h\n");
+
+tabulate_gas_pressure_profile_2h_fft_at_z_and_r(pba,pnl,ppm,ptsz);
+
+
+// double r_test =  2.42013e-01;
+// double z_test = 1.20000e+00;
+// double m_test = 3.5e13;
+// double rho_test = get_gas_pressure_2h_at_r_and_m_and_z(r_test,m_test,z_test,ptsz,pba);
+// printf("r_test = %.5e, z_test = %.5e, rho_test = %.8e\n",
+//         r_test,z_test,rho_test);
+}
+// exit(0);
 
 if (ptsz->has_pk_b_at_z_2h){
 tabulate_gas_density_profile_2h(pba,pnl,ppm,ppt,ptsz);
@@ -1681,6 +1711,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_pk_bb_at_z_1h
       + ptsz->has_pk_bb_at_z_2h
       + ptsz->has_pk_b_at_z_2h
+      + ptsz->has_gas_pressure_profile_2h
       + ptsz->has_pk_em_at_z_1h
       + ptsz->has_pk_em_at_z_2h
       + ptsz->has_pk_HI_at_z_1h
@@ -1796,7 +1827,8 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
       + ptsz->has_tSZ_cib_2h
       + ptsz->has_tSZ_lens_1h
       + ptsz->has_tSZ_lens_2h
-      + ptsz->has_isw_tsz;
+      + ptsz->has_isw_tsz
+      + ptsz->has_gas_pressure_profile_2h;
 
 
   if (all_comps + mass_conversions == _FALSE_){
@@ -2287,28 +2319,38 @@ free(ptsz->array_ln_ng_bias_at_z_and_k);
 
 
 if (electron_pressure_comps != _FALSE_){
-if (ptsz->sz_verbose>10) printf("-> freeing pressure.\n");
-if (ptsz->pressure_profile == 3){
-   free(ptsz->array_profile_ln_l_over_ls);
-   free(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls);
-   }
+    if (ptsz->sz_verbose>5) printf("-> freeing pressure.\n");
+    if (ptsz->pressure_profile == 3){
+       free(ptsz->array_profile_ln_l_over_ls);
+       free(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls);
+       }
 
-if(ptsz->pressure_profile == 4){
-  free(ptsz->array_pressure_profile_ln_l);
-  free(ptsz->array_pressure_profile_ln_m);
-  free(ptsz->array_pressure_profile_ln_1pz);
+    if(ptsz->pressure_profile == 4){
+      if (ptsz->sz_verbose>5) printf("-> freeing pressure B12.\n");
+      free(ptsz->array_pressure_profile_ln_k);
+      free(ptsz->array_pressure_profile_ln_m);
+      free(ptsz->array_pressure_profile_ln_1pz);
 
- int n_ell = ptsz->n_ell_pressure_profile; //hard coded
- int index_l;
-for (index_l=0;
-     index_l<n_ell;
-     index_l++)
-{
-  free(ptsz->array_pressure_profile_ln_p_at_lnl_lnM_z[index_l]);
-}
+       int n_k = ptsz->n_k_pressure_profile; //hard coded
+       int index_k;
+      for (index_k=0;
+           index_k<n_k;
+           index_k++)
+        {
+          free(ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k]);
+        }
 
-}
-}
+      free(ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z);
+
+      }
+
+    if (ptsz->has_gas_pressure_profile_2h){
+      free(ptsz->array_pressure_profile_ln_r);
+      free(ptsz->array_pressure_profile_2h_ln_k);
+      free(ptsz->array_pressure_profile_ln_pressure_2h_at_k_and_z);
+      free(ptsz->array_pressure_profile_pressure_2h_at_r_and_z);
+    }
+  }
 
 if (ptsz->sz_verbose>10) printf("-> freeing miscellaneous.\n");
 
@@ -2416,6 +2458,7 @@ if (ptsz->has_kSZ_kSZ_gal_1h_fft
    || ptsz->has_kSZ_kSZ_lens_covmat
    || ptsz->convert_cls_to_gamma
    || ptsz->has_pk_b_at_z_2h
+   || ptsz->has_gas_pressure_profile_2h
    || ptsz->has_n5k){
   fftw_destroy_plan(ptsz->forward_plan);
   fftw_destroy_plan(ptsz->reverse_plan);
@@ -5030,6 +5073,14 @@ double integrand_at_m_and_z(double logM,
    // double z = pvectsz[ptsz->index_z];
    double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
    double kl;
+
+   double kl1;
+   double kl2;
+   double kl3;
+   double l1 = ptsz->ell[index_l];
+   double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
+   double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
+
    if (_pk_at_z_1h_
     || _pk_gg_at_z_1h_
     || _pk_at_z_2h_
@@ -5053,6 +5104,9 @@ double integrand_at_m_and_z(double logM,
       }
    else{
      kl = (ptsz->ell[index_l]+0.5)/d_A;
+     kl1 = (l1+0.5)/d_A;
+     kl2 = (l2+0.5)/d_A;
+     kl3 = (l3+0.5)/d_A;
     }
 
 
@@ -5134,8 +5188,8 @@ double damping_1h_term;
 
 
    else if (_mean_y_){
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
-     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+     // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+     evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
      pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
                                        pvectsz[ptsz->index_hmf]
@@ -5164,9 +5218,9 @@ double damping_1h_term;
 
    else if (_tSZ_power_spectrum_){
 
-      pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+      // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
 
-      evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+      evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
       double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
          pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                            *pvectsz[ptsz->index_completeness]
@@ -5183,14 +5237,14 @@ double damping_1h_term;
 
 
    else if (_trispectrum_){
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
-     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+     // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+     evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
 
 
      int index_l_prime = (int) pvectsz[ptsz->index_multipole_prime];
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l_prime];
-     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+     // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l_prime];
+     evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell_prime = pvectsz[ptsz->index_pressure_profile];
 
      pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_hmf]
@@ -5200,8 +5254,8 @@ double damping_1h_term;
  }
 
  else if (_2halo_){
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
-     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+     // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+     evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
      evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
      //this integrand is squared afterward
@@ -5212,8 +5266,8 @@ double damping_1h_term;
  }
 
  else if  (_te_y_y_){
-        pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
-        evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+        // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+        evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
         double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
         //int index_l = (int) pvectsz[ptsz->index_multipole];
         evaluate_temperature_mass_relation(pvecback,pvectsz,pba,ptsz);
@@ -5230,8 +5284,8 @@ double damping_1h_term;
 
           //int index_l = (int) pvectsz[ptsz->index_multipole];
            //evaluate_temperature_mass_relation(pvecback,pvectsz,pba,ptsz);
-           pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
-           evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+           // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+           evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
            double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
            pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
                                              pvectsz[ptsz->index_mass_for_hmf]
@@ -5242,8 +5296,8 @@ double damping_1h_term;
                                              *damping_1h_term;
         }
  else if  (_m_y_y_2h_){
-         pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
-         evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+         // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+         evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
          double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
 
 
@@ -5260,8 +5314,8 @@ double damping_1h_term;
 
         }
  else if  (_cov_Y_N_){
-           pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
-           evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+           // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+           evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
            double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
 
            pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
@@ -5328,8 +5382,8 @@ double damping_1h_term;
                                            }
 
            if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
-         pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
-         evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+         // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+         evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
          double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
 
            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
@@ -5343,8 +5397,8 @@ double damping_1h_term;
                                            }
         }
  else if  (_cov_Y_Y_ssc_){
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+   evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
 
            if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
@@ -5374,10 +5428,10 @@ double damping_1h_term;
         }
 
  else if (_kSZ_kSZ_1h_){
-   int index_l = (int) pvectsz[ptsz->index_multipole];
-   double l1 = ptsz->ell[index_l];
+   // int index_l = (int) pvectsz[ptsz->index_multipole];
+   // double l1 = ptsz->ell[index_l];
 
-   evaluate_tau_profile((l1+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+   evaluate_tau_profile(kl,pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
 
    pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_hmf]
@@ -5385,10 +5439,10 @@ double damping_1h_term;
                                     *tau_profile_at_ell_1;
   }
  else if (_kSZ_kSZ_2h_){
-   int index_l = (int) pvectsz[ptsz->index_multipole];
-   double l1 = ptsz->ell[index_l];
+   // int index_l = (int) pvectsz[ptsz->index_multipole];
+   // double l1 = ptsz->ell[index_l];
    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
-   evaluate_tau_profile((l1+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+   evaluate_tau_profile(kl,pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
 
    pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_hmf]
@@ -5398,21 +5452,22 @@ double damping_1h_term;
 
 
  else if (_tSZ_tSZ_tSZ_1halo_){
-   int index_l = (int) pvectsz[ptsz->index_multipole];
-   double l1 = ptsz->ell[index_l];
-   double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
-   double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
+   // int index_l = (int) pvectsz[ptsz->index_multipole];
+   // double l1 = ptsz->ell[index_l];
+   // double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
+   // double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
 
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;
+   // double kl1 =
+   evaluate_pressure_profile(kl1,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell_1 = pvectsz[ptsz->index_pressure_profile];
 
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = l2;
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] = l2;
+   evaluate_pressure_profile(kl2,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
 
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = l3;
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] = l3;
+   evaluate_pressure_profile(kl3,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell_3 = pvectsz[ptsz->index_pressure_profile];
 
        pvectsz[ptsz->index_integrand] =  //pvectsz[ptsz->index_chi2]
@@ -5431,19 +5486,19 @@ double damping_1h_term;
 
 
  else if (_tSZ_tSZ_tSZ_2h_){
-   int index_l = (int) pvectsz[ptsz->index_multipole];
-   double l1 = ptsz->ell[index_l];
-   double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
-   double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
+   // int index_l = (int) pvectsz[ptsz->index_multipole];
+   // double l1 = ptsz->ell[index_l];
+   // double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
+   // double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
 
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;
+   evaluate_pressure_profile(kl1,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell_1 = pvectsz[ptsz->index_pressure_profile];
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = l2;
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] = l2;
+   evaluate_pressure_profile(kl2,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = l3;
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] = l3;
+   evaluate_pressure_profile(kl3,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell_3 = pvectsz[ptsz->index_pressure_profile];
 
    evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
@@ -5493,18 +5548,18 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
    else if (_tSZ_tSZ_tSZ_3h_){
      int index_l = (int) pvectsz[ptsz->index_multipole];
-     double l1 = ptsz->ell[index_l];
-     double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
-     double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
+     // double l1 = ptsz->ell[index_l];
+     // double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
+     // double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
 
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;
-     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+     // pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;
+     evaluate_pressure_profile(kl1,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell_1 = pvectsz[ptsz->index_pressure_profile];
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = l2;
-     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+     // pvectsz[ptsz->index_multipole_for_pressure_profile] = l2;
+     evaluate_pressure_profile(kl2,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = l3;
-     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+     // pvectsz[ptsz->index_multipole_for_pressure_profile] = l3;
+     evaluate_pressure_profile(kl3,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell_3 = pvectsz[ptsz->index_pressure_profile];
 
 
@@ -5556,19 +5611,19 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
 
  else if (_kSZ_kSZ_tSZ_1h_){
-   int index_l = (int) pvectsz[ptsz->index_multipole];
-   double l1 = ptsz->ell[index_l];
-   double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
-   double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
+   // int index_l = (int) pvectsz[ptsz->index_multipole];
+   // double l1 = ptsz->ell[index_l];
+   // double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
+   // double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
 
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;//the actual multipole
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;//the actual multipole
+   evaluate_pressure_profile(kl1,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell_1 = pvectsz[ptsz->index_pressure_profile];
 
-   evaluate_tau_profile((l2+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+   evaluate_tau_profile(kl2,pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
 
-   evaluate_tau_profile((l3+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+   evaluate_tau_profile(kl3,pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_3 = pvectsz[ptsz->index_tau_profile];
 
        pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
@@ -5578,26 +5633,26 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
   }
 
  else if (_kSZ_kSZ_tSZ_2h_){
-   int index_l = (int) pvectsz[ptsz->index_multipole];
-   double l1 = ptsz->ell[index_l];
-   double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
-   double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
+   // int index_l = (int) pvectsz[ptsz->index_multipole];
+   // double l1 = ptsz->ell[index_l];
+   // double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
+   // double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
 
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;
+   evaluate_pressure_profile(kl1,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell_1 = pvectsz[ptsz->index_pressure_profile];
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = l2;
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] = l2;
+   evaluate_pressure_profile(kl2,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
-   pvectsz[ptsz->index_multipole_for_pressure_profile] = l3;
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] = l3;
+   evaluate_pressure_profile(kl3,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell_3 = pvectsz[ptsz->index_pressure_profile];
 
-   evaluate_tau_profile((l1+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+   evaluate_tau_profile(kl1,pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
-   evaluate_tau_profile((l2+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+   evaluate_tau_profile(kl2,pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
-   evaluate_tau_profile((l3+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+   evaluate_tau_profile(kl3,pvecback,pvectsz,pba,ptsz);
    double tau_profile_at_ell_3 = pvectsz[ptsz->index_tau_profile];
 
 
@@ -5649,26 +5704,26 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
 
    else if (_kSZ_kSZ_tSZ_3h_){
-     int index_l = (int) pvectsz[ptsz->index_multipole];
-     double l1 = ptsz->ell[index_l];
-     double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
-     double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
+     // int index_l = (int) pvectsz[ptsz->index_multipole];
+     // double l1 = ptsz->ell[index_l];
+     // double l2 = ptsz->bispectrum_lambda_k2*ptsz->ell[index_l];
+     // double l3 = ptsz->bispectrum_lambda_k3*ptsz->ell[index_l];
 
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;
-     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+     // pvectsz[ptsz->index_multipole_for_pressure_profile] = l1;
+     evaluate_pressure_profile(kl1,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell_1 = pvectsz[ptsz->index_pressure_profile];
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = l2;
-     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+     // pvectsz[ptsz->index_multipole_for_pressure_profile] = l2;
+     evaluate_pressure_profile(kl2,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = l3;
-     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+     // pvectsz[ptsz->index_multipole_for_pressure_profile] = l3;
+     evaluate_pressure_profile(kl3,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell_3 = pvectsz[ptsz->index_pressure_profile];
 
-     evaluate_tau_profile((l1+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+     evaluate_tau_profile(kl1,pvecback,pvectsz,pba,ptsz);
      double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
-     evaluate_tau_profile((l2+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+     evaluate_tau_profile(kl2,pvecback,pvectsz,pba,ptsz);
      double tau_profile_at_ell_2 = pvectsz[ptsz->index_tau_profile];
-     evaluate_tau_profile((l3+0.5)/chi,pvecback,pvectsz,pba,ptsz);
+     evaluate_tau_profile(kl3,pvecback,pvectsz,pba,ptsz);
      double tau_profile_at_ell_3 = pvectsz[ptsz->index_tau_profile];
 
 
@@ -6512,9 +6567,9 @@ pvectsz[ptsz->index_integrand] *= flag_conf;
 
  else if (_tSZ_lensmag_1h_){
 
-   int index_l = (int) pvectsz[ptsz->index_multipole];
-   pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
-   evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+   // int index_l = (int) pvectsz[ptsz->index_multipole];
+   // pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
+   evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
    double pressure_profile_at_ell_1 = pvectsz[ptsz->index_pressure_profile];
 
    // pvectsz[ptsz->index_multipole_for_lensing_profile] = ptsz->ell[index_l];
@@ -6534,9 +6589,9 @@ pvectsz[ptsz->index_integrand] *= flag_conf;
              if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
 
              evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
-             int index_l = (int) pvectsz[ptsz->index_multipole];
-             pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
-             evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+             // int index_l = (int) pvectsz[ptsz->index_multipole];
+             // pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
+             evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
 
              pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                                *pvectsz[ptsz->index_pressure_profile]
@@ -7458,8 +7513,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
     pvectsz[ptsz->index_multipole_for_cib_profile] = ptsz->ell[index_l];
     evaluate_cib_profile(m_delta_cib,r_delta_cib,c_delta_cib,pvecback,pvectsz,pba,ptsz);
     double cib_profile_at_ell_1 = pvectsz[ptsz->index_cib_profile];
-    pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
-    evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+    // pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
+    evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
     double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
 
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
@@ -7474,9 +7529,9 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
              evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
 
-             int index_l = (int) pvectsz[ptsz->index_multipole];
-             pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
-             evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+             // int index_l = (int) pvectsz[ptsz->index_multipole];
+             // pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
+             evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
 
              pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                                *pvectsz[ptsz->index_pressure_profile]
@@ -7606,12 +7661,12 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
   else if (_tSZ_gal_1h_){
 
-    int index_l = (int) pvectsz[ptsz->index_multipole];
-    pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l];
+    // int index_l = (int) pvectsz[ptsz->index_multipole];
+    // pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l];
     evaluate_galaxy_profile_2h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
     double galaxy_profile_at_ell_1 = pvectsz[ptsz->index_galaxy_profile];
-    pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
-    evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+    // pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
+    evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
 
     double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
 
@@ -7629,9 +7684,9 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
              if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
 
              evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
-             int index_l = (int) pvectsz[ptsz->index_multipole];
-             pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
-             evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+             // int index_l = (int) pvectsz[ptsz->index_multipole];
+             // pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
+             evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
 
              pvectsz[ptsz->index_integrand] =   pvectsz[ptsz->index_hmf]
                                                *pvectsz[ptsz->index_dlnMdeltadlnM]
@@ -7643,8 +7698,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
              if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
              evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
-             int index_l = (int) pvectsz[ptsz->index_multipole];
-             pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l];
+             // int index_l = (int) pvectsz[ptsz->index_multipole];
+             // pvectsz[ptsz->index_multipole_for_galaxy_profile] = ptsz->ell[index_l];
              evaluate_galaxy_profile_2h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
 
              pvectsz[ptsz->index_integrand] =   pvectsz[ptsz->index_hmf]
@@ -7690,12 +7745,12 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
   else if (_tSZ_lens_1h_){
 
-    int index_l = (int) pvectsz[ptsz->index_multipole];
+    // int index_l = (int) pvectsz[ptsz->index_multipole];
     // pvectsz[ptsz->index_multipole_for_lensing_profile] = ptsz->ell[index_l];
     evaluate_lensing_profile(kl,m_delta_lensing,r_delta_lensing,c_delta_lensing,pvecback,pvectsz,pba,ptsz);
     double lensing_profile_at_ell_1 = pvectsz[ptsz->index_lensing_profile];
-    pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
-    evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+    // pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
+    evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
     double pressure_profile_at_ell_2 = pvectsz[ptsz->index_pressure_profile];
 
         pvectsz[ptsz->index_integrand] =
@@ -7713,9 +7768,9 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
              if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
 
              evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
-             int index_l = (int) pvectsz[ptsz->index_multipole];
-             pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
-             evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+             // int index_l = (int) pvectsz[ptsz->index_multipole];
+             // pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
+             evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
 
              pvectsz[ptsz->index_integrand] =   pvectsz[ptsz->index_hmf]
                                                *pvectsz[ptsz->index_dlnMdeltadlnM]
@@ -7744,8 +7799,8 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
 
    else if (_isw_tsz_){
-     pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
-     evaluate_pressure_profile(pvecback,pvectsz,pba,ptsz);
+     // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
+     evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
      evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
      pvectsz[ptsz->index_integrand] =
@@ -8148,12 +8203,14 @@ int evaluate_lensing_profile(double kl,
    return _SUCCESS_;
 }
 
-int evaluate_pressure_profile(double * pvecback,
+int evaluate_pressure_profile(double kl,
+                              double * pvecback,
                               double * pvectsz,
                               struct background * pba,
                               struct tszspectrum * ptsz)
 {
   double z = pvectsz[ptsz->index_z];
+  double chi =  sqrt(pvectsz[ptsz->index_chi2]);
    //Fourier tranform
    //of the  pressure profile
 
@@ -8176,51 +8233,59 @@ int evaluate_pressure_profile(double * pvecback,
    if (ptsz->pressure_profile == 4 ){
 
          double m_asked = pvectsz[ptsz->index_m200c];
-         double l_asked = pvectsz[ptsz->index_multipole_for_pressure_profile];
+         double k_asked = kl*(1.+z)*pvectsz[ptsz->index_r200c]; // this is (l+1/2)/l200c
          // double m_asked = pvectsz[ptsz->index_m200m]; // in Msun/h
          double z_asked = pvectsz[ptsz->index_z];
 
 
-         if(log(l_asked)<ptsz->array_pressure_profile_ln_l[0] || _mean_y_ || _dydz_){
-           result = get_pressure_profile_at_l_M_z(exp(ptsz->array_pressure_profile_ln_l[0]),m_asked,z_asked,ptsz);
+         if( (log(k_asked)<ptsz->array_pressure_profile_ln_k[0]) || _mean_y_ || _dydz_){ // get large scale limit
+           result = get_gas_pressure_profile_at_k_m_z(exp(ptsz->array_pressure_profile_ln_k[0]),m_asked,z_asked,ptsz);
          }
+         // else if(log(k_asked)<ptsz->array_pressure_profile_ln_k[0]){
+         //   // also large scale limit in this case
+         //   result = get_gas_pressure_profile_at_k_m_z(exp(ptsz->array_pressure_profile_ln_k[0]),m_asked,z_asked,ptsz);
+         // }
          else{
-           double result_tabulated = get_pressure_profile_at_l_M_z(l_asked,m_asked,z_asked,ptsz);
+           double result_tabulated = get_gas_pressure_profile_at_k_m_z(k_asked,m_asked,z_asked,ptsz);
            result = result_tabulated;
          }
          // printf("%.7e %.7e %.7e\n",result,result_tabulated,m_asked);
 
    }
-   //custom gNFW pressure profile
+   //custom gNFW pressure profile at 500c
    else if(ptsz->pressure_profile == 3){
-    // double l_delta = 0.;
-   if (ptsz->mass_dependent_bias == 1 && ptsz->delta_def_electron_pressure == 2){
-      ptsz->HSEbias = 1./(0.8/(1.+ ptsz->Ap*pow(pvectsz[ptsz->index_m500]/3.e14,ptsz->alpha_b)));
-  //m500 X-ray for the pressure profiles A10 and P13
-   pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m500c]/ptsz->HSEbias;
-   // printf("m500 = %.3e\n",pvectsz[ptsz->index_m500]);
-   //r500 X-ray for the pressure profiles A10 and P13
-   pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
-   // printf("r500 = %.3e\n",pvectsz[ptsz->index_r500]);
-   pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
-   // l_delta = pvectsz[ptsz->index_l500];
- }
- else if (ptsz->delta_def_electron_pressure == 1){ // 200c
-   pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m200c];
-   // printf("m500 = %.3e\n",pvectsz[ptsz->index_m500]);
-   //r500 X-ray for the pressure profiles A10 and P13
-   pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
-   // printf("r500 = %.3e\n",pvectsz[ptsz->index_r500]);
-   pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
- }
- else{
-   printf("This delta definition for electron pressure is not implemented yet.\n");
-   exit(0);
- }
 
-      lnx_asked = log((pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500]);
+     // printf("ptsz->delta_def_electron_pressure = %d\n",ptsz->delta_def_electron_pressure);
+          // double l_delta = 0.;
+       if ( ptsz->delta_def_electron_pressure == 2){
+         if (ptsz->mass_dependent_bias == 1)
+            ptsz->HSEbias = 1./(0.8/(1.+ ptsz->Ap*pow(pvectsz[ptsz->index_m500]/3.e14,ptsz->alpha_b)));
+        //m500 X-ray for the pressure profiles A10 and P13
+         pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m500c]/ptsz->HSEbias;
+         // printf("m500 = %.3e\n",pvectsz[ptsz->index_m500]);
+         //r500 X-ray for the pressure profiles A10 and P13
+         pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+         // printf("r500 = %.3e\n",pvectsz[ptsz->index_r500]);
+         pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
+         // l_delta = pvectsz[ptsz->index_l500];
+       }
+       else if (ptsz->delta_def_electron_pressure == 1){ // 200c
+         pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m200c];
+         // printf("m500 = %.3e\n",pvectsz[ptsz->index_m500]);
+         //r500 X-ray for the pressure profiles A10 and P13
+         pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+         // printf("r500 = %.3e\n",pvectsz[ptsz->index_r500]);
+         pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
+       }
+       else{
+         printf("This delta definition for electron pressure is not implemented yet.\n");
+         exit(0);
+       }
 
-      if(lnx_asked<ptsz->array_profile_ln_l_over_ls[0] || _mean_y_ || _dydz_)
+      // lnx_asked = log(kl*chi/pvectsz[ptsz->index_l500]);
+      lnx_asked = log(kl*(1.+z)*pvectsz[ptsz->index_r500]);
+
+      if(lnx_asked<ptsz->array_profile_ln_l_over_ls[0] || _mean_y_ || _dydz_) // large scale limit
          result = ptsz->array_profile_ln_PgNFW_at_lnl_over_ls[0];
       else if (lnx_asked>ptsz->array_profile_ln_l_over_ls[ptsz->array_profile_ln_PgNFW_at_lnl_over_ls_size-1])
          result = -100.;
@@ -8252,7 +8317,8 @@ int evaluate_pressure_profile(double * pvecback,
    pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
 
 
-      lnx_asked = log((pvectsz[ptsz->index_multipole_for_pressure_profile]+0.5)/pvectsz[ptsz->index_l500]);
+      // lnx_asked = log(kl*chi/pvectsz[ptsz->index_l500]);
+      lnx_asked = log(kl*(1.+z)*pvectsz[ptsz->index_r500]);
       if(lnx_asked<ptsz->PP_lnx[0] || _mean_y_ || _dydz_)
          result = ptsz->PP_lnI[0];
       else if (lnx_asked>ptsz->PP_lnx[ptsz->PP_lnx_size-1])
@@ -14347,6 +14413,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
   ||  ptsz->has_kSZ_kSZ_lens_covmat
   ||  ptsz->convert_cls_to_gamma
   ||  ptsz->has_pk_b_at_z_2h
+  ||  ptsz->has_gas_pressure_profile_2h
   ||  ptsz->has_n5k){
     if(ptsz->sz_verbose>1) printf("constructing fftw plan\n");
     // ptsz->N_samp_fftw = 100;

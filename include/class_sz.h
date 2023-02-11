@@ -424,6 +424,10 @@ struct tszspectrum {
   int index_integrand_id_pk_bb_at_z_2h_first;
   int index_integrand_id_pk_bb_at_z_2h_last;
 
+
+  int has_gas_pressure_profile_2h;
+  int has_gas_density_profile_2h;
+
   int has_pk_b_at_z_2h;
   int index_md_pk_b_at_z_2h;
   int index_integrand_id_pk_b_at_z_2h_first;
@@ -1707,6 +1711,7 @@ double * steps_m;
   double * array_profile_ln_rho_2h_at_k_and_z;
   double * array_profile_rho_2h_at_r_and_z;
 
+
   double * array_m_m200m_to_m200c;
   double * array_ln_1pz_m200m_to_m200c;
   double * array_m200m_to_m200c_at_z_and_M;
@@ -1730,10 +1735,14 @@ double * steps_m;
   double * array_ln_1pz_m500c_to_m200c;
   double * array_m500c_to_m200c_at_z_and_M;
 
-  double ** array_pressure_profile_ln_p_at_lnl_lnM_z;
-  double * array_pressure_profile_ln_l;
+  double ** array_pressure_profile_ln_p_at_lnk_lnm_z;
+  double * array_pressure_profile_ln_k;
+  double * array_pressure_profile_2h_ln_k;
+  double * array_pressure_profile_ln_r;
   double * array_pressure_profile_ln_m;
   double * array_pressure_profile_ln_1pz;
+  double * array_pressure_profile_ln_pressure_2h_at_k_and_z;
+  double * array_pressure_profile_pressure_2h_at_r_and_z;
 
   double ** array_profile_ln_rho_at_lnk_lnM_z;
   double * array_profile_ln_r;
@@ -1950,7 +1959,8 @@ int szpowerspectrum_init(struct background * pba,
                             struct background * pba,
                             struct tszspectrum * ptsz);
 
-  int evaluate_pressure_profile(double * pvecback,
+  int evaluate_pressure_profile(double kl,
+                                double * pvecback,
                                 double * pvectsz,
                                 struct background * pba,
                                 struct tszspectrum * ptsz);
@@ -2109,7 +2119,7 @@ int evaluate_sigma2_hsv(double * pvecback,
                          struct nonlinear * pnl,
                          struct tszspectrum * ptsz);
 
-double integrand_patterson_test(double xi, void *p);
+double integrand_mass(double xi, void *p);
 
 
 int write_redshift_dependent_quantities(struct background * pba,
@@ -2124,10 +2134,10 @@ int write_redshift_dependent_quantities(struct background * pba,
 
 
 
-int tabulate_pressure_profile_gNFW(struct background * pba,
+int tabulate_gas_pressure_profile_gNFW(struct background * pba,
                                    struct tszspectrum * ptsz);
 
-int tabulate_pressure_profile_B12(struct background * pba,
+int tabulate_gas_pressure_profile_B12(struct background * pba,
                                   struct tszspectrum * ptsz);
 
 double evaluate_mean_galaxy_number_density_at_z(double z,
@@ -2590,6 +2600,20 @@ struct Parameters_for_integrand_gas_density_profile_2h{
   double z;
   double k;
 };
+
+
+struct Parameters_for_integrand_gas_pressure_profile_2h{
+  struct nonlinear * pnl;
+  struct primordial * ppm;
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  struct perturbs * ppt;
+  double * pvecback;
+  double * pvectsz;
+  double z;
+  double k;
+};
+
 
 struct Parameters_for_integrand_kSZ2_X_at_theta{
 struct nonlinear * pnl;
