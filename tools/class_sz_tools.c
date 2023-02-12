@@ -4676,7 +4676,7 @@ int number_of_threads= 1;
 
 #pragma omp parallel \
 shared(abort,\
-ptsz,pba,ppm,pnl,ptsz)\
+ptsz,pba,ppm,pnl)\
 private(tstart, tstop,index_z) \
 num_threads(number_of_threads)
 {
@@ -6119,8 +6119,7 @@ int two_dim_ft_pressure_profile(double kl,
                           ) {
 
 
-  //GSL
-  // QAWO
+
 
   double xin = ptsz->x_inSZ;
   double xout = 0.;
@@ -6138,6 +6137,9 @@ else{
     xout = ptsz->x_outSZ; // in all other cases the truncation radius is in multiples of rs=r_delta/c_delta
     }
 
+
+  //GSL
+  // QAWO --> START
   double delta_l = xout - xin;
 
   gsl_integration_workspace * w;
@@ -6180,6 +6182,12 @@ else{
 
   gsl_integration_qawo_table_free(wf);
   gsl_integration_workspace_free(w);
+
+  // GSL
+  // QAWO --> END
+
+  // FFTLog
+
 
   return _SUCCESS_;
 

@@ -24,6 +24,14 @@ from scipy import interpolate
 from scipy import integrate
 from scipy.interpolate import InterpolatedUnivariateSpline as _spline
 
+# testing stuffsL: BB
+# import tensorflow as tf
+# import cosmopower
+# path_to_cosmopower_organization = '/Users/boris/Work/CLASS-SZ/SO-SZ/cosmopower-organization'
+# path_to_emulators = path_to_cosmopower_organization + 'lcdm/'
+# from mcfit import P2xi
+
+
 
 
 
