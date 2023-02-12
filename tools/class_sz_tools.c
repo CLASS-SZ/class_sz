@@ -4540,7 +4540,7 @@ int number_of_threads= 1;
 
 #pragma omp parallel \
 shared(abort,\
-ptsz,pba,ppm,pnl,ptsz)\
+ptsz,pba,ppm,pnl)\
 private(tstart, tstop,index_z) \
 num_threads(number_of_threads)
 {
