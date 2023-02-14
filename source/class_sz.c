@@ -8617,6 +8617,7 @@ double get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(double x,
 double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double x,
                                                       double z,
                                                       double m,
+                                                      double delta,
                                                       struct background * pba,
                                                       struct tszspectrum * ptsz){
 
@@ -8649,7 +8650,7 @@ double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double x,
                   *pvecback[pba->index_bg_rho_crit]
                   /pow(pba->h,2);
 
-  double r500c =  pow(3.*m/(4.*_PI_*500.*rho_crit),1./3.);
+  double r500c =  pow(3.*m/(4.*_PI_*delta*rho_crit),1./3.);
 
   double Eh = pvecback[pba->index_bg_H]/pba->H0;
 
@@ -8663,7 +8664,7 @@ double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double x,
   // hasselfield et al 2013:
    double C_pressure = 1.65*pow(pba->h/0.7,2)
                        *pow(Eh,8./3.)
-                       *pow(m/(3.e14*0.7),2./3.);
+                       *pow(m/(3.e14*0.7),2./3.+ptsz->alpha_p);
                        // *pow(m/(3.e14*0.7),0.22/(1.+8.*pow(x,3.))); hasselfield et al has this part!
 
 

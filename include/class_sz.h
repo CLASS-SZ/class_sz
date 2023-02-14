@@ -2559,6 +2559,7 @@ double get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(double z,
 double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double z,
                                                       double m,
                                                       double x,
+                                                      double d,
                                                       struct background * pba,
                                                       struct tszspectrum * ptsz);
 

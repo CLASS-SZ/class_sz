@@ -789,6 +789,7 @@ cdef extern from "class.h":
     double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double z,
                                                            double m,
                                                            double x,
+                                                           double d,
                                                            void * pba,
                                                            void * ptsz)
 
