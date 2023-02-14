@@ -2728,7 +2728,7 @@ cdef class Class:
     def get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(self,z,m,x):
         return get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(z,m,x,&self.ba,&self.tsz)
 
-    def get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(self,z,m,d,x):
+    def get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(self,z,m,x,d):
         return get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(z,m,x,d,&self.ba,&self.tsz)
 
     def szunbinned_loglike(self):
