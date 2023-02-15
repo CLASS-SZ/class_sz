@@ -486,7 +486,52 @@ cdef class Class:
         for k,v in pdict_to_update.items():
           if k == 'fNL':
             self.tsz.fNL = pdict_to_update['fNL']
-
+          if k == 'A_rho0':
+            self.tsz.A_rho0 = pdict_to_update['A_rho0']
+          if k == 'A_alpha':
+            self.tsz.A_alpha = pdict_to_update['A_alpha']
+          if k == 'A_beta':
+              self.tsz.A_beta = pdict_to_update['A_beta']
+          if k == 'alpha_m_rho0':
+            self.tsz.alpha_m_rho0 = pdict_to_update['alpha_m_rho0']
+          if k == 'alpha_m_alpha':
+            self.tsz.alpha_m_alpha = pdict_to_update['alpha_m_alpha']
+          if k == 'alpha_m_beta':
+              self.tsz.alpha_m_beta = pdict_to_update['alpha_m_beta']
+          if k == 'alpha_z_rho0':
+            self.tsz.alpha_z_rho0 = pdict_to_update['alpha_z_rho0']
+          if k == 'alpha_z_alpha':
+            self.tsz.alpha_z_alpha = pdict_to_update['alpha_z_alpha']
+          if k == 'alpha_z_beta':
+              self.tsz.alpha_z_beta = pdict_to_update['alpha_z_beta']
+          if k == 'gamma_B16':
+              self.tsz.gamma_B16 = pdict_to_update['gamma_B16']
+          if k == 'xc_B16':
+              self.tsz.xc_B16 = pdict_to_update['xc_B16']
+          if k == 'P0_B12':
+              self.tsz.P0_B12 = pdict_to_update['P0_B12']
+          if k == 'beta_B12':
+              self.tsz.beta_B12 = pdict_to_update['beta_B12']
+          if k == 'alpha_B12':
+              self.tsz.alpha_B12 = pdict_to_update['alpha_B12']
+          if k == 'gamma_B12':
+              self.tsz.gamma_B12 = pdict_to_update['gamma_B12']
+          if k == 'xc_B12':
+              self.tsz.xc_B12 = pdict_to_update['xc_B12']
+          if k == 'alpha_m_P0_B12':
+              self.tsz.alpha_m_P0_B12 = pdict_to_update['alpha_m_P0_B12']
+          if k == 'alpha_m_xc_B12':
+              self.tsz.alpha_m_xc_B12 = pdict_to_update['alpha_m_xc_B12']
+          if k == 'alpha_m_beta_B12':
+              self.tsz.alpha_m_beta_B12 = pdict_to_update['alpha_m_beta_B12']
+          if k == 'alpha_z_P0_B12':
+              self.tsz.alpha_z_P0_B12 = pdict_to_update['alpha_z_P0_B12']
+          if k == 'alpha_z_xc_B12':
+              self.tsz.alpha_z_xc_B12 = pdict_to_update['alpha_z_xc_B12']
+          if k == 'alpha_z_beta_B12':
+              self.tsz.alpha_z_beta_B12 = pdict_to_update['alpha_z_beta_B12']
+          if k == 'x_outSZ':
+              self.tsz.x_outSZ = pdict_to_update['x_outSZ']
         if szpowerspectrum_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
         &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
             self.struct_cleanup()

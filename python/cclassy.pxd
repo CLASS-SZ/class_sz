@@ -390,6 +390,28 @@ cdef extern from "class.h":
         short sz_verbose
         double bin_dlog10_snr_last_bin
         double fNL
+        double P0_B12
+        double beta_B12
+        double alpha_B12
+        double gamma_B12
+        double xc_B12
+        double alpha_m_P0_B12
+        double alpha_m_xc_B12
+        double alpha_m_beta_B12
+        double alpha_z_P0_B12
+        double alpha_z_xc_B12
+        double alpha_z_beta_B12
+        double A_rho0
+        double A_alpha
+        double A_beta
+        double alpha_m_rho0
+        double alpha_m_alpha
+        double alpha_m_beta
+        double alpha_z_rho0
+        double alpha_z_alpha
+        double alpha_z_beta
+        double xc_B16
+        double gamma_B16
 
     cdef struct szcount:
         double ** dNdzdy_theoretical

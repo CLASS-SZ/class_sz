@@ -4116,7 +4116,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
 
           class_read_double("alpha_z_rho0",ptsz->alpha_z_rho0);
           class_read_double("alpha_z_alpha",ptsz->alpha_z_alpha);
-          class_read_double("alpha_z_bet",ptsz->alpha_z_beta);
+          class_read_double("alpha_z_beta",ptsz->alpha_z_beta);
           class_read_double("gamma_B16",ptsz->gamma_B16);
           class_read_double("xc_B16",ptsz->xc_B16);
         }
