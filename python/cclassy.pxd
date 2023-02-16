@@ -516,6 +516,7 @@ cdef extern from "class.h":
     int spectra_init(void*,void*,void*,void*,void*,void*,void*)
     int lensing_init(void*,void*,void*,void*,void*)
     int szpowerspectrum_init(void*,void*,void*,void*,void*,void*,void*,void*,void*)
+    int class_sz_cosmo_init(void*,void*,void*,void*,void*,void*,void*,void*,void*)
     int szcount_init(void*,void*,void*,void*,void*)
 
     int background_tau_of_z(void* pba, double z,double* tau)

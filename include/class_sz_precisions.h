@@ -120,6 +120,15 @@ class_sz_ptsz_parameter(k_min_gas_density_profile,double,1e-3)
 class_sz_ptsz_parameter(k_max_gas_density_profile,double,1e1)
 class_sz_ptsz_parameter(k_min_gas_pressure_profile,double,1e-2)
 class_sz_ptsz_parameter(k_max_gas_pressure_profile,double,1e2)
+
+class_sz_ptsz_parameter(x_min_gas_density_fftw,double,1e-5)
+class_sz_ptsz_parameter(x_max_gas_density_fftw,double,1e2)
+
+class_sz_ptsz_parameter(x_min_gas_pressure_fftw,double,1e-5)
+class_sz_ptsz_parameter(x_max_gas_pressure_fftw,double,1e2)
+
+class_sz_ptsz_parameter(use_fft_for_profiles_transform,int,0)
+
 class_sz_ptsz_parameter(k_min_gas_pressure_profile_2h,double,1e-2)
 class_sz_ptsz_parameter(k_max_gas_pressure_profile_2h,double,1e2)
 class_sz_ptsz_parameter(normalize_gas_density_profile,int,0)

@@ -2175,6 +2175,17 @@ int input_read_parameters(
         // exit(0);
       }
 
+      if ((strstr(string1,"gas_density_profile_2h") != NULL) ) {
+        ptsz->has_gas_density_profile_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+        // printf("ok %d\n",ptsz->has_gas_density_profile_2h);
+        // exit(0);
+      }
 
 
       if ((strstr(string1,"pk_em_at_z_1h") != NULL) ) {
@@ -5292,6 +5303,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       + ptsz->has_pk_bb_at_z_2h
       + ptsz->has_pk_b_at_z_2h
       + ptsz->has_gas_pressure_profile_2h
+      + ptsz->has_gas_density_profile_2h
       + ptsz->has_pk_em_at_z_1h
       + ptsz->has_pk_em_at_z_2h
       + ptsz->has_pk_HI_at_z_1h
@@ -6553,6 +6565,7 @@ int input_default_params(
   ptsz->has_pk_bb_at_z_2h = _FALSE_;
   ptsz->has_pk_b_at_z_2h = _FALSE_;
   ptsz->has_gas_pressure_profile_2h = _FALSE_;
+  ptsz->has_gas_density_profile_2h = _FALSE_;
   ptsz->has_pk_em_at_z_1h = _FALSE_;
   ptsz->has_pk_em_at_z_2h = _FALSE_;
   ptsz->has_pk_HI_at_z_1h = _FALSE_;

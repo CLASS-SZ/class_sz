@@ -1890,6 +1890,17 @@ double * steps_m;
 extern "C" {
 #endif
 
+
+int class_sz_cosmo_init(struct background * pba,
+                         struct thermo * pth,
+                         struct perturbs * ppt,
+                         struct nonlinear * pnl,
+                         struct primordial * ppm,
+                         struct spectra * psp,
+                         struct lensing * ple,
+                         struct tszspectrum * ptsz,
+                         struct precision * ppr);
+
 int szpowerspectrum_init(struct background * pba,
                          struct thermo * pth,
                          struct perturbs * ppt,
@@ -2139,6 +2150,9 @@ int tabulate_gas_pressure_profile_gNFW(struct background * pba,
 
 int tabulate_gas_pressure_profile_B12(struct background * pba,
                                   struct tszspectrum * ptsz);
+
+int tabulate_gas_pressure_profile_B12_fft(struct background * pba,
+                                          struct tszspectrum * ptsz);
 
 double evaluate_mean_galaxy_number_density_at_z(double z,
                                                 struct tszspectrum * ptsz);

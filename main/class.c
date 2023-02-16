@@ -105,10 +105,20 @@ int main(int argc, char **argv) {
   duration = ((double)end - start)/CLOCKS_PER_SEC;
   // printf("Time taken to execute lensing in seconds : %.3e\n", duration);
 
+
+  start = clock();
+  //BB: class_sz_cosmo module
+  if (class_sz_cosmo_init(&ba,&th,&pt,&nl,&pm,&sp,&le,&tsz,&pr) == _FAILURE_) {
+    printf("\nError in class_sz cosmo module\n");
+    return _FAILURE_;
+  }
+  end = clock();
+  duration = ((double)end - start)/CLOCKS_PER_SEC;
+
   start = clock();
   //BB: sz power spectrum module
   if (szpowerspectrum_init(&ba,&th,&pt,&nl,&pm,&sp,&le,&tsz,&pr) == _FAILURE_) {
-    printf("\nError in sz power spectrum module\n");
+    printf("\nError in class_sz main module\n");
     return _FAILURE_;
   }
   end = clock();
@@ -118,7 +128,7 @@ int main(int argc, char **argv) {
   start = clock();
   // //BB: sz cluster counts module
   if (szcount_init(&ba,&nl,&pm,&tsz,&csz) == _FAILURE_) {
-    printf("\nError in sz cluster count module\n");
+    printf("\nError in class_sz cluster counts module\n");
     return _FAILURE_;
   }
   end = clock();

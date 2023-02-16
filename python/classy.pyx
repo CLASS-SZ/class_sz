@@ -270,6 +270,9 @@ cdef class Class:
               level.append("szpowerspectrum")
         if "szpowerspectrum" in level:  #BB: added for class_sz
             if "lensing" not in level:
+              level.append("class_sz_cosmo")
+        if "class_sz_cosmo" in level:  #BB: added for class_sz
+            if "lensing" not in level:
               level.append("lensing")
         #if "distortions" in level:
         #    if "lensing" not in level:
@@ -459,6 +462,12 @@ cdef class Class:
                 raise CosmoComputationError(self.le.error_message)
             self.ncp.add("lensing")
 
+        if "class_sz_cosmo" in level:
+            if class_sz_cosmo_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+            &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
+                self.struct_cleanup()
+                raise CosmoComputationError(self.tsz.error_message)
+            self.ncp.add("class_sz_cosmo")
 
         if "szpowerspectrum" in level:
             if szpowerspectrum_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
