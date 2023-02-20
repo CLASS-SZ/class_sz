@@ -592,6 +592,11 @@ cdef class Class:
         &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
             self.struct_cleanup()
             raise CosmoComputationError(self.tsz.error_message)
+        if szcount_init(&(self.ba), &(self.nl), &(self.pm),
+        &(self.tsz),&(self.csz)) == _FAILURE_:
+            self.struct_cleanup()
+            raise CosmoComputationError(self.tsz.error_message)
+
         self.computed = True
         return
 
