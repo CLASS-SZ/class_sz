@@ -30,8 +30,8 @@ from scipy.interpolate import InterpolatedUnivariateSpline as _spline
 # path_to_cosmopower_organization = '/Users/boris/Work/CLASS-SZ/SO-SZ/cosmopower-organization'
 # path_to_emulators = path_to_cosmopower_organization + 'lcdm/'
 # from mcfit import P2xi
-
-
+import time
+from classy_szfast import classy_szfast
 
 
 
@@ -378,6 +378,40 @@ cdef class Class:
         # (And then we successively keep track of the ones we allocate additionally)
         self.allocated = True
 
+        # BB playground for emulators
+        # cszfast = classy_szfast()
+        # print(self._pars)
+        # params_settings = self._pars
+
+
+        # print('calculating cmb')
+        # start = time.time()
+        # cszfast.calculate_cmb(**params_settings)
+        # end = time.time()
+        # print('cmb calculation took:',end-start)
+
+
+        # print('calculating pkl')
+        # start = time.time()
+        # cszfast.calculate_pkl(**params_settings)
+        # end = time.time()
+        # print('pk calculation took:',end-start)
+
+        # print('calculating pknl')
+        # start = time.time()
+        # cszfast.calculate_pknl(**params_settings)
+        # end = time.time()
+        # print('pknl calculation took:',end-start)
+
+        # print('tabulate sigma')
+        # start = time.time()
+        # cszfast.calculate_sigma(**params_settings)
+        # end = time.time()
+        # print('end tabulate sigma:',end-start)
+        # print(cszfast.cszfast_pk_grid_dsigma2_flat[:10],np.shape(cszfast.cszfast_pk_grid_dsigma2_flat))
+        # print(cszfast.cszfast_pk_grid_sigma2_flat[:10],np.shape(cszfast.cszfast_pk_grid_sigma2_flat))
+
+
         # --------------------------------------------------------------------
         # Check the presence for all CLASS modules in the list 'level'. If a
         # module is found in level, executure its "_init" method.
@@ -491,7 +525,83 @@ cdef class Class:
         # following functions are only to output the desired numbers
         return
 
+    def compute_class_szfast(self):
+        # Equivalent of writing a parameter file
+        # self._fillparfile()
+
+        self.compute(level=["thermodynamics"])
+        # print(self._pars)
+        params_settings = self._pars
+
+
+        # BB playground for emulators
+        # cszfast = classy_szfast()
+        cszfast = classy_szfast(**params_settings)
+        # print(self._pars)
+        # params_settings = self._pars
+
+
+        # print('calculating cmb')
+        start = time.time()
+        cszfast.calculate_cmb(**params_settings)
+        end = time.time()
+        # print('cmb calculation took:',end-start)
+
+
+        # print('calculating pkl')
+        start = time.time()
+        cszfast.calculate_pkl(**params_settings)
+        end = time.time()
+        # print('pk calculation took:',end-start)
+
+        # print('calculating pknl')
+        start = time.time()
+        cszfast.calculate_pknl(**params_settings)
+        end = time.time()
+        # print('pknl calculation took:',end-start)
+
+        self.tsz.use_class_sz_fast_mode = 1
+
+        if class_sz_cosmo_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+        &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
+            self.struct_cleanup()
+            raise CosmoComputationError(self.tsz.error_message)
+
+        # print('tabulate sigma')
+        start = time.time()
+        cszfast.calculate_sigma(**params_settings)
+        # print('lnsigma2',cszfast.cszfast_pk_grid_lnsigma2_flat)
+        # print('dsigma2',cszfast.cszfast_pk_grid_dsigma2_flat)
+        # print('ln1pz',cszfast.cszfast_pk_grid_ln1pz)
+        # print('lnr',cszfast.cszfast_pk_grid_lnr)
+        index_z_r = 0
+        for index_z in range(self.tsz.n_arraySZ):
+          for index_r in range(self.tsz.ndimSZ):
+                self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
+                self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
+                self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
+                self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
+                self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
+                self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
+                self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
+                index_z_r += 1
+        end = time.time()
+        # print('end tabulate sigma:',end-start)
+
+        if szpowerspectrum_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+        &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
+            self.struct_cleanup()
+            raise CosmoComputationError(self.tsz.error_message)
+        self.computed = True
+        return
+
+
+
+
+
+
     def compute_class_sz(self,pdict_to_update):
+        self._fillparfile()
         for k,v in pdict_to_update.items():
           if k == 'fNL':
             self.tsz.fNL = pdict_to_update['fNL']
@@ -541,6 +651,70 @@ cdef class Class:
               self.tsz.alpha_z_beta_B12 = pdict_to_update['alpha_z_beta_B12']
           if k == 'x_outSZ':
               self.tsz.x_outSZ = pdict_to_update['x_outSZ']
+        # print('array_redshift:',
+        #       self.tsz.array_redshift[0],
+        #       self.tsz.array_redshift[1],
+        #       self.tsz.array_redshift[self.tsz.n_arraySZ-1])
+        # print('array_radius:',
+        #       self.tsz.array_radius[0],
+        #       self.tsz.array_radius[1],
+        #       self.tsz.array_radius[self.tsz.ndimSZ-1])
+        # print('array_dsigma2dR_at_z_and_R:',
+        #       self.tsz.array_dsigma2dR_at_z_and_R[0],
+        #       self.tsz.array_dsigma2dR_at_z_and_R[1],
+        #       self.tsz.array_dsigma2dR_at_z_and_R[self.tsz.n_arraySZ*self.tsz.ndimSZ-1])
+        # print('array_sigma_at_z_and_R:',
+        #       self.tsz.array_sigma_at_z_and_R[0],
+        #       self.tsz.array_sigma_at_z_and_R[1],
+        #       self.tsz.array_sigma_at_z_and_R[self.tsz.n_arraySZ*self.tsz.ndimSZ-1])
+
+        # # BB playground for emulators
+
+        # print(self._pars)
+        # params_settings = self._pars
+        # cszfast = classy_szfast(**params_settings)
+
+
+        # print('calculating cmb')
+        # start = time.time()
+        # cszfast.calculate_cmb(**params_settings)
+        # end = time.time()
+        # print('cmb calculation took:',end-start)
+
+
+        # print('calculating pkl')
+        # start = time.time()
+        # cszfast.calculate_pkl(**params_settings)
+        # end = time.time()
+        # print('pk calculation took:',end-start)
+
+        # print('calculating pknl')
+        # start = time.time()
+        # cszfast.calculate_pknl(**params_settings)
+        # end = time.time()
+        # print('pknl calculation took:',end-start)
+
+
+        # print('tabulate sigma')
+        # start = time.time()
+        # cszfast.calculate_sigma(**params_settings)
+        # print('lnsigma2',cszfast.cszfast_pk_grid_lnsigma2_flat)
+        # print('dsigma2',cszfast.cszfast_pk_grid_dsigma2_flat)
+        # print('ln1pz',cszfast.cszfast_pk_grid_ln1pz)
+        # print('lnr',cszfast.cszfast_pk_grid_lnr)
+        # index_z_r = 0
+        # for index_z in range(self.tsz.n_arraySZ):
+        #   for index_r in range(self.tsz.ndimSZ):
+        #         self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
+        #         self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
+        #         self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
+        #         self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
+        #         self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
+        #         self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
+        #         self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
+        #         index_z_r += 1
+        # end = time.time()
+        # print('end tabulate sigma:',end-start)
         if szpowerspectrum_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
         &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
             self.struct_cleanup()
@@ -2384,6 +2558,18 @@ cdef class Class:
     def get_rho_crit_at_z(self,z_asked):
         return get_rho_crit_at_z(z_asked,&self.ba,&self.tsz)
 
+    def get_pk_nonlin_at_k_and_z(self,k, z):
+        return get_pk_nonlin_at_k_and_z(k,z,&self.ba,&self.pm,&self.nl,&self.tsz)
+
+    def get_pk_lin_at_k_and_z(self,k, z):
+        return get_pk_lin_at_k_and_z(k,z,&self.ba,&self.pm,&self.nl,&self.tsz)
+
+    def get_pk_nonlin_at_k_and_z_fast(self,k, z):
+        return get_pk_nonlin_at_k_and_z_fast(k,z,&self.ba,&self.pm,&self.nl,&self.tsz)
+
+    def get_pk_lin_at_k_and_z_fast(self,k, z):
+        return get_pk_lin_at_k_and_z_fast(k,z,&self.ba,&self.pm,&self.nl,&self.tsz)
+
     def get_gas_profile_at_x_M_z_b16_200c(self,
                                           r_asked,
                                           m_asked,
@@ -2519,6 +2705,10 @@ cdef class Class:
 
     def get_sigma_at_z_and_m(self,z,m):
         return get_sigma_at_z_and_m(z,m,&self.tsz,&self.ba)
+
+    def get_dlnsigma_dlnR_at_z_and_m(self,z,m):
+        return get_dlnsigma_dlnR_at_z_and_m(z,m,&self.tsz,&self.ba)
+
     def get_sigma8_at_z(self,z):
         return get_sigma8_at_z(z,&self.tsz,&self.ba)
     def get_y_at_m_and_z(self,m,z):

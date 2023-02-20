@@ -1196,6 +1196,15 @@ struct tszspectrum {
   int use_bg_eff_in_ksz2g_eff;
 
   int hm_consistency;
+
+  int use_class_sz_fast_mode;
+  double * array_lnk;
+  double * array_pknl_at_z_and_k;
+  double * array_pkl_at_z_and_k;
+
+  // int cszfast_pk_grid_nk;
+  // int cszfast_pk_grid_nz;
+
   int check_consistency_conditions;
 
   // noise curve for cov(y,y)
@@ -2062,6 +2071,11 @@ double get_pk_lin_at_k_and_z(double k, double z,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
                           struct tszspectrum * ptsz);
+double get_pk_lin_at_k_and_z_fast(double k, double z,
+                          struct background * pba,
+                          struct primordial * ppm,
+                          struct nonlinear * pnl,
+                          struct tszspectrum * ptsz);
 
 double get2_pk_lin_at_k_and_z(//double * pvecback,//double * pvectsz,
   double * r,double k, double z,
@@ -2074,7 +2088,12 @@ double get_pk_nonlin_at_k_and_z(double k, double z,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
                           struct tszspectrum * ptsz);
-
+                          
+double get_pk_nonlin_at_k_and_z_fast(double k, double z,
+                          struct background * pba,
+                          struct primordial * ppm,
+                          struct nonlinear * pnl,
+                          struct tszspectrum * ptsz);
 
  int evaluate_pk_at_ell_plus_one_half_over_chi(double * pvecback,
                                               double * pvectsz,

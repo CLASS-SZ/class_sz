@@ -198,11 +198,59 @@ int class_sz_cosmo_init(  struct background * pba,
    // printf("need_hmf = %d\n",ptsz->need_hmf);
    select_multipole_array(ptsz);
 
+   ptsz->chi_star = pth->ra_star*pba->h;
+   double tau;
+   int first_index_back = 0;
+   double * pvecback;
+   double OmegaM;
+
+   class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
 
 
+      class_call(background_tau_of_z(pba,
+                                     0.0, //TBC: z1SZ?
+                                     &tau
+                                     ),
+                      ptsz->error_message,
+                      ptsz->error_message
+                      );
+
+     class_call(background_at_tau(pba,
+                                  tau,
+                                  pba->long_info,
+                                  pba->inter_normal,
+                                  &first_index_back,
+                                  pvecback),
+                      ptsz->error_message,
+                      ptsz->error_message
+                      );
+
+      ptsz->Rho_crit_0 =
+      (3./(8.*_PI_*_G_*_M_sun_))
+      *pow(_Mpc_over_m_,1)
+      *pow(_c_,2)
+      *pvecback[pba->index_bg_rho_crit]
+      /pow(pba->h,2);
+
+
+      ptsz->Omega_m_0 = pvecback[pba->index_bg_Omega_m];
+      ptsz->Omega_r_0 = pvecback[pba->index_bg_Omega_r];
+      free(pvecback);
+
+      ptsz->Omega_ncdm_0 = ptsz->Omega_m_0
+      -pba->Omega0_b
+      -pba->Omega0_cdm;
+
+      ptsz->Omega0_b = pba->Omega0_b;
+
+      if (ptsz->f_b_gas == -1.){
+        ptsz->f_b_gas = pba->Omega0_b/ptsz->Omega_m_0;
+      }
+
+if (ptsz->use_class_sz_fast_mode == 0)
    show_preamble_messages(pba,pth,pnl,ppm,ptsz);
-   if (ptsz->need_sigma == 1
-    || ptsz->has_vrms2){
+
+if (ptsz->need_sigma == 1 || ptsz->has_vrms2){
 
 
       double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
@@ -226,6 +274,21 @@ int class_sz_cosmo_init(  struct background * pba,
 
    tabulate_sigma_and_dsigma_from_pk(pba,pnl,ppm,ptsz);
 
+// if (ptsz->use_class_sz_fast_mode){
+// for the class_szfast mode
+  class_alloc(ptsz->array_pkl_at_z_and_k,
+              sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+              ptsz->error_message);
+
+  class_alloc(ptsz->array_pknl_at_z_and_k,
+              sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+              ptsz->error_message);
+
+  class_alloc(ptsz->array_lnk,
+              sizeof(double *)*ptsz->ndimSZ,
+              ptsz->error_message);
+
+// }
 
    return _SUCCESS_;
    }
@@ -447,6 +510,24 @@ int szpowerspectrum_init(
 //    tabulate_sigma_and_dsigma_from_pk(pba,pnl,ppm,ptsz);
 
 
+
+
+
+// // if (ptsz->use_class_sz_fast_mode){
+// // for the class_szfast mode
+//   class_alloc(ptsz->array_pkl_at_z_and_k,
+//               sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+//               ptsz->error_message);
+//
+//   class_alloc(ptsz->array_pknl_at_z_and_k,
+//               sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+//               ptsz->error_message);
+//
+//   class_alloc(ptsz->array_lnk,
+//               sizeof(double *)*ptsz->ndimSZ,
+//               ptsz->error_message);
+//
+// // }
 
 // begin tk stuff
 // start collecting transfer functions
@@ -2725,6 +2806,12 @@ if (ptsz->sz_verbose>10) printf("-> freeing sigma(M,r).\n");
    free(ptsz->array_sigma_at_z_and_R);
    free(ptsz->array_dsigma2dR_at_z_and_R);
  }
+
+// if (ptsz->use_class_sz_fast_mode){
+  free(ptsz->array_pkl_at_z_and_k);
+  free(ptsz->array_pknl_at_z_and_k);
+  free(ptsz->array_lnk);
+// }
 
 
 if (ptsz->sz_verbose>10) printf("-> freeing flag 1.\n");
@@ -9641,7 +9728,7 @@ double get_sigma_at_z_and_m(double z,
 
    double z_asked = log(1.+z);
    // double R_asked = log(exp(log(rh))/pba->h);
-   double R_asked = log(rh/pba->h);
+   double R_asked = log(rh/pba->h); // this is in Mpc
 
 
  if (z_asked<ptsz->array_redshift[0]){
@@ -9902,6 +9989,12 @@ double get_pk_nonlin_at_k_and_z(double k, double z,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
                           struct tszspectrum * ptsz){
+
+if (ptsz->use_class_sz_fast_mode){
+double pk = get_pk_lin_at_k_and_z_fast(k,z,pba,ppm,pnl,ptsz);
+return pk;
+}
+else{
 if ((k*pba->h < exp(pnl->ln_k[0])) || (k*pba->h > exp(pnl->ln_k[pnl->k_size-1]))){
   return 0.;
 }
@@ -9922,7 +10015,55 @@ double * pk_ic = NULL;
                                           pnl->error_message,
                                           pnl->error_message);
 return pk*pow(pba->h,3.);
+}
                           }
+
+
+double get_pk_lin_at_k_and_z_fast(double k, double z,
+                          struct background * pba,
+                          struct primordial * ppm,
+                          struct nonlinear * pnl,
+                          struct tszspectrum * ptsz){
+  if ((k*pba->h < exp(ptsz->array_lnk[0])) || (k*pba->h > exp(ptsz->array_lnk[ptsz->ndimSZ-1]))){
+    return 0.;
+  }
+
+   double zp = log(1.+z);
+   double kp = log(k*pba->h);
+   double pk = pwl_interp_2d(ptsz->n_arraySZ,
+                      ptsz->ndimSZ,
+                      ptsz->array_redshift,
+                      ptsz->array_lnk,
+                      ptsz->array_pkl_at_z_and_k,
+                      1,
+                      &zp,
+                      &kp);
+
+return pk*pow(pba->h,3.);
+}
+
+double get_pk_nonlin_at_k_and_z_fast(double k, double z,
+                          struct background * pba,
+                          struct primordial * ppm,
+                          struct nonlinear * pnl,
+                          struct tszspectrum * ptsz){
+  if ((k*pba->h < exp(ptsz->array_lnk[0])) || (k*pba->h > exp(ptsz->array_lnk[ptsz->ndimSZ-1]))){
+    return 0.;
+  }
+
+   double zp = log(1.+z);
+   double kp = log(k*pba->h);
+   double pk = pwl_interp_2d(ptsz->n_arraySZ,
+                      ptsz->ndimSZ,
+                      ptsz->array_redshift,
+                      ptsz->array_lnk,
+                      ptsz->array_pknl_at_z_and_k,
+                      1,
+                      &zp,
+                      &kp);
+
+return pk*pow(pba->h,3.);
+}
 
 
 double get_pk_lin_at_k_and_z(double k, double z,
@@ -9931,10 +10072,18 @@ double get_pk_lin_at_k_and_z(double k, double z,
                           struct nonlinear * pnl,
                           struct tszspectrum * ptsz){
 
+
+
+if (ptsz->use_class_sz_fast_mode){
+double pk = get_pk_lin_at_k_and_z_fast(k,z,pba,ppm,pnl,ptsz);
+return pk;
+}
+else{
+double pk;
 if ((k*pba->h < exp(pnl->ln_k[0])) || (k*pba->h > exp(pnl->ln_k[pnl->k_size-1]))){
   return 0.;
 }
-double pk;
+
 double * pk_ic = NULL;
 // printf("before\n");
         class_call(nonlinear_pk_at_k_and_z(
@@ -9956,6 +10105,7 @@ double * pk_ic = NULL;
 // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
 
 return pk*pow(pba->h,3.);
+}
                           }
 
 
@@ -10786,9 +10936,9 @@ int evaluate_HMF_at_logM_and_z(
    //    R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
    //
 
-pvectsz[ptsz->index_logSigma2] = 2.*log(get_sigma_at_z_and_m(exp(z_asked)-1.,m_for_hmf,ptsz,pba));
+  pvectsz[ptsz->index_logSigma2] = 2.*log(get_sigma_at_z_and_m(exp(z_asked)-1.,m_for_hmf,ptsz,pba));
 
-pvectsz[ptsz->index_lognu] = log(get_nu_at_z_and_m(exp(z_asked)-1.,m_for_hmf,ptsz,pba));
+  pvectsz[ptsz->index_lognu] = log(get_nu_at_z_and_m(exp(z_asked)-1.,m_for_hmf,ptsz,pba));
 
   pvectsz[ptsz->index_dlogSigma2dlogRh] = 2.*get_dlnsigma_dlnR_at_z_and_m(z,m_for_hmf,ptsz,pba);
   // pwl_interp_2d(
@@ -13098,26 +13248,26 @@ int show_preamble_messages(struct background * pba,
                       ptsz->error_message
                       );
 
-      ptsz->Rho_crit_0 =
-      (3./(8.*_PI_*_G_*_M_sun_))
-      *pow(_Mpc_over_m_,1)
-      *pow(_c_,2)
-      *pvecback[pba->index_bg_rho_crit]
-      /pow(pba->h,2);
-
-
-      ptsz->Omega_m_0 = pvecback[pba->index_bg_Omega_m];
-      ptsz->Omega_r_0 = pvecback[pba->index_bg_Omega_r];
-
-      ptsz->Omega_ncdm_0 = ptsz->Omega_m_0
-      -pba->Omega0_b
-      -pba->Omega0_cdm;
-
-      ptsz->Omega0_b = pba->Omega0_b;
-
-      if (ptsz->f_b_gas == -1.){
-        ptsz->f_b_gas = pba->Omega0_b/ptsz->Omega_m_0;
-      }
+      // ptsz->Rho_crit_0 =
+      // (3./(8.*_PI_*_G_*_M_sun_))
+      // *pow(_Mpc_over_m_,1)
+      // *pow(_c_,2)
+      // *pvecback[pba->index_bg_rho_crit]
+      // /pow(pba->h,2);
+      //
+      //
+      // ptsz->Omega_m_0 = pvecback[pba->index_bg_Omega_m];
+      // ptsz->Omega_r_0 = pvecback[pba->index_bg_Omega_r];
+      //
+      // ptsz->Omega_ncdm_0 = ptsz->Omega_m_0
+      // -pba->Omega0_b
+      // -pba->Omega0_cdm;
+      //
+      // ptsz->Omega0_b = pba->Omega0_b;
+      //
+      // if (ptsz->f_b_gas == -1.){
+      //   ptsz->f_b_gas = pba->Omega0_b/ptsz->Omega_m_0;
+      // }
 
       if (pba->Omega0_lambda != 0.) OmegaM = 1-pba->Omega0_lambda;
       else OmegaM = 1-pba->Omega0_fld;
@@ -13127,7 +13277,7 @@ int show_preamble_messages(struct background * pba,
       ptsz->Sigma8OmegaM_SZ = pnl->sigma8[pnl->index_pk_m]*pow(OmegaM/0.28,3./8.);
       //quantities at surface of last scattering
       // conformal distance to redshift of last scattering in Mpc/h
-      ptsz->chi_star = pth->ra_star*pba->h;
+
 
       if (ptsz->sz_verbose > 0)
       {

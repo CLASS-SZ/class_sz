@@ -1886,6 +1886,8 @@ int input_read_parameters(
       //For the computation of sigma2
       class_read_int("ndim_masses",ptsz->ndimSZ);
 
+      class_read_int("use_class_sz_fast_mode",ptsz->use_class_sz_fast_mode);
+
       class_read_double("delta_cSZ",ptsz->delta_cSZ);
 
       //Multplicity function Tinker 2010
@@ -6135,6 +6137,8 @@ int input_default_params(
   ptsz->hm_consistency = 0; //0: nothing 1: counter terms 2: alpha(z)
   ptsz->check_consistency_conditions = 0;
   ptsz->damping_1h_term = 1;
+
+  ptsz->use_class_sz_fast_mode = 0;
 
   ptsz->N_kSZ2_gal_multipole_grid = 20;
 

@@ -6568,15 +6568,17 @@ for (index_k=0;
 {
 class_alloc(ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k],n_m*n_z*sizeof(double *),ptsz->error_message);
 index_m_z = 0;
+for (index_z=0;
+     index_z<n_z;
+     index_z++)
+{
+
 for (index_m=0;
      index_m<n_m;
      index_m++){
 //class_alloc(ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z],n_z*sizeof(double ),ptsz->error_message);
 
-for (index_z=0;
-     index_z<n_z;
-     index_z++)
-{
+
   // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = -100.; // initialize with super small number
   ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k][index_m_z] = 1e-100; // initialize with super small number
   index_m_z_tab[index_m][index_z] = index_m_z;
@@ -19808,6 +19810,51 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
 if (ptsz->need_sigma == 0)
     return 0;
 
+
+
+// class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+
+
+if (ptsz->use_class_sz_fast_mode){
+  ptsz->ndimSZ = 500; // fixed by cosmopower emulator k-sampling
+  class_alloc(ptsz->array_radius,sizeof(double *)*ptsz->ndimSZ,ptsz->error_message);
+
+
+  class_alloc(ptsz->array_sigma_at_z_and_R,
+              sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+              ptsz->error_message);
+
+  class_alloc( ptsz->array_dsigma2dR_at_z_and_R,
+              sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+              ptsz->error_message);
+
+  // class_alloc(ptsz->array_pkl_at_z_and_k,
+  //             sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+  //             ptsz->error_message);
+  //
+  // class_alloc(ptsz->array_pknl_at_z_and_k,
+  //             sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+  //             ptsz->error_message);
+  //
+  // class_alloc(ptsz->array_lnk,
+  //             sizeof(double *)*ptsz->ndimSZ,
+  //             ptsz->error_message);
+
+  return _SUCCESS_;
+}
+else{
+
+class_alloc(ptsz->array_radius,sizeof(double *)*ptsz->ndimSZ,ptsz->error_message);
+
+
+class_alloc(ptsz->array_sigma_at_z_and_R,
+            sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+            ptsz->error_message);
+
+class_alloc( ptsz->array_dsigma2dR_at_z_and_R,
+            sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
+            ptsz->error_message);
+
 // printf("tabulating sigma\n");
 
    // bounds array of radii for sigma computations:
@@ -19844,17 +19891,6 @@ if (ptsz->need_sigma == 0)
   double ** array_sigma_at_z_and_R;
   double ** array_dsigma2dR_at_z_and_R;
 
-// class_alloc(ptsz->array_redshift,sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
-class_alloc(ptsz->array_radius,sizeof(double *)*ptsz->ndimSZ,ptsz->error_message);
-
-
-class_alloc(ptsz->array_sigma_at_z_and_R,
-            sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
-            ptsz->error_message);
-
-class_alloc( ptsz->array_dsigma2dR_at_z_and_R,
-            sizeof(double *)*ptsz->n_arraySZ*ptsz->ndimSZ,
-            ptsz->error_message);
 
 class_alloc(array_sigma_at_z_and_R,
             ptsz->n_arraySZ*sizeof(double *),
@@ -19966,7 +20002,7 @@ num_threads(number_of_threads)
 
 
       if (ptsz->HMF_prescription_NCDM == 2) //No-pres
-        spectra_sigma_prime( pba,
+        spectra_sigma_prime(pba,
                             ppm,
                             pnl,
                             ptsz,
@@ -19975,7 +20011,7 @@ num_threads(number_of_threads)
                             &dsigma_var//&dsigma2dR_at_z_and_R
                             );
       else
-        spectra_sigma_ncdm_prime( pba,
+        spectra_sigma_ncdm_prime(pba,
                                  ppm,
                                  pnl,
                                  ptsz,
@@ -20049,6 +20085,8 @@ for (index_l=0;
   free(array_dsigma2dR_at_z_and_R);
 
 return _SUCCESS_;
+
+}
 }
 
 

@@ -386,10 +386,18 @@ cdef extern from "class.h":
         double * cov_Y_N_mass_bin_edges
         double * cov_N_N
         double ** cov_N_N_hsv
+        double * array_sigma_at_z_and_R
+        double * array_dsigma2dR_at_z_and_R
+        double * array_radius
+        double * array_redshift
+        double * array_lnk
+        double * array_pknl_at_z_and_k
+        double * array_pkl_at_z_and_k
         short has_tszspectrum
         short sz_verbose
         double bin_dlog10_snr_last_bin
         double fNL
+        int use_class_sz_fast_mode
         double P0_B12
         double beta_B12
         double alpha_B12
@@ -660,8 +668,31 @@ cdef extern from "class.h":
                                                double k_asked,
                                                double bh,
                                                void * ptsz)
+    double get_pk_nonlin_at_k_and_z(double k,
+                                    double z,
+                                    void * pba,
+                                    void * ppm,
+                                    void * pnl,
+                                    void * ptsz)
+    double get_pk_lin_at_k_and_z(double k,
+                                    double z,
+                                    void * pba,
+                                    void * ppm,
+                                    void * pnl,
+                                    void * ptsz)
 
-
+    double get_pk_nonlin_at_k_and_z_fast(double k,
+                                    double z,
+                                    void * pba,
+                                    void * ppm,
+                                    void * pnl,
+                                    void * ptsz)
+    double get_pk_lin_at_k_and_z_fast(double k,
+                                    double z,
+                                    void * pba,
+                                    void * ppm,
+                                    void * pnl,
+                                    void * ptsz)
     double get_P_delta_at_m_and_z_b12(double m_asked,
                                        double z_asked,
                                        void * ptsz,
@@ -855,6 +886,10 @@ cdef extern from "class.h":
     double get_y_at_m_and_z(double m, double z, void * ptsz, void * pba)
     double get_theta_at_m_and_z(double m, double z, void * ptsz, void * pba)
     double get_sigma_at_z_and_m(double z_asked,
+                                double m_asked,
+                                void * tsz,
+                                void * pba)
+    double get_dlnsigma_dlnR_at_z_and_m(double z_asked,
                                 double m_asked,
                                 void * tsz,
                                 void * pba)
