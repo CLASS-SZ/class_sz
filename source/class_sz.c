@@ -7485,13 +7485,22 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
     }
 
    else if (_gal_lens_1h_){
+    // kl = 1e-1;
+    // m_delta_gal = 5e13;
+    // r_delta_gal = 0.3;
+    // c_delta_gal = 8.;
+    // pvectsz[ptsz->index_z] = 0.3;
+    // pvectsz[ptsz->index_chi2] = 13.4;
+    // pvecback[pba->index_bg_ang_distance] = 789.9;
 
              // int index_l = (int) pvectsz[ptsz->index_multipole];
              // pvectsz[ptsz->index_multipole_for_lensing_profile] = ptsz->ell[index_l];
              evaluate_lensing_profile(kl,m_delta_lensing,r_delta_lensing,c_delta_lensing,pvecback,pvectsz,pba,ptsz);
              // pvectsz[ptsz->index_multipole_for_galaxy_profile] =  ptsz->ell[index_l];
              evaluate_galaxy_profile_2h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
-
+    // printf("lens = %.8e gal = %.8e\n",pvectsz[ptsz->index_lensing_profile],pvectsz[ptsz->index_galaxy_profile]);
+    //
+    //          exit(0);
              pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                                *pvectsz[ptsz->index_lensing_profile]
                                                *pvectsz[ptsz->index_galaxy_profile]
@@ -7531,10 +7540,17 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
 
   else if (_ngal_lens_1h_){
-
+    // kl = 1e-1;
+    // m_delta_gal = 5e13;
+    // r_delta_gal = 0.3;
+    // c_delta_gal = 8.;
+    // pvectsz[ptsz->index_z] = 0.3;
+    // pvectsz[ptsz->index_chi2] = 13.4;
+    // pvecback[pba->index_bg_ang_distance] = 789.9;
     evaluate_galaxy_profile_ngal(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
     evaluate_lensing_profile(kl,m_delta_lensing,r_delta_lensing,c_delta_lensing,pvecback,pvectsz,pba,ptsz);
-
+    // printf("lens = %.8e gal = %.8e\n",pvectsz[ptsz->index_lensing_profile],pvectsz[ptsz->index_galaxy_profile]);
+    // exit(0);
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                       *pvectsz[ptsz->index_lensing_profile]
                                       *pvectsz[ptsz->index_galaxy_profile]
@@ -11900,6 +11916,11 @@ double evaluate_mean_galaxy_number_density_at_z_ngal(
    if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
       z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
 
+// int i = 0;
+// for (i = 0 ; i<10; i++){
+//   printf("i = %d array_z = %.3e array_nbar = %.5e\n",
+//           i, ptsz->array_redshift[i],ptsz->array_mean_galaxy_number_density_ngal[index_g][i]);
+// }
 
     return exp(pwl_value_1d(ptsz->n_arraySZ,
                             ptsz->array_redshift,
@@ -11925,6 +11946,11 @@ double evaluate_mean_galaxy_number_density_at_z(
    if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
       z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
 
+// int i = 0;
+// for (i = 0 ; i<10; i++){
+//   printf("i = %d array_z = %.3e array_nbar = %.5e\n",
+//           i, ptsz->array_redshift[i],ptsz->array_mean_galaxy_number_density[i]);
+// }
 
     return exp(pwl_value_1d(ptsz->n_arraySZ,
                             ptsz->array_redshift,
@@ -17288,6 +17314,9 @@ if (isinf(ug_at_ell) || isnan(ug_at_ell)){
 printf("ng_bar = %.3e nc = %.3e ns = %.3e us = %.3e\n",ng_bar,nc,ns,us);
 exit(0);
 }
+// printf("ug_at_ell = %.3e ngb = %.3e nc = %.5e ns = %.5e us = %.5e\n",
+//       ug_at_ell,ng_bar,nc,ns,us);
+
 pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
 
 }
@@ -17472,10 +17501,11 @@ if (_ngal_ngal_2h_
     ng_bar = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g,ptsz);
     ug_at_ell  = (1./ng_bar)*(nc+ns*us);
 
-    // printf("ug_at_ell = %.3e\n",ug_at_ell);
+    // printf("ug_at_ell = %.3e ngb = %.3e nc = %.5e ns = %.5e us = %.5e\n",
+    //       ug_at_ell,ng_bar,nc,ns,us);
 
     }
-    if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
+    if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) { // gal_gal_2h for index_g_prime
     ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,ptsz);
     nc_galprime = HOD_mean_number_of_central_galaxies(z,M_halo,M_min_galprime,sigma_log10M_galprime,f_cen_HOD_galprime,ptsz,pba);
     ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,ptsz,pba);
@@ -17483,6 +17513,40 @@ if (_ngal_ngal_2h_
     ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,ptsz);
     ug_at_ell  = (1./ng_bar_galprime)*(nc_galprime+ns_galprime*us_galprime);
     }
+  // }
+  }
+
+if (_ngal_lens_1h_
+  ||_ngal_lens_2h_
+  ){
+  // if (index_g_prime == index_g){
+  //   nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,f_cen_HOD,ptsz,pba);
+  //   ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,alpha_s_HOD,M1_prime,ptsz,pba);
+  //   us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
+  //   ng_bar = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g,ptsz);
+  //   ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+  // }
+  // else{
+    // if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1
+    //    || (int) pvectsz[ptsz->index_part_id_cov_hsv] ==  0) {
+    nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,f_cen_HOD,ptsz,pba);
+    ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,alpha_s_HOD,M1_prime,ptsz,pba);
+    us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
+    ng_bar = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g,ptsz);
+    ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+
+    // printf("ug_at_ell = %.3e ngb = %.3e nc = %.5e ns = %.5e us = %.5e\n",
+    //       ug_at_ell,ng_bar,nc,ns,us);
+
+    // }
+    // if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) { // gal_gal_2h for index_g_prime
+    // ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,ptsz);
+    // nc_galprime = HOD_mean_number_of_central_galaxies(z,M_halo,M_min_galprime,sigma_log10M_galprime,f_cen_HOD_galprime,ptsz,pba);
+    // ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,ptsz,pba);
+    // us_galprime = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout_galprime);
+    // ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,ptsz);
+    // ug_at_ell  = (1./ng_bar_galprime)*(nc_galprime+ns_galprime*us_galprime);
+    // }
   // }
   }
 

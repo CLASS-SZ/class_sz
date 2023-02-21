@@ -11072,7 +11072,8 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
   // this is needed only in  the approximate calculation...
   // for the exact calculation in HOD, this comes out of Sigma_crit
   result *= W_lens;
-
+    // printf("result gal lens hf = %.3e  b = %.3e z = %.3e\n",result,V->pvectsz[V->ptsz->index_halo_bias],z);
+    // exit(0);
   }
 
   else if ((V->ptsz->has_ngal_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_hf)) {
@@ -11480,9 +11481,13 @@ if (
     ||((V->ptsz->has_kSZ_kSZ_lens_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_1h_fft))
     ||((V->ptsz->has_kSZ_kSZ_lens_2h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_2h_fft))
     ||((V->ptsz->has_kSZ_kSZ_lens_3h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_3h_fft))
-    ||((V->ptsz->has_kSZ_kSZ_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_hf))
+    ||((V->ptsz->has_kSZ_kSZ_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_hf)) // this is not correct??
 ){
 
+if (((V->ptsz->has_kSZ_kSZ_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_hf))){
+  printf("this seems not correct, check lensing kernel for kSZ_kSZ_lens_hf!\n");
+  exit(0);
+}
 double Wg = radial_kernel_W_cmb_lensing_at_z(z,V->pvectsz,V->pba,V->ptsz);
 result *= Wg;
 
@@ -15866,6 +15871,7 @@ struct Parameters_for_integrand_mean_galaxy_number{
   double * pvectsz;
   double * pvecback;
   double z;
+  int index_g;
 };
 
 
@@ -15932,6 +15938,84 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
       nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD,V->ptsz,V->pba);
       ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],nc,M0,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
 
+      double result = hmf*(ns+nc);
+
+
+
+
+  return result;
+
+}
+
+
+
+double integrand_mean_galaxy_number_ngal(double lnM_halo, void *p){
+
+  struct Parameters_for_integrand_mean_galaxy_number *V = ((struct Parameters_for_integrand_mean_galaxy_number *) p);
+
+    double M_halo = exp(lnM_halo);
+
+    double z = V->z;
+    int index_g = V->index_g;
+
+
+
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call(background_tau_of_z(V->pba,z,&tau),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+      class_call(background_at_tau(V->pba,
+                                   tau,
+                                   V->pba->long_info,
+                                   V->pba->inter_normal,
+                                   &first_index_back,
+                                   V->pvecback),
+                 V->pba->error_message,
+                 V->pba->error_message);
+
+
+
+
+      V->pvectsz[V->ptsz->index_z] = z;
+      V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *V->pvecback[V->pba->index_bg_rho_crit]
+                                            /pow(V->pba->h,2);
+
+      double omega = V->pvecback[V->pba->index_bg_Omega_m];
+
+      V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+
+      V->pvectsz[V->ptsz->index_has_galaxy] = 1;
+      do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+
+      evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
+
+      double hmf = V->pvectsz[V->ptsz->index_hmf];
+
+      double M_min;
+      double M0;
+      double M1_prime;
+      double sigma_log10M;
+      double nc,ns;
+
+      M_min = V->ptsz->M_min_HOD_ngal[index_g];
+      M0 = V->ptsz->M0_HOD_ngal[index_g];
+      M1_prime = V->ptsz->M1_prime_HOD_ngal[index_g];
+      sigma_log10M = V->ptsz->sigma_log10M_HOD_ngal[index_g];
+      // }
+      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD_ngal[index_g],V->ptsz,V->pba);
+      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],nc,M0,V->ptsz->alpha_s_HOD_ngal[index_g],M1_prime,V->ptsz,V->pba);
+
+
+    //   printf("%.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n",
+    // hmf,nc,ns,M_min, M0, M1_prime, sigma_log10M,V->ptsz->f_cen_HOD_ngal[index_g],V->ptsz->alpha_s_HOD_ngal[index_g]);
+    // exit(0);
       double result = hmf*(ns+nc);
 
 
@@ -16010,6 +16094,8 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
                                                integrand_mean_galaxy_number,
                                                params,ptsz->patterson_show_neval);
 
+          // if (z< 1e-3)
+          //   printf("-> [1gal] ngbar for sample at z = %.3e is %.3e.\n",z,r);
         // here we always impose the consistency condition.
         // add counter terms:
          double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
@@ -16020,8 +16106,12 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
 
 
           ptsz->array_mean_galaxy_number_density[index_z] = log(r);
-
-
+          // if (z< 1e-3)
+          //   printf("-> [1gal] ngbar for sample at z = %.3e is %.3e.\n",z,r);
+        if (ptsz->sz_verbose>3){
+          if (z< 1e-3)
+            printf("-> [1gal] ngbar for sample at z = %.3e is %.3e.\n",z,r);
+        }
        }
  free(pvecback);
  free(pvectsz);
@@ -16106,6 +16196,7 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
           V.pvectsz = pvectsz;
           V.pvecback = pvecback;
           V.z = z;
+          V.index_g = index_g;
 
           void * params = &V;
           double epsrel=ptsz->mass_epsrel_ngbar;
@@ -16113,24 +16204,28 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
 
           r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                                epsrel, epsabs,
-                                               integrand_mean_galaxy_number,
+                                               integrand_mean_galaxy_number_ngal,
                                                params,ptsz->patterson_show_neval);
 
-
+          // if (z< 1e-3)
+          //   printf("-> [ngal] ngbar for sample %d at z = %.3e is %.3e.\n",index_g,z,r);
 
         // here we always impose the consistency condition.
         // add counter terms:
          double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-         double I0 = integrand_mean_galaxy_number(log(m_min),params);
+         double I0 = integrand_mean_galaxy_number_ngal(log(m_min),params);
          double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
          r += nmin_umin;
 
 
           ptsz->array_mean_galaxy_number_density_ngal[index_g][index_z] = log(r);
+          // if (z< 1e-3)
+          //   printf("-> [ngal] ngbar for sample %d at z = %.3e is %.3e.\n",index_g,z,r);
 
 
         if (ptsz->sz_verbose>3){
-          printf("-> [ngal] ngbar for sample %d at z = %.3e is %.3e.\n",index_g,z,r);
+          if (z< 1e-3)
+            printf("-> [ngal] ngbar for sample %d at z = %.3e is %.3e.\n",index_g,z,r);
         }
 
        }
