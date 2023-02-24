@@ -409,6 +409,13 @@ cdef extern from "class.h":
         double alpha_z_P0_B12
         double alpha_z_xc_B12
         double alpha_z_beta_B12
+        double mcut_B12
+        double alphap_m_P0_B12
+        double alphap_m_xc_B12
+        double alphap_m_beta_B12
+        double alpha_c_P0_B12
+        double alpha_c_xc_B12
+        double alpha_c_beta_B12
         double A_rho0
         double A_alpha
         double A_beta
@@ -418,6 +425,13 @@ cdef extern from "class.h":
         double alpha_z_rho0
         double alpha_z_alpha
         double alpha_z_beta
+        double mcut
+        double alphap_m_rho0
+        double alphap_m_alpha
+        double alphap_m_beta
+        double alpha_c_rho0
+        double alpha_c_alpha
+        double alpha_c_beta
         double xc_B16
         double gamma_B16
 
@@ -743,6 +757,7 @@ cdef extern from "class.h":
     double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                              double m_asked,
                                              double z_asked,
+                                             double c_asked,
                                              double A_rho0,
                                              double A_alpha,
                                              double A_beta,
@@ -752,6 +767,13 @@ cdef extern from "class.h":
                                              double alpha_z_rho0,
                                              double alpha_z_alpha,
                                              double alpha_z_beta,
+                                						 double mcut,
+                                						 double alphap_m_rho0,
+                                						 double alphap_m_alpha,
+                                						 double alphap_m_beta,
+                                						 double alpha_c_rho0,
+                                						 double alpha_c_alpha,
+                                						 double alpha_c_beta,
                                              double gamma,
                                              double xc,
                                              void * pba,
@@ -851,6 +873,7 @@ cdef extern from "class.h":
     double get_pressure_P_over_P_delta_at_x_M_z_b12_200c(double x_asked,
                                                          double m_asked,
                                                          double z_asked,
+                                                         double c_asked,
                                                          double A_P0,
                                                          double A_xc,
                                                          double A_beta,
@@ -860,6 +883,13 @@ cdef extern from "class.h":
                                                          double alpha_z_P0,
                                                          double alpha_z_xc,
                                                          double alpha_z_beta,
+                                      							     double mcut,
+                                      							     double alphap_m_P0,
+                                      							     double alphap_m_xc,
+                                      							     double alphap_m_beta,
+                                      							     double alpha_c_P0,
+                                      							     double alpha_c_xc,
+                                      							     double alpha_c_beta,
                                                          double alpha,
                                                          double gamma,
                                                          void * pba,

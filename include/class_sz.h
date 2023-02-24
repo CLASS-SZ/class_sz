@@ -1373,6 +1373,28 @@ struct tszspectrum {
   double alpha_z_xc_B12;
   double alpha_z_beta_B12;
 
+
+  // B.H.
+  double mcut_B12;
+  double alphap_m_P0_B12;
+  double alphap_m_xc_B12;
+  double alphap_m_beta_B12;
+
+  double alpha_c_P0_B12;
+  double alpha_c_xc_B12;
+  double alpha_c_beta_B12;
+
+
+    // B.H.
+  double mcut;
+  double alphap_m_rho0;
+  double alphap_m_alpha;
+  double alphap_m_beta;
+
+  double alpha_c_rho0;
+  double alpha_c_alpha;
+  double alpha_c_beta;
+
   // Battaglia density profile:
   double A_rho0;
   double A_alpha;
@@ -2088,7 +2110,7 @@ double get_pk_nonlin_at_k_and_z(double k, double z,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
                           struct tszspectrum * ptsz);
-                          
+
 double get_pk_nonlin_at_k_and_z_fast(double k, double z,
                           struct background * pba,
                           struct primordial * ppm,
@@ -2525,6 +2547,7 @@ double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
 double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                          double m_asked,
                                          double z_asked,
+                                         double c,
                                          double A_rho,
                                          double A_alpha,
                                          double A_beta,
@@ -2534,6 +2557,15 @@ double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                          double alpha_z_rho0,
                                          double alpha_z_alpha,
                                          double alpha_z_beta,
+                                         // break model param
+		                                     double mcut,
+		                                     double alphap_m_rho0,
+                                         double alphap_m_alpha,
+                                         double alphap_m_beta,
+		                                     double alpha_c_rho0,
+                                         double alpha_c_alpha,
+                                         double alpha_c_beta,
+                                         // end break model param
                                          double gamma,
                                          double xc,
                                          struct background * pba,
@@ -2599,6 +2631,7 @@ double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double z,
 double get_pressure_P_over_P_delta_at_x_M_z_b12_200c(double x_asked,
                                                      double m_asked,
                                                      double z_asked,
+                                                     double c_asked,
                                                      double A_P0,
                                                      double A_xc,
                                                      double A_beta,
@@ -2608,6 +2641,13 @@ double get_pressure_P_over_P_delta_at_x_M_z_b12_200c(double x_asked,
                                                      double alpha_z_P0,
                                                      double alpha_z_xc,
                                                      double alpha_z_beta,
+                                  							     double mcut,
+                                  							     double alphap_m_P0,
+                                  							     double alphap_m_xc,
+                                  							     double alphap_m_beta,
+                                  							     double alpha_c_P0,
+                                  							     double alpha_c_xc,
+                                  							     double alpha_c_beta,
                                                      double alpha,
                                                      double gamma,
                                                      struct background * pba,

@@ -628,6 +628,20 @@ cdef class Class:
             self.tsz.alpha_z_alpha = pdict_to_update['alpha_z_alpha']
           if k == 'alpha_z_beta':
               self.tsz.alpha_z_beta = pdict_to_update['alpha_z_beta']
+          if k == 'mcut':
+              self.tsz.mcut = pdict_to_update['mcut']
+          if k == 'alphap_m_rho0':
+              self.tsz.alphap_m_rho0 = pdict_to_update['alphap_m_rho0']
+          if k == 'alphap_m_alpha':
+             self.tsz.alphap_m_alpha = pdict_to_update['alphap_m_alpha']
+          if k == 'alphap_m_beta':
+              self.tsz.alphap_m_beta = pdict_to_update['alphap_m_beta']
+          if k == 'alpha_c_rho0':
+            self.tsz.alpha_c_rho0 = pdict_to_update['alpha_c_rho0']
+          if k == 'alpha_c_alpha':
+            self.tsz.alpha_c_alpha = pdict_to_update['alpha_c_alpha']
+          if k == 'alpha_c_beta':
+              self.tsz.alpha_c_beta = pdict_to_update['alpha_c_beta']
           if k == 'gamma_B16':
               self.tsz.gamma_B16 = pdict_to_update['gamma_B16']
           if k == 'xc_B16':
@@ -654,6 +668,20 @@ cdef class Class:
               self.tsz.alpha_z_xc_B12 = pdict_to_update['alpha_z_xc_B12']
           if k == 'alpha_z_beta_B12':
               self.tsz.alpha_z_beta_B12 = pdict_to_update['alpha_z_beta_B12']
+          if k == 'mcut_B12':
+              self.tsz.mcut_B12 = pdict_to_update['mcut_B12']
+          if k == 'alphap_m_P0_B12':
+              self.tsz.alphap_m_P0_B12 = pdict_to_update['alphap_m_P0_B12']
+          if k == 'alphap_m_xc_B12':
+              self.tsz.alphap_m_xc_B12 = pdict_to_update['alphap_m_xc_B12']
+          if k == 'alphap_m_beta_B12':
+              self.tsz.alphap_m_beta_B12 = pdict_to_update['alphap_m_beta_B12']
+          if k == 'alpha_c_P0_B12':
+              self.tsz.alpha_c_P0_B12 = pdict_to_update['alpha_c_P0_B12']
+          if k == 'alpha_c_xc_B12':
+              self.tsz.alpha_c_xc_B12 = pdict_to_update['alpha_c_xc_B12']
+          if k == 'alpha_c_beta_B12':
+              self.tsz.alpha_c_beta_B12 = pdict_to_update['alpha_c_beta_B12']
           if k == 'x_outSZ':
               self.tsz.x_outSZ = pdict_to_update['x_outSZ']
         # print('array_redshift:',
@@ -2579,6 +2607,7 @@ cdef class Class:
                                           r_asked,
                                           m_asked,
                                           z_asked,
+                                          c_asked = 0.,
                                           A_rho0 = 4.e3,
                                           A_alpha = 0.88,
                                           A_beta = 3.83,
@@ -2588,12 +2617,20 @@ cdef class Class:
                                           alpha_z_rho0 = -0.66,
                                           alpha_z_alpha = 0.19,
                                           alpha_z_beta = -0.025,
+                                          mcut = 1e14,
+                                          alphap_m_rho0 = 0.29,
+                                          alphap_m_alpha = -0.03,
+                                          alphap_m_beta = 0.04,
+                                          alpha_c_rho0 = 0.,
+                                          alpha_c_alpha = 0.,
+                                          alpha_c_beta = 0.,
                                           gamma = -0.2,
                                           xc = 0.5
                                           ):
         return get_gas_profile_at_x_M_z_b16_200c(r_asked,
                                                  m_asked,
                                                  z_asked,
+                                                 c_asked,
                                                  A_rho0,
                                                  A_alpha,
                                                  A_beta,
@@ -2603,6 +2640,13 @@ cdef class Class:
                                                  alpha_z_rho0,
                                                  alpha_z_alpha,
                                                  alpha_z_beta,
+                                                 mcut,
+                                                 alphap_m_rho0,
+                                                 alphap_m_alpha,
+                                                 alphap_m_beta,
+                                                 alpha_c_rho0,
+                                                 alpha_c_alpha,
+                                                 alpha_c_beta,
                                                  gamma,
                                                  xc,
                                                  &self.ba,
@@ -2612,6 +2656,7 @@ cdef class Class:
                                                         x_asked,
                                                         m_asked,
                                                         z_asked,
+                                                        c_asked = 0.,
                                                         A_P0 = 18.1,
                                                         A_xc = 0.497,
                                                         A_beta = 4.35,
@@ -2621,11 +2666,19 @@ cdef class Class:
                                                         alpha_z_P0 = -0.758,
                                                         alpha_z_xc = 0.731,
                                                         alpha_z_beta = 0.415,
+                                                        mcut = 1e14,
+                                                        alphap_m_P0 = 0.154,
+                                                        alphap_m_xc = -0.00865,
+                                                        alphap_m_beta = 0.0393,
+                                                        alpha_c_P0 = 0.,
+                                                        alpha_c_xc = 0.,
+                                                        alpha_c_beta = 0.,
                                                         alpha = 1.,
                                                         gamma = -0.3):
         return  get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x_asked,
                                                               m_asked,
                                                               z_asked,
+                                                              c_asked,
                                                               A_P0,
                                                               A_xc,
                                                               A_beta,
@@ -2635,6 +2688,13 @@ cdef class Class:
                                                               alpha_z_P0,
                                                               alpha_z_xc,
                                                               alpha_z_beta,
+                                                              mcut,
+                                                              alphap_m_P0,
+                                                              alphap_m_xc,
+                                                              alphap_m_beta,
+                                                              alpha_c_P0,
+                                                              alpha_c_xc,
+                                                              alpha_c_beta,
                                                               alpha,
                                                               gamma,
                                                               &self.ba,

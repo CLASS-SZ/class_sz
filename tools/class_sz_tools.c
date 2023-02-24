@@ -1841,6 +1841,7 @@ struct Parameters_for_integrand_m_to_xout{
   double m;
   double z;
   double rd;
+  double c;
 };
 
 
@@ -1855,6 +1856,7 @@ double rs = V->rd/cd;
 r = 4.*_PI_*pow(rs,3.)*get_gas_profile_at_x_M_z_b16_200c(x,
                                                V->m,
                                                V->z,
+                                               V->c, // TBC
                                                V->ptsz->A_rho0,
                                                V->ptsz->A_alpha,
                                                V->ptsz->A_beta,
@@ -1864,6 +1866,15 @@ r = 4.*_PI_*pow(rs,3.)*get_gas_profile_at_x_M_z_b16_200c(x,
                                                V->ptsz->alpha_z_rho0,
                                                V->ptsz->alpha_z_alpha,
                                                V->ptsz->alpha_z_beta,
+                                               // break model param
+					                                     V->ptsz->mcut,
+					                                     V->ptsz->alphap_m_rho0,
+                                               V->ptsz->alphap_m_alpha,
+                                               V->ptsz->alphap_m_beta,
+					                                     V->ptsz->alpha_c_rho0,
+                                               V->ptsz->alpha_c_alpha,
+                                               V->ptsz->alpha_c_beta,
+                                               // end break model param
                                                V->ptsz->gamma_B16,
                                                V->ptsz->xc_B16,
                                                V->pba,
@@ -1896,6 +1907,7 @@ int m_to_xout(
   V.m = m;
   V.z = z;
   V.rd = rd;
+  V.c = 0.; // TBC!
   // V.pvectsz = Pvectsz;
   // V.pvecback = Pvecback;
 
@@ -3788,22 +3800,28 @@ int rho_gnfw(double * rho_nfw_x,
     double alpha_m_alpha = ptsz->alpha_m_alpha;
     double alpha_m_beta = ptsz->alpha_m_beta;
 
+    double alphap_m_rho0 = ptsz->alphap_m_rho0;
+    double alphap_m_alpha = ptsz->alphap_m_alpha;
+    double alphap_m_beta = ptsz->alphap_m_beta;
+
     double alpha_z_rho0 = ptsz->alpha_z_rho0;
     double alpha_z_alpha = ptsz->alpha_z_alpha;
     double alpha_z_beta = ptsz->alpha_z_beta;
 
   // Eq. A1 and A2:
-  double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
-  double rho0 = 1.;
-  double alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
-  double beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
+  // double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
+  // double rho0 = 1.;
+  // double alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
+  // double beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
 
   double gamma = ptsz->gamma_B16;
   double xc = ptsz->xc_B16;
 
+  double c_asked;
   *rho_nfw_x = get_gas_profile_at_x_M_z_b16_200c(x,
                                                  pvectsz[ptsz->index_m200c],
                                                  z,
+                                                 c_asked,
                                                  A_rho0,
                                                  A_alpha,
                                                  A_beta,
@@ -3813,6 +3831,13 @@ int rho_gnfw(double * rho_nfw_x,
                                                  alpha_z_rho0,
                                                  alpha_z_alpha,
                                                  alpha_z_beta,
+                                                 ptsz->mcut,
+					                                       ptsz->alphap_m_rho0,
+                                                 ptsz->alphap_m_alpha,
+                                                 ptsz->alphap_m_beta,
+					                                       ptsz->alpha_c_rho0,
+                                                 ptsz->alpha_c_alpha,
+                                                 ptsz->alpha_c_beta,
                                                  gamma,
                                                  xc,
                                                  pba,
@@ -4062,6 +4087,7 @@ return result;
 double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                          double m_asked,
                                          double z_asked,
+                                         double c_asked,
                                          double A_rho0,
                                          double A_alpha,
                                          double A_beta,
@@ -4071,6 +4097,13 @@ double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                          double alpha_z_rho0,
                                          double alpha_z_alpha,
                                          double alpha_z_beta,
+                            						 double mcut,
+                            						 double alphap_m_rho0,
+                            						 double alphap_m_alpha,
+                            						 double alphap_m_beta,
+                            						 double alpha_c_rho0,
+                            						 double alpha_c_alpha,
+                            						 double alpha_c_beta,
                                          double gamma,
                                          double xc,
                                          struct background * pba,
@@ -4193,10 +4226,23 @@ free(pvectsz);
   // Eq. A1 and A2:
   double m200_over_msol = m_asked/pba->h; // convert to Msun
   // double rho0  = 1.;
-  double rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z,alpha_z_rho0);
-  double alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
-  double beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
+  double rho0;
+  double alpha;
+  double beta;
+  if (m200_over_msol > mcut) {
+  // rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z,alpha_z_rho0);
+  // alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
+  // beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
+  rho0 = A_rho0*pow(m200_over_msol/mcut,alpha_m_rho0)*pow(1.+z,alpha_z_rho0)*pow(1.+c_asked,alpha_c_rho0);
+  alpha = A_alpha*pow(m200_over_msol/mcut,alpha_m_alpha)*pow(1.+z,alpha_z_alpha)*pow(1.+c_asked,alpha_c_alpha);
+  beta = A_beta*pow(m200_over_msol/mcut,alpha_m_beta)*pow(1.+z,alpha_z_beta)*pow(1.+c_asked,alpha_c_beta);
+  }
+  else{
 
+  rho0 = A_rho0*pow(m200_over_msol/mcut,alphap_m_rho0)*pow(1.+z,alpha_z_rho0)*pow(1.+c_asked,alpha_c_rho0);
+  alpha = A_alpha*pow(m200_over_msol/mcut,alphap_m_alpha)*pow(1.+z,alpha_z_alpha)*pow(1.+c_asked,alpha_c_alpha);
+  beta = A_beta*pow(m200_over_msol/mcut,alphap_m_beta)*pow(1.+z,alpha_z_beta)*pow(1.+c_asked,alpha_c_beta);
+  }
   // double gamma = -0.2;
   // double xc = 0.5;
 
@@ -6270,9 +6316,11 @@ for (ix=0; ix<N; ix++){
       Px[ix] = 0.;
     }
   else{
+    double c_asked = 0.;
     Px[ix] =  get_gas_profile_at_x_M_z_b16_200c(x[ix],
                                                 pvectsz[ptsz->index_m200c],
                                                 z,
+                                                c_asked,
                                                 A_rho0,
                                                 A_alpha,
                                                 A_beta,
@@ -6282,6 +6330,13 @@ for (ix=0; ix<N; ix++){
                                                 alpha_z_rho0,
                                                 alpha_z_alpha,
                                                 alpha_z_beta,
+					                                      ptsz->mcut,
+					                                      ptsz->alphap_m_rho0,
+                                                ptsz->alphap_m_alpha,
+                                                ptsz->alphap_m_beta,
+					                                      ptsz->alpha_c_rho0,
+                                                ptsz->alpha_c_alpha,
+                                                ptsz->alpha_c_beta,                                                
                                                 gamma,
                                                 xc,
                                                 pba,
@@ -6736,23 +6791,46 @@ for (ix=0; ix<N; ix++){
     }
   else{
 
-        double xc;
-        double beta;
-        double P0;
-
+        // double xc;
+        // double beta;
+        // double P0;
+        //
         double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
         double z = pvectsz[ptsz->index_z];
+        //
+        //
+        // P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
+        // xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
+        // beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
+        //
+        // double gamma = ptsz->gamma_B12;
+        // double alpha = ptsz->alpha_B12;
+        //
+        // double p_gnfw_x = P0*pow(x[ix]/xc,gamma)*pow(1.+ pow(x[ix]/xc,alpha),-beta);
+        // Px[ix] = p_gnfw_x;
+
+double c_asked = 0.;//what we pass there?
+Px[ix] = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x[ix],m200_over_msol,z,
+                                              c_asked,ptsz->P0_B12,
+                                              ptsz->xc_B12,ptsz->beta_B12,
+                                              ptsz->alpha_m_P0_B12,ptsz->alpha_m_xc_B12,
+                                              ptsz->alpha_m_beta_B12,ptsz->alpha_z_P0_B12,
+                                              ptsz->alpha_z_xc_B12,ptsz->alpha_z_beta_B12,
+                                              // break model
+                                  						ptsz->mcut_B12,ptsz->alphap_m_P0_B12,
+                                  						ptsz->alphap_m_xc_B12,ptsz->alphap_m_beta_B12,
+                                  						ptsz->alpha_c_P0_B12,
+                                  						ptsz->alpha_c_xc_B12,
+                                  						ptsz->alpha_c_beta_B12,
+                                                     // end break model
+                                              ptsz->alpha_B12,
+                                              ptsz->gamma_B12,
+                                              pba,ptsz);
 
 
-        P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
-        xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
-        beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
 
-        double gamma = ptsz->gamma_B12;
-        double alpha = ptsz->alpha_B12;
 
-        double p_gnfw_x = P0*pow(x[ix]/xc,gamma)*pow(1.+ pow(x[ix]/xc,alpha),-beta);
-        Px[ix] = p_gnfw_x;
+
     }
   // printf("x = %.3e Px = %.3e\n",x[ix],Px[ix]);
 
@@ -10327,26 +10405,48 @@ int p_gnfw(double * p_gnfw_x,
 
 
 
-        double xc;
-        double beta;
-        double P0;
-
+        // double xc;
+        // double beta;
+        // double P0;
+        //
         double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
-        double z = pvectsz[ptsz->index_z];
+        // double z = pvectsz[ptsz->index_z];
+        //
+        //
+        // P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
+        // xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
+        // beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
+        //
+        // double gamma = ptsz->gamma_B12;
+        // double alpha = ptsz->alpha_B12;
 
+double c_asked = 0.;
+double Px = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x,m200_over_msol,pvectsz[ptsz->index_z],
+                                              c_asked,ptsz->P0_B12,
+                                              ptsz->xc_B12,ptsz->beta_B12,
+                                              ptsz->alpha_m_P0_B12,ptsz->alpha_m_xc_B12,
+                                              ptsz->alpha_m_beta_B12,ptsz->alpha_z_P0_B12,
+                                              ptsz->alpha_z_xc_B12,ptsz->alpha_z_beta_B12,
+                                              // break model
+                                  						ptsz->mcut_B12,ptsz->alphap_m_P0_B12,
+                                  						ptsz->alphap_m_xc_B12,ptsz->alphap_m_beta_B12,
+                                  						ptsz->alpha_c_P0_B12,
+                                  						ptsz->alpha_c_xc_B12,
+                                  						ptsz->alpha_c_beta_B12,
+                                                     // end break model
+                                              ptsz->alpha_B12,
+                                              ptsz->gamma_B12,
+                                              pba,ptsz);
 
-        P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
-        xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
-        beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
+          // *p_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)
+          //               *pow(x,2)
+          //               /(x*kl);
 
-        double gamma = ptsz->gamma_B12;
-        double alpha = ptsz->alpha_B12;
+        *p_gnfw_x = Px*pow(x,2)/(x*kl);
 
-          *p_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)
-                        *pow(x,2)
-                        /(x*kl);
-        if (_mean_y_ || _dydz_)
-          *p_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)*pow(x,2);
+  if (_mean_y_ || _dydz_)
+        // *p_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)*pow(x,2);
+        *p_gnfw_x = Px*pow(x,2);
     }
   else{
       *p_gnfw_x = 0.;

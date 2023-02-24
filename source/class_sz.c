@@ -1381,7 +1381,7 @@ if (ptsz->has_sz_rates){
 
 
   if ( (ptsz->has_gal_gallens_1h || ptsz->has_gal_gallens_2h) && ptsz->convert_cls_to_gamma){
-
+    // shear
     if (ptsz->sz_verbose > 0) printf("converting cls to gamma\n");
     class_alloc(ptsz->thetas_arcmin,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
     class_alloc(ptsz->gamma_gal_gallens_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
@@ -8880,6 +8880,7 @@ int evaluate_pressure_profile(double kl,
 double get_pressure_P_over_P_delta_at_x_M_z_b12_200c(double x_asked,
                                                      double m_asked,
                                                      double z_asked,
+                                                     double c_asked,
                                                      double A_P0,
                                                      double A_xc,
                                                      double A_beta,
@@ -8889,6 +8890,15 @@ double get_pressure_P_over_P_delta_at_x_M_z_b12_200c(double x_asked,
                                                      double alpha_z_P0,
                                                      double alpha_z_xc,
                                                      double alpha_z_beta,
+                                                     // break model
+                                  							     double mcut,
+                                  							     double alphap_m_P0,
+                                  							     double alphap_m_xc,
+                                  							     double alphap_m_beta,
+                                  							     double alpha_c_P0,
+                                  							     double alpha_c_xc,
+                                  							     double alpha_c_beta,
+                                                     // end break model
                                                      double alpha,
                                                      double gamma,
                                                      struct background * pba,
@@ -8904,11 +8914,22 @@ double get_pressure_P_over_P_delta_at_x_M_z_b12_200c(double x_asked,
   double x = x_asked;
   double z = z_asked;
 
+  if (m200_over_msol > mcut) {
 
-  P0 = A_P0*pow(m200_over_msol/1e14,alpha_m_P0)*pow(1.+z,alpha_z_P0);
-  xc = A_xc*pow(m200_over_msol/1e14,alpha_m_xc)*pow(1.+z,alpha_z_xc);
-  beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
+  // P0 = A_P0*pow(m200_over_msol/1e14,alpha_m_P0)*pow(1.+z,alpha_z_P0);
+  // xc = A_xc*pow(m200_over_msol/1e14,alpha_m_xc)*pow(1.+z,alpha_z_xc);
+  // beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
 
+    P0 = A_P0*pow(m200_over_msol/mcut,alpha_m_P0)*pow(1.+z,alpha_z_P0)*pow(1.+c_asked,alpha_c_P0);
+    xc = A_xc*pow(m200_over_msol/mcut,alpha_m_xc)*pow(1.+z,alpha_z_xc)*pow(1.+c_asked,alpha_c_xc);
+    beta = A_beta*pow(m200_over_msol/mcut,alpha_m_beta)*pow(1.+z,alpha_z_beta)*pow(1.+c_asked,alpha_c_beta);
+
+}
+else {
+  P0 = A_P0*pow(m200_over_msol/mcut,alphap_m_P0)*pow(1.+z,alpha_z_P0)*pow(1.+c_asked,alpha_c_P0);
+  xc = A_xc*pow(m200_over_msol/mcut,alphap_m_xc)*pow(1.+z,alpha_z_xc)*pow(1.+c_asked,alpha_c_xc);
+  beta = A_beta*pow(m200_over_msol/mcut,alphap_m_beta)*pow(1.+z,alpha_z_beta)*pow(1.+c_asked,alpha_c_beta);
+}
   // double gamma = -0.3;
   // double alpha = 1.0;
 
@@ -8972,23 +8993,40 @@ double get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(double x,
 
   /// NORMALIZED PRESSURE PROFILE PART
 
-  double xc;
-  double beta;
-  double P0;
-
+  // double xc;
+  // double beta;
+  // double P0;
+  //
   double m200_over_msol = m/pba->h; // convert to Msun
+  //
+  //
+  // P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
+  // xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
+  // beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
+  //
+  // double gamma = ptsz->gamma_B12;
+  // double alpha = ptsz->alpha_B12;
+  //
+  // double plc_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta);
 
-
-  P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
-  xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
-  beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
-
-  double gamma = ptsz->gamma_B12;
-  double alpha = ptsz->alpha_B12;
-
-  double plc_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta);
-
-
+double c_asked = 0.;
+double Px = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x,m200_over_msol,z,
+                                              c_asked,ptsz->P0_B12,
+                                              ptsz->xc_B12,ptsz->beta_B12,
+                                              ptsz->alpha_m_P0_B12,ptsz->alpha_m_xc_B12,
+                                              ptsz->alpha_m_beta_B12,ptsz->alpha_z_P0_B12,
+                                              ptsz->alpha_z_xc_B12,ptsz->alpha_z_beta_B12,
+                                              // break model
+                                  						ptsz->mcut_B12,ptsz->alphap_m_P0_B12,
+                                  						ptsz->alphap_m_xc_B12,ptsz->alphap_m_beta_B12,
+                                  						ptsz->alpha_c_P0_B12,
+                                  						ptsz->alpha_c_xc_B12,
+                                  						ptsz->alpha_c_beta_B12,
+                                                     // end break model
+                                              ptsz->alpha_B12,
+                                              ptsz->gamma_B12,
+                                              pba,ptsz);
+double plc_x = Px;
   //putting everything together
   double result = sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb // here Tcmb is in muK
                    /50. // to cancel the factor 50 above 50eV/cm^3
