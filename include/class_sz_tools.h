@@ -20,6 +20,45 @@ extern "C" {
 #endif
 
 
+int y_to_m (
+            double xout,
+            double * mRES,
+            double z,
+            double m,
+            // double rd,
+            struct tszspectrum * ptsz,
+            struct background * pba,
+            struct nonlinear * pnl,
+            struct primordial * ppm
+          );
+
+int solve_y_to_m(
+                    double * result,
+                    double z,
+                    double m,
+                    struct tszspectrum * ptsz,
+                    struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm
+                  );
+
+int zbrent_y_to_m(
+              double x1,
+              double x2,
+              double tol,
+              double fa,
+              double fb,
+              double * knl,
+              double z,
+              double m,
+              // double rd,
+              struct tszspectrum * ptsz,
+              struct background * pba,
+              struct nonlinear * pnl,
+              struct primordial * ppm
+            );
+
+
 int m_to_xout (
             double xout,
             double * mRES,
@@ -63,6 +102,13 @@ int tabulate_m_to_xout(struct background * pba,
                        struct primordial * ppm,
                        struct tszspectrum * ptsz);
 
+int tabulate_y_to_m(struct background * pba,
+                       struct nonlinear * pnl,
+                       struct primordial * ppm,
+                       struct tszspectrum * ptsz);
+double get_y_to_m_at_z_and_y(double z_asked, double y_asked, struct tszspectrum * ptsz);
+double get_dlnm_dlny(double lny,double z,struct tszspectrum * ptsz);
+double get_dNdlny_at_z_and_y(double z_asked, double y_asked, struct background * pba, struct tszspectrum * ptsz);
 double integrate_over_m_at_z(double * pvecback,
                            double * pvectsz,
                            struct background * pba,

@@ -224,7 +224,7 @@ cdef class Class:
         if(self.allocated != True):
           return
         if "szcount" in self.ncp: #BB: added for class_sz
-            szcount_free(&self.csz)
+            szcounts_free(&self.csz,&self.tsz)
         if "szpowerspectrum" in self.ncp:  #BB: added for class_sz
             szpowerspectrum_free(&self.tsz)
         if "lensing" in self.ncp:
@@ -628,6 +628,8 @@ cdef class Class:
             self.tsz.alpha_z_alpha = pdict_to_update['alpha_z_alpha']
           if k == 'alpha_z_beta':
               self.tsz.alpha_z_beta = pdict_to_update['alpha_z_beta']
+          if k == 'c_B16':
+              self.tsz.c_B16 = pdict_to_update['cp_B16']
           if k == 'mcut':
               self.tsz.mcut = pdict_to_update['mcut']
           if k == 'alphap_m_rho0':
@@ -668,6 +670,8 @@ cdef class Class:
               self.tsz.alpha_z_xc_B12 = pdict_to_update['alpha_z_xc_B12']
           if k == 'alpha_z_beta_B12':
               self.tsz.alpha_z_beta_B12 = pdict_to_update['alpha_z_beta_B12']
+          if k == 'c_B12':
+              self.tsz.c_B12 = pdict_to_update['cp_B12']
           if k == 'mcut_B12':
               self.tsz.mcut_B12 = pdict_to_update['mcut_B12']
           if k == 'alphap_m_P0_B12':

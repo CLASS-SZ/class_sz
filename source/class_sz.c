@@ -9009,7 +9009,7 @@ double get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(double x,
   //
   // double plc_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta);
 
-double c_asked = 0.;
+double c_asked = ptsz->c_B12;
 double Px = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x,m200_over_msol,z,
                                               c_asked,ptsz->P0_B12,
                                               ptsz->xc_B12,ptsz->beta_B12,
@@ -17841,45 +17841,7 @@ return c500;
 }
 
 
-// Mass cuts for unwise galaxy
-// This functions returns an m_cut value depending on the sample (red, blue or gree)
-// We typically use it for M200m, but this is an arbitrary choice
-// We restrict the mass integral to go from m_cut to the max set in the param file ('M2SZ', typically 1e15Msun/h)
-//
-// def(mcut, zz, isamp, green_option='default'):
-//     '''Gives mcut for 5-param Zheng HOD for wise sample isamp at redshift zz.
-//     Satellite fractions 5-10% for red and green, and 25% for blue.
-//     green_option = 'default' or 'shallower'; 'default' is the default
-//     bias evolution, and shallower is a somewhat shallower bias evolution,
-//     but with higher masses.'''
-//     if isamp=='red':
-//         zall = [ 0.75,  1.00,  1.5,  2.0]
-//         mcut_all = [12.00, 12.00, 12.6, 13.6]
-//         if zz <= 0.75:
-//             mcut = 12.00
-//         elif (zz > 0.75) & (zz <= 2.00):
-//             mcut = np.interp(zz,zall,mcut_all)
-//         elif zz >= 2.00:
-//             mcut = 13.6
-//     elif isamp=='green':
-//         if green_option == 'default':
-//             zall = [0.00, 0.25, 0.4, 0.5, 0.65, 0.75, 1.00, 1.25, 1.50, 2.00, 2.50]
-//             mcut_all = [11.9, 12.0, 12.15, 12.15, 11.75, 11.75, 12.4, 12.6, 12.75, 13.25, 13.25]
-//             if zz <= 2.5:
-//                mcut = np.interp(zz, zall,mcut_all)
-//             else:
-//                 mcut = 13.55
-//         elif green_option == 'shallower':
-//             zall = [0.25, 0.4, 0.5, 0.65, 0.75, 1.00]
-//             mcut_all = [11.5, 12, 12, 11, 11, 12.72]
-//             if zz <= 1.0:
-//                 mcut = np.interp(zz, zall,mcut_all)
-//             else:
-//                 mcut = -0.5161*zz**4+2.919*zz**3-5.384*zz**2+\
-//                            3.842*zz+12.01 if zz < 2.5 else 13.42
-//     elif isamp=='blue':
-//         mcut = 11.65 + zz
-//     return mcut
+
 
 double evaluate_unwise_m_min_cut(double z,
                                  int sample_id,

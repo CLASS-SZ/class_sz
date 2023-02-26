@@ -3332,6 +3332,21 @@ int input_read_parameters(
 
       }
 
+      if ((strstr(string1,"sz_cluster_counts_fft") != NULL) ) {
+        // printf("counts\n");
+        ptsz->has_sz_counts =_TRUE_;
+        ptsz->has_sz_counts_fft =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+        ptsz->has_500c = 1;
+
+      }
+
+
       if ((strstr(string1,"sz_unbinned_cluster_counts") != NULL) ) {
         // printf("counts\n");
         ptsz->has_sz_counts =_TRUE_;
@@ -3865,6 +3880,9 @@ int input_read_parameters(
        class_read_double("alpha_z_xc_B12",ptsz->alpha_z_xc_B12);// = 0.731;
        class_read_double("alpha_z_beta_B12",ptsz->alpha_z_beta_B12);// = 0.415;
 
+       class_read_double("cp_B12",ptsz->c_B12);// = 1.e14;
+       class_read_double("cp_B16",ptsz->c_B16);// = 1.e14;
+
        class_read_double("mcut_B12",ptsz->mcut_B12);// = 1.e14;
        class_read_double("alphap_m_P0_B12",ptsz->alphap_m_P0_B12);// = 0.154;
        class_read_double("alphap_m_xc_B12",ptsz->alphap_m_xc_B12);// = -0.00865;
@@ -4109,7 +4127,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
             ptsz->alpha_z_beta = -0.025;
             ptsz->xc_B16 = 0.5;
 
-
+            ptsz->c_B16 = 0.;
 	          ptsz->mcut = 1.e14;
             ptsz->alphap_m_rho0 = 0.29;
             ptsz->alphap_m_alpha = -0.03;
@@ -4135,6 +4153,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
             ptsz->alpha_z_beta = 0.037;
             ptsz->xc_B16 = 0.5;
 
+            ptsz->c_B16 = 0.;
 	          ptsz->mcut = 1.e14;
             ptsz->alphap_m_rho0 = 0.09;
             ptsz->alphap_m_alpha = -0.017;
@@ -4160,7 +4179,8 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
 
 
 	        // B.H.
-	        class_read_double("mcut",ptsz->mcut);
+          class_read_double("cp_B16",ptsz->c_B16);
+          class_read_double("mcut",ptsz->mcut);
           class_read_double("alphap_m_rho0",ptsz->alphap_m_rho0);
           class_read_double("alphap_m_alpha",ptsz->alphap_m_alpha);
           class_read_double("alphap_m_beta",ptsz->alphap_m_beta);
@@ -5334,6 +5354,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
 
     if (ptsz->has_sz_ps
       + ptsz->has_sz_counts
+      + ptsz->has_sz_counts_fft
       + ptsz->has_sz_rates
       + ptsz->has_hmf
       + ptsz->has_pk_at_z_1h
@@ -6331,6 +6352,7 @@ int input_default_params(
    ptsz->alpha_z_xc_B12 = 0.731;
    ptsz->alpha_z_beta_B12 = 0.415;
 
+   ptsz->c_B12 = 0.;
    ptsz->mcut_B12 = 1.e14;
    ptsz->alphap_m_P0_B12 = 0.154;
    ptsz->alphap_m_xc_B12 = -0.00865;
@@ -6362,6 +6384,15 @@ int input_default_params(
    ptsz->xc_B16 = 0.5;
 
 
+   ptsz->c_B16 = 0.;
+	 ptsz->mcut = 1.e14;
+   ptsz->alphap_m_rho0 = 0.29;
+   ptsz->alphap_m_alpha = -0.03;
+   ptsz->alphap_m_beta = 0.04;
+
+   ptsz->alpha_c_rho0 = 0.;
+   ptsz->alpha_c_alpha = 0.;
+   ptsz->alpha_c_beta = 0.;
   //units
   ptsz->nu_y_dist_GHz = 150.;
   ptsz->exponent_unit = 2; // 2: dimensionless, 0:  'muK' (micro Kelvin)
@@ -6569,6 +6600,7 @@ int input_default_params(
 
   //ptsz->has_tszspectrum = _FALSE_;
   ptsz->has_sz_counts = _FALSE_;
+  ptsz->has_sz_counts_fft = _FALSE_;
   ptsz->has_sz_rates = _FALSE_;
   ptsz->has_isw_lens = _FALSE_;
   ptsz->has_isw_tsz = _FALSE_;

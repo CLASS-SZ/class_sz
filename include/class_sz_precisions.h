@@ -105,6 +105,10 @@ class_sz_ptsz_parameter(n_mass_m_to_xout , int,102);
 class_sz_ptsz_parameter(use_bg_at_z_in_ksz2g_eff, int, 0);
 class_sz_ptsz_parameter(use_fdndz_for_ksz2g_eff, int, 0);
 
+
+class_sz_ptsz_parameter(n_y_y_to_m,int,50)
+class_sz_ptsz_parameter(n_z_y_to_m,int,50)
+
 class_sz_ptsz_parameter(n_z_psi_b1gt,int,50)
 class_sz_ptsz_parameter(n_l_psi_b1gt,int,50)
 

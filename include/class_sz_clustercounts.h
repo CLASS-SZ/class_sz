@@ -89,7 +89,7 @@ int szcount_init(struct background * pba,
                    struct szcount * pcsz);
 
 
-int szcount_free(struct szcount * pcsz);
+int szcounts_free(struct szcount * pcsz,struct tszspectrum * ptsz);
 
 
 int compute_count_sz(struct background * pba,
@@ -97,6 +97,13 @@ int compute_count_sz(struct background * pba,
                      struct primordial * ppm,
                      struct tszspectrum * ptsz,
                      struct szcount * pcsz);
+
+int compute_counts_sz_fft(struct background * pba,
+                     struct nonlinear * pnl,
+                     struct primordial * ppm,
+                     struct tszspectrum * ptsz,
+                     struct szcount * pcsz);
+
 
   int grid_C_2d(double * pvecsz,
                 struct background *pba,

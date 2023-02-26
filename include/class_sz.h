@@ -371,6 +371,7 @@ struct tszspectrum {
   int index_md;
 
   int has_sz_counts;
+  int has_sz_counts_fft;
 
   int create_ref_trispectrum_for_cobaya;
 
@@ -1286,6 +1287,16 @@ struct tszspectrum {
   double M2SZ_dndlnM;
 
 
+  double y_min;
+  double y_max;
+
+  // int n_y_y_to_m;
+  // int n_z_y_to_m;
+  // int n_mass_y_to_m;
+  double * array_y_to_m_y;
+  double * array_y_to_m_at_z_y;
+  double * array_y_to_m_redshift;
+
   // double z1SZ_L_sat;
   // double z2SZ_L_sat;
   //
@@ -1376,6 +1387,8 @@ struct tszspectrum {
 
   // B.H.
   double mcut_B12;
+  double c_B12;
+  double c_B16;
   double alphap_m_P0_B12;
   double alphap_m_xc_B12;
   double alphap_m_beta_B12;

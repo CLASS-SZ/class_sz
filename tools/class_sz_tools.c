@@ -799,8 +799,190 @@ int zbrent_pkl_to_knl(
 }
 
 
+
+
+
 //Root finding algorithm
-//for the nonlinear scale
+//for the inverting ym relation
+int zbrent_y_to_m(
+              double x1,
+              double x2,
+              double tol,
+              double fa,
+              double fb,
+              double * knl,
+              double z,
+              double y,
+              // double rd,
+              struct tszspectrum * ptsz,
+              struct background * pba,
+              struct nonlinear * pnl,
+              struct primordial * ppm
+              )
+{
+  int iter;
+  int ITMAX = 100;
+
+  double a;
+  double b;
+  double c;
+  double d;
+  double e;
+  double min1;
+  double min2;
+  double fc;
+  double p;
+  double q;
+  double r;
+  double tol1;
+  double s;
+  double xm;
+  double EPS2;
+
+  double knl_test;
+
+
+
+
+  EPS2=3.e-8;
+  a =x1;
+  b =x2;
+
+
+  // knl_test = exp(a);
+
+
+  class_call(
+             y_to_m(
+                        a,
+                        &fa,
+                        z,
+                        y,
+                        // rd,
+                        ptsz,
+                        pba,
+                        pnl,
+                        ppm
+                        ),
+             ptsz->error_message,
+             ptsz->error_message);
+
+  // knl_test = exp(b);
+
+
+  class_call(
+             y_to_m(
+                    b,
+                    &fb,
+                    z,
+                    y,
+                    // rd,
+                    ptsz,
+                    pba,
+                    pnl,
+                    ppm
+                    ),
+             ptsz->error_message,
+             ptsz->error_message);
+
+
+  if ((fb)*(fa) > 0.0)  {
+    printf("Root must be bracketed in ZBRENT\n");
+    return _FAILURE_;
+  }
+
+  fc=fb;
+
+  for (iter=1;iter<=ITMAX;iter++) {
+    if ((fb)*(fc) > 0.0) {
+      c=a;
+      fc=fa;
+      e=d=b-a;
+    }
+
+    if (fabs(fc) < fabs(fb)) {
+      a=b;
+      b=c;
+      c=a;
+      fa=fb;
+      fb=fc;
+      fc=fa;
+    }
+    tol1=2.0*(EPS2)*fabs(b)+0.5*tol;
+    xm=0.5*(c-b);
+    if (fabs(xm) <= tol1 || fb == 0.0)  {
+      *knl = b;
+
+
+      return _SUCCESS_;
+    }
+
+    if (fabs(e) >= tol1 && fabs(fa) > fabs(fb)) {
+      s=fb/(fa);
+      if (a == c) {
+        p=2.0*(xm)*(s);
+        q=1.0-s;
+      }
+      else {
+        q=fa/(fc);
+        r=fb/(fc);
+        p=s*(2.0*(xm)*(q)*(q-r)-(b-a)*(r-1.0));
+        q=(q-1.0)*(r-1.0)*(s-1.0);
+      }
+      if (p > 0.0)  q = -q;
+      p=fabs(p);
+      min1=3.0*(xm)*(q)-fabs(tol1*(q));
+      min2=fabs(e*(q));
+      if (2.0*(p) < (min1 < min2 ? min1 : min2))
+      {
+        e=d;
+        d=p/(q);
+      }
+      else {
+        d=xm;
+        e=d;
+      }
+    }
+    else {
+      d=xm;
+      e=d;
+    }
+    a=b;
+    fa=fb;
+    if (fabs(d) > tol1)
+      b += d;
+    else
+      b += (xm > 0.0 ? fabs(tol1) : -fabs(tol1));
+
+
+
+    class_call(
+               y_to_m(
+                      b,
+                      &fb,
+                      z,
+                      y,
+                      // rd,
+                      ptsz,
+                      pba,
+                      pnl,
+                      ppm
+                      ),
+               ptsz->error_message,
+               ptsz->error_message);
+  }
+
+  printf("Max. num. of ite. exceeded in ZBRENT\n");
+
+  return _FAILURE_;
+}
+
+
+
+
+
+//Root finding algorithm
+//for the outer radius of gas density profile
 int zbrent_m_to_xout(
               double x1,
               double x2,
@@ -1856,7 +2038,7 @@ double rs = V->rd/cd;
 r = 4.*_PI_*pow(rs,3.)*get_gas_profile_at_x_M_z_b16_200c(x,
                                                V->m,
                                                V->z,
-                                               V->c, // TBC
+                                               V->ptsz->c_B16, // TBC
                                                V->ptsz->A_rho0,
                                                V->ptsz->A_alpha,
                                                V->ptsz->A_beta,
@@ -1886,6 +2068,56 @@ return r;
 
 //Routine used for
 //finding the non-linear scale
+int y_to_m(
+            double xout,
+            double * mRES,
+            double z,
+            double y,
+            // double rd,
+            struct tszspectrum * ptsz,
+            struct background * pba,
+            struct nonlinear * pnl,
+            struct primordial * ppm
+            )
+{
+
+  // struct Parameters_for_integrand_y_to_m V;
+  // V.pnl = pnl;
+  // V.ppm = ppm;
+  // V.ptsz = ptsz;
+  // V.pba = pba;
+  // V.m = m;
+  // V.z = z;
+  // // V.rd = rd;
+  // // V.c = 0.; // TBC!
+  // // V.pvectsz = Pvectsz;
+  // // V.pvecback = Pvecback;
+  //
+  // void * params = &V;
+  //
+  //
+  // double epsrel= ptsz->m_to_xout_epsrel;
+  // double epsabs= ptsz->m_to_xout_epsabs;
+  // int show_neval = ptsz->patterson_show_neval;
+  // //integral of density profile.
+  // double m_profile = Integrate_using_Patterson_adaptive(1e-5, xout,
+  //                                                       epsrel, epsabs,
+  //                                                       integrand_m_to_xout,
+  //                                                       params,show_neval);
+  //
+
+  *mRES = get_y_at_m_and_z(xout,z,ptsz,pba) - y;
+
+  return _SUCCESS_;
+}
+
+
+
+
+
+
+//Routine used for
+//finding the non-linear scale
 int m_to_xout(
             double xout,
             double * mRES,
@@ -1907,7 +2139,7 @@ int m_to_xout(
   V.m = m;
   V.z = z;
   V.rd = rd;
-  V.c = 0.; // TBC!
+  V.c = ptsz->c_B16; // TBC!
   // V.pvectsz = Pvectsz;
   // V.pvecback = Pvecback;
 
@@ -1927,6 +2159,110 @@ int m_to_xout(
   *mRES =m_profile-ptsz->f_b_gas*m;
 
   return _SUCCESS_;
+}
+
+
+
+
+int tabulate_y_to_m(struct background * pba,
+                   struct nonlinear * pnl,
+                   struct primordial * ppm,
+                   struct tszspectrum * ptsz){
+
+if (ptsz->sz_verbose > 0)
+ printf("->SZ_counts tabulating y to m.\n");
+
+class_alloc(ptsz->array_y_to_m_redshift,sizeof(double *)*ptsz->n_z_y_to_m,ptsz->error_message);
+class_alloc(ptsz->array_y_to_m_y,sizeof(double *)*ptsz->n_y_y_to_m,ptsz->error_message);
+class_alloc(ptsz->array_y_to_m_at_z_y,sizeof(double *)*ptsz->n_z_y_to_m*ptsz->n_y_y_to_m,ptsz->error_message);
+
+
+double r;
+double y_min,y_max;
+y_min = exp(ptsz->lnymin); // for the mass integral
+y_max = exp(ptsz->lnymax); // for the mass integral
+int index_y;
+for (index_y=0; index_y<ptsz->n_y_y_to_m; index_y++)
+        {
+
+          ptsz->array_y_to_m_y[index_y] =
+                                      log(y_min)
+                                      +index_y*(log(y_max)-log(y_min))
+                                      /(ptsz->n_y_y_to_m-1.); // log(nu)
+        }
+
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+int index_z;
+for (index_z=0; index_z<ptsz->n_z_y_to_m; index_z++)
+        {
+
+          ptsz->array_y_to_m_redshift[index_z] =
+                                                  log(1.+z_min)
+                                                  +index_z*(log(1.+z_max)-log(1.+z_min))
+                                                  /(ptsz->n_z_y_to_m-1.); // log(1+z)
+        }
+
+
+
+double tstart, tstop;
+int abort;
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+pba,ptsz,ppm,pnl,z_min,z_max,y_min,y_max)\
+private(tstart, tstop,index_z,index_y,r) \
+num_threads(number_of_threads)
+{
+
+  #pragma omp for collapse(2)
+  for (index_z=0; index_z<ptsz->n_z_y_to_m; index_z++)
+  {
+    for (index_y=0; index_y<ptsz->n_y_y_to_m; index_y++)
+    {
+
+  #ifdef _OPENMP
+    tstart = omp_get_wtime();
+  #endif
+
+// double xout_var; // in multiples of 200c
+double z = exp(ptsz->array_y_to_m_redshift[index_z])-1.;;
+double y = exp(ptsz->array_y_to_m_y[index_y]);
+
+int index_z_y = index_y * ptsz->n_z_y_to_m + index_z;
+
+solve_y_to_m(&r,
+             z,
+             y,
+             ptsz,
+             pba,
+             pnl,
+             ppm);
+
+// printf("z = %.5e m=%.5e xout = %.5e\n",z,m,r);
+  ptsz->array_y_to_m_at_z_y[index_z_y] = r;
+}
+}
+
+#ifdef _OPENMP
+  tstop = omp_get_wtime();
+  if (ptsz->sz_verbose > 0)
+    printf("In %s: time spent in parallel region (loop over z m's) = %e s for thread %d\n",
+           __func__,tstop-tstart,omp_get_thread_num());
+#endif
+}
+if (abort == _TRUE_) return _FAILURE_;
 }
 
 
@@ -2436,6 +2772,210 @@ free(pvectsz);
                                z,
                                m,
                                rd,
+                               ptsz,
+                               pba,
+                               pnl,
+                               ppm
+                               ),
+             ptsz->error_message,
+             ptsz->error_message);
+
+  mDEL = logMDEL;
+  *result = mDEL;
+
+  free(mTEST);
+  return _SUCCESS_;
+}
+
+
+
+
+//Routine used for
+//the invert ym relation
+int solve_y_to_m(
+                    double * result,
+                    double z,
+                    double y,
+                    struct tszspectrum * ptsz,
+                    struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm
+                    )
+{
+
+  // printf("z = %.5e m=%.5e xout = %.5e\n",z,m,r);
+  // printf("z = %.5e m=%.5e\n",z,m);
+
+
+// /// get rhoc and rd
+//
+// double * pvecback;
+// double * pvectsz;
+//
+// double tau;
+// int first_index_back = 0;
+//
+// class_alloc(pvecback,
+//             pba->bg_size*sizeof(double),
+//             ptsz->error_message);
+//
+// class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+ int i;
+//  for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+//
+// class_call(background_tau_of_z(pba,z,&tau),
+//            pba->error_message,
+//            pba->error_message);
+//
+// class_call(background_at_tau(pba,
+//                              tau,
+//                              pba->long_info,
+//                              pba->inter_normal,
+//                              &first_index_back,
+//                              pvecback),
+//            pba->error_message,
+//            pba->error_message);
+//
+//
+//
+//
+// // pvectsz[ptsz->index_z] = z;
+// pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+//                                 *pow(_Mpc_over_m_,1)
+//                                 *pow(_c_,2)
+//                                 *pvecback[pba->index_bg_rho_crit]
+//                                 /pow(pba->h,2);
+//
+// double rho_crit = pvectsz[ptsz->index_Rho_crit];
+// double delta = 200.;//*pvecback[pba->index_bg_Omega_m];
+// double c_delta = get_c200c_at_m_and_z(m,z,pba,ptsz);
+// double rd = pow(3.*m/(4.*_PI_*delta*rho_crit),1./3.); //in units of h^-1 Mpc
+//
+//
+// free(pvecback);
+// free(pvectsz);
+/////
+
+
+
+  double  mDEL;
+  double  var;
+
+  double  lTEST;
+
+  double  fa;
+  double  fb;
+  double  m1;
+  double  m2;
+  double  mLO;
+  double  mUP;
+  double  logMDEL;
+
+
+
+  // int  i;
+  int iMAX = 50;
+
+  double * mTEST;
+  class_alloc(mTEST,
+              iMAX*sizeof( double ),
+              ptsz->error_message);
+
+
+
+  mTEST[0] = 1.e14;
+
+ // printf("res 0 ini : %.3e\n",lTEST);
+  class_call(
+             y_to_m(
+                    mTEST[0],
+                    &lTEST,
+                    z,
+                    y,
+                    // rd,
+                    ptsz,
+                    pba,
+                    pnl,
+                    ppm
+                    ),
+             ptsz->error_message,
+             ptsz->error_message
+             );
+ // printf("res 0 : %.3e\n",lTEST);
+ //exit(0);
+
+  if (lTEST <= 0.) {
+    for (i=1;i<iMAX;i++ ) {
+
+      mTEST[i] = 2.*mTEST[i-1];
+
+      class_call(
+                 y_to_m(
+                        mTEST[i],
+                        &lTEST,
+                        z,
+                        y,
+                        // rd,
+                        ptsz,
+                        pba,
+                        pnl,
+                        ppm
+                        ),
+                 ptsz->error_message,
+                 ptsz->error_message
+                 );
+
+      if (lTEST > 0.)
+      {
+        m1 = mTEST[i];
+        m2 = mTEST[i-1];
+        break;
+      }
+    }
+  }
+  else
+  {
+    for (i=1;i<iMAX;i++ )
+    {
+      mTEST[i] = mTEST[i-1]/2.;
+
+      class_call(
+                 y_to_m(
+                        mTEST[i],
+                        &lTEST,
+                        z,
+                        y,
+                        // rd,
+                        ptsz,
+                        pba,
+                        pnl,
+                        ppm
+                        ),
+                 ptsz->error_message,
+                 ptsz->error_message);
+
+      if(lTEST < 0.)
+      {
+        m1 = mTEST[i];
+        m2 = mTEST[i-1];
+        break;
+      }
+    }
+  }
+
+  mLO=MIN(m1,m2);
+  mUP=MAX(m1,m2);
+
+  class_call(zbrent_y_to_m(
+                               mLO,
+                               mUP,
+                               1.e-4,
+                               fa,
+                               fb,
+                               &logMDEL,
+                               z,
+                               y,
+                               // rd,
                                ptsz,
                                pba,
                                pnl,
@@ -3817,7 +4357,7 @@ int rho_gnfw(double * rho_nfw_x,
   double gamma = ptsz->gamma_B16;
   double xc = ptsz->xc_B16;
 
-  double c_asked;
+  double c_asked = ptsz->c_B16;
   *rho_nfw_x = get_gas_profile_at_x_M_z_b16_200c(x,
                                                  pvectsz[ptsz->index_m200c],
                                                  z,
@@ -4229,6 +4769,7 @@ free(pvectsz);
   double rho0;
   double alpha;
   double beta;
+  // printf("mcut = %.5e %.5e\n",mcut,ptsz->mcut);
   if (m200_over_msol > mcut) {
   // rho0 = A_rho0*pow(m200_over_msol/1e14,alpha_m_rho0)*pow(1.+z,alpha_z_rho0);
   // alpha = A_alpha*pow(m200_over_msol/1e14,alpha_m_alpha)*pow(1.+z,alpha_z_alpha);
@@ -6316,7 +6857,7 @@ for (ix=0; ix<N; ix++){
       Px[ix] = 0.;
     }
   else{
-    double c_asked = 0.;
+    double c_asked = ptsz->c_B16;
     Px[ix] =  get_gas_profile_at_x_M_z_b16_200c(x[ix],
                                                 pvectsz[ptsz->index_m200c],
                                                 z,
@@ -6336,7 +6877,7 @@ for (ix=0; ix<N; ix++){
                                                 ptsz->alphap_m_beta,
 					                                      ptsz->alpha_c_rho0,
                                                 ptsz->alpha_c_alpha,
-                                                ptsz->alpha_c_beta,                                                
+                                                ptsz->alpha_c_beta,
                                                 gamma,
                                                 xc,
                                                 pba,
@@ -6809,7 +7350,7 @@ for (ix=0; ix<N; ix++){
         // double p_gnfw_x = P0*pow(x[ix]/xc,gamma)*pow(1.+ pow(x[ix]/xc,alpha),-beta);
         // Px[ix] = p_gnfw_x;
 
-double c_asked = 0.;//what we pass there?
+double c_asked = ptsz->c_B12;//what we pass there?
 Px[ix] = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x[ix],m200_over_msol,z,
                                               c_asked,ptsz->P0_B12,
                                               ptsz->xc_B12,ptsz->beta_B12,
@@ -10420,7 +10961,7 @@ int p_gnfw(double * p_gnfw_x,
         // double gamma = ptsz->gamma_B12;
         // double alpha = ptsz->alpha_B12;
 
-double c_asked = 0.;
+double c_asked = ptsz->c_B12;
 double Px = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x,m200_over_msol,pvectsz[ptsz->index_z],
                                               c_asked,ptsz->P0_B12,
                                               ptsz->xc_B12,ptsz->beta_B12,
@@ -22974,6 +23515,77 @@ double get_dydz_at_z(double z_asked, struct tszspectrum * ptsz)
                          ptsz->array_dydz_redshift,
                          ptsz->array_dydz_at_z,
                          z));
+
+}
+
+double get_dNdlny_at_z_and_y(double z_asked, double y_asked, struct background * pba, struct tszspectrum * ptsz){
+ double m = get_y_to_m_at_z_and_y(z_asked,y_asked,ptsz);
+ double dNdlnm = 1.;//get_volume_at_z(z_asked,pba)*get_dndlnM_at_z_and_M(z_asked,m,ptsz);
+ dNdlnm = get_dndlnM_at_z_and_M(z_asked,m,ptsz);
+ dNdlnm *= get_volume_at_z(z_asked,pba);
+ double dlnmdlny = get_dlnm_dlny(log(y_asked),z_asked,ptsz);
+ return dNdlnm*dlnmdlny;
+
+}
+
+
+
+double get_dlnm_dlny(double lny,
+                     double z,
+                     struct tszspectrum * ptsz)
+                         {
+  // printf("dlnM\n");
+//! JCH edit: I think Komatsu has forgotten the Jacobian factor dlnMdel/dlnM
+//! as discussed in Eq. (5) of Komatsu-Seljak (2002)
+//! Approximate via standard three-point finite difference
+//! (checked w/ Mathematica implementation -- agrees very well)
+double result;
+double tol= 2.*(ptsz->array_y_to_m_y[1]-ptsz->array_y_to_m_y[0]);
+//double mvir;
+double fp,fm;
+double lnyp = lny+tol;
+double lnym = lny-tol;
+
+fp = log(get_y_to_m_at_z_and_y(z,exp(lnyp),ptsz));
+fm = log(get_y_to_m_at_z_and_y(z,exp(lnym),ptsz));
+
+
+result = (fp-fm)/2./tol;
+// result = dlnm200ddlnm;
+
+
+return result;
+}
+
+
+
+double get_y_to_m_at_z_and_y(double z_asked, double y_asked, struct tszspectrum * ptsz)
+{
+  double z = log(1.+z_asked);
+  double y = log(y_asked);
+
+ if (z<ptsz->array_y_to_m_redshift[0])
+    z = ptsz->array_y_to_m_redshift[0];
+ if (z>ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1])
+    z = ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1];
+
+ if (y<ptsz->array_y_to_m_y[0])
+    y = ptsz->array_y_to_m_y[0];
+
+ if (y>ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1])
+    y =  ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1];
+
+
+
+
+ return pwl_interp_2d(ptsz->n_z_y_to_m,
+                      ptsz->n_y_y_to_m,
+                      ptsz->array_y_to_m_redshift,
+                      ptsz->array_y_to_m_y,
+                      ptsz->array_y_to_m_at_z_y,
+                      1,
+                      &z,
+                      &y);
 
 }
 

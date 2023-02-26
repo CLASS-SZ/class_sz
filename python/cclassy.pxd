@@ -410,6 +410,7 @@ cdef extern from "class.h":
         double alpha_z_xc_B12
         double alpha_z_beta_B12
         double mcut_B12
+        double c_B12
         double alphap_m_P0_B12
         double alphap_m_xc_B12
         double alphap_m_beta_B12
@@ -426,6 +427,7 @@ cdef extern from "class.h":
         double alpha_z_alpha
         double alpha_z_beta
         double mcut
+        double c_B16
         double alphap_m_rho0
         double alphap_m_alpha
         double alphap_m_beta
@@ -521,7 +523,7 @@ cdef extern from "class.h":
     void background_free(void*)
     void nonlinear_free(void*)
     void szpowerspectrum_free(void*)
-    void szcount_free(void*)
+    void szcounts_free(void*,void*)
 
     cdef int _FAILURE_
     cdef int _FALSE_

@@ -110,6 +110,8 @@ void fht(int N, const double r[], const double complex a[], double k[], double c
     // fftw_plan reverse_plan = fftw_plan_dft_1d(N, (fftw_complex*) b, (fftw_complex*) b, +1, FFTW_ESTIMATE);
     // printf("My Thread num in fht 1b is: %d\n", id);
     // fftw_execute(forward_plan);
+
+    /* Compute the convolution b = a*u using FFTs */
     fftw_execute_dft(ptsz->forward_plan, (fftw_complex*) a, (fftw_complex*) b);
 
     // printf("My Thread num in fht 2 is: %d\n", id);
@@ -170,7 +172,7 @@ void fftlog_ComputeXiLMsloz(int l, int m, int N, const double k[], const double 
 
     for(int i = 0; i < N; i++)
         a[i] = pow(k[i], m - 0.5) * pk[i];
-    
+
     fht(N, k, a, r, b, l + 0.5, 0, 1, 1, NULL,ptsz);
     for(int i = 0; i < N; i++)
         xi[i] = creal(pow(2*M_PI*r[i], -1.5) * b[i]);
