@@ -1162,7 +1162,9 @@ struct tszspectrum {
   double dlogM;
   double * cov_Y_N_mass_bin_edges;
 
-
+double * szcounts_fft_z;
+double * szcounts_fft_sigmayobs;
+int ** szcounts_fft_index_zsig;
 
   //HOD
   double M_min_HOD;

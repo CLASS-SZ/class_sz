@@ -94,12 +94,31 @@ int szcounts_free(struct szcount * pcsz,struct tszspectrum * ptsz)
     free(ptsz->array_y_to_m_redshift);
     free(ptsz->array_y_to_m_y);
     free(ptsz->array_y_to_m_at_z_y);
+    free(ptsz->szcounts_fft_z);
+    free(ptsz->szcounts_fft_sigmayobs);
+    int izsig;
+    for (izsig=0;izsig<ptsz->szcounts_fft_nz;izsig++){
+      free(ptsz->szcounts_fft_index_zsig[izsig]);
+    }
+    free(ptsz->szcounts_fft_index_zsig);
   }
 
   return _SUCCESS_;
 }
 
 
+void shiftArray(double arr[], int size, int s) {
+    double temp[s];
+    for (int i = 0; i < s; i++) {
+        temp[i] = arr[i];
+    }
+    for (int i = s; i < size; i++) {
+        arr[i - s] = arr[i];
+    }
+    for (int i = 0; i < s; i++) {
+        arr[size - s + i] = temp[i];
+    }
+}
 
 
 int compute_counts_sz_fft(struct background * pba,
@@ -127,7 +146,7 @@ printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e\n",z,m,y,mrec,der);
 double dNdlny = get_dNdlny_at_z_and_y(z,y,pba,ptsz);
 printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e dNdlny = %.5e\n",z,m,y,mrec,der,dNdlny);
 
-
+// exit(0);
 
     if(ptsz->sz_verbose>1) printf("constructing fftw plan\n");
     fftw_plan forward_plan, reverse_plan;
@@ -157,7 +176,8 @@ printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e dNdlny = %.5e\n",z,m,y
     fftw_free(a_tmp);
     fftw_free(b_tmp);
 
-int index_parallel = 0;
+int index_parallel_zp = 0;
+int index_parallel_sigmayobsp = 0;
 
 int abort;
 
@@ -182,7 +202,7 @@ omp_lock_t lock;
 
 #pragma omp parallel \
    shared(abort,pba,ptsz,ppm,pnl,lock,forward_plan,reverse_plan)\
-   private(id,index_parallel)\
+   private(id,index_parallel_zp,index_parallel_sigmayobsp)\
    num_threads(number_of_threads)
 	 {
 
@@ -190,75 +210,86 @@ omp_lock_t lock;
 	   tstart = omp_get_wtime();
 #endif
 
-#pragma omp for schedule (dynamic)
-for (index_parallel=0;index_parallel<1;index_parallel++)
-	     {
-#pragma omp flush(abort)
+// #pragma omp for schedule (dynamic)
+// for (index_parallel_zp=0;index_parallel_zp<1;index_parallel_zp++)
+// 	     {
+// #pragma omp flush(abort)
+
+#pragma omp for collapse(2)
+// for (index_parallel_zp=0; index_parallel_zp<1; index_parallel_zp++)
+for (index_parallel_zp=0; index_parallel_zp<ptsz->szcounts_fft_nz; index_parallel_zp++)
+{
+// for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<1; index_parallel_sigmayobsp++)
+for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<ptsz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++)
+  {
+
+double zp = 0.3;//ptsz->szcounts_fft_z[index_parallel_zp];
+double sigmay_obsp = 5e-3;//exp(ptsz->szcounts_fft_sigmayobs[index_parallel_sigmayobsp]);
+// double zp =ptsz->szcounts_fft_z[index_parallel_zp];
+// double sigmay_obsp = exp(ptsz->szcounts_fft_sigmayobs[index_parallel_sigmayobsp]);
+
+if (ptsz->sz_verbose>10)
+printf("#########  zp = %.5e sigp = %.5e\n",zp,sigmay_obsp);
+
+int index_z_sigma = ptsz->szcounts_fft_index_zsig[index_parallel_zp][index_parallel_sigmayobsp];
 // double *in,*out;
 // fftw_plan myplan;
 int N = ptsz->N_samp_fftw;
-// double z_fft = 0.3;
+double a = 2 * M_PI/5.;
+
+double z_fft = zp; // pick a redshift just for testing
 //
 
-double sig2 = pow(0.5,2.);
+// double sigma = 1.;
+double sigma = ptsz->sigmaM_ym;
+
+double sig2 = pow(sigma,2.);
 double fac =1./sqrt(2.*_PI_*sig2);
 
-double lny_fft[N];
-double klny_fft[N];
+// double lny_fft[N];
+// double klny_fft[N];
 double lnymin_fft =  ptsz->lnymin;//ptsz->lnymin;
 double lnymax_fft =  ptsz->lnymax;//ptsz->lnymax;
 // double dNdlny_fft[N];
-double lognormal_fft[N];
-// double test_func[N];
-// double rout[N];
-// double rin2[N];
-// // double fac =1./sqrt(2.*_PI_*pow(ptsz->sigmaM_ym,2));
-// double fac =1./sqrt(2.*_PI_);
-// // in  = fftw_malloc (N*sizeof(double));
-// // out = fftw_malloc (N*sizeof(double));
-// //
-// // myplan = fftw_plan_r2r_1d(N,in,out,FFTW_R2HC,FFTW_FORWARD);
-// // exit(0);
+// double lognormal_fft[N];
+double xarr[2*N];
+
   fftw_complex in[2*N], out[2*N], in2[2*N],test[2*N],out_test[2*N]; /* double [2] */
   fftw_complex product[2*N],product_out[2*N];
-//   // double complex* in = malloc(sizeof(complex double)*N);
-//   // double *in = malloc(sizeof(complex double)*N);
-//   // double complex* out = malloc(sizeof(complex double)*N);
-//
-//   double complex* out_lognormal_fft = malloc(sizeof(complex double)*N);
-//   double complex* out_dNdlny_fft = malloc(sizeof(complex double)*N);
-//
-//   double complex* in_lognormal_fft = malloc(sizeof(complex double)*N);
-//   double complex* in_dNdlny_fft = malloc(sizeof(complex double)*N);
-//
-//   // double complex* in2 = malloc(sizeof(complex double)*N);
-//
-//   // fftw_plan p, q;
-  int i;
-//
-//   // double * y
-//
-//   /* prepare a cosine wave */
 
-printf("preparing arrays\n");
-double dx = (lnymax_fft-lnymin_fft)/(N-1.);
+
+// printf("preparing arrays\n");
+
+// the kernel is centered at 0, we need to pad the arrays.
+// so we preserve symmetry around 0.
+
+double lnymin_fft_padded = ptsz->lnymin-3.;
+double lnymax_fft_padded = -lnymin_fft_padded; //lnymin is negative
+
+
+double L = (lnymax_fft_padded-lnymin_fft_padded);
+double dx = L/(N);
+int i;
   for (i = 0; i < N; i++) {
-    double x = lnymin_fft+i*(lnymax_fft-lnymin_fft)
-                 /(N-1.);
-    lny_fft[i] = x;
+    double x = lnymin_fft_padded+i*dx;
+    // lny_fft[i] = x;
+    xarr[i] = x;
+    xarr[i+N] = lnymax_fft_padded+i*dx;
 //
 //     dNdlny_fft[i] = get_dNdlny_at_z_and_y(z_fft,exp(lny_fft[i]),pba,ptsz);
 //     in_dNdlny_fft[i] = dNdlny_fft[i];
 //
 //
 //     // double arg0 = lny_fft[i]/(sqrt(2.)*ptsz->sigmaM_ym);
-    double arg0 = x/sqrt(2.*sig2);///(sqrt(2.));
-    lognormal_fft[i] = fac*exp(-arg0*arg0);
-//     in_lognormal_fft[i] = lognormal_fft[i];
-//
-//     test_func[i] = pow(x,3)+pow(x,2);
-//
-    in[i][0]= lognormal_fft[i];//fac*exp(-arg0*arg0);//cos(3 * 2*M_PI*i/N);
+    double arg0 = (x)/sqrt(2.*sig2);///(sqrt(2.));
+
+    // in[i][0]= lognormal_fft[i];
+    // if (x==0)
+    //   in[i][0]=1.;
+    // else
+    //   in[i][0]=sin(M_PI*x)/(M_PI*x);
+    // double arg0 = x/sigma;
+    in[i][0] = fac*exp(-arg0*arg0);//fac*exp(-0.5*arg0*arg0);//cos(3 * 2*M_PI*i/N);
     // in[i][0]= cos(3 * 2*M_PI*i/N);//fac*exp(-arg0*arg0);//cos(3 * 2*M_PI*i/N);
     in[i][1]= 0.;
 
@@ -266,243 +297,256 @@ double dx = (lnymax_fft-lnymin_fft)/(N-1.);
     in[N+i][1]= 0.;
 //
     // test[i][0] = pow(x,3)+pow(x,2);
-    double w = 10.;
-    test[i][0] = sin(2 * M_PI * x/100.)*0.5*(1.-tanh((x-w/2.)))*0.5*(1.+tanh((x+w/2.)));
-    test[i][1] = 0.;
+    // double w = 5.;
+    // test[i][0] = pow(1.+sin(a * (x+19.)),2.)*0.5*(1.-tanh((x+19.-w/0.3)))*0.5*(1.+tanh((x+19.+w/2.)));
+    // test[i][0] = sin(a * x);//*0.5*(1.-tanh((x-w/2.)))*0.5*(1.+tanh((x+w/2.)));
+    // if (x==0)
+    //   test[i][0] = 2.;
+    // else
+    //   test[i][0] = 2.*sin(2.*M_PI*x)/(2.*M_PI*x);
 
+
+    test[i][0] = get_dNdlny_at_z_and_y(z_fft,exp(x),pba,ptsz);
+    // printf("lny %.5e test %.5e\n",x,test[i][0]);
+    if (isinf(test[i][0]))
+      exit(0);
+
+    test[i][1] = 0.;
+    //
     test[N+i][0] = 0.;
     test[N+i][1] = 0.;
-//     // in[i] = dNdlny_fft[i];//fac*exp(-arg0*arg0);//cos(3 * 2*M_PI*i/N);
-//
-//     // printf("i = %d %.5e %.5e %.5e %.5e\n",i,lny_fft[i],arg0,lognormal_fft[i],in_lognormal_fft[i]);
-//     printf("i = %d %.5e\n",i,in[i][0],in[i][1]);
-//
-//     // printf("N = %d y[i] = %.3e dN[i] = %.3e  arg0 = %.8e gauss = %.5e\n",
-//     // N,
-//     // // lnymin_fft,
-//     // // lnymax_fft,
-//     // lny_fft[i],
-//     // in_dNdlny_fft[i],
-//     // lny_fft[i],
-//     // lny_fft[i]);
-//     // in[i] =
-//     // in[i][1] = 0;
+
   }
-//
-printf("array filled.\n");
+
+  // exit(0);
+
 
   id = omp_get_thread_num();
-//   /* forward Fourier transform, save the result in 'out' */
-  // p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-  // fftw_execute(p);
-//   // fftw_execute_dft(forward_plan, (fftw_complex*) in_dNdlny_fft, (fftw_complex*) out_dNdlny_fft);
-//   //
 
-  printf("doing ffts\n");
   fftw_execute_dft(forward_plan, (fftw_complex*) in, (fftw_complex*) out);
   fftw_execute_dft(forward_plan, (fftw_complex*) test, (fftw_complex*) out_test);
-printf("ffts done\n");
+// printf("ffts done\n");
 
   // exit(0);
 //   // fftw_execute_dft(reverse_plan, (fftw_complex*) out, (fftw_complex*) out);
 //
 // product[0][0]= out[][0]*out_test[i][0]
-  for (i = 0; i < 2*N; i++){
- product[i][0]= (out[i][0]*out_test[i][0]-out[i][1]*out_test[i][1])/(2.*N);
- product[i][1]= (out[i][0]*out_test[i][1]+out[i][1]*out_test[i][0])/(2.*N);
-  }
+for (i = 0; i < 2*N; i++){
+   product[i][0]= (out[i][0]*out_test[i][0]-out[i][1]*out_test[i][1])/(double)(2*N);
+   product[i][1]= (out[i][0]*out_test[i][1]+out[i][1]*out_test[i][0])/(double)(2*N);
+    }
 //
 //
   fftw_execute_dft(reverse_plan, (fftw_complex*) product, (fftw_complex*) product_out);
-//
-//   // fftw_execute_dft(forward_plan, (fftw_complex*) in2, (fftw_complex*) in2);
-//   //
-//   // for (i = 0; i < N; i++){
-//   //   // printf("thread  %d freq: %3d %+9.5f %+9.5f %+9.5f %+9.5f %+9.5f I\n",id, i, out[i], out[i],out_dNdlny_fft[i],out_dNdlny_fft[i],in_dNdlny_fft[i]);
-//   //   // printf("thread  %d freq: %3d out example = %.6e  in = %.6e I\n",id, i, out[i], in[i]);
-//   //   // printf("thread  %d freq: %3d out dN = %.6e  in = %.6e I\n",id, i, out_dNdlny_fft[i],in_dNdlny_fft[i]);
-//   //   // printf("thread  %d freq: %3d out gaussian = %.6e\t in = %.6e I\n",id, i, out_lognormal_fft[i],in_lognormal_fft[i]);
-//   //   printf("i = %d %.5e %.5e %.5e\n",i,lny_fft[i],lognormal_fft[i],in_lognormal_fft[i]);
-//   //
-//   // }
-//     /* Reverse b array */
-//     double complex tmp;
-//     int n;
-//     // for(n = 0; n < N/2; n++) {
-//     //     tmp = out[n];
-//     //     out[n] = out[N-n-1];
-//     //     out[N-n-1] = tmp;
-//     // }
-    for(i = 0; i < N; i++){
+
+    for(i = 0; i < 2*N; i++){
         // rout[i] = creal(out[i])*1./N;
         // product_out[i][0] = product_out[i][0]/(double)(N);
         // product_out[i][1] = product_out[i][1]/(double)(N);
-
-        printf("i = %d r = %.5e\n",i,product_out[i][0]);
+        product_out[i][0] *= dx;
+if(ptsz->sz_verbose>10)
+        printf("fft thread %d i = %d r = %.5e\n",id,i,product_out[i][0]);
 
         // rin2[i] = creal(in2[i])*1./N;;
       }
 
-      // int n;
-      // double complex tmp;
-      // for(n = 0; n < N; n++) {
-      //     tmp = product_out[n];
-      //     product_out[n] = product_out[2*N-n-1];
-      //     product_out[2*N-n-1] = tmp;
-      // }
+      // double tmp;
 
-//
-//   for (i = 0; i < N; i++){
-//     // printf("thread  %d freq: %3d %+9.5f %+9.5f %+9.5f %+9.5f %+9.5f I\n",id, i, out[i], out[i],out_dNdlny_fft[i],out_dNdlny_fft[i],in_dNdlny_fft[i]);
-//     printf("thread  %d freq: %3d in = %.6e  test = %.6e out = %.6e + %.6e I\n",id, i, lognormal_fft[i], test_func[i], product_out[i][0], product_out[i][1]);
-//     // printf("thread  %d freq: %3d out dN = %.6e  in = %.6e I\n",id, i, out_dNdlny_fft[i],in_dNdlny_fft[i]);
-//     // printf("thread  %d freq: %3d out gaussian = %.6e\t in = %.6e I\n",id, i, out_lognormal_fft[i],in_lognormal_fft[i]);
-//       // printf("i = %d %.5e %.5e %.5e %.5e I\n",i,lny_fft[i],lognormal_fft[i],in_lognormal_fft[i],out_lognormal_fft[i]);
-//       // printf("i = %3d %.5e %.5e %.5e %.5e I\n",i,lny_fft[i],lognormal_fft[i],in[i],out[i]);
-//   // fprintf(fp,"%.5e\t%.5e\t%.5e\t%.5e\n",lny_fft[i],lognormal_fft[i],klny_fft[i],rout[i],rin2[i]);
-//   }
+      double result_conv[2*N];
 
+      for(i = 0; i < 2*N; i++) {
+        // int shift = int(N/2);
+        //   tmp = product_out[i][0];
+          result_conv[i] = product_out[i][0];// =product_out[shift+i][0];
 
+      }
 
-        /* Compute k's corresponding to input r's */
-    // double k0r0 = 1.;//kcrc * exp(-L);
-    // klny_fft[0] = k0r0/lny_fft[0];
-
-  //   for(n = 0; n < N; n++)
-  //       klny_fft[n] = 1./klny_fft[n];// * exp(n*L/N);
-  //
-  //   for(i = 0; i < N; i++){
-  //       rout[i] = creal(out[i])*1./N;
-  //       rin2[i] = creal(in2[i])*1./N;;
-  //     }
-  //
+      int shift = (int) (N/2);
+      shiftArray(result_conv, 2*N, shift);
+if (ptsz->sz_verbose>10){
   FILE *fp;
   char Filepath[_ARGUMENT_LENGTH_MAX_];
-  sprintf(Filepath,"%s%s%s",ptsz->root,"test_ffts",".txt");
+  sprintf(Filepath,"%s%s%s",ptsz->root,"test_ffts_complex",".txt");
   fp=fopen(Filepath, "w");
   // fftw_execute_dft(forward_plan, (fftw_complex*) in_lognormal_fft, (fftw_complex*) out_lognormal_fft);
-  for (i = 0; i < N; i++){
-    // printf("thread  %d freq: %3d %+9.5f %+9.5f %+9.5f %+9.5f %+9.5f I\n",id, i, out[i], out[i],out_dNdlny_fft[i],out_dNdlny_fft[i],in_dNdlny_fft[i]);
-    // printf("thread  %d freq: %3d in = %.6e  out = %.6e in2 = %.5e \n",id, i, lognormal_fft[i], rout[i],rin2[i]);
-    // printf("thread  %d freq: %3d out dN = %.6e  in = %.6e I\n",id, i, out_dNdlny_fft[i],in_dNdlny_fft[i]);
-    // printf("thread  %d freq: %3d out gaussian = %.6e\t in = %.6e I\n",id, i, out_lognormal_fft[i],in_lognormal_fft[i]);
-      // printf("i = %d %.5e %.5e %.5e %.5e I\n",i,lny_fft[i],lognormal_fft[i],in_lognormal_fft[i],out_lognormal_fft[i]);
-      // printf("i = %3d %.5e %.5e %.5e %.5e I\n",i,lny_fft[i],lognormal_fft[i],in[i],out[i]);
-  // fprintf(fp,"%.5e\t%.5e\n",lny_fft[i],lognormal_fft[i],klny_fft[i],rout[i],rin2[i]);
-  fprintf(fp,"%.5e\t%.5e\t%.5e\t%.5e\n",lny_fft[i],product_out[i][0],test[i][0],in[i][0]);
+  for (i = 0; i < 2*N; i++){
+  fprintf(fp,"%.5e\t%.5e\t%.5e\t%.5e\n",xarr[i],result_conv[i],test[i][0],in[i][0]);
   }
   fclose(fp);
+}
   //
-  exit(0);
-
-  // fftw_destroy_plan(p);
-
-  // /* backward Fourier transform, save the result in 'in2' */
-  // printf("\nInverse transform:\n");
- //  fftw_execute_dft(reverse_plan, (fftw_complex*) out, (fftw_complex*) in2);
- //  // q = fftw_plan_dft_1d(N, out, in2, FFTW_BACKWARD, FFTW_ESTIMATE);
- //  // fftw_execute(q);
- //  // /* normalize */
- //  for (i = 0; i < N; i++) {
- //    in2[i] *= 1./N;
- //    // in2[i][1] *= 1./N;
- //  }
- //  for (i = 0; i < N; i++){
- //    printf("thread  %d recover: %d %.5e %.5e I vs. %.5e %.5e I\n",
- //        id,i, in[i], in[i], in2[i], in2[i]);
- //
- //   printf("%i %.3e %.3e\n",i,in[i],in[i]);
- // }
-    //
-    // printf("thread  %d recover: %3d %+9.5e %+9.5e I vs. %+9.5e %+9.5e I\n",
-    //     id,i, in[i], creal(in[i]), in2[i], in2[i]);
-  // fftw_destroy_plan(q);
-
-  // fftw_cleanup();
-
-// test chatgpt:
+  // exit(0);
 
 
-    n = ptsz->N_samp_fftw; // input array size
-    double *in1r, *in2r, *outr, *xin;
-    fftw_plan p1, p2;
+  // at this stage we have tilde F(lny,sigma_lny):
+  // This function/data is stored in the array result_conv.
+  // Now we need to convolve it with the obs kernel.
+if (ptsz->sz_verbose>10)
+printf("done with the scatter convolution.\n");
+// exit(0);
+  // example:
+  //z = 3.00000e-01 m = 5.00000e+14 y = 1.37830e-03 mrec = 4.999999e+14 der = 5.61798e-01
+  // typically for planck, sigmyobs varies between: 5e-5 and 1e-2
+double sigmay_obs =  sigmay_obsp; // one of the sigma values
 
-    // allocate input and output arrays
-    xin = (double*) fftw_malloc(sizeof(double) * n);
-    in1r = (double*) fftw_malloc(sizeof(double) * n);
-    in2r = (double*) fftw_malloc(sizeof(double) * n);
-    outr = (double*) fftw_malloc(sizeof(double) * n);
 
-    // initialize input arrays
-    for (i = 0; i < n; i++) {
+double qp[2*N];
+// double function1[2*N];
+// double function2[2*N];
+// double out1[2*N];
+// double out2[2*N];
+// double prod[2*N];
+// double prod_out[2*N];
 
-    double x = lnymin_fft+i*(lnymax_fft-lnymin_fft)
-                 /(n-1.);
+double qmin_fft_padded = -50;
+double qmax_fft_padded = 50;
 
-    // double arg0 = x;///(sqrt(2.));
+double L_q = (qmax_fft_padded-qmin_fft_padded);
+double dq = L_q/(N);
+fac = 1./sqrt(2.*_PI_);
+// int i;
+for (i = 0; i < N; i++) {
+ double x = qmin_fft_padded+i*dq;
+ qp[i] = x;
+ qp[i+N] = qmax_fft_padded+i*dq;
+ double arg0 = x/sqrt(2.);
+ in[i][0] = fac*exp(-arg0*arg0);
+ in[i][1]= 0.;
+ in[N+i][0]= 0.;
+ in[N+i][1]= 0.;
 
-       // lognormal_fft[i] = fac*exp(-arg0*arg0);
-        xin[i] = x;
-        double arg0 = x/sqrt(2.*sig2);///(sqrt(2.));
-        in1r[i] = fac*exp(-arg0*arg0);
+   double lnyp =  log(x*sigmay_obs);
+   double conv1;
+   if (lnyp<xarr[0])
+    conv1 = 0.;
+   else if (lnyp>xarr[2*N-1])
+    conv1 = 0.;
+   else
+    conv1 =  pwl_value_1d(2*N,
+                          xarr,
+                          result_conv,
+                          lnyp);
+ test[i][0] = conv1;
+ test[i][1] = 0.;
+ test[N+i][0] = 0.;
+ test[N+i][1] = 0.;
+}
 
-        // in1[i] = sin(2 * M_PI * i / n);
-        // in2[i] = cos(4 * M_PI * i / n);
-        // in2[i] = pow(x,3)+pow(x,2);
-        double w = 10.;
-        in2r[i] = sin(2 * M_PI * x/100.)*0.5*(1.-tanh((x-w/2.)))*0.5*(1.+tanh((x+w/2.)));;
+fftw_execute_dft(forward_plan, (fftw_complex*) in, (fftw_complex*) out);
+fftw_execute_dft(forward_plan, (fftw_complex*) test, (fftw_complex*) out_test);
+
+for (i = 0; i < 2*N; i++){
+   product[i][0]= (out[i][0]*out_test[i][0]-out[i][1]*out_test[i][1])/(double)(2*N);
+   product[i][1]= (out[i][0]*out_test[i][1]+out[i][1]*out_test[i][0])/(double)(2*N);
     }
 
-    // create FFTW plans for forward and inverse transforms
-    p1 = fftw_plan_r2r_1d(n, in1r, in1r, FFTW_R2HC, FFTW_ESTIMATE);
-    p2 = fftw_plan_r2r_1d(n, in2r, in2r, FFTW_R2HC, FFTW_ESTIMATE);
+fftw_execute_dft(reverse_plan, (fftw_complex*) product, (fftw_complex*) product_out);
 
-    // perform forward transforms
-    fftw_execute(p1);
-    fftw_execute(p2);
+    for(i = 0; i < 2*N; i++){
+        product_out[i][0] *= dq;
+      if (ptsz->sz_verbose>10)
+        printf("fft thread %d i = %d r = %.5e\n",id,i,product_out[i][0]);
+      }
 
-    // perform convolution in frequency domain
-    outr[0] = in1r[0] * in2r[0];
-    for (i = 1; i < n; i++) {
-        outr[i] = in1r[i] * in2r[i];// - in1r[n - i] * in2r[n - i];
-    }
+double result_qconv[2*N];
+  for(i = 0; i < 2*N; i++) {
+          result_qconv[i] = product_out[i][0];
+      }
+shiftArray(result_qconv, 2*N, shift);
 
-    // create FFTW plan for inverse transform
-    p1 = fftw_plan_r2r_1d(n, outr, outr, FFTW_HC2R, FFTW_ESTIMATE);
+if (ptsz->sz_verbose>10){
+  FILE *fp;
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+  sprintf(Filepath,"%s%s%s",ptsz->root,"test_ffts_q_complex",".txt");
+  fp=fopen(Filepath, "w");
+  // fftw_execute_dft(forward_plan, (fftw_complex*) in_lognormal_fft, (fftw_complex*) out_lognormal_fft);
+  for (i = 0; i < 2*N; i++){
+  fprintf(fp,"%.5e\t%.5e\t%.5e\t%.5e\n",qp[i],result_qconv[i],test[i][0],in[i][0]);
+  }
+  fclose(fp);
+}
+// exit(0);
 
-    // perform inverse transform
-    fftw_execute(p1);
+/* start fftlog stuff
+// Here we use the FFTLog algorithm
+// because the y values are in a log grid
+double rp[N];//the log-spaced y_values
+double function1[N]; //the 1st function
+double function2[N]; // the second function (kernel)
+double out1[N]; // the fourier transform of the second function
+double out2[N]; // the fourier transform of the first function
+double kp[N]; // the frequency grid
+double prod[N];
+double prod_out[N];
 
-    // normalize output array
-    for (i = 0; i < n; i++) {
-        outr[i] /= n;
-    }
 
-    // print output array
+printf("allocating arrays for fftlogin'\n");
+double lnymin_fftlog = ptsz->lnymin-1.;
+double lnymax_fftlog = ptsz->lnymax+3.;
 
+// double lnqmin_fftlog = log(1e-2);
+// double lnqmax_fftlog = log()
+double Lfftlog = (lnymax_fftlog-lnymin_fftlog);
+double dxfftlog = Lfftlog/(N);
+for (i=0;i<N;i++){
+  double lnyp = lnymin_fftlog+i*dxfftlog;
+  rp[i] = exp(lnyp);
 
-    // FILE *fp;
-    // char Filepath[_ARGUMENT_LENGTH_MAX_];
-    sprintf(Filepath,"%s%s%s",ptsz->root,"test_ffts_real",".txt");
-    fp=fopen(Filepath, "w");
-    for (i = 0; i < n; i++) {
-        printf("%.5e\t%.5e\n",xin[i],outr[i]);
+  // printf("rp = %.5e\n",rp[i]);
 
-        fprintf(fp,"%.5e\t%.5e\n",xin[i],outr[i]);
+  double conv1 =  pwl_value_1d(2*N,
+                          xarr,
+                          result_conv,
+                          lnyp);
 
-    }
-    fclose(fp);
+  function1[i] = conv1;
+  function2[i] = 1./sqrt(2.*_PI_*sigmay_obs*sigmay_obs)
+                 *exp(-0.5*pow(rp[i]/sigmay_obs,2.));
+}
+// exit(0);
+printf("done allocating arrays for fftlogin'\n");
+  // Compute the function
+  // *   \xi_l^m(r) = \int_0^\infty \frac{dk}{2\pi^2} k^m j_l(kr) P(k)
+  // * Note that the usual 2-point correlation function xi(r) is just xi_0^2(r)
+  // * in this notation.  The input k-values must be logarithmically spaced.  The
+  // * resulting xi_l^m(r) will be evaluated at the dual r-values
+  // *   r[0] = 1/k[N-1], ..., r[N-1] = 1/k[0].
+  // void fftlog_ComputeXiLM(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[]);
+  // here is what we need:
+  // int l = -1
+  // int m = 0
 
-    // free memory and destroy plans
-    fftw_destroy_plan(p1);
-    fftw_destroy_plan(p2);
-    fftw_free(in1r);
-    fftw_free(in2r);
-    fftw_free(outr);
+  fftlog_ComputeXiLMsloz(-1, 0, N, rp,  function1, kp, out1,ptsz);
 
-    // end test chatgpt
+printf("computed fftlog1.\n");
+
+  fftlog_ComputeXiLMsloz(-1, 0, N, rp,  function2, kp, out2,ptsz);
+for (i=0;i<N;i++){
+  // prod[i] = (2.*M_PI*kp[i]*out1[i])*(2.*M_PI*kp[i]*out2[i]);
+  // prod[i] = (2.*M_PI*kp[i]*out1[i]);//*(2.*M_PI*kp[i]*out2[i]);
+  prod[i] = (out1[i]);
+}
+
+ fftlog_ComputeXiLMsloz(-1, 0, N, kp, prod, rp, prod_out,ptsz);
+
+ sprintf(Filepath,"%s%s%s",ptsz->root,"test_fftlog",".txt");
+ fp=fopen(Filepath, "w");
+ // fftw_execute_dft(forward_plan, (fftw_complex*) in_lognormal_fft, (fftw_complex*) out_lognormal_fft);
+ for (i = 0; i < N; i++){
+
+ // prod_out[i] = (2.*M_PI*rp[i]*prod_out[i]);
+ prod_out[i] = (prod_out[i]);
+
+ printf("fftlog thread %d i = %d r = %.5e\n",id,i,prod_out[i]);
+
+ fprintf(fp,"%.5e\t%.5e\t%.5e\t%.5e\n",rp[i],prod_out[i],function1[i],function2[i]);
+ }
+ fclose(fp);
+
+ */ // end fftlog stuff
 
           }
+        }
 #ifdef _OPENMP
       tstop = omp_get_wtime();
       if (ptsz->sz_verbose > 0)
@@ -520,7 +564,7 @@ printf("ffts done\n");
 
    fftw_destroy_plan(forward_plan);
    fftw_destroy_plan(reverse_plan);
-  exit(0);
+  // exit(0);
 
   return _SUCCESS_;
 }
@@ -1419,6 +1463,38 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
 
   //pcsz->rho_m_at_z = ptsz->Omega_m_0*ptsz->Rho_crit_0*pow((1.+pcsz->redshift_for_dndm),3);
 
+// printf("allocating memory for szcounts ffts.\n");
+// exit(0);
+  if (ptsz->has_sz_counts_fft){
+if (ptsz->sz_verbose>1)
+printf("allocating memory for szcounts ffts.\n");
+    class_alloc(ptsz->szcounts_fft_z,sizeof(double)*ptsz->szcounts_fft_nz,ptsz->error_message);
+    class_alloc(ptsz->szcounts_fft_sigmayobs,sizeof(double)*ptsz->szcounts_fft_nsigmayobs,ptsz->error_message);
+    class_alloc(ptsz->szcounts_fft_index_zsig,sizeof(int *)*ptsz->szcounts_fft_nz,ptsz->error_message);
+
+    int index_parallel_zp;
+    int index_parallel_sigmayobsp;
+    for (index_parallel_zp=0; index_parallel_zp<ptsz->szcounts_fft_nz; index_parallel_zp++)
+    {
+      ptsz->szcounts_fft_z[index_parallel_zp] = ptsz->szcounts_fft_z_min + index_parallel_zp*(ptsz->szcounts_fft_z_max-ptsz->szcounts_fft_z_min)/ptsz->szcounts_fft_nz;
+
+      class_alloc(ptsz->szcounts_fft_index_zsig[index_parallel_zp],sizeof(int)*ptsz->szcounts_fft_nsigmayobs,ptsz->error_message);
+
+    }
+    for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<ptsz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++)
+    {
+      ptsz->szcounts_fft_sigmayobs[index_parallel_sigmayobsp] = log(ptsz->szcounts_fft_sigmayobs_min) + index_parallel_sigmayobsp*(log(ptsz->szcounts_fft_sigmayobs_max)-log(ptsz->szcounts_fft_sigmayobs_min))/ptsz->szcounts_fft_nsigmayobs;
+    }
+    int index_zsig = 0;
+    for (index_parallel_zp=0; index_parallel_zp<ptsz->szcounts_fft_nz; index_parallel_zp++){
+      for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<ptsz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++){
+        ptsz->szcounts_fft_index_zsig[index_parallel_zp][index_parallel_sigmayobsp] =index_zsig;
+        index_zsig+=1;
+      }
+    }
+if (ptsz->sz_verbose>1)
+printf("allocated memory for szcounts ffts.\n");
+  }
 
   class_alloc(pcsz->redshift,sizeof(double)*pcsz->nzSZ,pcsz->error_message);
 
@@ -1770,6 +1846,8 @@ int find_y_bin(struct tszspectrum * ptsz, double thp, int * l_array, double * th
   theta_array[1] = th1;
   theta_array[2] = th2;
 }
+
+
 
   return _SUCCESS_;
 }

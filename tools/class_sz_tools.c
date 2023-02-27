@@ -15962,6 +15962,9 @@ for (index_thetas = 0; index_thetas<ptsz->nthetas; index_thetas ++){
   {
     ptsz->sky_averaged_ylims[index_thetas] += ptsz->skyfracs[index_patches]*ptsz->ylims[index_patches][index_thetas]/sum_skyfracs;
   }
+  if (ptsz->sz_verbose >= 1){
+printf("sky_ave idtheta = %d sigmac = %.5e\n",index_thetas,ptsz->sky_averaged_ylims[index_thetas]);
+  }
 }
 
 if (ptsz->sz_verbose >= 3){
@@ -23519,12 +23522,33 @@ double get_dydz_at_z(double z_asked, struct tszspectrum * ptsz)
 }
 
 double get_dNdlny_at_z_and_y(double z_asked, double y_asked, struct background * pba, struct tszspectrum * ptsz){
+
+  double z = log(1.+z_asked);
+  double y = log(y_asked);
+
+ if (z<=ptsz->array_y_to_m_redshift[0])
+    return 0.;//z = ptsz->array_y_to_m_redshift[0];
+ if (z>=ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1])
+    return 0.;//z = ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1];
+
+ if (y<=ptsz->array_y_to_m_y[0])
+    return 0.;//y = ptsz->array_y_to_m_y[0];
+
+ if (y>=ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1])
+    return 0.;//y =  ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1];
+
+
+
  double m = get_y_to_m_at_z_and_y(z_asked,y_asked,ptsz);
  double dNdlnm = 1.;//get_volume_at_z(z_asked,pba)*get_dndlnM_at_z_and_M(z_asked,m,ptsz);
  dNdlnm = get_dndlnM_at_z_and_M(z_asked,m,ptsz);
  dNdlnm *= get_volume_at_z(z_asked,pba);
  double dlnmdlny = get_dlnm_dlny(log(y_asked),z_asked,ptsz);
- return dNdlnm*dlnmdlny;
+
+ double result = dNdlnm*dlnmdlny;
+ if (isinf(result))
+  printf("inf in dndlny %.5e %.5e %.5e %.5e\n",m,get_dndlnM_at_z_and_M(z_asked,m,ptsz),get_volume_at_z(z_asked,pba),dlnmdlny);
+ return result;
 
 }
 
@@ -23549,8 +23573,16 @@ double lnym = lny-tol;
 fp = log(get_y_to_m_at_z_and_y(z,exp(lnyp),ptsz));
 fm = log(get_y_to_m_at_z_and_y(z,exp(lnym),ptsz));
 
+if (lny-tol<ptsz->array_y_to_m_y[0])
+  return 0.;
+if (lny+tol>ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1])
+  return 0.;
+
 
 result = (fp-fm)/2./tol;
+// if (isinf(result)){}
+
+
 // result = dlnm200ddlnm;
 
 
@@ -23565,15 +23597,15 @@ double get_y_to_m_at_z_and_y(double z_asked, double y_asked, struct tszspectrum 
   double y = log(y_asked);
 
  if (z<ptsz->array_y_to_m_redshift[0])
-    z = ptsz->array_y_to_m_redshift[0];
+    return 0.;//z = ptsz->array_y_to_m_redshift[0];
  if (z>ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1])
-    z = ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1];
+    return 0.;//z = ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1];
 
  if (y<ptsz->array_y_to_m_y[0])
-    y = ptsz->array_y_to_m_y[0];
+    return 0.;//y = ptsz->array_y_to_m_y[0];
 
  if (y>ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1])
-    y =  ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1];
+    return 0.;//y =  ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1];
 
 
 

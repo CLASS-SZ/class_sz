@@ -92,6 +92,7 @@ void fht(int N, const double r[], const double complex a[], double k[], double c
         u = ulocal;
     }
 
+// printf("fftlog coefficients computed.\n");
 
     int id = omp_get_thread_num();
     // omp_set_lock(lock); //Only a single thread writes
@@ -113,7 +114,7 @@ void fht(int N, const double r[], const double complex a[], double k[], double c
 
     /* Compute the convolution b = a*u using FFTs */
     fftw_execute_dft(ptsz->forward_plan, (fftw_complex*) a, (fftw_complex*) b);
-
+// printf("first plan executed.\n");
     // printf("My Thread num in fht 2 is: %d\n", id);
     int m;
     for(m = 0; m < N; m++)

@@ -55,6 +55,13 @@ class_sz_ptsz_parameter(n_k_density_profile,int,100)
 class_sz_ptsz_parameter(n_m_density_profile,int,100)
 class_sz_ptsz_parameter(n_z_density_profile,int,100)
 
+class_sz_ptsz_parameter(szcounts_fft_nz,int,50)
+class_sz_ptsz_parameter(szcounts_fft_nsigmayobs,int,20)
+class_sz_ptsz_parameter(szcounts_fft_z_min,double,0.)
+class_sz_ptsz_parameter(szcounts_fft_sigmayobs_min,double,5e-5)
+class_sz_ptsz_parameter(szcounts_fft_z_max,double,2.)
+class_sz_ptsz_parameter(szcounts_fft_sigmayobs_max,double,1e-2)
+
 class_sz_ptsz_parameter(n_k_pressure_profile,int,50)
 class_sz_ptsz_parameter(n_k_pressure_profile_2h,int,50)
 class_sz_ptsz_parameter(n_m_pressure_profile,int,30)

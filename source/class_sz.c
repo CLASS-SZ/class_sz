@@ -2830,6 +2830,7 @@ if (ptsz->has_kSZ_kSZ_gal_1h_fft
    || ptsz->has_kSZ_kSZ_lens_covmat
    || ptsz->convert_cls_to_gamma
    || ptsz->has_pk_b_at_z_2h
+   || ptsz->has_sz_counts_fft
    || ptsz->has_gas_density_profile_2h
    || ptsz->has_gas_pressure_profile_2h
    || ptsz->use_fft_for_profiles_transform
@@ -14916,6 +14917,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
   ||  ptsz->has_kSZ_kSZ_lens_covmat
   ||  ptsz->convert_cls_to_gamma
   ||  ptsz->has_pk_b_at_z_2h
+  ||  ptsz->has_sz_counts_fft
   ||  ptsz->has_gas_density_profile_2h
   ||  ptsz->has_gas_pressure_profile_2h
   ||  ptsz->use_fft_for_profiles_transform
