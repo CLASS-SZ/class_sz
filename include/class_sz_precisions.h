@@ -60,7 +60,7 @@ class_sz_ptsz_parameter(szcounts_qmax_fft_padded,double,100.)
 class_sz_ptsz_parameter(szcounts_lnqmin_fft,double,-5.)
 class_sz_ptsz_parameter(szcounts_lnqmax_fft,double,5.)
 
-
+class_sz_ptsz_parameter(use_skyaveraged_noise,int,0)
 class_sz_ptsz_parameter(szcounts_fft_nqobs,int,50)
 class_sz_ptsz_parameter(szcounts_fft_nexpected_qobs_n,int,50)
 class_sz_ptsz_parameter(szcounts_fft_nexpected_qobs_min,double,5.)

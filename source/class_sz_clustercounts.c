@@ -1046,7 +1046,11 @@ printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e dNdlny = %.5e\n",z,m,y
 // char Filepath[_ARGUMENT_LENGTH_MAX_];
 
 // set up arrays used for the convolutions:
-int npatches = ptsz->nskyfracs;
+int npatches;
+if (ptsz->use_skyaveraged_noise)
+    npatches = 1;
+else
+    npatches = ptsz->nskyfracs;
 int N = ptsz->N_samp_fftw;
 double lnqmin_fft = ptsz->szcounts_lnqmin_fft;
 double lnqmax_fft = ptsz->szcounts_lnqmax_fft;
@@ -1240,9 +1244,14 @@ fftw_complex product[2*N],product_out[2*N];
 
     // if (i % 100 == 0)
     //  printf("thread %d z = %.5e lnq = %.5e m = %.5e dNdlnm = %.5e\n",id,z,x,m,dNdlnm);
-
-    // dNdlnm *= get_volume_at_z(z,pba)*4.*M_PI*ptsz->skyfracs[index_patchesloop];
+if (ptsz->use_skyaveraged_noise){
+    // printf("using sky averaged sigma.\n");
     dNdlnm *= get_volume_at_z(z,pba)*4.*M_PI*ptsz->fsky_from_skyfracs;
+  }
+else{
+    dNdlnm *= get_volume_at_z(z,pba)*4.*M_PI*ptsz->skyfracs[index_patchesloop];
+}
+
     // compute derivative dlnmdlnq
     double tol = 0.5;
     double lnqp = x+tol;
@@ -1507,11 +1516,11 @@ fftw_destroy_plan(reverse_plan);
 
 
 // test
-// double ztest = 8.45000e-02;
-// double qtest = 3.02734e+00;
-// double rtest = get_szcounts_dndzdq_at_z_q(ztest,qtest,ptsz);
-//
-// printf("ztest = %.5e qtest = %.5e rtest = %.5e\n",ztest,qtest,rtest);
+double ztest = 8.45000e-02;
+double qtest = 3.02734e+00;
+double rtest = get_szcounts_dndzdq_at_z_q(ztest,qtest,ptsz);
+
+printf("ztest = %.5e qtest = %.5e rtest = %.5e\n",ztest,qtest,rtest);
 
 
 
