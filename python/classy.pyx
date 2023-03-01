@@ -2383,6 +2383,19 @@ cdef class Class:
     def get_scale_dependent_bias_at_z_and_k(self,z_asked,k_asked,bh):
         return get_scale_dependent_bias_at_z_and_k(z_asked,k_asked,bh,&self.tsz)
 
+
+    def get_szcounts_rates_at_z_sigobs_qobs(self,z_asked,sig_asked, qobs_asked):
+        return get_szcounts_rates_at_z_sigobs_qobs(z_asked, sig_asked, qobs_asked, &self.tsz)
+
+
+    def get_szcounts_dndzdqgt_at_z_q(self,z_asked,qobs_asked):
+        return get_szcounts_dndzdqgt_at_z_q(z_asked, qobs_asked, &self.tsz)
+
+    def get_szcounts_dndzdq_at_z_q(self,z_asked,qobs_asked):
+        return get_szcounts_dndzdq_at_z_q(z_asked, qobs_asked, &self.tsz)
+
+
+
     def get_params_sz(self):
         """
         (SZ) Return the current parameters
@@ -2765,6 +2778,9 @@ cdef class Class:
 
     def get_planck_sigma_at_theta500(self, theta500):
         return get_planck_sigma_at_theta500(theta500, &self.tsz)
+
+    def get_szcountsz_sigma_at_theta_in_patch(self, id,theta500):
+        return get_szcountsz_sigma_at_theta_in_patch(theta500, id, &self.tsz)
 
     def get_second_order_bias_at_z_and_nu(self,z,nu):
         return get_second_order_bias_at_z_and_nu(z,nu,&self.tsz,&self.ba)

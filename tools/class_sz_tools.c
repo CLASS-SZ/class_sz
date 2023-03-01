@@ -2250,7 +2250,11 @@ solve_y_to_m(&r,
              pnl,
              ppm);
 
-// printf("z = %.5e m=%.5e xout = %.5e\n",z,m,r);
+
+if (isinf(r)){
+  printf("z = %.5e y=%.5e r = %.5e\n",z,y,r);
+  exit(0);
+}
   ptsz->array_y_to_m_at_z_y[index_z_y] = r;
 }
 }
@@ -2883,9 +2887,9 @@ int solve_y_to_m(
 
 
 
-  mTEST[0] = 1.e14;
+  mTEST[0] = 1.e11;
 
- // printf("res 0 ini : %.3e\n",lTEST);
+ // printf("res 0 ini : %.3e\n",y);
   class_call(
              y_to_m(
                     mTEST[0],
@@ -2902,7 +2906,7 @@ int solve_y_to_m(
              ptsz->error_message
              );
  // printf("res 0 : %.3e\n",lTEST);
- //exit(0);
+ // exit(0);
 
   if (lTEST <= 0.) {
     for (i=1;i<iMAX;i++ ) {
@@ -23526,15 +23530,15 @@ double get_dNdlny_at_z_and_y(double z_asked, double y_asked, struct background *
   double z = log(1.+z_asked);
   double y = log(y_asked);
 
- if (z<=ptsz->array_y_to_m_redshift[0])
+ if (z<ptsz->array_y_to_m_redshift[0])
     return 0.;//z = ptsz->array_y_to_m_redshift[0];
- if (z>=ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1])
+ if (z>ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1])
     return 0.;//z = ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1];
 
- if (y<=ptsz->array_y_to_m_y[0])
+ if (y<ptsz->array_y_to_m_y[0])
     return 0.;//y = ptsz->array_y_to_m_y[0];
 
- if (y>=ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1])
+ if (y>ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1])
     return 0.;//y =  ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1];
 
 
@@ -23552,6 +23556,126 @@ double get_dNdlny_at_z_and_y(double z_asked, double y_asked, struct background *
 
 }
 
+
+double get_theta_at_y_and_z(double y,
+                            double z,
+                            struct tszspectrum * ptsz,
+                            struct background * pba)
+                         {
+ if (z<ptsz->array_y_to_m_redshift[0])
+    return -1.;//z = ptsz->array_y_to_m_redshift[0];
+ if (z>ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1])
+    return -1.;//z = ptsz->array_y_to_m_redshift[ptsz->n_z_y_to_m-1];
+
+ if (y<ptsz->array_y_to_m_y[0])
+    return -1.;//y = ptsz->array_y_to_m_y[0];
+
+ if (y>ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1])
+    return -1.;//y =  ptsz->array_y_to_m_y[ptsz->n_y_y_to_m-1];
+
+double m = get_y_to_m_at_z_and_y(z,y,ptsz);
+double theta = get_theta_at_m_and_z(m,z,ptsz,pba);
+return theta;
+                         }
+
+
+
+double get_szcountsz_sigma_at_theta_in_patch(double theta,int index_patches,struct tszspectrum *ptsz){
+
+    if (theta < ptsz->thetas[0]){
+      int l1 = 0;
+      int l2 = 1;
+      double th1 = ptsz->thetas[l1];
+      double th2 = ptsz->thetas[l2];
+     double y1 = ptsz->ylims[index_patches][l1];
+     double y2 = ptsz->ylims[index_patches][l2];
+     double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
+     return y1;
+    }
+    if (theta > ptsz->thetas[ptsz->nthetas-1]){
+      int l1 = ptsz->nthetas - 1;
+      int l2 = ptsz->nthetas - 2;
+      double th1 = ptsz->thetas[l1];
+      double th2 = ptsz->thetas[l2];
+    double y1 = ptsz->ylims[index_patches][l1];
+    double y2 = ptsz->ylims[index_patches][l2];
+    double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
+    return y1;
+    }
+
+  // return pwl_value_1d(ptsz->nthetas,
+  //                     ptsz->thetas,
+  //                     ptsz->ylims[index_patches],
+  //                     theta);
+
+  // for sky averaged sigma's:
+  return pwl_value_1d(ptsz->nthetas,
+                       ptsz->thetas,
+                       ptsz->sky_averaged_ylims,
+                       theta); // ~5% difference
+
+}
+
+
+// void tabulate_dlnm_dlnq(double * lnq_tab,
+//                         );
+
+double get_dlnm_dlnq(double lnq,
+                     double z,
+                     int idpatch,
+                     struct tszspectrum * ptsz,
+                     struct background * pba)
+                         {
+
+
+// first we tabulate q as a function of m.
+int ntab = 500;
+double lnq_tab[ntab];
+double lnm_tab[ntab];
+
+int itab;
+double lnm_tab_mmin = log(0.5*ptsz->M1SZ); // add some padding
+double lnm_tab_mmax = log(2.*ptsz->M2SZ); // add some padding
+double dlnm_tab = (lnm_tab_mmax-lnm_tab_mmin)/(ntab-1.);
+for (itab = 0;itab<ntab;itab++){
+lnm_tab[itab] = lnm_tab_mmin+itab*dlnm_tab;
+double mtab = exp(lnm_tab[itab]);
+double ytab = get_y_at_m_and_z(mtab,z,ptsz,pba);
+double thetatab = get_theta_at_m_and_z(mtab,z,ptsz,pba);
+double sigtab = get_szcountsz_sigma_at_theta_in_patch(thetatab,idpatch,ptsz);
+lnq_tab[itab] = log(ytab/sigtab);
+}
+
+// now given the arrays we can compute the derivative by
+// finite difference
+
+double tol = 1e-3;
+// double dlnq = 5*fabs(lnq_tab[ntab-1]-lnq_tab[0])/ntab;
+double lnqp = lnq+tol;
+double lnqm = lnq-tol;
+
+double result;
+double lnmp = pwl_value_1d(ntab,
+                           lnq_tab,
+                           lnm_tab,
+                           lnqp);
+double lnmm = pwl_value_1d(ntab,
+                          lnq_tab,
+                          lnm_tab,
+                          lnqp);
+
+result = (lnmp-lnmm)/2./tol;
+
+
+// printf("dlnM\n");
+//! JCH edit: I think Komatsu has forgotten the Jacobian factor dlnMdel/dlnM
+//! as discussed in Eq. (5) of Komatsu-Seljak (2002)
+//! Approximate via standard three-point finite difference
+//! (checked w/ Mathematica implementation -- agrees very well)
+
+
+return result;
+}
 
 
 double get_dlnm_dlny(double lny,
@@ -23867,6 +23991,9 @@ double get_theta_at_m_and_z(double m, double z, struct tszspectrum * ptsz, struc
   double tau;
   int first_index_back = 0;
   double * pvecback;
+  if (z==0)
+    z += 1e-5; // avoid division by zero in theta
+
   class_alloc(pvecback,
               pba->bg_size*sizeof(double),
               ptsz->error_message);
@@ -23940,6 +24067,8 @@ double get_y_at_m_and_z(double m, double z, struct tszspectrum * ptsz, struct ba
   double tau;
   int first_index_back = 0;
   double * pvecback;
+  if (z==0)
+    z += 1e-5; // to avoid 1/0 division due to dA
   class_alloc(pvecback,
               pba->bg_size*sizeof(double),
               ptsz->error_message);
@@ -24004,6 +24133,10 @@ else if (ptsz->y_m_relation == 0){
         yp = y500_for_mp_at_zp;
 
 
+        // if (isinf(yp)){
+          // printf("yp = %.5e m = %.5e z = %.5e Eh = %.5e d_A =%.5e\n",yp,mp_bias,z,Eh,d_A);
+        //   // exit(0);
+        // }
 
 }
 

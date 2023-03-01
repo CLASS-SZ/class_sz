@@ -102,6 +102,18 @@ int tabulate_m_to_xout(struct background * pba,
                        struct primordial * ppm,
                        struct tszspectrum * ptsz);
 
+double get_dlnq_dlnm(double lnq,
+                     double z,
+                     int idpatch,
+                     struct tszspectrum * ptsz,
+                     struct background * pba);
+
+
+double get_theta_at_y_and_z(double y,
+                            double z,
+                            struct tszspectrum * ptsz,
+                            struct background * pba);
+double get_szcountsz_sigma_at_theta_in_patch(double theta,int id_patch,struct tszspectrum *ptsz);
 int tabulate_y_to_m(struct background * pba,
                        struct nonlinear * pnl,
                        struct primordial * ppm,

@@ -55,6 +55,16 @@ class_sz_ptsz_parameter(n_k_density_profile,int,100)
 class_sz_ptsz_parameter(n_m_density_profile,int,100)
 class_sz_ptsz_parameter(n_z_density_profile,int,100)
 
+class_sz_ptsz_parameter(szcounts_qmin_fft_padded,double,-100.)
+class_sz_ptsz_parameter(szcounts_qmax_fft_padded,double,100.)
+class_sz_ptsz_parameter(szcounts_lnqmin_fft,double,-5.)
+class_sz_ptsz_parameter(szcounts_lnqmax_fft,double,5.)
+
+
+class_sz_ptsz_parameter(szcounts_fft_nqobs,int,50)
+class_sz_ptsz_parameter(szcounts_fft_nexpected_qobs_n,int,50)
+class_sz_ptsz_parameter(szcounts_fft_nexpected_qobs_min,double,5.)
+class_sz_ptsz_parameter(szcounts_fft_nexpected_qobs_max,double,25.)
 class_sz_ptsz_parameter(szcounts_fft_nz,int,50)
 class_sz_ptsz_parameter(szcounts_fft_nsigmayobs,int,20)
 class_sz_ptsz_parameter(szcounts_fft_z_min,double,0.)

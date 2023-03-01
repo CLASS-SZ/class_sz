@@ -734,6 +734,7 @@ cdef extern from "class.h":
                                              void * ptsz)
 
     double get_planck_sigma_at_theta500(double theta500, void * ptsz)
+    double get_szcountsz_sigma_at_theta_in_patch(double theta500, int id, void * ptsz)
 
     double get_gas_profile_at_x_M_z_nfw_200c(double x_asked,
                                              double m_asked,
@@ -751,6 +752,11 @@ cdef extern from "class.h":
                                           double xout)
 
     double get_mean_galaxy_bias_at_z(double z, void * ptsz)
+
+    double  get_szcounts_rates_at_z_sigobs_qobs(double z_asked, double sig_asked, double qobs_asked, void * ptsz)
+    double  get_szcounts_dndzdqgt_at_z_q(double z_asked, double qobs_asked, void * ptsz)
+    double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, void * ptsz)
+
 
     double get_f_tinker10_at_nu_and_z(double nu, double z,void * ptsz)
     double get_T10_alpha_at_z(double z,void * ptsz)

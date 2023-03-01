@@ -141,7 +141,13 @@ struct Parameters_for_integrand_cluster_counts_completeness{
   double y;
 };
 
+double  get_szcounts_rates_at_z_sigobs_qobs(double z_asked,
+                                            double sig_asked,
+                                            double qobs_asked,
+                                            struct tszspectrum * ptsz);
 
+double get_szcounts_dndzdqgt_at_z_q(double z_asked, double qobs_asked, struct tszspectrum * ptsz);
+double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, struct tszspectrum * ptsz);
 
 #ifdef __cplusplus
 }
