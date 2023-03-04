@@ -1881,7 +1881,7 @@ int input_read_parameters(
       class_read_double("A_ym",ptsz->A_ym);
       class_read_double("B_ym",ptsz->B_ym);
       class_read_double("C_ym",ptsz->C_ym);
-      class_read_double("m_pivot_ym [Msun]",ptsz->m_pivot_ym);
+      class_read_double("m_pivot_ym_[Msun]",ptsz->m_pivot_ym);
 
       //For the computation of sigma2
       class_read_int("ndim_masses",ptsz->ndimSZ);
@@ -1931,8 +1931,8 @@ int input_read_parameters(
 
       class_read_int("load_Planck_noise_map",ptsz->has_completeness_for_ps_SZ);
 
-      class_read_double("signal-to-noise cut-off for survey cluster completeness",ptsz->sn_cutoff);
-      class_read_double("signal-to-noise cut-off for survey cluster completeness",pcsz->sn_cutoff);
+      class_read_double("signal-to-noise_cut-off_for_survey_cluster_completeness",ptsz->sn_cutoff);
+      class_read_double("signal-to-noise_cut-off_for_survey_cluster_completeness",pcsz->sn_cutoff);
 
       //Integration scheme for the mass integral:
       class_call(parser_read_string(pfc,"integration method (mass)",&string1,&flag1,errmsg),

@@ -2172,10 +2172,6 @@ int tabulate_y_to_m(struct background * pba,
 if (ptsz->sz_verbose > 0)
  printf("->SZ_counts tabulating y to m.\n");
 
-class_alloc(ptsz->array_y_to_m_redshift,sizeof(double *)*ptsz->n_z_y_to_m,ptsz->error_message);
-class_alloc(ptsz->array_y_to_m_y,sizeof(double *)*ptsz->n_y_y_to_m,ptsz->error_message);
-class_alloc(ptsz->array_y_to_m_at_z_y,sizeof(double *)*ptsz->n_z_y_to_m*ptsz->n_y_y_to_m,ptsz->error_message);
-
 
 double r;
 double y_min,y_max;
@@ -5103,6 +5099,8 @@ int tabulate_gas_density_profile_2h_fft_at_z_and_r(struct background * pba,
                                                    struct primordial * ppm,
                                                    struct tszspectrum * ptsz){
 
+  if (ptsz->sz_verbose>10) printf("-> ftabulateing density profile kmz.\n");
+  // exit(0);
 
 double k_min = ptsz->k_min_samp_fftw;
 double k_max = ptsz->k_max_samp_fftw; // this is a precision parameter
@@ -16125,7 +16123,8 @@ int read_sz_catalog(struct tszspectrum * ptsz){
       //         "/sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt");
       //
       // process = popen(Filepath, "r");
-      class_open(process,"sz_auxiliary_files/SZ_cat.txt", "r",ptsz->error_message);
+      // class_open(process,"sz_auxiliary_files/SZ_cat.txt", "r",ptsz->error_message);
+      class_open(process,ptsz->SZ_cat_file, "r",ptsz->error_message);
 
       while (fgets(line, sizeof(line)-1, process) != NULL) {
         sscanf(line, "%lf %lf %lf", &this_lnx, &this_lny, &this_lnz);
@@ -23581,33 +23580,33 @@ return theta;
 
 
 double get_szcountsz_sigma_at_theta_in_patch(double theta,int index_patches,struct tszspectrum *ptsz){
-if (ptsz->use_skyaveraged_noise){
+if (ptsz->use_skyaveraged_noise == 0){
 
     if (theta < ptsz->thetas[0]){
-      int l1 = 0;
-      int l2 = 1;
-      double th1 = ptsz->thetas[l1];
-      double th2 = ptsz->thetas[l2];
-     double y1 = ptsz->ylims[index_patches][l1];
-     double y2 = ptsz->ylims[index_patches][l2];
-     double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
-     return y1;
-    }
+        int l1 = 0;
+        int l2 = 1;
+        double th1 = ptsz->thetas[l1];
+        double th2 = ptsz->thetas[l2];
+        double y1 = ptsz->ylims[index_patches][l1];
+        double y2 = ptsz->ylims[index_patches][l2];
+        double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
+        return y1;
+        }
     if (theta > ptsz->thetas[ptsz->nthetas-1]){
-      int l1 = ptsz->nthetas - 1;
-      int l2 = ptsz->nthetas - 2;
-      double th1 = ptsz->thetas[l1];
-      double th2 = ptsz->thetas[l2];
-    double y1 = ptsz->ylims[index_patches][l1];
-    double y2 = ptsz->ylims[index_patches][l2];
-    double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
-    return y1;
-    }
+        int l1 = ptsz->nthetas - 1;
+        int l2 = ptsz->nthetas - 2;
+        double th1 = ptsz->thetas[l1];
+        double th2 = ptsz->thetas[l2];
+        double y1 = ptsz->ylims[index_patches][l1];
+        double y2 = ptsz->ylims[index_patches][l2];
+        double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
+        return y1;
+        }
 
-  return pwl_value_1d(ptsz->nthetas,
-                      ptsz->thetas,
-                      ptsz->ylims[index_patches],
-                      theta);
+    return pwl_value_1d(ptsz->nthetas,
+                        ptsz->thetas,
+                        ptsz->ylims[index_patches],
+                        theta);
 }
 else{
 
@@ -23616,20 +23615,20 @@ else{
       int l2 = 1;
       double th1 = ptsz->thetas[l1];
       double th2 = ptsz->thetas[l2];
-     double y1 = ptsz->sky_averaged_ylims[l1];
-     double y2 = ptsz->sky_averaged_ylims[l2];
-     double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
-     return y1;
-    }
+      double y1 = ptsz->sky_averaged_ylims[l1];
+      double y2 = ptsz->sky_averaged_ylims[l2];
+      double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
+      return y1;
+      }
     if (theta > ptsz->thetas[ptsz->nthetas-1]){
       int l1 = ptsz->nthetas - 1;
       int l2 = ptsz->nthetas - 2;
       double th1 = ptsz->thetas[l1];
       double th2 = ptsz->thetas[l2];
-    double y1 = ptsz->sky_averaged_ylims[l1];
-    double y2 = ptsz->sky_averaged_ylims[l2];
-    double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
-    return y1;
+      double y1 = ptsz->sky_averaged_ylims[l1];
+      double y2 = ptsz->sky_averaged_ylims[l2];
+      double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
+      return y1;
     }
   // for sky averaged sigma's:
   return pwl_value_1d(ptsz->nthetas,

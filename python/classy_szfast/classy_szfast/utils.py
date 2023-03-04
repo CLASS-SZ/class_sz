@@ -14,7 +14,7 @@ from numpy import linalg as LA
 import mcfit
 from mcfit import P2xi
 import cosmopower
-import classy_sz as csz
+# import classy_sz as csz
 
 from cosmopower import cosmopower_NN
 from cosmopower import cosmopower_PCAplusNN

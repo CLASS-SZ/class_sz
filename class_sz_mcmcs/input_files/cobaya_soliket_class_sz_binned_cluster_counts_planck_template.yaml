@@ -1,0 +1,241 @@
+output: /Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/class_sz_mcmcs/chains/class_sz_binned_cluster_counts_planck
+
+likelihood:
+  soliket.sz_binned_cluster_counts.binned_cc.binned_cc_likelihood:
+    tcat_file: 'SZ_cat.txt'
+    snrcut: 6.
+    experiment: 'Planck'
+
+    bin_z_min_cluster_counts : 0.01
+    bin_z_max_cluster_counts : 1.01
+    bin_dz_cluster_counts : 0.1
+    bin_dlog10_snr: 0.25
+    debug: False
+    stop_at_error: True
+
+
+
+
+theory:
+
+  classy_szfast.classy_sz.classy_sz:
+     use_class_sz_fast_mode : 1
+     stop_at_error: True
+     extra_args:
+          non_linear: 'halofit'
+          output : 'sz_cluster_counts'
+          mass function : 'M500'
+
+          has_selection_function : 1
+          experiment : 0 # Planck
+          y_m_relation : 0
+          signal-to-noise_cut-off_for_survey_cluster_completeness : 6.
+          use_planck_binned_proba : 1
+          use_skyaveraged_noise : 1
+
+          M_min : 5e11
+          M_max : 5e15
+
+          z_min: 0.
+          z_max: 1.02
+
+          # bin_z_min_cluster_counts : 0.
+          # bin_z_max_cluster_counts : 2.
+          # bin_dz_cluster_counts : 0.1
+          #
+          #
+          tau_reio: 0.0561 # planck 2018 value (in abstract of 1807.06209)
+          YHe: BBN
+
+          # 1 massive neutrino (planck 2018 baseline)
+          N_ur: 2.0328
+          N_ncdm: 1
+          m_ncdm: 0.06
+          T_ncdm: 0.71611
+
+          #
+          # #3 massive neutrinos
+          # N_ur : 0.00641
+          # N_ncdm : 1
+          # deg_ncdm : 3
+          # m_ncdm : 0.02
+          # T_ncdm : 0.71611
+
+
+
+          #
+          # HMF_prescription_NCDM: 'CDM'
+
+          # verbose parameters for debugging
+          input_verbose : 0
+          background_verbose: 0
+          perturbations_verbose: 0
+          # class_sz_verbose  : 0
+
+          # X ray mass bias (if applicable)
+          B : 1.25
+
+
+          bin_z_min_cluster_counts : 0.01
+          bin_z_max_cluster_counts : 1.01
+          bin_dz_cluster_counts : 0.1
+          bin_dlog10_snr: 0.25
+
+          dlny : 0.03
+          lnymin : -11.
+          lnymax : 1.
+          sigmaM_ym : 0.173
+
+
+          dlnM_cluster_count_completeness_grid : 0.05
+
+
+          cluster_count_completeness_grid_z_cutoff_low : 0.5
+          cluster_count_completeness_grid_z_cutoff_mid : 1.5
+          dz_cluster_count_completeness_grid_low_z : 5e-3
+          dz_cluster_count_completeness_grid_mid_z : 1e-2
+          dz_cluster_count_completeness_grid_high_z : 1e-1
+
+          mass_epsrel_cluster_counts : 1e-3
+          mass_epsabs_cluster_counts : 1e-30
+
+          redshift_epsrel_cluster_counts : 1e-3
+          redshift_epsabs_cluster_counts : 1e-30
+
+
+
+          #
+          #
+          # # tabulation of mass function:
+          n_z_dndlnM : 80
+          n_m_dndlnM : 80
+          #
+          # # computation of mass function
+          # # (grid in mass and redshifts for sigma and dsigma)
+          ndim_masses : 80
+          ndim_redshifts : 80
+          #
+          # pk setup for computation of sigma and dsigma
+          k_per_decade_class_sz : 20.
+          k_min_for_pk_class_sz : 1e-3
+          k_max_for_pk_class_sz : 1e1
+
+          P_k_max_h/Mpc : 1e1
+
+          class_sz_verbose: 0
+
+
+params:
+  # theta_MC_100:
+  #   prior:
+  #     min: 0.5
+  #     max: 10
+  #   ref:
+  #     dist: norm
+  #     loc: 9.5232346E-01
+  #     scale: 0.0004
+  #   proposal: 0.0002
+  #   latex: 100\theta_\mathrm{MC}
+  #   drop: true
+  #   renames: theta
+  # 100*theta_s:
+  #   value: 'lambda theta_MC_100: theta_MC_100'
+  #   derived: false
+  H0:
+    prior:
+      min: 40.
+      max: 100.
+    ref:
+      dist: norm
+      loc: 65.387571
+      scale: 1.
+    proposal: 1.
+  logA:
+    prior:
+      min: 2.5
+      max: 3.5
+    ref:
+      dist: norm
+      loc: 3.1900223
+      scale: 0.01
+    proposal: 0.01
+    # drop: true
+    latex: \log(10^{10} A_\mathrm{s})
+  # A_s:
+  #   value: 'lambda logA: 1e-10*np.exp(logA)'
+  #   latex: A_\mathrm{s}
+  n_s:
+    prior:
+      min: 0.8812
+      max: 1.0492
+    ref:
+      dist: norm
+      loc: 0.96
+      scale: 0.01
+    proposal: 0.01
+    latex: n_\mathrm{s}
+  # B:
+  #   prior:
+  #     min: 1.
+  #     max: 2.
+  #   ref:
+  #     dist: norm
+  #     loc: 1.8
+  #     scale: 0.02
+  #   proposal: 0.02
+  #   latex: B
+  omega_b:
+    prior:
+      min: 0.01933
+      max: 0.02533
+    ref:
+      dist: norm
+      loc: 0.02
+      scale: 0.005
+    proposal: 0.005
+    latex: \Omega_\mathrm{b}h^2
+  omega_cdm:
+    prior:
+      min: 0.08
+      max: 0.2
+    ref:
+      dist: norm
+      loc: 0.12117194
+      scale: 0.005
+    proposal: 0.005
+    latex: \Omega_\mathrm{c}h^2
+
+  # F_sz:
+  #   derived: 'lambda sigma8, Omega_m, B, H0: (sigma8/0.8)*(Omega_m/0.3)**0.35*(B/1.25)**-0.35*(H0/70.)**-0.20'
+  #   latex: F_\mathrm{sz}
+
+
+sampler:
+  #settings for covmat see https://cobaya.readthedocs.io/en/latest/sampler_mcmc.html
+  mcmc:
+    covmat: /Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/class_sz_mcmcs/covmats/class_sz_unbinned_cluster_counts_planck.covmat
+    Rminus1_stop: 0.1
+    burn_in: 0
+    # drag: true
+    proposal_scale: 1.
+    learn_proposal: True
+    learn_every: 40
+    learn_proposal_Rminus1_max: 100.
+    learn_proposal_Rminus1_max_early: 100.
+    max_tries : 10000
+
+  # evaluate:
+  #   override:
+  #     # #parameter values:
+  #     omega_cdm: 0.125
+  #     omega_b: 0.0224
+  #     logA: 2.95
+  #     n_s: 0.96
+  #     # H0: 69.
+  #     theta_MC_100: 1.043612
+
+
+
+
+debug : False
+timing: False

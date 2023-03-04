@@ -142,6 +142,7 @@ struct tszspectrum {
 
 
   fftw_plan forward_plan, reverse_plan;
+  fftw_plan forward_plan_counts_fft, reverse_plan_counts_fft;
   // int N_samp_fftw;
 
 
@@ -1166,13 +1167,15 @@ double * szcounts_fft_qobs;
 double * szcounts_fft_z;
 double * szcounts_fft_sigmayobs;
 int ** szcounts_fft_index_zsig;
-double ** szcounts_fft_rates_at_z_sigy_qobs;
-double * szcounts_fft_nexpected_dndzdqgt;
+// double ** szcounts_fft_rates_at_z_sigy_qobs;
+// double * szcounts_fft_nexpected_dndzdqgt;
 double * szcounts_fft_dndzdq;
 double * szcounts_fft_nexpected_qobs;
 int ** szcounts_fft_index_zq;
 int ** szcounts_fft_index_zq_final;
 double ** szcounts_fft_qmconv_all_patches;
+
+double szcounts_ntot;
 
   //HOD
   double M_min_HOD;

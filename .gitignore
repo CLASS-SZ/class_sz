@@ -245,3 +245,7 @@ sz_auxiliary_files/cls_mdpl2_len_mag_cibmap_planck_217_217.dat
 python/autosetup.py
 notebooks/classy_szfast-cluster-counts-fft.ipynb
 class_sz_cluster_counts_high_precision_planck_unbinned_fft.ini
+python/classy_sz.cpython-39-darwin.so
+class_sz_mcmcs/notebooks/.ipynb_checkpoints/get_cosmopower_chains_planck_szcounts_unbinned-checkpoint.ipynb
+class_sz_mcmcs/notebooks/get_cosmopower_chains_planck_szcounts_unbinned.ipynb
+class_sz_mcmcs/chains

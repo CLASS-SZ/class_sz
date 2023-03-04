@@ -249,6 +249,31 @@ int class_sz_cosmo_init(  struct background * pba,
 
 if (ptsz->use_class_sz_fast_mode == 0)
    show_preamble_messages(pba,pth,pnl,ppm,ptsz);
+   // this routine also prints sigma8 and stuff like that
+   // so it would crash if running by the emulators.
+
+
+   //compute T_cmb*gNU at 150GHz
+   double frequency_in_Hz = 150.0e9;
+
+   ptsz->Tcmb_gNU_at_150GHz =
+   pba->T_cmb
+   *((_h_P_*frequency_in_Hz
+       /(_k_B_*pba->T_cmb))
+      *(1./tanh((_h_P_*frequency_in_Hz
+                      /(_k_B_*pba->T_cmb))
+                     /2.))
+      -4.);
+
+    frequency_in_Hz = ptsz->nu_y_dist_GHz*1e9;
+    ptsz->Tcmb_gNU =
+    pba->T_cmb
+    *((_h_P_*frequency_in_Hz
+        /(_k_B_*pba->T_cmb))
+       *(1./tanh((_h_P_*frequency_in_Hz
+                      /(_k_B_*pba->T_cmb))
+                      /2.))-4.);
+
 
 if (ptsz->need_sigma == 1 || ptsz->has_vrms2){
 
@@ -571,7 +596,7 @@ while( pch != NULL ) {
 
 
 
-   if (ptsz->has_sz_rates  == 1){
+   if (ptsz->has_sz_rates || ptsz->has_sz_counts_fft){
       read_sz_catalog(ptsz);
 
       if (ptsz->sz_verbose>1){
@@ -587,10 +612,10 @@ while( pch != NULL ) {
     }
 
    // exit(0);
-   if (ptsz->sz_verbose>1)
+   if (ptsz->sz_verbose>=1)
     printf("-> allocating class_sz memory...\n");
    initialise_and_allocate_memory(ptsz);
-   if (ptsz->sz_verbose>1)
+   if (ptsz->sz_verbose>=1)
     printf("-> memory allocated.\n");
 
 
@@ -2197,6 +2222,7 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
 
 
   if (all_comps + mass_conversions == _FALSE_){
+    if (ptsz->sz_verbose>10) printf("-> freeing nothing.\n");
     return  _SUCCESS_;
   }
 
@@ -2450,11 +2476,13 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
 
 // printf("free 1\n");
 
-  if (ptsz->has_sz_rates){
+  if (ptsz->has_sz_rates || ptsz->has_sz_counts_fft){
     free(ptsz->szrate);
   }
 
-   if ((ptsz->has_completeness_for_ps_SZ == 1)  || (ptsz->has_sz_counts  == 1)){
+   if ((ptsz->has_completeness_for_ps_SZ == 1)
+    || (ptsz->has_sz_counts  == 1)
+    || ptsz->has_sz_counts_fft == 1){
    free(ptsz->thetas);
    free(ptsz->skyfracs);
    free(ptsz->szcat_z);
@@ -2551,11 +2579,12 @@ if(ptsz->has_kSZ_kSZ_gal_1h
 
 ){
 
+  if (ptsz->sz_verbose>10) printf("-> freeing density profile kmz.\n");
   free(ptsz->array_profile_ln_k);
   free(ptsz->array_profile_ln_m);
   free(ptsz->array_profile_ln_1pz);
 
-
+  if (ptsz->sz_verbose>10) printf("-> freeing density profile 2h.\n");
   free(ptsz->array_profile_ln_rho_2h_at_k_and_z);
   free(ptsz->array_profile_rho_2h_at_r_and_z);
   free(ptsz->array_profile_ln_r);
@@ -2835,6 +2864,7 @@ if (ptsz->has_kSZ_kSZ_gal_1h_fft
    || ptsz->has_gas_pressure_profile_2h
    || ptsz->use_fft_for_profiles_transform
    || ptsz->has_n5k){
+     if (ptsz->sz_verbose>10) printf("-> destroying fft plans freeing flag 1.\n");
   fftw_destroy_plan(ptsz->forward_plan);
   fftw_destroy_plan(ptsz->reverse_plan);
 }
@@ -2845,6 +2875,7 @@ if (ptsz->has_dndlnM == 1
  || ptsz->has_kSZ_kSZ_gal_1h_fft
  || ptsz->has_kSZ_kSZ_gal_2h_fft
  || ptsz->has_kSZ_kSZ_gal_3h_fft){
+   if (ptsz->sz_verbose>10) printf("freeing dndlnM.\n");
    free(ptsz->array_m_dndlnM);
    free(ptsz->array_z_dndlnM);
    free(ptsz->array_dndlnM_at_z_and_M);
@@ -3124,6 +3155,8 @@ if (ptsz->has_sz_counts == 1){
   free(ptsz->steps_z);
   free(ptsz->steps_m);
   free(ptsz->erfs_2d_to_1d_y_array);
+
+if (ptsz->sz_verbose>10) printf("-> freeing cluster counts freed.\n");
 }
 
 if (ptsz->sz_verbose>10) printf("-> freeing more kSZ2X.\n");
@@ -13455,27 +13488,7 @@ if   (ptsz->has_sz_ps
       printf("->sigma8_cb= %e\n",ptsz->sigma8_Pcb);
     }
 
-   //compute T_cmb*gNU at 150GHz
-   double frequency_in_Hz = 150.0e9;
 
-   ptsz->Tcmb_gNU_at_150GHz =
-   pba->T_cmb
-   *((_h_P_*frequency_in_Hz
-       /(_k_B_*pba->T_cmb))
-      *(1./tanh((_h_P_*frequency_in_Hz
-                      /(_k_B_*pba->T_cmb))
-                     /2.))
-      -4.);
-
-    frequency_in_Hz = ptsz->nu_y_dist_GHz*1e9;
-    ptsz->Tcmb_gNU =
-    pba->T_cmb
-    *((_h_P_*frequency_in_Hz
-        /(_k_B_*pba->T_cmb))
-       *(1./tanh((_h_P_*frequency_in_Hz
-                      /(_k_B_*pba->T_cmb))
-                      /2.))
-       -4.);
 
     free(pvecback);
 
@@ -15623,12 +15636,13 @@ if (ptsz->need_hmf){
      class_alloc(ptsz->dndlnM_at_z_and_M[index_z],(ptsz->N_mass_dndlnM)*sizeof(double),ptsz->error_message);
    }
 
-   if (ptsz->has_sz_rates){
+   if (ptsz->has_sz_rates+ptsz->has_sz_counts_fft){
    class_alloc(ptsz->szrate,ptsz->szcat_size*sizeof(double *),ptsz->error_message);
    int irate;
    for (irate = 0; irate < ptsz->szcat_size ; irate++){
      ptsz->szrate[irate] = 0.;
    }
+   // exit(0);
  }
 
    class_alloc(ptsz->tllprime_sz,ptsz->nlSZ*sizeof(double *),ptsz->error_message);

@@ -275,6 +275,15 @@ cdef extern from "class.h":
         double logR1SZ
         double logR2SZ
         double delta_cSZ
+        int szcounts_ntot
+        double szcounts_fft_z_min
+        double szcounts_fft_z_max
+        double szcounts_qmax_fft_padded
+        int szcounts_fft_nz
+        double sn_cutoff
+        double * szrate
+        int szcat_size
+        int need_sigma
         double alphaSZ
         double beta0SZ
         double gamma0SZ
@@ -753,8 +762,6 @@ cdef extern from "class.h":
 
     double get_mean_galaxy_bias_at_z(double z, void * ptsz)
 
-    double  get_szcounts_rates_at_z_sigobs_qobs(double z_asked, double sig_asked, double qobs_asked, void * ptsz)
-    double  get_szcounts_dndzdqgt_at_z_q(double z_asked, double qobs_asked, void * ptsz)
     double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, void * ptsz)
 
 

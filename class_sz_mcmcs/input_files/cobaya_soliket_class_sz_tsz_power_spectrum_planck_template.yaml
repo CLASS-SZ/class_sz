@@ -1,0 +1,228 @@
+output: /Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/class_sz_mcmcs/chains/class_sz_tsz_powerspectrum_planck
+
+likelihood:
+  soliket.ymap.ymap_ps.SZLikelihood:
+    # sz_data_directory: "/Users/boris/Work/CLASS-SZ/SO-SZ/Likelihoods_sz/solike/ymap/data/planck_2015_ymap/"
+    # ymap_ps_file: "data_ps-ell-y2-erry2_total-planck-collab-15.txt"
+    # f_sky: 0.47 #sky_fraction of Planck y-map (communicated by Barbara Commis)
+    # trispectrum_directory: "/Users/boris/Work/CLASS-SZ/SO-SZ/Likelihoods_sz/solike/ymap/chains/sz_ps_completeness_analysis/"
+    # trispectrum_ref: "tSZ_trispectrum_ref_total-planck-collab-15_step_1.txt"
+
+
+
+theory:
+  soliket.ymap.ymap_ps.SZForegroundTheory:
+    # speed: 2
+    # foreground_data_directory: "/Users/boris/Work/CLASS-SZ/SO-SZ/Likelihoods_sz/solike/ymap/data/planck_2015_ymap"
+    # foreground_data_file: "data_fg-ell-cib_rs_ir_cn-total-planck-collab-15.txt"
+
+
+
+  classy_szfast.classy_sz.classy_sz:
+     use_class_sz_fast_mode : 1
+     extra_args:
+          output : 'tSZ_1h, tCl'
+          units for tSZ spectrum : 'dimensionless'
+          component of tSZ power spectrum : 'total'
+          # write sz results to files : 'no'
+          mass function : 'M500'
+          # integrate_wrt_m500c : 1
+          pressure profile : 'A10'
+          multipoles_sz : 'P15'
+          nlSZ : 18
+
+          z_min : 0.005
+          z_max : 3.0
+          M_min : 1.0e10
+          M_max : 3.5e15
+          z_max_pk : 4.
+
+          non_linear: 'halofit'
+          k_per_decade_class_sz : 20.
+          k_min_for_pk_class_sz : 1e-3
+          k_max_for_pk_class_sz : 1e1
+
+          perturbations_verbose: 0
+          thermodynamics_verbose: 0
+          background_verbose: 0
+          class_sz_verbose: 0
+          spectra_verbose: 0
+
+          # harmonic_verbose: 0
+          # fourier_verbose : 0
+          input_verbose : 0
+          # lensing_verbose : 0
+          # The base model features two massless
+          # and one massive neutrino with m=0.06eV.
+          # The settings below ensures that Neff=3.046
+          # and m/omega = 93.14 eV
+          N_ur : 2.0328
+          N_ncdm : 1
+          m_ncdm : 0.06
+          T_ncdm : 0.71611
+          YHe: 'BBN'
+
+          tau_reio: 0.054
+          # following parameters (50,50) give less than 1% difference w.r.t. ndimSZ = 100 and n_arraySZ=1000
+          # [relevant for tabulation of sigma(R,z)]
+          # ndimSZ: 50
+          # n_arraySZ: 50
+          #write parameters : 'yeap'
+
+
+          # create reference trispectrum for likelihood code: 'NO'
+          # append_name_trispectrum_ref: 'total-planck-collab-15_step_1'
+          # path to reference trispectrum for likelihood code: '/Users/boris/Work/CLASS-SZ/SO-SZ/Likelihoods_sz/solike/ymap/chains/sz_ps_completeness_analysis/'
+
+
+
+params:
+  A_CIB:
+      prior:
+          min: 0
+          max: 5
+      ref:
+        dist: norm
+        loc: 0.66
+        scale: 0.16
+      proposal: 0.16
+      latex: A_\mathrm{CIB}
+
+  A_RS:
+      prior:
+          min: 0
+          max: 5
+      ref:
+        dist: norm
+        loc: 0.004
+        scale: 0.34
+      proposal: 0.34
+      latex: A_\mathrm{RS}
+
+  A_IR:
+      prior:
+          min: 0
+          max: 5
+      ref:
+        dist: norm
+        loc: 2.04
+        scale: 0.18
+      proposal: 0.18
+      latex: A_\mathrm{IR}
+
+  B:
+      prior:
+          min: 1.0
+          max: 2.0
+      ref:
+        dist: norm
+        loc: 1.4
+        scale: 0.2
+      proposal: 0.2
+      latex: B
+
+  omega_b:
+    prior:
+      min: 0.02
+      max: 0.025
+    ref:
+      dist: norm
+      loc: 0.0224
+      scale: 0.00015
+    proposal: 0.00015
+    latex: \Omega_\mathrm{b} h^2
+
+  omega_cdm:
+    prior:
+      min: 0.11
+      max: 0.13
+    ref:
+      dist: norm
+      loc: 0.1202
+      scale: 0.0014
+    proposal: 0.0014
+    latex: \Omega_\mathrm{c} h^2
+
+  logA:
+    prior:
+      min: 2
+      max: 4
+    ref:
+      dist: norm
+      loc: 3.1900223
+      scale: 0.01
+    proposal: 0.01
+    # drop: true
+    latex: \log(10^{10} A_\mathrm{s})
+
+  n_s:
+    prior:
+      min: 0.94
+      max: 1.
+    ref:
+      dist: norm
+      loc: 0.965
+      scale: 0.0044
+    proposal: 0.0044
+    latex: n_\mathrm{s}
+
+  # nb: No need to sample tau_reio when doing tsz runs without cmb anisotropy.
+  # tau_reio:
+  #   prior:
+  #     min: 0.01
+  #     max: 0.8
+  #   ref:
+  #     dist: norm
+  #     loc: 0.055
+  #     scale: 0.006
+  #   proposal: 0.003
+  #   latex: \tau_\mathrm{reio}
+
+  H0:
+    prior:
+      min: 55.
+      max: 90.
+    ref:
+      dist: norm
+      loc: 67.27
+      scale: 0.6
+    proposal: 0.6
+    latex: H_0
+
+  # add derived parameter, e.g.:
+  # Omega_m:
+  #   latex: \Omega_\mathrm{m}
+  # sigma8:
+  #   latex: \sigma_8
+  # F_sz:
+  #   derived: 'lambda sigma8, Omega_m, B, H0: (sigma8/0.8)*(Omega_m/0.3)**0.35*(B/1.25)**-0.35*(H0/70.)**-0.20'
+  #   latex: F_\mathrm{sz}
+
+
+sampler:
+  #settings for covmat see https://cobaya.readthedocs.io/en/latest/sampler_mcmc.html
+  mcmc:
+    covmat: #auto
+    Rminus1_stop: 0.01
+    drag: true
+    proposal_scale: 2.4
+    learn_proposal: True
+    learn_proposal_Rminus1_max: 2.
+
+  # evaluate:
+  #   override:
+  #     # #parameter values:
+  #     # Bolliet et al 2018 best-fit (see figure 3)
+  #     B: 1.41
+  #     omega_cdm: 0.125
+  #     omega_b: 0.0224
+  #     logA: 3.05
+  #     n_s: 0.96
+  #     H0: 69.
+  #     A_CIB: 0.66
+  #     A_IR: 2.04
+  #     A_RS: 0.0004
+
+
+
+debug : False

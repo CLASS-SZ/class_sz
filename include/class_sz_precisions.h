@@ -39,6 +39,8 @@ class_sz_string_parameter(cmb_lensing_noise_file,"cmb_lensing_noise_file","cmb_l
 // columns in the original file are :
 // ell, TT, TE, EE, TB, EB, EE+EB, TT+TE+EE+EB, TT (curl), TE (curl), EE (curl), TB (curl), EB (curl), EE+EB (curl), TT+TE+EE+EB (curl)
 
+class_sz_string_parameter(SZ_cat_file,"/sz_auxiliary_files/SZ_cat.txt","SZ_cat_file")
+
 
 class_sz_string_parameter(Planck_thetas_file,"/sz_auxiliary_files/SZ_thetas.txt","Planck_thetas_file")
 class_sz_string_parameter(SO_thetas_file,"/sz_auxiliary_files/so_3freqs_191121_thetas.txt","SO_thetas_file")
@@ -59,6 +61,8 @@ class_sz_ptsz_parameter(szcounts_qmin_fft_padded,double,-100.)
 class_sz_ptsz_parameter(szcounts_qmax_fft_padded,double,100.)
 class_sz_ptsz_parameter(szcounts_lnqmin_fft,double,-5.)
 class_sz_ptsz_parameter(szcounts_lnqmax_fft,double,5.)
+class_sz_ptsz_parameter(tol_dlnm_dlnq,double,0.5)
+class_sz_ptsz_parameter(ntab_dlnm_dlnq,int,250)
 
 class_sz_ptsz_parameter(use_skyaveraged_noise,int,0)
 class_sz_ptsz_parameter(szcounts_fft_nqobs,int,50)

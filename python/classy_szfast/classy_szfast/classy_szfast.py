@@ -4,8 +4,8 @@ import numpy as np
 from .cosmopower import *
 from .pks_and_sigmas import *
 import scipy
-import pyquad
-from classy_sz import Class
+# import pyquad
+# from classy_sz import Class
 from multiprocessing import Process
 from mcfit import TophatVar
 from scipy.interpolate import CubicSpline
@@ -50,7 +50,7 @@ class classy_szfast(object):
 
         self.cszfast_ldim = 20000 # used for the cls arrays
 
-        self.cszfast_pk_grid_nz = 100 # has to be same as narraySZ
+        self.cszfast_pk_grid_nz = 100 # has to be same as narraySZ, i.e., ndim_redshifts; it is setup hereafter if ndim_redshifts is passed
         self.cszfast_pk_grid_zmax = 5.
         self.cszfast_pk_grid_z = np.linspace(0.,self.cszfast_pk_grid_zmax,self.cszfast_pk_grid_nz)
 
@@ -229,6 +229,41 @@ class classy_szfast(object):
         #     return 0
         return 0
 
+    def calculate_sigma8_and_der(self,
+                         cosmo_model = 'lcdm',
+                         **params_values_dict):
+        params_values = params_values_dict.copy()
+        # print('in pkl:',params_values)
+
+        params_dict = {}
+        for k,v in zip(params_values.keys(),params_values.values()):
+            params_dict[k]=[v]
+        self.cp_predicted_der = self.cp_der_nn[cosmo_model].ten_to_predictions_np(params_dict)[0]
+        self.sigma8 = self.cp_predicted_der[1]
+        return 0
+
+
+    def calculate_sigma8_at_z(self,
+                             cosmo_model = 'lcdm',
+                             **params_values_dict):
+        params_values = params_values_dict.copy()
+        # print('in pkl:',params_values)
+
+        params_dict = {}
+        for k,v in zip(params_values.keys(),params_values.values()):
+            params_dict[k]=[v]
+
+        s8z  = self.cp_s8_nn[cosmo_model].predictions_np(params_dict)
+        # print(self.s8z)
+        self.s8z_interp = scipy.interpolate.interp1d(
+                                                    np.linspace(0.,20.,5000),
+                                                    s8z[0],
+                                                    kind='linear',
+                                                    axis=-1,
+                                                    copy=True,
+                                                    bounds_error=None,
+                                                    fill_value=np.nan,
+                                                    assume_sorted=False)
 
     def calculate_pknl(self,
                       cosmo_model = 'lcdm',
@@ -384,7 +419,12 @@ class classy_szfast(object):
         # elif method == 'cloughtocher':
         #     pk = self.pknl_cloughtocher_interp(z_asked,np.log(k_asked))
         # return np.exp(pk)
-        return self.sigma_interp.sigma(r_asked,z_asked)
+        k = self.cszfast_pk_grid_k
+        P_at_z = self.get_pkl_at_k_and_z(k,z_asked)
+        R,var = TophatVar(k, lowring=True)(P_at_z, extrap=True)
+        varR = CubicSpline(R, var)
+        sigma_at_r_and_z = np.sqrt(varR(r_asked))
+        return sigma_at_r_and_z
 
 
 
@@ -452,3 +492,48 @@ class classy_szfast(object):
     #     # x = self.get_gas_pressure_profile_x(zp,3e13,self.cszfast_gas_pressure_xgrid)
     #     x = 1
     #     return x
+
+
+    def get_sigma8_at_z(self,z):
+        return self.s8z_interp(z)
+
+    #################################
+    # gives an estimation of f(z)*sigma8(z) at the scale of 8 h/Mpc, computed as (d sigma8/d ln a)
+    def get_effective_f_sigma8(self, z, z_step=0.1,params_values_dict={}):
+        """
+        effective_f_sigma8(z)
+
+        Returns the time derivative of sigma8(z) computed as (d sigma8/d ln a)
+
+        Parameters
+        ----------
+        z : float
+                Desired redshift
+        z_step : float
+                Default step used for the numerical two-sided derivative. For z < z_step the step is reduced progressively down to z_step/10 while sticking to a double-sided derivative. For z< z_step/10 a single-sided derivative is used instead.
+
+        Returns
+        -------
+        (d ln sigma8/d ln a)(z) (dimensionless)
+        """
+
+        s8z_interp =  self.s8z_interp
+        # we need d sigma8/d ln a = - (d sigma8/dz)*(1+z)
+
+        # if possible, use two-sided derivative with default value of z_step
+        if z >= z_step:
+            result = (s8z_interp(z-z_step)-s8z_interp(z+z_step))/(2.*z_step)*(1+z)
+            # return (s8z_interp(z-z_step)-s8z_interp(z+z_step))/(2.*z_step)*(1+z)
+        else:
+            # if z is between z_step/10 and z_step, reduce z_step to z, and then stick to two-sided derivative
+            if (z > z_step/10.):
+                z_step = z
+                result = (s8z_interp(z-z_step)-s8z_interp(z+z_step))/(2.*z_step)*(1+z)
+                # return (s8z_interp(z-z_step)-s8z_interp(z+z_step))/(2.*z_step)*(1+z)
+            # if z is between 0 and z_step/10, use single-sided derivative with z_step/10
+            else:
+                z_step /=10
+                result = (s8z_interp(z)-s8z_interp(z+z_step))/z_step*(1+z)
+                # return (s8z_interp(z)-s8z_interp(z+z_step))/z_step*(1+z)
+        # print('fsigma8 result : ',result)
+        return result

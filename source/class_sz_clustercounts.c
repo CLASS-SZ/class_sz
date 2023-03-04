@@ -13,6 +13,7 @@
 #include "r8lib.h"
 # include  "fft.h"
 # include <fftw3.h>
+#include <gsl/gsl_rng.h>
 
 int szcount_init(struct background * pba,
                  struct nonlinear * pnl,
@@ -91,34 +92,44 @@ int szcounts_free(struct szcount * pcsz,struct tszspectrum * ptsz)
   }
 
   if (ptsz->has_sz_counts_fft == _TRUE_){
+
+    fftw_destroy_plan(ptsz->forward_plan_counts_fft);
+    fftw_destroy_plan(ptsz->reverse_plan_counts_fft);
+
     free(ptsz->array_y_to_m_redshift);
     free(ptsz->array_y_to_m_y);
     free(ptsz->array_y_to_m_at_z_y);
     free(ptsz->szcounts_fft_z);
     free(ptsz->szcounts_fft_qobs);
-    free(ptsz->szcounts_fft_sigmayobs);
-    free(ptsz->szcounts_fft_nexpected_qobs);
+    // free(ptsz->szcounts_fft_sigmayobs);
+    // free(ptsz->szcounts_fft_nexpected_qobs);
     free(ptsz->szcounts_fft_dndzdq);
     int izsig;
     for (izsig=0;izsig<ptsz->szcounts_fft_nz;izsig++){
-      free(ptsz->szcounts_fft_index_zsig[izsig]);
-      free(ptsz->szcounts_fft_index_zq[izsig]);
+      // free(ptsz->szcounts_fft_index_zsig[izsig]);
+      // free(ptsz->szcounts_fft_index_zq[izsig]);
       free(ptsz->szcounts_fft_index_zq_final[izsig]);
     }
+    free(ptsz->szcounts_fft_index_zq_final);
 
     int ipatches;
     for (ipatches = 0;ipatches<ptsz->nskyfracs;ipatches++){
       free(ptsz->szcounts_fft_qmconv_all_patches[ipatches]);
     }
     free(ptsz->szcounts_fft_qmconv_all_patches);
-    free(ptsz->szcounts_fft_index_zsig);
-    free(ptsz->szcounts_fft_index_zq);
-    free(ptsz->szcounts_fft_nexpected_dndzdqgt);
-    int index_qobs;
-    for (index_qobs = 0; index_qobs<ptsz->N_samp_fftw; index_qobs++){
-    free(ptsz->szcounts_fft_rates_at_z_sigy_qobs[index_qobs]);
-}
-free(ptsz->szcounts_fft_rates_at_z_sigy_qobs);
+    // free(ptsz->szcounts_fft_index_zsig);
+    // free(ptsz->szcounts_fft_index_zq);
+
+    // free(ptsz->szcounts_fft_nexpected_dndzdqgt);
+//     int index_qobs;
+//     for (index_qobs = 0; index_qobs<ptsz->N_samp_fftw; index_qobs++){
+//     free(ptsz->szcounts_fft_rates_at_z_sigy_qobs[index_qobs]);
+// }
+// free(ptsz->szcounts_fft_rates_at_z_sigy_qobs);
+
+// printf("freeing dndzdq\n");
+// // free(ptsz->szcounts_fft_dndzdq);
+// printf("dndzdq freed\n");
 
   }
 
@@ -184,163 +195,165 @@ double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, struct tsz
 
 }
 
+//
+// double  get_szcounts_dndzdqgt_at_z_q(double z_asked, double qobs_asked, struct tszspectrum * ptsz){
+//   double z = z_asked;
+//   double nu = qobs_asked;
+//
+//   // double z = log(1.+z_asked);
+//   // double m = log(m_asked);
+//    if (z<ptsz->szcounts_fft_z[0]){
+//       // z = ptsz->array_z_L_sat[0];
+//       printf("redshift min out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[0]);
+//       exit(0);
+//     }
+//         // printf("dealing with mass conversion in hmf\n");
+//    if (z>ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]){
+//       // z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
+//
+//       printf("redshift max out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]);
+//       exit(0);
+//     }
+//
+//
+//    if (nu<ptsz->szcounts_fft_nexpected_qobs[0]){
+//     // nu = ptsz->array_nu_L_sat[0];
+//       printf("qobs  min out of range in Lsat asked %.8e bound %.8e.\n",exp(nu),exp(ptsz->szcounts_fft_nexpected_qobs[0]));
+//       exit(0);
+//   }
+//       // printf("dealing with mass conversion in hmf\n");
+//    if (nu>ptsz->szcounts_fft_nexpected_qobs[ptsz->szcounts_fft_nexpected_qobs_n-1]){
+//       // nu =  ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1];
+//       printf("qobs max out of range in Lsat asked %.3e bound %.3e.\n",exp(nu),exp(ptsz->szcounts_fft_nexpected_qobs[ptsz->szcounts_fft_nexpected_qobs_n-1]));
+//       exit(0);
+//     }
+//
+//  double result  = pwl_interp_2d(ptsz->szcounts_fft_nexpected_qobs_n,
+//                                 ptsz->szcounts_fft_nz,
+//                                 ptsz->szcounts_fft_nexpected_qobs,
+//                                 ptsz->szcounts_fft_z,
+//                                 ptsz->szcounts_fft_nexpected_dndzdqgt,
+//                                 1,
+//                                 &nu,
+//                                 &z);
+//
+//  // double result  = pwl_interp_2d(ptsz->szcounts_fft_nexpected_qobs_n,
+//  //                                ptsz->szcounts_fft_nz,
+//  //                                ptsz->szcounts_fft_nexpected_qobs,
+//  //                                ptsz->szcounts_fft_z,
+//  //                                ptsz->szcounts_fft_nexpected_dndzdqgt,
+//  //                                1,
+//  //                                &nu,
+//  //                                &z);
+//
+//  return result;
+//
+// }
 
-double  get_szcounts_dndzdqgt_at_z_q(double z_asked, double qobs_asked, struct tszspectrum * ptsz){
-  double z = z_asked;
-  double nu = qobs_asked;
-
-  // double z = log(1.+z_asked);
-  // double m = log(m_asked);
-   if (z<ptsz->szcounts_fft_z[0]){
-      // z = ptsz->array_z_L_sat[0];
-      printf("redshift min out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[0]);
-      exit(0);
-    }
-        // printf("dealing with mass conversion in hmf\n");
-   if (z>ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]){
-      // z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
-
-      printf("redshift max out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]);
-      exit(0);
-    }
-
-
-   if (nu<ptsz->szcounts_fft_nexpected_qobs[0]){
-    // nu = ptsz->array_nu_L_sat[0];
-      printf("qobs  min out of range in Lsat asked %.8e bound %.8e.\n",exp(nu),exp(ptsz->szcounts_fft_nexpected_qobs[0]));
-      exit(0);
-  }
-      // printf("dealing with mass conversion in hmf\n");
-   if (nu>ptsz->szcounts_fft_nexpected_qobs[ptsz->szcounts_fft_nexpected_qobs_n-1]){
-      // nu =  ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1];
-      printf("qobs max out of range in Lsat asked %.3e bound %.3e.\n",exp(nu),exp(ptsz->szcounts_fft_nexpected_qobs[ptsz->szcounts_fft_nexpected_qobs_n-1]));
-      exit(0);
-    }
-
- double result  = pwl_interp_2d(ptsz->szcounts_fft_nexpected_qobs_n,
-                                ptsz->szcounts_fft_nz,
-                                ptsz->szcounts_fft_nexpected_qobs,
-                                ptsz->szcounts_fft_z,
-                                ptsz->szcounts_fft_nexpected_dndzdqgt,
-                                1,
-                                &nu,
-                                &z);
-
- // double result  = pwl_interp_2d(ptsz->szcounts_fft_nexpected_qobs_n,
- //                                ptsz->szcounts_fft_nz,
- //                                ptsz->szcounts_fft_nexpected_qobs,
- //                                ptsz->szcounts_fft_z,
- //                                ptsz->szcounts_fft_nexpected_dndzdqgt,
- //                                1,
- //                                &nu,
- //                                &z);
-
- return result;
-
-}
-
-
-double  get_szcounts_rates_at_z_sigobs_qobs(double z_asked, double sig_asked, double qobs_asked, struct tszspectrum * ptsz){
-  double z = z_asked;
-  double m = log(sig_asked);
-  double nu = qobs_asked;
-
-  // printf("nu asked = %.3e\n",nu_asked);
-  // exit(0);
-
-
-  // double z = log(1.+z_asked);
-  // double m = log(m_asked);
-   if (z<ptsz->szcounts_fft_z[0]){
-      // z = ptsz->array_z_L_sat[0];
-      printf("redshift min out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[0]);
-      exit(0);
-    }
-        // printf("dealing with mass conversion in hmf\n");
-   if (z>ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]){
-      // z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
-
-      printf("redshift max out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]);
-      exit(0);
-    }
-
-   if (m<ptsz->szcounts_fft_sigmayobs[0]){
-    // m = ptsz->array_m_L_sat[0];
-      printf("mass min out of range in Lsat asked %.3e bound %.3e.\n",m,ptsz->szcounts_fft_sigmayobs[0]);
-      exit(0);
-  }
-      // printf("dealing with mass conversion in hmf\n");
-   if (m>ptsz->szcounts_fft_sigmayobs[ptsz->szcounts_fft_nsigmayobs-1]){
-      // m =  ptsz->array_m_L_sat[ptsz->n_m_L_sat-1];
-      printf("mass max out of range in Lsat asked %.3e bound %.3e.\n",m,ptsz->szcounts_fft_sigmayobs[ptsz->szcounts_fft_nsigmayobs-1]);
-      exit(0);
-    }
-
-   if (nu<ptsz->szcounts_fft_qobs[0]){
-    // nu = ptsz->array_nu_L_sat[0];
-      printf("freq min out of range in Lsat asked %.8e bound %.8e.\n",exp(nu),exp(ptsz->szcounts_fft_qobs[0]));
-      exit(0);
-  }
-      // printf("dealing with mass conversion in hmf\n");
-   if (nu>ptsz->szcounts_fft_qobs[ptsz->szcounts_fft_nqobs-1]){
-      // nu =  ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1];
-      printf("freq max out of range in Lsat asked %.3e bound %.3e.\n",exp(nu),exp(ptsz->szcounts_fft_qobs[ptsz->szcounts_fft_nqobs-1]));
-      exit(0);
-    }
-
-  // if (ptsz->tau_profile == 1){
-  // find the closest l's in the grid:
-  int id_l_low;
-  int id_l_up;
-  int n_nu = ptsz->szcounts_fft_nqobs;
-  int n_m = ptsz->szcounts_fft_nsigmayobs;
-  int n_z = ptsz->szcounts_fft_nz;
-  r8vec_bracket(n_nu,ptsz->szcounts_fft_qobs,nu,&id_l_low,&id_l_up);
-
-  // interpolate 2d at l_low:
-
- double ln_rho_low = pwl_interp_2d(n_m,
-                                n_z,
-                                ptsz->szcounts_fft_sigmayobs,
-                                ptsz->szcounts_fft_z,
-                                ptsz->szcounts_fft_rates_at_z_sigy_qobs[id_l_low-1],
-                                1,
-                                &m,
-                                &z);
-
- double ln_rho_up = pwl_interp_2d(n_m,
-                                n_z,
-                                ptsz->szcounts_fft_sigmayobs,
-                                ptsz->szcounts_fft_z,
-                                ptsz->szcounts_fft_rates_at_z_sigy_qobs[id_l_up-1],
-                                1,
-                                &m,
-                                &z);
- double ln_l_low = ptsz->szcounts_fft_qobs[id_l_low-1];
- double ln_l_up = ptsz->szcounts_fft_qobs[id_l_up-1];
-
- // printf("lnrh %.5e %.5e %d %d\n",ln_rho_low,ln_rho_up,id_l_low,id_l_up);
-
- return ln_rho_low + ((nu - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low);
- // return ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low);
+//
+// double  get_szcounts_rates_at_z_sigobs_qobs(double z_asked, double sig_asked, double qobs_asked, struct tszspectrum * ptsz){
+//   double z = z_asked;
+//   double m = log(sig_asked);
+//   double nu = qobs_asked;
+//
+//   // printf("nu asked = %.3e\n",nu_asked);
+//   // exit(0);
+//
+//
+//   // double z = log(1.+z_asked);
+//   // double m = log(m_asked);
+//    if (z<ptsz->szcounts_fft_z[0]){
+//       // z = ptsz->array_z_L_sat[0];
+//       printf("redshift min out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[0]);
+//       exit(0);
+//     }
+//         // printf("dealing with mass conversion in hmf\n");
+//    if (z>ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]){
+//       // z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
+//
+//       printf("redshift max out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]);
+//       exit(0);
+//     }
+//
+//    if (m<ptsz->szcounts_fft_sigmayobs[0]){
+//     // m = ptsz->array_m_L_sat[0];
+//       printf("mass min out of range in Lsat asked %.3e bound %.3e.\n",m,ptsz->szcounts_fft_sigmayobs[0]);
+//       exit(0);
+//   }
+//       // printf("dealing with mass conversion in hmf\n");
+//    if (m>ptsz->szcounts_fft_sigmayobs[ptsz->szcounts_fft_nsigmayobs-1]){
+//       // m =  ptsz->array_m_L_sat[ptsz->n_m_L_sat-1];
+//       printf("mass max out of range in Lsat asked %.3e bound %.3e.\n",m,ptsz->szcounts_fft_sigmayobs[ptsz->szcounts_fft_nsigmayobs-1]);
+//       exit(0);
+//     }
+//
+//    if (nu<ptsz->szcounts_fft_qobs[0]){
+//     // nu = ptsz->array_nu_L_sat[0];
+//       printf("freq min out of range in Lsat asked %.8e bound %.8e.\n",exp(nu),exp(ptsz->szcounts_fft_qobs[0]));
+//       exit(0);
+//   }
+//       // printf("dealing with mass conversion in hmf\n");
+//    if (nu>ptsz->szcounts_fft_qobs[ptsz->szcounts_fft_nqobs-1]){
+//       // nu =  ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1];
+//       printf("freq max out of range in Lsat asked %.3e bound %.3e.\n",exp(nu),exp(ptsz->szcounts_fft_qobs[ptsz->szcounts_fft_nqobs-1]));
+//       exit(0);
+//     }
+//
+//   // if (ptsz->tau_profile == 1){
+//   // find the closest l's in the grid:
+//   int id_l_low;
+//   int id_l_up;
+//   int n_nu = ptsz->szcounts_fft_nqobs;
+//   int n_m = ptsz->szcounts_fft_nsigmayobs;
+//   int n_z = ptsz->szcounts_fft_nz;
+//   r8vec_bracket(n_nu,ptsz->szcounts_fft_qobs,nu,&id_l_low,&id_l_up);
+//
+//   // interpolate 2d at l_low:
+//
+//  double ln_rho_low = pwl_interp_2d(n_m,
+//                                 n_z,
+//                                 ptsz->szcounts_fft_sigmayobs,
+//                                 ptsz->szcounts_fft_z,
+//                                 ptsz->szcounts_fft_rates_at_z_sigy_qobs[id_l_low-1],
+//                                 1,
+//                                 &m,
+//                                 &z);
+//
+//  double ln_rho_up = pwl_interp_2d(n_m,
+//                                 n_z,
+//                                 ptsz->szcounts_fft_sigmayobs,
+//                                 ptsz->szcounts_fft_z,
+//                                 ptsz->szcounts_fft_rates_at_z_sigy_qobs[id_l_up-1],
+//                                 1,
+//                                 &m,
+//                                 &z);
+//  double ln_l_low = ptsz->szcounts_fft_qobs[id_l_low-1];
+//  double ln_l_up = ptsz->szcounts_fft_qobs[id_l_up-1];
+//
+//  // printf("lnrh %.5e %.5e %d %d\n",ln_rho_low,ln_rho_up,id_l_low,id_l_up);
+//
+//  return ln_rho_low + ((nu - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low);
+//  // return ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low);
+//
+//
+// }
 
 
-}
-
-
-
+// thanks chatgpt
 void shiftArray(double arr[], int size, int s) {
     double temp[s];
-    for (int i = 0; i < s; i++) {
+    int i;
+    for (i = 0; i < s; i++) {
         temp[i] = arr[i];
     }
-    for (int i = s; i < size; i++) {
+    for (i = s; i < size; i++) {
         arr[i - s] = arr[i];
     }
-    for (int i = 0; i < s; i++) {
+    for (i = 0; i < s; i++) {
         arr[size - s + i] = temp[i];
     }
 }
+
 
 
 int compute_counts_sz_fft(struct background * pba,
@@ -355,18 +368,18 @@ int compute_counts_sz_fft(struct background * pba,
 
 
 // test m - >y at z;
-double z = 0.3;
-double m = 5e14;
-double y = get_y_at_m_and_z(m,z,ptsz,pba);
-printf("z = %.5e m = %.5e y = %.5e\n",z,m,y);
-tabulate_y_to_m(pba,pnl,ppm,ptsz);
-double mrec;
-mrec = get_y_to_m_at_z_and_y(z,y,ptsz);
-printf("z = %.5e m = %.5e y = %.5e mrec = %.6e\n",z,m,y,mrec);
-double der = get_dlnm_dlny(log(y),z,ptsz);
-printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e\n",z,m,y,mrec,der);
-double dNdlny = get_dNdlny_at_z_and_y(z,y,pba,ptsz);
-printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e dNdlny = %.5e\n",z,m,y,mrec,der,dNdlny);
+// double z = 0.3;
+// double m = 5e14;
+// double y = get_y_at_m_and_z(m,z,ptsz,pba);
+// printf("z = %.5e m = %.5e y = %.5e\n",z,m,y);
+// tabulate_y_to_m(pba,pnl,ppm,ptsz);
+// double mrec;
+// mrec = get_y_to_m_at_z_and_y(z,y,ptsz);
+// printf("z = %.5e m = %.5e y = %.5e mrec = %.6e\n",z,m,y,mrec);
+// double der = get_dlnm_dlny(log(y),z,ptsz);
+// printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e\n",z,m,y,mrec,der);
+// double dNdlny = get_dNdlny_at_z_and_y(z,y,pba,ptsz);
+// printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e dNdlny = %.5e\n",z,m,y,mrec,der,dNdlny);
 
 // exit(0);
 
@@ -377,11 +390,11 @@ printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e dNdlny = %.5e\n",z,m,y
     fftw_complex* b_tmp;
     a_tmp = fftw_alloc_complex(2*ptsz->N_samp_fftw);
     b_tmp = fftw_alloc_complex(2*ptsz->N_samp_fftw);
-    forward_plan = fftw_plan_dft_1d(2*ptsz->N_samp_fftw,
+    ptsz->forward_plan_counts_fft = fftw_plan_dft_1d(2*ptsz->N_samp_fftw,
                                     (fftw_complex*) a_tmp,
                                     (fftw_complex*) b_tmp,
                                     -1, FFTW_ESTIMATE);
-    reverse_plan = fftw_plan_dft_1d(2*ptsz->N_samp_fftw,
+    ptsz->reverse_plan_counts_fft = fftw_plan_dft_1d(2*ptsz->N_samp_fftw,
                                     (fftw_complex*) b_tmp,
                                     (fftw_complex*) b_tmp,
                                     +1, FFTW_ESTIMATE);
@@ -1046,6 +1059,8 @@ printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e dNdlny = %.5e\n",z,m,y
 // char Filepath[_ARGUMENT_LENGTH_MAX_];
 
 // set up arrays used for the convolutions:
+
+
 int npatches;
 if (ptsz->use_skyaveraged_noise)
     npatches = 1;
@@ -1120,7 +1135,7 @@ omp_lock_t lock;
 // double result_qmconv_all_patches;//[ptsz->nskyfracs][2*N];
 
 #pragma omp parallel \
-   shared(N,xarr,kernel_scatter,npatches,index_zloop,abort,pba,ptsz,ppm,pnl,lock,forward_plan,reverse_plan)\
+   shared(N,xarr,kernel_scatter,npatches,index_zloop,abort,pba,ptsz,ppm,pnl,lock)\
    private(id,index_patchesloop)\
    num_threads(number_of_threads)
 	 {
@@ -1143,7 +1158,7 @@ id = omp_get_thread_num();
 
 // first we tabulate q as a function of m.
 int idpatch = index_patchesloop;
-int ntab = 250;
+int ntab = ptsz->ntab_dlnm_dlnq;
 double lnq_tab[ntab];
 double lnm_tab[ntab];
 
@@ -1195,10 +1210,29 @@ for (itab = 0;itab<ntab;itab++){
 // double dx = L/(double) N;
 
 // convolution arrays
+// double complex* a = malloc(sizeof(complex double)*N);
+// double complex* b = malloc(sizeof(complex double)*N);
 
-fftw_complex in[2*N], out[2*N], in2[2*N],test[2*N],out_test[2*N]; /* double [2] */
-fftw_complex product[2*N],product_out[2*N];
+fftw_complex* in;
+fftw_complex* out;
 
+fftw_complex* test;
+fftw_complex* out_test; /* double [2] */
+
+fftw_complex* product;
+fftw_complex* product_out;
+
+
+in = fftw_alloc_complex(2*N);
+out = fftw_alloc_complex(2*N);
+
+test = fftw_alloc_complex(2*N);
+out_test = fftw_alloc_complex(2*N);
+
+product = fftw_alloc_complex(2*N);
+product_out = fftw_alloc_complex(2*N);
+// fftw_free(a_tmp);
+// fftw_free(b_tmp);
 
     // the probability distribution of qt|qm
     // double sigma = ptsz->sigmaM_ym;
@@ -1253,7 +1287,7 @@ else{
 }
 
     // compute derivative dlnmdlnq
-    double tol = 0.5;
+    double tol = ptsz->tol_dlnm_dlnq;
     double lnqp = x+tol;
     double lnqm = x-tol;
     double lnmp = pwl_value_1d(ntab,
@@ -1299,8 +1333,8 @@ else{
   // printf("array saved");
 // }
 // exit(0);
-  fftw_execute_dft(forward_plan, (fftw_complex*) in, (fftw_complex*) out);
-  fftw_execute_dft(forward_plan, (fftw_complex*) test, (fftw_complex*) out_test);
+  fftw_execute_dft(ptsz->forward_plan_counts_fft, (fftw_complex*) in, (fftw_complex*) out);
+  fftw_execute_dft(ptsz->forward_plan_counts_fft, (fftw_complex*) test, (fftw_complex*) out_test);
 
 for (i = 0; i < 2*N; i++){
    product[i][0]= (out[i][0]*out_test[i][0]-out[i][1]*out_test[i][1])/(double)(2*N);
@@ -1308,7 +1342,7 @@ for (i = 0; i < 2*N; i++){
     }
 
 
-    fftw_execute_dft(reverse_plan, (fftw_complex*) product, (fftw_complex*) product_out);
+    fftw_execute_dft(ptsz->reverse_plan_counts_fft, (fftw_complex*) product, (fftw_complex*) product_out);
 
 
 // printf("saving result of qm convolution iz = %d\n",index_zloop);
@@ -1333,12 +1367,19 @@ for (i = 0; i < 2*N; i++){
   // fp=fopen(Filepath, "w");
 
   for(i = 0; i < 2*N; i++){
-
-    // fprintf(fp,"%.5e\t%.5e\n",xarr[i],result_qmconv[i]);
     ptsz->szcounts_fft_qmconv_all_patches[index_patchesloop][i] = result_qmconv[i];
     }
 
 // fclose(fp);
+
+
+fftw_free(in);
+fftw_free(out);
+fftw_free(test);
+fftw_free(out_test);
+fftw_free(product);
+fftw_free(product_out);
+
 
 } // end patches loop
 #ifdef _OPENMP
@@ -1393,10 +1434,27 @@ for (index_patchesloop=0;index_patchesloop<npatches;index_patchesloop++) // numb
 // double dx = L/(double) N;
 
 
-fftw_complex in[2*N], out[2*N], in2[2*N],test[2*N],out_test[2*N]; /* double [2] */
-fftw_complex product[2*N],product_out[2*N];
+// fftw_complex in[2*N], out[2*N], in2[2*N],test[2*N],out_test[2*N]; /* double [2] */
+// fftw_complex product[2*N],product_out[2*N];
 
 
+fftw_complex* in;
+fftw_complex* out;
+
+fftw_complex* test;
+fftw_complex* out_test; /* double [2] */
+
+fftw_complex* product;
+fftw_complex* product_out;
+
+in = fftw_alloc_complex(2*N);
+out = fftw_alloc_complex(2*N);
+
+test = fftw_alloc_complex(2*N);
+out_test = fftw_alloc_complex(2*N);
+
+product = fftw_alloc_complex(2*N);
+product_out = fftw_alloc_complex(2*N);
 // printf("saving final conv arrays etc arrays for iz = %d\n",index_zloop);
 //   // FILE *fp;
 //   // char Filepath[_ARGUMENT_LENGTH_MAX_];
@@ -1457,34 +1515,42 @@ for (i = 0; i < N; i++) {
 
 // fclose(fp);
 
-fftw_execute_dft(forward_plan, (fftw_complex*) in, (fftw_complex*) out);
-fftw_execute_dft(forward_plan, (fftw_complex*) test, (fftw_complex*) out_test);
+fftw_execute_dft(ptsz->forward_plan_counts_fft, (fftw_complex*) in, (fftw_complex*) out);
+fftw_execute_dft(ptsz->forward_plan_counts_fft, (fftw_complex*) test, (fftw_complex*) out_test);
 
     for (i = 0; i < 2*N; i++){
        product[i][0]= (out[i][0]*out_test[i][0]-out[i][1]*out_test[i][1])/(double)(2*N);
        product[i][1]= (out[i][0]*out_test[i][1]+out[i][1]*out_test[i][0])/(double)(2*N);
         }
 
-fftw_execute_dft(reverse_plan, (fftw_complex*) product, (fftw_complex*) product_out);
+fftw_execute_dft(ptsz->reverse_plan_counts_fft, (fftw_complex*) product, (fftw_complex*) product_out);
 
-    for(i = 0; i < 2*N; i++){
-        product_out[i][0] *= dq;
-      if (ptsz->sz_verbose>10)
-        printf("fft thread %d i = %d r = %.5e\n",id,i,product_out[i][0]);
-      }
+    // for(i = 0; i < 2*N; i++){
+    //     product_out[i][0] *= dq;
+    //   if (ptsz->sz_verbose>10)
+    //     printf("fft thread %d i = %d r = %.5e\n",id,i,product_out[i][0]);
+    //   }
 
   double result_qconv[2*N];
     for(i = 0; i < 2*N; i++) {
-            result_qconv[i] = product_out[i][0];
+            result_qconv[i] = product_out[i][0]*dq;
         }
   int shift = (int) (N/2);
   shiftArray(result_qconv, 2*N, shift);
 
 
-  FILE *fp;
-  char Filepath[_ARGUMENT_LENGTH_MAX_];
-sprintf(Filepath,"%s%s%d%s",ptsz->root,"test_allpatches_final_qconv_iz_",index_zloop,".txt");
-fp=fopen(Filepath, "w");
+
+fftw_free(in);
+fftw_free(out);
+fftw_free(test);
+fftw_free(out_test);
+fftw_free(product);
+fftw_free(product_out);
+
+  // FILE *fp;
+  // char Filepath[_ARGUMENT_LENGTH_MAX_];
+  // sprintf(Filepath,"%s%s%d%s",ptsz->root,"test_allpatches_final_qconv_iz_",index_zloop,".txt");
+  // fp=fopen(Filepath, "w");
 
 
 for(i = 0; i < N; i++) {
@@ -1492,17 +1558,17 @@ for(i = 0; i < N; i++) {
   ptsz->szcounts_fft_dndzdq[index_zq] = result_qconv[i];
 
 
-  fprintf(fp,"%.5e\t%.5e\n",qp[i],result_qconv[i]);
-// if ((index_zloop%3==0)&&(i%100==0)){
-//   printf("z = %.5e q = %.5e dndzdq = %.5e %d\n",z,qp[i],ptsz->szcounts_fft_dndzdq[index_zq],index_zq);
-// }
+  // fprintf(fp,"%.5e\t%.5e\n",qp[i],result_qconv[i]);
+  // if ((index_zloop%3==0)&&(i%100==0)){
+  //   printf("z = %.5e q = %.5e dndzdq = %.5e %d\n",z,qp[i],ptsz->szcounts_fft_dndzdq[index_zq],index_zq);
+  // }
 
-// if ((z>0.08) && (z<0.12) && (qp[i]>2.8) && (qp[i]<3.2)){
-//   printf("z = %.5e q = %.5e  conv = %.5e\n",z,qp[i],result_qconv[i]);
-// }
+  // if ((z>0.08) && (z<0.12) && (qp[i]>2.8) && (qp[i]<3.2)){
+  //   printf("z = %.5e q = %.5e  conv = %.5e\n",z,qp[i],result_qconv[i]);
+  // }
 
   }
-fclose(fp);
+  // fclose(fp);
 
 if (ptsz->sz_verbose>=1)
   printf("second convolution done for z = %.5e.\n",z);
@@ -1511,16 +1577,165 @@ if (ptsz->sz_verbose>=1)
 
 
 // destroy the fft plans.
-fftw_destroy_plan(forward_plan);
-fftw_destroy_plan(reverse_plan);
+// fftw_destroy_plan(forward_plan);
+// fftw_destroy_plan(reverse_plan);
 
 
 // test
-double ztest = 8.45000e-02;
-double qtest = 3.02734e+00;
-double rtest = get_szcounts_dndzdq_at_z_q(ztest,qtest,ptsz);
+// double ztest = 8.45000e-02;
+// double qtest = 3.02734e+00;
+// double rtest = get_szcounts_dndzdq_at_z_q(ztest,qtest,ptsz);
+//
+// printf("ztest = %.5e qtest = %.5e rtest = %.5e\n",ztest,qtest,rtest);
+//
 
-printf("ztest = %.5e qtest = %.5e rtest = %.5e\n",ztest,qtest,rtest);
+// now we compute the likelihoods over the catalogue.
+
+      // if (ptsz->sz_verbose>=1){
+
+        int icat = 0;
+        int imissz = 0;
+        double max_z = 0.;
+        double min_z = 100.;
+        int imissz_arr[ptsz->szcat_size];
+        if (ptsz->sz_verbose>=1) printf("szcat: got %d lines.\n",ptsz->szcat_size);
+        for (icat=0;icat<ptsz->szcat_size;icat++){
+            if (ptsz->sz_verbose>=10) printf("szcat z = %.3e \t snr = %.3e\n",ptsz->szcat_z[icat],ptsz->szcat_snr[icat]);
+        if (ptsz->szcat_z[icat]<= 0) {
+          imissz_arr[imissz] = icat;
+          imissz += 1;
+        }
+        else{
+          double zc = ptsz->szcat_z[icat];
+          if (zc<min_z) min_z = zc;
+          if (zc>max_z) max_z = zc;
+        }
+        }
+        if (ptsz->sz_verbose>=1) {
+          printf("cat min z = %.5e cat max z = %.5e\n",min_z,max_z);
+        }
+        if (min_z<ptsz->szcounts_fft_z_min){
+          printf("You need to decrease szcounts_fft_z_min, min z from cat is %.5e\n",min_z);
+          printf("Your current min z is %.5e\n",ptsz->szcounts_fft_z_min);
+        }
+        if (max_z>ptsz->szcounts_fft_z_max){
+          printf("You need to increase szcounts_fft_z_max, max z from cat is %.5e\n",max_z);
+          printf("Your current max z is %.5e\n",ptsz->szcounts_fft_z_max);
+        }
+// randomly assign zs to missing:
+       const gsl_rng_type * T;
+       gsl_rng * rmissz;
+       gsl_rng_env_setup();
+       T = gsl_rng_default;
+       rmissz = gsl_rng_alloc (T);
+       int iimissz;
+
+       for (iimissz = 0; iimissz < imissz; iimissz++)
+         {
+           double u = gsl_rng_uniform (rmissz);
+           ptsz->szcat_z[imissz_arr[iimissz]] = min_z + (max_z-min_z)*u;
+           if (ptsz->sz_verbose>=1){
+           printf ("cluster %d now has z = %.5f\n",imissz_arr[iimissz], u);
+            }
+         }
+
+       gsl_rng_free (rmissz);
+
+      if (ptsz->sz_verbose>=1){
+        printf("szcat: got %d objects with missing redshift.\n",imissz);
+        printf("random z's have been assigned to them, see above.\n");
+      }
+
+      // }
+
+
+   // class_alloc(ptsz->szrate,ptsz->szcat_size*sizeof(double *),ptsz->error_message);
+   int irate;
+   for (irate = 0; irate < ptsz->szcat_size ; irate++){
+     // ptsz->szrate[irate] = 0.;
+     double qcat = ptsz->szcat_snr[irate];
+     double zcat = ptsz->szcat_z[irate];
+     ptsz->szrate[irate] = get_szcounts_dndzdq_at_z_q(zcat,qcat,ptsz);
+      if (ptsz->sz_verbose>=1){
+        printf("rate of cluster[%d] = %.5e\n",irate,ptsz->szrate[irate]);
+      }
+   }
+
+//    // now we just need to compute the total number of clusters above the threshold.
+//    if (ptsz->sz_verbose>=1)
+//     printf("computing nexpected above qcut = %.5e\n",ptsz->sn_cutoff);
+//    // ptsz->sn_cutoff
+//    int index_z;
+//    int index_q;
+//    double dz_ntot = (ptsz->szcounts_fft_z_max-ptsz->szcounts_fft_z_min)/(ptsz->szcounts_fft_nz-1.);
+//    int nq = 200;
+//    double dq_ntot = (ptsz->szcounts_qmax_fft_padded-ptsz->sn_cutoff)/(nq-1.);
+//    double ntot = 0.;
+//    double arr_dndzdq[ptsz->szcounts_fft_nz][nq];
+//    for (index_z = 0; index_z<ptsz->szcounts_fft_nz; index_z++){
+//      for (index_q = 0; index_q<nq; index_q++){
+//         double zp = ptsz->szcounts_fft_z_min+index_z*dz_ntot;
+//         double qp = ptsz->sn_cutoff+index_q*dq_ntot;
+//         double dn = get_szcounts_dndzdq_at_z_q(zp,qp,ptsz);
+//         arr_dndzdq[index_z][index_q] = dn;//ntot += 0.5*()*dz*dq;
+//         // if (index_z == 0 || index_z == ptsz->szcounts_fft_nz-1 || index_q == 0 || index_q == nq-1) {
+//         //                 ntot += dn*dz_ntot*dq_ntot;
+//         //             } else {
+//                         ntot += dn*dz_ntot*dq_ntot;
+//                     // }
+//
+//      }
+//    }
+//
+//
+//         // Calculating the integral value
+//         // wrt y at each point for x
+//         double ax[ptsz->szcounts_fft_nz];
+//         for (index_z = 0; index_z < ptsz->szcounts_fft_nz; ++index_z)
+//         {
+//             ax[index_z] = 0;
+//             for (index_q = 0; index_q < nq; ++index_q)
+//             {
+//                 // if (index_q == 0 || index_q == nq - 1)
+//                     ax[index_z] += arr_dndzdq[index_z][index_q];
+//                 // else if (index_q % 2 == 0)
+//                 //     ax[index_z] += 2 * arr_dndzdq[index_z][index_q];
+//                 // else
+//                 //     ax[index_z] += 4 * arr_dndzdq[index_z][index_q];
+//             }
+//             ax[index_z] *= (dq_ntot);// / 3);
+//         }
+//
+//         ntot = 0.;
+//
+//         // Calculating the final integral value
+//         // using the integral obtained in the above step
+//         for (index_z = 0; index_z < ptsz->szcounts_fft_nz; ++index_z)
+//         {
+//             // if (index_z == 0 || index_z == ptsz->szcounts_fft_nz - 1)
+//                 ntot += ax[index_z];
+//             // else if (i % 2 == 0)
+//             //     ntot += 2 * ax[index_z];
+//             // else
+//             //     ntot += 4 * ax[index_z];
+//         }
+//         ntot *= (dz_ntot);// / 3);
+//
+//
+//   ptsz->szcounts_ntot = ntot;
+//
+//
+//
+// // if (ptsz->has_sz_rates){
+//   ptsz->szunbinned_loglike = - ntot;
+//   int index_rate;
+//   for (index_rate=0;index_rate<ptsz->szcat_size;index_rate++){
+//     ptsz->szunbinned_loglike += log(ptsz->szrate[index_rate]);
+//   // printf("cluster id = %d\trate = %.4e \n",index_rate,ptsz->szrate[index_rate]);
+//   }
+//   if (ptsz->sz_verbose >= 1 ) printf("loglike unbinned cc = %.3e\n",ptsz->szunbinned_loglike);
+//   if (ptsz->sz_verbose >= 1 ) printf("Ntot above qcut = %.3e\n",ptsz->szcounts_ntot);
+// // }
 
 
 
@@ -1622,7 +1837,11 @@ int grid_C_2d(
   const int dim_2 = ptsz->nthetas;
 
 
-
+  int npatches;
+  if (ptsz->use_skyaveraged_noise)
+      npatches = 1;
+  else
+      npatches = ptsz->nskyfracs;
 
   int l_array[3];
   double theta_array[3];
@@ -1756,16 +1975,18 @@ if (pcsz->has_completeness == 1){
 
         int index_patches;
         double comp_sky_tot = 0.;
-        for (index_patches =0;index_patches<ptsz->nskyfracs;index_patches++){
+        for (index_patches =0;index_patches<npatches;index_patches++){
 
           // double y1 = ptsz->ylims[index_patches][l1];
           // double y2 = ptsz->ylims[index_patches][l2];
           // double y = y1 + (y2-y1)/(th2-th1)*(thp-th1);
 
-          double y_interp = pwl_value_1d(ptsz->nthetas,
-                                         ptsz->thetas,
-                                         ptsz->ylims[index_patches],
-                                         thp);
+          double y_interp = get_szcountsz_sigma_at_theta_in_patch(thp,index_patches,ptsz);;
+
+          // double y_interp = pwl_value_1d(ptsz->nthetas,
+          //                                ptsz->thetas,
+          //                                ptsz->ylims[index_patches],
+          //                                thp);
           // double y_interp = pwl_value_1d(ptsz->nthetas,
           //                                ptsz->thetas,
           //                                ptsz->sky_averaged_ylims,
@@ -1807,7 +2028,13 @@ if (pcsz->has_completeness == 1){
             c2 = erf_compl_nicola(yp,y,ptsz->sn_cutoff,y_min,y_max);
           }
 
-          completeness_2d[index_m][index_z] += c2*ptsz->skyfracs[index_patches];///fsky;
+if (ptsz->use_skyaveraged_noise){
+          completeness_2d[index_m][index_z] += c2*ptsz->fsky_from_skyfracs;///fsky;
+
+        }
+else{
+     completeness_2d[index_m][index_z] += c2*ptsz->skyfracs[index_patches];///fsky;
+}
           // printf("%d\n",index_patches);
 
           // completeness_2d_to_1d[index_m_z] += c2*ptsz->skyfracs[index_patches];
@@ -1880,10 +2107,16 @@ if (pcsz->has_completeness == 1){
       for (index1=0;index1<ptsz->Ny;index1++)
       {
         double y0=exp(ptsz->erfs_2d_to_1d_y_array[index1]);
-        for (index_patches=0;index_patches<ptsz->nskyfracs;index_patches++){
+        for (index_patches=0;index_patches<npatches;index_patches++){
           //fsky += ptsz->skyfracs[index_patches];
 
-          double y1 = ptsz->ylims[index_patches][index2];
+          double y1;
+          if (ptsz->use_skyaveraged_noise == 0){
+            y1 = ptsz->ylims[index_patches][index2];
+          }
+          else{
+            y1 =  ptsz->sky_averaged_ylims[index2];
+          }
           // double y1 = get_ylim_of_theta(th1,ptsz->ylims[index_patches][index2];
           // int k = index_y;
           //
@@ -1902,8 +2135,12 @@ if (pcsz->has_completeness == 1){
           else{
             c2 = erf_compl_nicola(y0,y1,ptsz->sn_cutoff,y_min,y_max);
           }
+          if (ptsz->use_skyaveraged_noise == 0){
           erfs[index1][index2]=erfs[index1][index2]+c2*ptsz->skyfracs[index_patches];
-
+        }
+        else{
+              erfs[index1][index2]=erfs[index1][index2]+c2*ptsz->fsky_from_skyfracs;
+        }
           // erfs_2d_to_1d[index_th_y] += c2*ptsz->skyfracs[index_patches]/fsky;
 
 
@@ -2062,15 +2299,15 @@ if (pcsz->has_completeness == 1){
 
 
         if (int_comp > fsky) {
-          printf("int_comp larger than fsky.\n");
+          if (ptsz->sz_verbose>3) printf("int_comp larger than fsky.\n");
           int_comp=fsky;
         }
         if (int_comp <= 0. || isinf(int_comp) || isnan(int_comp)) {
           if (ptsz->sz_verbose>3){
-        if (int_comp <= 0.) printf("int_comp<0 thp = %.5e th2 = %.5e mp = %.5e zp = %.5e\n",thp,th2,mp,zp); // This is not problematic. I forgot why. theta just too large i think.
-        if (isinf(int_comp)) printf("int_comp=infty.\n");
-        if (isnan(int_comp)) printf("comp=nan.\n");
-      }
+              if (int_comp <= 0.) printf("int_comp<0 thp = %.5e th2 = %.5e mp = %.5e zp = %.5e\n",thp,th2,mp,zp); // This is not problematic. I forgot why. theta just too large i think.
+              if (isinf(int_comp)) printf("int_comp=infty.\n");
+              if (isnan(int_comp)) printf("comp=nan.\n");
+            }
         int_comp=1.e-300;
 }
 
@@ -2173,9 +2410,9 @@ for (index_z_steps_z = index_z_steps_z_min;index_z_steps_z<index_z_steps_z_max+1
     double cp = completeness_2d[index_m][index_z_steps_z];
     double fpp = get_volume_at_z(zpp,pba)*get_dndlnM_at_z_and_M(zpp,mp,ptsz);
     double cpp = completeness_2d[index_m][index_z_steps_z+1];
-if (ptsz->sz_verbose>3)
-    printf("index_y =  %d cp = %.5e fp = %.5e zp = %.5e  zpp = %.5e  mp = %.5e\n",index_y,cp, fp, zp, zpp, mp);
- r+= 0.5*(fp*cp+fpp*cpp)*pcsz->dlnM*(zpp-zp);
+      if (ptsz->sz_verbose>3)
+          printf("index_y =  %d cp = %.5e fp = %.5e zp = %.5e  zpp = %.5e  mp = %.5e\n",index_y,cp, fp, zp, zpp, mp);
+    r+= 0.5*(fp*cp+fpp*cpp)*pcsz->dlnM*(zpp-zp);
   }
 }
 
@@ -2191,6 +2428,12 @@ if (ptsz->sz_verbose>3)
     // }
     //
      }//end loop z bins for lkl
+
+
+     for (index_m=0;index_m<pcsz->nsteps_m;index_m++){
+       free(completeness_2d[index_m]);
+     }
+
 
   free(completeness_2d);
   free(completeness_2d_to_1d);
@@ -2415,7 +2658,7 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
   pcsz->nzSZ = ptsz->n_arraySZ_for_integral;
 
   ptsz->has_completeness = pcsz->has_completeness;
-
+// read_sz_catalog(ptsz);
   //pcsz->nzSZ = 20.; //cosmomc settings
   //pcsz->size_logM = 105; //cosmomc settings
 
@@ -2428,15 +2671,29 @@ if (ptsz->sz_verbose>1)
 printf("allocating memory for szcounts ffts.\n");
 ptsz->szcounts_fft_nqobs = ptsz->N_samp_fftw;
     class_alloc(ptsz->szcounts_fft_qobs,sizeof(double)*ptsz->szcounts_fft_nqobs,ptsz->error_message);
-    class_alloc(ptsz->szcounts_fft_nexpected_qobs,sizeof(double)*ptsz->szcounts_fft_nexpected_qobs_n,ptsz->error_message);
+    // checked its well freed.
 
     class_alloc(ptsz->szcounts_fft_z,sizeof(double)*ptsz->szcounts_fft_nz,ptsz->error_message);
-    class_alloc(ptsz->szcounts_fft_sigmayobs,sizeof(double)*ptsz->szcounts_fft_nsigmayobs,ptsz->error_message);
-    class_alloc(ptsz->szcounts_fft_index_zsig,sizeof(int *)*ptsz->szcounts_fft_nz,ptsz->error_message);
-    class_alloc(ptsz->szcounts_fft_index_zq,sizeof(int *)*ptsz->szcounts_fft_nz,ptsz->error_message);
+    // checked it's well freed.
+
+    // class_alloc(ptsz->szcounts_fft_sigmayobs,sizeof(double)*ptsz->szcounts_fft_nsigmayobs,ptsz->error_message);
+    // class_alloc(ptsz->szcounts_fft_index_zsig,sizeof(int *)*ptsz->szcounts_fft_nz,ptsz->error_message);
+    // class_alloc(ptsz->szcounts_fft_index_zq,sizeof(int *)*ptsz->szcounts_fft_nz,ptsz->error_message);
     class_alloc(ptsz->szcounts_fft_index_zq_final,sizeof(int *)*ptsz->szcounts_fft_nz,ptsz->error_message);
-    class_alloc(ptsz->szcounts_fft_rates_at_z_sigy_qobs,sizeof(double *)*ptsz->szcounts_fft_nqobs,ptsz->error_message);
+    // checked.
+
+    // class_alloc(ptsz->szcounts_fft_rates_at_z_sigy_qobs,sizeof(double *)*ptsz->szcounts_fft_nqobs,ptsz->error_message);
     class_alloc(ptsz->szcounts_fft_qmconv_all_patches,sizeof(double *)*ptsz->nskyfracs,ptsz->error_message);
+    //checked
+
+ptsz->szcounts_lnqmax_fft = log(ptsz->szcounts_qmax_fft_padded);
+ptsz->szcounts_qmin_fft_padded = -ptsz->szcounts_qmax_fft_padded;
+ptsz->szcounts_lnqmin_fft = -ptsz->szcounts_lnqmax_fft;
+
+class_alloc(ptsz->array_y_to_m_redshift,sizeof(double *)*ptsz->n_z_y_to_m,ptsz->error_message);
+class_alloc(ptsz->array_y_to_m_y,sizeof(double *)*ptsz->n_y_y_to_m,ptsz->error_message);
+class_alloc(ptsz->array_y_to_m_at_z_y,sizeof(double *)*ptsz->n_z_y_to_m*ptsz->n_y_y_to_m,ptsz->error_message);
+// all three checked
 
 
 int i ;
@@ -2450,44 +2707,51 @@ for (i = 0; i < ptsz->szcounts_fft_nqobs; i++) {
     for (ipatches = 0;ipatches<ptsz->nskyfracs;ipatches++){
       class_alloc(ptsz->szcounts_fft_qmconv_all_patches[ipatches],sizeof(double *)*2*ptsz->szcounts_fft_nqobs,ptsz->error_message);
     }
+    // checked.
 
     int index_parallel_zp;
     int index_parallel_sigmayobsp;
     int index_qobs;
 
-    for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nqobs; index_qobs++){
-      class_alloc(ptsz->szcounts_fft_rates_at_z_sigy_qobs[index_qobs],sizeof(double *)*ptsz->szcounts_fft_nz*ptsz->szcounts_fft_nsigmayobs,ptsz->error_message);
-    }
+    // for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nqobs; index_qobs++){
+    //   class_alloc(ptsz->szcounts_fft_rates_at_z_sigy_qobs[index_qobs],sizeof(double *)*ptsz->szcounts_fft_nz*ptsz->szcounts_fft_nsigmayobs,ptsz->error_message);
+    // }
 
 
 
+    // printf("allocating dndzdq\n");
     class_alloc(ptsz->szcounts_fft_dndzdq,
                 sizeof(double *)*ptsz->szcounts_fft_nz*ptsz->szcounts_fft_nqobs,
                 ptsz->error_message);
+    // checked
 
-    class_alloc(ptsz->szcounts_fft_nexpected_dndzdqgt,
-                sizeof(double *)*ptsz->szcounts_fft_nz*ptsz->szcounts_fft_nexpected_qobs_n,
-                ptsz->error_message);
-
-    for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nexpected_qobs_n; index_qobs++){
-      ptsz->szcounts_fft_nexpected_qobs[index_qobs] = ptsz->szcounts_fft_nexpected_qobs_min + index_qobs*(ptsz->szcounts_fft_nexpected_qobs_max-ptsz->szcounts_fft_nexpected_qobs_min)/(double) ptsz->szcounts_fft_nexpected_qobs_n;
-
-          if (ptsz->sz_verbose>=1){
-            printf("%d qobs = %.5e\n",index_qobs,ptsz->szcounts_fft_nexpected_qobs[index_qobs]);
-          }
-      }
+    // printf("dndzdq allocated\n");
+    // exit(0);
+    // class_alloc(ptsz->szcounts_fft_nexpected_dndzdqgt,
+    //             sizeof(double *)*ptsz->szcounts_fft_nz*ptsz->szcounts_fft_nexpected_qobs_n,
+    //             ptsz->error_message);
+    //
+    // for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nexpected_qobs_n; index_qobs++){
+    //   ptsz->szcounts_fft_nexpected_qobs[index_qobs] = ptsz->szcounts_fft_nexpected_qobs_min + index_qobs*(ptsz->szcounts_fft_nexpected_qobs_max-ptsz->szcounts_fft_nexpected_qobs_min)/(double) ptsz->szcounts_fft_nexpected_qobs_n;
+    //
+    //       if (ptsz->sz_verbose>=1){
+    //         printf("%d qobs = %.5e\n",index_qobs,ptsz->szcounts_fft_nexpected_qobs[index_qobs]);
+    //       }
+    //   }
 
     int index_zq = 0;
     // int index_zqfinal = 0;
     for (index_parallel_zp=0; index_parallel_zp<ptsz->szcounts_fft_nz; index_parallel_zp++)
     {
-      class_alloc(ptsz->szcounts_fft_index_zq[index_parallel_zp],sizeof(int)*ptsz->szcounts_fft_nexpected_qobs_n,ptsz->error_message);
+      // class_alloc(ptsz->szcounts_fft_index_zq[index_parallel_zp],sizeof(int)*ptsz->szcounts_fft_nexpected_qobs_n,ptsz->error_message);
       class_alloc(ptsz->szcounts_fft_index_zq_final[index_parallel_zp],sizeof(int)*ptsz->szcounts_fft_nqobs,ptsz->error_message);
+      //checked
 
-      for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nexpected_qobs_n; index_qobs++){
-          ptsz->szcounts_fft_index_zq[index_parallel_zp][index_qobs] = index_zq;
-          index_zq += 1;
-      }
+
+      // for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nexpected_qobs_n; index_qobs++){
+      //     ptsz->szcounts_fft_index_zq[index_parallel_zp][index_qobs] = index_zq;
+      //     index_zq += 1;
+      // }
 
       // for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nqobs; index_qobs++){
       //     ptsz->szcounts_fft_index_zq_final[index_parallel_zp][index_qobs] = index_zqfinal;
@@ -2508,26 +2772,26 @@ for (i = 0; i < ptsz->szcounts_fft_nqobs; i++) {
     {
       ptsz->szcounts_fft_z[index_parallel_zp] = ptsz->szcounts_fft_z_min + index_parallel_zp*(ptsz->szcounts_fft_z_max-ptsz->szcounts_fft_z_min)/(double) (ptsz->szcounts_fft_nz-1.);
 
-      class_alloc(ptsz->szcounts_fft_index_zsig[index_parallel_zp],sizeof(int)*ptsz->szcounts_fft_nsigmayobs,ptsz->error_message);
+      // class_alloc(ptsz->szcounts_fft_index_zsig[index_parallel_zp],sizeof(int)*ptsz->szcounts_fft_nsigmayobs,ptsz->error_message);
 
     }
-    for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<ptsz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++)
-    {
-      ptsz->szcounts_fft_sigmayobs[index_parallel_sigmayobsp] = log(ptsz->szcounts_fft_sigmayobs_min) + index_parallel_sigmayobsp*(log(ptsz->szcounts_fft_sigmayobs_max)-log(ptsz->szcounts_fft_sigmayobs_min))/ptsz->szcounts_fft_nsigmayobs;
-    }
-    int index_zsig = 0;
-    for (index_parallel_zp=0; index_parallel_zp<ptsz->szcounts_fft_nz; index_parallel_zp++){
-      for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<ptsz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++){
-        ptsz->szcounts_fft_index_zsig[index_parallel_zp][index_parallel_sigmayobsp] =index_zsig;
-        index_zsig+=1;
-      }
-    }
+    // for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<ptsz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++)
+    // {
+    //   ptsz->szcounts_fft_sigmayobs[index_parallel_sigmayobsp] = log(ptsz->szcounts_fft_sigmayobs_min) + index_parallel_sigmayobsp*(log(ptsz->szcounts_fft_sigmayobs_max)-log(ptsz->szcounts_fft_sigmayobs_min))/ptsz->szcounts_fft_nsigmayobs;
+    // }
+    // int index_zsig = 0;
+    // for (index_parallel_zp=0; index_parallel_zp<ptsz->szcounts_fft_nz; index_parallel_zp++){
+    //   for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<ptsz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++){
+    //     ptsz->szcounts_fft_index_zsig[index_parallel_zp][index_parallel_sigmayobsp] =index_zsig;
+    //     index_zsig+=1;
+    //   }
+    // }
 if (ptsz->sz_verbose>1)
 printf("allocated memory for szcounts ffts.\n");
   }
 
   class_alloc(pcsz->redshift,sizeof(double)*pcsz->nzSZ,pcsz->error_message);
-
+  // checked
 
 
 
