@@ -899,49 +899,76 @@ cdef class Class:
         cdef int lmaxR
         cdef double *lcl = <double*> calloc(self.le.lt_size,sizeof(double))
 
-        # Define a list of integers, refering to the flags and indices of each
-        # possible output Cl. It allows for a clear and concise way of looping
-        # over them, checking if they are defined or not.
-        has_flags = [
-            (self.le.has_tt, self.le.index_lt_tt, 'tt'),
-            (self.le.has_ee, self.le.index_lt_ee, 'ee'),
-            (self.le.has_te, self.le.index_lt_te, 'te'),
-            (self.le.has_bb, self.le.index_lt_bb, 'bb'),
-            (self.le.has_pp, self.le.index_lt_pp, 'pp'),
-            (self.le.has_tp, self.le.index_lt_tp, 'tp'),]
-        spectra = []
+        if self.tsz.use_class_sz_fast_mode == 1:
+          # bypass all together and replace by cosmopower call.
+          cls = {}
+          cls['ell'] = np.arange(20000)
+          cls['tt'] = np.zeros(20000)
+          cls['te'] = np.zeros(20000)
+          cls['ee'] = np.zeros(20000)
+          cls['pp'] = np.zeros(20000)
 
-        for flag, index, name in has_flags:
-            if flag:
-                spectra.append(name)
+          nl = len(self.class_szfast.cp_predicted_tt_spectrum)
+          lcp = np.asarray(cls['ell'][2:nl+2])
+          # print('nl:',nl)
+          cls['tt'][2:nl+2] = self.class_szfast.cp_predicted_tt_spectrum
+          cls['tt'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
+          cls['te'][2:nl+2] = self.class_szfast.cp_predicted_te_spectrum
+          cls['te'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
+          cls['ee'][2:nl+2] = self.class_szfast.cp_predicted_ee_spectrum
+          cls['ee'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
+          # cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum/4. ## this is clkk... works for so lensinglite lkl
+          cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
+          # # here for the planck lensing lkl, using lfactor option gives:
+          # cls['pp'][2:nl+2] = self.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
+          # cls['pp'][2:nl+2] *= (lcp*(lcp+1.))**2./2./np.pi
+          free(lcl)
+          return cls
+        else:
 
-        if not spectra:
-            raise CosmoSevereError("No lensed Cl computed")
-        lmaxR = self.le.l_lensed_max
+          # Define a list of integers, refering to the flags and indices of each
+          # possible output Cl. It allows for a clear and concise way of looping
+          # over them, checking if they are defined or not.
+          has_flags = [
+              (self.le.has_tt, self.le.index_lt_tt, 'tt'),
+              (self.le.has_ee, self.le.index_lt_ee, 'ee'),
+              (self.le.has_te, self.le.index_lt_te, 'te'),
+              (self.le.has_bb, self.le.index_lt_bb, 'bb'),
+              (self.le.has_pp, self.le.index_lt_pp, 'pp'),
+              (self.le.has_tp, self.le.index_lt_tp, 'tp'),]
+          spectra = []
 
-        if lmax == -1:
-            lmax = lmaxR
-        if lmax > lmaxR:
-            if nofail:
-                self._pars_check("l_max_scalars",lmax)
-                self.compute(["lensing"])
-            else:
-                raise CosmoSevereError("Can only compute up to lmax=%d"%lmaxR)
+          for flag, index, name in has_flags:
+              if flag:
+                  spectra.append(name)
 
-        cl = {}
-        # Simple Cls, for temperature and polarisation, are not so big in size
-        for elem in spectra:
-            cl[elem] = np.zeros(lmax+1, dtype=np.double)
-        for ell from 2<=ell<lmax+1:
-            if lensing_cl_at_l(&self.le,ell,lcl) == _FAILURE_:
-                raise CosmoSevereError(self.le.error_message)
-            for flag, index, name in has_flags:
-                if name in spectra:
-                    cl[name][ell] = lcl[index]
-        cl['ell'] = np.arange(lmax+1)
+          if not spectra:
+              raise CosmoSevereError("No lensed Cl computed")
+          lmaxR = self.le.l_lensed_max
 
-        free(lcl)
-        return cl
+          if lmax == -1:
+              lmax = lmaxR
+          if lmax > lmaxR:
+              if nofail:
+                  self._pars_check("l_max_scalars",lmax)
+                  self.compute(["lensing"])
+              else:
+                  raise CosmoSevereError("Can only compute up to lmax=%d"%lmaxR)
+
+          cl = {}
+          # Simple Cls, for temperature and polarisation, are not so big in size
+          for elem in spectra:
+              cl[elem] = np.zeros(lmax+1, dtype=np.double)
+          for ell from 2<=ell<lmax+1:
+              if lensing_cl_at_l(&self.le,ell,lcl) == _FAILURE_:
+                  raise CosmoSevereError(self.le.error_message)
+              for flag, index, name in has_flags:
+                  if name in spectra:
+                      cl[name][ell] = lcl[index]
+          cl['ell'] = np.arange(lmax+1)
+
+          free(lcl)
+          return cl
 
     def density_cl(self, lmax=-1, nofail=False):
         """
