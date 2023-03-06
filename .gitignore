@@ -249,3 +249,6 @@ python/classy_sz.cpython-39-darwin.so
 class_sz_mcmcs/notebooks/.ipynb_checkpoints/get_cosmopower_chains_planck_szcounts_unbinned-checkpoint.ipynb
 class_sz_mcmcs/notebooks/get_cosmopower_chains_planck_szcounts_unbinned.ipynb
 class_sz_mcmcs/chains
+*checkpoint.ipynb
+notebooks/class_sz_tutorial_notebooks/.ipynb_checkpoints/class_sz_cmb_cls-checkpoint.ipynb
+class_sz_mcmcs/notebooks/get_class_sz_chains_desy3_with_cosmosis.ipynb

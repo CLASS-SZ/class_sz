@@ -136,7 +136,7 @@ class_sz_ptsz_parameter(n_l_psi_b1gt,int,50)
 class_sz_ptsz_parameter(n_z_psi_b1kgt,int,50)
 class_sz_ptsz_parameter(n_l_psi_b1kgt,int,50)
 
-class_sz_ptsz_parameter(N_samp_fftw,int,150)
+class_sz_ptsz_parameter(N_samp_fftw,int,1024)
 class_sz_ptsz_parameter(l_min_samp_fftw,double,1e-12)
 class_sz_ptsz_parameter(l_max_samp_fftw,double,1e9)
 class_sz_ptsz_parameter(k_min_samp_fftw,double,1e-12)
