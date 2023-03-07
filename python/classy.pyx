@@ -625,11 +625,17 @@ cdef class Class:
 
 
 
-
-
     def compute_class_sz(self,pdict_to_update):
         self._fillparfile()
         for k,v in pdict_to_update.items():
+          if k == 'M_min':
+            self.tsz.M1SZ = pdict_to_update[k]
+          if k == 'M_max':
+            self.tsz.M2SZ = pdict_to_update[k]
+          if k == 'z_min':
+            self.tsz.z1SZ = pdict_to_update[k]
+          if k == 'z_max':
+            self.tsz.z2SZ = pdict_to_update[k]
           if k == 'fNL':
             self.tsz.fNL = pdict_to_update['fNL']
           if k == 'A_rho0':
