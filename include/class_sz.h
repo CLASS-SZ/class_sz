@@ -1303,6 +1303,16 @@ double szcounts_ntot;
   double y_min;
   double y_max;
 
+
+  double theta_ej_bcm;
+  double delta_bcm;
+  double gamma_bcm;
+  double eta_star_bcm;
+  double log10Mc_bcm;
+  double mu_bcm;
+  double nu_log10Mc_bcm;
+  // double xxx_bcdm;
+
   // int n_y_y_to_m;
   // int n_z_y_to_m;
   // int n_mass_y_to_m;
@@ -1638,7 +1648,7 @@ double * steps_m;
   double Omega_r_0;
   double Omega_ncdm_0;
   double Omega0_b;
-
+  double Omega0_cdm;
   double bispectrum_lambda_k2;
   double bispectrum_lambda_k3;
 
@@ -2048,6 +2058,10 @@ int szpowerspectrum_init(struct background * pba,
                                struct background * pba,
                                struct tszspectrum * ptsz);
 
+double get_fstar_of_m_at_z(double m,
+                           double z,
+                           struct tszspectrum * ptsz);
+
 double get_tau_profile_at_z_m_l(double z,
                                 double m,
                                 double k,
@@ -2330,6 +2344,14 @@ double get_c500c_at_m_and_z(//double * pvecback,
 double get_galaxy_number_counts(double z,
                                 struct tszspectrum * ptsz);
 
+
+double get_f_of_sigma_at_m_and_z(double m,
+                                 double z,
+                                 struct background * pba,
+                                 struct nonlinear * pnl,
+                                 struct tszspectrum * ptsz);
+
+
 double get_source_galaxy_number_counts(double z,
                                 struct tszspectrum * ptsz);
 double radial_kernel_W_galaxy_at_z( double * pvecback,
@@ -2569,6 +2591,13 @@ double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
                                          double z_asked,
                                          struct background * pba,
                                          struct tszspectrum * ptsz);
+
+double get_gas_profile_at_x_M_z_bcm_200c(double x_asked,
+                                         double m_asked,
+                                         double z_asked,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz);
+
 
 double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                          double m_asked,

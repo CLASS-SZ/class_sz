@@ -20,6 +20,11 @@ extern "C" {
 #endif
 
 
+double get_delta_mean_from_delta_crit_at_z(double delta_crit,
+                                           double z,
+                                           struct tszspectrum * ptsz);
+
+
 int y_to_m (
             double xout,
             double * mRES,

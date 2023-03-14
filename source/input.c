@@ -1802,6 +1802,16 @@ int input_read_parameters(
       class_read_double("z2SZ_dndlnM",ptsz->z2SZ_dndlnM);
 
 
+      class_read_double("theta_ej_bcm",ptsz->theta_ej_bcm);
+      class_read_double("delta_bcm",ptsz->delta_bcm);
+      class_read_double("gamma_bcm",ptsz->gamma_bcm);
+      class_read_double("mu_bcm",ptsz->mu_bcm);
+      class_read_double("eta_star_bcm",ptsz->eta_star_bcm);
+      class_read_double("log10Mc_bcm",ptsz->log10Mc_bcm);
+      class_read_double("nu_log10Mc_bcm",ptsz->nu_log10Mc_bcm);
+
+
+
       //number of mass bins for cov_Y-N:
       class_read_double("number of mass bins for cluster covariances",ptsz->nbins_M);
 
@@ -3823,6 +3833,21 @@ int input_read_parameters(
             }
 
 
+//
+// class_call(parser_read_string(pfc,"sigma_derivative",&string1,&flag1,errmsg),
+//            errmsg,
+//            errmsg);
+// if (flag1 == _TRUE_) {
+//   if ((strstr(string1,"Matter") != NULL))
+//     ptsz->HMF_prescription_NCDM=0;
+//   else  if ((strstr(string1,"CDM") != NULL))
+//     ptsz->HMF_prescription_NCDM=1;
+//   else  if ((strstr(string1,"No-pres") != NULL))
+//     ptsz->HMF_prescription_NCDM=2;
+//
+//       }
+
+
 
 
     if (ptsz->pressure_profile==0){
@@ -4105,6 +4130,11 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
           ptsz->tau_profile=1;
           ptsz->use_analytical_truncated_nfw=0; // overwrite previous
         }
+        else  if ((strstr(string1,"BCM") != NULL)){
+          ptsz->tau_profile=2;
+          // ptsz->use_analytical_truncated_nfw=0; // overwrite previous
+        }
+
         }
 
       /* tau profile mode kSZ */
@@ -5722,6 +5752,8 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
   class_read_string("full_path_to_redshift_dependent_M_min",ptsz->full_path_to_redshift_dependent_M_min);
   class_read_string("full_path_to_source_dndz_gal",ptsz->full_path_to_source_dndz_gal);
   // printf("-> File Name: %s\n",ptsz->ksz_filter_file);
+    // printf("-> File Name: %s\n",ptsz->full_path_to_dndz_gal);
+    // exit(0);
   class_read_string("cmb_lensing_noise_file",ptsz->cmb_lensing_noise_file);
   // printf("-> File Name: %s\n",ptsz->cmb_lensing_noise_file);
   // exit(0);
@@ -6420,6 +6452,25 @@ int input_default_params(
   ptsz->maniyar_cib_tau = 1.2040244128818796; // see https://github.com/abhimaniyar/halomodel_cib_tsz_cibxtsz/blob/master/input_var.py
   ptsz->maniyar_cib_fsub = 0.134; // see https://github.com/abhimaniyar/halomodel_cib_tsz_cibxtsz/blob/master/Cell_cib.py
   ptsz->fNL = 0.;
+
+
+  // ## fiducial BCM parameters (matches BAHAMAS)
+  // logMc = 13.25
+  // theta_ej = 4.711
+  // eta_star = 0.2
+  // eta_cga = 0.297 /// not needed.
+  // mu = 1.0
+  // gamma = 2.5
+  // delta = 7.0
+  // nu_Mc = 0.038
+  ptsz->log10Mc_bcm = 13.25;
+  ptsz->theta_ej_bcm = 4.711;
+  ptsz->eta_star_bcm = 0.2;
+  ptsz->delta_bcm = 7.0;
+  ptsz->gamma_bcm = 2.5;
+  ptsz->mu_bcm = 1.0;
+  ptsz->nu_log10Mc_bcm = 0.038;
+
 
   //# Table 1 of https://arxiv.org/pdf/1309.0382.pdf
   ptsz->has_cib_flux_cut  = 0;

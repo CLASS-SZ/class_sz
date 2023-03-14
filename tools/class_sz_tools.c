@@ -4623,6 +4623,97 @@ return result;
 }
 
 
+double get_gas_profile_at_x_M_z_bcm_200c(double x_asked, // this is just radius
+                                         double m_asked,
+                                         double z,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz){
+    double result;
+    double rvir;
+
+    double * pvectsz;
+    double * pvecback;
+    double tau;
+    int first_index_back;
+
+    class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+    class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+
+
+    class_call(background_tau_of_z(pba,z,&tau),
+               pba->error_message,
+               pba->error_message);
+
+    class_call(background_at_tau(pba,
+                                 tau,
+                                 pba->long_info,
+                                 pba->inter_normal,
+                                 &first_index_back,
+                                 pvecback),
+               pba->error_message,
+               pba->error_message);
+
+
+  pvectsz[ptsz->index_z] = z;
+
+
+
+  pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+  double chi = sqrt(pvectsz[ptsz->index_chi2]);
+  // pvectsz[ptsz->index_multipole_for_pressure_profile] = k*chi;
+  // pvectsz[ptsz->index_md] = 0; // avoid the if condition in p_gnfw for the pk mode computation
+
+  pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                *pow(_Mpc_over_m_,1)
+                                *pow(_c_,2)
+                                *pvecback[pba->index_bg_rho_crit]
+                                /pow(pba->h,2);
+
+  double omega = pvecback[pba->index_bg_Omega_m];
+  pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+  pvectsz[ptsz->index_m200c] = m_asked;
+  pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+
+  double r_asked = x_asked*pvectsz[ptsz->index_r200c];
+
+  class_call(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
+                          200.*(pvectsz[ptsz->index_Rho_crit]),
+                          pvectsz[ptsz->index_Delta_c],
+                          pvectsz[ptsz->index_Rho_crit],
+                          z,
+                          &pvectsz[ptsz->index_mVIR],
+                          ptsz,
+                          pba),
+                  ptsz->error_message,
+                  ptsz->error_message);
+ //
+ //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
+  rvir = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+
+
+double omega_b_over_omega_m = ptsz->f_b_gas;
+double fstar = get_fstar_of_m_at_z(m_asked,z,ptsz);
+double num = omega_b_over_omega_m-fstar;
+double delta = ptsz->delta_bcm;
+double gamma = ptsz->gamma_bcm;
+double thetaej = ptsz->theta_ej_bcm;
+double mu = ptsz->mu_bcm;
+double mc = pow(10.,ptsz->log10Mc_bcm);
+double betam = 3.*pow(m_asked/mc,mu)/(1.+pow(m_asked/mc,mu));
+double den1 = pow(1.+10.*r_asked/rvir,betam);
+double den2 = pow(1.+pow(r_asked/thetaej/rvir,gamma),(delta-betam)/gamma);
+result = num/den1/den2;
+
+free(pvectsz);
+free(pvecback);
+
+return result;
+
+
+}
+
+
+
 
 double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                          double m_asked,
@@ -6882,6 +6973,107 @@ for (ix=0; ix<N; ix++){
                                                 ptsz->alpha_c_beta,
                                                 gamma,
                                                 xc,
+                                                pba,
+                                                ptsz);
+                                              }
+  // printf("x = %.3e Px = %.3e\n",x[ix],Px[ix]);
+  }
+
+  double kp[N], Pkp[N];
+    // pk2xi(N,k,Pk1,rp,xi1,ptsz);
+  /* Compute the function
+   *   \xi_l^m(r) = \int_0^\infty \frac{dk}{2\pi^2} k^m j_l(kr) P(k)
+   * Note that the usual 2-point correlation function xi(r) is just xi_0^2(r)
+   * in this notation.  The input k-values must be logarithmically spaced.  The
+   * resulting xi_l^m(r) will be evaluated at the dual r-values
+   *   r[0] = 1/k[N-1], ..., r[N-1] = 1/k[0]. */
+  //void fftlog_ComputeXiLM(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[]);
+  fftlog_ComputeXiLMsloz(0, 2, N, x, Px, kp, Pkp,ptsz);
+
+/// ---- > FFT end commented
+
+  double result;
+
+  for (index_k=0;
+       index_k<n_k;
+       index_k++)
+  {
+
+    double k = exp(ptsz->array_profile_ln_k[index_k]);
+    pvectsz[ptsz->index_multipole_for_nfw_profile] = k;
+
+  // pvectsz[ptsz->index_has_electron_density] = 1;
+  // do_mass_conversions(lnM,z,pvecback,pvectsz,pba,ptsz);
+
+  double  result_fft = 2.*_PI_*_PI_*pwl_value_1d(N,
+                                                kp,
+                                                Pkp,
+                                                k*pvectsz[ptsz->index_r200c]*(1.+pvectsz[ptsz->index_z]));
+
+
+
+   // double result_int;
+   // two_dim_ft_nfw_profile(ptsz,pba,pvectsz,&result_int);
+
+   // printf("result_fft = %.5e result_qawo = %.5e ratio = %.5e \n",result_fft,result_int,result_int/result_fft);
+
+
+   double result = result_fft;
+   // double result = result_int;
+   double tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_r200c],3);
+   // printf("In tab gas: k %.4e z %.8e rt %.8e mt %.8e res = %.4e\n",ell,pvectsz[ptsz->index_z],pvectsz[ptsz->index_r200c],pvectsz[ptsz->index_m200c],result);
+
+
+   if (result<=0 || isnan(result) || isinf(result)){
+         // printf("ERROR: In tab gas: k %.4e z %.8e rt %.8e mt %.8e res = %.4e\n",ell,pvectsz[ptsz->index_z],pvectsz[ptsz->index_r200c],pvectsz[ptsz->index_m200c],result);
+         // printf("check precision and input parameters?\n");
+         // exit(0);
+         result = 1e-200;
+        }
+
+   result *= tau_normalisation;
+
+   ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_k][index_m_z] = log(result);
+ } // k loop
+} // density mode
+if (ptsz->tau_profile == 2){
+// here we FFT the profile ===== commented
+const int N = ptsz->N_samp_fftw; //precision parameter
+int ix;
+double x[N], Px[N];
+double x_min = ptsz->x_min_gas_density_fftw;
+double x_max = ptsz->x_max_gas_density_fftw;
+// double x_max = ptsz->x_out_truncated_nfw_profile_electrons;
+double x_out = ptsz->x_out_truncated_nfw_profile_electrons;
+// if (ptsz->use_xout_in_density_profile_from_enclosed_mass){
+//     x_out = get_m_to_xout_at_z_and_m(pvectsz[ptsz->index_z],pvectsz[ptsz->index_m200c],ptsz);
+//     }
+
+// double A_rho0 = ptsz->A_rho0;
+// double A_alpha = ptsz->A_alpha;
+// double A_beta = ptsz->A_beta;
+//
+// double alpha_m_rho0 = ptsz->alpha_m_rho0;
+// double alpha_m_alpha = ptsz->alpha_m_alpha;
+// double alpha_m_beta = ptsz->alpha_m_beta;
+//
+// double alpha_z_rho0 = ptsz->alpha_z_rho0;
+// double alpha_z_alpha = ptsz->alpha_z_alpha;
+// double alpha_z_beta = ptsz->alpha_z_beta;
+// double gamma = ptsz->gamma_B16;
+// double xc = ptsz->xc_B16;
+
+
+for (ix=0; ix<N; ix++){
+  x[ix] = exp(log(x_min)+ix/(N-1.)*(log(x_max)-log(x_min)));
+  if (x[ix]>x_out){
+      Px[ix] = 0.;
+    }
+  else{
+    // double c_asked = ptsz->c_B16;
+    Px[ix] =  get_gas_profile_at_x_M_z_bcm_200c(x[ix],
+                                                pvectsz[ptsz->index_m200c],
+                                                z,
                                                 pba,
                                                 ptsz);
                                               }
@@ -10669,6 +10861,21 @@ int load_T10_alpha_norm(struct tszspectrum * ptsz)
 
 
 
+
+double get_delta_mean_from_delta_crit_at_z(double delta_crit,
+                                           double z,
+                                           struct tszspectrum * ptsz){
+  double om0 = ptsz->Omega_m_0;
+  double om0_nonu = ptsz->Omega0_cdm+ptsz->Omega0_b;
+  double or0 = ptsz->Omega_r_0;
+  double ol0 = 1.-om0-or0;
+  double Omega_m_z = om0_nonu*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.)); //// omega_matter without neutrinos
+  double  delta_mean = delta_crit/Omega_m_z;
+
+  return delta_mean;
+                                           }
+
+
 //HMF Tinker et al 2008
 //interpolated at mdeltac
 int MF_T08_m500(
@@ -10681,12 +10888,13 @@ int MF_T08_m500(
 {
   //T08@m500
   // if(z>3.) z=3.; // ccl doesnt have this.. commenting for now.
-  double om0 = ptsz->Omega_m_0;
-  double or0 = ptsz->Omega_r_0;
-  double ol0 = 1.-om0-or0;
-  double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.));
-  double  delta_mean = delta_crit/Omega_m_z;
 
+  // double om0 = ptsz->Omega_m_0;
+  // double or0 = ptsz->Omega_r_0;
+  // double ol0 = 1.-om0-or0;
+  // double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.));
+  // double  delta_mean = delta_crit/Omega_m_z;
+  double  delta_mean = get_delta_mean_from_delta_crit_at_z(delta_crit,z,ptsz);
   delta_mean = log10(delta_mean);
 
   double delta_mean_tab[9]=
@@ -10885,7 +11093,7 @@ int MF_T08_m500(
   }
 
   double alphaT08 =
-  pow(10.,-pow(0.75/log10(pow(10.,delta_mean)/75.),1.2));
+  pow(10.,-pow(0.75/log10(pow(10.,delta_mean)/75.),1.2)); // pow(10.,delta_mean) is delta
   // note in ccl this is written slighlty diff:
   // def _pd(self, ld):
   //     return 10.**(-(0.75/(ld - 1.8750612633))**1.2)
@@ -10906,6 +11114,7 @@ int MF_T08_m500(
   // sigma = .15;
 
   *result = 0.5*(Ap*(pow(sigma/b,-a)+1.)*exp(-c/pow(sigma,2.)));
+  // *result = 0.5*(Ap);
   // *result = 0.5*(Ap*(pow(1.0/b,-a)+1.)*exp(-c/pow(1.0,2.)));
   // *result = 0.5;
   // *result = 0.5*exp(-1./pow(sigma,2));
@@ -12052,6 +12261,7 @@ if ( ((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_
   ){
 // multiply by radial kernel for galaxies (squared for gxg quantities)
 double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
+printf("z = %.5e Wg = %.5e\n",z,Wg);
 result *= pow(Wg/V->pvectsz[V->ptsz->index_chi2],2.);
 }
 
@@ -12342,18 +12552,25 @@ if(_pk_at_z_1h_
 else if ( _szrates_ )
 {
   if (ptsz->sz_verbose > 10) printf("evaluating rate at z = %.3e.\n",ptsz->szcat_z[(int)Pvectsz[ptsz->index_szrate]]);
-  if (ptsz->szcat_z[(int)Pvectsz[ptsz->index_szrate]] <= 0){
-    r = 1.; // contrinbutes to nothing to the lkl. since we take sum of ln(rates).
-}
-else {
-  r = integrand_redshift(log(1. + ptsz->szcat_z[(int)Pvectsz[ptsz->index_szrate]]),params);
+    if (ptsz->szcat_z[(int)Pvectsz[ptsz->index_szrate]] <= 0){
+          r = 1.; // contrinbutes to nothing to the lkl. since we take sum of ln(rates).
+      }
+    else {
+        r = integrand_redshift(log(1. + ptsz->szcat_z[(int)Pvectsz[ptsz->index_szrate]]),params);
 
- if (r == 0.) r = 1e-300; // when snr cat is too high the integral becomes too small.
-}
+       if (r == 0.) r = 1e-300; // when snr cat is too high the integral becomes too small.
+      }
 }
 else{
-
-  // printf("z_min = %.4e z_max  = %.4e\n",z_min,z_max);
+//   if (_gal_gal_hf_
+//    || _ngal_ngal_hf_){
+//
+//   printf("z_min = %.4e z_max  = %.4e\n",z_min,z_max);
+//   printf("currently in mode %d\n",_gal_gal_hf_);
+//   exit(0);
+//   z_min = ptsz->normalized_dndz_ngal_z[0];
+//   z_max = .......
+// }
   r = Integrate_using_Patterson_adaptive(log(1. + z_min), log(1. + z_max),
                                          epsrel, epsabs,
                                          integrand_redshift,

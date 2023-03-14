@@ -205,7 +205,14 @@ class classy_szfast(object):
         for iz,zp in enumerate(self.cszfast_pk_grid_z):
             R, var[:,iz] = TophatVar(k, lowring=True)(P[:,iz], extrap=True)
             # dvar[:,iz] = np.gradient(var[:,iz], np.log(R))
+            # if params_values_dict['sigma_derivative'] == 1: ## need more points here !!
+            #     rds,dvar[:,iz] =  TophatVar(k,lowring=True,deriv=1)(P[:,iz]*k,extrap=True)
+            # else:
+            #     dvar[:,iz] = np.gradient(var[:,iz], R)
+
             dvar[:,iz] = np.gradient(var[:,iz], R)
+            # from inigo: R_vec,self.dvar = TophatVar(k,lowring=True,deriv=1)(P[:,iz]*k,extrap=True)
+            # from inigo: self.dsigma_vec = self.dvar/(2.*self.sigma_vec)
             # print('R:',R,np.shape(R))
             # varR = CubicSpline(R, var[:,iz])
             # print(zp,np.sqrt(varR(8)))

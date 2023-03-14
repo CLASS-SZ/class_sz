@@ -1561,6 +1561,9 @@ cdef class Class:
         return self.class_szfast.get_effective_f_sigma8(z)
 
 
+
+
+
     #def neff(self):
     #    self.compute(["spectra"])
     #    return self.sp.neff
@@ -1869,6 +1872,14 @@ cdef class Class:
 
     def get_volume_dVdzdOmega_at_z(self,z):
         return get_volume_at_z(z,&self.ba)
+
+
+    def get_f_of_sigma_at_m_and_z(self,m,z):
+        return get_f_of_sigma_at_m_and_z(m,z,&self.ba,&self.nl,&self.tsz)
+
+    def get_delta_mean_from_delta_crit_at_z(self,delta_crit,z):
+        return get_delta_mean_from_delta_crit_at_z(delta_crit,z,&self.tsz)
+
 
     def get_galaxy_number_counts(self,z):
         return get_galaxy_number_counts(z,&self.tsz)
@@ -2846,6 +2857,9 @@ cdef class Class:
 
     def get_gas_profile_at_x_M_z_nfw_200m(self,r_asked,m_asked,z_asked):
         return get_gas_profile_at_x_M_z_nfw_200m(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
+
+    def get_gas_profile_at_x_M_z_bcm_200c(self, x_asked, m_asked,z):
+        return get_gas_profile_at_x_M_z_bcm_200c(x_asked,m_asked,z,&self.ba,&self.tsz)
 
     def get_gas_profile_at_x_M_z_nfw_200c(self,r_asked,m_asked,z_asked):
         return get_gas_profile_at_x_M_z_nfw_200c(r_asked,m_asked,z_asked,&self.ba,&self.tsz)

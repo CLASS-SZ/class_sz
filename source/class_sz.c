@@ -242,6 +242,7 @@ int class_sz_cosmo_init(  struct background * pba,
       -pba->Omega0_cdm;
 
       ptsz->Omega0_b = pba->Omega0_b;
+      ptsz->Omega0_cdm = pba->Omega0_cdm;
 
       if (ptsz->f_b_gas == -1.){
         ptsz->f_b_gas = pba->Omega0_b/ptsz->Omega_m_0;
@@ -983,6 +984,17 @@ if (ptsz->use_fft_for_profiles_transform){
 
   // printf("-> start tabulation of gas pressure profile  444.\n");
   tabulate_gas_density_profile_fft(pba,ptsz);
+//
+// double m_asked = 5e14;
+// double z_asked = 0.1;
+// double k_asked = 0.005;
+//
+// double test = get_gas_density_profile_at_k_M_z(k_asked,m_asked,z_asked,ptsz);
+//
+//   printf("-> tabulation of gas pressure profile  444 done test = %.5e.\n",test);
+//   exit(0);
+
+
 
   // printf("-> start tabulation of gas pressure profile  444 done.\n");
 //
@@ -1197,7 +1209,7 @@ tabulate_gas_density_profile_2h(pba,pnl,ppm,ppt,ptsz);
 // double rho_test = get_rho_2h_at_k_and_z(k_test,z_test,ptsz);
 // printf("k_test = %.3e, z_test = %.3e, rho_test = %.8e\n",
 //         k_test,z_test,rho_test);
-//
+
 // k_test =  2.42013e-01;
 // z_test = 3.00000e+00;
 // rho_test = get_rho_2h_at_k_and_z(k_test,z_test,ptsz);
@@ -1209,12 +1221,15 @@ tabulate_gas_density_profile_2h_fft_at_z_and_r(pba,pnl,ppm,ptsz);
 
 
 // double r_test =  2.42013e-01;
-// double z_test = 1.20000e+00;
+// z_test = 0.20000e+00;
 // double m_test = 3.5e13;
-// double rho_test = get_rho_2h_at_r_and_m_and_z(r_test,m_test,z_test,ptsz,pba);
+// rho_test = get_rho_2h_at_r_and_m_and_z(r_test,m_test,z_test,ptsz,pba);
 // //
 // printf("r_test = %.5e, z_test = %.5e, rho_test = %.12e\n",
 //         r_test,z_test,rho_test);
+//
+// double norm = get_normalization_gas_density_profile(z_test,m_test,ptsz);
+// printf("norm = %.3e\n",norm);
 // exit(0);
 
 // double k_min = ptsz->k_min_samp_fftw;
@@ -9686,9 +9701,10 @@ double get_first_order_bias_at_z_and_nu(double z,
   // double ol0 = 1.-ptsz->Omega_m_0;
   // double Omega_m_at_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0);
   double om0 = ptsz->Omega_m_0;
+  double om0_nonu =  ptsz->Omega0_cdm+ptsz->Omega0_b;
   double or0 = ptsz->Omega_r_0;
   double ol0 = 1.-om0-or0;
-  double Omega_m_at_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.));
+  double Omega_m_at_z = om0_nonu*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.)); // omega_matter without neutrinos
 
 // Omega_m_0
 
@@ -10982,6 +10998,259 @@ if (pvectsz[ptsz->index_has_galaxy] == 1){
 
 
 
+double get_f_of_sigma_at_m_and_z(double m,
+                                 double z,
+                                 struct background * pba,
+                                 struct nonlinear * pnl,
+                                 struct tszspectrum * ptsz)
+{
+  double * pvecback;
+  double * pvectsz;
+  int index_z;
+
+class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+    double tau;
+    int first_index_back = 0;
+    // ptsz->array_z_dndlnM[index_z] =
+    //                           log(1.+z_min)
+    //                           +index_z*(log(1.+z_max)-log(1.+z_min))
+    //                           /(ptsz->n_z_dndlnM-1.); // log(1+z)
+    // double z =   exp(ptsz->array_z_dndlnM[index_z])-1.;
+
+    class_call(background_tau_of_z(pba,z,&tau),
+               pba->error_message,
+               pba->error_message);
+
+    class_call(background_at_tau(pba,
+                                 tau,
+                                 pba->long_info,
+                                 pba->inter_normal,
+                                 &first_index_back,
+                                 pvecback),
+               pba->error_message,
+               pba->error_message);
+
+
+
+   double m_for_hmf = m;
+
+
+
+  if (ptsz->HMF_prescription_NCDM == 0) //Matter
+    pvectsz[ptsz->index_Rh] = pow(3.*m_for_hmf/(4*_PI_*(pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0),1./3.);
+
+  else if (ptsz->HMF_prescription_NCDM == 1) //CDM
+    pvectsz[ptsz->index_Rh] = pow(3.*m_for_hmf/(4*_PI_*(pba->Omega0_cdm+pba->Omega0_b)*ptsz->Rho_crit_0),1./3.);
+
+  else if (ptsz->HMF_prescription_NCDM == 2) //No-pres
+    pvectsz[ptsz->index_Rh] = pow(3.*m_for_hmf/(4*_PI_*ptsz->Omega_m_0*ptsz->Rho_crit_0),1./3.);
+
+
+   double z_asked = log(1.+z);
+
+   // double R_asked = log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h);
+// printf("dealing with mass conversion in hmf0 %.3e\n",ptsz->array_redshift[0]);
+   // if (z<exp(ptsz->array_redshift[0])-1.)
+   //    z_asked = ptsz->array_redshift[0];
+   //      // printf("dealing with mass conversion in hmf\n");
+   // if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
+   //    z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
+   //      // printf("dealing with mass conversion in hmf2\n");
+   // if (log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h)<ptsz->array_radius[0])
+   //    R_asked = ptsz->array_radius[0];
+   //      // printf("dealing with mass conversion in hmf3\n");
+   // if (log(exp(log(pvectsz[ptsz->index_Rh]))/pba->h)>ptsz->array_radius[ptsz->ndimSZ-1])
+   //    R_asked =  ptsz->array_radius[ptsz->ndimSZ-1];
+   //
+
+  pvectsz[ptsz->index_logSigma2] = 2.*log(get_sigma_at_z_and_m(exp(z_asked)-1.,m_for_hmf,ptsz,pba));
+
+  pvectsz[ptsz->index_lognu] = log(get_nu_at_z_and_m(exp(z_asked)-1.,m_for_hmf,ptsz,pba));
+
+  pvectsz[ptsz->index_dlogSigma2dlogRh] = 2.*get_dlnsigma_dlnR_at_z_and_m(z,m_for_hmf,ptsz,pba);
+  // pwl_interp_2d(
+  //               ptsz->n_arraySZ,
+  //               ptsz->ndimSZ,
+  //               ptsz->array_redshift,
+  //               ptsz->array_radius,
+  //               ptsz->array_dsigma2dR_at_z_and_R,
+  //               1,
+  //               &z_asked,
+  //               &R_asked
+  //               );
+
+
+
+  pvectsz[ptsz->index_dlogSigma2dlogRh] *= exp(log(pvectsz[ptsz->index_Rh]))/pba->h
+                                           /exp(pvectsz[ptsz->index_logSigma2]);
+
+
+  pvectsz[ptsz->index_dlognudlogRh] = -pvectsz[ptsz->index_dlogSigma2dlogRh];
+   //HMF evaluation:
+   //Tinker et al 2010
+   if (ptsz->MF==1) {
+      class_call(
+                      MF_T10(
+                                 &pvectsz[ptsz->index_mf],
+                                 &pvectsz[ptsz->index_lognu],
+                                 z,
+                                 ptsz
+                                 ),
+                      ptsz->error_message,
+                      ptsz->error_message
+                      );
+   }
+
+   //HMF evaluation:
+   //Boquet et al 2015
+   else if (ptsz->MF==2) {
+      class_call(
+                      MF_B15(
+                                 &pvectsz[ptsz->index_mf],
+                                 &pvectsz[ptsz->index_lognu],
+                                 z,
+                                 ptsz
+                                 ),
+                      ptsz->error_message,
+                      ptsz->error_message
+                      );
+   }
+
+   //HMF evaluation:
+   //Jenkins et al 2001
+   else if (ptsz->MF==3){
+      class_call(
+                      MF_J01(
+                                 &pvectsz[ptsz->index_mf],
+                                 &pvectsz[ptsz->index_lognu],
+                                 ptsz
+                                 ),
+                      ptsz->error_message,
+                      ptsz->error_message
+                      );
+   }
+   //HMF evaluation:
+   //Tinker et al 2008
+   else if (ptsz->MF==4) {
+       double zz = z;
+       // if(z>3.) zz=3.;
+       // double om0 = ptsz->Omega_m_0;
+       // double ol0 = 1.-ptsz->Omega_m_0;
+       // double Omega_m_z = om0*pow(1.+zz,3.)/(om0*pow(1.+zz,3.)+ ol0);
+       double om0 = ptsz->Omega_m_0;
+       double or0 = ptsz->Omega_r_0;
+       double ol0 = 1.-om0-or0;
+       double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.));
+      class_call(
+                      // MF_T08(
+                      //            &pvectsz[ptsz->index_mf],
+                      //            &pvectsz[ptsz->index_lognu],
+                      //            z,
+                      //            ptsz
+                      //            ),
+                      // ptsz->error_message,
+                      // ptsz->error_message
+                      // );
+
+                      MF_T08_m500(
+                                        &pvectsz[ptsz->index_mf],
+                                        &pvectsz[ptsz->index_lognu],
+                                        z,
+                                        200.*Omega_m_z,
+                                        ptsz
+                                        ),
+                      ptsz->error_message,
+                      ptsz->error_message
+                      );
+
+
+
+   }
+
+   //HMF evaluation:
+   //Tinker et al 2008 @ m500
+   else if (ptsz->MF==5) {
+      class_call(
+                      MF_T08_m500(
+                                        &pvectsz[ptsz->index_mf],
+                                        &pvectsz[ptsz->index_lognu],
+                                        z,
+                                        500.,
+                                        ptsz
+                                        ),
+                      ptsz->error_message,
+                      ptsz->error_message
+                      );
+    // exit(0);
+   }
+
+
+   //HMF evaluation:
+   //Tinker et al 2008 @ M1600-mean
+   else if (ptsz->MF==6) {
+      class_call(
+                      MF_T08_M1600m(
+                                           &pvectsz[ptsz->index_mf],
+                                           &pvectsz[ptsz->index_lognu],
+                                           z,
+                                           ptsz
+                                           ),
+                      ptsz->error_message,
+                      ptsz->error_message
+                      );
+   }
+
+   //HMF evaluation:
+   //Boquet et al 2015
+   else if (ptsz->MF==7) {
+      class_call(MF_B15_M500c(&pvectsz[ptsz->index_mf],
+                                          &pvectsz[ptsz->index_lognu],
+                                          z,ptsz),
+                      ptsz->error_message,
+                      ptsz->error_message);
+   }
+
+
+   //HMF evaluation:
+   //Tinker et al 2008 @ m200c
+   else if (ptsz->MF==8) {
+      class_call(
+                      MF_T08_m500(
+                                        &pvectsz[ptsz->index_mf],
+                                        &pvectsz[ptsz->index_lognu],
+                                        z,
+                                        200.,
+                                        ptsz
+                                        ),
+                      ptsz->error_message,
+                      ptsz->error_message
+                      );
+  // printf("calling T08 m200c\n");
+   }
+
+
+// pvectsz[ptsz->index_dndlogRh] = 3./(4.*_PI_*pow(pvectsz[ptsz->index_Rh],3))
+//                                                *pvectsz[ptsz->index_dlognudlogRh]
+//                                                *pvectsz[ptsz->index_mf];
+//
+// //Return the HMF - dn/dlogM in units of h^3 Mpc^-3
+// pvectsz[ptsz->index_hmf] = pvectsz[ptsz->index_dndlogRh]/3.;
+// pvectsz[ptsz->index_hmf] = pvectsz[ptsz->index_mf];
+
+double result = pvectsz[ptsz->index_mf];
+
+free(pvecback);
+free(pvectsz);
+
+return result;
+}
+
+
+
+
 
 int evaluate_HMF_at_logM_and_z(
                  double logM ,
@@ -11099,9 +11368,10 @@ int evaluate_HMF_at_logM_and_z(
        // double ol0 = 1.-ptsz->Omega_m_0;
        // double Omega_m_z = om0*pow(1.+zz,3.)/(om0*pow(1.+zz,3.)+ ol0);
        double om0 = ptsz->Omega_m_0;
+       double om0_nonu = ptsz->Omega0_cdm+ptsz->Omega0_b;
        double or0 = ptsz->Omega_r_0;
        double ol0 = 1.-om0-or0;
-       double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.));
+       double Omega_m_z = om0_nonu*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.)); //// omega_matter without neutrinos
       class_call(
                       // MF_T08(
                       //            &pvectsz[ptsz->index_mf],
@@ -14899,7 +15169,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
 
       ptsz->has_electron_density = 1;
 
-      if (ptsz->tau_profile == 1){ // battaglia tau profile, need m200c
+      if (ptsz->tau_profile == 1 || ptsz->tau_profile == 2){ // battaglia or BCM gas profile, need m200c
           ptsz->has_200c = 1;
           ptsz->delta_def_electron_density = 1;
           }
@@ -16480,9 +16750,9 @@ double z_asked  = pvectsz[ptsz->index_z];
 double phig = 0.;
 
 if(z_asked<ptsz->normalized_dndz_ngal_z[index_g][0])
-   phig = 1e-100;
+   phig = 0.;//1e-100;
 else if (z_asked>ptsz->normalized_dndz_ngal_z[index_g][ptsz->normalized_dndz_ngal_size[index_g]-1])
-   phig = 1e-100;
+   phig = 0.;//1e-100;
 else  phig =  pwl_value_1d(ptsz->normalized_dndz_ngal_size[index_g],
                          ptsz->normalized_dndz_ngal_z[index_g],
                          ptsz->normalized_dndz_ngal_phig[index_g],
@@ -16526,6 +16796,17 @@ pvectsz[ptsz->index_phi_galaxy_counts] = get_galaxy_number_counts(z_asked,ptsz);
 
 
 
+double get_fstar_of_m_at_z(double m,
+                           double z,
+                           struct tszspectrum * ptsz){
+double result;
+double ms = 2.5e11;
+double eta = ptsz->eta_star_bcm;
+result = 0.055*pow(m/ms,-eta);
+return result;
+                           }
+
+
 
 double get_source_galaxy_number_counts(double z,
                                 struct tszspectrum * ptsz){
@@ -16566,9 +16847,9 @@ double get_galaxy_number_counts(double z,
   //                              z_asked);
 
   if(z_asked<ptsz->normalized_dndz_z[0])
-     phig = 1e-100;
+     phig = 0.;
   else if (z_asked>ptsz->normalized_dndz_z[ptsz->normalized_dndz_size-1])
-     phig = 1e-100;
+     phig = 0.;
 else  phig =  pwl_value_1d(ptsz->normalized_dndz_size,
                            ptsz->normalized_dndz_z,
                            ptsz->normalized_dndz_phig,

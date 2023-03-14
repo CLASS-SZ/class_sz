@@ -742,6 +742,11 @@ cdef extern from "class.h":
                                              void * pba,
                                              void * ptsz)
 
+    double get_gas_profile_at_x_M_z_bcm_200c(double r_asked,
+                                      double m_asked,
+                                      double z_asked,
+                                      void * pba,
+                                      void * ptsz)
     double get_planck_sigma_at_theta500(double theta500, void * ptsz)
     double get_szcountsz_sigma_at_theta_in_patch(double theta500, int id, void * ptsz)
 
@@ -768,6 +773,12 @@ cdef extern from "class.h":
     double get_f_tinker10_at_nu_and_z(double nu, double z,void * ptsz)
     double get_T10_alpha_at_z(double z,void * ptsz)
     double get_f_tinker08_at_nu_and_z(double nu, double z, void * ptsz)
+
+    double get_f_of_sigma_at_m_and_z(double m,
+                                     double z,
+                                     void * pba,
+                                     void * pnl,
+                                     void * ptsz)
 
     double get_gas_profile_at_x_M_z_b16_200c(double x_asked,
                                              double m_asked,
@@ -832,6 +843,7 @@ cdef extern from "class.h":
                                           void * tsz)
 
     double get_volume_at_z(double z, void * pba)
+    double get_delta_mean_from_delta_crit_at_z(double delta_crit,double z,void * ptsz)
     double get_dndlnM_at_z_and_M(double z_asked,
                                  double m_asked,
                                  void * tsz)
