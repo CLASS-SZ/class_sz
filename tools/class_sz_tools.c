@@ -12266,7 +12266,7 @@ if ( ((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_
   ){
 // multiply by radial kernel for galaxies (squared for gxg quantities)
 double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
-printf("z = %.5e Wg = %.5e\n",z,Wg);
+// printf("z = %.5e Wg = %.5e\n",z,Wg);
 result *= pow(Wg/V->pvectsz[V->ptsz->index_chi2],2.);
 }
 
@@ -12294,6 +12294,9 @@ if ( ((V->ptsz->has_ngal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_ng
 
 int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
 double Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+// if (index_g<2)
+// printf("index_g = %d Wg = %.5e z = %.5e\n",index_g,Wg,z);
+
 result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 }
 

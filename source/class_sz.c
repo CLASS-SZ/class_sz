@@ -2357,23 +2357,25 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
      int index_g;
      int index_g_prime;
      for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
-       if (ptsz->has_ngal_ngal_1h
-         + ptsz->has_ngal_ngal_2h
-         + ptsz->has_ngal_lens_1h
-         + ptsz->has_ngal_lens_2h)
-         free(ptsz->array_mean_galaxy_number_density_ngal[index_g]);
-       free(ptsz->normalized_dndz_ngal_z[index_g]);
-       free(ptsz->normalized_dndz_ngal_phig[index_g]);
+           if (ptsz->has_ngal_ngal_1h
+             + ptsz->has_ngal_ngal_2h
+             + ptsz->has_ngal_lens_1h
+             + ptsz->has_ngal_lens_2h)
+             free(ptsz->array_mean_galaxy_number_density_ngal[index_g]);
+     free(ptsz->normalized_dndz_ngal_z[index_g]);
+     free(ptsz->normalized_dndz_ngal_phig[index_g]);
      }
+
      if (ptsz->has_ngal_ngal_1h
        + ptsz->has_ngal_ngal_2h
        + ptsz->has_ngal_lens_1h
        + ptsz->has_ngal_lens_2h)
        free(ptsz->array_mean_galaxy_number_density_ngal);
-     free(ptsz->normalized_dndz_ngal_z);
-     free(ptsz->normalized_dndz_ngal_phig);
 
-     free(ptsz->galaxy_samples_list);
+ free(ptsz->normalized_dndz_ngal_z);
+ free(ptsz->normalized_dndz_ngal_phig);
+
+ free(ptsz->galaxy_samples_list);
 
     if (ptsz->has_ngal_ngal_hf
        +ptsz->has_ngal_lens_hf)
@@ -16412,7 +16414,7 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
    ptsz->index_integrand_id_ngal_ngal_hf_first = ptsz->index_integrand_id_ngal_ngal_2h_last + 1;
    ptsz->index_integrand_id_ngal_ngal_hf_last = ptsz->index_integrand_id_ngal_ngal_hf_first + ptsz->ngal_dim - 1;
 
-   ptsz->index_integrand_id_ngal_lens_1h_first = ptsz->index_integrand_id_ngal_ngal_hf_first + 1;
+   ptsz->index_integrand_id_ngal_lens_1h_first = ptsz->index_integrand_id_ngal_ngal_hf_last + 1;
    ptsz->index_integrand_id_ngal_lens_1h_last = ptsz->index_integrand_id_ngal_lens_1h_first + ptsz->nlSZ*ptsz->galaxy_samples_list_num - 1;
    ptsz->index_integrand_id_ngal_lens_2h_first = ptsz->index_integrand_id_ngal_lens_1h_last+ 1;
    ptsz->index_integrand_id_ngal_lens_2h_last = ptsz->index_integrand_id_ngal_lens_2h_first + ptsz->nlSZ*ptsz->galaxy_samples_list_num - 1;
