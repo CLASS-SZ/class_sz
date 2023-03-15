@@ -256,6 +256,7 @@ Class_sz is now very fast ! In part it's because it can run with emulators.
 To use this mode, you need the python wrapper installed, and also:
 
 $ cd python/classy_szfast
+
 $ pip install -e .
 
 And also change the file here to the repo containing the emulators:
