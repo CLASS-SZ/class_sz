@@ -4698,7 +4698,12 @@ double delta = ptsz->delta_bcm;
 double gamma = ptsz->gamma_bcm;
 double thetaej = ptsz->theta_ej_bcm;
 double mu = ptsz->mu_bcm;
-double mc = pow(10.,ptsz->log10Mc_bcm);
+double mc;// = pow(10.,ptsz->log10Mc_bcm);
+
+// include redshift dependence of Mc:
+double mc_z = ptsz->log10Mc_bcm*pow(1.+z,ptsz->nu_log10Mc_bcm);
+mc = pow(10.,mc_z);
+
 double betam = 3.*pow(m_asked/mc,mu)/(1.+pow(m_asked/mc,mu));
 double den1 = pow(1.+10.*r_asked/rvir,betam);
 double den2 = pow(1.+pow(r_asked/thetaej/rvir,gamma),(delta-betam)/gamma);
