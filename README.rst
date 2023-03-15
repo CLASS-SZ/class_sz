@@ -267,6 +267,8 @@ change this line:
 
 path_to_cosmopower_organization = '/Users/boris/Work/CLASS-SZ/SO-SZ/cosmopower-organization/'
 
+This path needs to be adapted so it matches the location of your cosmopower-organization repository where you have stored the emulators.
+
 
 Then in the python wrapper, just use:
 
@@ -283,6 +285,8 @@ And for instance, this notebook:
 
 https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_szfast_plots_and_tutorial_ngal.ipynb
 
+
+The emulators are described in https://arxiv.org/abs/2303.01591
 
 Support
 -------
