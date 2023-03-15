@@ -249,6 +249,37 @@ There are two modifications:
 
 
 
+EMULATORS
+--------------
+
+Class_sz is now very fast ! In part it's because it can run with emulators.
+To use this mode, you need the python wrapper installed, and also:
+
+$ cd python/classy_szfast
+$ pip install -e .
+
+And also change the file here to the repo containing the emulators:
+In class_sz/python/classy_szfast/classy_szfast/config.py:
+change this line:
+path_to_cosmopower_organization = '/Users/boris/Work/CLASS-SZ/SO-SZ/cosmopower-organization/'
+
+
+Then in the python wrapper, just use:
+
+M.compute_class_szfast()
+
+instead of M.compute()
+
+And also to use this mode, you need the emulators and to pass parameters that they can understand.
+For that check instructions there:
+
+https://github.com/cosmopower-organization/notebooks/blob/main/get_quantities_cosmopower.ipynb
+
+And for instance, this notebook: 
+
+https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_szfast_plots_and_tutorial_ngal.ipynb
+
+
 Support
 -------
 
