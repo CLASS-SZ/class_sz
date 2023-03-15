@@ -9500,7 +9500,7 @@ result = 0.;
   }
 else{
 
- result = exp(pwl_interp_2d(ptsz->nz_ng_bias,
+ result = ptsz->fNL*exp(pwl_interp_2d(ptsz->nz_ng_bias,
                           ptsz->nk_ng_bias,
                           ptsz->array_ln_1pz_ng_bias,
                           ptsz->array_ln_k_ng_bias,
