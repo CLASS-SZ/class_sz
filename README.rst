@@ -21,9 +21,10 @@ matter clustering) is always consistent with the cosmological model.
 
 
 
-**Take a look at the notebook to see what class_sz can do:**
+**Take a look at the notebooks to see what class_sz can do:**
 
-https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_plots_and_tutorial.ipynb
+https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_tutorial_notebooks
+
 
 The code is currently in development, don't hesitate to reach out if you would like to use the code and need assistance.
 
