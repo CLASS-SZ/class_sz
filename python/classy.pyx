@@ -2876,6 +2876,9 @@ cdef class Class:
     def get_first_order_bias_at_z_and_nu(self,z,nu):
         return get_first_order_bias_at_z_and_nu(z,nu,&self.tsz)
 
+    def get_cib_Snu_z_and_nu(self,z,nu):
+        return get_cib_Snu_z_and_nu(z,nu,&self.tsz)
+
     def get_sigma_at_z_and_m(self,z,m):
         return get_sigma_at_z_and_m(z,m,&self.tsz,&self.ba)
 

@@ -48,6 +48,9 @@ def run(args):
     print(M.get_current_derived_parameters(['Neff']))
     print(M.get_current_derived_parameters(['sigma8']))
 
+    # try adjusting the ccl precision paramaters (cf. chat with david on SO)
+    # ccl.spline_params.K_MIN=1E-4
+    # see e.g. https://github.com/LSSTDESC/CCL/pull/918
 
     start = time.time()
     cosmo = ccl.Cosmology(
@@ -90,24 +93,25 @@ def run(args):
 
     'M_min':1e14,
     'M_max':1e16,
-    'ndim_masses':300,
-    'n_m_dndlnM':300,
+    'ndim_masses':600,
+    'n_m_dndlnM':600,
 
 
 
     'z_min':0.,
     'z_max': 3.,
-    'n_z_dndlnM':200,
-    'ndim_redshifts':200,
+    'n_z_dndlnM':100,
+    'ndim_redshifts':100,
 
     'no_spline_in_tinker' : 1, # ccl doesnt have splines... its interp 1d only.
     # # 'HMF_prescription_NCDM' : 'CDM',
     'HMF_prescription_NCDM' : 'CDM',
 
     # these params determin how many k's when we compute sigma
-    'k_per_decade_class_sz':50.,
+    'k_per_decade_class_sz':150.,
     'k_min_for_pk_class_sz':1e-5,
-    'k_max_for_pk_class_sz':50.
+    'k_max_for_pk_class_sz':50.,
+    'k_per_decade_for_pk':150.,
 
     })
 

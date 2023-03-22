@@ -936,6 +936,11 @@ cdef extern from "class.h":
                                              void * tsz,
                                              void * pba)
 
+
+    double get_cib_Snu_z_and_nu(double z_asked,
+                                double nu_asked,
+                                void * tsz)
+
     double get_first_order_bias_at_z_and_nu(double z_asked,
                                              double nu_asked,
                                              void * tsz)

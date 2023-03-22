@@ -20340,18 +20340,18 @@ double integrand_patterson_L_sat(double lnM_sub, void *p){
 
 
   double L_gal_at_nu;
-if (V->ptsz->use_maniyar_cib_model){
-double sfrI;
-double sfrII;
-sfrI = evaluate_galaxy_luminosity(z, M_sub, nu, V->ptsz);
-sfrII =  evaluate_galaxy_luminosity(z, M_host*(1.-V->ptsz->maniyar_cib_fsub), nu, V->ptsz)*M_sub/(M_host*(1.-V->ptsz->maniyar_cib_fsub));
+  if (V->ptsz->use_maniyar_cib_model){
+      double sfrI;
+      double sfrII;
+      sfrI = evaluate_galaxy_luminosity(z, M_sub, nu, V->ptsz);
+      sfrII =  evaluate_galaxy_luminosity(z, M_host*(1.-V->ptsz->maniyar_cib_fsub), nu, V->ptsz)*M_sub/(M_host*(1.-V->ptsz->maniyar_cib_fsub));
 
-L_gal_at_nu = r8_min(sfrI,sfrII);
+      L_gal_at_nu = r8_min(sfrI,sfrII);
 
-}
-else{
-L_gal_at_nu = evaluate_galaxy_luminosity(z, M_sub, nu, V->ptsz);
-}
+      }
+  else{
+      L_gal_at_nu = evaluate_galaxy_luminosity(z, M_sub, nu, V->ptsz);
+      }
 
   double dNdlnMs = subhalo_hmf_dndlnMs(M_host,M_sub,V->ptsz);
   double result = L_gal_at_nu*dNdlnMs;
