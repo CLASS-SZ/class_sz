@@ -1187,7 +1187,7 @@ int load_n5k_pk_zk(
 
 
 
-class_open(process,"sz_auxiliary_files/n5k_z.txt", "r",ptsz->error_message);
+class_open(process,"class_sz_auxiliary_files/n5k_z.txt", "r",ptsz->error_message);
 
   while (fgets(line, sizeof(line)-1, process) != NULL) {
     sscanf(line, "%lf", &this_lnx);
@@ -1235,7 +1235,7 @@ class_open(process,"sz_auxiliary_files/n5k_z.txt", "r",ptsz->error_message);
   lnx   = (double *)malloc(n_data_guess*sizeof(double));
 
 
-  class_open(process,"sz_auxiliary_files/n5k_k.txt", "r",ptsz->error_message);
+  class_open(process,"class_sz_auxiliary_files/n5k_k.txt", "r",ptsz->error_message);
 
   // printf("-> %s\n",Filepath);
 
@@ -1302,7 +1302,7 @@ class_open(process,"sz_auxiliary_files/n5k_z.txt", "r",ptsz->error_message);
   }
 
 
-  class_open(process,"sz_auxiliary_files/n5k_pk_nl.txt", "r",ptsz->error_message);
+  class_open(process,"class_sz_auxiliary_files/n5k_pk_nl.txt", "r",ptsz->error_message);
 
 
   int z =0;
@@ -1384,7 +1384,7 @@ int read_Zhao_CM_init(
   n_data_guess = 100;
   lnx   = (double *)malloc(n_data_guess*sizeof(double));
 
-  class_open(process,"sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm-redshits.txt", "r",ptsz->error_message);
+  class_open(process,"class_sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm-redshits.txt", "r",ptsz->error_message);
 
   while (fgets(line, sizeof(line)-1, process) != NULL) {
     sscanf(line, "%lf", &this_lnx);
@@ -1432,7 +1432,7 @@ int read_Zhao_CM_init(
   lnx   = (double *)malloc(n_data_guess*sizeof(double));
 
 
-  class_open(process,"sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm-masses.txt", "r",ptsz->error_message);
+  class_open(process,"class_sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm-masses.txt", "r",ptsz->error_message);
 
 
 
@@ -1499,7 +1499,7 @@ int read_Zhao_CM_init(
   }
 
 
-  class_open(process,"sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm.txt", "r",ptsz->error_message);
+  class_open(process,"class_sz_auxiliary_files/C-M_Zhao09/lnconcentration_vs_z_and_lnm.txt", "r",ptsz->error_message);
 
 
 
@@ -5954,11 +5954,11 @@ double get_cib_Snu_z_and_nu(double z_asked, double nu_asked, struct tszspectrum 
 
   double result = 0.;
   if (z<ptsz->cib_Snu_z[0]){
-    printf("z too small\n");
+    printf("z too small in Snu z = %.5e snuzmax = %.5e \n",z,ptsz->cib_Snu_z[0]);
     result = 0.;
   }
   else if (z>ptsz->cib_Snu_z[ptsz->cib_Snu_z_size-1]){
-    printf("z too big\n");
+    printf("z too big in Snu z = %.5e snuzmax = %.5e \n",z,ptsz->cib_Snu_z[ptsz->cib_Snu_z_size-1]);
     result = 0.;
   }
   else if (k<ptsz->cib_Snu_nu[0]){
@@ -5966,7 +5966,7 @@ double get_cib_Snu_z_and_nu(double z_asked, double nu_asked, struct tszspectrum 
     result = 0.;
   }
   else if (k>ptsz->cib_Snu_nu[ptsz->cib_Snu_nu_size-1]){
-    printf("nu too big numax = %.3e\n",ptsz->cib_Snu_nu[ptsz->cib_Snu_nu_size-1]);
+    printf("nu too big nu = %.5e numax = %.3e\n",k,ptsz->cib_Snu_nu[ptsz->cib_Snu_nu_size-1]);
     result = 0.;
   }
   else{
@@ -8527,7 +8527,7 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
   else if (ptsz->pressure_profile==2){
     if (ptsz->sz_verbose > 0)
       printf("-> Openning the pressure profile file for A10\n");
-    //class_open(process,"sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt", "r",ptsz->error_message);
+    //class_open(process,"class_sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt", "r",ptsz->error_message);
     class_open(process,ptsz->A10_file, "r",ptsz->error_message);
     if (ptsz->sz_verbose > 0)
       printf("-> File Name: %s\n",ptsz->A10_file);
@@ -8540,13 +8540,13 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
     //         // "%s%s%s",
     //         "cat ",
     //         // ptsz->path_to_class,
-    //         "/sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_P13.txt");
+    //         "/class_sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_P13.txt");
   //   sprintf(Filepath,
   //           "%s%s",
   //           // "%s%s%s",
   //           "cat ",
   //           ptsz->path_to_class,
-  //           "/sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt");
+  //           "/class_sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt");
   // process = popen(Filepath, "r");
   if (ptsz->sz_verbose > 0)
     printf("-> Scanning the pressure profile file\n");
@@ -8879,7 +8879,7 @@ if (ptsz->sz_verbose >= 1)
   // char Filepath[_ARGUMENT_LENGTH_MAX_];
   // if (ptsz->sz_verbose >= 1)
   //   printf("-> File Name: %s\n",ptsz->cmb_lensing_noise_file);
-  class_open(process,"sz_auxiliary_files/n5k_gg_chi_K0.txt", "r",ptsz->error_message);
+  class_open(process,"class_sz_auxiliary_files/n5k_gg_chi_K0.txt", "r",ptsz->error_message);
   // if (ptsz->sz_verbose >= 1)
   //   printf("-> File Name: %s\n",ptsz->cmb_lensing_noise_file);
 
@@ -9196,7 +9196,7 @@ if (ptsz->sz_verbose >= 1)
   // char Filepath[_ARGUMENT_LENGTH_MAX_];
   // if (ptsz->sz_verbose >= 1)
   //   printf("-> File Name: %s\n",ptsz->cmb_lensing_noise_file);
-  class_open(process,"sz_auxiliary_files/n5k_z_chi.txt", "r",ptsz->error_message);
+  class_open(process,"class_sz_auxiliary_files/n5k_z_chi.txt", "r",ptsz->error_message);
   // if (ptsz->sz_verbose >= 1)
   //   printf("-> File Name: %s\n",ptsz->cmb_lensing_noise_file);
 
@@ -9778,7 +9778,7 @@ class_open(process,ptsz->cib_Snu_file_z, "r",ptsz->error_message);
   lnx   = (double *)malloc(n_data_guess*sizeof(double));
 
 class_open(process,ptsz->cib_Snu_file_nu, "r",ptsz->error_message);
-  // class_open(process,"sz_auxiliary_files/filtered_snu_planck_nu.txt", "r",ptsz->error_message);
+  // class_open(process,"class_sz_auxiliary_files/filtered_snu_planck_nu.txt", "r",ptsz->error_message);
 
   // printf("-> %s\n",Filepath);
 
@@ -9846,7 +9846,7 @@ class_open(process,ptsz->cib_Snu_file_nu, "r",ptsz->error_message);
 
 
 class_open(process,ptsz->cib_Snu_file_snu, "r",ptsz->error_message);
-  // class_open(process,"sz_auxiliary_files/filtered_snu_planck_90_100_143_217_353_545_857.txt", "r",ptsz->error_message);
+  // class_open(process,"class_sz_auxiliary_files/filtered_snu_planck_90_100_143_217_353_545_857.txt", "r",ptsz->error_message);
 
 
   int z =0;
@@ -9890,9 +9890,9 @@ class_open(process,ptsz->cib_Snu_file_snu, "r",ptsz->error_message);
          free(logC[index_z]);
        }
   free(logC);
-
+if (ptsz->sz_verbose>=1){
   printf("cib Snu loaded with %d z and %d nu\n",ptsz->cib_Snu_z_size,ptsz->cib_Snu_nu_size);
-
+}
   return _SUCCESS_;
 }
 
@@ -10786,7 +10786,7 @@ int load_T10_alpha_norm(struct tszspectrum * ptsz)
   lnx   = (double *)malloc(n_data_guess*sizeof(double));
   lnI = (double *)malloc(n_data_guess*sizeof(double));
 
-  // class_open(process,"sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt", "r",ptsz->error_message);
+  // class_open(process,"class_sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt", "r",ptsz->error_message);
   class_open(process,ptsz->Tinker_et_al_10_alpha_consistency_msyriac_file, "r",ptsz->error_message);
 
 
@@ -15957,16 +15957,16 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   //         "%s%s",
   //         "cat ",
   //         // ptsz->path_to_class,
-  //         "/sz_auxiliary_files/SZ_thetas.txt");
+  //         "/class_sz_auxiliary_files/SZ_thetas.txt");
   //
   // process = popen(Filepath, "r");
   if (ptsz->experiment == 0){
-  // class_open(process,"sz_auxiliary_files/SZ_thetas.txt", "r",ptsz->error_message);
+  // class_open(process,"class_sz_auxiliary_files/SZ_thetas.txt", "r",ptsz->error_message);
   class_open(process,ptsz->Planck_thetas_file, "r",ptsz->error_message);
 
 }
   else if (ptsz->experiment == 1){
-  // class_open(process,"sz_auxiliary_files/so_3freqs_020621_thetas.txt", "r",ptsz->error_message);
+  // class_open(process,"class_sz_auxiliary_files/so_3freqs_020621_thetas.txt", "r",ptsz->error_message);
   class_open(process,ptsz->SO_thetas_file, "r",ptsz->error_message);
 
 }
@@ -16056,21 +16056,21 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
   //         "%s%s",
   //         "cat ",
   //         // ptsz->path_to_class,
-  //         "/sz_auxiliary_files/SZ_skyfracs.txt");
+  //         "/class_sz_auxiliary_files/SZ_skyfracs.txt");
   //
   // process = popen(Filepath, "r");
   if (ptsz->sz_verbose >= 3){
     printf("Loading skyfrac file\n");
   }
-  //class_open(process,"sz_auxiliary_files/SZ_skyfracs.txt", "r",ptsz->error_message);
+  //class_open(process,"class_sz_auxiliary_files/SZ_skyfracs.txt", "r",ptsz->error_message);
 
   if (ptsz->experiment == 0){
-  // class_open(process,"sz_auxiliary_files/SZ_skyfracs.txt", "r",ptsz->error_message);
+  // class_open(process,"class_sz_auxiliary_files/SZ_skyfracs.txt", "r",ptsz->error_message);
   class_open(process,ptsz->Planck_skyfracs_file, "r",ptsz->error_message);
 
 }
   else if (ptsz->experiment == 1){
-  // class_open(process,"sz_auxiliary_files/so_3freqs_020621_skyfracs.txt", "r",ptsz->error_message);
+  // class_open(process,"class_sz_auxiliary_files/so_3freqs_020621_skyfracs.txt", "r",ptsz->error_message);
   class_open(process,ptsz->SO_skyfracs_file, "r",ptsz->error_message);
 
 }
@@ -16134,12 +16134,12 @@ int read_Planck_noise_map(struct tszspectrum * ptsz)
 
 
   if (ptsz->experiment == 0){
-    // class_open(process,"sz_auxiliary_files/SZ_ylims.txt", "r",ptsz->error_message);
+    // class_open(process,"class_sz_auxiliary_files/SZ_ylims.txt", "r",ptsz->error_message);
     class_open(process,ptsz->Planck_ylims_file, "r",ptsz->error_message);
 
   }
   else if (ptsz->experiment == 1){
-    // class_open(process,"sz_auxiliary_files/so_3freqs_020621_ylims.txt", "r",ptsz->error_message);
+    // class_open(process,"class_sz_auxiliary_files/so_3freqs_020621_ylims.txt", "r",ptsz->error_message);
     class_open(process,ptsz->SO_ylims_file, "r",ptsz->error_message);
 
   }
@@ -16221,10 +16221,10 @@ if (ptsz->sz_verbose >= 3){
       //         // "%s%s%s",
       //         "cat ",
       //         // ptsz->path_to_class,
-      //         "/sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt");
+      //         "/class_sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt");
       //
       // process = popen(Filepath, "r");
-      class_open(process,"sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt", "r",ptsz->error_message);
+      class_open(process,"class_sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt", "r",ptsz->error_message);
 
       while (fgets(line, sizeof(line)-1, process) != NULL) {
         sscanf(line, "%lf %lf", &this_lnx, &this_lny);
@@ -16282,7 +16282,7 @@ int read_SO_noise(struct tszspectrum * ptsz){
         ptsz->SO_skyfrac   = (double *)malloc(n_data_guess*sizeof(double));
 
 
-        class_open(process,"sz_auxiliary_files/SO_files/SOSim_3freq_small_RMSTab_comp_test.txt", "r",ptsz->error_message);
+        class_open(process,"class_sz_auxiliary_files/SO_files/SOSim_3freq_small_RMSTab_comp_test.txt", "r",ptsz->error_message);
 
         while (fgets(line, sizeof(line)-1, process) != NULL) {
           sscanf(line, "%lf %lf", &this_lnx, &this_lny);
@@ -16345,10 +16345,10 @@ int read_sz_catalog(struct tszspectrum * ptsz){
       //         // "%s%s%s",
       //         "cat ",
       //         // ptsz->path_to_class,
-      //         "/sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt");
+      //         "/class_sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt");
       //
       // process = popen(Filepath, "r");
-      // class_open(process,"sz_auxiliary_files/SZ_cat.txt", "r",ptsz->error_message);
+      // class_open(process,"class_sz_auxiliary_files/SZ_cat.txt", "r",ptsz->error_message);
       class_open(process,ptsz->SZ_cat_file, "r",ptsz->error_message);
 
       while (fgets(line, sizeof(line)-1, process) != NULL) {
@@ -20344,8 +20344,9 @@ double integrand_patterson_L_sat(double lnM_sub, void *p){
       double sfrI;
       double sfrII;
       sfrI = evaluate_galaxy_luminosity(z, M_sub, nu, V->ptsz);
-      sfrII =  evaluate_galaxy_luminosity(z, M_host*(1.-V->ptsz->maniyar_cib_fsub), nu, V->ptsz)*M_sub/(M_host*(1.-V->ptsz->maniyar_cib_fsub));
+      sfrII =  evaluate_galaxy_luminosity(z, M_host, nu, V->ptsz)*M_sub/M_host;
 
+      // L_gal_at_nu = sfrI;//r8_min(sfrI,sfrII);
       L_gal_at_nu = r8_min(sfrI,sfrII);
 
       }
@@ -20353,7 +20354,7 @@ double integrand_patterson_L_sat(double lnM_sub, void *p){
       L_gal_at_nu = evaluate_galaxy_luminosity(z, M_sub, nu, V->ptsz);
       }
 
-  double dNdlnMs = subhalo_hmf_dndlnMs(M_host,M_sub,V->ptsz);
+  double dNdlnMs = subhalo_hmf_dndlnMs(M_host/(1.-V->ptsz->maniyar_cib_fsub),M_sub,V->ptsz);
   double result = L_gal_at_nu*dNdlnMs;
 
   // printf("result Lsat integrand = %.5e\n",result);
@@ -20523,7 +20524,11 @@ for (index_nu=0; index_nu<ptsz->n_nu_L_sat; index_nu++)
       else{
       lnMs_min = log(ptsz->M_min_HOD);
       }
-      double lnMs_max = logM;//log(1e11);
+      double lnMs_max;
+      if (ptsz->use_maniyar_cib_model == 1)
+        lnMs_max = log(exp(logM)*(1.-ptsz->maniyar_cib_fsub));
+      else
+        lnMs_max = logM;//log(1e11);
 
       if (lnMs_max<=lnMs_min){
       r = 0.;
@@ -20537,7 +20542,10 @@ for (index_nu=0; index_nu<ptsz->n_nu_L_sat; index_nu++)
       V.nu = exp(ptsz->array_nu_L_sat[index_nu]);
       V.z = z;
       V.ptsz = ptsz;
-      V.M_host = exp(logM);
+      if (ptsz->use_maniyar_cib_model == 1)
+        V.M_host = exp(logM)*(1.-ptsz->maniyar_cib_fsub);
+      else
+        V.M_host = exp(logM);
 
 
       void * params = &V;

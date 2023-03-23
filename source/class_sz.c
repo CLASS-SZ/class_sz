@@ -17226,7 +17226,7 @@ return _SUCCESS_;
 // return _SUCCESS_;
 
 
-}
+}// end cib shot noise
 else if(_dcib0dz_){
 nu =  exp(ptsz->array_dcib0dz_nu[index_nu]);
 Lc_nu = Luminosity_of_central_galaxies(z,M_halo,nu/(1.+ptsz->z_obs_cib),pvectsz,ptsz,pba);
@@ -17241,7 +17241,7 @@ if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu]){
 }
 }
 }
-// cross terms
+//  2halo cross termscross terms
 else {
 // nu = ptsz->frequencies_for_cib[index_nu];
 nu = ptsz->cib_frequency_list[index_nu];
@@ -17258,6 +17258,7 @@ if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu]){
 }
 
 // eq. 13 of MM20
+// Ls_nu = Lc_nu;
 ug_at_ell  = 1./(4.*_PI_)*(Lc_nu+Ls_nu*us);
 
 }// end 2halo terms and monopole
@@ -17293,6 +17294,8 @@ if (S_nu*1e3 > ptsz->cib_Snu_cutoff_list_in_mJy[index_nu_prime]){
 }
 
 // eq. 15 of MM20
+// Ls_nu_prime = Lc_nu;
+// Ls_nu = Lc_nu;
 ug_at_ell  = 1./(4.*_PI_)*sqrt(Ls_nu*Ls_nu_prime*us*us+Lc_nu*Ls_nu_prime*us+Lc_nu_prime*Ls_nu*us);
 
 }
