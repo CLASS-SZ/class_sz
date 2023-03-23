@@ -1179,6 +1179,7 @@ double szcounts_ntot;
 
   //HOD
   double M_min_HOD;
+  double M_min_HOD_cib;
   double M0_HOD;
   double sigma_log10M_HOD;
   double alpha_s_HOD;

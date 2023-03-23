@@ -3709,6 +3709,7 @@ int input_read_parameters(
       class_read_double("nfw_profile_epsabs",ptsz->nfw_profile_epsabs);
 
       class_read_double("M_min_HOD",ptsz->M_min_HOD);
+      class_read_double("M_min_HOD_cib",ptsz->M_min_HOD_cib);
       class_read_double("f_cen_HOD",ptsz->f_cen_HOD);
       class_read_double("Delta_z_lens",ptsz->Delta_z_lens);
       class_read_double("Delta_z_source",ptsz->Delta_z_source);
@@ -6956,6 +6957,7 @@ int input_default_params(
 
   //HOD
   ptsz->M_min_HOD = pow(10,11.5); //Msun/h
+  ptsz->M_min_HOD_cib = pow(10,11.5); //Msun/h
   ptsz->M1_prime_HOD = pow(10,12.6); //Msun/h
   ptsz->alpha_s_HOD = 1.;
   ptsz->sigma_log10M_HOD = 0.15;

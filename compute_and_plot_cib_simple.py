@@ -43,11 +43,12 @@ cib_Snu_2 = 315.
 
 # set path to the class_sz code
 path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
+# path_to_class = '/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/'
 # path_to_class = '/Users/boris/Downloads/class_sz-df37ebccd13a2e266cecd9bf553b729e93101e7e/'
 # set path to to the repository containing the folder 'cib_files' with your cib's in it
 # set path to where to save the figures
 FIG_DIR = '/Users/boris/Work/CLASS-SZ/SO-SZ/figures'
-subprocess.call(['mkdir','-p',path_to_class+'sz_auxiliary_files/run_scripts'])
+subprocess.call(['mkdir','-p',path_to_class+'class_sz_auxiliary_files/run_scripts'])
 
 # usefule function for formatting numbers
 def scientific_notation(p_value,digit=2):
@@ -257,7 +258,7 @@ def run(args):
         p_dict["Frequency_id nu^prime for cib in GHz (to save in file)"] = 1
     # verbose paramete of class_sz
     p_dict['class_sz_verbose'] = 2
-    p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
+    p_dict['root'] = 'class_sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
     p_dict['write sz results to files'] = 'yes' # this writes  PS and f(z)
     # precision parameters
     p_dict['pressure_profile_epsabs'] = 1.e-8
@@ -293,14 +294,14 @@ def run(args):
 
 
     p_dict['output'] = args.output
-    p_dict['root'] = 'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
+    p_dict['root'] = 'class_sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_'
     # p_dict['path_to_class'] = path_to_class
 
 
-    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_1h_'+str(int(freq_cib_1))+'x'+str(int(freq_cib_2))+'.txt')
+    L_ref = np.loadtxt(path_to_class + 'class_sz_auxiliary_files/cib_files/cib_1h_'+str(int(freq_cib_1))+'x'+str(int(freq_cib_2))+'.txt')
     ell_MM20 = L_ref[:,0]
     cl_cib_cib_1h_MM20 = L_ref[:,1]
-    L_ref = np.loadtxt(path_to_class + 'sz_auxiliary_files/cib_files/cib_2h_'+str(int(freq_cib_1))+'x'+str(int(freq_cib_2))+'.txt')
+    L_ref = np.loadtxt(path_to_class + 'class_sz_auxiliary_files/cib_files/cib_2h_'+str(int(freq_cib_1))+'x'+str(int(freq_cib_2))+'.txt')
     cl_cib_cib_2h_MM20 = L_ref[:,1]
 
 
@@ -406,13 +407,13 @@ def run(args):
             p_dict[param_name] = p_val
             if args.mode == 'run':
                 if id_p == 0:
-                    subprocess.call(['rm','-r','-f',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
-                    subprocess.call(['mkdir','-p',path_to_class+'sz_auxiliary_files/run_scripts/tmp'])
-                with open(path_to_class+'sz_auxiliary_files/run_scripts/tmp/tmp.ini', 'w') as f:
+                    subprocess.call(['rm','-r','-f',path_to_class+'class_sz_auxiliary_files/run_scripts/tmp'])
+                    subprocess.call(['mkdir','-p',path_to_class+'class_sz_auxiliary_files/run_scripts/tmp'])
+                with open(path_to_class+'class_sz_auxiliary_files/run_scripts/tmp/tmp.ini', 'w') as f:
                     for k, v in p_dict.items():
                         f.write(str(k) + ' = '+ str(v) + '\n')
                 startTime = datetime.now()
-                subprocess.call(['./class',path_to_class+'sz_auxiliary_files/run_scripts/tmp/tmp.ini'])
+                subprocess.call(['./class',path_to_class+'class_sz_auxiliary_files/run_scripts/tmp/tmp.ini'])
                 print("time in class -> " + str((datetime.now() - startTime)))
             #print(datetime.now() - startTime)
 
@@ -423,9 +424,9 @@ def run(args):
             col.append(next(colors))
 
             if args.mode == 'run':
-                R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
+                R = np.loadtxt(path_to_class+'class_sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt')
             elif args.mode == 'plot':
-                R = np.loadtxt(path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_szpowerspectrum_' + str(p_val) + '.txt')
+                R = np.loadtxt(path_to_class+'class_sz_auxiliary_files/run_scripts/tmp/class-sz_szpowerspectrum_' + str(p_val) + '.txt')
 
             multipoles.append(R[:,0])
             cl_1h.append(R[:,1])
@@ -521,7 +522,7 @@ def run(args):
             if args.mode == 'run':
                 #save some results and remove the temporary files
                 # print('ok3')
-                subprocess.call(['mv',path_to_class+'sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt', path_to_class+'sz_auxiliary_files/run_scripts/tmp/' + 'class-sz_szpowerspectrum_' + str(p_val) + '.txt'])
+                subprocess.call(['mv',path_to_class+'class_sz_auxiliary_files/run_scripts/tmp/class-sz_tmp_szpowerspectrum.txt', path_to_class+'class_sz_auxiliary_files/run_scripts/tmp/' + 'class-sz_szpowerspectrum_' + str(p_val) + '.txt'])
                 # print('ok3')
             id_p += 1
 

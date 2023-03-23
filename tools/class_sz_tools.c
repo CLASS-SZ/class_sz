@@ -20353,8 +20353,13 @@ double integrand_patterson_L_sat(double lnM_sub, void *p){
   else{
       L_gal_at_nu = evaluate_galaxy_luminosity(z, M_sub, nu, V->ptsz);
       }
-
-  double dNdlnMs = subhalo_hmf_dndlnMs(M_host/(1.-V->ptsz->maniyar_cib_fsub),M_sub,V->ptsz);
+double dNdlnMs;
+if (V->ptsz->use_maniyar_cib_model){
+  dNdlnMs = subhalo_hmf_dndlnMs(M_host/(1.-V->ptsz->maniyar_cib_fsub),M_sub,V->ptsz);
+}
+else{
+  dNdlnMs = subhalo_hmf_dndlnMs(M_host,M_sub,V->ptsz);
+}
   double result = L_gal_at_nu*dNdlnMs;
 
   // printf("result Lsat integrand = %.5e\n",result);
@@ -20522,7 +20527,7 @@ for (index_nu=0; index_nu<ptsz->n_nu_L_sat; index_nu++)
       lnMs_min = log(ptsz->M_min_subhalo_in_Msun);
       }
       else{
-      lnMs_min = log(ptsz->M_min_HOD);
+      lnMs_min = log(ptsz->M_min_HOD_cib);
       }
       double lnMs_max;
       if (ptsz->use_maniyar_cib_model == 1)
@@ -20715,7 +20720,7 @@ for (index_M=0; index_M<ptsz->n_m_L_sat; index_M++)
       double z =   exp(ptsz->array_z_L_sat[index_z])-1.;
       double logM =   ptsz->array_m_L_sat[index_M];
 
-      double lnMs_min = log(ptsz->M_min_HOD);
+      double lnMs_min = log(ptsz->M_min_HOD_cib);
       double lnMs_max = logM;//log(1e11);
 
       double epsrel = ptsz->epsrel_L_sat;
