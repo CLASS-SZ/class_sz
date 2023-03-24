@@ -376,6 +376,9 @@ cdef extern from "class.h":
         double * b_tSZ_tSZ_tSZ_1halo
         double * b_tSZ_tSZ_tSZ_2h
         double * b_tSZ_tSZ_tSZ_3h
+        double * b_kSZ_kSZ_tSZ_1h
+        double * b_kSZ_kSZ_tSZ_2h
+        double * b_kSZ_kSZ_tSZ_3h
         double * k_for_pk_hm
         double * pk_gg_at_z_1h
         double * pk_gg_at_z_2h

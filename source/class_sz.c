@@ -10549,7 +10549,7 @@ if (pvectsz[ptsz->index_has_electron_pressure] == 1){
   else if (ptsz->delta_def_electron_pressure == 2)
     pvectsz[ptsz->index_has_500c] = 1;
 
-if (ptsz->pressure_profile == 4){
+if ((ptsz->pressure_profile == 4) &&  (ptsz->truncate_wrt_rvir)){
       pvectsz[ptsz->index_has_vir] = 1; // cut wrt virial radius
       }
 }

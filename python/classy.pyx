@@ -2219,6 +2219,22 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def b_tty(self):
+        """
+        (class_sz) Return the 1-halo, 2-halo and 3-halo terms of ksz-ksz-tsz bispectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['3h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.b_kSZ_kSZ_tSZ_1h[index])
+            cl['2h'].append(self.tsz.b_kSZ_kSZ_tSZ_2h[index])
+            cl['3h'].append(self.tsz.b_kSZ_kSZ_tSZ_3h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
     def pk_gg_at_z_hm(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of 3d P(k) gg power spectrum

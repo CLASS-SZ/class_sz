@@ -22275,18 +22275,7 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
     double mdel = pvectsz[ptsz->index_m200m];
 
     double mdel_prime;
-    class_call_parallel(mDEL_to_mDELprime(mdel,
-                           delrho,
-                           delrho_prime,
-                           delc,
-                           rhoc,
-                           z,
-                           &mdel_prime,
-                           ptsz,
-                           pba),
-                    ptsz->error_message,
-                    ptsz->error_message);
-    pvectsz[ptsz->index_m200c] = mdel_prime;
+
 
     if (ptsz->use_websky_m200m_to_m200c_conversion == 1){
       // omegamz = co.omegam*(1+z)**3/(co.omegam*(1+z)**3+1-co.omegam)
@@ -22294,6 +22283,20 @@ for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
       // return m200c
 
       pvectsz[ptsz->index_m200c] = pow(omega,0.35)*pvectsz[ptsz->index_m200m];
+    }
+    else{
+      class_call_parallel(mDEL_to_mDELprime(mdel,
+                             delrho,
+                             delrho_prime,
+                             delc,
+                             rhoc,
+                             z,
+                             &mdel_prime,
+                             ptsz,
+                             pba),
+                      ptsz->error_message,
+                      ptsz->error_message);
+      pvectsz[ptsz->index_m200c] = mdel_prime;
     }
 
     array_m200m_to_m200c_at_z_and_M[index_z][index_M] = log(pvectsz[ptsz->index_m200c]);
