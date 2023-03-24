@@ -12210,7 +12210,12 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
 //   exit(0);
   // For all the above cases we multiply the linear matter power spectrum to the redshift integrand
   // evaluated at (ell+1/2)/Chi and redshift z
+  if (V->ptsz->use_pknl_in_2hterms){
+  result *= get_pk_nonlin_at_k_and_z((V->ptsz->ell[index_l]+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);//V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+  }
+  else{
   result *= get_pk_lin_at_k_and_z((V->ptsz->ell[index_l]+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);//V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+  }
 
 }
 
@@ -16812,6 +16817,10 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
       nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD,V->ptsz,V->pba);
       ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],nc,M0,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
 
+      if (V->ptsz->sz_verbose>3){
+        printf("got nc ns hmf %.3e and %.3e %.3e at z = %.3e and m = %.3e\n",nc,ns,hmf,z,exp(lnM_halo));
+      }
+
       double result = hmf*(ns+nc);
 
 
@@ -16924,6 +16933,11 @@ m_min = ptsz->M_min_ng_bar;
 m_max = ptsz->M_max_ng_bar;
 // }
 
+
+if (ptsz->sz_verbose){
+  printf("tabulating mean ngal from hod between %.3e  and %.3e Msun/h\n",m_min,m_max);
+}
+
 double * pvecback;
 double * pvectsz;
 
@@ -16947,7 +16961,9 @@ double * pvectsz;
 for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
         {
           double z = exp(ptsz->array_redshift[index_z])-1.;
-
+          if (ptsz->sz_verbose>3){
+            printf("tabulating mean ngal from hod between %.3e  and %.3e Msun/h at z = %.3e\n",m_min,m_max,z);
+          }
 
           // at each z, perform the mass integral
           struct Parameters_for_integrand_mean_galaxy_number V;
@@ -16967,17 +16983,29 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
                                                epsrel, epsabs,
                                                integrand_mean_galaxy_number,
                                                params,ptsz->patterson_show_neval);
+           if (ptsz->sz_verbose>3){
+             printf("got %.3e at z = %.3e\n",r,z);
+           }
 
           // if (z< 1e-3)
           //   printf("-> [1gal] ngbar for sample at z = %.3e is %.3e.\n",z,r);
         // here we always impose the consistency condition.
         // add counter terms:
+        if (ptsz->hm_consistency){
          double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
          double I0 = integrand_mean_galaxy_number(log(m_min),params);
          double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
+
+         if (ptsz->sz_verbose>3){
+           printf("counter terms %.3e at z = %.3e\n",nmin,z);
+         }
+
          r += nmin_umin;
 
-
+         if (ptsz->sz_verbose>3){
+           printf("after counter terms added got %.3e at z = %.3e\n",r,z);
+         }
+       }
 
           ptsz->array_mean_galaxy_number_density[index_z] = log(r);
           // if (z< 1e-3)

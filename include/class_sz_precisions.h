@@ -54,6 +54,7 @@ class_sz_string_parameter(SO_ylims_file,"/class_sz_auxiliary_files/so_3freqs_191
 class_sz_ptsz_parameter(no_spline_in_tinker,int,0)
 
 class_sz_ptsz_parameter(sigma_derivative,int,0) // 0 is gradient, and 1 is mcfit
+class_sz_ptsz_parameter(use_pknl_in_2hterms,int,0) // 0 is gradient, and 1 is mcfit
 
 class_sz_ptsz_parameter(n_k_density_profile,int,100)
 class_sz_ptsz_parameter(n_m_density_profile,int,100)

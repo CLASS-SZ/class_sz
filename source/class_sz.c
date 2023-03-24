@@ -966,6 +966,8 @@ if (ptsz->has_tSZ_gal_1h
 tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
 }
 
+
+
 if (ptsz->has_ngal_ngal_1h
    +ptsz->has_ngal_ngal_2h
    +ptsz->has_ngal_lens_1h
@@ -1433,8 +1435,18 @@ if (ptsz->has_sz_rates){
     for (i=0;i<ptsz->nlSZ;i++){
       double fac = ptsz->ell[i]*(ptsz->ell[i]+1.)/(2*_PI_);
       lnl[i] = log(ptsz->ell[i]);
-      lncl_1h[i] = log(ptsz->cl_gal_gallens_1h[i]/fac);
+      if (ptsz->cl_gal_gallens_1h[i]<=0){
+        lncl_1h[i] = -100.;
+      }
+      else{
+        lncl_1h[i] = log(ptsz->cl_gal_gallens_1h[i]/fac);
+      }
+      if (ptsz->cl_gal_gallens_2h[i]<=0){
+          lncl_2h[i] = -100.;
+      }
+      else{
       lncl_2h[i] = log(ptsz->cl_gal_gallens_2h[i]/fac);
+      }
 
     }
 
@@ -10097,7 +10109,7 @@ double get_pk_nonlin_at_k_and_z(double k, double z,
                           struct tszspectrum * ptsz){
 
 if (ptsz->use_class_sz_fast_mode){
-double pk = get_pk_lin_at_k_and_z_fast(k,z,pba,ppm,pnl,ptsz);
+double pk = get_pk_nonlin_at_k_and_z_fast(k,z,pba,ppm,pnl,ptsz);
 return pk;
 }
 else{
