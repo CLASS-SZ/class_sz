@@ -10751,6 +10751,10 @@ int load_ksz_filter(struct tszspectrum * ptsz)
   free(lnx);
   free(lnI);
 
+  if (ptsz->sz_verbose >= 1)
+    printf("-> filter f(l) for cl^kSZ2_x successfully loaded.\n");
+
+
   return _SUCCESS_;
 }
 
@@ -14258,9 +14262,10 @@ if (isnan(Pk1[ik])||isinf(Pk1[ik])){
 double pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,pba,ppm,pnl,ptsz);//pvectsz[ptsz->index_pk_for_halo_bias];
 Pk2[ik] = fl*pkl*get_psi_b1t_at_k_and_z((l+0.5)/chi,z,ptsz);
 // if(l>3e3)
-  // printf("k = %.5e pk = %.5e\n",l,Pk2[ik]);
+  // printf("l = %.5e pk2 = %.5e\n",l,Pk2[ik]);
 }
 // printf("k pk done\n");
+// exit(0);
 
 double rp[N], xi1[N], xi2[N], xi12[N];
 
@@ -14268,6 +14273,7 @@ double rp[N], xi1[N], xi2[N], xi12[N];
 xi2pk(N,k,Pk1,rp,xi1,ptsz);
 xi2pk(N,k,Pk2,rp,xi2,ptsz);
 for (ik=0; ik<N; ik++){
+  // if (isnan(xi1[ik]) || isinf(r)){
 // convolution:
 xi12[ik] = xi1[ik]*xi2[ik];
 }
@@ -14276,7 +14282,10 @@ xi12[ik] = xi1[ik]*xi2[ik];
 // move back to position space:
 pk2xi(N,rp,xi12,k,Pkr,ptsz);
 
+
 // evaluate at l3
+
+
 double f_psi_f_psi = pwl_value_1d(N,lnk,Pkr,log(l3));
 
 r_m_12 = f_psi_f_psi;
@@ -14288,7 +14297,13 @@ r_m_23 = 1.;
 r = r_m_11*r_m_21 +  r_m_12*r_m_22  +  r_m_13*r_m_23;
 // printf("xi pd done r=%.5e\n",r);
 if (isnan(r) || isinf(r)){
-  printf("k %.3e z %.3e r_m_11 %.5e r_m_12 %.5e r_m_21 %.5e\n",(l3+0.5)/chi,z,r_m_11,r_m_12,r_m_21);
+  // check transform
+  for (ik=0; ik<10; ik++){
+  printf("rp = %.3e xi1 = %.3e k = %.3e Pk1 = %.5e\n",rp[ik],xi1[ik],k[ik],Pk1[ik]);
+  printf("rp = %.3e xi2 = %.3e k = %.3e Pk2 = %.5e\n",rp[ik],xi2[ik],k[ik],Pk2[ik]);
+  printf("rp = %.3e xi12 = %.3e k = %.3e Pkr = %.5e\n",rp[ik],xi12[ik],k[ik],Pkr[ik]);
+  }
+  printf("in kSZ_kSZ_gal_2h_fft k %.3e z %.3e r_m_11 %.5e r_m_12 %.5e r_m_21 %.5e\n",(l3+0.5)/chi,z,r_m_11,r_m_12,r_m_21);
   exit(0);
 }
   }
@@ -19295,6 +19310,12 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1t; index_z++)
                                                params,
                                                ptsz->patterson_show_neval);
 
+           if (isnan(r)||isinf(r)){
+             printf("nan or inf in psib1t tab at z %.4e l %.3e got %.3e\n",
+             z,l,r);
+             exit(0);
+           }
+
    if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
      double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
      double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
@@ -19305,9 +19326,20 @@ for (index_z=0; index_z<ptsz->n_z_psi_b1t; index_z++)
      // if (ct_over_int>0.1)
      // printf("z = %.8e l = %.8e int = %.8e ct = %.8e ct/int = %.8e\n",
      // z,l,r-bmin_umin,bmin_umin,ct_over_int);
-
+     if (isnan(bmin_umin)||isinf(bmin_umin)){
+       printf("nan or inf in psib1t tab at z %.4e l %.3e got bmin_umin %.3e\n",
+       z,l,bmin_umin);
+       exit(0);
+     }
   }
 
+  if (r==0) r = 1e-200;
+
+  if (r<0){
+    printf("negative r in psib1t tab at z %.4e l %.3e got r %.3e\n",
+    z,l,r);
+    exit(0);
+  }
           ptsz->array_psi_b1t_psi[index_l_z] = log(r);
 
        }
