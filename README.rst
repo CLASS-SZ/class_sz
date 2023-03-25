@@ -58,7 +58,7 @@ The **class_sz** code is public.
 
 If you use it, please cite:
 
-`CLASS_SZ: Fast and Accurate Calculations of Cosmic Microwave Background, Large Scale Structure and Halo Model Observables (Boris Bolliet, Aleksandra Kusiak, Fiona McCarthy, Alina Sabyr, Kristen Surrao et al, to appear)`
+`CLASS_SZ: Fast and Accurate Calculations of Cosmic Microwave Background, Large Scale Structure and Halo Model Observables (Boris Bolliet, Aleksandra Kusiak, Fiona McCarthy, Alina Sabyr, Kristen Surrao et al, to appear) <https:https://github.com/CLASS-SZ/class_sz>`_.
 
 `Projected-field kinetic Sunyaev-Zel'dovich Cross-correlations: halo model and forecasts (Boris Bolliet, J. Colin Hill, Simone Ferraro, Aleksandra Kusiak, Alex Krolewski, 2023) <https://iopscience.iop.org/article/10.1088/1475-7516/2023/03/039>`_.
 
