@@ -126,9 +126,10 @@ If nothing appears to solve your installation issues: it is a good idea to try i
 Computing CMB, LSS and Halo model quantities via the Python wrapper classy_sz
 ------------------------------
 
+Class_sz is now very fast ! In part it's because it can run with emulators. This is available via the python wrapper (if requested).
 
-Once class_sz is installed. You can use classy_sz just as you use classy with the normal class code.
-You can compute everything classy computes, as well as all the halo model quantities implemented in class_sz.
+Once class_sz is installed. You can use the python wrapper classy_sz just as you use classy with the normal class code.
+You can compute everything classy computes, as well as all the additional CMB, LSS and Halo Model quantities implemented in class_sz.
 
 First, make sure that you have compiled the python wrapper with:
 
@@ -139,9 +140,50 @@ $ make
 (Note that the second command must be 'make', and not 'make class' for the python wrappper to be compiled.)
 
 That's it!
+To check the install is fine, try "import classy_sz" in some python code. It shouldn't crash.
 
-Have a look at the notebooks https://github.com/CLASS-SZ/notebooks.
+Have a look at the notebooks https://github.com/CLASS-SZ/notebooks. They all use the python wrapper.
 
+
+Since recently we have implemented emulators in classy_sz. So we have an extra-dependency to tensorflow.
+
+
+So for the python wrapper to work you also need to do:
+
+$ cd python/classy_szfast
+
+$ pip install -e .
+
+And also change the file here to the repo containing the emulators:
+
+In class_sz/python/classy_szfast/classy_szfast/config.py:
+
+change this line:
+
+path_to_cosmopower_organization = '/path/to/cosmopower-organization/'
+
+This path needs to be adapted so it matches the location of your cosmopower-organization repository where you have stored the emulators.
+
+
+Then in the python wrapper, just use:
+
+M.compute_class_szfast()
+
+instead of M.compute()
+
+And there are many examples in the notebooks that use this. See https://github.com/CLASS-SZ/notebooks.
+
+Note that to use this mode, you need the emulators and to pass parameters that they can understand.
+For that check instructions there:
+
+https://github.com/cosmopower-organization/notebooks/blob/main/get_quantities_cosmopower.ipynb
+
+
+If you are having trouble with tensorflow on Mac M1, note that we followed:
+
+https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706
+
+which worked fine. 
 
 
 Some tips to run on computer clusters
@@ -249,39 +291,6 @@ There are two modifications:
 
 
 
-EMULATORS
---------------
-
-Class_sz is now very fast ! In part it's because it can run with emulators.
-To use this mode, you need the python wrapper installed, and also:
-
-$ cd python/classy_szfast
-
-$ pip install -e .
-
-And also change the file here to the repo containing the emulators:
-
-In class_sz/python/classy_szfast/classy_szfast/config.py:
-
-change this line:
-
-path_to_cosmopower_organization = '/path/to/cosmopower-organization/'
-
-This path needs to be adapted so it matches the location of your cosmopower-organization repository where you have stored the emulators.
-
-
-Then in the python wrapper, just use:
-
-M.compute_class_szfast()
-
-instead of M.compute()
-
-And also to use this mode, you need the emulators and to pass parameters that they can understand.
-For that check instructions there:
-
-https://github.com/cosmopower-organization/notebooks/blob/main/get_quantities_cosmopower.ipynb
-
-And the notebooks at https://github.com/CLASS-SZ/notebooks.
 
 
 Support
