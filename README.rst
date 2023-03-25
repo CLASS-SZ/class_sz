@@ -114,7 +114,7 @@ and **Cython** installed on your computer.
 
 Run the code with most of the power spectra output:
 
-    $ ./class class_sz_test.ini
+    $ ./class_sz class_sz_test.ini
 
 
 The  'ini' files are the parameter files. I will be releasing a detailed explanatory file soon.
