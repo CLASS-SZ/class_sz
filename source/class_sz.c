@@ -1,6 +1,6 @@
-/** @file szpowerspectrum.c SZ+halo model module.
+/** @file class_sz.c
  *
- * Boris Bolliet, 2020
+ * Boris Bolliet and colleagues since 2015
  */
 
 
