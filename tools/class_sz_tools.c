@@ -2011,6 +2011,61 @@ int pkl_to_knl (
 
 
 
+struct Parameters_for_integrand_n5k_at_k{
+  // struct nonlinear * pnl;
+  // struct primordial * ppm;
+  // struct perturbs * ppt;
+  struct tszspectrum * ptsz;
+  // struct background * pba;
+  // double * pvecback;
+  // double * pvectsz;
+  //double * llprime_grid;
+  // double m;
+  // double z;
+  // double rd;
+  double l;
+};
+
+
+double integrand_n5k_at_k(double lk, void *p){
+  struct Parameters_for_integrand_n5k_at_k *V = ((struct Parameters_for_integrand_n5k_at_k *) p);
+  double k = exp(lk);
+  // double k = exp(ptsz->array_n5k_F1_k[index_k]);
+  // int l = ptsz->array_n5k_F1_l[index_l];
+
+
+  double chi_min = V->ptsz->chi_min_n5k_samp_fftw;//1e0;//ptsz->l_min_samp_fftw; //precision parameter
+  double chi_max = V->ptsz->chi_max_n5k_samp_fftw;//7e3;//ptsz->l_max_samp_fftw; //precision parameter
+
+  const int N = V->ptsz->N_samp_fftw; //precision parameter
+  int ichi;
+  double chi[N], Pchi[N];
+  for (ichi=0; ichi<N; ichi++){
+    chi[ichi] =  exp(log(chi_min)+ichi/(N-1.)*(log(chi_max)-log(chi_min)));
+    double zchi = get_n5k_z_of_chi(chi[ichi],V->ptsz);
+    Pchi[ichi] = sqrt(get_n5k_pk_at_z_and_k(zchi,k,V->ptsz))*get_n5k_cl_K1_at_chi(chi[ichi],V->ptsz);
+    // printf("Pchi = %.3e\n",Pchi[ichi]);
+  }
+
+  double chit[N], Pchit[N];
+  /* Compute the function
+  *   \xi_l^m(r) = \int_0^\infty \frac{dk}{2\pi^2} k^m j_l(kr) P(k)
+  * Note that the usual 2-point correlation function xi(r) is just xi_0^2(r)
+  * in this notation.  The input k-values must be logarithmically spaced.  The
+  * resulting xi_l^m(r) will be evaluated at the dual r-values
+  *   r[0] = 1/k[N-1], ..., r[N-1] = 1/k[0]. */
+  fftlog_ComputeXiLMsloz(V->l, 0, N, chi,  Pchi, chit, Pchit,V->ptsz);
+  double F1 = 2.*_PI_*_PI_*pwl_value_1d(N,chit,Pchit,k);
+  fftlog_ComputeXiLMsloz(V->l, 0, N, chi,  Pchi, chit, Pchit,V->ptsz);
+  double F2 = 2.*_PI_*_PI_*pwl_value_1d(N,chit,Pchit,k);
+  double intk = F1*F2*k*k;
+  intk *= k; // integrate in logk
+  return intk;
+  // double dlk = (log(k_max)-log(k_min))/(ptsz->n_k_n5k-1.);
+  // sumk +=  intk*k*dlk;
+}
+
+
 struct Parameters_for_integrand_m_to_xout{
   struct nonlinear * pnl;
   struct primordial * ppm;
@@ -18907,8 +18962,8 @@ for (index_l=0; index_l<ptsz->n_l_n5k; index_l++)
 
         }
 
-double k_min = 1.e-4;
-double k_max = 1e2;
+double k_min = ptsz->k_min_n5k;//1.e-4;
+double k_max = ptsz->k_max_n5k;//1e2;
 for (index_k=0; index_k<ptsz->n_k_n5k; index_k++)
         {
 
@@ -18960,6 +19015,8 @@ num_threads(number_of_threads)
  // for (index_k=0; index_k<ptsz->n_k_n5k; index_k++)
  //   {
 
+
+
 #pragma omp for schedule (dynamic)
 for (index_l=0; index_l<ptsz->n_l_n5k; index_l++)
 {
@@ -18967,44 +19024,75 @@ for (index_l=0; index_l<ptsz->n_l_n5k; index_l++)
 
 double sumk = 0.;
 int l = ptsz->array_n5k_F1_l[index_l];
-for (index_k=0; index_k<ptsz->n_k_n5k; index_k++)
-  {
+// for (index_k=0; index_k<ptsz->n_k_n5k; index_k++)
+//   {
+//
+//           double k = exp(ptsz->array_n5k_F1_k[index_k]);
+//           // int l = ptsz->array_n5k_F1_l[index_l];
+//
+//
+//           double chi_min = ptsz->chi_min_n5k_samp_fftw;//1e0;//ptsz->l_min_samp_fftw; //precision parameter
+//           double chi_max = ptsz->chi_max_n5k_samp_fftw;//7e3;//ptsz->l_max_samp_fftw; //precision parameter
+//
+//           const int N = ptsz->N_samp_fftw; //precision parameter
+//           int ichi;
+//           double chi[N], Pchi[N];
+//           for (ichi=0; ichi<N; ichi++){
+//             chi[ichi] =  exp(log(chi_min)+ichi/(N-1.)*(log(chi_max)-log(chi_min)));
+//             double zchi = get_n5k_z_of_chi(chi[ichi],ptsz);
+//             Pchi[ichi] = sqrt(get_n5k_pk_at_z_and_k(zchi,k,ptsz))*get_n5k_cl_K1_at_chi(chi[ichi],ptsz);
+//             // printf("Pchi = %.3e\n",Pchi[ichi]);
+//           }
+//
+//           double chit[N], Pchit[N];
+//         /* Compute the function
+//          *   \xi_l^m(r) = \int_0^\infty \frac{dk}{2\pi^2} k^m j_l(kr) P(k)
+//          * Note that the usual 2-point correlation function xi(r) is just xi_0^2(r)
+//          * in this notation.  The input k-values must be logarithmically spaced.  The
+//          * resulting xi_l^m(r) will be evaluated at the dual r-values
+//          *   r[0] = 1/k[N-1], ..., r[N-1] = 1/k[0]. */
+//           fftlog_ComputeXiLMsloz(l, 0, N, chi,  Pchi, chit, Pchit,ptsz);
+//           double F1 = 2.*_PI_*_PI_*pwl_value_1d(N,chit,Pchit,k);
+//           fftlog_ComputeXiLMsloz(l, 0, N, chi,  Pchi, chit, Pchit,ptsz);
+//           double F2 = 2.*_PI_*_PI_*pwl_value_1d(N,chit,Pchit,k);
+//           double intk = F1*F2*k*k;
+//           double dlk = (log(k_max)-log(k_min))/(ptsz->n_k_n5k-1.);
+//           sumk +=  intk*k*dlk;
+//
+//        }
+    // if (ptsz->sz_verbose>5){
+    //   printf("ell = %d sumk = %.3e\n",l,sumk);
+    // }
 
-          double k = exp(ptsz->array_n5k_F1_k[index_k]);
-          // int l = ptsz->array_n5k_F1_l[index_l];
+  struct Parameters_for_integrand_n5k_at_k V;
+  // V.pnl = pnl;
+  // V.ppm = ppm;
+  V.ptsz = ptsz;
+  // V.pba = pba;
+  // V.m = m;
+  // V.z = z;
+  // V.rd = rd;
+  V.l = l; // TBC!
+  // V.pvectsz = Pvectsz;
+  // V.pvecback = Pvecback;
+
+  void * params = &V;
 
 
-          double chi_min = 1e0;//ptsz->l_min_samp_fftw; //precision parameter
-          double chi_max = 7e3;//ptsz->l_max_samp_fftw; //precision parameter
+  double epsrel= ptsz->integrand_n5k_epsrel;
+  double epsabs= ptsz->integrand_n5k_epsabs;
+  int show_neval = ptsz->patterson_show_neval;
+  //integral of density profile.
+  double sumk_patterson= Integrate_using_Patterson_adaptive(log(ptsz->k_min_n5k),
+                                                        log(ptsz->k_max_n5k),
+                                                        epsrel, epsabs,
+                                                        integrand_n5k_at_k,
+                                                        params,show_neval);
 
-          const int N = ptsz->N_samp_fftw; //precision parameter
-          int ichi;
-          double chi[N], Pchi[N];
-          for (ichi=0; ichi<N; ichi++){
-            chi[ichi] =  exp(log(chi_min)+ichi/(N-1.)*(log(chi_max)-log(chi_min)));
-            double zchi = get_n5k_z_of_chi(chi[ichi],ptsz);
-            Pchi[ichi] = sqrt(get_n5k_pk_at_z_and_k(zchi,k,ptsz))*get_n5k_cl_K1_at_chi(chi[ichi],ptsz);
-            // printf("Pchi = %.3e\n",Pchi[ichi]);
-          }
+  // printf("sumk %.8e sumkpatt %.8e\n",sumk,sumk_patterson);
+sumk = sumk_patterson;
 
-          double chit[N], Pchit[N];
-        /* Compute the function
-         *   \xi_l^m(r) = \int_0^\infty \frac{dk}{2\pi^2} k^m j_l(kr) P(k)
-         * Note that the usual 2-point correlation function xi(r) is just xi_0^2(r)
-         * in this notation.  The input k-values must be logarithmically spaced.  The
-         * resulting xi_l^m(r) will be evaluated at the dual r-values
-         *   r[0] = 1/k[N-1], ..., r[N-1] = 1/k[0]. */
-          fftlog_ComputeXiLMsloz(l, 0, N, chi,  Pchi, chit, Pchit,ptsz);
-          double F1 = 2.*_PI_*_PI_*pwl_value_1d(N,chit,Pchit,k);
-          fftlog_ComputeXiLMsloz(l, 0, N, chi,  Pchi, chit, Pchit,ptsz);
-          double F2 = 2.*_PI_*_PI_*pwl_value_1d(N,chit,Pchit,k);
-          double intk = F1*F2*k*k;
-          double dlk = (log(k_max)-log(k_min))/(ptsz->n_k_n5k-1.);
-          sumk +=  intk*k*dlk;
-
-       }
-    // printf("ell = %d sumk = %.3e\n",l,sumk);
-    ptsz->array_n5k_F1_F[index_l] = sumk*2./_PI_;
+ptsz->array_n5k_F1_F[index_l] = sumk*2./_PI_;
 
      }
      #ifdef _OPENMP

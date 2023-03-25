@@ -1164,11 +1164,12 @@ if (ptsz->has_n5k){
   //   printf("%d,\n",ptsz->array_n5k_F1_l[index_l]);
   // }
   printf("\n");
-  printf("cls\n");
+  printf("printing cls to file\n");
   char Filepath[_ARGUMENT_LENGTH_MAX_];
   FILE *fp;
 
   sprintf(Filepath,"%s%s%s",ptsz->root,"n5k_F",".txt");
+  printf("printing cls to file %s\n",Filepath);
   fp=fopen(Filepath, "w");
   // char Filepath[_ARGUMENT_LENGTH_MAX_];
   for (index_l=0; index_l<ptsz->n_l_n5k; index_l++){

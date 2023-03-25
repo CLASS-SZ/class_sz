@@ -110,6 +110,16 @@ class_sz_ptsz_parameter(n_l_psi_b1t,int,80)
 class_sz_ptsz_parameter(n_k_n5k,int,50)
 class_sz_ptsz_parameter(n_l_n5k,int,103)
 
+class_sz_ptsz_parameter(k_min_n5k, double, 1.e-4);
+class_sz_ptsz_parameter(k_max_n5k, double, 1.e2);
+
+class_sz_ptsz_parameter(chi_min_n5k_samp_fftw, double, 1.e0);
+class_sz_ptsz_parameter(chi_max_n5k_samp_fftw, double, 7.e3);
+
+class_sz_ptsz_parameter(integrand_n5k_epsrel, double, 1.e-6);
+class_sz_ptsz_parameter(integrand_n5k_epsabs, double, 7.e-40);
+
+
 class_sz_ptsz_parameter(M1SZ_L_sat, double, 1.e9);
 class_sz_ptsz_parameter(M2SZ_L_sat, double, 1.e17);
 class_sz_ptsz_parameter(z1SZ_L_sat, double, 1.e-5);
