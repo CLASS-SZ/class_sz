@@ -55,9 +55,15 @@ Using the code
 
 The **class_sz** code is public.
 
-Some References.
 
-The first papers using class_sz were:
+If you use it, please cite:
+
+`CLASS_SZ: Fast and Accurate Calculations of Cosmic Microwave Background, Large Scale Structure and Halo Model Observables (Boris Bolliet, Aleksandra Kusiak, Fiona McCarthy, Alina Sabyr, Kristen Surrao et al, to appear)`
+
+`Projected-field kinetic Sunyaev-Zel'dovich Cross-correlations: halo model and forecasts (Boris Bolliet, J. Colin Hill, Simone Ferraro, Aleksandra Kusiak, Alex Krolewski, 2023) <https://iopscience.iop.org/article/10.1088/1475-7516/2023/03/039>`_.
+
+
+If you use thermal SZ power spectrum and cluster counts calculations, please also consider citing:
 
 `Including massive neutrinos in thermal Sunyaev Zeldovich power spectrum and cluster counts analyses (Bolliet, Brinckmann, Chluba, Lesgourgues, 2020) <https://arxiv.org/abs/1906.10359>`_.
 
@@ -103,10 +109,6 @@ and **Cython** installed on your computer.
 Run the code with most of the power spectra output:
 
     $ ./class class_sz_test.ini
-
-Run the code with a simple tSZ computation:
-
-    $ ./class class-sz_simple.ini
 
 
 The  'ini' files are the parameter files. I will be releasing a detailed explanatory file soon.
@@ -288,4 +290,4 @@ To get support on the class_sz module, feel free to contact me via slack/email (
 Acknowledgment
 -------
 
-Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas, Fiona McCarthy, Eunseong Lee, Ola Kusiak, Simone Ferraro, Mat Madhavacheril, Manu Schaan, Shivam Pandey for help, suggestions and/or running tests with **class_sz**.
+Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas, Fiona McCarthy, Eunseong Lee, Ola Kusiak, Simone Ferraro, Mat Madhavacheril, Manu Schaan, Shivam Pandey, Yogesh Meta for help, suggestions and/or running tests with **class_sz**.
