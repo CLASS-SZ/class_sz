@@ -1,32 +1,15 @@
 ==============================================
 CLASS_SZ
 ==============================================
- Cosmic Linear Anisotropy Solving System
-
- with fast and accurate halo model computations
+ Cosmic Linear Anisotropy Solving System with Fast and Accurate CMB, LSS and Halo Model Observables Computations
 
 
-
-In addition to SZ power spectrum, class_sz can compute cross and auto power spectra for other tracers
-in the halo model (kSZ, galaxy, galaxy-lensing, ISW, CMB lensing and CIB).
-
-It has several mass functions implemented, with several possible halo mass definitions and concentration-mass
-relations. For galaxy clustering and lensing, class_sz has an implementation of HOD based on the one used by
-the DES collaboration.
-
-The code is close to be as fast as it can get, with full parallelization.
-
-Since it is based on Lesgourgues's class code, the halo model (essentially based on distances and
-matter clustering) is always consistent with the cosmological model.
+This code is close to be as fast as it gets, with full parallelization, implementation of high-accuracy cosmopower emulators (see below for some instructions) and Fast Fourier Transforms (including FFTLog).
 
 
+Since it is based on Lesgourgues's class code, the halo model and LSS calculations (essentially based on distances and
+matter clustering) are always consistent with the cosmological model computed by class.
 
-**Take a look at the notebooks to see what class_sz can do:**
-
-https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_tutorial_notebooks
-
-
-The code is currently in development, don't hesitate to reach out if you would like to use the code and need assistance.
 
 CLASS_SZ is an extension of Julien Lesgourgues's CLASS code.
 
@@ -36,8 +19,7 @@ CLASS_SZ is initially based on Eiichiro Komatsu’s fortran code SZFAST.
 
 (See http://wwwmpa.mpa-garching.mpg.de/~komatsu/CRL/clusters/szpowerspectrumks/)
 
-CLASS_SZ modules are located in the files **source/class_sz.c** and **source/class_sz_clustercounts.c**.
-
+CLASS_SZ modules are located in the files **source/class_sz.c**, **source/class_sz_clustercounts.c**  and **tools/class_sz_tools.c**.
 
 CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such as:
 
@@ -51,10 +33,22 @@ CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such
 
 
 
+Tutorials
+--------------
+
+
+The tutorial notebooks can be found at:
+
+https://github.com/CLASS-SZ/notebooks
+
+These notebooks along with the paper (link) constitute the documentation.
+
+
+
 Downloading the code
 --------------
 
-Clone or download from https://github.com/borisbolliet/class_sz
+Clone or download from hhttps://github.com/CLASS-SZ/class_sz
 
 Note: the significant size of the repository is due to the size of the original **class** repository.
 
@@ -64,24 +58,39 @@ Using the code
 
 The **class_sz** code is public.
 
-Some References.
 
-The first papers using class_sz were:
+If you use it, please cite:
+
+`CLASS_SZ: Fast and Accurate Calculations of Cosmic Microwave Background, Large Scale Structure and Halo Model Observables (Boris Bolliet, Aleksandra Kusiak, Fiona McCarthy, Alina Sabyr, Kristen Surrao et al, to appear) <https:https://github.com/CLASS-SZ/class_sz>`_.
+
+`Projected-field kinetic Sunyaev-Zel'dovich Cross-correlations: halo model and forecasts (Boris Bolliet, J. Colin Hill, Simone Ferraro, Aleksandra Kusiak, Alex Krolewski, 2023) <https://iopscience.iop.org/article/10.1088/1475-7516/2023/03/039>`_.
+
+If you use the emulators (fast method of class_sz, see below), please cite:
+
+`High-accuracy emulators for observables in LCDM, Neff+LCDM, Mnu+LCDM and wCDM cosmologies (Bolliet, Spurio Mancini, Hill, Madhavacheril, Jense, Calabrese, Dunkley, 2023) <https://inspirehep.net/literature/2638458>`_.
+
+`COSMOPOWER: emulating cosmological power spectra for accelerated Bayesian inference from next-generation surveys (Spurio Mancini, Piras, Alsing, Joachimi, Hobson, 2021) <https://arxiv.org/abs/2106.03846>`_.
+
+
+If you use thermal SZ power spectrum and cluster counts calculations, please also consider citing:
 
 `Including massive neutrinos in thermal Sunyaev Zeldovich power spectrum and cluster counts analyses (Bolliet, Brinckmann, Chluba, Lesgourgues, 2020) <https://arxiv.org/abs/1906.10359>`_.
 
 `Dark Energy from the Thermal Sunyaev Zeldovich Power Spectrum (Bolliet, Comis, Komatsu, Macias-Perez, 2017)
 <https://arxiv.org/abs/1712.00788>`_.
 
+`The Sunyaev-Zel'dovich angular power spectrum as a probe of cosmological parameters (Komatsu and Seljak, 2002)
+<https://arxiv.org/abs/astro-ph/0205468>`_.
+
 If you use the code, please also cite the original class papers (since class_sz is an extension of class), e.g.,:
+
+`CLASS I: Overview (Lesgourgues, 2011) <https://arxiv.org/abs/1104.2932>`_.
 
 `CLASS II: Approximation schemes (Blas, Lesgourgues, Tram, 2011)
 <http://arxiv.org/abs/1104.2933>`_.
 
-As well as the original tSZ power spectrum halo-model paper:
+As well as other references listed there: http://class-code.net
 
-`The Sunyaev-Zel'dovich angular power spectrum as a probe of cosmological parameters (Komatsu and Seljak, 2002)
-<https://arxiv.org/abs/astro-ph/0205468>`_.
 
 
 Compiling CLASS_SZ and getting started
@@ -111,25 +120,25 @@ and **Cython** installed on your computer.
 
 Run the code with most of the power spectra output:
 
-    $ ./class class_sz_test.ini
-
-Run the code with a simple tSZ computation:
-
-    $ ./class class-sz_simple.ini
+    $ ./class_sz class_sz_test.ini
 
 
-The  'ini' files are the parameter files. I will be releasing a detailed explanatory file soon.
+The  'ini' files are the parameter files.
 
-If any of these two ini files crash, it simply means that the installation was not successful. In this case, please read carefully this readme file and follow the instructions given below. If you are still not able to run these test files, please get in touch.
-If nothing appears to solve your installation issues: it is a good idea to try installing the original class code and check that it runs as well as its python wrapper (e.g., the notebook cl_ST.ipynb). If the class code does not run on your system, you should consult the issue page of the class repository and first make sure you solve your issues with the original class code, before moving to class_sz.
+If you want to run class and not do the class_sz part, you can! For example:
+
+    $ ./class_sz explanatory.ini
+
+will just run the standard class code and its calculation. All depends on what output you request: if you request a class_sz observable or not.
 
 
-Computing SZ and Halo model quantities via the Python wrapper classy_sz
+Computing CMB, LSS and halo model quantities via the Python wrapper classy_sz
 ------------------------------
 
+Class_sz is now very fast ! In part it's because it can run with emulators. This is available via the python wrapper (if requested).
 
-Once class_sz is installed. You can use classy_sz just as you use classy with the normal class code.
-You can compute everything classy computes, as well as all the halo model quantities implemented in class_sz.
+Once class_sz is installed. You can use the python wrapper classy_sz just as you use classy with the normal class code.
+You can compute everything classy computes, as well as all the additional CMB, LSS and Halo Model quantities implemented in class_sz.
 
 First, make sure that you have compiled the python wrapper with:
 
@@ -140,11 +149,50 @@ $ make
 (Note that the second command must be 'make', and not 'make class' for the python wrappper to be compiled.)
 
 That's it!
+To check the install is fine, try "import classy_sz" in some python code. It shouldn't crash.
 
-Have a look at the notebook class_sz_plots_and_tutorial.ipynb and try to run it. It should output the primary cmb and tsz power spectra.
-The notebook is here:
+Have a look at the notebooks https://github.com/CLASS-SZ/notebooks. They all use the python wrapper.
 
-https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_plots_and_tutorial.ipynb
+
+Since recently we have implemented emulators in classy_sz. So we have an extra-dependency to tensorflow.
+
+
+So for the python wrapper to work you also need to do:
+
+$ cd python/classy_szfast
+
+$ pip install -e .
+
+And also change the file here to the repo containing the emulators:
+
+In class_sz/python/classy_szfast/classy_szfast/config.py:
+
+change this line:
+
+path_to_cosmopower_organization = '/path/to/cosmopower-organization/'
+
+This path needs to be adapted so it matches the location of your cosmopower-organization repository where you have stored the emulators.
+
+
+Then in the python wrapper, just use:
+
+M.compute_class_szfast()
+
+instead of M.compute()
+
+And there are many examples in the notebooks that use this. See https://github.com/CLASS-SZ/notebooks.
+
+Note that to use this mode, you need the emulators and to pass parameters that they can understand.
+For that check instructions there:
+
+https://github.com/cosmopower-organization/notebooks/blob/main/get_quantities_cosmopower.ipynb
+
+
+If you are having trouble with tensorflow on Mac M1, note that we followed:
+
+https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706
+
+which worked fine.
 
 
 Some tips to run on computer clusters
@@ -158,6 +206,8 @@ https://cobaya.readthedocs.io/en/latest/installation.html#mpi-parallelization-op
 You may need to activate an environment to run the install comment.
 To make sure you use the same openmpi compiler, example:
 env MPICC=/global/common/software/m3169/cori/openmpi/4.1.2/intel/bin/mpicc python -m pip install mpi4py
+
+
 
 GSL library
 ------------------------------
@@ -212,7 +262,7 @@ To run the code in parallel, you may run into a problem on a mac. The solution i
 https://github.com/lesgourg/class_public/issues/208
 
 Essentially, you need to edit a line in python/setup.py such as the code knows about the mpi libraries to be used with your compiler (gcc-11 in the example below).
-In my case the modif looks like this:
+In our case the modif looks like this:
 
   extra_link_args=['-lgomp','-lgsl','-lgslcblas','**-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/**']
 
@@ -244,57 +294,15 @@ Compiler - GCC version
 The current gcc version used in the makefile is gcc-11. But this  can be changed easily to any gcc version that is available to you.
 There are two modifications:
 
-1) Line 20 of Makefile: CC = gcc-XX (where XX=11 in my case.)
+1) Line 20 of Makefile: CC = gcc-XX (where XX=11 in our case.)
 
 2) Line 12 of python/setup.py: replace 'gcc-11' with, e.g., 'gcc-XX'.
 
 
 
-EMULATORS
---------------
 
-Class_sz is now very fast ! In part it's because it can run with emulators.
-To use this mode, you need the python wrapper installed, and also:
-
-$ cd python/classy_szfast
-
-$ pip install -e .
-
-And also change the file here to the repo containing the emulators:
-
-In class_sz/python/classy_szfast/classy_szfast/config.py:
-
-change this line:
-
-path_to_cosmopower_organization = '/Users/boris/Work/CLASS-SZ/SO-SZ/cosmopower-organization/'
-
-This path needs to be adapted so it matches the location of your cosmopower-organization repository where you have stored the emulators.
-
-
-Then in the python wrapper, just use:
-
-M.compute_class_szfast()
-
-instead of M.compute()
-
-And also to use this mode, you need the emulators and to pass parameters that they can understand.
-For that check instructions there:
-
-https://github.com/cosmopower-organization/notebooks/blob/main/get_quantities_cosmopower.ipynb
-
-And for instance, this notebook:
-
-https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_szfast_plots_and_tutorial_ngal.ipynb
-
-
-The emulators are described in https://arxiv.org/abs/2303.01591
 
 Support
 -------
 
-To get support on the class_sz module, feel free to contact me via slack/email (boris.bolliet@gmail.com), or open an issue on the GitHub page.
-
-Acknowledgment
--------
-
-Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas, Fiona McCarthy, Eunseong Lee, Ola Kusiak, Simone Ferraro, Mat Madhavacheril, Manu Schaan, Shivam Pandey for help, suggestions and/or running tests with **class_sz**.
+To get support on the class_sz module, feel free to open an issue on the GitHub page, we will try to answer as soon as possible.
