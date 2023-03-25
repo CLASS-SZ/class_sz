@@ -79,15 +79,18 @@ If you use thermal SZ power spectrum and cluster counts calculations, please als
 `Dark Energy from the Thermal Sunyaev Zeldovich Power Spectrum (Bolliet, Comis, Komatsu, Macias-Perez, 2017)
 <https://arxiv.org/abs/1712.00788>`_.
 
+`The Sunyaev-Zel'dovich angular power spectrum as a probe of cosmological parameters (Komatsu and Seljak, 2002)
+<https://arxiv.org/abs/astro-ph/0205468>`_.
+
 If you use the code, please also cite the original class papers (since class_sz is an extension of class), e.g.,:
+
+`CLASS I: Overview (Lesgourgues, 2011) <https://arxiv.org/abs/1104.2932>`_.
 
 `CLASS II: Approximation schemes (Blas, Lesgourgues, Tram, 2011)
 <http://arxiv.org/abs/1104.2933>`_.
 
-As well as the original tSZ power spectrum halo-model paper:
+As well as other references listed there: http://class-code.net
 
-`The Sunyaev-Zel'dovich angular power spectrum as a probe of cosmological parameters (Komatsu and Seljak, 2002)
-<https://arxiv.org/abs/astro-ph/0205468>`_.
 
 
 Compiling CLASS_SZ and getting started
