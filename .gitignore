@@ -258,6 +258,7 @@ notebooks/class_sz_tutorial_notebooks/LSST.ipynb
 class_sz_test_rhoe2h_bug.ini
 notebooks/dndq_test.npy
 notebooks/dndq_test.npy
+notebooks
 class_sz_auxiliary_files/maniyar_cib_benchmark/data_files/*
 class_sz_auxiliary_files/class_sz_dev_notes.bib
 class_sz_auxiliary_files/class_sz_dev_notes.lyx
