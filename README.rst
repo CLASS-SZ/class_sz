@@ -62,6 +62,12 @@ If you use it, please cite:
 
 `Projected-field kinetic Sunyaev-Zel'dovich Cross-correlations: halo model and forecasts (Boris Bolliet, J. Colin Hill, Simone Ferraro, Aleksandra Kusiak, Alex Krolewski, 2023) <https://iopscience.iop.org/article/10.1088/1475-7516/2023/03/039>`_.
 
+If you use the emulators (fast method of class_sz, see below), please cite:
+
+`High-accuracy emulators for observables in LCDM, Neff+LCDM, Mnu+LCDM and wCDM cosmologies (Bolliet, Spurio Mancini, Hill, Madhavacheril, Jense, Calabrese, Dunkley, 2023) <https://inspirehep.net/literature/2638458>`_.
+
+`COSMOPOWER: emulating cosmological power spectra for accelerated Bayesian inference from next-generation surveys (Spurio Mancini, Piras, Alsing, Joachimi, Hobson, 2021) <https://arxiv.org/abs/2106.03846>`_.
+
 
 If you use thermal SZ power spectrum and cluster counts calculations, please also consider citing:
 
@@ -275,19 +281,10 @@ For that check instructions there:
 
 https://github.com/cosmopower-organization/notebooks/blob/main/get_quantities_cosmopower.ipynb
 
-And for instance, this notebook:
+And the notebooks at https://github.com/CLASS-SZ/notebooks.
 
-https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_szfast_plots_and_tutorial_ngal.ipynb
-
-
-The emulators are described in https://arxiv.org/abs/2303.01591
 
 Support
 -------
 
 To get support on the class_sz module, feel free to contact me via slack/email (boris.bolliet@gmail.com), or open an issue on the GitHub page.
-
-Acknowledgment
--------
-
-Thanks to  Juan Macias-Perez, Eiichiro Komatsu, Ryu Makiya, Barabara Comis, Julien Lesgourgues, Jens Chluba, Colin Hill, Florian Ruppin, Thejs Brinckmann, Aditya Rotti, Mathieu Remazeilles, David Alonso, Nick Koukoufilippas, Fiona McCarthy, Eunseong Lee, Ola Kusiak, Simone Ferraro, Mat Madhavacheril, Manu Schaan, Shivam Pandey, Yogesh Meta for help, suggestions and/or running tests with **class_sz**.
