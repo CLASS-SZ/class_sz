@@ -1,7 +1,7 @@
 ==============================================
 CLASS_SZ
 ==============================================
- Cosmic Linear Anisotropy Solving System with Fast and Accurate CMB, LSS and Halo Model observables
+ Cosmic Linear Anisotropy Solving System with Fast and Accurate CMB, LSS and Halo Model Observables Computations
 
 
 This code is close to be as fast as it gets, with full parallelization, implementation of high-accuracy cosmopower emulators (see below for some instructions) and Fast Fourier Transforms (including FFTLog).
