@@ -132,7 +132,7 @@ If you want to run class and not do the class_sz part, you can! For example:
 will just run the standard class code and its calculation. All depends on what output you request: if you request a class_sz observable or not.
 
 
-Computing CMB, LSS and Halo model quantities via the Python wrapper classy_sz
+Computing CMB, LSS and halo model quantities via the Python wrapper classy_sz
 ------------------------------
 
 Class_sz is now very fast ! In part it's because it can run with emulators. This is available via the python wrapper (if requested).
