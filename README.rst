@@ -4,20 +4,12 @@ CLASS_SZ
  Cosmic Linear Anisotropy Solving System with Fast and Accurate CMB, LSS and Halo Model observables
 
 
-The tutorial notebooks can be found at:
+This code is close to be as fast as it gets, with full parallelization, implementation of high-accuracy cosmopower emulators (see below for some instructions) and Fast Fourier Transforms (including FFTLog).
 
-https://github.com/CLASS-SZ/notebooks
-
-These notebooks along with the paper (link) constitute the documentation.
-
-The code is close to be as fast as it can get, with full parallelization and implementation of high-accuracy cosmopower emulators.
-(See below for some instructions.)
 
 Since it is based on Lesgourgues's class code, the halo model and LSS calculations (essentially based on distances and
-matter clustering) are always consistent with the cosmological model.
+matter clustering) are always consistent with the cosmological model computed by class.
 
-
-The code is currently in development, don't hesitate to reach out if you would like to use the code and need assistance.
 
 CLASS_SZ is an extension of Julien Lesgourgues's CLASS code.
 
@@ -27,8 +19,7 @@ CLASS_SZ is initially based on Eiichiro Komatsu’s fortran code SZFAST.
 
 (See http://wwwmpa.mpa-garching.mpg.de/~komatsu/CRL/clusters/szpowerspectrumks/)
 
-CLASS_SZ modules are located in the files **source/class_sz.c** and **source/class_sz_clustercounts.c**.
-
+CLASS_SZ modules are located in the files **source/class_sz.c**, **source/class_sz_clustercounts.c**  and **tools/class_sz_tools.c**.
 
 CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such as:
 
@@ -39,6 +30,18 @@ CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such
 - `HaloGen <https://github.com/EmmanuelSchaan/HaloGen/tree/master>`_,
 
 - `yxg <https://github.com/nikfilippas/yxg>`_.
+
+
+
+Tutorials
+--------------
+
+
+The tutorial notebooks can be found at:
+
+https://github.com/CLASS-SZ/notebooks
+
+These notebooks along with the paper (link) constitute the documentation.
 
 
 
@@ -117,10 +120,13 @@ Run the code with most of the power spectra output:
     $ ./class_sz class_sz_test.ini
 
 
-The  'ini' files are the parameter files. I will be releasing a detailed explanatory file soon.
+The  'ini' files are the parameter files.
 
-If any of these two ini files crash, it simply means that the installation was not successful. In this case, please read carefully this readme file and follow the instructions given below. If you are still not able to run these test files, please get in touch.
-If nothing appears to solve your installation issues: it is a good idea to try installing the original class code and check that it runs as well as its python wrapper (e.g., the notebook cl_ST.ipynb). If the class code does not run on your system, you should consult the issue page of the class repository and first make sure you solve your issues with the original class code, before moving to class_sz.
+If you want to run class and not do the class_sz part, you can! For example:
+
+    $ ./class_sz explanatory.ini
+
+will just run the standard class code and its calculation. All depends on what output you request: if you request a class_sz observable or not.
 
 
 Computing CMB, LSS and Halo model quantities via the Python wrapper classy_sz
