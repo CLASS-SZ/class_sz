@@ -45,7 +45,7 @@ CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such
 Downloading the code
 --------------
 
-Clone or download from https://github.com/borisbolliet/class_sz
+Clone or download from hhttps://github.com/CLASS-SZ/class_sz
 
 Note: the significant size of the repository is due to the size of the original **class** repository.
 
@@ -123,7 +123,7 @@ If any of these two ini files crash, it simply means that the installation was n
 If nothing appears to solve your installation issues: it is a good idea to try installing the original class code and check that it runs as well as its python wrapper (e.g., the notebook cl_ST.ipynb). If the class code does not run on your system, you should consult the issue page of the class repository and first make sure you solve your issues with the original class code, before moving to class_sz.
 
 
-Computing SZ and Halo model quantities via the Python wrapper classy_sz
+Computing CMB, LSS and Halo model quantities via the Python wrapper classy_sz
 ------------------------------
 
 
@@ -140,10 +140,8 @@ $ make
 
 That's it!
 
-Have a look at the notebook class_sz_plots_and_tutorial.ipynb and try to run it. It should output the primary cmb and tsz power spectra.
-The notebook is here:
+Have a look at the notebooks https://github.com/CLASS-SZ/notebooks.
 
-https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_plots_and_tutorial.ipynb
 
 
 Some tips to run on computer clusters
@@ -157,6 +155,8 @@ https://cobaya.readthedocs.io/en/latest/installation.html#mpi-parallelization-op
 You may need to activate an environment to run the install comment.
 To make sure you use the same openmpi compiler, example:
 env MPICC=/global/common/software/m3169/cori/openmpi/4.1.2/intel/bin/mpicc python -m pip install mpi4py
+
+
 
 GSL library
 ------------------------------
@@ -265,7 +265,7 @@ In class_sz/python/classy_szfast/classy_szfast/config.py:
 
 change this line:
 
-path_to_cosmopower_organization = '/Users/boris/Work/CLASS-SZ/SO-SZ/cosmopower-organization/'
+path_to_cosmopower_organization = '/path/to/cosmopower-organization/'
 
 This path needs to be adapted so it matches the location of your cosmopower-organization repository where you have stored the emulators.
 
@@ -287,4 +287,4 @@ And the notebooks at https://github.com/CLASS-SZ/notebooks.
 Support
 -------
 
-To get support on the class_sz module, feel free to contact me via slack/email (boris.bolliet@gmail.com), or open an issue on the GitHub page.
+To get support on the class_sz module, feel free to open an issue on the GitHub page, we will try to answer as soon as possible.
