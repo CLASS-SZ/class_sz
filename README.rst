@@ -1,29 +1,20 @@
 ==============================================
 CLASS_SZ
 ==============================================
- Cosmic Linear Anisotropy Solving System
-
- with fast and accurate halo model computations
+ Cosmic Linear Anisotropy Solving System with Fast and Accurate CMB, LSS and Halo Model observables
 
 
+The tutorial notebooks can be found at:
 
-In addition to SZ power spectrum, class_sz can compute cross and auto power spectra for other tracers
-in the halo model (kSZ, galaxy, galaxy-lensing, ISW, CMB lensing and CIB).
+https://github.com/CLASS-SZ/notebooks
 
-It has several mass functions implemented, with several possible halo mass definitions and concentration-mass
-relations. For galaxy clustering and lensing, class_sz has an implementation of HOD based on the one used by
-the DES collaboration.
+These notebooks along with the paper (link) constitute the documentation.
 
-The code is close to be as fast as it can get, with full parallelization.
+The code is close to be as fast as it can get, with full parallelization and implementation of high-accuracy cosmopower emulators.
+(See below for some instructions.)
 
-Since it is based on Lesgourgues's class code, the halo model (essentially based on distances and
-matter clustering) is always consistent with the cosmological model.
-
-
-
-**Take a look at the notebooks to see what class_sz can do:**
-
-https://github.com/borisbolliet/class_sz/blob/master/notebooks/class_sz_tutorial_notebooks
+Since it is based on Lesgourgues's class code, the halo model and LSS calculations (essentially based on distances and
+matter clustering) are always consistent with the cosmological model.
 
 
 The code is currently in development, don't hesitate to reach out if you would like to use the code and need assistance.
