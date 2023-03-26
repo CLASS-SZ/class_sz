@@ -677,6 +677,7 @@ double get_gas_pressure_2h_at_r_and_m_and_z(double r_asked,
 double get_gas_density_profile_at_k_M_z(double l_asked,
                                     double m_asked,
                                     double z_asked,
+                                    int normalize,
                                     struct tszspectrum * ptsz);
 
 double get_gas_pressure_profile_at_k_m_z(double l_asked,

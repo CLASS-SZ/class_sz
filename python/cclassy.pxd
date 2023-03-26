@@ -880,6 +880,7 @@ cdef extern from "class.h":
     double get_gas_density_profile_at_k_M_z(double l_asked,
                                         double m_asked,
                                         double z_asked,
+                                        int normalize,
                                         void * tsz)
 
     double get_te_of_m500c_at_z_arnaud(double m, double z, void * pba, void * ptsz)
@@ -989,6 +990,11 @@ cdef extern from "class.h":
                                                double fcen,
                                                void * ptsz,
                                                void * pba)
+
+
+    double get_fstar_of_m_at_z(double m,
+                               double z,
+                               void * ptsz)
 
 
     double get_matter_bispectrum_at_z_tree_level_PT(double k1_in_h_over_Mpc,

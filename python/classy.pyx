@@ -1561,6 +1561,8 @@ cdef class Class:
         return self.class_szfast.get_effective_f_sigma8(z)
 
 
+    def get_fstar_of_m_at_z(self,m,z):
+        return get_fstar_of_m_at_z(m,z,&self.tsz)
 
 
 
@@ -2655,14 +2657,8 @@ cdef class Class:
     def get_hmf_counter_term_b2min_at_z(self,z):
         return get_hmf_counter_term_b2min_at_z(z,&self.tsz)
 
-    def get_gas_density_profile_at_k_M_z(self,l_asked,m_asked,z_asked, include_normalization = 'no'):
-        tau_normalization = 1.
-        #if (include_normalization == 'yes'):
-        #    if (self.tsz.tau_profile == 0): # nfw case
-        #        rho0 =  mvir
-        #        tau_normalization =  self.ba.Omega0_b/self.tsz.Omega_m_0/self.tsz.mu_e*self.tsz.f_free
-        #    elif (self.tsz.tau_profile == 1): # nfw case
-        return tau_normalization*get_gas_density_profile_at_k_M_z(l_asked,m_asked,z_asked,&self.tsz)
+    def get_gas_density_profile_at_k_M_z(self,l_asked,m_asked,z_asked, normalize = 0):
+        return get_gas_density_profile_at_k_M_z(l_asked,m_asked,z_asked,normalize,&self.tsz)
 
     def get_rho_2h_at_r_and_m_and_z(self,r_asked,m_asked,z_asked):
         return get_rho_2h_at_r_and_m_and_z(r_asked,m_asked,z_asked,&self.tsz,&self.ba)
