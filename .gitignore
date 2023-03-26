@@ -1,7 +1,7 @@
 output/
 *~
 build/
-class
+class_sz
 *.prof
 libclass.a
 *out
