@@ -1,5 +1,6 @@
 /** @file class.c
  * Julien Lesgourgues, 17.04.2011
+ * Boris Bolliet for the class_sz part, 2015-
  */
 
 #include "class.h"
@@ -16,12 +17,12 @@ int main(int argc, char **argv) {
   struct transfers tr;        /* for transfer functions */
   struct spectra sp;          /* for output spectra */
   struct lensing le;          /* for lensed spectra */
-  struct tszspectrum tsz;     /* BB: additional structure for thermal sz spectrum*/
+  struct tszspectrum tsz;     /* BB: additional structure for class_sz*/
   struct szcount csz;         /* BB: additional structure for sz cluster counts*/
   struct output op;           /* for output files */
   ErrorMsg errmsg;            /* for error messages */
 
-  //BB: initialize w. additional sz structures
+  //BB: initialize w. additional class_sz structures
   clock_t start, end;
   start = clock();
   if (input_init_from_arguments(argc, argv,&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&csz,&op,errmsg) == _FAILURE_) {

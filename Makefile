@@ -1,5 +1,6 @@
-#Some Makefile for CLASS.
-#Julien Lesgourgues, 28.11.2011
+#Some Makefile for CLASS_SZ.
+#Julien Lesgourgues, 28.11.2011 for the CLASS part.
+#Boris Bolliet 2015- for the class_sz part.
 
 MDIR := $(shell pwd)
 WRKDIR = $(MDIR)/build
@@ -124,7 +125,7 @@ LENSING = lensing.o
 
 OUTPUT = output.o
 
-CLASS = class.o
+CLASS_SZ = class_sz_driver.o
 
 TEST_LOOPS = test_loops.o
 
@@ -147,7 +148,7 @@ TEST_HYPERSPHERICAL = test_hyperspherical.o
 C_TOOLS =  $(addprefix tools/, $(addsuffix .c,$(basename $(TOOLS))))
 C_SOURCE = $(addprefix source/, $(addsuffix .c,$(basename $(SOURCE) $(OUTPUT))))
 C_TEST = $(addprefix test/, $(addsuffix .c,$(basename $(TEST_DEGENERACY) $(TEST_LOOPS) $(TEST_TRANSFER) $(TEST_NONLINEAR) $(TEST_PERTURBATIONS) $(TEST_THERMODYNAMICS))))
-C_MAIN = $(addprefix main/, $(addsuffix .c,$(basename $(CLASS))))
+C_MAIN = $(addprefix main/, $(addsuffix .c,$(basename $(CLASS_SZ))))
 C_ALL = $(C_MAIN) $(C_TOOLS) $(C_SOURCE)
 H_ALL = $(addprefix include/, common.h svnversion.h $(addsuffix .h, $(basename $(notdir $(C_ALL)))))
 PRE_ALL = cl_ref.pre clt_permille.pre
@@ -155,15 +156,15 @@ INI_ALL = explanatory.ini lcdm.ini
 MISC_FILES = Makefile CPU psd_FD_single.dat myselection.dat myevolution.dat README bbn/sBBN.dat external_Pk/* cpp
 PYTHON_FILES = python/classy.pyx python/setup.py python/cclassy.pxd python/test_class.py
 
-all: class libclass.a classy
+all: class_sz libclass.a classy_sz
 
 libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
 	$(AR)  $@ $(addprefix build/, $(TOOLS) $(SOURCE) $(EXTERNAL))
 
-class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS)
+class_sz: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS_SZ)
 	#$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm -L/home/runner/work/SOLikeT/SOLikeT/gsl-2.6/lib -lgsl -lgslcblas
 	 # $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/Users/boris/miniconda/lib -lgsl -lgslcblas -lfftw3 -lm
-	 $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lgsl -lgslcblas -lfftw3 -lm -L/Users/boris/opt/miniconda3/lib
+	 $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class_sz $(addprefix build/,$(notdir $^)) -lgsl -lgslcblas -lfftw3 -lm -L/Users/boris/opt/miniconda3/lib
 
 	 # $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/Users/boris/opt/anaconda3/lib -L/opt/homebrew/lib -lgsl -lgslcblas -lfftw3 -lm
 	 # $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -lgsl -lgslcblas -lm
@@ -197,9 +198,9 @@ test_hyperspherical: $(TOOLS) $(TEST_HYPERSPHERICAL)
 
 
 tar: $(C_ALL) $(C_TEST) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
-	tar czvf class.tar.gz $(C_ALL) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
+	tar czvf class_sz.tar.gz $(C_ALL) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
 
-classy: libclass.a python/classy.pyx python/cclassy.pxd
+classy_sz: libclass.a python/classy.pyx python/cclassy.pxd
 ifdef OMPFLAG
 	cp python/setup.py python/autosetup.py
 else

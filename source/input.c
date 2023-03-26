@@ -6470,7 +6470,7 @@ int input_default_params(
   ptsz->delta_bcm = 7.0;
   ptsz->gamma_bcm = 2.5;
   ptsz->mu_bcm = 1.0;
-  ptsz->nu_log10Mc_bcm = 0.038;
+  ptsz->nu_log10Mc_bcm = -0.038;
 
 
   //# Table 1 of https://arxiv.org/pdf/1309.0382.pdf

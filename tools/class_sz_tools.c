@@ -4742,7 +4742,7 @@ double get_gas_profile_at_x_M_z_bcm_200c(double x_asked, // this is just radius
                   ptsz->error_message,
                   ptsz->error_message);
  //
- //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
+ //  // rvir needed in bcm model
   rvir = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
 
 
@@ -4961,7 +4961,7 @@ return 0.;
 
 
 
-double get_gas_density_profile_at_k_M_z(double k_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
+double get_gas_density_profile_at_k_M_z(double k_asked, double m_asked, double z_asked, int normalize, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
   double k = log(k_asked);
@@ -5019,8 +5019,9 @@ if (k<ptsz->array_profile_ln_k[0])
 
  double result = exp(ln_rho_low + ((k - ln_k_low) / (ln_k_up - ln_k_low)) * (ln_rho_up - ln_rho_low));
 
-if (ptsz->normalize_gas_density_profile == 1){
-  double norm = get_normalization_gas_density_profile(z_asked,m_asked,ptsz)/ptsz->f_b_gas;
+// BCM needs to be normalized
+if (normalize == 1){
+  double norm = get_normalization_gas_density_profile(z_asked,m_asked,ptsz);
   result *= 1./norm;
   // printf("norm = %.5e\n",norm);
 }
@@ -5186,9 +5187,13 @@ double integrand_gas_density_profile_2h(double lnM_halo, void *p){
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
 
+      int normalize = 0;
+      if (V->ptsz->tau_profile == 2)
+        normalize = 1;
       double gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,
                                                                    V->pvectsz[V->ptsz->index_mass_for_electron_density],
                                                                    z,
+                                                                   normalize,
                                                                    V->ptsz);
 
 
@@ -5939,18 +5944,18 @@ double get_normalization_gas_density_profile(double z_asked, double m_asked, str
   double z = log(1.+z_asked);
   double m = log(m_asked);
 
-  double result = 0.;
+  double result = 1e100;
   if (z<ptsz->array_profile_ln_1pz[0]){
-    result = 0.;
+    result = 1e100;
   }
   else if (z>ptsz->array_profile_ln_1pz[ptsz->n_z_density_profile-1]){
-    result = 0.;
+    result = 1e100;
   }
   else if (m<ptsz->array_profile_ln_m[0]){
-    result = 0.;
+    result = 1e100;
   }
   else if (m>ptsz->array_profile_ln_m[ptsz->n_m_density_profile-1]){
-    result = 0.;
+    result = 1e100;
   }
   else{
     result = exp(pwl_interp_2d(ptsz->n_z_density_profile,
@@ -5961,6 +5966,19 @@ double get_normalization_gas_density_profile(double z_asked, double m_asked, str
                           1,
                           &z,
                           &m))/exp(m);
+
+  if (ptsz->tau_profile == 2){
+    double omega_b_over_omega_m = ptsz->f_b_gas;
+    double fstar = get_fstar_of_m_at_z(m_asked,z,ptsz);
+    double num = omega_b_over_omega_m-fstar;
+    result *= 1./num;
+  }
+
+  // nfw case already normalized.
+  // if (ptsz->tau_profile == 2){
+  // do nothing
+  // }
+
   }
   return result;
 }
@@ -7096,6 +7114,7 @@ for (ix=0; ix<N; ix++){
    ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_k][index_m_z] = log(result);
  } // k loop
 } // density mode
+//BCM model
 if (ptsz->tau_profile == 2){
 // here we FFT the profile ===== commented
 const int N = ptsz->N_samp_fftw; //precision parameter
