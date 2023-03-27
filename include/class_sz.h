@@ -324,6 +324,8 @@ struct tszspectrum {
   double * array_ln_k_ng_bias;
   double * array_ln_ng_bias_at_z_and_k;
 
+  double * array_ln_density_norm_at_z_and_m;
+
   int need_ksz_template;
   int need_tt_noise;
   int need_lensing_noise;
@@ -2226,6 +2228,7 @@ int write_redshift_dependent_quantities(struct background * pba,
 
 
 
+int tabulate_normalization_gas_density_profile(struct tszspectrum * ptsz,struct background * pba);
 
 int tabulate_gas_pressure_profile_gNFW(struct background * pba,
                                    struct tszspectrum * ptsz);

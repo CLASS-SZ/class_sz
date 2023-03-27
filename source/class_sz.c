@@ -492,7 +492,11 @@ int szpowerspectrum_init(
      if (ptsz->sz_verbose > 0)
         printf("->Class_sz computations. Initialization.\n");
 
-
+  if (ptsz->use_fft_for_profiles_transform){
+    ptsz->n_k_pressure_profile = ptsz->N_samp_fftw;
+    if (ptsz->tau_profile != 0) // dont change that if scaled nfw:
+      ptsz->n_k_density_profile = ptsz->N_samp_fftw;
+  }
 // // printf("entering szp module");
 //     ptsz->ln_k_size_for_tSZ = (int)(log(ptsz->k_max_for_pk_in_tSZ
 //                                      /ptsz->k_min_for_pk_in_tSZ)
@@ -982,10 +986,16 @@ if (ptsz->has_mean_galaxy_bias)
 }
 
 
-if (ptsz->use_fft_for_profiles_transform){
+if (ptsz->has_electron_density){
 
-  // printf("-> start tabulation of gas pressure profile  444.\n");
+
+
+if (ptsz->use_fft_for_profiles_transform && ptsz->tau_profile != 0){
+
+  // printf("-> start tabulation of gas density profile  444.\n");
+
   tabulate_gas_density_profile_fft(pba,ptsz);
+
 //
 // double m_asked = 5e14;
 // double z_asked = 0.1;
@@ -1073,6 +1083,20 @@ else{
 // double result = get_gas_density_profile_at_k_M_z(k_asked,m_asked,z_asked,ptsz);
 // printf("res = %.10e\n",result/m_asked/ptsz->f_b_gas);
 //  exit(0);
+}
+
+  if (ptsz->tau_profile == 2){
+  // printf("-> start tabulation of gas density profile norm 444.\n");
+  tabulate_normalization_gas_density_profile(ptsz,pba);
+
+
+// double z_asked = exp(ptsz->array_profile_ln_1pz[71])-1.;
+// double m_asked = exp(ptsz->array_profile_ln_m[58]);
+// double result = get_normalization_gas_density_profile(z_asked,m_asked,ptsz);
+// printf("m = %.5e z = %.5e res = %.10e\n",m_asked,z_asked,log(result));
+// exit(0);
+}
+
 }
 
 
@@ -2740,6 +2764,14 @@ if (ptsz->need_ng_bias){
 free(ptsz->array_ln_1pz_ng_bias);
 free(ptsz->array_ln_k_ng_bias);
 free(ptsz->array_ln_ng_bias_at_z_and_k);
+}
+
+
+if (ptsz->has_electron_density){
+
+  if (ptsz->tau_profile == 2){
+    free(ptsz->array_ln_density_norm_at_z_and_m);
+  }
 }
 
 
@@ -7078,11 +7110,12 @@ pvectsz[ptsz->index_integrand] *= flag_conf;
 
   else if (_pk_bb_at_z_1h_){
     double gas_profile_at_k_1;
+    double k_asked = kl*(1.+z)*r_delta_electron_density;
     if (ptsz->tau_profile == 2){ //BCM Needs to be normalized here:
-        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,1,ptsz);
+        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_delta_electron_density,z,1,ptsz);
       }
     else{
-      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,0,ptsz);
+      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_delta_electron_density,z,0,ptsz);
       }
 
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
@@ -7095,11 +7128,12 @@ pvectsz[ptsz->index_integrand] *= flag_conf;
   else if (_pk_bb_at_z_2h_){
 
     double gas_profile_at_k_1;
+    double k_asked = kl*(1.+z)*r_delta_electron_density;
     if (ptsz->tau_profile == 2){ //BCM Needs to be normalized here:
-        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,1,ptsz);
+        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_delta_electron_density,z,1,ptsz);
       }
     else{
-      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,0,ptsz);
+      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_delta_electron_density,z,0,ptsz);
       }
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
 
@@ -7112,11 +7146,12 @@ pvectsz[ptsz->index_integrand] *= flag_conf;
   else if (_pk_b_at_z_2h_){
 
     double gas_profile_at_k_1;
+    double k_asked = kl*(1.+z)*r_delta_electron_density;
     if (ptsz->tau_profile == 2){ //BCM Needs to be normalized here:
-        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,1,ptsz);
+        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_delta_electron_density,z,1,ptsz);
       }
     else{
-      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,0,ptsz);
+      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_delta_electron_density,z,0,ptsz);
       }
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
 
@@ -7130,11 +7165,12 @@ pvectsz[ptsz->index_integrand] *= flag_conf;
   else if (_pk_em_at_z_1h_){
 
     double gas_profile_at_k_1;
+    double k_asked = kl*(1.+z)*r_delta_electron_density;
     if (ptsz->tau_profile == 2){ //BCM Needs to be normalized here:
-        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,1,ptsz);
+        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_delta_electron_density,z,1,ptsz);
       }
     else{
-      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,0,ptsz);
+      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_delta_electron_density,z,0,ptsz);
       }
 
     evaluate_matter_density_profile(kl,r_delta_matter,c_delta_matter,pvecback,pvectsz,pba,ptsz);
@@ -7151,11 +7187,12 @@ pvectsz[ptsz->index_integrand] *= flag_conf;
   else if (_pk_em_at_z_2h_){
  if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
     double gas_profile_at_k_1;
+    double k_asked = kl*(1.+z)*r_delta_electron_density;
     if (ptsz->tau_profile == 2){ //BCM Needs to be normalized here:
-        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,1,ptsz);
+        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_delta_electron_density,z,1,ptsz);
       }
     else{
-      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(kl,m_delta_electron_density,z,0,ptsz);
+      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_delta_electron_density,z,0,ptsz);
       }
     evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
 
@@ -8433,14 +8470,21 @@ int evaluate_tau_profile(
    // double k = (l_asked+0.5)/chi;
    double z_asked = pvectsz[ptsz->index_z];
    // printf("l_asked %.8e")
+    // double gas_profile_at_k_1;
+    // if (ptsz->tau_profile == 2){ //BCM Needs to be normalized here:
+    //     gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k,m_asked,z_asked,1,ptsz);
+    //   }
+    // else{
+    //   gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k,m_asked,z_asked,0,ptsz);
+    //   }
     double gas_profile_at_k_1;
+    double k_asked = k*(1.+z_asked)*pvectsz[ptsz->index_radius_for_electron_density];
     if (ptsz->tau_profile == 2){ //BCM Needs to be normalized here:
-        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k,m_asked,z_asked,1,ptsz);
+        gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_asked,z_asked,1,ptsz);
       }
     else{
-      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k,m_asked,z_asked,0,ptsz);
+      gas_profile_at_k_1 = get_gas_density_profile_at_k_M_z(k_asked,m_asked,z_asked,0,ptsz);
       }
-
 
    result = gas_profile_at_k_1;
    // printf("%.5e %.5e %.5e %.5e %.5e\n",
@@ -15219,6 +15263,12 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       +ptsz->has_kSZ_kSZ_tSZ_1h
       +ptsz->has_kSZ_kSZ_tSZ_2h
       +ptsz->has_gas_density_profile_2h
+      + ptsz->has_pk_bb_at_z_1h
+      + ptsz->has_pk_bb_at_z_2h
+      + ptsz->has_pk_b_at_z_2h
+      + ptsz->has_bk_ttg_at_z_1h
+      + ptsz->has_bk_ttg_at_z_2h
+      + ptsz->has_bk_ttg_at_z_3h
       +ptsz->has_kSZ_kSZ_1h
       +ptsz->has_kSZ_kSZ_2h
       +ptsz->has_kSZ_kSZ_tSZ_3h
@@ -15280,6 +15330,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
     fftw_free(a_tmp);
     fftw_free(b_tmp);
   }
+
+
 
 
    if (ptsz->has_tSZ_gal_1h
