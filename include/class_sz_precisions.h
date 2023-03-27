@@ -119,6 +119,8 @@ class_sz_ptsz_parameter(chi_max_n5k_samp_fftw, double, 7.e3);
 class_sz_ptsz_parameter(integrand_n5k_epsrel, double, 1.e-6);
 class_sz_ptsz_parameter(integrand_n5k_epsabs, double, 7.e-40);
 
+class_sz_ptsz_parameter(density_norm_epsrel, double, 1.e-6);
+class_sz_ptsz_parameter(density_norm_epsabs, double, 1.e-100);
 
 class_sz_ptsz_parameter(M1SZ_L_sat, double, 1.e9);
 class_sz_ptsz_parameter(M2SZ_L_sat, double, 1.e17);
