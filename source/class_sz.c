@@ -1228,6 +1228,13 @@ tabulate_gas_pressure_profile_2h_fft_at_z_and_r(pba,pnl,ppm,ptsz);
 }
 // exit(0);
 
+
+// double dy = get_dyldzdlnm_at_l_z_and_m(0.,0.4,1e13,pba,pnl,ptsz);
+// double dy2 = get_dyldzdlnm_at_l_z_and_m(100.,0.4,1e13,pba,pnl,ptsz);
+//
+// printf("%.5e %.5e\n",dy,dy2);
+// exit(0);
+
 if (ptsz->has_pk_b_at_z_2h
    +ptsz->has_gas_density_profile_2h){
 tabulate_gas_density_profile_2h(pba,pnl,ppm,ppt,ptsz);
@@ -8743,7 +8750,291 @@ int evaluate_lensing_profile(double kl,
    return _SUCCESS_;
 }
 
-int evaluate_pressure_profile(double kl,
+//
+// // temporary function cause the modes need to be sorted:
+// double evaluate_pressure_profile(double kl,
+//                               double * pvecback,
+//                               double * pvectsz,
+//                               struct background * pba,
+//                               struct tszspectrum * ptsz)
+// {
+//   double z = pvectsz[ptsz->index_z];
+//   double chi =  sqrt(pvectsz[ptsz->index_chi2]);
+//    //Fourier tranform
+//    //of the  pressure profile
+//
+//    //If customized profile (!=P13 or A10)
+//    //perform the Fourier transform
+//    //at each ell, M, z...
+//    //time consuming.
+//    //(but still manageable for
+//    //MCMC runs)
+//
+//    //Else, read the FT from tabulated
+//    //values and interpolate
+//    //at the desired ell/ell500.
+//    int index_md = (int) pvectsz[ptsz->index_md];
+//    double lnx_asked;
+//
+//    double result = 0.;
+//
+//    //Battaglia et al 2012
+//    if (ptsz->pressure_profile == 4 ){
+//
+//          double m_asked = pvectsz[ptsz->index_m200c];
+//          double k_asked = kl*(1.+z)*pvectsz[ptsz->index_r200c]; // this is (l+1/2)/l200c
+//          // double m_asked = pvectsz[ptsz->index_m200m]; // in Msun/h
+//          double z_asked = pvectsz[ptsz->index_z];
+//
+//
+//          if( (log(k_asked)<ptsz->array_pressure_profile_ln_k[0]) || _mean_y_ || _dydz_){ // get large scale limit
+//            result = get_gas_pressure_profile_at_k_m_z(exp(ptsz->array_pressure_profile_ln_k[0]),m_asked,z_asked,ptsz);
+//          }
+//          // else if(log(k_asked)<ptsz->array_pressure_profile_ln_k[0]){
+//          //   // also large scale limit in this case
+//          //   result = get_gas_pressure_profile_at_k_m_z(exp(ptsz->array_pressure_profile_ln_k[0]),m_asked,z_asked,ptsz);
+//          // }
+//          else{
+//            double result_tabulated = get_gas_pressure_profile_at_k_m_z(k_asked,m_asked,z_asked,ptsz);
+//            result = result_tabulated;
+//          }
+//          // printf("%.7e %.7e %.7e\n",result,result_tabulated,m_asked);
+//
+//    }
+//    //custom gNFW pressure profile at 500c
+//    else if(ptsz->pressure_profile == 3){
+//
+//      // printf("ptsz->delta_def_electron_pressure = %d\n",ptsz->delta_def_electron_pressure);
+//           // double l_delta = 0.;
+//        if ( ptsz->delta_def_electron_pressure == 2){
+//          if (ptsz->mass_dependent_bias == 1)
+//             ptsz->HSEbias = 1./(0.8/(1.+ ptsz->Ap*pow(pvectsz[ptsz->index_m500]/3.e14,ptsz->alpha_b)));
+//         //m500 X-ray for the pressure profiles A10 and P13
+//          pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m500c]/ptsz->HSEbias;
+//          // printf("m500 = %.3e\n",pvectsz[ptsz->index_m500]);
+//          //r500 X-ray for the pressure profiles A10 and P13
+//          pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+//          // printf("r500 = %.3e\n",pvectsz[ptsz->index_r500]);
+//          pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
+//          // l_delta = pvectsz[ptsz->index_l500];
+//        }
+//        else if (ptsz->delta_def_electron_pressure == 1){ // 200c
+//          pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m200c];
+//          // printf("m500 = %.3e\n",pvectsz[ptsz->index_m500]);
+//          //r500 X-ray for the pressure profiles A10 and P13
+//          pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+//          // printf("r500 = %.3e\n",pvectsz[ptsz->index_r500]);
+//          pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
+//        }
+//        else{
+//          printf("This delta definition for electron pressure is not implemented yet.\n");
+//          exit(0);
+//        }
+//
+//       // lnx_asked = log(kl*chi/pvectsz[ptsz->index_l500]);
+//       lnx_asked = log(kl*(1.+z)*pvectsz[ptsz->index_r500]);
+//
+//       if(lnx_asked<ptsz->array_profile_ln_l_over_ls[0]) // large scale limit
+//          result = ptsz->array_profile_ln_PgNFW_at_lnl_over_ls[0];
+//       else if (lnx_asked>ptsz->array_profile_ln_l_over_ls[ptsz->array_profile_ln_PgNFW_at_lnl_over_ls_size-1])
+//          result = -100.;
+//       else
+//         result = pwl_value_1d(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls_size,
+//                               ptsz->array_profile_ln_l_over_ls,
+//                               ptsz->array_profile_ln_PgNFW_at_lnl_over_ls,
+//                               lnx_asked);
+//
+//       result = exp(result);
+//       // printf("lnx_asked = %.3e pp=%.3e\n",lnx_asked ,result);
+//
+//    }
+//   // tabulated A10 and P13 profiles
+//   else {
+//
+//    if (ptsz->mass_dependent_bias == 1)
+//       ptsz->HSEbias = 1./(0.8/(1.+ ptsz->Ap*pow(pvectsz[ptsz->index_m500]/3.e14,ptsz->alpha_b)));
+//
+//
+//   //m500 X-ray for the pressure profiles A10 and P13
+//    pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m500c]/ptsz->HSEbias;
+//    // printf("m500 = %.3e\n",pvectsz[ptsz->index_m500]);
+//
+//    //r500 X-ray for the pressure profiles A10 and P13
+//    pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+//    // printf("r500 = %.3e\n",pvectsz[ptsz->index_r500]);
+//
+//    pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
+//
+//
+//       // lnx_asked = log(kl*chi/pvectsz[ptsz->index_l500]);
+//       lnx_asked = log(kl*(1.+z)*pvectsz[ptsz->index_r500]);
+//       if(lnx_asked<ptsz->PP_lnx[0])
+//          result = ptsz->PP_lnI[0];
+//       else if (lnx_asked>ptsz->PP_lnx[ptsz->PP_lnx_size-1])
+//          result = -100.;
+//       else splint(ptsz->PP_lnx,
+//                   ptsz->PP_lnI,
+//                   ptsz->PP_d2lnI,
+//                   ptsz->PP_lnx_size,
+//                   lnx_asked,
+//                   &result);
+//
+//       result = exp(result);
+//    }
+//
+//
+//
+//    pvectsz[ptsz->index_pressure_profile] = result;
+//
+//     // in units of Mpc^-1*micro Kelvins
+//     // old version (szfast)
+//     // double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283./0.5176; //1./0.5176=1.932=(5Xh+3)/2(Xh+1) with Xh = 0.76 and Pth=1.932Pe
+//     // (Xh is the primodial hydrogen mass fraction)
+//     // more accurate version (see explanation below):
+//     // in units of Mpc^-1*micro Kelvins
+//     double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283.2980000259841/0.5176*pba->T_cmb/2.725;
+//
+//     // Explanation of the above factors:
+//     // sigma_thomson_in_m2 = 6.6524587321e-29
+//     // me_in_eV = 0.510998946e6
+//     // Mpc_over_m =  3.085677581282e22
+//     // factor_in_inverse_Mpc =  sigma_thomson_in_m2/me_in_eV*50.*1e6*Mpc_over_m*0.5176
+//     // print(factor_in_inverse_Mpc*2.725e6)
+//     // 283.2980000259841
+//     // we divide by 0.5176 because it was included in the 283. It is necessary when working with
+//     // thermal pressure, but not when we work with electron pressure:  Pth=1.932*Pe, Pe = 0.5176*Pth
+//
+//
+//    double characteristic_radius;
+//    double characteristic_multipole;
+//    double pressure_normalisation;
+//
+//
+//    //Battaglia et al 2012 pressure profile
+//    if (ptsz->pressure_profile == 4) {
+//
+//       double P_200; //in units of eV/cm^3, corresponds to Pth
+//
+//
+//       double R_200crit = pvectsz[ptsz->index_r200c]; //in units of h^-1 Mpc
+//       double f_b = ptsz->f_b_gas;//pba->Omega0_b/ptsz->Omega_m_0;
+//
+//       double Eh = pvecback[pba->index_bg_H]/pba->H0;
+//
+//       //double rho_crit_at_z = pvectsz[ptsz->index_Rho_crit]; //in units of h^2 M_sun/Mpc^3
+//       //double _G_in_eV_Mpc_over_Msun2 = _G_/(_eV_ *_Mpc_over_m_ /_M_sun_/_M_sun_);
+//       //double P_200_boris = _G_in_eV_Mpc_over_Msun2*pvectsz[ptsz->index_m200c]
+//       //            /pba->h*200.*rho_crit_at_z*pba->h*pba->h
+//       //            *f_b/2./(R_200crit/pba->h)/pow(_Mpc_over_m_,3.)/1e6;
+//
+//       P_200 = pvectsz[ptsz->index_m200c]/(R_200crit)*f_b
+//               *2.61051e-18*pow(100.*pba->h*Eh,2.);
+//
+//
+//      // NB JCH implementation:
+//      // transform2d=4.0d0*pi*(r500/h0)/(l500**2d0)* &
+//      //      2.61051d-18*(obh2/om0/h0**2d0)*(100.0d0*h0*Ez(z))**2d0* &
+//      //      m500/r500*2.5d0*rombint3(padia,xin,xoutpress,tol,(ell+0.5d0)/l500,m500,z)
+//      // ! the 10.94d0 factor below is sigmaT/m_e/c^2*Mpcincm*Tcmb*10^6
+//      // ! in units that agree with the eV/cm^3 in transform2d
+//      // Tsz=-2d0*10.94d0*transform2d ! uK, Rayleigh-Jeans limit
+//
+//      // link with class_sz: (283./0.5176/50.)=10.935085007727976
+//
+//      // (2.61....m500/r500) is the pressure normalization for the Battaglia pressure profile in eV/cm^3
+//
+//
+//
+//
+//       pressure_normalisation = P_200;///1.932; //1./0.5176=1.932=(5Xh+3)/2(Xh+1) with Xh = 0.76
+//       //divide by 1.932 to obtain Pe
+//       characteristic_radius = pvectsz[ptsz->index_r200c]/pba->h; //in Mpc
+//       characteristic_multipole = pvectsz[ptsz->index_l200c];
+//
+//
+//
+//    }
+//
+//    else {
+//
+//      // formula D1 of WMAP 7 year paper (normalisation of pressure profile)
+//      // see also formula 5 of Planck 2013 profile paper, P500:
+//       double C_pressure = 1.65*pow(pba->h/0.7,2)
+//                           *pow(pvecback[pba->index_bg_H]/pba->H0,8./3.)
+//                           *pow(pvectsz[ptsz->index_m500]/(3.e14*0.7),2./3.+ptsz->alpha_p)
+//                           *pow(pvectsz[ptsz->index_m500]/3.e14, ptsz->delta_alpha);
+//
+//
+//
+//       //A10:
+//       if (ptsz->pressure_profile == 2)
+//       pressure_normalisation = C_pressure
+//                                *ptsz->P0GNFW
+//                                *pow(0.7/pba->h, 1.5); // as found by dimensional analysis (X-ray data, see email with E. Komatsu and R. Makya)
+//       //P13:
+//       else if (ptsz->pressure_profile == 0)
+//       pressure_normalisation = C_pressure
+//                                *ptsz->P0GNFW
+//                                *pow(0.7/pba->h, 1.); // as found by dimensional analysis (sz data, see email with E. Komatsu and R. Makya)
+//
+//       //Custom. GNFW
+//       else if (ptsz->pressure_profile == 3)
+//       pressure_normalisation = C_pressure
+//                                *ptsz->P0GNFW
+//                                *pow(0.7/pba->h, 1.5); // assuming X-ray data based pressure profile
+//      // //Custom. GNFW
+//      // else if (ptsz->pressure_profile == 3)
+//      // pressure_normalisation = C_pressure
+//      //                          *ptsz->P0GNFW
+//      //                          *pow(0.7/pba->h, 1.); // assuming SZ data based pressure profile
+//
+//
+//       characteristic_radius = pvectsz[ptsz->index_r500]/pba->h; // in Mpc
+//       characteristic_multipole = pvectsz[ptsz->index_l500];
+//
+//
+//    }
+//
+//
+//    //(see comments after to link this way of writing with the szfast implementation)
+//    pvectsz[ptsz->index_pressure_profile] = sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb // here Tcmb is in muK
+//                                            /50. // to cancel the factor 50 above 50eV/cm^3
+//                                            /pba->T_cmb
+//                                            *pressure_normalisation
+//                                            *pvectsz[ptsz->index_pressure_profile]
+//                                            *(4*_PI_)
+//                                            *pow(characteristic_multipole,-2)
+//                                            *characteristic_radius //rs in Mpc
+//                                            *ptsz->Tcmb_gNU;
+//                                            // now in units Tcmb*gNU at the requested frequency
+//                                            // Result in muK due to the units in sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb
+//                                            // which is in units of Mpc^-1*micro Kelvins
+//                                            // (but Tcmb is in K in Tcmb_gNU)
+//
+//    // Ancient way of writing (like in szfast):
+//    // pvectsz[ptsz->index_pressure_profile] = (ptsz->Tcmb_gNU_at_150GHz/pba->T_cmb)      //gnu at 150 GHz (was -0.953652 in sz_fast), we replace it with the exact formula
+//    //                                         *sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb
+//    //                                         *pressure_normalisation
+//    //                                         *pvectsz[ptsz->index_pressure_profile]
+//    //                                         *(4*_PI_)
+//    //                                         *pow(characteristic_multipole,-2)
+//    //                                         *characteristic_radius //rs in Mpc
+//    //                                         /50. //pressure normalised to 50eV/cm^3
+//    //                                         *ptsz->Tcmb_gNU/ptsz->Tcmb_gNU_at_150GHz;
+//    //                                         // now in units Tcmb*gNU at the requested frequency
+//    //                                         // Result in muK due to the units in sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb
+//    //                                         // which is in units of Mpc^-1*micro Kelvins
+//    //                                         // (but Tcmb is in K in Tcmb_gNU)
+//
+//    return pvectsz[ptsz->index_pressure_profile];
+// }
+//
+//
+//
+
+
+
+double evaluate_pressure_profile(double kl,
                               double * pvecback,
                               double * pvectsz,
                               struct background * pba,
@@ -9017,7 +9308,7 @@ int evaluate_pressure_profile(double kl,
    //                                         // which is in units of Mpc^-1*micro Kelvins
    //                                         // (but Tcmb is in K in Tcmb_gNU)
 
-   return _SUCCESS_;
+   return pvectsz[ptsz->index_pressure_profile];
 }
 
 
@@ -10259,13 +10550,13 @@ double get_pk_nonlin_at_k_and_z_fast(double k, double z,
    double zp = log(1.+z);
    double kp = log(k*pba->h);
    double pk = pwl_interp_2d(ptsz->n_arraySZ,
-                      ptsz->ndimSZ,
-                      ptsz->array_redshift,
-                      ptsz->array_lnk,
-                      ptsz->array_pknl_at_z_and_k,
-                      1,
-                      &zp,
-                      &kp);
+                             ptsz->ndimSZ,
+                             ptsz->array_redshift,
+                             ptsz->array_lnk,
+                             ptsz->array_pknl_at_z_and_k,
+                             1,
+                             &zp,
+                             &kp);
 
 return pk*pow(pba->h,3.);
 }

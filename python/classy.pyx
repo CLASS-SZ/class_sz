@@ -2677,6 +2677,14 @@ cdef class Class:
     def get_gas_pressure_2h_at_r_and_m_and_z(self,r_asked,m_asked,z_asked):
         return get_gas_pressure_2h_at_r_and_m_and_z(r_asked,m_asked,z_asked,&self.tsz,&self.ba)
 
+    def get_dkappacmbdz_at_l_and_z(self,l,z,use_pklin = 0):
+        if use_pklin == 1:
+            return get_dkappacmbdz_pklin_at_l_and_z(l,z,&self.ba,&self.pm,&self.nl,&self.tsz)
+        else:
+            return get_dkappacmbdz_at_l_and_z(l,z,&self.ba,&self.pm,&self.nl,&self.tsz)
+
+    def get_dydzdlnm_at_z_and_m(self,z,m,l=0):
+        return get_dyldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
 
     def get_r_delta_of_m_delta_at_z(self,delta,m_delta,z):
         return (m_delta*3./4./np.pi/delta/self.get_rho_crit_at_z(z))**(1./3.)

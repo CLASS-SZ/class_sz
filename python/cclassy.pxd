@@ -818,6 +818,28 @@ cdef extern from "class.h":
                              void * pba,
                              void * ptsz)
 
+
+    double get_dkappacmbdz_at_l_and_z(double l,
+                                      double z,
+                                      void * pba,
+                                      void * ppm,
+                                      void * pnl,
+                                      void * ptsz)
+
+    double get_dkappacmbdz_pklin_at_l_and_z(double l,
+                                            double z,
+                                            void * pba,
+                                            void * ppm,
+                                            void * pnl,
+                                            void * ptsz)
+
+    double get_dyldzdlnm_at_l_z_and_m(double l,
+                                      double z,
+                                      double m,
+                                      void * pba,
+                                      void * pnl,
+                                      void * ptsz)
+
     double get_m200m_to_m200c_at_z_and_M(double z_asked,
                                          double m_asked,
                                          void * ptsz)

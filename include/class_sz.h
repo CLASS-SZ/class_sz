@@ -2040,7 +2040,7 @@ int szpowerspectrum_init(struct background * pba,
                             struct background * pba,
                             struct tszspectrum * ptsz);
 
-  int evaluate_pressure_profile(double kl,
+  double evaluate_pressure_profile(double kl,
                                 double * pvecback,
                                 double * pvectsz,
                                 struct background * pba,
@@ -2249,6 +2249,14 @@ double evaluate_mean_galaxy_number_density_at_z_ngal(double z,
 double get_mean_galaxy_bias_at_z(double z,
                                  struct tszspectrum * ptsz);
 
+
+
+double get_dyldzdlnm_at_l_z_and_m(double l,
+                                  double z,
+                                  double m,
+                                  struct background * pba,
+                                  struct nonlinear * pnl,
+                                  struct tszspectrum * ptsz);
 
 double HOD_mean_number_of_central_galaxies(double z,
                                            double M_halo,
