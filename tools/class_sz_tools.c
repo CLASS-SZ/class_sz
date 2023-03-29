@@ -6080,6 +6080,218 @@ if (abort == _TRUE_) return _FAILURE_;
 }
 
 
+
+
+double get_dkappacmbdz_pklin_at_l_and_z(double l,
+                                  double z,
+                                  struct background * pba,
+                                  struct primordial * ppm,
+                                  struct nonlinear * pnl,
+                                  struct tszspectrum * ptsz){
+
+  double tau;
+  int first_index_back = 0;
+
+
+  double * pvecback;
+  double * pvectsz;
+ class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+      class_call(background_tau_of_z(pba,z,&tau),
+                 pba->error_message,
+                 pba->error_message);
+
+      class_call(background_at_tau(pba,
+                                   tau,
+                                   pba->long_info,
+                                   pba->inter_normal,
+                                   &first_index_back,
+                                   pvecback),
+                 pba->error_message,
+                 pba->error_message);
+
+
+
+
+      pvectsz[ptsz->index_z] = z;
+      pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *pvecback[pba->index_bg_rho_crit]
+                                            /pow(pba->h,2);
+
+      double omega = pvecback[pba->index_bg_Omega_m];
+      pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+      double chi = sqrt(pvectsz[ptsz->index_chi2]);
+      double kl = (l+0.5)/chi;
+
+
+
+      double pk1 = get_pk_lin_at_k_and_z(kl,z,pba,ppm,pnl,ptsz); // volume
+      double result = pk1;
+      double Wg = radial_kernel_W_cmb_lensing_at_z(z,pvectsz,pba,ptsz); // dimensionless
+      result *= pow(Wg,2.);
+      double Omega_m = ptsz->Omega_m_0;
+      result *= pow(3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/2./chi*pow(1.+z,1.),2.); // volume^-2
+      result *= get_volume_at_z(pvectsz[ptsz->index_z],pba); // volume
+
+
+      free(pvecback);
+      free(pvectsz);
+      return result;
+                                  }
+
+double get_dkappacmbdz_at_l_and_z(double l,
+                                  double z,
+                                  struct background * pba,
+                                  struct primordial * ppm,
+                                  struct nonlinear * pnl,
+                                  struct tszspectrum * ptsz){
+
+  double tau;
+  int first_index_back = 0;
+
+
+  double * pvecback;
+  double * pvectsz;
+ class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+      class_call(background_tau_of_z(pba,z,&tau),
+                 pba->error_message,
+                 pba->error_message);
+
+      class_call(background_at_tau(pba,
+                                   tau,
+                                   pba->long_info,
+                                   pba->inter_normal,
+                                   &first_index_back,
+                                   pvecback),
+                 pba->error_message,
+                 pba->error_message);
+
+
+
+
+      pvectsz[ptsz->index_z] = z;
+      pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *pvecback[pba->index_bg_rho_crit]
+                                            /pow(pba->h,2);
+
+      double omega = pvecback[pba->index_bg_Omega_m];
+      pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+      double chi = sqrt(pvectsz[ptsz->index_chi2]);
+      double kl = (l+0.5)/chi;
+
+
+
+      double pk1 = get_pk_nonlin_at_k_and_z(kl,z,pba,ppm,pnl,ptsz); // volume
+      double result = pk1;
+      double Wg = radial_kernel_W_cmb_lensing_at_z(z,pvectsz,pba,ptsz); // dimensionless
+      result *= pow(Wg,2.);
+      double Omega_m = ptsz->Omega_m_0;
+      result *= pow(3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/2./chi*pow(1.+z,1.),2.); // volume^-2
+      result *= get_volume_at_z(pvectsz[ptsz->index_z],pba); // volume
+
+
+      free(pvecback);
+      free(pvectsz);
+      return result;
+                                  }
+
+double get_dyldzdlnm_at_l_z_and_m(double l,
+                                  double z,
+                                  double m,
+                                  struct background * pba,
+                                  struct nonlinear * pnl,
+                                  struct tszspectrum * ptsz){
+
+
+// double result = get_dndlnM_at_z_and_M(z_asked,m,ptsz)
+//                 *get_volume_at_z(z,pba)
+//                 *evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
+
+
+
+  // double M_halo = m;
+
+  double tau;
+  int first_index_back = 0;
+
+
+  double * pvecback;
+  double * pvectsz;
+ class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+   int i;
+   for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc(pvecback,pba->bg_size*sizeof(double),ptsz->error_message);
+      class_call(background_tau_of_z(pba,z,&tau),
+                 pba->error_message,
+                 pba->error_message);
+
+      class_call(background_at_tau(pba,
+                                   tau,
+                                   pba->long_info,
+                                   pba->inter_normal,
+                                   &first_index_back,
+                                   pvecback),
+                 pba->error_message,
+                 pba->error_message);
+
+
+
+
+      pvectsz[ptsz->index_z] = z;
+      pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *pvecback[pba->index_bg_rho_crit]
+                                            /pow(pba->h,2);
+
+      double omega = pvecback[pba->index_bg_Omega_m];
+      pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+
+
+      // request appropriate mass conversion
+      pvectsz[ptsz->index_has_electron_pressure] = 1 ;
+
+      do_mass_conversions(log(m),z,pvecback,pvectsz,pba,ptsz);
+      evaluate_HMF_at_logM_and_z(log(m),z,pvecback,pvectsz,pba,pnl,ptsz);
+
+      double hmf = pvectsz[ptsz->index_hmf];
+      pvectsz[ptsz->index_md] = -1;//ptsz->index_md_dydz;
+
+
+      double kl;
+      if (l==0)
+        kl = 0.;
+      else
+        kl = (l+0.5)/sqrt(pvectsz[ptsz->index_chi2]);
+
+      evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
+
+
+      double result = hmf*pvectsz[ptsz->index_pressure_profile];
+
+      // multiply by volume element:
+      double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
+      result *= pvectsz[ptsz->index_chi2]/H_over_c_in_h_over_Mpc;
+      result *= 1./pow(ptsz->Tcmb_gNU,1)/1.e6;
+      free(pvecback);
+      free(pvectsz);
+
+return result;
+                                }
+
 double get_normalization_gas_density_profile(double z_asked, double m_asked, struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
@@ -12301,7 +12513,7 @@ else if ((V->ptsz->has_lens_lensmag_hf == _TRUE_) && (index_md == V->ptsz->index
 
   // Halofit approach
 else if ((V->ptsz->has_lens_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_hf))
-{
+  {
   int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
   double l = V->ptsz->ell[index_l];
   double pk1 = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -12612,6 +12824,7 @@ if (
 
 if (((V->ptsz->has_kSZ_kSZ_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lens_hf))){
   printf("this seems not correct, check lensing kernel for kSZ_kSZ_lens_hf!\n");
+  printf(" i think in the lensing hf case the kernel should be radial_kernel_W_lensing_at_z.\n");
   exit(0);
 }
 double Wg = radial_kernel_W_cmb_lensing_at_z(z,V->pvectsz,V->pba,V->ptsz);

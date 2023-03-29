@@ -786,6 +786,22 @@ int tabulate_n5k_F1(struct background * pba,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
+
+double get_dkappacmbdz_at_l_and_z(double l,
+                                  double z,
+                                  struct background * pba,
+                                  struct primordial * ppm,
+                                  struct nonlinear * pnl,
+                                  struct tszspectrum * ptsz);
+
+double get_dkappacmbdz_pklin_at_l_and_z(double l,
+                                  double z,
+                                  struct background * pba,
+                                  struct primordial * ppm,
+                                  struct nonlinear * pnl,
+                                  struct tszspectrum * ptsz);
+
+
 double get_n5k_pk_at_z_and_k(double z_asked, double k_asked, struct tszspectrum * ptsz);
 int load_n5k_pk_zk(struct tszspectrum * ptsz);
 int load_n5k_cl_K1(struct tszspectrum * ptsz);
