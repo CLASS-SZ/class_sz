@@ -4705,6 +4705,89 @@ return result;
 }
 
 
+
+double get_rvir_of_m200c_at_z(//double x_asked, // this is just radius
+                              double m_asked,
+                              double z,
+                              struct background * pba,
+                              struct tszspectrum * ptsz){
+
+    double result;
+    double rvir;
+
+    double * pvectsz;
+    double * pvecback;
+    double tau;
+    int first_index_back;
+
+    class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+    class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+
+
+    class_call(background_tau_of_z(pba,z,&tau),
+               pba->error_message,
+               pba->error_message);
+
+    class_call(background_at_tau(pba,
+                                 tau,
+                                 pba->long_info,
+                                 pba->inter_normal,
+                                 &first_index_back,
+                                 pvecback),
+               pba->error_message,
+               pba->error_message);
+
+
+  pvectsz[ptsz->index_z] = z;
+
+
+
+  pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+  double chi = sqrt(pvectsz[ptsz->index_chi2]);
+  // pvectsz[ptsz->index_multipole_for_pressure_profile] = k*chi;
+  // pvectsz[ptsz->index_md] = 0; // avoid the if condition in p_gnfw for the pk mode computation
+
+  pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                *pow(_Mpc_over_m_,1)
+                                *pow(_c_,2)
+                                *pvecback[pba->index_bg_rho_crit]
+                                /pow(pba->h,2);
+
+  double omega = pvecback[pba->index_bg_Omega_m];
+  pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+  pvectsz[ptsz->index_m200c] = m_asked;
+  pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
+
+  // double r_asked = x_asked*pvectsz[ptsz->index_r200c];
+
+  class_call(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
+                          200.*(pvectsz[ptsz->index_Rho_crit]),
+                          pvectsz[ptsz->index_Delta_c],
+                          pvectsz[ptsz->index_Rho_crit],
+                          z,
+                          &pvectsz[ptsz->index_mVIR],
+                          ptsz,
+                          pba),
+                  ptsz->error_message,
+                  ptsz->error_message);
+ //
+ //  // rvir needed in bcm model
+  rvir = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+
+
+free(pvectsz);
+free(pvecback);
+
+return rvir;
+
+
+}
+
+
+
+
+
+
 double get_gas_profile_at_x_M_z_bcm_200c(double x_asked, // this is just radius
                                          double m_asked,
                                          double z,
@@ -12855,7 +12938,8 @@ if (
 ||((V->ptsz->has_kSZ_kSZ_gallens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_hf))
 ){
 
-double Wg = radial_kernel_W_galaxy_lensing_at_z(z,V->pvectsz,V->pba,V->ptsz);
+double Wg = radial_kernel_W_galaxy_lensing_at_z(z,//V->pvectsz,V->pba,
+                                                V->ptsz);
 result *= Wg;
 }
 
@@ -12863,7 +12947,8 @@ if(
   ((V->ptsz->has_gallens_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_gallens_1h))
 ||((V->ptsz->has_gallens_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_gallens_2h))
 ){
-double Wg = radial_kernel_W_galaxy_lensing_at_z(z,V->pvectsz,V->pba,V->ptsz);
+double Wg = radial_kernel_W_galaxy_lensing_at_z(z,//V->pvectsz,V->pba,
+                                                V->ptsz);
 result *= pow(Wg,2.);
 }
 
@@ -21838,11 +21923,11 @@ printf("-> end tabulating Wz for source galaxies\n");
 
 
 
-int evaluate_redshift_int_gallens_sources(double * pvectsz,
-                                          struct tszspectrum * ptsz)
+double  evaluate_redshift_int_gallens_sources(double z,
+                                              struct tszspectrum * ptsz)
   {
 
-   double z = pvectsz[ptsz->index_z];
+   // double z = pvectsz[ptsz->index_z];
    double z_asked = log(1.+z);
 
    if (z<exp(ptsz->array_z_W_gallens_sources[0])-1.)
@@ -21851,15 +21936,17 @@ int evaluate_redshift_int_gallens_sources(double * pvectsz,
       z_asked =  ptsz->array_z_W_gallens_sources[ptsz->n_z_W_gallens_sources-1];
 
 
-   pvectsz[ptsz->index_W_gallens_sources] =  exp(pwl_value_1d(ptsz->n_z_W_gallens_sources,
-                                                        ptsz->array_z_W_gallens_sources,
-                                                        ptsz->array_W_gallens_sources,
-                                                        z_asked));
-if ( pvectsz[ptsz->index_W_gallens_sources] == 0){
+   // pvectsz[ptsz->index_W_gallens_sources]
+   double result  =  exp(pwl_value_1d(ptsz->n_z_W_gallens_sources,
+                                      ptsz->array_z_W_gallens_sources,
+                                      ptsz->array_W_gallens_sources,
+                                      z_asked));
+// if ( pvectsz[ptsz->index_W_gallens_sources] == 0){
+if ( result == 0){
   printf("null W gallens source %.3e\n",z);
   exit(0);
 }
-return _SUCCESS_;
+return result;
 }
 
 

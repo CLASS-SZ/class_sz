@@ -16928,25 +16928,27 @@ return result;
 
 
 double radial_kernel_W_galaxy_lensing_at_z(double z,
-                                           double * pvectsz,
-                                           struct background * pba,
+                                           // double * pvectsz,
+                                           // struct background * pba,
                                            struct tszspectrum * ptsz){
 
-    evaluate_redshift_int_gallens_sources(pvectsz,ptsz);
-    double redshift_int_sources = pvectsz[ptsz->index_W_gallens_sources];
+    // evaluate_redshift_int_gallens_sources(pvectsz,ptsz);
+    double redshift_int_sources = evaluate_redshift_int_gallens_sources(z,ptsz);//pvectsz[ptsz->index_W_gallens_sources];
     // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
-    double chi = sqrt(pvectsz[ptsz->index_chi2]);
+    // double chi = sqrt(pvectsz[ptsz->index_chi2]);
     // pvectsz[ptsz->index_lensing_Sigma_crit] = pow(3.*pow(pba->H0/pba->h,2)/2./ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_sources);
 
-    pvectsz[ptsz->index_lensing_Sigma_crit] = 1./(redshift_int_sources);
+    // pvectsz[ptsz->index_lensing_Sigma_crit] = 1./(redshift_int_sources);
 
-    if (isnan(pvectsz[ptsz->index_lensing_Sigma_crit])||isinf(pvectsz[ptsz->index_lensing_Sigma_crit])){
+    // if (isnan(pvectsz[ptsz->index_lensing_Sigma_crit])||isinf(pvectsz[ptsz->index_lensing_Sigma_crit])){
+      if (isnan(redshift_int_sources)||isinf(redshift_int_sources)){
+
       printf("%.3e\n",redshift_int_sources);
       printf("nan or inf in sigmacrit\n");
       exit(0);
     }
 
-    return 1./pvectsz[ptsz->index_lensing_Sigma_crit];
+    return redshift_int_sources;//1./pvectsz[ptsz->index_lensing_Sigma_crit];
 
 
                                            }

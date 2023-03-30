@@ -755,6 +755,10 @@ cdef extern from "class.h":
     double get_planck_sigma_at_theta500(double theta500, void * ptsz)
     double get_szcountsz_sigma_at_theta_in_patch(double theta500, int id, void * ptsz)
 
+    double get_rvir_of_m200c_at_z(double m_asked,
+                                  double z_asked,
+                                  void * pba,
+                                  void * ptsz)
     double get_gas_profile_at_x_M_z_nfw_200c(double x_asked,
                                              double m_asked,
                                              double z_asked,
@@ -818,7 +822,11 @@ cdef extern from "class.h":
                              void * pba,
                              void * ptsz)
 
+    double radial_kernel_W_galaxy_lensing_at_z(double z,
+                                               void * ptsz)
 
+    double get_source_galaxy_number_counts(double z,
+                                           void * ptsz)
     double get_dkappacmbdz_at_l_and_z(double l,
                                       double z,
                                       void * pba,

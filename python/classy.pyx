@@ -2895,6 +2895,10 @@ cdef class Class:
     def get_gas_profile_at_x_M_z_bcm_200c(self, x_asked, m_asked,z):
         return get_gas_profile_at_x_M_z_bcm_200c(x_asked,m_asked,z,&self.ba,&self.tsz)
 
+    def get_rvir_of_m200c_at_z(self,m_asked,z):
+        return get_rvir_of_m200c_at_z(m_asked,z,&self.ba,&self.tsz)
+
+
     def get_gas_profile_at_x_M_z_nfw_200c(self,r_asked,m_asked,z_asked):
         return get_gas_profile_at_x_M_z_nfw_200c(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
 
@@ -3009,8 +3013,14 @@ cdef class Class:
 
         return fRel
 
+    def get_radial_kernel_W_galaxy_lensing_at_z(self,double z):
+        return radial_kernel_W_galaxy_lensing_at_z(z,&self.tsz)
+
     def get_ng_bar_at_z(self,double z):
         return evaluate_mean_galaxy_number_density_at_z(z, &self.tsz)
+
+    def get_source_galaxy_number_counts(self,double z):
+        return get_source_galaxy_number_counts(z, &self.tsz)
 
     def get_N_satellites(self,double z,double M_halo,double Nc_mean,double M_min,double alpha_s,double M1_prime):
         Ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,Nc_mean,M_min,alpha_s,M1_prime,&self.tsz,&self.ba)
