@@ -317,7 +317,7 @@ double delta_to_delta_prime_nfw(
   int tabulate_redshift_int_lensmag(struct tszspectrum * ptsz,
                                     struct background * pba);
 
-  int evaluate_redshift_int_gallens_sources(double * pvectsz,
+  double evaluate_redshift_int_gallens_sources(double z,
                                     struct tszspectrum * ptsz);
 
   int tabulate_redshift_int_gallens_sources(struct tszspectrum * ptsz,

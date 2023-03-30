@@ -2397,8 +2397,8 @@ double radial_kernel_W_cmb_lensing_at_z(double z,
                                         struct tszspectrum * ptsz);
 
 double radial_kernel_W_galaxy_lensing_at_z(double z,
-                                           double * pvectsz,
-                                           struct background * pba,
+                                           // double * pvectsz,
+                                           // struct background * pba,
                                            struct tszspectrum * ptsz);
 
 double radial_kernel_W_galaxy_lensing_magnification_at_z(double z,
@@ -2597,6 +2597,11 @@ double get_gas_profile_at_x_M_z_nfw_200c(double x_asked,
                                          struct background * pba,
                                          struct tszspectrum * ptsz);
 
+double get_rvir_of_m200c_at_z(
+                                         double m_asked,
+                                         double z_asked,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz);
 
 double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
                                          double m_asked,
