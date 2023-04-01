@@ -307,7 +307,7 @@ class h_u_b:
         return 1. / (np.log(1.+c) - c/(1.+c))
 
     def nfwfourier_u(self):
-        rs = self.r_star()#*(1.+self.z)
+        rs = self.r_star()*(1.+self.z)  ## should be times (1+z)
         c = self.nu_to_c200c()*5.
         c = c/c*5.
         a = self.ampl_nfw(c)

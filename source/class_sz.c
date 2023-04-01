@@ -175,6 +175,7 @@ int class_sz_cosmo_init(  struct background * pba,
    {
       if (ptsz->sz_verbose > 0)
          printf("->No class_sz quantities requested - modules skipped.\n");
+         ptsz->skip_class_sz = 1;
          return _SUCCESS_;
    }
 
