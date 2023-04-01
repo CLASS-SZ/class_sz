@@ -119,6 +119,8 @@ cdef class Class:
     cpdef object ncp   # Keeps track of the structures initialized, in view of cleaning.
 
 
+
+
     cpdef double sigma8_fast
     cpdef object class_szfast
 
@@ -138,6 +140,7 @@ cdef class Class:
     property nonlinear_method:
         def __get__(self):
             return self.nl.method
+
 
 #    def set_default(self):
 #        _pars = {
@@ -229,7 +232,7 @@ cdef class Class:
         # print('level:',self.ncp)
         if(self.allocated != True):
           return
-        if self.tsz.use_class_sz_fast_mode == 1:
+        if self.tsz.use_class_sz_fast_mode == 1 and self.tsz.skip_class_sz == 0:
             szcounts_free(&self.csz,&self.tsz)
             szpowerspectrum_free(&self.tsz)
         if "szcount" in self.ncp: #BB: added for class_sz
@@ -535,19 +538,13 @@ cdef class Class:
         return
 
     def compute_class_szfast(self):
-        # print("print parameters:")
-        # print(self._pars)
-        self.compute(level=["thermodynamics"])
-        # print(self._pars)
+        self.compute(level=["input"])
+        # print("skip",self.tsz.skip_background_and_thermo)
         params_settings = self._pars
-
-
-        # BB playground for emulators
-        # cszfast = classy_szfast()
-        cszfast = classy_szfast(**params_settings)
         # print(self._pars)
-        # params_settings = self._pars
 
+        # Emulators
+        cszfast = classy_szfast(**params_settings)
 
         # print('calculating cmb')
         start = time.time()
@@ -555,18 +552,18 @@ cdef class Class:
         end = time.time()
         # print('cmb calculation took:',end-start)
 
+        if self.pt.has_pk_matter and self.tsz.skip_pk == 0:
+          # print('calculating pkl')
+          start = time.time()
+          cszfast.calculate_pkl(**params_settings)
+          end = time.time()
+          # print('pk calculation took:',end-start)
 
-        # print('calculating pkl')
-        start = time.time()
-        cszfast.calculate_pkl(**params_settings)
-        end = time.time()
-        # print('pk calculation took:',end-start)
-
-        # print('calculating pknl')
-        start = time.time()
-        cszfast.calculate_pknl(**params_settings)
-        end = time.time()
-        # print('pknl calculation took:',end-start)
+          # print('calculating pknl')
+          start = time.time()
+          cszfast.calculate_pknl(**params_settings)
+          end = time.time()
+          # print('pknl calculation took:',end-start)
 
         # print('calculating sigma8')
         start = time.time()
@@ -579,48 +576,68 @@ cdef class Class:
         cszfast.calculate_sigma8_at_z(**params_settings)
 
 
-        self.tsz.use_class_sz_fast_mode = 1
 
-        if class_sz_cosmo_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
-        &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
-            self.struct_cleanup()
-            raise CosmoComputationError(self.tsz.error_message)
 
-        # print('tabulate sigma')
-        start = time.time()
-        cszfast.calculate_sigma(**params_settings)
-        # print('lnsigma2',cszfast.cszfast_pk_grid_lnsigma2_flat)
-        # print('dsigma2',cszfast.cszfast_pk_grid_dsigma2_flat)
-        # print('ln1pz',cszfast.cszfast_pk_grid_ln1pz)
-        # print('lnr',cszfast.cszfast_pk_grid_lnr)
-        if self.tsz.need_sigma == 1:
-          index_z_r = 0
-          for index_z in range(self.tsz.n_arraySZ):
-            for index_r in range(self.tsz.ndimSZ):
-                  self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
-                  self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
-                  self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
-                  self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
-                  self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
-                  self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
-                  self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
-                  index_z_r += 1
-        end = time.time()
-        # print('end tabulate sigma:',end-start)
 
-        self.class_szfast = cszfast
 
-        if szpowerspectrum_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
-        &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
-            self.struct_cleanup()
-            raise CosmoComputationError(self.tsz.error_message)
-        if szcount_init(&(self.ba), &(self.nl), &(self.pm),
-        &(self.tsz),&(self.csz)) == _FAILURE_:
-            self.struct_cleanup()
-            raise CosmoComputationError(self.tsz.error_message)
 
-        self.computed = True
-        return
+        if self.tsz.skip_background_and_thermo:
+          cszfast.calculate_chi(**params_settings)
+          cszfast.calculate_hubble(**params_settings)
+          self.tsz.use_class_sz_fast_mode = 1
+          self.class_szfast = cszfast
+          self.computed = True
+          return
+        else:
+          self.compute(level=["thermodynamics"])
+          self.tsz.use_class_sz_fast_mode = 1
+          if class_sz_cosmo_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+          &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
+              self.struct_cleanup()
+              raise CosmoComputationError(self.tsz.error_message)
+          if self.tsz.skip_class_sz:
+              # print("skipping class_sz")
+              # print("pkmatter:",self.pt.has_pk_matter)
+              self.computed = True
+              self.class_szfast = cszfast
+              return
+          else:
+            # print('tabulate sigma')
+            start = time.time()
+            cszfast.calculate_sigma(**params_settings)
+            # print('lnsigma2',cszfast.cszfast_pk_grid_lnsigma2_flat)
+            # print('dsigma2',cszfast.cszfast_pk_grid_dsigma2_flat)
+            # print('ln1pz',cszfast.cszfast_pk_grid_ln1pz)
+            # print('lnr',cszfast.cszfast_pk_grid_lnr)
+            if self.tsz.need_sigma == 1:
+              index_z_r = 0
+              for index_z in range(self.tsz.n_arraySZ):
+                for index_r in range(self.tsz.ndimSZ):
+                      self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
+                      self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
+                      self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
+                      self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
+                      self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
+                      self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
+                      self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
+                      index_z_r += 1
+            end = time.time()
+            # print('end tabulate sigma:',end-start)
+
+
+
+            if szpowerspectrum_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+            &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
+                self.struct_cleanup()
+                raise CosmoComputationError(self.tsz.error_message)
+            if szcount_init(&(self.ba), &(self.nl), &(self.pm),
+            &(self.tsz),&(self.csz)) == _FAILURE_:
+                self.struct_cleanup()
+                raise CosmoComputationError(self.tsz.error_message)
+
+            self.computed = True
+            self.class_szfast = cszfast
+            return
 
 
 
@@ -1486,6 +1503,10 @@ cdef class Class:
         # we need d sigma8/d ln a = - (d sigma8/dz)*(1+z)
 
         # if possible, use two-sided derivative with default value of z_step
+        if self.tsz.use_class_sz_fast_mode == 1:
+            return self.class_szfast.get_effective_f_sigma8(z,z_step=z_step)
+
+
         if z >= z_step:
             return (self.sigma(8/self.h(),z-z_step,h_units=True)-self.sigma(8/self.h(),z+z_step,h_units=True))/(2.*z_step)*(1+z)
         else:
@@ -1576,7 +1597,10 @@ cdef class Class:
 
     def rs_drag(self):
         if self.tsz.use_class_sz_fast_mode == 1:
-          return self.th.rs_d
+          if self.tsz.skip_background_and_thermo:
+            return self.class_szfast.rs_drag()
+          else:
+            return self.th.rs_d
         else:
           self.compute(["thermodynamics"])
           return self.th.rs_d
@@ -1603,13 +1627,16 @@ cdef class Class:
 
         pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
 
-        if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
-            raise CosmoSevereError(self.ba.error_message)
+        if self.tsz.skip_background_and_thermo:
+          D_A = self.class_szfast.get_chi(z)*(1.+z)
+        else:
+          if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
+              raise CosmoSevereError(self.ba.error_message)
 
-        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
-            raise CosmoSevereError(self.ba.error_message)
+          if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+              raise CosmoSevereError(self.ba.error_message)
 
-        D_A = pvecback[self.ba.index_bg_ang_distance]
+          D_A = pvecback[self.ba.index_bg_ang_distance]
 
         free(pvecback)
 
@@ -1718,13 +1745,16 @@ cdef class Class:
 
         pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
 
-        if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
-            raise CosmoSevereError(self.ba.error_message)
+        if self.tsz.skip_background_and_thermo:
+          H = self.class_szfast.get_hubble(z)
+        else:
+          if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
+              raise CosmoSevereError(self.ba.error_message)
 
-        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
-            raise CosmoSevereError(self.ba.error_message)
+          if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+              raise CosmoSevereError(self.ba.error_message)
 
-        H = pvecback[self.ba.index_bg_H]
+          H = pvecback[self.ba.index_bg_H]
 
         free(pvecback)
 

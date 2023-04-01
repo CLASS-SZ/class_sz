@@ -8,6 +8,10 @@ import numpy as np
 
 class classy_sz(classy):
     use_class_sz_fast_mode = 0 # this is passed in the yaml file
+    lensing_lkl = "SOLikeT"
+    # skip_background_and_thermo = True
+    ell_factor = False # True for pyactlite and bplike, False for clik
+
     def initialize(self):
         """Importing CLASS from the correct path, if given, and if not, globally."""
         self.classy_module = self.is_installed()
@@ -26,6 +30,10 @@ class classy_sz(classy):
         # Derived parameters that may not have been requested, but will be necessary later
         self.derived_extra = []
         self.log.info("Initialized!")
+
+
+        # print(self.lensing_lkl)
+        # exit(0)
 
         # # class_sz default params for lkl
         # self.extra_args["output"] = 'tSZ_1h'
@@ -68,8 +76,36 @@ class classy_sz(classy):
                     args_names=[],
                     args=[])
 
+        if self.use_class_sz_fast_mode:
+            if "Cl" in requirements:
+                # make sure cobaya still runs as it does for standard classy
+                requirements.pop("Cl")
+                # specify the method to collect the new observable
+                self.collectors["Cl"] = Collector(
+                        method="lensed_cl", # name of the method in classy.pyx
+                        args_names=[],
+                        args=[])
+
+
         super().must_provide(**requirements)
 
+    # get the required new observable
+    def get_Cl(self,ell_factor=False):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl"])
+        # print(cls)
+        lcp = np.asarray(cls['ell'])
+        # print(self.lensing_lkl)
+        if ell_factor==True:
+            cls['tt'] *= (2.7255e6)**2.*(lcp*(lcp+1.))/2./np.pi
+            cls['te'] *= (2.7255e6)**2.*(lcp*(lcp+1.))/2./np.pi
+            cls['ee'] *= (2.7255e6)**2.*(lcp*(lcp+1.))/2./np.pi
+
+        if self.lensing_lkl ==  "SOLikeT":
+            cls['pp'] *= (lcp*(lcp+1.))**2./4.
+        else: # here for the planck lensing lkl, using lfactor option gives:
+            cls['pp'] *= (lcp*(lcp+1.))**2.*1./2./np.pi
+        return cls
     # get the required new observable
     def get_Cl_sz(self):
         cls = {}
@@ -186,6 +222,46 @@ class classy_sz(classy):
             # Prepare necessary extra derived parameters
         state["derived_extra"] = deepcopy(d_extra)
 
+
+    # # get the required new observable
+    # def get_Cl(self,ell_factor=True,units="FIRASmuK2"):
+    #     ell_factor=self.ell_factor
+    #     # if self.tsz.use_class_sz_fast_mode == 1:
+    #     cls = {}
+    #     cls['ell'] = np.arange(20000)
+    #     # print(cls['ell'])
+    #     cls['tt'] = np.zeros(20000)
+    #     cls['te'] = np.zeros(20000)
+    #     cls['ee'] = np.zeros(20000)
+    #     cls['pp'] = np.zeros(20000)
+    #     # if self.tt_spectra is not None:
+    #     nl = len(self.classy.class_szfast.cp_predicted_tt_spectrum)
+    #     # print('nl:',nl)
+    #     cls['tt'][2:nl+2] = (2.7255e6)**2.*self.classy.class_szfast.cp_predicted_tt_spectrum
+    #     if ell_factor==False:
+    #         lcp = np.asarray(cls['ell'][2:nl+2])
+    #         cls['tt'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
+    #
+    # # if self.te_spectra is not None:
+    #     cls['te'][2:nl+2] = (2.7255e6)**2.*self.classy.class_szfast.cp_predicted_te_spectrum
+    #     if ell_factor==False:
+    #         lcp = np.asarray(cls['ell'][2:nl+2])
+    #         cls['te'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
+    # # if self.ee_spectra is not None:
+    #     cls['ee'][2:nl+2] = (2.7255e6)**2.*self.classy.class_szfast.cp_predicted_ee_spectrum
+    #     if ell_factor==False:
+    #         lcp = np.asarray(cls['ell'][2:nl+2])
+    #         cls['ee'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
+    #     # if self.pp_spectra is not None:
+    #         # nl = len(self.pp_spectra[0])
+    #     if self.lensing_lkl ==  "SOLikeT":
+    #         cls['pp'][2:nl+2] = self.classy.class_szfast.cp_predicted_pp_spectrum/4. ## this is clkk... works for so lensinglite lkl
+    #     else:
+    #         # here for the planck lensing lkl, using lfactor option gives:
+    #         lcp = np.asarray(cls['ell'][2:nl+2])
+    #         cls['pp'][2:nl+2] = self.classy.class_szfast.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
+    #         cls['pp'][2:nl+2] *= (lcp*(lcp+1.))**2./2./np.pi
+    #     return cls
 
 
 

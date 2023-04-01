@@ -184,7 +184,9 @@ class classy_szfast(object):
         # # self.pkl_cloughtocher_interp = CloughTocher2DInterpolator(list(zip(z_arr,np.log(k_arr))), np.log(pk_re).T)
         # exit(0)
         # self.pkl_cloughtocher_interp = CloughTocher2DInterpolator(list(zip(z_arr,np.log(k_arr))), pk_value)
+        # is this line making things slower?
         self.pkl_interp = PowerSpectrumInterpolator(z_arr,k_arr,np.log(pk_re).T,logP=True)
+        # self.pkl_interp = None
         self.cszfast_pk_grid_pk = pk_re
         self.cszfast_pk_grid_pk_flat = pk_re.flatten()
         return pk_re, k_arr, z_arr
@@ -312,7 +314,9 @@ class classy_szfast(object):
         # self.pknl_linearnd_interp = LinearNDInterpolator(list(zip(z_arr,np.log(k_arr))), pk_re.T)
         # self.pknl_cloughtocher_interp = CloughTocher2DInterpolator(list(zip(z_arr,np.log(k_arr))), pk_re.T)
 
+        # is this line making things slower?
         self.pknl_interp = PowerSpectrumInterpolator(z_arr,k_arr,np.log(pk_re).T,logP=True)
+        # self.pknl_interp = None
         self.cszfast_pk_grid_pknl = pk_re
         self.cszfast_pk_grid_pknl_flat = pk_re.flatten()
         return pk_re, k_arr, z_arr
@@ -420,6 +424,7 @@ class classy_szfast(object):
         # return np.exp(pk)
         return self.pkl_interp.P(z_asked,k_asked)
 
+    # function used to overwrite the classy function in fast mode.
     def get_sigma_at_r_and_z(self,r_asked,z_asked):
         # if method == 'linear':
         #     pk = self.pknl_linearnd_interp(z_asked,np.log(k_asked))
@@ -435,7 +440,7 @@ class classy_szfast(object):
 
 
 
-    def get_hubble(self, z,units="km/s/Mpc"):
+    def get_hubble(self, z,units="1/Mpc"):
         return np.array(self.hz_interp(z)*H_units_conv_factor[units])
 
     def get_chi(self, z):
@@ -504,8 +509,12 @@ class classy_szfast(object):
     def get_sigma8_at_z(self,z):
         return self.s8z_interp(z)
 
+
+    def rs_drag(self):
+        return self.cp_predicted_der[13]
     #################################
     # gives an estimation of f(z)*sigma8(z) at the scale of 8 h/Mpc, computed as (d sigma8/d ln a)
+    # Now used by cobaya wrapper.
     def get_effective_f_sigma8(self, z, z_step=0.1,params_values_dict={}):
         """
         effective_f_sigma8(z)
