@@ -256,6 +256,7 @@ cdef extern from "class.h":
         double M2SZ
         int skip_class_sz
         int skip_pk
+        int skip_pkl
         int skip_background_and_thermo
         double cl_gal_gal_A_sn
         double * array_m_dndlnM
