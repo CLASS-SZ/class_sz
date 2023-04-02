@@ -111,7 +111,7 @@ Clean up and Compile
 The code **class_sz** runs in parallel, so you need a **gcc** compiler that is not **clang**.
 
 The previous commands compile both the executable and the python wrapper.
-If you do not want to compile the **classy** python module do ‘$ make class’.
+If you do not want to compile the **classy** python module do ‘$ make class_sz’. Or even faster: ‘$ make -j class_sz’.
 
 For the python module, you need the prerequisites such as **numpy**, **scipy**
 and **Cython** installed on your computer.
@@ -148,7 +148,21 @@ $ make
 
 (Note that the second command must be 'make', and not 'make class' for the python wrappper to be compiled.)
 
+With more recent python/Setuptools version, the python wrapper may not compile, hence you may need to do:
+
+
+$ cd python
+
+$ pip install -e .
+
+(When everything seems broken, its often possible that several classy_sz are installed on your system and there is confusion.
+In this case you need to take great care on cleanup and making sure that when you load the module, it loads the files you just compiled!
+This is true for all code installations in general.)
+
+
 That's it!
+
+
 To check the install is fine, try "import classy_sz" in some python code. It shouldn't crash.
 
 Have a look at the notebooks https://github.com/CLASS-SZ/notebooks. They all use the python wrapper.
