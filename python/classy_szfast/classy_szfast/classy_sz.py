@@ -76,23 +76,22 @@ class classy_sz(classy):
                     args_names=[],
                     args=[])
 
-        if self.use_class_sz_fast_mode:
-            if "Cl" in requirements:
-                # make sure cobaya still runs as it does for standard classy
-                requirements.pop("Cl")
-                # specify the method to collect the new observable
-                self.collectors["Cl"] = Collector(
-                        method="lensed_cl", # name of the method in classy.pyx
-                        args_names=[],
-                        args=[])
-
 
         super().must_provide(**requirements)
 
     # get the required new observable
-    def get_Cl(self,ell_factor=False):
+    def get_Cl(self, ell_factor=False, units="FIRASmuK2"):
+        if self.use_class_sz_fast_mode:
+            return self.get_Clfast()
+        else:
+            return self._get_Cl(ell_factor=ell_factor, units=units, lensed=True)
+    def get_Clfast(self):
+        # print(ell_factor)
+        # exit(0)
         cls = {}
         cls = deepcopy(self._current_state["Cl"])
+        ell_factor = self.ell_factor
+        # print(ell_factor)
         # print(cls)
         lcp = np.asarray(cls['ell'])
         # print(self.lensing_lkl)
@@ -101,6 +100,10 @@ class classy_sz(classy):
             cls['te'] *= (2.7255e6)**2.*(lcp*(lcp+1.))/2./np.pi
             cls['ee'] *= (2.7255e6)**2.*(lcp*(lcp+1.))/2./np.pi
 
+        # print(cls['tt'][1230])
+        # print(cls['te'][1230])
+        # print(cls['ee'][1230])
+        # exit(0)
         if self.lensing_lkl ==  "SOLikeT":
             cls['pp'] *= (lcp*(lcp+1.))**2./4.
         else: # here for the planck lensing lkl, using lfactor option gives:
@@ -124,11 +127,15 @@ class classy_sz(classy):
         cls = deepcopy(self._current_state["sz_binned_cluster_counts"])
         return cls
 
+    # IMPORTANT: this method is imported from cobaya and modified to accomodate the emulators
     def calculate(self, state, want_derived=True, **params_values_dict):
         # Set parameters
         params_values = params_values_dict.copy()
-        params_values['ln10^{10}A_s'] = params_values.pop("logA")
-        self.set(params_values)
+        try:
+            params_values['ln10^{10}A_s'] = params_values.pop("logA")
+            self.set(params_values)
+        except KeyError:
+            self.set(params_values)
         # Compute!
         try:
             if self.use_class_sz_fast_mode == 1:
@@ -159,6 +166,7 @@ class classy_sz(classy):
             raise  # No LoggedError, so that CLASS traceback gets printed
         # Gather products
         for product, collector in self.collectors.items():
+            # print(product,collector)
             # Special case: sigma8 needs H0, which cannot be known beforehand:
             if "sigma8" in self.collectors:
                 self.collectors["sigma8"].args[0] = 8 / self.classy.h()
@@ -221,6 +229,7 @@ class classy_sz(classy):
             state["derived"] = {p: d.get(p) for p in self.output_params}
             # Prepare necessary extra derived parameters
         state["derived_extra"] = deepcopy(d_extra)
+        # exit(0)
 
 
     # # get the required new observable
@@ -262,6 +271,24 @@ class classy_sz(classy):
     #         cls['pp'][2:nl+2] = self.classy.class_szfast.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
     #         cls['pp'][2:nl+2] *= (lcp*(lcp+1.))**2./2./np.pi
     #     return cls
+
+    # def check_ranges(self, z, k):
+    #     return 1
+
+    # IMPORTANT: copied from cobaya and changed.
+    def get_param(self, p):
+        translated = self.translate_param(p)
+        for pool in ["params", "derived", "derived_extra"]:
+            value = (self.current_state[pool] or {}).get(translated, None)
+            if p == 'omegam':
+                # print(translated)
+                # print(self.classy.Omega_m())
+                # exit(0)
+                return self.classy.Omega_m()
+            if value is not None:
+                return value
+
+        raise LoggedError(self.log, "Parameter not known: '%s'", p)
 
 
 

@@ -370,7 +370,7 @@ class classy_szfast(object):
         self.cp_predicted_da  = self.cp_da_nn[cosmo_model].predictions_np(params_dict)[0]
         self.chi_interp = scipy.interpolate.interp1d(
                                                     self.cp_z_interp,
-                                                    self.cp_predicted_da/(1.+self.cp_z_interp),
+                                                    self.cp_predicted_da*(1.+self.cp_z_interp),
                                                     kind='linear',
                                                     axis=-1,
                                                     copy=True,
