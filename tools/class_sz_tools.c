@@ -21436,6 +21436,11 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct primordial * ppm,
                                       struct tszspectrum * ptsz){
 
+
+if (ptsz->use_class_sz_fast_mode){
+ptsz->ndimSZ = 500;
+}
+
 if (ptsz->need_sigma == 0)
     return 0;
 
@@ -21445,7 +21450,7 @@ if (ptsz->need_sigma == 0)
 
 
 if (ptsz->use_class_sz_fast_mode){
-  ptsz->ndimSZ = 500; // fixed by cosmopower emulator k-sampling
+   // fixed by cosmopower emulator k-sampling
   class_alloc(ptsz->array_radius,sizeof(double *)*ptsz->ndimSZ,ptsz->error_message);
 
 

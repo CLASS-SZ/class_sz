@@ -53,6 +53,7 @@ class classy_szfast(object):
         self.cszfast_pk_grid_nz = 100 # has to be same as narraySZ, i.e., ndim_redshifts; it is setup hereafter if ndim_redshifts is passed
         self.cszfast_pk_grid_zmax = 5.
         self.cszfast_pk_grid_z = np.linspace(0.,self.cszfast_pk_grid_zmax,self.cszfast_pk_grid_nz)
+        self.cszfast_pk_grid_ln1pz = np.log(1.+self.cszfast_pk_grid_z)
 
         self.cszfast_pk_grid_kmin = 1e-4
         self.cszfast_pk_grid_kmax = 50.
@@ -66,6 +67,7 @@ class classy_szfast(object):
             if k == 'ndim_redshifts':
                 self.cszfast_pk_grid_nz = v
                 self.cszfast_pk_grid_z = np.linspace(0.,self.cszfast_pk_grid_zmax,self.cszfast_pk_grid_nz)
+                self.cszfast_pk_grid_ln1pz = np.log(1.+self.cszfast_pk_grid_z)
 
         # print('self.cszfast_pk_grid_nk',self.cszfast_pk_grid_nk)
         # print('self.cszfast_pk_grid_nz',self.cszfast_pk_grid_nz)
@@ -90,6 +92,7 @@ class classy_szfast(object):
         self.cszfast_zgrid = np.linspace(self.cszfast_zgrid_zmin,
                                          self.cszfast_zgrid_zmax,
                                          self.cszfast_zgrid_nz)
+
 
         self.cszfast_mgrid_mmin = 1e10
         self.cszfast_mgrid_mmax = 1e15
@@ -223,7 +226,7 @@ class classy_szfast(object):
         # h = params_values['H0']/100.
         # var = var.T
         # dvar = dvar.T
-        self.cszfast_pk_grid_ln1pz = np.log(1.+self.cszfast_pk_grid_z)
+
         self.cszfast_pk_grid_lnr = np.log(R)
         self.cszfast_pk_grid_sigma2 = var
         self.cszfast_pk_grid_sigma2_flat = var.flatten()

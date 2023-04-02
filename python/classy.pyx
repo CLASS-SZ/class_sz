@@ -559,12 +559,30 @@ cdef class Class:
             cszfast.calculate_pkl(**params_settings)
             end = time.time()
             # print('pk calculation took:',end-start)
+            #index_z_r = 0
+            #for index_z in range(self.tsz.n_arraySZ):
+            #  for index_r in range(self.tsz.ndimSZ):
+            #        self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
+            #        self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
+            #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
+            #        index_z_r += 1
 
           # print('calculating pknl')
           start = time.time()
           cszfast.calculate_pknl(**params_settings)
           end = time.time()
           # print('pknl calculation took:',end-start)
+
+          #index_z_r = 0
+          #for index_z in range(self.tsz.n_arraySZ):
+          #  for index_r in range(self.tsz.ndimSZ):
+          #        self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
+          #        self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
+          #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
+          #        index_z_r += 1
+
+
+
 
         # print('calculating sigma8')
         start = time.time()
@@ -618,8 +636,8 @@ cdef class Class:
                       self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
                       self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
                       self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
-                      self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
                       self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
+                      self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
                       self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
                       index_z_r += 1
             end = time.time()
@@ -1168,6 +1186,7 @@ cdef class Class:
         cdef double pk
         if self.tsz.use_class_sz_fast_mode == 1:
           pk = self.class_szfast.get_pknl_at_k_and_z(k,z)
+          # pk = self.get_pk_nonlin_at_k_and_z(k/self.h(), z)*self.h()**3
         else:
           if (self.pt.has_pk_matter == _FALSE_):
               raise CosmoSevereError("No power spectrum computed. You must add mPk to the list of outputs.")
@@ -1223,6 +1242,7 @@ cdef class Class:
 
         if self.tsz.use_class_sz_fast_mode == 1:
           pk_lin = self.class_szfast.get_pkl_at_k_and_z(k,z)
+          # pk_lin = self.get_pk_lin_at_k_and_z(k/self.h(), z)*self.h()**3
         else:
           if (self.pt.has_pk_matter == _FALSE_):
               raise CosmoSevereError("No power spectrum computed. You must add mPk to the list of outputs.")
@@ -1414,6 +1434,9 @@ cdef class Class:
         """
         cdef double sigma
         if self.tsz.use_class_sz_fast_mode == 1:
+          if R == 8.0:
+            return self.class_szfast.get_sigma8_at_z(z)
+
           sigma = self.class_szfast.get_sigma_at_r_and_z(R,z)
           # if h_units == True:
           #   sigma = self.class_szfast.get_sigma_at_r_and_z(R*self.h(),z)
