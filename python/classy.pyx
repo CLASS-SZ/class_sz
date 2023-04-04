@@ -546,11 +546,12 @@ cdef class Class:
         # Emulators
         cszfast = classy_szfast(**params_settings)
 
-        # print('calculating cmb')
-        start = time.time()
-        cszfast.calculate_cmb(**params_settings)
-        end = time.time()
-        # print('cmb calculation took:',end-start)
+        if self.tsz.skip_cmb == 0:
+          # print('calculating cmb')
+          start = time.time()
+          cszfast.calculate_cmb(**params_settings)
+          end = time.time()
+          # print('cmb calculation took:',end-start)
 
         if self.pt.has_pk_matter and self.tsz.skip_pk == 0:
           if self.tsz.skip_pkl == 0:
@@ -567,6 +568,7 @@ cdef class Class:
             #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
             #        index_z_r += 1
 
+        if self.tsz.skip_pknl == 0:
           # print('calculating pknl')
           start = time.time()
           cszfast.calculate_pknl(**params_settings)
@@ -583,7 +585,7 @@ cdef class Class:
 
 
 
-
+        
         # print('calculating sigma8')
         start = time.time()
         cszfast.calculate_sigma8_and_der(**params_settings)

@@ -7,6 +7,7 @@ import os
 import subprocess as sbp
 import os.path as osp
 
+# this file is currently what works on M1.
 # Recover the gcc compiler
 GCCPATH_STRING = sbp.Popen(
     # ['gcc-11', '-print-libgcc-file-name'],
