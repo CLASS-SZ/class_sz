@@ -302,6 +302,12 @@ $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^
 In setup.py:
 extra_link_args=['-lomp','-lgsl','-lfftw3','-lgslcblas'])
 
+Tensorflow. 
+To install the new version of class_sz, you will need tensorflow (needed for the cosmopower emulators). On M1/M2 make sure, you have the arch64 version of conda (if not, you need to remove your entire conda and install the arch64 version for Apple sillicon). 
+
+This video might be helpful https://www.youtube.com/watch?v=BEUU-icPg78
+Then you can follow standard Tensorflow installation recipe for M1, e.g., https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706 or https://developer.apple.com/forums/thread/697846 . 
+
 Compiler - GCC version
 ------------------------------
 
