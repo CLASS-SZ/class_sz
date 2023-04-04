@@ -166,6 +166,7 @@ To check the install is fine, try "import classy_sz" in some python code. It sho
 
 Have a look at the notebooks https://github.com/CLASS-SZ/notebooks. They all use the python wrapper.
 
+
 Python Wrapper Tensorflow and Cosmopower Dependency
 ------------------------------
 
