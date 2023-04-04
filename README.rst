@@ -167,7 +167,7 @@ To check the install is fine, try "import classy_sz" in some python code. It sho
 Have a look at the notebooks https://github.com/CLASS-SZ/notebooks. They all use the python wrapper.
 
 
-Python Wrapper Tensorflow and Cosmopower Dependency
+Python Wrapper (Tensorflow and Cosmopower Dependency)
 ------------------------------
 
 Since recently we have implemented emulators in classy_sz, now it has an extra-dependency to tensorflow through cosmopower. 
@@ -178,6 +178,7 @@ Since recently we have implemented emulators in classy_sz, now it has an extra-d
 4. Open notebooks/get_quantities_cosmopower.ipynb notebook and follow the instructions there to get the cosmopower emulators.
 5. Compile the fast python wrapper:
   $ cd python/classy_szfast
+  
   $ pip install -e .
 
 (might need to change the path there.
@@ -188,31 +189,23 @@ This path needs to be adapted so it matches the location of your cosmopower-orga
 
 6. Finally compile the python wrapper: 
   $ cd python
+  
   $ pip install -e .
   
 7. Check you can import classy_sz in your python/jupyter notebook, e.g.,:
   $ python
+  
   $ from classy_sz import Class
   
   or try to run any of the notebooks. 
 8. To run the emulator-based computations, simply change
   M.compute()
-  to M.compute_class_szfast()
+  
+  M.compute_class_szfast()
   
 9. There are many examples in the notebooks how to use class_szfast. See https://github.com/CLASS-SZ/notebooks.
 
 
-Note that to use this mode, you need the emulators and to pass parameters that they can understand.
-For that check instructions there:
-
-https://github.com/cosmopower-organization/notebooks/blob/main/get_quantities_cosmopower.ipynb
-
-
-If you are having trouble with tensorflow on Mac M1, note that we followed:
-
-https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706
-
-which worked fine.
 
 
 Some tips to run on computer clusters
