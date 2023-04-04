@@ -197,6 +197,7 @@ This path needs to be adapted so it matches the location of your cosmopower-orga
   
   $ from classy_sz import Class
 or try to run any of the notebooks. 
+
 8. To run the emulator-based computations, simply change
   M.compute()
   
