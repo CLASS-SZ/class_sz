@@ -93,6 +93,8 @@ class_sz_ptsz_parameter(n_l_psi_b1kg,int,50)
 class_sz_ptsz_parameter(n_nu_dcib0dz,int,80)
 class_sz_ptsz_parameter(n_z_dcib0dz,int,68)
 
+class_sz_ptsz_parameter(skip_cmb,int,0)
+class_sz_ptsz_parameter(skip_pknl,int,0)
 class_sz_ptsz_parameter(skip_pkl,int,0)
 class_sz_ptsz_parameter(skip_pk,int,0)
 class_sz_ptsz_parameter(skip_class_sz,int,0)

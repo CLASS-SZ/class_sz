@@ -68,6 +68,8 @@ class classy_szfast(object):
                 self.cszfast_pk_grid_nz = v
                 self.cszfast_pk_grid_z = np.linspace(0.,self.cszfast_pk_grid_zmax,self.cszfast_pk_grid_nz)
                 self.cszfast_pk_grid_ln1pz = np.log(1.+self.cszfast_pk_grid_z)
+                self.cszfast_pk_grid_pknl_flat = np.zeros(self.cszfast_pk_grid_nz*self.cszfast_pk_grid_nk)
+                self.cszfast_pk_grid_pkl_flat = np.zeros(self.cszfast_pk_grid_nz*self.cszfast_pk_grid_nk)
 
         # print('self.cszfast_pk_grid_nk',self.cszfast_pk_grid_nk)
         # print('self.cszfast_pk_grid_nz',self.cszfast_pk_grid_nz)
