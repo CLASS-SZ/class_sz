@@ -94,10 +94,14 @@
 #define _lens_lens_hf_ ((ptsz->has_lens_lens_hf == _TRUE_) && (index_md == ptsz->index_md_lens_lens_hf))
 #define _tSZ_gal_1h_ ((ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_1h))
 #define _tSZ_gal_2h_ ((ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_2h))
+#define _tSZ_gallens_1h_ ((ptsz->has_tSZ_gallens_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gallens_1h))
+#define _tSZ_gallens_2h_ ((ptsz->has_tSZ_gallens_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gallens_2h))
 #define _tSZ_cib_1h_ ((ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_cib_1h))
 #define _tSZ_cib_2h_ ((ptsz->has_tSZ_cib_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_cib_2h))
 #define _gal_cib_1h_ ((ptsz->has_gal_cib_1h == _TRUE_) && (index_md == ptsz->index_md_gal_cib_1h))
 #define _gal_cib_2h_ ((ptsz->has_gal_cib_2h == _TRUE_) && (index_md == ptsz->index_md_gal_cib_2h))
+#define _gallens_cib_1h_ ((ptsz->has_gallens_cib_1h == _TRUE_) && (index_md == ptsz->index_md_gallens_cib_1h))
+#define _gallens_cib_2h_ ((ptsz->has_gallens_cib_2h == _TRUE_) && (index_md == ptsz->index_md_gallens_cib_2h))
 #define _ngal_ngal_1h_ ((ptsz->has_ngal_ngal_1h == _TRUE_) && (index_md == ptsz->index_md_ngal_ngal_1h))
 #define _ngal_ngal_2h_ ((ptsz->has_ngal_ngal_2h == _TRUE_) && (index_md == ptsz->index_md_ngal_ngal_2h))
 #define _ngal_ngal_hf_ ((ptsz->has_ngal_ngal_hf == _TRUE_) && (index_md == ptsz->index_md_ngal_ngal_hf))
@@ -218,6 +222,8 @@ struct tszspectrum {
   double * cl_lens_lens_2h;
   double * cl_tSZ_gal_1h;
   double * cl_tSZ_gal_2h;
+  double * cl_tSZ_gallens_1h;
+  double * cl_tSZ_gallens_2h;
   double *** cl_ngal_ngal_1h;
   double *** cl_ngal_ngal_2h;
   double *** cl_ngal_ngal_hf;
@@ -230,6 +236,8 @@ struct tszspectrum {
   double ** cl_tSZ_cib_2h;
   double ** cl_gal_cib_1h;
   double ** cl_gal_cib_2h;
+  double ** cl_gallens_cib_1h;
+  double ** cl_gallens_cib_2h;
   double ** cl_lens_cib_1h;
   double ** cl_lens_cib_2h;
   double * cl_tSZ_lens_1h;
@@ -840,6 +848,26 @@ struct tszspectrum {
   int index_md_tSZ_gal_2h;
   int index_integrand_id_tSZ_gal_2h_first;
   int index_integrand_id_tSZ_gal_2h_last;
+
+  int has_tSZ_gallens_1h;
+  int index_md_tSZ_gallens_1h;
+  int index_integrand_id_tSZ_gallens_1h_first;
+  int index_integrand_id_tSZ_gallens_1h_last;
+
+  int has_tSZ_gallens_2h;
+  int index_md_tSZ_gallens_2h;
+  int index_integrand_id_tSZ_gallens_2h_first;
+  int index_integrand_id_tSZ_gallens_2h_last;
+
+  int has_gallens_cib_1h;
+  int index_md_gallens_cib_1h;
+  int index_integrand_id_gallens_cib_1h_first;
+  int index_integrand_id_gallens_cib_1h_last;
+
+  int has_gallens_cib_2h;
+  int index_md_gallens_cib_2h;
+  int index_integrand_id_gallens_cib_2h_first;
+  int index_integrand_id_gallens_cib_2h_last;
 
   int has_gal_cib_1h;
   int index_md_gal_cib_1h;

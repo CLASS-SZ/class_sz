@@ -585,7 +585,7 @@ cdef class Class:
 
 
 
-        
+
         # print('calculating sigma8')
         start = time.time()
         cszfast.calculate_sigma8_and_der(**params_settings)
@@ -639,7 +639,7 @@ cdef class Class:
                       self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
                       self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
                       self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
-                      self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
+                      self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pkl_flat[index_z_r]
                       self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
                       index_z_r += 1
             end = time.time()
@@ -951,6 +951,7 @@ cdef class Class:
           cls['te'] = np.zeros(20000)
           cls['ee'] = np.zeros(20000)
           cls['pp'] = np.zeros(20000)
+          cls['bb'] = np.zeros(20000)
 
           nl = len(self.class_szfast.cp_predicted_tt_spectrum)
           lcp = np.asarray(cls['ell'][2:nl+2])
@@ -2033,6 +2034,20 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_ykg(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of y x kg power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_tSZ_gallens_1h[index])
+            cl['2h'].append(self.tsz.cl_tSZ_gallens_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
 
     def cl_kSZ_kSZ_g(self):
         """
@@ -2477,6 +2492,25 @@ cdef class Class:
                 cl['ell'].append(self.tsz.ell[index])
             cl_gk[str(int(nu1))] = cl
         return cl_gk
+
+    def cl_kg_cib(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of kg x cib power spectrum
+        """
+        cl_y_cib = {}
+
+        for id_nu1 in range(self.tsz.cib_frequency_list_num):
+            nu1 = self.tsz.cib_frequency_list[id_nu1]
+            cl = {}
+            cl['ell'] = []
+            cl['1h'] = []
+            cl['2h'] = []
+            for index in range(self.tsz.nlSZ):
+                cl['1h'].append(self.tsz.cl_gallens_cib_1h[id_nu1][index])
+                cl['2h'].append(self.tsz.cl_gallens_cib_2h[id_nu1][index])
+                cl['ell'].append(self.tsz.ell[index])
+            cl_y_cib[str(int(nu1))] = cl
+        return cl_y_cib
 
 
     def cl_tSZ_cib(self):
