@@ -86,11 +86,13 @@ class classy_sz(classy):
         else:
             return self._get_Cl(ell_factor=ell_factor, units=units, lensed=True)
     def get_Clfast(self):
-        # print(ell_factor)
+        # print('ell_factor:',self.ell_factor)
         # exit(0)
         cls = {}
         cls = deepcopy(self._current_state["Cl"])
         ell_factor = self.ell_factor
+        # print(cls)
+        # exit(0)
         # print(ell_factor)
         # print(cls)
         lcp = np.asarray(cls['ell'])
@@ -100,12 +102,18 @@ class classy_sz(classy):
             cls['te'] *= (2.7255e6)**2.*(lcp*(lcp+1.))/2./np.pi
             cls['ee'] *= (2.7255e6)**2.*(lcp*(lcp+1.))/2./np.pi
 
+        if self.lensing_lkl == "ACT":
+            cls['tt'] *= (2.7255e6)**2.
+            cls['te'] *= (2.7255e6)**2.
+            cls['ee'] *= (2.7255e6)**2.
         # print(cls['tt'][1230])
         # print(cls['te'][1230])
         # print(cls['ee'][1230])
         # exit(0)
         if self.lensing_lkl ==  "SOLikeT":
             cls['pp'] *= (lcp*(lcp+1.))**2./4.
+        elif self.lensing_lkl == "ACT":
+            cls['pp'] *= 1.#(lcp*(lcp+1.))**2./4.
         else: # here for the planck lensing lkl, using lfactor option gives:
             cls['pp'] *= (lcp*(lcp+1.))**2.*1./2./np.pi
         return cls

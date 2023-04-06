@@ -193,7 +193,7 @@ class classy_szfast(object):
         self.pkl_interp = PowerSpectrumInterpolator(z_arr,k_arr,np.log(pk_re).T,logP=True)
         # self.pkl_interp = None
         self.cszfast_pk_grid_pk = pk_re
-        self.cszfast_pk_grid_pk_flat = pk_re.flatten()
+        self.cszfast_pk_grid_pkl_flat = pk_re.flatten()
         return pk_re, k_arr, z_arr
 
 
@@ -390,10 +390,13 @@ class classy_szfast(object):
         cls['te'] = np.zeros(self.cszfast_ldim)
         cls['ee'] = np.zeros(self.cszfast_ldim)
         cls['pp'] = np.zeros(self.cszfast_ldim)
+        cls['bb'] = np.zeros(self.cszfast_ldim)
         cls['tt'][2:self.cp_lmax+1] = (Tcmb_uk)**2.*self.cp_predicted_tt_spectrum.copy()
         cls['te'][2:self.cp_lmax+1] = (Tcmb_uk)**2.*self.cp_predicted_te_spectrum.copy()
         cls['ee'][2:self.cp_lmax+1] = (Tcmb_uk)**2.*self.cp_predicted_ee_spectrum.copy()
         cls['pp'][2:self.cp_lmax+1] = self.cp_predicted_pp_spectrum.copy()/4. ## this is clkk... works for so lensinglite lkl
+        # cls['bb'][2:self.cp_lmax+1] = self.cp_predicted_pp_spectrum.copy()/4. ## this is clkk... works for so lensinglite lkl
+        # print('doing gets')
         # For planck likelihood:
         # lcp = np.asarray(cls['ell'][2:nl+2])
         # cls['pp'][2:nl+2] = self.pp_spectra[0].copy()/(lcp*(lcp+1.))**2.
@@ -407,6 +410,7 @@ class classy_szfast(object):
             cls['tt'][2:self.cp_lmax+1] *= fac_l[2:self.cp_lmax+1]
             cls['te'][2:self.cp_lmax+1] *= fac_l[2:self.cp_lmax+1]
             cls['ee'][2:self.cp_lmax+1] *= fac_l[2:self.cp_lmax+1]
+            # cls['bb'] = np.zeros(self.cszfast_ldim)
         return cls
 
 
