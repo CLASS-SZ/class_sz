@@ -13373,6 +13373,15 @@ double integrand_mass(double logM, void *p){
                                            integrand_mass,
                                            params,ptsz->patterson_show_neval);
 
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
   pvectsz[ptsz->index_part_id_cov_hsv] = 2;
   V.pvectsz = pvectsz;
   params = &V;
@@ -13383,6 +13392,16 @@ double integrand_mass(double logM, void *p){
                                            epsrel, epsabs,
                                            integrand_mass,
                                            params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
   r = r_m_1*r_m_2;
                                      }
 
@@ -13401,6 +13420,15 @@ double integrand_mass(double logM, void *p){
                                            integrand_mass,
                                            params,ptsz->patterson_show_neval);
 
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
   pvectsz[ptsz->index_part_id_cov_hsv] = 2;
   V.pvectsz = pvectsz;
   params = &V;
@@ -13411,6 +13439,17 @@ double integrand_mass(double logM, void *p){
                                            epsrel, epsabs,
                                            integrand_mass,
                                            params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
   r = r_m_1*r_m_2;
                                      }
 
@@ -13585,6 +13624,16 @@ else{
                                            integrand_mass,
                                            params,ptsz->patterson_show_neval);
 
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
   pvectsz[ptsz->index_part_id_cov_hsv] = 2;
   V.pvectsz = pvectsz;
   params = &V;
@@ -13595,6 +13644,17 @@ else{
                                            epsrel, epsabs,
                                            integrand_mass,
                                            params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
   r = r_m_1*r_m_2;
                                      }
 
@@ -13613,6 +13673,16 @@ else{
                                            integrand_mass,
                                            params,ptsz->patterson_show_neval);
 
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
   pvectsz[ptsz->index_part_id_cov_hsv] = 2;
   V.pvectsz = pvectsz;
   params = &V;
@@ -13623,6 +13693,16 @@ else{
                                            epsrel, epsabs,
                                            integrand_mass,
                                            params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
   r = r_m_1*r_m_2;
                                      }
 
