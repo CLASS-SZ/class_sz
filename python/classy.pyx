@@ -538,13 +538,59 @@ cdef class Class:
         return
 
     def compute_class_szfast(self):
+        # print('input parameters:',self._pars)
+        # oldpars = self._pars.copy()
+        if 'ns' in self._pars:
+          self._pars['n_s'] = self._pars.pop('ns')
+        if 'As' in self._pars:
+          self._pars['A_s'] = self._pars.pop('As')
+        if 'mnu' in self._pars:
+          self._pars['m_ncdm'] = self._pars.pop('mnu')
+        if 'omch2' in self._pars:
+          self._pars['omega_cdm'] = self._pars.pop('omch2')
+        if 'ombh2' in self._pars:
+          self._pars['omega_b'] = self._pars.pop('ombh2')
+        if 'h' in self._pars:
+          self._pars['H0'] = 100.*self._pars.pop('h')
+        if 'Omega_b' in self._pars:
+          self._pars['omega_b'] = self._pars.pop('Omega_b')*(self._pars['H0']/100.)**2.
+        if 'Omega_cdm' in self._pars:
+          self._pars['omega_cdm'] = self._pars.pop('Omega_cdm')*(self._pars['H0']/100.)**2.
+
+
+        # print('new input parameters:',self._pars)
+
+
         self.compute(level=["input"])
+
+
         # print("skip",self.tsz.skip_background_and_thermo)
         params_settings = self._pars
         # print(self._pars)
+        # print('h',self.h())
+        # print(self.get_current_derived_parameters(['ln10^{10}A_s']))
 
         # Emulators
         cszfast = classy_szfast(**params_settings)
+
+        if 'A_s' in self._pars:
+          params_settings['ln10^{10}A_s'] = self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
+
+        if '100*theta_s' in self._pars:
+          # print('doing theta_s -> H0')
+          # cszfast.get_H0_from_thetas(params_settings)
+          print('We will compute that, but this is not what to do for fast-mode.\n')
+          print('It is ok for testing, but....\n')
+          print('You should pass H0 or h for maximum speed.\n')
+          print('You can always recover 100*theta_s as a derived parameter.\n')
+          params_settings['H0'] = 100.*self.h()
+        if 'sigma8' in self._pars:
+          print('We will compute that, but this is not what to do for fast-mode.\n')
+          print('It is ok for testing, but....\n')
+          print('You should pass A_s or ln10^{10}A_s for maximum speed.\n')
+          print('You can always recover sigma8 as a derived parameter.\n')
+          params_settings['ln10^{10}A_s'] = self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
+        # exit(0)
 
         if self.tsz.skip_cmb == 0:
           # print('calculating cmb')
@@ -3667,6 +3713,7 @@ cdef class Class:
 
         derived = {}
         for name in names:
+            # print('name:',name)
             if name == 'h':
                 value = self.ba.h
             elif name == 'H0':
@@ -3686,7 +3733,14 @@ cdef class Class:
             elif name == 'Neff':
                 value = self.ba.Neff
             elif name == 'Omega_m':
-                value = self.ba.Omega0_m
+                if self.tsz.skip_background_and_thermo:
+                  params_settings = self._pars
+                  value = (params_settings['omega_b']+params_settings['omega_cdm'])*(100./params_settings['H0'])**2.
+                else:
+                  value = self.ba.Omega0_m
+                # print(value)
+            # elif name == 'omegam':
+            #     value = self.ba.Omega0_m
             elif name == 'omega_m':
                 value = self.ba.Omega0_m*self.ba.h**2
             elif name == 'xi_idr':
@@ -3808,7 +3862,10 @@ cdef class Class:
             elif name == 'phi_max':
                 value = self.pm.phi_max
             elif name == 'sigma8':
-                value = self.nl.sigma8[self.nl.index_pk_m]
+                if self.tsz.use_class_sz_fast_mode == 1:
+                  value = self.sigma8_fast
+                else:
+                  value = self.nl.sigma8[self.nl.index_pk_m]
             elif name == 'sigma8_cb':
                 value = self.nl.sigma8[self.nl.index_pk_cb]
             elif name == 'k_eq':
