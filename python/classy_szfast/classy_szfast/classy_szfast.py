@@ -34,6 +34,8 @@ class classy_szfast(object):
         self.cp_h_nn = cp_h_nn
         self.cp_s8_nn = cp_s8_nn
 
+        self.cosmo_model = 'lcdm'
+
         self.cp_lmax = cp_l_max_scalars
         self.cp_ls = np.arange(2,self.cp_lmax+1)
 
@@ -109,6 +111,29 @@ class classy_szfast(object):
         self.cszfast_gas_pressure_xgrid = np.geomspace(self.cszfast_gas_pressure_xgrid_xmin,
                                                        self.cszfast_gas_pressure_xgrid_xmax,
                                                        self.cszfast_gas_pressure_xgrid_nx)
+
+    def get_H0_from_thetas(self,params_values):
+        # print(params_values)
+        theta_s_asked = params_values['100*theta_s']
+        def fzero(H0_goal):
+          params_values['H0'] = H0_goal[0]
+          params_dict = {}
+          for k,v in params_values.items():
+              params_dict[k]=[v]
+          # print(params_dict)
+          predicted_der_params = self.cp_der_nn[self.cosmo_model].ten_to_predictions_np(params_dict)
+          return predicted_der_params[0][0]-theta_s_asked
+        sol = optimize.root(fzero,
+                          #[40., 99.],
+                          x0 = 100.*(3.54*theta_s_asked**2-5.455*theta_s_asked+2.548),
+                          #jac=jac,
+                          tol = 1e-10,
+                          method='hybr')
+
+        params_values.pop('100*theta_s')
+        params_values['H0'] = sol.x[0]
+        return 1
+
 
     def calculate_cmb(self,
                       cosmo_model = 'lcdm',
