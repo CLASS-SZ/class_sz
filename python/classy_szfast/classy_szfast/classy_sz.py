@@ -289,6 +289,7 @@ class classy_sz(classy):
         for pool in ["params", "derived", "derived_extra"]:
             value = (self.current_state[pool] or {}).get(translated, None)
             if p == 'omegam':
+                print('getting omegam in get_param')
                 # print(translated)
                 # print(self.classy.Omega_m())
                 # exit(0)
@@ -297,6 +298,15 @@ class classy_sz(classy):
                 return value
 
         raise LoggedError(self.log, "Parameter not known: '%s'", p)
+### ORIGINAL FUNCTION:
+#    def get_param(self, p):
+#        translated = self.translate_param(p)
+#        for pool in ["params", "derived", "derived_extra"]:
+#            value = (self.current_state[pool] or {}).get(translated, None)
+#            if value is not None:
+#                return value
+#
+#        raise LoggedError(self.log, "Parameter not known: '%s'", p)
 
 
 
