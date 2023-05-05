@@ -5,6 +5,7 @@ from cobaya.tools import load_module
 import logging
 import os
 import numpy as np
+import time
 
 class classy_sz(classy):
     use_class_sz_fast_mode = 0 # this is passed in the yaml file
@@ -139,6 +140,7 @@ class classy_sz(classy):
     def calculate(self, state, want_derived=True, **params_values_dict):
         # Set parameters
         params_values = params_values_dict.copy()
+        # print('class/class_sz using params:',params_values)
         try:
             params_values['ln10^{10}A_s'] = params_values.pop("logA")
             self.set(params_values)
@@ -147,7 +149,10 @@ class classy_sz(classy):
         # Compute!
         try:
             if self.use_class_sz_fast_mode == 1:
+                # start = time.perf_counter()
                 self.classy.compute_class_szfast()
+                # end = time.perf_counter()
+                # print('classy_szfast took:',end-start)
             # self.classy.compute_class_szfast()
             else:
                 self.classy.compute()
