@@ -6104,7 +6104,7 @@ double m = exp(ptsz->array_profile_ln_m[index_m]);
 
 ptsz->array_ln_density_norm_at_z_and_m[index_z_m] = 0.;
 
-if (ptsz->tau_profile == 2){
+if (ptsz->tau_profile == 2){ // BCM
 
 struct Parameters_for_integrand_bcm_profile_norm V;
 V.ptsz = ptsz;

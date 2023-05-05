@@ -30,6 +30,8 @@ from scipy.interpolate import InterpolatedUnivariateSpline as _spline
 # path_to_cosmopower_organization = '/Users/boris/Work/CLASS-SZ/SO-SZ/cosmopower-organization'
 # path_to_emulators = path_to_cosmopower_organization + 'lcdm/'
 # from mcfit import P2xi
+# from mcfit.transforms import *
+import mcfit
 import time
 from classy_szfast import classy_szfast
 
@@ -560,9 +562,10 @@ cdef class Class:
 
         # print('new input parameters:',self._pars)
 
-
+        # start = time.time()
         self.compute(level=["input"])
-
+        # end = time.time()
+        # print('class_sz input calculation took:',end-start) # this takes < 1e-4s
 
         # print("skip",self.tsz.skip_background_and_thermo)
         params_settings = self._pars
@@ -595,24 +598,30 @@ cdef class Class:
         if self.tsz.skip_cmb == 0:
           # print('calculating cmb')
           start = time.time()
-          cszfast.calculate_cmb(**params_settings)
+          # print('self.tsz.want_pp:',self.tsz.want_pp)
+          cszfast.calculate_cmb(cosmo_model = 'lcdm',
+                                want_tt=True,
+                                want_te=True,
+                                want_ee=True,
+                                # want_pp=self.tsz.want_pp,
+                                **params_settings)
           end = time.time()
           # print('cmb calculation took:',end-start)
 
-        if self.pt.has_pk_matter and self.tsz.skip_pk == 0:
-          if self.tsz.skip_pkl == 0:
-            # print('calculating pkl')
-            start = time.time()
-            cszfast.calculate_pkl(**params_settings)
-            end = time.time()
-            # print('pk calculation took:',end-start)
-            #index_z_r = 0
-            #for index_z in range(self.tsz.n_arraySZ):
-            #  for index_r in range(self.tsz.ndimSZ):
-            #        self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
-            #        self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
-            #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
-            #        index_z_r += 1
+        #if self.pt.has_pk_matter and self.tsz.skip_pk == 0:
+        if self.tsz.skip_pkl == 0:
+          # print('calculating pkl')
+          start = time.time()
+          cszfast.calculate_pkl(**params_settings)
+          end = time.time()
+          # print('pk calculation took:',end-start)
+          #index_z_r = 0
+          #for index_z in range(self.tsz.n_arraySZ):
+          #  for index_r in range(self.tsz.ndimSZ):
+          #        self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
+          #        self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
+          #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
+          #        index_z_r += 1
 
         if self.tsz.skip_pknl == 0:
           # print('calculating pknl')
@@ -633,24 +642,30 @@ cdef class Class:
 
 
         # print('calculating sigma8')
-        start = time.time()
-        cszfast.calculate_sigma8_and_der(**params_settings)
-        end = time.time()
-        # print('der calculation took:',end-start)
-        # print('sigma8:',cszfast.sigma8)
-        self.sigma8_fast = cszfast.sigma8
-
-        cszfast.calculate_sigma8_at_z(**params_settings)
-
-
+        if self.tsz.skip_sigma8_and_der == 0:
+          start = time.time()
+          cszfast.calculate_sigma8_and_der(**params_settings)
+          end = time.time()
+          # print('sigma8_and_der calculation took:',end-start)
+          # print('sigma8:',cszfast.sigma8)
+          self.sigma8_fast = cszfast.sigma8
+        else:
+          self.sigma8_fast = 0.
+        if self.tsz.skip_sigma8_at_z == 0:
+          start = time.time()
+          cszfast.calculate_sigma8_at_z(**params_settings)
+          end = time.time()
+          # print('sigma8_at_z calculation took:',end-start)
 
 
 
 
 
         if self.tsz.skip_background_and_thermo:
-          cszfast.calculate_chi(**params_settings)
-          cszfast.calculate_hubble(**params_settings)
+          if self.tsz.skip_chi == 0:
+            cszfast.calculate_chi(**params_settings)
+          if self.tsz.skip_hubble == 0:
+            cszfast.calculate_hubble(**params_settings)
           self.tsz.use_class_sz_fast_mode = 1
           self.class_szfast = cszfast
           self.computed = True
@@ -1009,7 +1024,8 @@ cdef class Class:
           cls['ee'][2:nl+2] = self.class_szfast.cp_predicted_ee_spectrum
           cls['ee'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
           # cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum/4. ## this is clkk... works for so lensinglite lkl
-          cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
+          if self.tsz.want_pp:
+            cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
           # # here for the planck lensing lkl, using lfactor option gives:
           # cls['pp'][2:nl+2] = self.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
           # cls['pp'][2:nl+2] *= (lcp*(lcp+1.))**2./2./np.pi
@@ -2080,7 +2096,11 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
-    def cl_ykg(self):
+    def cl_ykg(self,
+               Nmcfit = 1024,
+               log10xmin_mcfit = -6,
+               log10xmax_mcfit = +6,
+               log10x_num = 600):
         """
         (class_sz) Return the 1-halo and 2-halo terms of y x kg power spectrum
         """
@@ -2092,6 +2112,26 @@ cdef class Class:
             cl['1h'].append(self.tsz.cl_tSZ_gallens_1h[index])
             cl['2h'].append(self.tsz.cl_tSZ_gallens_2h[index])
             cl['ell'].append(self.tsz.ell[index])
+        if self.tsz.do_real_space_with_mcfit:
+            cl_g_gamma_ell = np.asarray(cl['ell'])
+            cl_g_gamma_1h = np.asarray(cl['1h'])
+            cl_g_gamma_2h = np.asarray(cl['2h'])
+            fac = cl_g_gamma_ell*(cl_g_gamma_ell+1.)/2./np.pi
+            cltot = cl_g_gamma_1h/fac+cl_g_gamma_2h/fac
+            cltotfunc = interpolate.interp1d(cl_g_gamma_ell,cltot,kind='cubic',
+                                             axis=-1,
+                                             copy=True,
+                                             bounds_error=False,
+                                             fill_value=1e-100,
+                                             assume_sorted=False)
+            mcfitx = np.logspace(log10xmin_mcfit, log10xmax_mcfit, num=log10x_num, endpoint=False)
+            F = cltotfunc(mcfitx)
+            H = mcfit.transforms.Hankel(mcfitx, nu=2, q=1, N=Nmcfit, lowring=True) # nu = 0 for gg, (and yg)
+            y, G = H(F, extrap=True)
+            theta_mcfit = y*(60.*180.)/np.pi
+            xi_mcfit = G/2./np.pi
+            cl['theta'] = theta_mcfit
+            cl['xi'] = xi_mcfit
         return cl
 
 
@@ -2253,7 +2293,11 @@ cdef class Class:
         return cl
 
 
-    def cl_ggamma(self):
+    def cl_ggamma(self,
+                  Nmcfit = 1024,
+                  log10xmin_mcfit = -6,
+                  log10xmax_mcfit = +6,
+                  log10x_num = 600):
         """
         (class_sz) Return the 1-halo and 2-halo terms of galaxy x galaxy lensing power spectrum
         """
@@ -2265,6 +2309,26 @@ cdef class Class:
             cl['1h'].append(self.tsz.cl_gal_gallens_1h[index])
             cl['2h'].append(self.tsz.cl_gal_gallens_2h[index])
             cl['ell'].append(self.tsz.ell[index])
+        if self.tsz.do_real_space_with_mcfit:
+            cl_g_gamma_ell = np.asarray(cl['ell'])
+            cl_g_gamma_1h = np.asarray(cl['1h'])
+            cl_g_gamma_2h = np.asarray(cl['2h'])
+            fac = cl_g_gamma_ell*(cl_g_gamma_ell+1.)/2./np.pi
+            cltot = cl_g_gamma_1h/fac+cl_g_gamma_2h/fac
+            cltotfunc = interpolate.interp1d(cl_g_gamma_ell,cltot,kind='cubic',
+                                             axis=-1,
+                                             copy=True,
+                                             bounds_error=False,
+                                             fill_value=1e-100,
+                                             assume_sorted=False)
+            mcfitx = np.logspace(log10xmin_mcfit, log10xmax_mcfit, num=log10x_num, endpoint=False)
+            F = cltotfunc(mcfitx)
+            H = mcfit.transforms.Hankel(mcfitx, nu=2, q=1, N=Nmcfit, lowring=True)
+            y, G = H(F, extrap=True)
+            theta_mcfit = y*(60.*180.)/np.pi
+            xi_mcfit = G/2./np.pi
+            cl['theta'] = theta_mcfit
+            cl['xi'] = xi_mcfit
         return cl
 
     def gamma_ggamma(self):
@@ -2685,10 +2749,12 @@ cdef class Class:
         """
         T_ll = defaultdict(list)
         cdef int index_l,index_l_prime
+        T_ll_arr = np.zeros((self.tsz.nlSZ,self.tsz.nlSZ))
         for index_l in range(self.tsz.nlSZ):
             for index_l_prime in range(index_l+1):
                 T_ll[index_l].append(self.tsz.tllprime_sz[index_l][index_l_prime])
-        return T_ll
+                T_ll_arr[index_l][index_l_prime] = self.tsz.tllprime_sz[index_l][index_l_prime]
+        return T_ll_arr
 
 
     def A_rs(self):

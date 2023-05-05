@@ -3535,6 +3535,7 @@ int input_read_parameters(
 
 
 
+
       //units for tSZ spectrum
       class_call(parser_read_string(pfc,"units for tSZ spectrum",&string1,&flag1,errmsg),
                  errmsg,

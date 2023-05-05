@@ -204,6 +204,9 @@ int class_sz_cosmo_init(  struct background * pba,
 
    // printf("need_hmf = %d\n",ptsz->need_hmf);
    select_multipole_array(ptsz);
+   // printf("=============l array selected.\n");
+   // printf("=============ell_sz = %d\n",ptsz->ell_sz);
+   // printf("=============nlsz = %d\n",ptsz->nlSZ);
 
    ptsz->chi_star = pth->ra_star*pba->h;
    double tau;
@@ -636,7 +639,15 @@ while( pch != NULL ) {
    if (ptsz->sz_verbose>=1)
     printf("-> memory allocated.\n");
 
-
+// printf("ell_sz = %d\n",ptsz->ell_sz);
+// printf("nlsz = %d\n",ptsz->nlSZ);
+// int index_l;
+// for (index_l=0;index_l<ptsz->nlSZ;index_l++)
+// {
+//   printf("l = %.5e\n",ptsz->ell[index_l]);
+// }
+//
+// exit(0);
 
    if ((ptsz->has_completeness_for_ps_SZ == 1)  || (ptsz->has_sz_counts  == 1)){
       read_Planck_noise_map(ptsz);
@@ -15706,6 +15717,9 @@ int select_multipole_array(struct tszspectrum * ptsz)
       else if (ptsz->ell_sz == 1){
          ptsz->ell[index_l] = ptsz->ell_plc[index_l];
          //ptsz->nlSZ = 18;
+         // printf("---> ell_sz = %d\n",ptsz->ell_sz);
+         // printf("---> nlsz = %d\n",ptsz->nlSZ);
+         // exit(0);
        }
       else if (ptsz->ell_sz == 2)
          ptsz->ell[index_l] = ptsz->ell_trispectrum[index_l];
@@ -17527,7 +17541,7 @@ double get_fstar_of_m_at_z(double m,
 double result;
 double ms = 2.5e11;
 double eta = ptsz->eta_star_bcm;
-result = 0.055*pow(m/ms,-eta);
+result = ptsz->fstar_ms*pow(m/ms,-eta);//0.055*pow(m/ms,-eta);
 return result;
                            }
 

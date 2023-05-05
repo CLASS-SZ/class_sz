@@ -140,7 +140,7 @@ class classy_szfast(object):
                       want_tt=True,
                       want_te=True,
                       want_ee=True,
-                      want_pp=True,
+                      want_pp=1,
                       **params_values_dict):
         params_values = params_values_dict.copy()
         # params_values['ln10^{10}A_s'] = params_values.pop("logA")
@@ -545,7 +545,10 @@ class classy_szfast(object):
 
 
     def rs_drag(self):
-        return self.cp_predicted_der[13]
+        try:
+            return self.cp_predicted_der[13]
+        except AttributeError:
+            return 0
     #################################
     # gives an estimation of f(z)*sigma8(z) at the scale of 8 h/Mpc, computed as (d sigma8/d ln a)
     # Now used by cobaya wrapper.
