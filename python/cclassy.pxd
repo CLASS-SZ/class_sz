@@ -258,6 +258,7 @@ cdef extern from "class.h":
         int skip_class_sz
         int skip_pk
         int skip_cmb
+        int use_cmb_cls_from_file
         int skip_chi
         int skip_hubble
         int want_pp
