@@ -9,6 +9,9 @@ class_sz_string_parameter(full_path_and_prefix_to_dndz_ngal,"/class_sz_auxiliary
 class_sz_string_parameter(full_path_to_source_dndz_gal,"/class_sz_auxiliary_files/WISC_bin3.txt","custom dndz file")
 class_sz_string_parameter(full_path_to_redshift_dependent_M_min,"/class_sz_auxiliary_files/websky_halo_mass_completion_z_Mmin_in_Msun_over_h.txt","custom M_min file")
 
+class_sz_string_parameter(cmb_cls_filename,"/class_sz_auxiliary_files/cmb_cls_test.pickle","cmb_cls_filename")
+
+
 //class_sz_string_parameter(UNWISE_dndz_file,"/class_sz_auxiliary_files/UNWISE_galaxy_distributions/normalised_dndz.txt","unWISE dndz file")
 class_sz_string_parameter(UNWISE_dndz_file,"/class_sz_auxiliary_files/UNWISE_galaxy_distributions/normalised_dndz_cosmos.txt","unWISE dndz file")
 class_sz_string_parameter(UNWISE_fdndz_file,"/class_sz_auxiliary_files/UNWISE_galaxy_distributions/normalised_fdndz.txt","unWISE fdndz file")
@@ -93,6 +96,7 @@ class_sz_ptsz_parameter(n_l_psi_b1kg,int,50)
 class_sz_ptsz_parameter(n_nu_dcib0dz,int,80)
 class_sz_ptsz_parameter(n_z_dcib0dz,int,68)
 
+class_sz_ptsz_parameter(use_cmb_cls_from_file,int,0)
 class_sz_ptsz_parameter(skip_cmb,int,0)
 class_sz_ptsz_parameter(skip_sigma8_at_z,int,0)
 class_sz_ptsz_parameter(skip_sigma8_and_der,int,0)

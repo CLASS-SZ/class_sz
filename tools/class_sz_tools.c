@@ -6513,6 +6513,8 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 + ptsz->has_kSZ_kSZ_gal_3h
 + ptsz->has_kSZ_kSZ_tSZ_1h
 + ptsz->has_kSZ_kSZ_tSZ_2h
++ ptsz->has_tau_gal_1h
++ ptsz->has_tau_gal_2h
 + ptsz->has_kSZ_kSZ_1h
 + ptsz->has_kSZ_kSZ_2h
 + ptsz->has_pk_bb_at_z_1h
@@ -7228,6 +7230,8 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 + ptsz->has_kSZ_kSZ_gal_3h
 + ptsz->has_kSZ_kSZ_tSZ_1h
 + ptsz->has_kSZ_kSZ_tSZ_2h
++ ptsz->has_tau_gal_1h
++ ptsz->has_tau_gal_2h
 + ptsz->has_kSZ_kSZ_1h
 + ptsz->has_kSZ_kSZ_2h
 + ptsz->has_pk_bb_at_z_1h
@@ -10477,6 +10481,8 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_bk_ttg_at_z_3h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_ )
     && (ptsz->has_gal_gal_1h != _TRUE_ )
+    && (ptsz->has_tau_gal_1h != _TRUE_ )
+    && (ptsz->has_tau_gal_2h != _TRUE_ )
     && (ptsz->has_gal_lens_1h != _TRUE_ )
     && (ptsz->has_gal_lens_2h != _TRUE_ )
     && (ptsz->has_gal_cib_1h != _TRUE_ )
@@ -10722,6 +10728,8 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_hf != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_ )
     && (ptsz->has_gal_gal_1h != _TRUE_ )
+    && (ptsz->has_tau_gal_1h != _TRUE_ )
+    && (ptsz->has_tau_gal_2h != _TRUE_ )
     && (ptsz->has_gal_lens_1h != _TRUE_ )
     && (ptsz->has_gal_lens_2h != _TRUE_ )
     && (ptsz->has_gal_cib_1h != _TRUE_ )
@@ -10904,6 +10912,8 @@ if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_hf != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_lensmag_1halo != _TRUE_ )
     && (ptsz->has_gal_gal_1h != _TRUE_ )
+    && (ptsz->has_tau_gal_1h != _TRUE_ )
+    && (ptsz->has_tau_gal_2h != _TRUE_ )
     && (ptsz->has_gal_lens_1h != _TRUE_ )
     && (ptsz->has_gal_lens_2h != _TRUE_ )
     && (ptsz->has_gal_cib_1h != _TRUE_ )
@@ -12277,6 +12287,8 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
      || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))
      || ((V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
      || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
+     || ((V->ptsz->has_tau_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tau_gal_1h))
+     || ((V->ptsz->has_tau_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tau_gal_2h))
      || ((V->ptsz->has_gal_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_1h))
      || ((V->ptsz->has_gal_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_2h))
      || ((V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
@@ -12732,6 +12744,7 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_gal_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_2h))
  || ((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
  || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
+ || ((V->ptsz->has_tau_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tau_gal_2h))
  || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
  || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
  || ((V->ptsz->has_tSZ_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gallens_2h))
@@ -12810,6 +12823,8 @@ if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_
   || ((V->ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_3h))
   || ((V->ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_hf))
   || ((V->ptsz->has_gal_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_hf))
+  || ((V->ptsz->has_tau_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tau_gal_2h))
+  || ((V->ptsz->has_tau_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tau_gal_1h))
   || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
   || ((V->ptsz->has_gal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_1h))
   || ((V->ptsz->has_gal_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_2h))
@@ -14014,6 +14029,58 @@ else{
   //
   // }
 
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tau_gal_2h){
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('gal' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_1 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('Phi' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  // corrected to match Mat M. consistency treatment in hmvec
+  // r_m_2 = r_m_2 + ptsz->Omega_m_0*ptsz->Rho_crit_0*pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.)/pvectsz[ptsz->index_lensing_Sigma_crit];
+
+
+  r = r_m_1*r_m_2;
+  }
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_ngal_lens_2h){
   double r_m_1; // first part of redshift integrand
   double r_m_2; // second part of redshift integrand
