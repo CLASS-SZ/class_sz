@@ -69,6 +69,8 @@
 #define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
 #define _n5k_ ((ptsz->has_n5k == _TRUE_) && (index_md == ptsz->index_md_n5k))
 #define _gal_gal_hf_ ((ptsz->has_gal_gal_hf == _TRUE_) && (index_md == ptsz->index_md_gal_gal_hf))
+#define _tau_gal_1h_ ((ptsz->has_tau_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tau_gal_1h))
+#define _tau_gal_2h_ ((ptsz->has_tau_gal_2h == _TRUE_) && (index_md == ptsz->index_md_tau_gal_2h))
 #define _gal_lens_2h_ ((ptsz->has_gal_lens_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_2h))
 #define _gal_lens_hf_ ((ptsz->has_gal_lens_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lens_hf))
 #define _gal_lens_1h_ ((ptsz->has_gal_lens_1h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_1h))
@@ -196,6 +198,8 @@ struct tszspectrum {
   double * cl_gal_gal_hf;
   double * cl_gal_lens_hf;
   double * cl_lens_lens_hf;
+  double * cl_tau_gal_2h;
+  double * cl_tau_gal_1h;
   double * cl_gal_lens_2h;
   double * cl_gal_lens_1h;
   double * cl_gal_lensmag_hf;
@@ -723,6 +727,17 @@ struct tszspectrum {
   int index_md_lens_lens_hf;
   int index_integrand_id_lens_lens_hf_first;
   int index_integrand_id_lens_lens_hf_last;
+
+
+  int has_tau_gal_2h;
+  int index_md_tau_gal_2h;
+  int index_integrand_id_tau_gal_2h_first;
+  int index_integrand_id_tau_gal_2h_last;
+
+  int has_tau_gal_1h;
+  int index_md_tau_gal_1h;
+  int index_integrand_id_tau_gal_1h_first;
+  int index_integrand_id_tau_gal_1h_last;
 
 
   int has_gal_lens_2h;

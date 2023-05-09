@@ -539,6 +539,16 @@ cdef class Class:
         # following functions are only to output the desired numbers
         return
 
+
+    def calculate_pkl_fftlog_alphas(self,zpk,cosmo_model = 'lcdm'):
+        params_settings = self._pars
+        cnew = self.class_szfast.calculate_pkl_fftlog_alphas(cosmo_model = cosmo_model,zpk=zpk,**params_settings)
+        return self.class_szfast.cp_pkl_fftlog_alphas_nus[cosmo_model]['arr_0'],cnew
+
+    def get_pkl_reconstructed_from_fftlog(self,zpk,cosmo_model = 'lcdm'):
+        params_settings = self._pars
+        return self.class_szfast.get_pkl_reconstructed_from_fftlog(cosmo_model = 'lcdm',zpk=zpk,**params_settings)
+
     def compute_class_szfast(self):
         # print('input parameters:',self._pars)
         # oldpars = self._pars.copy()
@@ -599,14 +609,21 @@ cdef class Class:
           # print('calculating cmb')
           start = time.time()
           # print('self.tsz.want_pp:',self.tsz.want_pp)
-          cszfast.calculate_cmb(cosmo_model = 'lcdm',
-                                want_tt=True,
-                                want_te=True,
-                                want_ee=True,
-                                # want_pp=self.tsz.want_pp,
-                                **params_settings)
+          if self.tsz.use_cmb_cls_from_file == 0:
+            cszfast.calculate_cmb(cosmo_model = 'lcdm',
+                                  want_tt=True,
+                                  want_te=True,
+                                  want_ee=True,
+                                  # want_pp=self.tsz.want_pp,
+                                  **params_settings)
+          else:
+            cszfast.load_cmb_cls_from_file(**params_settings)
           end = time.time()
           # print('cmb calculation took:',end-start)
+
+        #if self.tsz.skip_pkl_fftlog_alpha == 0:
+        #  cszfast.calculate_pkl_fftlog_alphas(**params_settings)
+
 
         #if self.pt.has_pk_matter and self.tsz.skip_pk == 0:
         if self.tsz.skip_pkl == 0:
@@ -2343,6 +2360,22 @@ cdef class Class:
             cl['1h'].append(self.tsz.gamma_gal_gallens_1h[index])
             cl['2h'].append(self.tsz.gamma_gal_gallens_2h[index])
             cl['thetas'].append(self.tsz.thetas_arcmin[index])
+        return cl
+
+    def cl_eg(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of electron x galaxy power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        # cl['hf'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_tau_gal_1h[index])
+            cl['2h'].append(self.tsz.cl_tau_gal_2h[index])
+            # cl['hf'].append(self.tsz.cl_tau_gal_hf[index])
+            cl['ell'].append(self.tsz.ell[index])
         return cl
 
     def cl_kg(self):
