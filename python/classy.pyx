@@ -573,7 +573,7 @@ cdef class Class:
         # print('new input parameters:',self._pars)
 
         # start = time.time()
-        self.compute(level=["input"])
+        # self.compute(level=["input"])
         # end = time.time()
         # print('class_sz input calculation took:',end-start) # this takes < 1e-4s
 
@@ -588,22 +588,36 @@ cdef class Class:
 
         if 'A_s' in self._pars:
           params_settings['ln10^{10}A_s'] = self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
-
+          params_settings.pop('A_s')
         if '100*theta_s' in self._pars:
           # print('doing theta_s -> H0')
-          # cszfast.get_H0_from_thetas(params_settings)
-          print('We will compute that, but this is not what to do for fast-mode.\n')
-          print('It is ok for testing, but....\n')
-          print('You should pass H0 or h for maximum speed.\n')
-          print('You can always recover 100*theta_s as a derived parameter.\n')
-          params_settings['H0'] = 100.*self.h()
+          cszfast.get_H0_from_thetas(params_settings)
+          # print('We will compute that, but this is not what to do for fast-mode.\n')
+          # print('It is ok for testing, but....\n')
+          # print('You should pass H0 or h for maximum speed.\n')
+          # print('You can always recover 100*theta_s as a derived parameter.\n')
+          #params_settings['H0'] = 100.*self.h()
+          # print('self.pars',self._pars)
+          # self._pars.pop('100*theta_s')
+          # self._pars['H0'] = params_settings['H0']
         if 'sigma8' in self._pars:
-          print('We will compute that, but this is not what to do for fast-mode.\n')
-          print('It is ok for testing, but....\n')
-          print('You should pass A_s or ln10^{10}A_s for maximum speed.\n')
-          print('You can always recover sigma8 as a derived parameter.\n')
-          params_settings['ln10^{10}A_s'] = self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
+          # print('We will compute that, but this is not what to do for fast-mode.\n')
+          # print('It is ok for testing, but....\n')
+          # print('You should pass A_s or ln10^{10}A_s for maximum speed.\n')
+          # print('You can always recover sigma8 as a derived parameter.\n')
+          # params_settings['ln10^{10}A_s'] = self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
+          cszfast.find_As(params_settings)
+          # params_settings['ln10^{10}A_s'] = np.log(1.e10*cszfast.find_As(params_settings['sigma8'],params_settings))
+          # params_settings.pop('sigma8')
+          # print('self.pars',self._pars)
+          # self._pars.pop('sigma8')
+          # self._pars['ln10^{10}A_s'] = params_settings['ln10^{10}A_s']
         # exit(0)
+
+        # start = time.time()
+        self.compute(level=["input"])
+        # end = time.time()
+        # print('class_sz input calculation took:',end-start) # this takes < 1e-4s
 
         if self.tsz.skip_cmb == 0:
           # print('calculating cmb')

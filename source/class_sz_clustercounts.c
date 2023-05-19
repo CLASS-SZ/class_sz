@@ -2344,6 +2344,11 @@ else{
       double z_bin_min = pcsz->z_center[index_z]-0.5*pcsz->dz;
       double z_bin_max = pcsz->z_center[index_z]+0.5*pcsz->dz;
 
+
+      if (ptsz->sz_verbose > 3){
+        printf("\n\n zbin min = %.5e max = %.5e\n\n",z_bin_min,z_bin_max);
+      }
+
 // if (index_z == 0){
 //   z_bin_min = pcsz->z_0;
 // }
