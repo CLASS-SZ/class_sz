@@ -4,6 +4,7 @@ import numpy as np
 from .cosmopower import *
 from .pks_and_sigmas import *
 import scipy
+import time
 # import pyquad
 # from classy_sz import Class
 from multiprocessing import Process
@@ -34,9 +35,10 @@ class classy_szfast(object):
         self.cp_h_nn = cp_h_nn
         self.cp_s8_nn = cp_s8_nn
 
-        self.cp_pkl_fftlog_alphas_nus = cp_pkl_fftlog_alphas_nus
-        self.cp_pkl_fftlog_alphas_real_nn  = cp_pkl_fftlog_alphas_real_nn
-        self.cp_pkl_fftlog_alphas_imag_nn = cp_pkl_fftlog_alphas_imag_nn
+        if dofftlog_alphas == True:
+            self.cp_pkl_fftlog_alphas_nus = cp_pkl_fftlog_alphas_nus
+            self.cp_pkl_fftlog_alphas_real_nn  = cp_pkl_fftlog_alphas_real_nn
+            self.cp_pkl_fftlog_alphas_imag_nn = cp_pkl_fftlog_alphas_imag_nn
 
         self.cosmo_model = 'lcdm'
 
@@ -116,6 +118,29 @@ class classy_szfast(object):
                                                        self.cszfast_gas_pressure_xgrid_xmax,
                                                        self.cszfast_gas_pressure_xgrid_nx)
 
+
+    def find_As(self,params_cp):
+        # params_cp = self.params_cp
+        t0 = time.time()
+
+        sigma_8_asked = params_cp["sigma8"]
+        # print(params_cp)
+        def to_root(ln10_10_As_goal):
+            params_cp["ln10^{10}A_s"] = ln10_10_As_goal[0]
+            params_dict = {}
+            for k,v in params_cp.items():
+                params_dict[k]=[v]
+            return self.cp_der_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0][1]-sigma_8_asked
+
+        lnA_s = optimize.root(to_root,
+                              x0=3.046,
+                              #tol = 1e-10,
+                              method="hybr")
+        params_cp['ln10^{10}A_s'] = lnA_s.x[0]# .x[0]
+        params_cp.pop('sigma8')
+        # print("T total in find As",time.time()-t0)#self.t_total)
+        # print(params_cp)
+        return 1
 
 
     def get_H0_from_thetas(self,params_values):
@@ -209,7 +234,7 @@ class classy_szfast(object):
         cls_tt = cmb_cls_loaded['tt']*dlfac
         cls_te = cmb_cls_loaded['te']*dlfac
         cls_ee = cmb_cls_loaded['ee']*dlfac
-        # cls_pp = cmb_cls_loaded['pp']*dlfac # check the normalization. 
+        # cls_pp = cmb_cls_loaded['pp']*dlfac # check the normalization.
         nl_cp_cmb = len(self.cp_predicted_tt_spectrum)
         nl_req = min(nl_cls_file,nl_cp_cmb)
 

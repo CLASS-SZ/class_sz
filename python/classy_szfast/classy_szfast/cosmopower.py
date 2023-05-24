@@ -1,6 +1,8 @@
 from .utils import *
 from .config import *
 
+dofftlog_alphas = False
+
 cosmopower_derived_params_names = ['100*theta_s',
                                    'sigma8',
                                    'YHe',
@@ -115,7 +117,7 @@ for mp in ['lcdm','mnu','neff','wcdm']:
     cp_pkl_nn[mp] = cosmopower_NN(restore=True,
                               restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKL'])
 
-    if mp == 'lcdm':
+    if (mp == 'lcdm') and (dofftlog_alphas == True):
         cp_pkl_fftlog_alphas_real_nn[mp] = cosmopower_PCAplusNN(restore=True,
                                  restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKLFFTLOG_ALPHAS_REAL']
                                  )

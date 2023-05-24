@@ -4494,9 +4494,9 @@ class_alloc(pvecback,
             pba->bg_size*sizeof(double),
             ptsz->error_message);
 
-class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
- int i;
- for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+// class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+//  int i;
+//  for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
 
 class_call(background_tau_of_z(pba,z,&tau),
            pba->error_message,
@@ -4514,18 +4514,24 @@ class_call(background_at_tau(pba,
 
 
 
-pvectsz[ptsz->index_z] = z;
-pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+// pvectsz[ptsz->index_z] = z;
+// pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+//                                 *pow(_Mpc_over_m_,1)
+//                                 *pow(_c_,2)
+//                                 *pvecback[pba->index_bg_rho_crit]
+//                                 /pow(pba->h,2);
+//
+// rho_crit = pvectsz[ptsz->index_Rho_crit];
+
+rho_crit = (3./(8.*_PI_*_G_*_M_sun_))
                                 *pow(_Mpc_over_m_,1)
                                 *pow(_c_,2)
                                 *pvecback[pba->index_bg_rho_crit]
                                 /pow(pba->h,2);
 
-rho_crit = pvectsz[ptsz->index_Rho_crit];
-
 
 free(pvecback);
-free(pvectsz);
+// free(pvectsz);
 
 
 
