@@ -758,6 +758,10 @@ cdef class Class:
     def compute_class_sz(self,pdict_to_update):
         self._fillparfile()
         for k,v in pdict_to_update.items():
+          if k == 'P0GNFW':
+            self.tsz.P0GNFW = pdict_to_update[k]
+          if k == 'c500':
+            self.tsz.c500 = pdict_to_update[k]
           if k == 'M_min':
             self.tsz.M1SZ = pdict_to_update[k]
           if k == 'M_max':
