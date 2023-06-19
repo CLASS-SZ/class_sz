@@ -3470,10 +3470,10 @@ struct Parameters_for_integrand_sigma2_hsv V;
   //int show_neval = ptsz->patterson_show_neval;
 
   r=Integrate_using_Patterson_adaptive(log(k_min),
-                                        log(k_max),
-                                        epsrel, epsabs,
-                                        integrand_sigma2_hsv,
-                                        params,0);
+                                       log(k_max),
+                                       epsrel, epsabs,
+                                       integrand_sigma2_hsv,
+                                       params,0);
 
 
 
@@ -11469,7 +11469,7 @@ int MF_T08_m500(
                 )
 {
   //T08@m500
-  // if(z>3.) z=3.; // ccl doesnt have this.. commenting for now.
+  if(z>3.) z=3.; // ccl doesnt have this.. commenting for now.
 
   // double om0 = ptsz->Omega_m_0;
   // double or0 = ptsz->Omega_r_0;
@@ -12055,10 +12055,12 @@ double erf_compl_nicola(double y,
 
 double erf_compl(double y,
                  double sn,
-                 double q){
+                 double q,
+                 double dof){
   //Completeness with error function
   // double arg = (y - q * sn)/(sqrt(2.) * sn);
-  double arg = (sqrt(pow(y/sn,2.)+0.) - q )/(sqrt(2.));
+  // with optimization bias
+  double arg = (sqrt(pow(y/sn,2.)+pow(dof,1.)) - q )/(sqrt(2.));
   double erf_compl = (erf(arg) + 1.)/2.;
   return erf_compl;
 }

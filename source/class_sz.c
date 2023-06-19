@@ -15624,6 +15624,23 @@ printf("nu = %e\t\t cib shotnoise = %e \n",nu,ptsz->cib_shotnoise[index_nu]);
 
 }
 
+
+// if (ptsz->has_sz_cov_N_N){
+// printf("\n\n");
+// printf("#######################################\n");
+// printf("halo covariance:\n");
+// printf("#######################################\n");
+// printf("\n");
+// int index_M_bins;
+// int index_M_bins_prime;
+// for (index_M_bins=0; index_M_bins<ptsz->nbins_M; index_M_bins++){
+//
+// for (index_M_bins_prime=0; index_M_bins_prime<ptsz->nbins_M; index_M_bins_prime++){
+//   double nu = ptsz->cib_frequency_list[index_nu];
+//   printf("nu = %e\t\t cib shotnoise = %e \n",nu,ptsz->cib_shotnoise[index_nu]);
+//
+//   }
+// }
    return _SUCCESS_;
 }
 
