@@ -841,6 +841,18 @@ cdef extern from "class.h":
                              void * pba,
                              void * ptsz)
 
+    double Delta_c_of_Omega_m(double Omega_m)
+
+    double evaluate_rvir_of_mvir(double mvir,
+                                 double delc,
+                                 double rhoc,
+                                 void * ptsz)
+
+    double evaluate_cvir_of_mvir(double mvir,
+                                 double z,
+                                 void * ptsz,
+                                 void * pba)
+
     double radial_kernel_W_galaxy_lensing_at_z(double z,
                                                void * ptsz)
 

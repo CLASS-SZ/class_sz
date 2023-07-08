@@ -147,6 +147,8 @@ int class_sz_cosmo_init(  struct background * pba,
       + ptsz->need_m500c_to_m200c
       + ptsz->need_m200m_to_m500c
       + ptsz->need_m200m_to_m200c
+      + ptsz->need_m200m_to_mvir
+      + ptsz->need_m200c_to_mvir
       + ptsz->need_m200c_to_m200m
       + ptsz->tabulate_rhob_xout_at_m_and_z
       + ptsz->need_ng_bias;
@@ -468,6 +470,8 @@ int szpowerspectrum_init(
       + ptsz->need_m500c_to_m200c
       + ptsz->need_m200m_to_m500c
       + ptsz->need_m200m_to_m200c
+      + ptsz->need_m200m_to_mvir
+      + ptsz->need_m200c_to_mvir
       + ptsz->need_m200c_to_m200m
       + ptsz->tabulate_rhob_xout_at_m_and_z
       + ptsz->need_ng_bias;
@@ -703,7 +707,20 @@ while( pch != NULL ) {
       printf("-> m200m to m200c tabulated.\n");
     }
 
-
+   if (ptsz->need_m200m_to_mvir== 1){
+     if (ptsz->sz_verbose>1)
+        printf("-> tabulating m200m to mvir...\n");
+      tabulate_m200m_to_mvir(pba,ptsz);
+    if (ptsz->sz_verbose>1)
+      printf("-> m200m to mvir tabulated.\n");
+    }
+   if (ptsz->need_m200c_to_mvir== 1){
+     if (ptsz->sz_verbose>1)
+        printf("-> tabulating m200c to mvir...\n");
+      tabulate_m200c_to_mvir(pba,ptsz);
+    if (ptsz->sz_verbose>1)
+      printf("-> m200c to mvir tabulated.\n");
+    }
    if (ptsz->need_m200m_to_m500c == 1){
      if (ptsz->sz_verbose>1)
      printf("-> tabulating m200m to m500c...\n");
@@ -2291,6 +2308,8 @@ int szpowerspectrum_free(struct tszspectrum *ptsz)
 
 
   int mass_conversions = ptsz->need_m200m_to_m200c
+                        + ptsz->need_m200m_to_mvir
+                        + ptsz->need_m200c_to_mvir
                         + ptsz->need_m200c_to_m200m
                         + ptsz->need_m200m_to_m500c
                         + ptsz->need_m200c_to_m500c
@@ -2920,7 +2939,16 @@ if (ptsz->need_m200m_to_m200c){
    free(ptsz->array_m200m_to_m200c_at_z_and_M);
    }
 
-
+if (ptsz->need_m200m_to_mvir){
+   free(ptsz->array_m_m200m_to_mvir);
+   free(ptsz->array_ln_1pz_m200m_to_mvir);
+   free(ptsz->array_m200m_to_mvir_at_z_and_M);
+   }
+if (ptsz->need_m200c_to_mvir){
+   free(ptsz->array_m_m200c_to_mvir);
+   free(ptsz->array_ln_1pz_m200c_to_mvir);
+   free(ptsz->array_m200c_to_mvir_at_z_and_M);
+   }
 if (ptsz->need_m200m_to_m500c){
    free(ptsz->array_m_m200m_to_m500c);
    free(ptsz->array_ln_1pz_m200m_to_m500c);
@@ -9050,6 +9078,9 @@ int evaluate_lensing_profile(double kl,
    // if (l<0.)
    //  result = 1e-100;
    // else
+
+
+
     result =  evaluate_truncated_nfw_profile(pvectsz[ptsz->index_z],kl,r_delta,c_delta,xout);
 
 
@@ -9099,11 +9130,14 @@ int evaluate_lensing_profile(double kl,
    pvectsz[ptsz->index_lensing_profile] =  lensing_normalisation // dim less
                                            *mass_nfw // M
                                            *pvectsz[ptsz->index_lensing_profile]
-                                           /(pow(3.*pow(pba->H0/pba->h,2)/2./ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/chi)
+                                           /(pow(3.*pow(pba->H0/pba->h,2)/2./ptsz->Rho_crit_0,-1) // this is a constant: 1.66243e+18
+                                           *pow((1.+z),1.)/chi)
                                            ///pvectsz[ptsz->index_lensing_Sigma_crit] // Sigma_crit is in M/L^2
                                            *pow(pvecback[pba->index_bg_ang_distance]*pba->h,-2.); // 1/L^2
 
 
+// printf("check number = %.5e\n",pow(3.*pow(pba->H0/pba->h,2)/2./ptsz->Rho_crit_0,-1));
+// exit(0);
 
    return _SUCCESS_;
 }
@@ -9610,18 +9644,18 @@ double evaluate_pressure_profile(double kl,
       if (ptsz->pressure_profile == 2)
       pressure_normalisation = C_pressure
                                *ptsz->P0GNFW
-                               *pow(0.7/pba->h, 1.5); // as found by dimensional analysis (X-ray data, see email with E. Komatsu and R. Makya)
+                               *pow(0.7/pba->h, 1.5); // -> 1.5 as found by dimensional analysis (X-ray data, see email with E. Komatsu and R. Makya)
       //P13:
       else if (ptsz->pressure_profile == 0)
       pressure_normalisation = C_pressure
                                *ptsz->P0GNFW
-                               *pow(0.7/pba->h, 1.); // as found by dimensional analysis (sz data, see email with E. Komatsu and R. Makya)
+                               *pow(0.7/pba->h, 1.); // -> 1. as found by dimensional analysis (sz data, see email with E. Komatsu and R. Makya)
 
       //Custom. GNFW
       else if (ptsz->pressure_profile == 3)
       pressure_normalisation = C_pressure
                                *ptsz->P0GNFW
-                               *pow(0.7/pba->h, 1.5); // assuming X-ray data based pressure profile
+                               *pow(0.7/pba->h, 1.5); // -> 1.5 assuming X-ray data based pressure profile
      // //Custom. GNFW
      // else if (ptsz->pressure_profile == 3)
      // pressure_normalisation = C_pressure
@@ -11257,6 +11291,8 @@ if (pvectsz[ptsz->index_has_matter_density] == 1 || pvectsz[ptsz->index_has_lens
     pvectsz[ptsz->index_has_200c] = 1;
   else if (ptsz->delta_def_matter_density == 2)
     pvectsz[ptsz->index_has_500c] = 1;
+  else if (ptsz->delta_def_matter_density == 3)
+    pvectsz[ptsz->index_has_vir] = 1;
 }
 
 if (pvectsz[ptsz->index_has_electron_density] == 1){
@@ -11285,10 +11321,12 @@ if (pvectsz[ptsz->index_has_electron_pressure] == 1){
   else if (ptsz->delta_def_electron_pressure == 2)
     pvectsz[ptsz->index_has_500c] = 1;
 
-if ((ptsz->pressure_profile == 4) &&  (ptsz->truncate_wrt_rvir)){
-      pvectsz[ptsz->index_has_vir] = 1; // cut wrt virial radius
-      }
+  if (ptsz->truncate_gas_pressure_wrt_rvir){
+    pvectsz[ptsz->index_has_vir] = 1; // cut profiles wrt virial radius
+  }
+
 }
+
 
 // if (ptsz->MF == 1) {
 //   pvectsz[ptsz->index_has_200m] = 1;
@@ -11445,17 +11483,18 @@ if ((ptsz->pressure_profile == 4) &&  (ptsz->truncate_wrt_rvir)){
     pvectsz[ptsz->index_c200m] = get_c200m_at_m_and_z(pvectsz[ptsz->index_m200m],z,pba,ptsz);
 
     if (pvectsz[ptsz->index_has_vir] == 1){
-    class_call(mDEL_to_mVIR(pvectsz[ptsz->index_m200m],
-                             200.*pvecback[pba->index_bg_Omega_m]*(pvectsz[ptsz->index_Rho_crit]),
-                             pvectsz[ptsz->index_Delta_c],
-                             pvectsz[ptsz->index_Rho_crit],
-                             z,
-                             &pvectsz[ptsz->index_mVIR],
-                             ptsz,
-                             pba),
-                    ptsz->error_message,
-                    ptsz->error_message);
+    // class_call(mDEL_to_mVIR(pvectsz[ptsz->index_m200m],
+    //                          200.*pvecback[pba->index_bg_Omega_m]*(pvectsz[ptsz->index_Rho_crit]),
+    //                          pvectsz[ptsz->index_Delta_c],
+    //                          pvectsz[ptsz->index_Rho_crit],
+    //                          z,
+    //                          &pvectsz[ptsz->index_mVIR],
+    //                          ptsz,
+    //                          pba),
+    //                 ptsz->error_message,
+    //                 ptsz->error_message);
 
+    pvectsz[ptsz->index_mVIR] = get_m200m_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200m],ptsz);
     pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],
                                                       pvectsz[ptsz->index_Delta_c],
                                                       pvectsz[ptsz->index_Rho_crit],
@@ -11673,6 +11712,11 @@ if (pvectsz[ptsz->index_has_matter_density] == 1 || pvectsz[ptsz->index_has_lens
     m_delta_matter = pvectsz[ptsz->index_m500c];
     r_delta_matter = pvectsz[ptsz->index_r500c];
     c_delta_matter = pvectsz[ptsz->index_c500c];
+  }
+  else if (ptsz->delta_def_matter_density == 3){
+    m_delta_matter = pvectsz[ptsz->index_mVIR];
+    r_delta_matter = pvectsz[ptsz->index_rVIR];
+    c_delta_matter = pvectsz[ptsz->index_cVIR];
   }
 
   pvectsz[ptsz->index_mass_for_matter_density] = m_delta_matter;
@@ -15949,6 +15993,10 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       if (ptsz->pressure_profile == 4){
         ptsz->has_200c = 1;
         ptsz->delta_def_electron_pressure = 1;
+        if (ptsz->truncate_gas_pressure_wrt_rvir){
+        ptsz->has_vir = 1;
+        ptsz->need_m200c_to_mvir = 1;
+        }
       }
       else if (ptsz->pressure_profile == 0){ // Planck 2013
         ptsz->has_500c = 1;
@@ -16278,7 +16326,9 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
     else if (ptsz->delta_def_matter_density == 2){
       ptsz->has_500c = 1;
     }
-
+    else if (ptsz->delta_def_matter_density == 3){
+      ptsz->has_vir = 1;
+    }
   }
 
 
@@ -16306,6 +16356,10 @@ if (ptsz->need_hmf){
 
   if (ptsz->integrate_wrt_m200m == 1 && ptsz->has_200c == 1)
     ptsz->need_m200m_to_m200c = 1;
+
+  if (ptsz->integrate_wrt_m200m == 1 && ptsz->has_vir == 1)
+    ptsz->need_m200m_to_mvir = 1;
+
 
   if (ptsz->integrate_wrt_m200c == 1 && ptsz->has_200m == 1)
     ptsz->need_m200c_to_m200m = 1;
@@ -18875,7 +18929,10 @@ double evaluate_truncated_nfw_profile(//double * pvecback,
 //double z = pvectsz[ptsz->index_z];
 // c_delta = 5.;
 double q = k*r_delta/c_delta*(1.+z); // uk -> 1 when q->0
-double denominator = m_nfw(xout*c_delta); //normalization
+
+
+double denominator = m_nfw(c_delta); //normalization --> this does not satisfy that m*uk = m for k->0 when xout != 1
+// double denominator = m_nfw(xout*c_delta); //normalization --> this enforces that m*uk = m for k->0 for all xout
 
 
 

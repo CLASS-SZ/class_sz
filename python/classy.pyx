@@ -3174,6 +3174,31 @@ cdef class Class:
     def get_rvir_of_m200c_at_z(self,m_asked,z):
         return get_rvir_of_m200c_at_z(m_asked,z,&self.ba,&self.tsz)
 
+    def get_Delta_c_of_Omega_m(self,Omega_m):
+        return Delta_c_of_Omega_m(Omega_m)
+
+
+    def get_cvir_of_mvir_at_z(self,m_asked,z):
+        return evaluate_cvir_of_mvir(m_asked,z,&self.tsz,&self.ba)
+
+    def get_rvir_of_mvir_at_z(self,m_asked,z):
+        cdef double tau
+        cdef int last_index #junk
+        cdef double * pvecback
+
+        pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
+
+        if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
+            raise CosmoSevereError(self.ba.error_message)
+
+        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+            raise CosmoSevereError(self.ba.error_message)
+
+        omega = pvecback[self.ba.index_bg_Omega_m]
+        free(pvecback)
+        Delta_c = self.get_Delta_c_of_Omega_m(omega)
+        rhoc =  self.get_rho_crit_at_z(z)
+        return evaluate_rvir_of_mvir(m_asked,Delta_c,rhoc,&self.tsz);
 
     def get_gas_profile_at_x_M_z_nfw_200c(self,r_asked,m_asked,z_asked):
         return get_gas_profile_at_x_M_z_nfw_200c(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
