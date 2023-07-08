@@ -321,6 +321,8 @@ struct tszspectrum {
   int index_psi;
   int number_of_titles;
 
+  int need_m200c_to_mvir;
+  int need_m200m_to_mvir;
   int need_m200m_to_m200c;
   int need_m200c_to_m200m;
   int need_m200m_to_m500c;
@@ -1808,7 +1810,7 @@ double * steps_m;
   double * unbinned_nl_tt_n_ell;
   int unbinned_nl_tt_size;
 
-  int truncate_wrt_rvir;
+  int truncate_gas_pressure_wrt_rvir;
 
   int no_tt_noise_in_kSZ2X_cov;
 
@@ -1829,6 +1831,13 @@ double * steps_m;
   double * array_ln_1pz_m200m_to_m200c;
   double * array_m200m_to_m200c_at_z_and_M;
 
+  double * array_m_m200c_to_mvir;
+  double * array_ln_1pz_m200c_to_mvir;
+  double * array_m200c_to_mvir_at_z_and_M;
+
+  double * array_m_m200m_to_mvir;
+  double * array_ln_1pz_m200m_to_mvir;
+  double * array_m200m_to_mvir_at_z_and_M;
 
   double * array_m_m200c_to_m200m;
   double * array_ln_1pz_m200c_to_m200m;
