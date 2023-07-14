@@ -201,6 +201,16 @@ int class_sz_cosmo_init(  struct background * pba,
   for (i=0; i<ptsz->ln_k_size_for_tSZ; i++)
       ptsz->ln_k_for_tSZ[i]=log(ptsz->k_min_for_pk_in_tSZ)+i*log(10.)/ptsz->k_per_decade_for_tSZ;
 
+// for vrms2
+      ptsz->ln_k_size_for_vrms2 = (int)(log(ptsz->k_max_for_pk_in_vrms2
+                                       /ptsz->k_min_for_pk_in_vrms2)
+                                   /log(10.)*ptsz->k_per_decade_for_vrms2) + 2;
+
+    class_alloc(ptsz->ln_k_for_vrms2,ptsz->ln_k_size_for_vrms2*sizeof(double),ptsz->error_message);
+    int j;
+    for (j=0; j<ptsz->ln_k_size_for_vrms2; j++)
+        ptsz->ln_k_for_vrms2[j]=log(ptsz->k_min_for_pk_in_vrms2)+j*log(10.)/ptsz->k_per_decade_for_vrms2;
+
 
    // printf("need_hmf = %d\n",ptsz->need_hmf);
    select_multipole_array(ptsz);

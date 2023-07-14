@@ -7,7 +7,6 @@ import os
 import subprocess as sbp
 import os.path as osp
 
-# this file is currently what works on M1.
 # Recover the gcc compiler
 GCCPATH_STRING = sbp.Popen(
     # ['gcc-11', '-print-libgcc-file-name'],
@@ -46,7 +45,9 @@ classy_ext = Extension("classy_sz", [os.path.join(classy_folder, "classy.pyx")],
                            #extra_link_args=['-lgomp','-L/Users/boris/gsl-2.6/lib/','-lgsl','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/'])
                            # extra_link_args=['-lgomp','-lgsl','-lfftw3','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/']) # BB
                            # extra_link_args=['-lomp','-L/Users/boris/miniconda/lib','-lgsl','-lfftw3','-lgslcblas']) # BB
-                           extra_link_args=['-lomp','-L/Users/boris/opt/miniconda3/lib','-lgsl','-lfftw3','-lgslcblas']) # BB
+                           #extra_link_args=['-lomp','-L/Users/boris/opt/miniconda3/lib','-lgsl','-lfftw3','-lgslcblas']) # BB
+                           extra_link_args=['-lgomp','-L/Users/aleksandra/software/gsl-2.7.1/lib/','-lgsl','-L/Users/aleksandra/software/fftw-3.3.10/lib/', '-lfftw3','-lgslcblas','-Wl,-rpath,/opt/homebrew/opt/gcc/lib/gcc/12/',"-L/Users/aleksandra/anaconda3/lib/"]) # BB
+
                            # extra_link_args=['-lomp','-L/Users/boris/opt/anaconda3/lib','-lgsl','-lfftw3','-lgslcblas']) # BB
 
                            #extra_link_args=['-lgomp','-lgsl','-lfftw3_omp','-lfftw3','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/']) # BB

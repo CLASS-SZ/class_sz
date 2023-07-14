@@ -49,6 +49,7 @@ class classy_sz(classy):
 
 
     def must_provide(self, **requirements):
+        print("requirements ", requirements)
         if "Cl_sz" in requirements:
             # make sure cobaya still runs as it does for standard classy
             requirements.pop("Cl_sz")
@@ -57,6 +58,88 @@ class classy_sz(classy):
                     method="cl_sz", # name of the method in classy.pyx
                     args_names=[],
                     args=[])
+        if "Cl_yxg" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("Cl_yxg")
+            # specify the method to collect the new observable
+            self.collectors["Cl_yxg"] = Collector(
+                    method="cl_yg", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+        if "Cl_gxg" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("Cl_gxg")
+            # specify the method to collect the new observable
+            self.collectors["Cl_gxg"] = Collector(
+                    method="cl_gg", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+        if "Cl_gxmu" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("Cl_gxmu")
+            # specify the method to collect the new observable
+            self.collectors["Cl_gxmu"] = Collector(
+                    method="cl_gm", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+        if "Cl_muxmu" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("Cl_muxmu")
+            # specify the method to collect the new observable
+            self.collectors["Cl_muxmu"] = Collector(
+                    method="cl_mm", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+        if "Cl_kgxg" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("Cl_kxg")
+            # specify the method to collect the new observable
+            self.collectors["Cl_kxg"] = Collector(
+                    method="cl_kg", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+        if "Cl_gxkgal" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("Cl_gxkgal")
+            # specify the method to collect the new observable
+            print("in the collector")
+            self.collectors["Cl_gxkgal"] = Collector(
+                    method="cl_ggamma", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+        if "Cl_kxmu" in requirements:
+        # make sure cobaya still runs as it does for standard classy
+            requirements.pop("Cl_kxmu")
+        # specify the method to collect the new observable
+            self.collectors["Cl_kxmu"] = Collector(
+                    method="cl_km", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+        if "Cl_yxmu" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("Cl_yxmu")
+            # specify the method to collect the new observable
+            self.collectors["Cl_yxmu"] = Collector(
+                    method="cl_ym", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+        if "s8omegamp5" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("s8omegamp5")
+            # specify the method to collect the new observable
+            self.collectors["s8omegamp5"] = Collector(
+                    method="s8omegamp5", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+        if "H0" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("H0")
+            # specify the method to collect the new observable
+            self.collectors["H0"] = Collector(
+                    method="H0", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+
 
         if "sz_binned_cluster_counts" in requirements:
             # make sure cobaya still runs as it does for standard classy
@@ -85,6 +168,44 @@ class classy_sz(classy):
             return self.get_Clfast()
         else:
             return self._get_Cl(ell_factor=ell_factor, units=units, lensed=True)
+    def get_Cl_sz(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_sz"])
+        return cls
+
+    def get_Cl_yxg(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_yxg"])
+        return cls
+    def get_Cl_kxg(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_kxg"])
+        return cls
+    def get_Cl_gxkgal(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_gxkgal"])
+        return cls
+    def get_Cl_gxg(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_gxg"])
+        return cls
+    def get_Cl_muxmu(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_muxmu"])
+        return cls
+    def get_Cl_gxmu(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_gxmu"])
+        return cls
+    def get_Cl_kxmu(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_kxmu"])
+        return cls
+    def get_Cl_yxmu(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_yxmu"])
+        return cls
+
     def get_Clfast(self):
         # print('ell_factor:',self.ell_factor)
         # exit(0)

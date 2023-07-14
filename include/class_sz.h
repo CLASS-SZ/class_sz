@@ -1593,6 +1593,11 @@ double szcounts_ntot;
   double k_max_for_pk_in_tSZ;
   double * ln_k_for_tSZ;
 
+  int ln_k_size_for_vrms2;
+  double k_per_decade_for_vrms2;
+  double k_min_for_pk_in_vrms2;
+  double k_max_for_pk_in_vrms2;
+  double * ln_k_for_vrms2;
 
 int nsteps_m;
 int nsteps_z;

@@ -3792,7 +3792,7 @@ int spectra_vrms2(
   index_num=i;
 
   class_alloc(array_for_sigma,
-              ptsz->ln_k_size_for_tSZ*index_num*sizeof(double),
+              ptsz->ln_k_size_for_vrms2*index_num*sizeof(double),
               pnl->error_message);
 
     //background quantities @ z:
@@ -3827,9 +3827,9 @@ int spectra_vrms2(
 
 
 
-      for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
-        k=exp(ptsz->ln_k_for_tSZ[i]);
-        if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999;
+      for (i=0;i<ptsz->ln_k_size_for_vrms2;i++) {
+        k=exp(ptsz->ln_k_for_vrms2[i]);
+        if (i == (ptsz->ln_k_size_for_vrms2-1)) k *= 0.9999999;
 // printf("ok k = %e I = %e\n",k,pk*W*W);
     // //Input: wavenumber in 1/Mpc
     // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
@@ -3866,7 +3866,7 @@ int spectra_vrms2(
 // printf("ok z = %e\n",W);
   class_call(array_spline(array_for_sigma,
                           index_num,
-                          ptsz->ln_k_size_for_tSZ,
+                          ptsz->ln_k_size_for_vrms2,
                           index_k,
                           index_y,
                           index_ddy,
@@ -3877,7 +3877,7 @@ int spectra_vrms2(
 //printf("ok z = %e\n",W);
   class_call(array_integrate_all_spline(array_for_sigma,
                                         index_num,
-                                        ptsz->ln_k_size_for_tSZ,
+                                        ptsz->ln_k_size_for_vrms2,
                                         index_k,
                                         index_y,
                                         index_ddy,
