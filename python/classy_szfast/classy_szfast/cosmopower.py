@@ -1,6 +1,8 @@
 from .utils import *
 from .config import *
 
+dofftlog_alphas = False
+
 cosmopower_derived_params_names = ['100*theta_s',
                                    'sigma8',
                                    'YHe',
@@ -35,6 +37,8 @@ emulator_dict['lcdm']['EE'] = 'EE_v1'
 emulator_dict['lcdm']['PP'] = 'PP_v1'
 emulator_dict['lcdm']['PKNL'] = 'PKNL_v1'
 emulator_dict['lcdm']['PKL'] = 'PKL_v1'
+emulator_dict['lcdm']['PKLFFTLOG_ALPHAS_REAL'] = 'PKLFFTLOGALPHAS_creal_v1'
+emulator_dict['lcdm']['PKLFFTLOG_ALPHAS_IMAG'] = 'PKLFFTLOGALPHAS_cimag_v1'
 emulator_dict['lcdm']['DER'] = 'DER_v1'
 emulator_dict['lcdm']['DAZ'] = 'DAZ_v1'
 emulator_dict['lcdm']['HZ'] = 'HZ_v1'
@@ -84,6 +88,9 @@ cp_ee_nn = {}
 cp_pp_nn = {}
 cp_pknl_nn = {}
 cp_pkl_nn = {}
+cp_pkl_fftlog_alphas_real_nn = {}
+cp_pkl_fftlog_alphas_imag_nn = {}
+cp_pkl_fftlog_alphas_nus = {}
 cp_der_nn = {}
 cp_da_nn = {}
 cp_h_nn = {}
@@ -110,6 +117,14 @@ for mp in ['lcdm','mnu','neff','wcdm']:
     cp_pkl_nn[mp] = cosmopower_NN(restore=True,
                               restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKL'])
 
+    if (mp == 'lcdm') and (dofftlog_alphas == True):
+        cp_pkl_fftlog_alphas_real_nn[mp] = cosmopower_PCAplusNN(restore=True,
+                                 restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKLFFTLOG_ALPHAS_REAL']
+                                 )
+        cp_pkl_fftlog_alphas_imag_nn[mp] = cosmopower_PCAplusNN(restore=True,
+                                 restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKLFFTLOG_ALPHAS_IMAG']
+                                 )
+        cp_pkl_fftlog_alphas_nus[mp] = np.load(path_to_emulators + 'PK/PKL_FFTLog_alphas_nu_v1.npz')
     cp_der_nn[mp] = cosmopower_NN(restore=True,
                               restore_filename=path_to_emulators + 'derived-parameters/' + emulator_dict[mp]['DER'])
 

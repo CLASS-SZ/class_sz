@@ -30,6 +30,8 @@ from scipy.interpolate import InterpolatedUnivariateSpline as _spline
 # path_to_cosmopower_organization = '/Users/boris/Work/CLASS-SZ/SO-SZ/cosmopower-organization'
 # path_to_emulators = path_to_cosmopower_organization + 'lcdm/'
 # from mcfit import P2xi
+# from mcfit.transforms import *
+import mcfit
 import time
 from classy_szfast import classy_szfast
 
@@ -537,6 +539,16 @@ cdef class Class:
         # following functions are only to output the desired numbers
         return
 
+
+    def calculate_pkl_fftlog_alphas(self,zpk,cosmo_model = 'lcdm'):
+        params_settings = self._pars
+        cnew = self.class_szfast.calculate_pkl_fftlog_alphas(cosmo_model = cosmo_model,zpk=zpk,**params_settings)
+        return self.class_szfast.cp_pkl_fftlog_alphas_nus[cosmo_model]['arr_0'],cnew
+
+    def get_pkl_reconstructed_from_fftlog(self,zpk,cosmo_model = 'lcdm'):
+        params_settings = self._pars
+        return self.class_szfast.get_pkl_reconstructed_from_fftlog(cosmo_model = 'lcdm',zpk=zpk,**params_settings)
+
     def compute_class_szfast(self):
         # print('input parameters:',self._pars)
         # oldpars = self._pars.copy()
@@ -560,9 +572,10 @@ cdef class Class:
 
         # print('new input parameters:',self._pars)
 
-
-        self.compute(level=["input"])
-
+        # start = time.time()
+        # self.compute(level=["input"])
+        # end = time.time()
+        # print('class_sz input calculation took:',end-start) # this takes < 1e-4s
 
         # print("skip",self.tsz.skip_background_and_thermo)
         params_settings = self._pars
@@ -575,44 +588,71 @@ cdef class Class:
 
         if 'A_s' in self._pars:
           params_settings['ln10^{10}A_s'] = self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
-
+          params_settings.pop('A_s')
         if '100*theta_s' in self._pars:
           # print('doing theta_s -> H0')
-          # cszfast.get_H0_from_thetas(params_settings)
-          print('We will compute that, but this is not what to do for fast-mode.\n')
-          print('It is ok for testing, but....\n')
-          print('You should pass H0 or h for maximum speed.\n')
-          print('You can always recover 100*theta_s as a derived parameter.\n')
-          params_settings['H0'] = 100.*self.h()
+          cszfast.get_H0_from_thetas(params_settings)
+          # print('We will compute that, but this is not what to do for fast-mode.\n')
+          # print('It is ok for testing, but....\n')
+          # print('You should pass H0 or h for maximum speed.\n')
+          # print('You can always recover 100*theta_s as a derived parameter.\n')
+          #params_settings['H0'] = 100.*self.h()
+          # print('self.pars',self._pars)
+          # self._pars.pop('100*theta_s')
+          # self._pars['H0'] = params_settings['H0']
         if 'sigma8' in self._pars:
-          print('We will compute that, but this is not what to do for fast-mode.\n')
-          print('It is ok for testing, but....\n')
-          print('You should pass A_s or ln10^{10}A_s for maximum speed.\n')
-          print('You can always recover sigma8 as a derived parameter.\n')
-          params_settings['ln10^{10}A_s'] = self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
+          # print('We will compute that, but this is not what to do for fast-mode.\n')
+          # print('It is ok for testing, but....\n')
+          # print('You should pass A_s or ln10^{10}A_s for maximum speed.\n')
+          # print('You can always recover sigma8 as a derived parameter.\n')
+          # params_settings['ln10^{10}A_s'] = self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
+          cszfast.find_As(params_settings)
+          # params_settings['ln10^{10}A_s'] = np.log(1.e10*cszfast.find_As(params_settings['sigma8'],params_settings))
+          # params_settings.pop('sigma8')
+          # print('self.pars',self._pars)
+          # self._pars.pop('sigma8')
+          # self._pars['ln10^{10}A_s'] = params_settings['ln10^{10}A_s']
         # exit(0)
+
+        # start = time.time()
+        self.compute(level=["input"])
+        # end = time.time()
+        # print('class_sz input calculation took:',end-start) # this takes < 1e-4s
 
         if self.tsz.skip_cmb == 0:
           # print('calculating cmb')
           start = time.time()
-          cszfast.calculate_cmb(**params_settings)
+          # print('self.tsz.want_pp:',self.tsz.want_pp)
+          if self.tsz.use_cmb_cls_from_file == 0:
+            cszfast.calculate_cmb(cosmo_model = 'lcdm',
+                                  want_tt=True,
+                                  want_te=True,
+                                  want_ee=True,
+                                  # want_pp=self.tsz.want_pp,
+                                  **params_settings)
+          else:
+            cszfast.load_cmb_cls_from_file(**params_settings)
           end = time.time()
           # print('cmb calculation took:',end-start)
 
-        if self.pt.has_pk_matter and self.tsz.skip_pk == 0:
-          if self.tsz.skip_pkl == 0:
-            # print('calculating pkl')
-            start = time.time()
-            cszfast.calculate_pkl(**params_settings)
-            end = time.time()
-            # print('pk calculation took:',end-start)
-            #index_z_r = 0
-            #for index_z in range(self.tsz.n_arraySZ):
-            #  for index_r in range(self.tsz.ndimSZ):
-            #        self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
-            #        self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
-            #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
-            #        index_z_r += 1
+        #if self.tsz.skip_pkl_fftlog_alpha == 0:
+        #  cszfast.calculate_pkl_fftlog_alphas(**params_settings)
+
+
+        #if self.pt.has_pk_matter and self.tsz.skip_pk == 0:
+        if self.tsz.skip_pkl == 0:
+          # print('calculating pkl')
+          start = time.time()
+          cszfast.calculate_pkl(**params_settings)
+          end = time.time()
+          # print('pk calculation took:',end-start)
+          #index_z_r = 0
+          #for index_z in range(self.tsz.n_arraySZ):
+          #  for index_r in range(self.tsz.ndimSZ):
+          #        self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
+          #        self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
+          #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
+          #        index_z_r += 1
 
         if self.tsz.skip_pknl == 0:
           # print('calculating pknl')
@@ -633,24 +673,30 @@ cdef class Class:
 
 
         # print('calculating sigma8')
-        start = time.time()
-        cszfast.calculate_sigma8_and_der(**params_settings)
-        end = time.time()
-        # print('der calculation took:',end-start)
-        # print('sigma8:',cszfast.sigma8)
-        self.sigma8_fast = cszfast.sigma8
-
-        cszfast.calculate_sigma8_at_z(**params_settings)
-
-
+        if self.tsz.skip_sigma8_and_der == 0:
+          start = time.time()
+          cszfast.calculate_sigma8_and_der(**params_settings)
+          end = time.time()
+          # print('sigma8_and_der calculation took:',end-start)
+          # print('sigma8:',cszfast.sigma8)
+          self.sigma8_fast = cszfast.sigma8
+        else:
+          self.sigma8_fast = 0.
+        if self.tsz.skip_sigma8_at_z == 0:
+          start = time.time()
+          cszfast.calculate_sigma8_at_z(**params_settings)
+          end = time.time()
+          # print('sigma8_at_z calculation took:',end-start)
 
 
 
 
 
         if self.tsz.skip_background_and_thermo:
-          cszfast.calculate_chi(**params_settings)
-          cszfast.calculate_hubble(**params_settings)
+          if self.tsz.skip_chi == 0:
+            cszfast.calculate_chi(**params_settings)
+          if self.tsz.skip_hubble == 0:
+            cszfast.calculate_hubble(**params_settings)
           self.tsz.use_class_sz_fast_mode = 1
           self.class_szfast = cszfast
           self.computed = True
@@ -712,6 +758,10 @@ cdef class Class:
     def compute_class_sz(self,pdict_to_update):
         self._fillparfile()
         for k,v in pdict_to_update.items():
+          if k == 'P0GNFW':
+            self.tsz.P0GNFW = pdict_to_update[k]
+          if k == 'c500':
+            self.tsz.c500 = pdict_to_update[k]
           if k == 'M_min':
             self.tsz.M1SZ = pdict_to_update[k]
           if k == 'M_max':
@@ -1009,7 +1059,8 @@ cdef class Class:
           cls['ee'][2:nl+2] = self.class_szfast.cp_predicted_ee_spectrum
           cls['ee'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
           # cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum/4. ## this is clkk... works for so lensinglite lkl
-          cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
+          if self.tsz.want_pp:
+            cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
           # # here for the planck lensing lkl, using lfactor option gives:
           # cls['pp'][2:nl+2] = self.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
           # cls['pp'][2:nl+2] *= (lcp*(lcp+1.))**2./2./np.pi
@@ -2080,7 +2131,11 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
-    def cl_ykg(self):
+    def cl_ykg(self,
+               Nmcfit = 1024,
+               log10xmin_mcfit = -6,
+               log10xmax_mcfit = +6,
+               log10x_num = 600):
         """
         (class_sz) Return the 1-halo and 2-halo terms of y x kg power spectrum
         """
@@ -2092,6 +2147,26 @@ cdef class Class:
             cl['1h'].append(self.tsz.cl_tSZ_gallens_1h[index])
             cl['2h'].append(self.tsz.cl_tSZ_gallens_2h[index])
             cl['ell'].append(self.tsz.ell[index])
+        if self.tsz.do_real_space_with_mcfit:
+            cl_g_gamma_ell = np.asarray(cl['ell'])
+            cl_g_gamma_1h = np.asarray(cl['1h'])
+            cl_g_gamma_2h = np.asarray(cl['2h'])
+            fac = cl_g_gamma_ell*(cl_g_gamma_ell+1.)/2./np.pi
+            cltot = cl_g_gamma_1h/fac+cl_g_gamma_2h/fac
+            cltotfunc = interpolate.interp1d(cl_g_gamma_ell,cltot,kind='cubic',
+                                             axis=-1,
+                                             copy=True,
+                                             bounds_error=False,
+                                             fill_value=1e-100,
+                                             assume_sorted=False)
+            mcfitx = np.logspace(log10xmin_mcfit, log10xmax_mcfit, num=log10x_num, endpoint=False)
+            F = cltotfunc(mcfitx)
+            H = mcfit.transforms.Hankel(mcfitx, nu=2, q=1, N=Nmcfit, lowring=True) # nu = 0 for gg, (and yg)
+            y, G = H(F, extrap=True)
+            theta_mcfit = y*(60.*180.)/np.pi
+            xi_mcfit = G/2./np.pi
+            cl['theta'] = theta_mcfit
+            cl['xi'] = xi_mcfit
         return cl
 
 
@@ -2253,7 +2328,11 @@ cdef class Class:
         return cl
 
 
-    def cl_ggamma(self):
+    def cl_ggamma(self,
+                  Nmcfit = 1024,
+                  log10xmin_mcfit = -6,
+                  log10xmax_mcfit = +6,
+                  log10x_num = 600):
         """
         (class_sz) Return the 1-halo and 2-halo terms of galaxy x galaxy lensing power spectrum
         """
@@ -2265,6 +2344,26 @@ cdef class Class:
             cl['1h'].append(self.tsz.cl_gal_gallens_1h[index])
             cl['2h'].append(self.tsz.cl_gal_gallens_2h[index])
             cl['ell'].append(self.tsz.ell[index])
+        if self.tsz.do_real_space_with_mcfit:
+            cl_g_gamma_ell = np.asarray(cl['ell'])
+            cl_g_gamma_1h = np.asarray(cl['1h'])
+            cl_g_gamma_2h = np.asarray(cl['2h'])
+            fac = cl_g_gamma_ell*(cl_g_gamma_ell+1.)/2./np.pi
+            cltot = cl_g_gamma_1h/fac+cl_g_gamma_2h/fac
+            cltotfunc = interpolate.interp1d(cl_g_gamma_ell,cltot,kind='cubic',
+                                             axis=-1,
+                                             copy=True,
+                                             bounds_error=False,
+                                             fill_value=1e-100,
+                                             assume_sorted=False)
+            mcfitx = np.logspace(log10xmin_mcfit, log10xmax_mcfit, num=log10x_num, endpoint=False)
+            F = cltotfunc(mcfitx)
+            H = mcfit.transforms.Hankel(mcfitx, nu=2, q=1, N=Nmcfit, lowring=True)
+            y, G = H(F, extrap=True)
+            theta_mcfit = y*(60.*180.)/np.pi
+            xi_mcfit = G/2./np.pi
+            cl['theta'] = theta_mcfit
+            cl['xi'] = xi_mcfit
         return cl
 
     def gamma_ggamma(self):
@@ -2279,6 +2378,22 @@ cdef class Class:
             cl['1h'].append(self.tsz.gamma_gal_gallens_1h[index])
             cl['2h'].append(self.tsz.gamma_gal_gallens_2h[index])
             cl['thetas'].append(self.tsz.thetas_arcmin[index])
+        return cl
+
+    def cl_eg(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of electron x galaxy power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        # cl['hf'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_tau_gal_1h[index])
+            cl['2h'].append(self.tsz.cl_tau_gal_2h[index])
+            # cl['hf'].append(self.tsz.cl_tau_gal_hf[index])
+            cl['ell'].append(self.tsz.ell[index])
         return cl
 
     def cl_kg(self):
@@ -2685,10 +2800,12 @@ cdef class Class:
         """
         T_ll = defaultdict(list)
         cdef int index_l,index_l_prime
+        T_ll_arr = np.zeros((self.tsz.nlSZ,self.tsz.nlSZ))
         for index_l in range(self.tsz.nlSZ):
             for index_l_prime in range(index_l+1):
                 T_ll[index_l].append(self.tsz.tllprime_sz[index_l][index_l_prime])
-        return T_ll
+                T_ll_arr[index_l][index_l_prime] = self.tsz.tllprime_sz[index_l][index_l_prime]
+        return T_ll_arr
 
 
     def A_rs(self):
@@ -3057,6 +3174,31 @@ cdef class Class:
     def get_rvir_of_m200c_at_z(self,m_asked,z):
         return get_rvir_of_m200c_at_z(m_asked,z,&self.ba,&self.tsz)
 
+    def get_Delta_c_of_Omega_m(self,Omega_m):
+        return Delta_c_of_Omega_m(Omega_m)
+
+
+    def get_cvir_of_mvir_at_z(self,m_asked,z):
+        return evaluate_cvir_of_mvir(m_asked,z,&self.tsz,&self.ba)
+
+    def get_rvir_of_mvir_at_z(self,m_asked,z):
+        cdef double tau
+        cdef int last_index #junk
+        cdef double * pvecback
+
+        pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
+
+        if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
+            raise CosmoSevereError(self.ba.error_message)
+
+        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+            raise CosmoSevereError(self.ba.error_message)
+
+        omega = pvecback[self.ba.index_bg_Omega_m]
+        free(pvecback)
+        Delta_c = self.get_Delta_c_of_Omega_m(omega)
+        rhoc =  self.get_rho_crit_at_z(z)
+        return evaluate_rvir_of_mvir(m_asked,Delta_c,rhoc,&self.tsz);
 
     def get_gas_profile_at_x_M_z_nfw_200c(self,r_asked,m_asked,z_asked):
         return get_gas_profile_at_x_M_z_nfw_200c(r_asked,m_asked,z_asked,&self.ba,&self.tsz)

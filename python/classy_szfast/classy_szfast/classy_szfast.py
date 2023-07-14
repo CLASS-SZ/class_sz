@@ -4,12 +4,13 @@ import numpy as np
 from .cosmopower import *
 from .pks_and_sigmas import *
 import scipy
+import time
 # import pyquad
 # from classy_sz import Class
 from multiprocessing import Process
 from mcfit import TophatVar
 from scipy.interpolate import CubicSpline
-
+import pickle
 
 H_units_conv_factor = {"1/Mpc": 1, "km/s/Mpc": Const.c_km_s}
 
@@ -33,6 +34,11 @@ class classy_szfast(object):
         self.cp_da_nn = cp_da_nn
         self.cp_h_nn = cp_h_nn
         self.cp_s8_nn = cp_s8_nn
+
+        if dofftlog_alphas == True:
+            self.cp_pkl_fftlog_alphas_nus = cp_pkl_fftlog_alphas_nus
+            self.cp_pkl_fftlog_alphas_real_nn  = cp_pkl_fftlog_alphas_real_nn
+            self.cp_pkl_fftlog_alphas_imag_nn = cp_pkl_fftlog_alphas_imag_nn
 
         self.cosmo_model = 'lcdm'
 
@@ -112,6 +118,31 @@ class classy_szfast(object):
                                                        self.cszfast_gas_pressure_xgrid_xmax,
                                                        self.cszfast_gas_pressure_xgrid_nx)
 
+
+    def find_As(self,params_cp):
+        # params_cp = self.params_cp
+        t0 = time.time()
+
+        sigma_8_asked = params_cp["sigma8"]
+        # print(params_cp)
+        def to_root(ln10_10_As_goal):
+            params_cp["ln10^{10}A_s"] = ln10_10_As_goal[0]
+            params_dict = {}
+            for k,v in params_cp.items():
+                params_dict[k]=[v]
+            return self.cp_der_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0][1]-sigma_8_asked
+
+        lnA_s = optimize.root(to_root,
+                              x0=3.046,
+                              #tol = 1e-10,
+                              method="hybr")
+        params_cp['ln10^{10}A_s'] = lnA_s.x[0]# .x[0]
+        params_cp.pop('sigma8')
+        # print("T total in find As",time.time()-t0)#self.t_total)
+        # print(params_cp)
+        return 1
+
+
     def get_H0_from_thetas(self,params_values):
         # print(params_values)
         theta_s_asked = params_values['100*theta_s']
@@ -135,12 +166,47 @@ class classy_szfast(object):
         return 1
 
 
+    def calculate_pkl_fftlog_alphas(self,cosmo_model = 'lcdm',zpk = 0.,**params_values_dict):
+        params_values = params_values_dict.copy()
+        params_dict = {}
+        for k,v in params_values.items():
+            params_dict[k]=[v]
+        params_dict['z_pk_save_nonclass'] = [zpk]
+
+        predicted_testing_alphas_creal = self.cp_pkl_fftlog_alphas_real_nn[cosmo_model].predictions_np(params_dict)[0]
+        predicted_testing_alphas_cimag = self.cp_pkl_fftlog_alphas_imag_nn[cosmo_model].predictions_np(params_dict)[0]
+        predicted_testing_alphas_cimag = np.append(predicted_testing_alphas_cimag,0.)
+        creal = predicted_testing_alphas_creal
+        cimag = predicted_testing_alphas_cimag
+        Nmax = len(self.cszfast_pk_grid_k)
+        cnew = np.zeros(Nmax+1,dtype=complex)
+        for i in range(Nmax+1):
+            if i<int(Nmax/2):
+                cnew[i] = complex(creal[i],cimag[i])
+            elif i==int(Nmax/2):
+                cnew[i] = complex(creal[i],cimag[i])
+            else:
+                j = i-int(Nmax/2)
+                cnew[i] = complex(creal[::-1][j],-cimag[::-1][j])
+        # self.predicted_fftlog_pkl_alphas = cnew
+        return cnew
+
+    def get_pkl_reconstructed_from_fftlog(self,cosmo_model = 'lcdm',zpk = 0.,**params_values_dict):
+        #c_n_math = self.predicted_fftlog_pkl_alphas
+        c_n_math = self.calculate_pkl_fftlog_alphas(cosmo_model = cosmo_model,zpk = zpk,**params_values_dict)
+        nu_n_math = self.cp_pkl_fftlog_alphas_nus[cosmo_model]['arr_0']
+        Nmax = int(len(c_n_math)-1)
+        term1 = c_n_math[int(Nmax/2)]*self.cszfast_pk_grid_k**(nu_n_math[int(Nmax/2)])
+        term2_array = [c_n_math[int(Nmax/2)+i]*self.cszfast_pk_grid_k**(nu_n_math[int(Nmax/2)+i]) for i in range(1, int(Nmax/2)+1)]
+        pk_reconstructed = (term1 + 2*np.sum(term2_array,axis=0)).real
+        return self.cszfast_pk_grid_k,pk_reconstructed
+
     def calculate_cmb(self,
                       cosmo_model = 'lcdm',
                       want_tt=True,
                       want_te=True,
                       want_ee=True,
-                      want_pp=True,
+                      want_pp=1,
                       **params_values_dict):
         params_values = params_values_dict.copy()
         # params_values['ln10^{10}A_s'] = params_values.pop("logA")
@@ -157,6 +223,25 @@ class classy_szfast(object):
             self.cp_predicted_ee_spectrum = self.cp_ee_nn[cosmo_model].ten_to_predictions_np(params_dict)[0]
         if want_pp:
             self.cp_predicted_pp_spectrum = self.cp_pp_nn[cosmo_model].ten_to_predictions_np(params_dict)[0]
+
+    def load_cmb_cls_from_file(self,**params_values_dict):
+        cls_filename = params_values_dict['cmb_cls_filename']
+        with open(cls_filename, 'rb') as handle:
+            cmb_cls_loaded = pickle.load(handle)
+        nl_cls_file = len(cmb_cls_loaded['ell'])
+        cls_ls = cmb_cls_loaded['ell']
+        dlfac = cls_ls*(cls_ls+1.)/2./np.pi
+        cls_tt = cmb_cls_loaded['tt']*dlfac
+        cls_te = cmb_cls_loaded['te']*dlfac
+        cls_ee = cmb_cls_loaded['ee']*dlfac
+        # cls_pp = cmb_cls_loaded['pp']*dlfac # check the normalization.
+        nl_cp_cmb = len(self.cp_predicted_tt_spectrum)
+        nl_req = min(nl_cls_file,nl_cp_cmb)
+
+        self.cp_predicted_tt_spectrum[:nl_req-2] = cls_tt[2:nl_req]
+        self.cp_predicted_te_spectrum[:nl_req-2] = cls_te[2:nl_req]
+        self.cp_predicted_ee_spectrum[:nl_req-2] = cls_ee[2:nl_req]
+        # self.cp_predicted_pp_spectrum[:nl_req-2] = cls_pp[2:nl_req]
 
 
     def calculate_pkl(self,
@@ -545,7 +630,10 @@ class classy_szfast(object):
 
 
     def rs_drag(self):
-        return self.cp_predicted_der[13]
+        try:
+            return self.cp_predicted_der[13]
+        except AttributeError:
+            return 0
     #################################
     # gives an estimation of f(z)*sigma8(z) at the scale of 8 h/Mpc, computed as (d sigma8/d ln a)
     # Now used by cobaya wrapper.

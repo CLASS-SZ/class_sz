@@ -254,11 +254,18 @@ cdef extern from "class.h":
         int n_arraySZ_for_integral
         double M1SZ
         double M2SZ
+        int do_real_space_with_mcfit
         int skip_class_sz
         int skip_pk
         int skip_cmb
+        int use_cmb_cls_from_file
+        int skip_chi
+        int skip_hubble
+        int want_pp
         int skip_pkl
         int skip_pknl
+        int skip_sigma8_at_z
+        int skip_sigma8_and_der
         int skip_background_and_thermo
         double cl_gal_gal_A_sn
         double * array_m_dndlnM
@@ -350,6 +357,8 @@ cdef extern from "class.h":
         double * cl_gal_gal_2h
         double * cl_gal_gal_hf
         double * cl_gal_lens_hf
+        double * cl_tau_gal_1h
+        double * cl_tau_gal_2h
         double * cl_gal_lens_1h
         double * cl_gal_lens_2h
         double * cl_lens_lens_1h
@@ -831,6 +840,18 @@ cdef extern from "class.h":
     double get_rho_crit_at_z(double z_asked,
                              void * pba,
                              void * ptsz)
+
+    double Delta_c_of_Omega_m(double Omega_m)
+
+    double evaluate_rvir_of_mvir(double mvir,
+                                 double delc,
+                                 double rhoc,
+                                 void * ptsz)
+
+    double evaluate_cvir_of_mvir(double mvir,
+                                 double z,
+                                 void * ptsz,
+                                 void * pba)
 
     double radial_kernel_W_galaxy_lensing_at_z(double z,
                                                void * ptsz)

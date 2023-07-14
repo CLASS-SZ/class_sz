@@ -1184,7 +1184,7 @@ for (itab = 0;itab<ntab;itab++){
     //   lnq_tab[itab] = -100.;
     // else
 
-    lnq_tab[itab] = log(ytab/sigtab);
+    lnq_tab[itab] = log(sqrt(ytab/sigtab*ytab/sigtab+ptsz->szcc_dof*ptsz->szcc_dof));
 
     if (isinf(lnq_tab[itab])||isnan(lnq_tab[itab])){
       printf("lnq_tab[itab] = %.5e ytab =%.5e sigtab = %.5e\n",lnq_tab[itab],ytab,sigtab);
@@ -1998,9 +1998,9 @@ if (pcsz->has_completeness == 1){
           double c2;
 
           if (ptsz->use_planck_binned_proba == 1){
-          c2 = erf_compl(yp,y,ptsz->sn_cutoff);
-          c2 *= erf_compl(yp,y,y_min);
-          c2 *= (1.-erf_compl(yp,y,y_max));
+          c2 = erf_compl(yp,y,ptsz->sn_cutoff,ptsz->szcc_dof);
+          c2 *= erf_compl(yp,y,y_min,ptsz->szcc_dof);
+          c2 *= (1.-erf_compl(yp,y,y_max,ptsz->szcc_dof));
 
           // if (index_y == 2 && index_patches == 0 && index_z == 0 && index_m == 0){
           // printf("\n");
@@ -2011,15 +2011,15 @@ if (pcsz->has_completeness == 1){
 
 
           if (index_y == 0){
-            c2 = erf_compl(yp,y,ptsz->sn_cutoff);
-            c2 *= (1.-erf_compl(yp,y,y_max));
+            c2 = erf_compl(yp,y,ptsz->sn_cutoff,ptsz->szcc_dof);
+            c2 *= (1.-erf_compl(yp,y,y_max,ptsz->szcc_dof));
 
 
           }
 
           if (index_y == pcsz->Nbins_y-1){
-            c2 = erf_compl(yp,y,ptsz->sn_cutoff) ;
-            c2 *= erf_compl(yp,y,y_min);
+            c2 = erf_compl(yp,y,ptsz->sn_cutoff,ptsz->szcc_dof) ;
+            c2 *= erf_compl(yp,y,y_min,ptsz->szcc_dof);
 
 
           }}
@@ -2128,9 +2128,9 @@ else{
           double c2;
 
           if (ptsz->use_planck_binned_proba == 1){
-          if (index_y==0)  {c2=erf_compl(y0,y1,ptsz->sn_cutoff)*(1.-erf_compl(y0,y1,y_max));}
-          else if (index_y==pcsz->Nbins_y-1) {c2=erf_compl(y0,y1,y_min)*erf_compl(y0,y1,ptsz->sn_cutoff);}
-          else {c2=erf_compl(y0,y1,ptsz->sn_cutoff)*erf_compl(y0,y1,y_min)*(1.-erf_compl(y0,y1,y_max));}
+          if (index_y==0)  {c2=erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof)*(1.-erf_compl(y0,y1,y_max,ptsz->szcc_dof));}
+          else if (index_y==pcsz->Nbins_y-1) {c2=erf_compl(y0,y1,y_min,ptsz->szcc_dof)*erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof);}
+          else {c2=erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof)*erf_compl(y0,y1,y_min,ptsz->szcc_dof)*(1.-erf_compl(y0,y1,y_max,ptsz->szcc_dof));}
           }
           else{
             c2 = erf_compl_nicola(y0,y1,ptsz->sn_cutoff,y_min,y_max);
@@ -2343,6 +2343,11 @@ else{
     for (index_z=0;index_z<pcsz->Nbins_z;index_z++){
       double z_bin_min = pcsz->z_center[index_z]-0.5*pcsz->dz;
       double z_bin_max = pcsz->z_center[index_z]+0.5*pcsz->dz;
+
+
+      if (ptsz->sz_verbose > 3){
+        printf("\n\n zbin min = %.5e max = %.5e\n\n",z_bin_min,z_bin_max);
+      }
 
 // if (index_z == 0){
 //   z_bin_min = pcsz->z_0;

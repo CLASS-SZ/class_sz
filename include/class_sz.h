@@ -69,6 +69,8 @@
 #define _gal_gal_2h_ ((ptsz->has_gal_gal_2h == _TRUE_) && (index_md == ptsz->index_md_gal_gal_2h))
 #define _n5k_ ((ptsz->has_n5k == _TRUE_) && (index_md == ptsz->index_md_n5k))
 #define _gal_gal_hf_ ((ptsz->has_gal_gal_hf == _TRUE_) && (index_md == ptsz->index_md_gal_gal_hf))
+#define _tau_gal_1h_ ((ptsz->has_tau_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tau_gal_1h))
+#define _tau_gal_2h_ ((ptsz->has_tau_gal_2h == _TRUE_) && (index_md == ptsz->index_md_tau_gal_2h))
 #define _gal_lens_2h_ ((ptsz->has_gal_lens_2h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_2h))
 #define _gal_lens_hf_ ((ptsz->has_gal_lens_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lens_hf))
 #define _gal_lens_1h_ ((ptsz->has_gal_lens_1h == _TRUE_) && (index_md == ptsz->index_md_gal_lens_1h))
@@ -196,6 +198,8 @@ struct tszspectrum {
   double * cl_gal_gal_hf;
   double * cl_gal_lens_hf;
   double * cl_lens_lens_hf;
+  double * cl_tau_gal_2h;
+  double * cl_tau_gal_1h;
   double * cl_gal_lens_2h;
   double * cl_gal_lens_1h;
   double * cl_gal_lensmag_hf;
@@ -317,6 +321,8 @@ struct tszspectrum {
   int index_psi;
   int number_of_titles;
 
+  int need_m200c_to_mvir;
+  int need_m200m_to_mvir;
   int need_m200m_to_m200c;
   int need_m200c_to_m200m;
   int need_m200m_to_m500c;
@@ -723,6 +729,17 @@ struct tszspectrum {
   int index_md_lens_lens_hf;
   int index_integrand_id_lens_lens_hf_first;
   int index_integrand_id_lens_lens_hf_last;
+
+
+  int has_tau_gal_2h;
+  int index_md_tau_gal_2h;
+  int index_integrand_id_tau_gal_2h_first;
+  int index_integrand_id_tau_gal_2h_last;
+
+  int has_tau_gal_1h;
+  int index_md_tau_gal_1h;
+  int index_integrand_id_tau_gal_1h_first;
+  int index_integrand_id_tau_gal_1h_last;
 
 
   int has_gal_lens_2h;
@@ -1798,7 +1815,7 @@ double * steps_m;
   double * unbinned_nl_tt_n_ell;
   int unbinned_nl_tt_size;
 
-  int truncate_wrt_rvir;
+  int truncate_gas_pressure_wrt_rvir;
 
   int no_tt_noise_in_kSZ2X_cov;
 
@@ -1819,6 +1836,13 @@ double * steps_m;
   double * array_ln_1pz_m200m_to_m200c;
   double * array_m200m_to_m200c_at_z_and_M;
 
+  double * array_m_m200c_to_mvir;
+  double * array_ln_1pz_m200c_to_mvir;
+  double * array_m200c_to_mvir_at_z_and_M;
+
+  double * array_m_m200m_to_mvir;
+  double * array_ln_1pz_m200m_to_mvir;
+  double * array_m200m_to_mvir_at_z_and_M;
 
   double * array_m_m200c_to_m200m;
   double * array_ln_1pz_m200c_to_m200m;

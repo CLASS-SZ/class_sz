@@ -2946,6 +2946,25 @@ int input_read_parameters(
         // ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"tau_gal_1h") != NULL) ) {
+        ptsz->has_tau_gal_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"tau_gal_2h") != NULL) ) {
+        ptsz->has_tau_gal_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
 
       if ((strstr(string1,"gal_lens_1h") != NULL) ) {
         ptsz->has_gal_lens_1h =_TRUE_;
@@ -3539,6 +3558,7 @@ int input_read_parameters(
 
 
 
+
       //units for tSZ spectrum
       class_call(parser_read_string(pfc,"units for tSZ spectrum",&string1,&flag1,errmsg),
                  errmsg,
@@ -3967,8 +3987,14 @@ int input_read_parameters(
        class_read_double("alpha_c_P0_B12",ptsz->alpha_c_P0_B12);// = 0.;
        class_read_double("alpha_c_xc_B12",ptsz->alpha_c_xc_B12);// = 0.;
        class_read_double("alpha_c_beta_B12",ptsz->alpha_c_beta_B12);// = 0.;
+       class_read_int("truncate_gas_pressure_wrt_rvir",ptsz->truncate_gas_pressure_wrt_rvir);
+      if (ptsz->truncate_gas_pressure_wrt_rvir){
+        ptsz->has_vir = 1;
+      }
      }
-class_read_int("truncate_wrt_rvir",ptsz->truncate_wrt_rvir);
+
+
+
 class_read_int("use_websky_m200m_to_m200c_conversion",ptsz->use_websky_m200m_to_m200c_conversion);
 class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       /* mass function */
@@ -4093,6 +4119,8 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
           ptsz->delta_def_matter_density=1;
         else  if ((strstr(string1,"500c") != NULL))
           ptsz->delta_def_matter_density=2;
+        else  if ((strstr(string1,"vir") != NULL))
+          ptsz->delta_def_matter_density=3;
           }
 
 
@@ -5520,6 +5548,8 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       + ptsz->has_gal_gal_2h
       + ptsz->has_gal_gal_hf
       + ptsz->has_n5k
+      + ptsz->has_tau_gal_1h
+      + ptsz->has_tau_gal_2h
       + ptsz->has_gal_lens_1h
       + ptsz->has_gal_lens_2h
       + ptsz->has_gal_lens_hf
@@ -6422,7 +6452,7 @@ int input_default_params(
   ptsz->alpha_p = 0.12;
   //Hydrostatic Equilibrium Mass Bias, Piffaretti & Valdarnini [arXiv:0808.1111]
 
-   ptsz->truncate_wrt_rvir = 1;
+   ptsz->truncate_gas_pressure_wrt_rvir = 0;
    ptsz->no_tt_noise_in_kSZ2X_cov = 0;
   // battaglia pressure profile:
   ptsz->gamma_B12 = -0.3;
@@ -6720,6 +6750,8 @@ int input_default_params(
   ptsz->has_gal_gal_2h = _FALSE_;
   ptsz->has_gal_gal_hf = _FALSE_;
   ptsz->has_n5k = _FALSE_;
+  ptsz->has_tau_gal_1h = _FALSE_;
+  ptsz->has_tau_gal_2h = _FALSE_;
   ptsz->has_gal_lens_1h = _FALSE_;
   ptsz->has_gal_lens_2h = _FALSE_;
   ptsz->has_gal_lens_hf = _FALSE_;
@@ -6968,6 +7000,10 @@ int input_default_params(
   ptsz->index_md_gallens_cib_1h = 107;
   ptsz->index_md_gallens_cib_2h = 108;
 
+  ptsz->index_md_tau_gal_2h = 109;
+  ptsz->index_md_tau_gal_1h = 110;
+
+
   ptsz->integrate_wrt_mvir = 0;
   ptsz->integrate_wrt_m500c = 0;
   ptsz->integrate_wrt_m200c = 1;
@@ -6982,6 +7018,7 @@ int input_default_params(
   ptsz->integrate_wrt_m200m = 0;
 
   ptsz->need_m200c_to_m200m = 0;
+  ptsz->need_m200m_to_mvir = 0;
   ptsz->need_m200m_to_m200c = 0;
   ptsz->need_m200m_to_m500c = 0;
   ptsz->need_m200c_to_m500c = 0;
