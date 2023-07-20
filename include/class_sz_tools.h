@@ -533,7 +533,8 @@ double erf_compl_nicola(double y,
                         double sn,
                         double q,
                         double ymin,
-                        double ymax);
+                        double ymax,
+                        double dof);
 
   //coding number count likelihood
   double erf_compl(double y,

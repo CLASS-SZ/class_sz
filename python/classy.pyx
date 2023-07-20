@@ -2131,6 +2131,20 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_IA_g(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of IA x g power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(0.)
+            cl['2h'].append(self.tsz.cl_IA_gal_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
     def cl_ykg(self,
                Nmcfit = 1024,
                log10xmin_mcfit = -6,

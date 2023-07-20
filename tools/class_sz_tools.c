@@ -1632,12 +1632,12 @@ int  C200M200SC14(
   return _SUCCESS_;
 }
 
-int  CvirMvirKLYPIN (
-                     double * result,
-                     double logM ,
-                     double z,
-                     struct tszspectrum * ptsz
-                     )
+int  CvirMvirKLYPIN(
+                   double * result,
+                   double logM ,
+                   double z,
+                   struct tszspectrum * ptsz
+                   )
 {
 
   double z_tab[20] =
@@ -10125,6 +10125,7 @@ int load_normalized_source_dndz(struct tszspectrum * ptsz)
 if (
      (ptsz->has_gal_gallens_1h != _TRUE_ )
     && (ptsz->has_gal_gallens_2h != _TRUE_ )
+    && (ptsz->has_IA_gal_2h != _TRUE_ )
     && (ptsz->has_gallens_gallens_2h != _TRUE_ )
     && (ptsz->has_gallens_gallens_2h != _TRUE_ )
     && (ptsz->has_gallens_cib_1h != _TRUE_ )
@@ -10483,6 +10484,7 @@ int load_normalized_dndz(struct tszspectrum * ptsz)
 // all quantities requiring galaxy or lensmag need that:
 if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
+    && (ptsz->has_IA_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h_fft != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h_fft != _TRUE_ )
@@ -10733,6 +10735,7 @@ int load_normalized_fdndz(struct tszspectrum * ptsz)
 // don't load the unwise  dndz  if none of the following are required:
 if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
+    && (ptsz->has_IA_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h_fft != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h_fft != _TRUE_ )
@@ -10917,6 +10920,7 @@ int load_normalized_cosmos_dndz(struct tszspectrum * ptsz)
 // don't load the unwise  dndz  if none of the following are required:
 if (   (ptsz->has_tSZ_gal_1h != _TRUE_ )
     && (ptsz->has_tSZ_gal_2h != _TRUE_ )
+    && (ptsz->has_IA_gal_2h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_1h_fft != _TRUE_ )
     && (ptsz->has_kSZ_kSZ_gal_2h_fft != _TRUE_ )
@@ -12042,17 +12046,18 @@ double erf_compl_nicola(double y,
                         double sn,
                         double q,
                         double ymin,
-                        double ymax){
+                        double ymax,
+                        double szcc_dof){
   //Completeness with error function
   // double arg = (y - q * sn)/(sqrt(2.) * sn);
   double arg1;
   double ylim;
   ylim = ymax;
-  arg1 = (y/sn-ylim)/(sqrt(2.));
+  arg1 = (sqrt(y/sn*y/sn+szcc_dof)-ylim)/(sqrt(2.));
   double arg2;
   if (ymin>q) ylim = ymin;
   else ylim = q;
-  arg2 = (y/sn-ylim)/(sqrt(2.));
+  arg2 = (sqrt(y/sn*y/sn+szcc_dof)-ylim)/(sqrt(2.));
   double erf_compl = (erf(arg2) - erf(arg1))/2.;
 
   if (ymax<q) erf_compl = 1e-100;
@@ -12297,6 +12302,7 @@ double integrand_redshift(double ln1pz, void *p){
 
 if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
      || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
+     || ((V->ptsz->has_IA_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_IA_gal_2h))
      || ((V->ptsz->has_gal_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_1h))
      || ((V->ptsz->has_gal_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_2h))
      || ((V->ptsz->has_pk_gg_at_z_1h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_1h))
@@ -12760,6 +12766,7 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_gal_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_2h))
  || ((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
  || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
+ || ((V->ptsz->has_IA_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_IA_gal_2h))
  || ((V->ptsz->has_tau_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tau_gal_2h))
  || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
  || ((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
@@ -12831,6 +12838,7 @@ if ( ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_au
 // galaxy radial kernel
 if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
   || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
+  || ((V->ptsz->has_IA_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_IA_gal_2h))
   || ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h))
   || ((V->ptsz->has_kSZ_kSZ_gal_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h_fft))
   || ((V->ptsz->has_kSZ_kSZ_gal_2h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h_fft))
@@ -13737,6 +13745,54 @@ else{
   r = r_m_1*r_m_2;
                                      }
 
+
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_IA_gal_2h){
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Y' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_1\n");
+}
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('galaxy' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  r = r_m_1*r_m_2;
+    }
 
 
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tSZ_gal_2h){
@@ -20922,7 +20978,7 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
           double rho_cb = rho_crit_at_z*Omega_cb;
           double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
           double b1_min = (1.-r)*rho_cb/m_min/n_min;
-          ptsz->array_hmf_counter_terms_b1min[index_z] = b1_min; // is actually b1_min*m_min
+          ptsz->array_hmf_counter_terms_b1min[index_z] = b1_min;
 
        }
  free(pvecback);
@@ -21071,7 +21127,7 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
           double rho_cb = rho_crit_at_z*Omega_cb;
           double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
           double b2_min = -r*rho_cb/m_min/n_min;
-          ptsz->array_hmf_counter_terms_b2min[index_z] = b2_min; // is actually b2_min*m_min
+          ptsz->array_hmf_counter_terms_b2min[index_z] = b2_min;
 
        }
  free(pvecback);
@@ -21231,7 +21287,7 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
           double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);
           double rho_cb = rho_crit_at_z*Omega_cb;
           double n_min = (1.-r)*rho_cb/m_min;
-          ptsz->array_hmf_counter_terms_nmin[index_z] = n_min; // is actually n_min*m_min
+          ptsz->array_hmf_counter_terms_nmin[index_z] = n_min;
 
        }
  free(pvecback);

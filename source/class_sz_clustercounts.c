@@ -138,7 +138,7 @@ int szcounts_free(struct szcount * pcsz,struct tszspectrum * ptsz)
 
 double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, struct tszspectrum * ptsz){
   double z = z_asked;
-  double nu = qobs_asked;
+  double nu = sqrt(qobs_asked*qobs_asked);//+ptsz->szcc_dof);
 
   // double z = log(1.+z_asked);
   // double m = log(m_asked);
@@ -1096,7 +1096,7 @@ for (i = 0; i < N; i++) {
   qp[i+N] = qmax_fft_padded+i*dq;
   double arg0 = x/sqrt(2.);
   double fac = 1./sqrt(2.*_PI_);
-  kernel_qobs[i] = fac*exp(-arg0*arg0);
+  kernel_qobs[i] = fac*exp(-arg0*arg0); // this does the ym scatter
 }
 
 int index_zloop;
@@ -1184,7 +1184,8 @@ for (itab = 0;itab<ntab;itab++){
     //   lnq_tab[itab] = -100.;
     // else
 
-    lnq_tab[itab] = log(sqrt(ytab/sigtab*ytab/sigtab+ptsz->szcc_dof*ptsz->szcc_dof));
+    // lnq_tab[itab] = log(sqrt(ytab/sigtab*ytab/sigtab+ptsz->szcc_dof));
+    lnq_tab[itab] = log(sqrt(ytab/sigtab*ytab/sigtab));
 
     if (isinf(lnq_tab[itab])||isnan(lnq_tab[itab])){
       printf("lnq_tab[itab] = %.5e ytab =%.5e sigtab = %.5e\n",lnq_tab[itab],ytab,sigtab);
@@ -1478,7 +1479,8 @@ for (i = 0; i < N; i++) {
  // // ptsz->szcounts_fft_qobs[i] = qp[i];
  //
  // qp[i+N] = qmax_fft_padded+i*dq;
- double x = qp[i];
+ // double x = sqrt(qp[i]*qp[i]);//+ptsz->szcc_dof);
+ double x = sqrt(qp[i]*qp[i]+ptsz->szcc_dof);
  // double arg0 = x/sqrt(2.);
  in[i][0] = kernel_qobs[i];//fac*exp(-arg0*arg0);
  in[i][1]= 0.;
@@ -1497,11 +1499,16 @@ for (i = 0; i < N; i++) {
     conv1 = 0.;
    else if (lnqp>xarr[2*N-1])
     conv1 = 0.;
-   else
+   else{
+    // conv1 =  pwl_value_1d(2*N,
+    //                       xarr,
+    //                       result_qmconv_all,
+    //                       lnqp)/x;
     conv1 =  pwl_value_1d(2*N,
                           xarr,
                           result_qmconv_all,
                           lnqp)/x;
+                        }
    }
  test[i][0] = conv1;
  test[i][1] = 0.;
@@ -2025,7 +2032,7 @@ if (pcsz->has_completeness == 1){
           }}
 
           else {
-            c2 = erf_compl_nicola(yp,y,ptsz->sn_cutoff,y_min,y_max);
+            c2 = erf_compl_nicola(yp,y,ptsz->sn_cutoff,y_min,y_max,ptsz->szcc_dof);
           }
 
 if (ptsz->use_skyaveraged_noise){
@@ -2133,7 +2140,7 @@ else{
           else {c2=erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof)*erf_compl(y0,y1,y_min,ptsz->szcc_dof)*(1.-erf_compl(y0,y1,y_max,ptsz->szcc_dof));}
           }
           else{
-            c2 = erf_compl_nicola(y0,y1,ptsz->sn_cutoff,y_min,y_max);
+            c2 = erf_compl_nicola(y0,y1,ptsz->sn_cutoff,y_min,y_max,ptsz->szcc_dof);
           }
           if (ptsz->use_skyaveraged_noise == 0){
           erfs[index1][index2]=erfs[index1][index2]+c2*ptsz->skyfracs[index_patches];

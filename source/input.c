@@ -3232,6 +3232,16 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"IA_gal_2h") != NULL) ) {
+        ptsz->has_IA_gal_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
       if ((strstr(string1,"tSZ_gal_2h") != NULL) ) {
         ptsz->has_tSZ_gal_2h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -3913,6 +3923,10 @@ int input_read_parameters(
 //     ptsz->HMF_prescription_NCDM=2;
 //
 //       }
+
+
+class_read_double("A_IA",ptsz->A_IA);
+class_read_double("eta_IA",ptsz->eta_IA);
 
 
 
@@ -5524,6 +5538,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       + ptsz->has_kSZ_kSZ_lensmag_1halo
       + ptsz->has_tSZ_gal_1h
       + ptsz->has_tSZ_gal_2h
+      + ptsz->has_IA_gal_2h
       + ptsz->has_tSZ_cib_1h
       + ptsz->has_tSZ_cib_2h
       + ptsz->has_gallens_cib_1h
@@ -6437,6 +6452,9 @@ int input_default_params(
   // ptsz->alphaGNFW = 1.33;
   // ptsz->betaGNFW = 4.13;
 
+  ptsz->A_IA = 0.1; // see https://arxiv.org/pdf/2106.08438.pdf
+  ptsz->eta_IA = -0.5; // see https://arxiv.org/pdf/2106.08438.pdf
+
   //A10 UPP parameters
   ptsz->P0GNFW = 8.130;
   ptsz->c500 = 1.156;
@@ -6764,6 +6782,7 @@ int input_default_params(
   ptsz->has_lens_lensmag_2h = _FALSE_;
   ptsz->has_lens_lensmag_hf = _FALSE_;
   ptsz->has_tSZ_gal_1h = _FALSE_;
+  ptsz->has_IA_gal_2h = _FALSE_;
   ptsz->has_tSZ_gal_2h = _FALSE_;
   ptsz->has_tSZ_cib_1h = _FALSE_;
   ptsz->has_tSZ_cib_2h = _FALSE_;
@@ -6994,6 +7013,8 @@ int input_default_params(
 
   ptsz->index_md_tau_gal_2h = 109;
   ptsz->index_md_tau_gal_1h = 110;
+
+  ptsz->index_md_IA_gal_2h = 111;
 
 
   ptsz->integrate_wrt_mvir = 0;

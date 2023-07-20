@@ -96,6 +96,7 @@
 #define _lens_lens_hf_ ((ptsz->has_lens_lens_hf == _TRUE_) && (index_md == ptsz->index_md_lens_lens_hf))
 #define _tSZ_gal_1h_ ((ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_1h))
 #define _tSZ_gal_2h_ ((ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_2h))
+#define _IA_gal_2h_ ((ptsz->has_IA_gal_2h == _TRUE_) && (index_md == ptsz->index_md_IA_gal_2h))
 #define _tSZ_gallens_1h_ ((ptsz->has_tSZ_gallens_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gallens_1h))
 #define _tSZ_gallens_2h_ ((ptsz->has_tSZ_gallens_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gallens_2h))
 #define _tSZ_cib_1h_ ((ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_cib_1h))
@@ -226,6 +227,7 @@ struct tszspectrum {
   double * cl_lens_lens_2h;
   double * cl_tSZ_gal_1h;
   double * cl_tSZ_gal_2h;
+  double * cl_IA_gal_2h;
   double * cl_tSZ_gallens_1h;
   double * cl_tSZ_gallens_2h;
   double *** cl_ngal_ngal_1h;
@@ -866,6 +868,11 @@ struct tszspectrum {
   int index_integrand_id_tSZ_gal_2h_first;
   int index_integrand_id_tSZ_gal_2h_last;
 
+  int has_IA_gal_2h;
+  int index_md_IA_gal_2h;
+  int index_integrand_id_IA_gal_2h_first;
+  int index_integrand_id_IA_gal_2h_last;
+
   int has_tSZ_gallens_1h;
   int index_md_tSZ_gallens_1h;
   int index_integrand_id_tSZ_gallens_1h_first;
@@ -1425,6 +1432,9 @@ double szcounts_ntot;
   double alpha_b;
   double Ap;
   int mass_dependent_bias;
+
+  double A_IA;
+  double eta_IA;
 
   //Planck pressure profile
   double P0GNFW;
@@ -2097,6 +2107,12 @@ int szpowerspectrum_init(struct background * pba,
                                 double * pvectsz,
                                 struct background * pba,
                                 struct tszspectrum * ptsz);
+
+  double evaluate_IA(double kl,
+                     double * pvecback,
+                     double * pvectsz,
+                     struct background * pba,
+                     struct tszspectrum * ptsz);
 
   int evaluate_tau_profile(double k,
                            double * pvecback,
