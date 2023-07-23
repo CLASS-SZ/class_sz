@@ -1067,8 +1067,8 @@ if (ptsz->use_skyaveraged_noise)
 else
     npatches = ptsz->nskyfracs;
 int N = ptsz->N_samp_fftw;
-double lnqmin_fft = ptsz->szcounts_lnqmin_fft;
-double lnqmax_fft = ptsz->szcounts_lnqmax_fft;
+double lnqmin_fft = ptsz->szcounts_lnqmin_fft; // set in class_sz_precisions.h (-5)
+double lnqmax_fft = ptsz->szcounts_lnqmax_fft; // set in class_sz_precisions.h (5)
 double L = (lnqmax_fft-lnqmin_fft);
 double dx = L/(double) N;
 double xarr[2*N],kernel_scatter[N];
@@ -1480,21 +1480,24 @@ for (i = 0; i < N; i++) {
  //
  // qp[i+N] = qmax_fft_padded+i*dq;
  // double x = sqrt(qp[i]*qp[i]);//+ptsz->szcc_dof);
- double x = sqrt(qp[i]*qp[i]+ptsz->szcc_dof);
+ // double x = sqrt(qp[i]*qp[i]+ptsz->szcc_dof);
+ double x = qp[i];//sqrt(qp[i]*qp[i]+ptsz->szcc_dof);
  // double arg0 = x/sqrt(2.);
  in[i][0] = kernel_qobs[i];//fac*exp(-arg0*arg0);
  in[i][1]= 0.;
  in[N+i][0]= 0.;
  in[N+i][1]= 0.;
 
-   double lnqp =  log(x);
+   // double lnqp =  log(x);
+   double lnqp =  0.5*log(x*x-3.);
    double conv1;
 
-   if (x<=0.){
+   // if (x<=0.){
+   if (x<=sqrt(ptsz->szcc_dof)){
      conv1=0.;
    }
    else{
-  lnqp =  log(x);
+  lnqp =   0.5*log(x*x-ptsz->szcc_dof);//log(x);
    if (lnqp<xarr[0])
     conv1 = 0.;
    else if (lnqp>xarr[2*N-1])
@@ -1507,7 +1510,7 @@ for (i = 0; i < N; i++) {
     conv1 =  pwl_value_1d(2*N,
                           xarr,
                           result_qmconv_all,
-                          lnqp)/x;
+                          lnqp)*x/(pow(x,2)-ptsz->szcc_dof);
                         }
    }
  test[i][0] = conv1;
@@ -2247,12 +2250,22 @@ else{
           double y = exp(ptsz->erfs_2d_to_1d_y_array[k+1]);
           // y = exp(ptsz->erfs_2d_to_1d_y_array[k]);
           // printf("k = %d int_comp3 = %e\n",k,int_comp);
-          double dy=y-y0;
+          // double dy=y-y0;
+          // // printf("k = %d int_comp4 = %e\n",k,int_comp);
+          // double arg0=((ptsz->erfs_2d_to_1d_y_array[k]-mu)/(sqrt(2.)*ptsz->sigmaM_ym));
+          //
+          // double win0=erfs[k][l1]+(erfs[k][l2]-erfs[k][l1])/(th2-th1)*(thp-th1);
+          // double win=erfs[k+1][l1]+(erfs[k+1][l2]-erfs[k+1][l1])/(th2-th1)*(thp-th1);
+
+          /// write dlny integral:
+          double dlny=pcsz->dlny;
           // printf("k = %d int_comp4 = %e\n",k,int_comp);
           double arg0=((ptsz->erfs_2d_to_1d_y_array[k]-mu)/(sqrt(2.)*ptsz->sigmaM_ym));
 
+          /// erf(lny,theta)
           double win0=erfs[k][l1]+(erfs[k][l2]-erfs[k][l1])/(th2-th1)*(thp-th1);
           double win=erfs[k+1][l1]+(erfs[k+1][l2]-erfs[k+1][l1])/(th2-th1)*(thp-th1);
+
 
           // double ekl1 = get_detection_proba_at_y_and_theta(y0,th1,erfs_2d_to_1d,ptsz);
           // double ekl2 = get_detection_proba_at_y_and_theta(y0,th2,erfs_2d_to_1d,ptsz);
@@ -2266,12 +2279,17 @@ else{
 
           //double arg=((lny+pcsz->dlny-mu)/(sqrt(2.)*ptsz->sigmaM_ym));
           double arg=((ptsz->erfs_2d_to_1d_y_array[k+1]-mu)/(sqrt(2.)*ptsz->sigmaM_ym));
-          double py=(win0*fac/y0*exp(-arg0*arg0)+win*fac/y*exp(-arg*arg))*0.5;
+          // double py=(win0*fac/y0*exp(-arg0*arg0)+win*fac/y*exp(-arg*arg))*0.5;
+
+          double plny=(win0*fac*exp(-arg0*arg0)+win*fac*exp(-arg*arg))*0.5;
+
+
           // if (fabs(py)<1e-100)
           //   py = 0.;
           //lny=lny+pcsz->dlny;
 
-          int_comp=int_comp+py*dy;
+          int_comp=int_comp+plny*dlny;
+          // int_comp=int_comp+py*dy;
           // if (py*dy<0)
           // printf("k = %d int_comp15 = %.5e py = %.5e dy = %.5e win0 = %.5e win = %.5e th1 = %.5e th2 = %.5e thp = %.5e\n",k,int_comp,py,dy,win0,win,th1,th2,thp);
           //
@@ -2943,7 +2961,7 @@ if (ptsz->sz_verbose>3){
   //# Logymin corresponds to log10 of S/N_min (5 or 6)
   //# Logymax corresponds to log10 of S/N_max  (~32 for planck) (but the s/n is higher in the next to last bin)
   if (ptsz->experiment==0){
-  pcsz->logy_min = 0.7;
+  pcsz->logy_min = ptsz->log10_snr_min;//0.7;
   pcsz->logy_max = 1.5;
   pcsz->dlogy = ptsz->bin_dlog10_snr;
 }
