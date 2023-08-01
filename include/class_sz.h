@@ -2119,11 +2119,15 @@ int szpowerspectrum_init(struct background * pba,
                                 struct background * pba,
                                 struct tszspectrum * ptsz);
 
-  double evaluate_IA(double kl,
-                     double * pvecback,
-                     double * pvectsz,
-                     struct background * pba,
-                     struct tszspectrum * ptsz);
+  // double evaluate_IA(double kl,
+  //                    double * pvecback,
+  //                    double * pvectsz,
+  //                    struct background * pba,
+  //                    struct tszspectrum * ptsz);
+double get_IA_of_z(double z,
+                   struct background * pba,
+                   struct tszspectrum * ptsz);
+
 
   int evaluate_tau_profile(double k,
                            double * pvecback,
@@ -2154,7 +2158,7 @@ double get_A_IA_of_z(double z,
                     double * pvectsz,
                     struct background * pba,
                     struct tszspectrum * ptsz);
-                    
+
 double get_ksz_filter_at_l(double l,
                            struct tszspectrum * ptsz);
 

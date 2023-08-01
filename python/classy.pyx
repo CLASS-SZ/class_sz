@@ -2053,6 +2053,10 @@ cdef class Class:
         return get_volume_at_z(z,&self.ba)
 
 
+    def get_IA_of_z(self,z):
+        return get_IA_of_z(z,&self.ba,&self.tsz)
+
+
     def get_f_of_sigma_at_m_and_z(self,m,z):
         return get_f_of_sigma_at_m_and_z(m,z,&self.ba,&self.nl,&self.tsz)
 

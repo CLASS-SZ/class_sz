@@ -8704,19 +8704,19 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
    else if  (_IA_gal_2h_){
 
 
-             if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
+             // if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
 
-             evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
-             // int index_l = (int) pvectsz[ptsz->index_multipole];
-             // pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
-             double IA_term = evaluate_IA(kl,pvecback,pvectsz,pba,ptsz);
-
-             pvectsz[ptsz->index_integrand] =   pvectsz[ptsz->index_hmf]
-                                               // *pvectsz[ptsz->index_dlnMdeltadlnM]
-                                               // *pvectsz[ptsz->index_completeness]
-                                               *IA_term
-                                               *pvectsz[ptsz->index_halo_bias];
-                                             }
+             // evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
+             // // int index_l = (int) pvectsz[ptsz->index_multipole];
+             // // pvectsz[ptsz->index_multipole_for_pressure_profile] =  ptsz->ell[index_l];
+             // double IA_term = evaluate_IA(kl,pvecback,pvectsz,pba,ptsz);
+             //
+             // pvectsz[ptsz->index_integrand] =   pvectsz[ptsz->index_hmf]
+             //                                   // *pvectsz[ptsz->index_dlnMdeltadlnM]
+             //                                   // *pvectsz[ptsz->index_completeness]
+             //                                   *IA_term
+             //                                   *pvectsz[ptsz->index_halo_bias];
+                                             // }
 
              if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
 
@@ -9588,15 +9588,34 @@ A_IA_of_z =  A_IA*pow((1.+z)/(1.+z0),eta_IA)*c1_rhom0/D;
 return A_IA_of_z;
 }
 
-double evaluate_IA(double kl,
-                   double * pvecback,
-                   double * pvectsz,
+double get_IA_of_z(double z,
                    struct background * pba,
                    struct tszspectrum * ptsz)
 {
 double result;
 
-double z = pvectsz[ptsz->index_z];
+// double z = pvectsz[ptsz->index_z];
+
+double * pvecback;
+double tau;
+int first_index_back = 0;
+class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+class_call(background_tau_of_z(pba,z,&tau),
+           pba->error_message,
+           pba->error_message);
+
+class_call(background_at_tau(pba,
+                             tau,
+                             pba->long_info,
+                             pba->inter_normal,
+                             &first_index_back,
+                             pvecback),
+           pba->error_message,
+           pba->error_message);
+
+
 
 
 double D = pvecback[pba->index_bg_D];
@@ -9613,8 +9632,8 @@ A_IA_of_z =  A_IA*pow((1.+z)/(1.+z0),eta_IA)*c1_rhom0/D;
 // if (z >1e-1 && z <5e-1  ){
 // printf("z_asked = %e, Az = %e\n",z,A_IA_of_z);
 // }
-
-double chi =  sqrt(pvectsz[ptsz->index_chi2]);
+double chi = pvecback[pba->index_bg_ang_distance]*(1.+z);
+// double chi =  sqrt(pvectsz[ptsz->index_chi2]);
 double nz = get_source_galaxy_number_counts(z,ptsz);
 double dz_dchi = pvecback[pba->index_bg_H]/pba->h;
 
@@ -15170,12 +15189,56 @@ printf("########################################\n");
 printf("IA x galaxy power spectrum 2-halo term:\n");
 printf("########################################\n");
 printf("\n");
+
+
+printf("\n");
+printf("printing cls to file\n");
+char Filepath[_ARGUMENT_LENGTH_MAX_];
+FILE *fp;
+
+sprintf(Filepath,"%s%s%s",ptsz->root,"cl_IA",".txt");
+printf("printing IA cls to file %s\n",Filepath);
+fp=fopen(Filepath, "w");
+
 int index_l;
+
 for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 
-printf("ell = %e\t\t cl_IA_gal (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_IA_gal_2h[index_l]);
+  printf("ell = %e\t\t cl_IA_gal (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_IA_gal_2h[index_l]);
+
+  fprintf(fp,"%.5e\t%.5e\n",ptsz->ell[index_l],ptsz->cl_IA_gal_2h[index_l]);
+  }
+
+  fclose(fp);
+
+
+
+sprintf(Filepath,"%s%s%s",ptsz->root,"Az_IA",".txt");
+printf("printing IA Az to file %s\n",Filepath);
+fp=fopen(Filepath, "w");
+
+int index_z;
+int n_z = 200;
+double z_min = 0.01;
+double z_max = 2.;
+double z;
+double IA_z;
+for (index_z=0;index_z<n_z;index_z++){
+  z = z_min + (z_max-z_min)*index_z/(n_z-1.);
+  IA_z = get_IA_of_z(z,pba,ptsz);
+
+  printf("z = %e\t\t A(z) = %e \n",z,IA_z);
+
+  fprintf(fp,"%.5e\t%.5e\n",z,IA_z);
+  }
+
+  fclose(fp);
+
 }
-}
+
+
+
+
 
 if (ptsz->has_tSZ_lens_1h){
 printf("\n\n");

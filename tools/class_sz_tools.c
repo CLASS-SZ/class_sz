@@ -13768,19 +13768,21 @@ else{
   params = &V;
 
   // integrate over the whole mass range ('Y' part)
-  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
-                                           epsrel, epsabs,
-                                           integrand_mass,
-                                           params,ptsz->patterson_show_neval);
+  // r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+  //                                          epsrel, epsabs,
+  //                                          integrand_mass,
+  //                                          params,ptsz->patterson_show_neval);
+  r_m_1 = 1.;
+  r_m_1 *= get_IA_of_z(pvectsz[ptsz->index_z],pba,ptsz);
 
- if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
-   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
-   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
-   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-   r_m_1 += bmin_umin;
-   // printf("counter terms done r_m_1\n");
-}
+//  if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+//    double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+//    double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+//    double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+//    double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+//    r_m_1 += bmin_umin;
+//    // printf("counter terms done r_m_1\n");
+// }
 
 
   pvectsz[ptsz->index_part_id_cov_hsv] = 2;

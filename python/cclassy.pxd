@@ -800,7 +800,7 @@ cdef extern from "class.h":
 
     double get_A_IA_of_z(double z,
                           double * pvecback,
-                          double * pvectsz, 
+                          double * pvectsz,
                           void * pba,
                           void * ptsz)
 
@@ -918,6 +918,7 @@ cdef extern from "class.h":
                                           void * tsz)
 
     double get_volume_at_z(double z, void * pba)
+    double get_IA_of_z(double z, void * pba, void * ptsz)
     double get_delta_mean_from_delta_crit_at_z(double delta_crit,double z,void * ptsz)
     double get_dndlnM_at_z_and_M(double z_asked,
                                  double m_asked,
