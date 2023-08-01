@@ -351,6 +351,9 @@ int szpowerspectrum_init(
 
 // ptsz->has_sz_counts = _TRUE_;
 
+// printf("%.5e %d\n",ptsz->fixed_c200m,ptsz->n_m_matter_density_profile);
+// exit(0);
+
   int all_comps = ptsz->has_sz_ps
       + ptsz->has_hmf
       + ptsz->has_n5k
@@ -1382,6 +1385,24 @@ if (ptsz->has_kSZ_kSZ_gal_1h_fft
 tabulate_psi_b1t(pba,pnl,ppm,ppt,ptsz);
 tabulate_psi_b2t(pba,pnl,ppm,ptsz);
 }
+
+// printf("%.5e %d\n",ptsz->fixed_c200m,ptsz->n_m_matter_density_profile);
+// exit(0);
+
+if (ptsz->has_matter_density
+ || ptsz->has_lensing){
+   if (ptsz->profile_matter_density == 1){
+     if (ptsz->sz_verbose>= 1){
+       printf("Tabulating nfw_with_power_law profile.\n");
+     }
+     // printf("%.5e %.5e\n",ptsz->x_out_matter_density_profile,ptsz->x_out_matter_density_profile_normalization);
+     // exit(0);
+     tabulate_normalization_matter_density_profile(ptsz,pba);
+     tabulate_matter_nfw_with_power_law_profile_fft(pba,ptsz);
+
+   }
+ }
+// exit(0);
 
 if (ptsz->sz_verbose>0)
   printf("-> Starting main parallel block.\n");
@@ -2743,6 +2764,25 @@ for (index_l=0;
 }
 free(ptsz->array_profile_ln_rho_at_lnk_lnM_z); //here jump
 }
+
+if (ptsz->has_lensing+ptsz->has_matter_density){
+  if (ptsz->profile_matter_density == 1){
+    free(ptsz->array_matter_density_profile_ln_k);
+    free(ptsz->array_matter_density_profile_ln_m);
+    free(ptsz->array_matter_density_profile_ln_1pz);
+
+    int index_k;
+    for (index_k=0;
+     index_k<ptsz->N_samp_fftw;
+     index_k++)
+     {
+    free(ptsz->array_profile_ln_rho_matter_at_lnk[index_k]);
+    }
+    free(ptsz->array_profile_ln_rho_matter_at_lnk);
+    free(ptsz->array_ln_matter_density_norm_at_z_and_m);
+    }
+  }
+
 
 if (ptsz->sz_verbose>10) printf("-> freeing more kSZ2X.\n");
 
@@ -9097,14 +9137,14 @@ int evaluate_matter_density_profile(double k,
 
 
 
-int evaluate_lensing_profile(double kl,
-                             double m_delta,
-                             double r_delta,
-                             double c_delta,
-                             double * pvecback,
-                             double * pvectsz,
-                             struct background * pba,
-                             struct tszspectrum * ptsz)
+double evaluate_lensing_profile(double kl,
+                                double m_delta,
+                                double r_delta,
+                                double c_delta,
+                                double * pvecback,
+                                double * pvectsz,
+                                struct background * pba,
+                                struct tszspectrum * ptsz)
 {
 
   double mass_nfw = m_delta;
@@ -9140,8 +9180,34 @@ int evaluate_lensing_profile(double kl,
    // else
 
 
-
+    if (ptsz->profile_matter_density == 0){
     result =  evaluate_truncated_nfw_profile(pvectsz[ptsz->index_z],kl,r_delta,c_delta,xout);
+    }
+    else if (ptsz->profile_matter_density == 1){
+    double ql = kl*rs*(1.+z);
+    result =  get_nfw_with_power_law_profile_at_z_m_q(z,
+                                                      m_delta,
+                                                      ql,
+                                                      ptsz);
+
+    /// here just check:
+    double result_trunc =  evaluate_truncated_nfw_profile(pvectsz[ptsz->index_z],
+                                                          kl,
+                                                          r_delta,
+                                                          c_delta,
+                                                          xout);
+    // if (result>2e-100){
+    // printf("k = %.5e fft = %.5e analytic = %.5e ratio = %.5e\n",
+    //         kl,
+    //         result,
+    //         result_trunc,
+    //         result_trunc/result);
+    //       }
+    // end check
+    }
+    else{
+      printf("This profile is not implemented yet. Check inputs.\n");
+    }
 
 
 
@@ -9199,7 +9265,7 @@ int evaluate_lensing_profile(double kl,
 // printf("check number = %.5e\n",pow(3.*pow(pba->H0/pba->h,2)/2./ptsz->Rho_crit_0,-1));
 // exit(0);
 
-   return _SUCCESS_;
+   return pvectsz[ptsz->index_lensing_profile];
 }
 
 //
@@ -9796,6 +9862,34 @@ double evaluate_pressure_profile(double kl,
 
 
 
+// nfw_with_power_law_profile
+double get_nfw_with_power_law_profile_at_x(double x,
+                                           double n,
+                                           double xout){
+
+
+  double result;
+  // if (x>1 && x<2)
+  //   result =  pow(x,-1.)*pow(1.+ x,-2.)*pow(x,n);
+  // else if (x>=2.)
+  //   result = 0.;
+  // else{
+  //   result =  pow(x,-1.)*pow(1.+ x,-2.);
+  // }
+
+  if (x>xout){
+    result = 0.;
+  }
+  else if (x>0.5*xout){
+    result =  pow(x,-1.)*pow(1.+ x,-2.)*pow(x,n);
+  }
+  else{
+    result =  pow(x,-1.)*pow(1.+ x,-2.);
+  }
+
+  return result;
+
+}
 
 
 
@@ -10569,7 +10663,9 @@ double get_first_order_bias_at_z_and_nu(double z,
 
    double Delta;
 
+if (ptsz->hmf_apply_zthreshold_to_hmf_and_bias){
   if (z>3.) z = 3.;
+}
 
   // double om0 = ptsz->Omega_m_0;
   // double ol0 = 1.-ptsz->Omega_m_0;
@@ -10876,7 +10972,9 @@ double get_second_order_bias_at_z_and_nu(double z,
                                          double nu,
                                          struct tszspectrum * ptsz,
                                          struct background * pba){
+if (ptsz->hmf_apply_zthreshold_to_hmf_and_bias){
 if (z>3.) z=3.;
+}
 
 //  double beta = ptsz->beta0SZ*pow(1.+z,0.2);
 //  double gamma = ptsz->gamma0SZ*pow(1.+z,-0.01);
@@ -14625,7 +14723,8 @@ if   (ptsz->has_sz_ps
                printf("->C-M relation:  DM14\n");
             if (ptsz->concentration_parameter==6)
                printf("->C-M relation:  Bhattacharya et al 2013\n");
-
+            if (ptsz->concentration_parameter==7)
+               printf("->C-M relation:  concentration fixed\n");
 
          // }
          printf("->h = %e\n",pba->h);
@@ -19022,6 +19121,89 @@ pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
 // }
 
 
+// analytical truncated NFW profile
+// truncated at r_out = xout*r_delta
+double get_nfw_with_power_law_profile_at_z_m_q(//double * pvecback,
+                                                double z_asked,
+                                                double m_asked,
+                                                double q_asked,
+                                                struct tszspectrum * ptsz)//, // so: r_out = xout*r_delta
+                                                //double * pvectsz,
+                                                // struct background * pba,
+                                                // struct tszspectrum * ptsz)
+{
+
+  double z = log(1.+z_asked);
+  double m = log(m_asked);
+  double lnq = log(q_asked);
+
+
+
+ if (z<ptsz->array_matter_density_profile_ln_1pz[0])
+    return 0.;//z = ptsz->array_profile_ln_1pz[0];
+ if (z>ptsz->array_matter_density_profile_ln_1pz[ptsz->n_z_matter_density_profile-1])
+    return 0.;//z = ptsz->array_profile_ln_1pz[ptsz->n_z_density_profile-1];
+
+ if (m<ptsz->array_matter_density_profile_ln_m[0])
+    return 0.;//m = ptsz->array_profile_ln_m[0];
+ if (m>ptsz->array_matter_density_profile_ln_m[ptsz->n_m_matter_density_profile-1])
+    return 0.;//m =  ptsz->array_profile_ln_m[ptsz->n_m_density_profile-1];
+
+if (lnq<ptsz->array_matter_density_profile_ln_k[0])
+    return 0.;//l = ptsz->array_profile_ln_k[0];
+ if (lnq>ptsz->array_matter_density_profile_ln_k[ptsz->N_samp_fftw-1])
+    return 0.;//l =  ptsz->array_profile_ln_k[ptsz->n_ell_density_profile-1];
+
+
+  int id_k_low;
+  int id_k_up;
+  int n_k = ptsz->N_samp_fftw;
+  int n_m = ptsz->n_m_matter_density_profile;
+  int n_z = ptsz->n_z_matter_density_profile;
+  r8vec_bracket(n_k,ptsz->array_matter_density_profile_ln_k,lnq,&id_k_low,&id_k_up);
+
+
+  // interpolate 2d at l_low:
+
+ double ln_rho_low = pwl_interp_2d(
+                                n_z,
+                                n_m,
+
+                                ptsz->array_matter_density_profile_ln_1pz,
+                                ptsz->array_matter_density_profile_ln_m,
+                                ptsz->array_profile_ln_rho_matter_at_lnk[id_k_low-1],
+                                1,
+                                &z,
+                                &m);
+
+ double ln_rho_up = pwl_interp_2d(
+                                n_z,
+                                n_m,
+                                ptsz->array_matter_density_profile_ln_1pz,
+                                ptsz->array_matter_density_profile_ln_m,
+                                ptsz->array_profile_ln_rho_matter_at_lnk[id_k_up-1],
+                                1,
+                                &z,
+                                &m);
+ double ln_k_low = ptsz->array_matter_density_profile_ln_k[id_k_low-1];
+ double ln_k_up = ptsz->array_matter_density_profile_ln_k[id_k_up-1];
+
+
+ double result = exp(ln_rho_low + ((lnq - ln_k_low) / (ln_k_up - ln_k_low)) * (ln_rho_up - ln_rho_low));
+
+//double z = pvectsz[ptsz->index_z];
+// c_delta = 5.;
+// double q = k*r_delta/c_delta*(1.+z); // uk -> 1 when q->0
+double norm = 1.;//m_nfw(c_delta);
+// double uk = exp(pwl_value_1d(ptsz->N_samp_fftw,
+//                              ptsz->array_matter_density_profile_ln_k,
+//                              ptsz->array_profile_ln_rho_matter_at_lnk,
+//                              lnq))/denominator;
+norm = get_normalization_matter_density_profile(z_asked,m_asked,ptsz);
+double uk = result/norm;
+
+return uk;
+}
 
 // analytical truncated NFW profile
 // truncated at r_out = xout*r_delta
@@ -19041,8 +19223,8 @@ double evaluate_truncated_nfw_profile(//double * pvecback,
 double q = k*r_delta/c_delta*(1.+z); // uk -> 1 when q->0
 
 
-double denominator = m_nfw(c_delta); //normalization --> this does not satisfy that m*uk = m for k->0 when xout != 1
-// double denominator = m_nfw(xout*c_delta); //normalization --> this enforces that m*uk = m for k->0 for all xout
+// double denominator = m_nfw(c_delta); //normalization --> this does not satisfy that m*uk = m for k->0 when xout != 1
+double denominator = m_nfw(xout*c_delta); //normalization --> this enforces that m*uk = m for k->0 for all xout
 
 
 
@@ -19106,7 +19288,7 @@ else if (ptsz->concentration_parameter==6){
 c = get_c200c_at_m_and_z_B13(M,z,pba,ptsz);
 }
 else if (ptsz->concentration_parameter==7){
-c = 5.;
+c = ptsz->fixed_c200c;
 }
 return  c;
                             }
@@ -19123,6 +19305,9 @@ c = get_c200m_at_m_and_z_D08(M,z);
 }
 else if (ptsz->concentration_parameter==6){
 c = get_c200m_at_m_and_z_B13(M,z,pba,ptsz);
+}
+else if (ptsz->concentration_parameter==7){
+c = ptsz->fixed_c200m;
 }
 return  c;
                             }

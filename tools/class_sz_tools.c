@@ -4391,6 +4391,33 @@ double integrand_bcm_profile_norm(double x, void *p)
 
 }
 
+struct Parameters_for_integrand_matter_density_profile_norm{
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double m;
+  double z;
+  double c_delta;
+};
+//
+double integrand_matter_density_profile_norm(double x, void *p)
+{
+  // double x = exp(lnx);
+  // printf("being integrated\n");
+  struct Parameters_for_integrand_matter_density_profile_norm *V = ((struct Parameters_for_integrand_matter_density_profile_norm *) p);
+  // double xout = V->ptsz->x_out_truncated_nfw_profile_electrons;
+      // if (x>xout){
+      //   return 0.;
+      // }
+      // else{
+      return  get_nfw_with_power_law_profile_at_x(x,
+                                                  V->ptsz->matter_nfw_power_law_index,
+                                                  // V->m,
+                                                  // V->z,
+                                                  // V->pba,
+                                                  V->c_delta*V->ptsz->x_out_matter_density_profile_normalization)*pow(x,2);
+      // }
+
+}
 
 
 
@@ -6122,7 +6149,8 @@ void * params = &V;
 double eps_rel = ptsz->density_norm_epsrel;
 double eps_abs = ptsz->density_norm_epsabs;
 
-double x_out = ptsz->x_out_truncated_nfw_profile_electrons;
+// in the BCM paper this is taken very large
+double x_out = ptsz->x_out_truncated_gas_density_profile_normalization;
 double x_in = 0.;
 
 double r = Integrate_using_Patterson_adaptive(x_in, x_out,
@@ -6168,6 +6196,192 @@ if (abort == _TRUE_) return _FAILURE_;
   return _SUCCESS_;
 }
 
+
+
+int tabulate_normalization_matter_density_profile(struct tszspectrum *ptsz,struct background * pba){
+  // printf("starting tabulating norm matter profile 0. \n");
+
+  int n_m = ptsz->n_m_matter_density_profile;
+  int n_z = ptsz->n_z_matter_density_profile;
+  int index_m;
+  int index_z;
+  // printf("starting tabulating norm matter profile 1. \n");
+  // printf("starting tabulating norm matter profile 1. %d %d\n",n_m,n_m);
+
+  // exit(0);
+
+
+  // printf("%.5e %d\n",ptsz->fixed_c200m,ptsz->n_m_matter_density_profile);
+
+  // printf("starting tabulating norm matter profile 1. %d %d\n",n_m,n_z);
+
+
+ class_alloc(ptsz->array_matter_density_profile_ln_m,sizeof(double *)*n_m,ptsz->error_message);
+ // printf("starting tabulating norm matter profile 2a.\n");
+
+ class_alloc(ptsz->array_matter_density_profile_ln_1pz,sizeof(double *)*n_z,ptsz->error_message);
+ // printf("starting tabulating norm matter profile 2.\n");
+//
+ double ln_m_min = log(ptsz->M1SZ);
+ double ln_m_max = log(ptsz->M2SZ);
+
+ // array of redshifts:
+ double ln_1pz_min = log(1.+ptsz->z1SZ);
+ double ln_1pz_max = log(1.+ptsz->z2SZ);
+
+// int index_m;
+for (index_m=0;
+     index_m<n_m;
+     index_m++)
+{
+  ptsz->array_matter_density_profile_ln_m[index_m] = ln_m_min
+                                      +index_m*(ln_m_max-ln_m_min)
+                                      /(n_m-1.);
+}
+
+// int index_z;
+for (index_z=0;
+     index_z<n_z;
+     index_z++)
+{
+  ptsz->array_matter_density_profile_ln_1pz[index_z] = ln_1pz_min
+                                                       +index_z*(ln_1pz_max-ln_1pz_min)
+                                                       /(n_z-1.);
+}
+
+
+
+  class_alloc(ptsz->array_ln_matter_density_norm_at_z_and_m,
+              sizeof(double *)*n_z*n_m,
+              ptsz->error_message);
+
+  double tstart, tstop;
+  int abort;
+
+  ///////////////////////////////////////////////
+  //Parallelization of computation
+  /* initialize error management flag */
+  abort = _FALSE_;
+  /* beginning of parallel region */
+
+  // printf("starting tabulating norm matter profile.\n");
+
+  int number_of_threads= 1;
+  #ifdef _OPENMP
+  #pragma omp parallel
+    {
+      number_of_threads = omp_get_num_threads();
+    }
+  #endif
+
+  #pragma omp parallel \
+  shared(abort,\
+  ptsz,pba,n_z,n_m)\
+  private(tstart, tstop, index_z,index_m) \
+  num_threads(number_of_threads)
+  {
+
+  #ifdef _OPENMP
+    tstart = omp_get_wtime();
+  #endif
+
+
+#pragma omp for collapse(2)
+for (index_z=0; index_z<n_z; index_z++)
+{
+for (index_m=0; index_m<n_m; index_m++)
+{
+int index_z_m = index_m * n_z + index_z;
+
+double z = exp(ptsz->array_matter_density_profile_ln_1pz[index_z])-1.;
+double m = exp(ptsz->array_matter_density_profile_ln_m[index_m]);
+
+ptsz->array_ln_matter_density_norm_at_z_and_m[index_z_m] = 0.;
+
+if (ptsz->profile_matter_density == 1){ // nfw with power law
+
+double c_delta_matter;
+  if (ptsz->delta_def_matter_density == 0){
+    c_delta_matter = get_c200m_at_m_and_z(m,z,pba,ptsz);
+  }
+  else if (ptsz->delta_def_matter_density == 1){
+    c_delta_matter = get_c200c_at_m_and_z(m,z,pba,ptsz);
+  }
+  else if (ptsz->delta_def_matter_density == 2){
+    c_delta_matter = get_c500c_at_m_and_z(m,z,pba,ptsz);
+  }
+  else if (ptsz->delta_def_matter_density == 3){
+    c_delta_matter = evaluate_cvir_of_mvir(m,z,ptsz,pba);
+  }
+
+
+struct Parameters_for_integrand_matter_density_profile_norm V;
+V.ptsz = ptsz;
+V.pba = pba;
+V.z = z;
+V.m = m;
+V.c_delta = c_delta_matter;
+
+void * params = &V;
+double eps_rel = ptsz->matter_density_norm_epsrel;
+double eps_abs = ptsz->matter_density_norm_epsabs;
+
+// in for power law nfw this should be 2
+// for truncated nfw, this should be c
+// double x_out = ptsz->x_out_truncated_matter_density_profile_normalization;
+double x_out = ptsz->x_out_matter_density_profile_normalization*c_delta_matter;//ptsz->x_out_truncated_matter_density_profile_normalization;
+
+double x_in = 0.;
+
+
+
+double r = Integrate_using_Patterson_adaptive(x_in, x_out,
+                                              eps_rel, eps_abs,
+                                              integrand_matter_density_profile_norm,
+                                              params,
+                                              ptsz->patterson_show_neval);
+
+// printf("norm matter: index z = %d index_m = %d xout = %.3e r = %.5e m = %.5e z = %.5e index_z_m = %d\n",index_z,index_m,x_out,r,m,z, index_z_m);
+
+// BCM: need to multiply by 4pi r200c^3:
+// double r200c =  pow(m*3./4./_PI_/200./get_rho_crit_at_z(z,pba,ptsz),1./3.);
+// double omega_b_over_omega_m = ptsz->f_b_gas;
+// double fstar = get_fstar_of_m_at_z(m,z,ptsz);
+// double num = omega_b_over_omega_m-fstar;
+// double norm = 4.*_PI_*pow(r200c,3.)*r/m/num;
+double norm =  r;
+ptsz->array_ln_matter_density_norm_at_z_and_m[index_z_m] = log(norm);
+
+if (index_z == 71 && index_m == 58)
+printf("matter_density_profile_norm: index z = %d index_m = %d  z = %.4e m = %.4e lognorm = %.5e\n",
+index_z,index_m,z,m,ptsz->array_ln_matter_density_norm_at_z_and_m[index_z_m]);
+
+}
+else{
+  printf("normalization for this gas density profile not implemented yet.\n");
+  exit(0);
+}
+
+
+    }
+  }
+
+  #ifdef _OPENMP
+    tstop = omp_get_wtime();
+    if (ptsz->sz_verbose > 0)
+      printf("In %s: time spent in parallel region (loop over zm's) = %e s for thread %d\n",
+             __func__,tstop-tstart,omp_get_thread_num());
+  #endif
+
+
+  // free(data);
+  }
+
+
+if (abort == _TRUE_) return _FAILURE_;
+
+  return _SUCCESS_;
+}
 
 
 
@@ -6405,6 +6619,53 @@ double get_normalization_gas_density_profile(double z_asked, double m_asked, str
                                ptsz->array_profile_ln_1pz,
                                ptsz->array_profile_ln_m,
                                ptsz->array_ln_density_norm_at_z_and_m,
+                               1,
+                               &z,
+                               &m));
+
+     // result *= 1/exp(m);
+
+  // if (ptsz->tau_profile == 2){
+  //   double omega_b_over_omega_m = ptsz->f_b_gas;
+  //   double fstar = get_fstar_of_m_at_z(m_asked,z,ptsz);
+  //   double num = omega_b_over_omega_m-fstar;
+  //   result *= 1./num;
+  // }
+
+  // nfw case already normalized.
+  // if (ptsz->tau_profile == 2){
+  // do nothing
+  // }
+
+  }
+  return result;
+}
+
+
+double get_normalization_matter_density_profile(double z_asked, double m_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double m = log(m_asked);
+
+  double result = 1e100;
+  if (z<ptsz->array_matter_density_profile_ln_1pz[0]){
+    result = 1e100;
+  }
+  else if (z>ptsz->array_matter_density_profile_ln_1pz[ptsz->n_z_matter_density_profile-1]){
+    result = 1e100;
+  }
+  else if (m<ptsz->array_matter_density_profile_ln_m[0]){
+    result = 1e100;
+  }
+  else if (m>ptsz->array_matter_density_profile_ln_m[ptsz->n_m_matter_density_profile-1]){
+    result = 1e100;
+  }
+  else{
+    result = exp(pwl_interp_2d(
+                              ptsz->n_z_matter_density_profile,
+                               ptsz->n_m_matter_density_profile,
+                               ptsz->array_matter_density_profile_ln_1pz,
+                               ptsz->array_matter_density_profile_ln_m,
+                               ptsz->array_ln_matter_density_norm_at_z_and_m,
                                1,
                                &z,
                                &m));
@@ -7221,6 +7482,332 @@ ptsz->has_kSZ_kSZ_gal_1h = has_ksz_bkp;
 //
 //
 
+int tabulate_matter_nfw_with_power_law_profile_fft(struct background * pba,
+                                                   struct tszspectrum * ptsz){
+
+ int n_k = ptsz->N_samp_fftw;
+ int n_m = ptsz->n_m_matter_density_profile;
+ int n_z = ptsz->n_z_matter_density_profile;
+ int index_m_z_tab[n_m][n_z];
+ // array of masses:
+ // double ln_m_min = log(ptsz->M1SZ);
+ // double ln_m_max = log(ptsz->M2SZ);
+ //
+ // // array of redshifts:
+ // double ln_1pz_min = log(1.+ptsz->z1SZ);
+ // double ln_1pz_max = log(1.+ptsz->z2SZ);
+
+ class_alloc(ptsz->array_matter_density_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
+ // class_alloc(ptsz->array_matter_density_profile_ln_m,sizeof(double *)*n_m,ptsz->error_message);
+ // class_alloc(ptsz->array_matter_density_profile_ln_1pz,sizeof(double *)*n_z,ptsz->error_message);
+
+
+ class_alloc(ptsz->array_profile_ln_rho_matter_at_lnk,n_k*sizeof(double *),ptsz->error_message);
+
+int index_m;
+// for (index_m=0;
+//      index_m<n_m;
+//      index_m++)
+// {
+//   ptsz->array_matter_density_profile_ln_m[index_m] = ln_m_min
+//                                       +index_m*(ln_m_max-ln_m_min)
+//                                       /(n_m-1.);
+// }
+
+int index_z;
+// for (index_z=0;
+//      index_z<n_z;
+//      index_z++)
+// {
+//   ptsz->array_matter_density_profile_ln_1pz[index_z] = ln_1pz_min
+//                                                        +index_z*(ln_1pz_max-ln_1pz_min)
+//                                                        /(n_z-1.);
+// }
+
+
+int index_m_z;
+int index_k;
+
+for (index_k=0;
+     index_k<n_k;
+     index_k++)
+{
+class_alloc(ptsz->array_profile_ln_rho_matter_at_lnk[index_k],n_m*n_z*sizeof(double *),ptsz->error_message);
+index_m_z = 0;
+for (index_z=0;
+     index_z<n_z;
+     index_z++)
+{
+
+for (index_m=0;
+     index_m<n_m;
+     index_m++){
+//class_alloc(ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z],n_z*sizeof(double ),ptsz->error_message);
+
+
+  // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = -100.; // initialize with super small number
+  ptsz->array_profile_ln_rho_matter_at_lnk[index_k][index_m_z] = 1e-100; // initialize with super small number
+  index_m_z_tab[index_m][index_z] = index_m_z;
+  index_m_z += 1;
+}
+
+     }
+}
+
+
+//Parallelization of profile computation
+/* initialize error management flag */
+
+
+int abort;
+double tstart, tstop;
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+ptsz,pba,index_m_z_tab)\
+private(tstart, tstop,index_k,index_z,index_m,index_m_z) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+#pragma omp for schedule (dynamic)
+for (index_z=0;
+     index_z<n_z;
+     index_z++){
+#pragma omp flush(abort)
+double * pvectsz;
+double * pvecback;
+class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+
+
+int index_pvectsz;
+for (index_pvectsz=0;
+     index_pvectsz<ptsz->tsz_size;
+     index_pvectsz++){
+       pvectsz[index_pvectsz] = 0.; // set everything to 0.
+     }
+
+double z = exp(ptsz->array_matter_density_profile_ln_1pz[index_z])-1.;
+  double tau;
+  int first_index_back = 0;
+
+
+  class_call_parallel(background_tau_of_z(pba,z,&tau),
+             pba->error_message,
+             pba->error_message);
+
+  class_call_parallel(background_at_tau(pba,
+                               tau,
+                               pba->long_info,
+                               pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             pba->error_message,
+             pba->error_message);
+
+
+  // fill relevant entries
+  pvectsz[ptsz->index_z] = z;
+
+
+  pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+  double chi = sqrt(pvectsz[ptsz->index_chi2]);
+  // pvectsz[ptsz->index_multipole_for_pressure_profile] = k*chi;
+  pvectsz[ptsz->index_md] = 0; // avoid the if condition in p_gnfw for the pk mode computation
+
+  pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                *pow(_Mpc_over_m_,1)
+                                *pow(_c_,2)
+                                *pvecback[pba->index_bg_rho_crit]
+                                /pow(pba->h,2);
+
+  double omega = pvecback[pba->index_bg_Omega_m];
+  pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+
+
+
+for (index_m=0;
+     index_m<n_m;
+     index_m++){
+  double lnM = ptsz->array_matter_density_profile_ln_m[index_m];
+  // index_m_z = index_m+ index_z*n_z;
+  index_m_z  = index_m_z_tab[index_m][index_z];
+
+
+
+// here we FFT the profile ===== commented
+const int N = ptsz->N_samp_fftw; //precision parameter
+int ix;
+double x[N], Px[N];
+double x_min = ptsz->x_min_matter_density_fftw;
+double x_max = ptsz->x_max_matter_density_fftw;
+
+double m_delta = exp(lnM);
+double c_delta_matter;
+double r_delta_matter;
+  if (ptsz->delta_def_matter_density == 0){
+    c_delta_matter = get_c200m_at_m_and_z(m_delta,z,pba,ptsz);
+    r_delta_matter = pow(3.*m_delta/(4.*_PI_*200.*pvecback[pba->index_bg_Omega_m]*pvectsz[ptsz->index_Rho_crit]),1./3.);
+  }
+  else if (ptsz->delta_def_matter_density == 1){
+    c_delta_matter = get_c200c_at_m_and_z(m_delta,z,pba,ptsz);
+    r_delta_matter = pow(3.*m_delta/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+
+  }
+  else if (ptsz->delta_def_matter_density == 2){
+    c_delta_matter = get_c500c_at_m_and_z(m_delta,z,pba,ptsz);
+    r_delta_matter = pow(3.*m_delta/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+  }
+  else if (ptsz->delta_def_matter_density == 3){
+    c_delta_matter = evaluate_cvir_of_mvir(m_delta,z,ptsz,pba);
+    r_delta_matter = evaluate_rvir_of_mvir(m_delta,pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+  }
+
+for (ix=0; ix<N; ix++){
+   x[ix] = exp(log(x_min)+ix/(N-1.)*(log(x_max)-log(x_min)));
+  // if (x[ix]>x_out){
+  //     Px[ix] = 0.;
+  //   }
+  // else{
+    Px[ix] =  get_nfw_with_power_law_profile_at_x(x[ix],
+                                                  ptsz->matter_nfw_power_law_index,
+                                                  ptsz->x_out_matter_density_profile*c_delta_matter);
+                                              // }
+  // printf("x = %.3e Px = %.3e\n",x[ix],Px[ix]);
+  }
+
+  double kp[N], Pkp[N];
+    // pk2xi(N,k,Pk1,rp,xi1,ptsz);
+  /* Compute the function
+   *   \xi_l^m(r) = \int_0^\infty \frac{dk}{2\pi^2} k^m j_l(kr) P(k)
+   * Note that the usual 2-point correlation function xi(r) is just xi_0^2(r)
+   * in this notation.  The input k-values must be logarithmically spaced.  The
+   * resulting xi_l^m(r) will be evaluated at the dual r-values
+   *   r[0] = 1/k[N-1], ..., r[N-1] = 1/k[0]. */
+  //void fftlog_ComputeXiLM(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[]);
+  fftlog_ComputeXiLMsloz(0, 2, N, x, Px, kp, Pkp,ptsz);
+
+/// ---- > FFT end commented
+
+  double result;
+  int index_k;
+//
+// if (index_z == 10 && index_m == 23){
+//
+// char Filepath[_ARGUMENT_LENGTH_MAX_];
+//
+// FILE *fp;
+// sprintf(Filepath,"%s%s%s",ptsz->root,"","test_nfw.txt");
+// fp=fopen(Filepath, "w");
+//
+//   for (index_k=0;
+//        index_k<n_k;
+//        index_k++)
+//   {
+//
+//     double k;
+//     double  result_fft;
+//
+//     ptsz->array_matter_density_profile_ln_k[index_k] = log(kp[index_k]);//(pvectsz[ptsz->index_r200c]*(1.+pvectsz[ptsz->index_z])));
+//     result_fft = 2.*_PI_*_PI_*Pkp[index_k];
+//
+//
+//     double result = result_fft;
+//
+//
+//    if (result<=0 || isnan(result) || isinf(result)){
+//          // printf("ERROR: In tab gas: k %.4e z %.8e rt %.8e mt %.8e res = %.4e\n",ell,pvectsz[ptsz->index_z],pvectsz[ptsz->index_r200c],pvectsz[ptsz->index_m200c],result);
+//          // printf("check precision and input parameters?\n");
+//          // exit(0);
+//          result = 1e-200;
+//         }
+//     double result_trunc = evaluate_truncated_nfw_profile(z,
+//                                                          kp[index_k]/(r_delta_matter/c_delta_matter*(1.+z)),
+//                                                          r_delta_matter,
+//                                                          c_delta_matter,
+//                                                          ptsz->x_out_truncated_nfw_profile);
+//     printf("matter nfw: k = %.5e r = %.5e ratio = %.5e\n",kp[index_k],result,result/result_trunc);
+//
+//     double norm = get_normalization_matter_density_profile(z,m_delta,ptsz);
+// fprintf(fp,"%.5e \t %.5e \t %.5e\n",kp[index_k],result/norm,result_trunc);
+//
+//    ptsz->array_profile_ln_rho_matter_at_lnk[index_k][index_m_z] = log(result);
+//  } // k loop
+// fclose(fp);
+//
+// exit(0);
+// }
+// else{
+
+
+  for (index_k=0;
+       index_k<n_k;
+       index_k++)
+  {
+
+    double k;
+    double  result_fft;
+
+    ptsz->array_matter_density_profile_ln_k[index_k] = log(kp[index_k]);//(pvectsz[ptsz->index_r200c]*(1.+pvectsz[ptsz->index_z])));
+    result_fft = 2.*_PI_*_PI_*Pkp[index_k];
+
+
+    double result = result_fft;
+
+
+   if (result<=0 || isnan(result) || isinf(result)){
+         // printf("ERROR: In tab gas: k %.4e z %.8e rt %.8e mt %.8e res = %.4e\n",ell,pvectsz[ptsz->index_z],pvectsz[ptsz->index_r200c],pvectsz[ptsz->index_m200c],result);
+         // printf("check precision and input parameters?\n");
+         // exit(0);
+         result = 1e-200;
+        }
+    // double result_trunc = evaluate_truncated_nfw_profile(0.,
+    //                                                      kp[index_k],
+    //                                                      1.,
+    //                                                      1.,
+    //                                                      1.)*m_nfw(1.);
+
+
+   ptsz->array_profile_ln_rho_matter_at_lnk[index_k][index_m_z] = log(result);
+ } // k loop
+
+// } // else condition
+
+
+} // m loop
+
+free(pvectsz);
+free(pvecback);
+
+} // z loop
+
+#ifdef _OPENMP
+  tstop = omp_get_wtime();
+  if (ptsz->sz_verbose > 0)
+    printf("In %s: time spent in tab pressure profile parallel region (loop over z's) = %e s for thread %d\n",
+           __func__,tstop-tstart,omp_get_thread_num());
+#endif
+
+}
+if (abort == _TRUE_) return _FAILURE_;
+
+return _SUCCESS_;
+                                     }
+
 // Tabulate 2D Fourier transform of density profile on a [z - ln_M - ln_ell] grid
 // this is the tau profile for kSZ
 int tabulate_gas_density_profile_fft(struct background * pba,
@@ -7272,8 +7859,8 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
  class_alloc(ptsz->array_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
 
  // array of masses:
- double ln_m_min = log(5e8);
- double ln_m_max = log(1e16);
+ double ln_m_min = log(ptsz->M1SZ);
+ double ln_m_max = log(ptsz->M2SZ);
 
 
  class_alloc(ptsz->array_profile_ln_m,sizeof(double *)*n_m,ptsz->error_message);
@@ -7871,8 +8458,8 @@ int tabulate_gas_pressure_profile_B12_fft(struct background * pba,
  class_alloc(ptsz->array_pressure_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
 
  // array of masses:
- double ln_m_min = log(1e8);
- double ln_m_max = log(1e17);
+ double ln_m_min = log(ptsz->M1SZ);
+ double ln_m_max = log(ptsz->M2SZ);
 
 
  class_alloc(ptsz->array_pressure_profile_ln_m,sizeof(double *)*n_m,ptsz->error_message);
@@ -11481,8 +12068,9 @@ int MF_T08_m500(
                 )
 {
   //T08@m500
+  if (ptsz->hmf_apply_zthreshold_to_hmf_and_bias){
   if(z>3.) z=3.; // ccl doesnt have this.. commenting for now.
-
+}
   // double om0 = ptsz->Omega_m_0;
   // double or0 = ptsz->Omega_r_0;
   // double ol0 = 1.-om0-or0;
@@ -11842,13 +12430,14 @@ int MF_T10 (
 
 
 double get_f_tinker10_at_nu_and_z(double nu, double z,struct tszspectrum * ptsz){
+if (ptsz->hmf_apply_zthreshold_to_hmf_and_bias){
   if(z>3.) z=3.;
-
+}
   double alpha;
 
-  // always do alpha(z)
 
 
+  // fix alpha or not
   if (ptsz->T10_alpha_fixed == 1){
   alpha = ptsz->alphaSZ;
   }
@@ -11909,8 +12498,10 @@ double get_f_tinker10_at_nu_and_z(double nu, double z,struct tszspectrum * ptsz)
 
 double get_f_tinker08_at_nu_and_z(double nu, double z,  struct tszspectrum * ptsz){
 
+if (ptsz->hmf_apply_zthreshold_to_hmf_and_bias){
   if(z>2.5) z=2.5; // see sec 4 of https://arxiv.org/pdf/0803.2706.pdf
   // this is not in CCL
+}
 
   double alphaT08 = pow(10.,-pow(0.75/log10(200./75.),1.2));
 

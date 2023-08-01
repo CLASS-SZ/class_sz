@@ -63,6 +63,16 @@ class_sz_ptsz_parameter(n_k_density_profile,int,100)
 class_sz_ptsz_parameter(n_m_density_profile,int,100)
 class_sz_ptsz_parameter(n_z_density_profile,int,100)
 
+class_sz_ptsz_parameter(fixed_c200m,double,7.)
+class_sz_ptsz_parameter(fixed_c200c,double,7.)
+
+
+class_sz_ptsz_parameter(n_m_matter_density_profile,int,100)
+class_sz_ptsz_parameter(n_z_matter_density_profile,int,100)
+
+
+class_sz_ptsz_parameter(szcounts_obsscatter,double,1.)
+
 class_sz_ptsz_parameter(szcounts_qmin_fft_padded,double,-100.)
 class_sz_ptsz_parameter(szcounts_qmax_fft_padded,double,100.)
 class_sz_ptsz_parameter(szcounts_lnqmin_fft,double,-5.)
@@ -137,6 +147,10 @@ class_sz_ptsz_parameter(chi_max_n5k_samp_fftw, double, 7.e3);
 class_sz_ptsz_parameter(integrand_n5k_epsrel, double, 1.e-6);
 class_sz_ptsz_parameter(integrand_n5k_epsabs, double, 7.e-40);
 
+class_sz_ptsz_parameter(matter_density_norm_epsrel, double, 1.e-6);
+class_sz_ptsz_parameter(matter_density_norm_epsabs, double, 1.e-100);
+
+
 class_sz_ptsz_parameter(density_norm_epsrel, double, 1.e-6);
 class_sz_ptsz_parameter(density_norm_epsabs, double, 1.e-100);
 
@@ -181,11 +195,21 @@ class_sz_ptsz_parameter(k_max_gas_pressure_profile,double,1e2)
 
 class_sz_ptsz_parameter(fstar_ms,double,0.)
 
+class_sz_ptsz_parameter(x_min_matter_density_fftw,double,1e-5)
+class_sz_ptsz_parameter(x_max_matter_density_fftw,double,1e2)
+
 class_sz_ptsz_parameter(x_min_gas_density_fftw,double,1e-5)
 class_sz_ptsz_parameter(x_max_gas_density_fftw,double,1e2)
 
 class_sz_ptsz_parameter(x_min_gas_pressure_fftw,double,1e-5)
 class_sz_ptsz_parameter(x_max_gas_pressure_fftw,double,1e2)
+
+
+class_sz_ptsz_parameter(x_out_truncated_gas_density_profile_normalization,double,1.)
+
+class_sz_ptsz_parameter(x_out_matter_density_profile_normalization,double,2.)
+class_sz_ptsz_parameter(x_out_matter_density_profile,double,2.)
+
 
 class_sz_ptsz_parameter(use_fft_for_profiles_transform,int,0)
 
@@ -199,8 +223,10 @@ class_sz_ptsz_parameter(ell_max_kSZ2_gal_multipole_grid,double,1e5)
 
 class_sz_ptsz_parameter(n_z_hmf_counter_terms,int,200)
 class_sz_ptsz_parameter(array_profile_ln_PgNFW_at_lnl_over_ls_size,int,200)
-class_sz_ptsz_parameter(m_min_counter_terms,double,1e11)
+class_sz_ptsz_parameter(m_min_counter_terms,double,1e11) // this is then set to M1SZ ("m_min") in class_sz.c
 class_sz_ptsz_parameter(m_max_counter_terms,double,1e17)
+
+class_sz_ptsz_parameter(hmf_apply_zthreshold_to_hmf_and_bias,int,1) // see sec 4 of https://arxiv.org/pdf/0803.2706.pdf -- CCL doesnt have this
 
 
 class_sz_ptsz_parameter(mass_epsrel_ngbar,double,1e-6)

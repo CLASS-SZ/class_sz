@@ -302,11 +302,16 @@ struct tszspectrum {
   double * cov_cl_cl;
   double * sig_cl_squared_binned;
 
+  int profile_matter_density;
+  double matter_nfw_power_law_index;
+
+
   int delta_def_galaxies;
   int delta_def_cib;
   int delta_def_matter_density;
   int delta_def_electron_pressure;
   int delta_def_electron_density;
+
 
 
   int delta_def_HI_pressure;
@@ -341,6 +346,8 @@ struct tszspectrum {
   double * array_ln_ng_bias_at_z_and_k;
 
   double * array_ln_density_norm_at_z_and_m;
+
+  double * array_ln_matter_density_norm_at_z_and_m;
 
   int need_ksz_template;
   int need_tt_noise;
@@ -1882,6 +1889,13 @@ double * steps_m;
   double * array_profile_ln_m;
   double * array_profile_ln_1pz;
 
+  // int n_m_matter_density_profile;
+
+  double * array_matter_density_profile_ln_k;
+  double * array_matter_density_profile_ln_m;
+  double * array_matter_density_profile_ln_1pz;
+  double ** array_profile_ln_rho_matter_at_lnk;
+
   // int array_profile_ln_PgNFW_at_lnl_over_ls_size; defined in class_sz_precisions.h
   double * array_profile_ln_l_over_ls;
   double * array_profile_ln_PgNFW_at_lnl_over_ls;
@@ -2120,14 +2134,14 @@ int szpowerspectrum_init(struct background * pba,
                            struct background * pba,
                            struct tszspectrum * ptsz);
 
-  int evaluate_lensing_profile(double kl,
-                               double m_delta,
-                               double r_delta,
-                               double c_delta,
-                               double * pvecback,
-                               double * pvectsz,
-                               struct background * pba,
-                               struct tszspectrum * ptsz);
+  double evaluate_lensing_profile(double kl,
+                                  double m_delta,
+                                  double r_delta,
+                                  double c_delta,
+                                  double * pvecback,
+                                  double * pvectsz,
+                                  struct background * pba,
+                                  struct tszspectrum * ptsz);
 
 double get_fstar_of_m_at_z(double m,
                            double z,
@@ -2294,6 +2308,7 @@ int write_redshift_dependent_quantities(struct background * pba,
 //                         struct background * pba,
 //                         struct tszspectrum * ptsz);
 
+int tabulate_normalization_matter_density_profile(struct tszspectrum * ptsz,struct background * pba);
 
 
 int tabulate_normalization_gas_density_profile(struct tszspectrum * ptsz,struct background * pba);
@@ -2391,6 +2406,15 @@ double get_truncated_nfw_profile_at_z_m_k_xout(//double * pvecback,
                                       struct background * pba,
                                       struct tszspectrum * ptsz);
 
+double get_nfw_with_power_law_profile_at_z_m_q(
+                                               double z,
+                                               double m,
+                                               double q,
+                                               struct tszspectrum * ptsz);
+
+double get_nfw_with_power_law_profile_at_x(double x,
+                                           double n,
+                                           double c);
 
 double evaluate_truncated_nfw_profile(
                                    double z,

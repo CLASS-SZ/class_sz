@@ -1726,6 +1726,7 @@ int input_read_parameters(
       /** (sz) SZ parameters */
 
       //BB: read SZ parameters from ini file
+      class_read_int("class_sz_verbose",ptsz->sz_verbose);
       class_read_int("nlSZ",ptsz->nlSZ);
       class_read_int("convert_cls_to_gamma",ptsz->convert_cls_to_gamma);
 
@@ -1780,6 +1781,11 @@ int input_read_parameters(
       //Array size
       class_read_int("ndim_redshifts",ptsz->n_arraySZ);//number of z in the interpolation for sigma
       class_read_int("n_arraySZ_for_integral",ptsz->n_arraySZ_for_integral);//number of z in the integration
+
+      // class_read_int("n_m_matter_density_profile",ptsz->n_m_matter_density_profile);
+      // printf("%d \n",ptsz->n_m_matter_density_profile);
+      // exit(0);
+
 
       //mass limits: h^-1 Msun
       class_read_double("M_min",ptsz->M1SZ);
@@ -1870,9 +1876,9 @@ int input_read_parameters(
       class_read_int("use_maniyar_cib_model",ptsz->use_maniyar_cib_model);
 
       class_read_int("y_m_relation",ptsz->y_m_relation);
-      class_read_double("ystar",pcsz->ystar);
-      class_read_double("alpha",pcsz->alpha);
-      class_read_double("sigmaM",pcsz->sigmaM);
+      // class_read_double("ystar",pcsz->ystar);
+      // class_read_double("alpha",pcsz->alpha);
+      // class_read_double("sigmaM",pcsz->sigmaM);
       //pcsz->ystar = pow(10.,pcsz->ystar)/pow(2., pcsz->alpha)*0.00472724; ////8.9138435358806980e-004;
 
       class_read_double("ystar_ym",ptsz->ystar_ym);
@@ -3739,7 +3745,7 @@ int input_read_parameters(
           ptsz->concentration_parameter=6; // https://arxiv.org/pdf/1112.5479.pdf
         else  if ((strstr(string1,"fixed") != NULL))
           ptsz->concentration_parameter=7; // https://arxiv.org/pdf/1112.5479.pdf
-
+          // in this case the concentration is read (see class_sz_precisions.h)
           }
 
 
@@ -4100,6 +4106,26 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
         ptsz->delta_def_electron_pressure = 0;
       }
 
+      class_call(parser_read_string(pfc,"profile_for_matter_density",&string1,&flag1,errmsg),errmsg,errmsg);
+
+        if ((strstr(string1,"nfw_with_power_law") != NULL)){
+          ptsz->profile_matter_density=1;
+          class_read_double("matter_nfw_power_law_index",ptsz->matter_nfw_power_law_index);
+          if (ptsz->sz_verbose>0){
+            printf("using matter_nfw_power_law with n=%.3e\n",ptsz->matter_nfw_power_law_index);
+          }
+        }
+
+        else if (flag1 == _TRUE_) {
+          if ((strstr(string1,"nfw") != NULL)){
+            ptsz->profile_matter_density=0;
+            if (ptsz->sz_verbose>0){
+              printf("using standard nfw profile for matter profile.\n",ptsz->matter_nfw_power_law_index);
+            }
+          }
+          }
+
+
       class_call(parser_read_string(pfc,"delta for galaxies",&string1,&flag1,errmsg),errmsg,errmsg);
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"200m") != NULL))
@@ -4168,7 +4194,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       class_read_string("root",ptsz->root);
       class_read_string("root",pcsz->root);
 
-      class_read_int("class_sz_verbose",ptsz->sz_verbose);
+
       class_read_double("f_free",ptsz->f_free);
       class_read_double("f_b_gas",ptsz->f_b_gas);
 
@@ -6391,7 +6417,7 @@ int input_default_params(
 
 
 
-
+  // ptsz->n_m_matter_density_profile =  100;
 
 
   //mass limits: h^-1 Msun
@@ -6612,13 +6638,13 @@ int input_default_params(
   ptsz->use_maniyar_cib_model = 0;
 
 
-  pcsz->ystar = -0.186; //-0.186 ref. value in SZ_plus_priors.ini (cosmomc)
-  pcsz->alpha = 1.789; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
-  pcsz->ystar = pow(10.,pcsz->ystar)/pow(2., pcsz->alpha)*0.00472724; ////8.9138435358806980e-004;
-  pcsz->sigmaM = 0.075; //in log10 see tab 1 of planck cc 2015 paper
-  pcsz->beta = 0.66;
-  pcsz->thetastar = 6.997;
-  pcsz->alpha_theta = 1./3.;
+  // pcsz->ystar = -0.186; //-0.186 ref. value in SZ_plus_priors.ini (cosmomc)
+  // pcsz->alpha = 1.789; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
+  // pcsz->ystar = pow(10.,pcsz->ystar)/pow(2., pcsz->alpha)*0.00472724; ////8.9138435358806980e-004;
+  // pcsz->sigmaM = 0.075; //in log10 see tab 1 of planck cc 2015 paper
+  // pcsz->beta = 0.66;
+  // pcsz->thetastar = 6.997;
+  // pcsz->alpha_theta = 1./3.;
 
   ptsz->ystar_ym = -0.186; //-0.186 ref. value in SZ_plus_priors.ini (cosmomc)
   ptsz->alpha_ym = 1.78; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
@@ -6648,16 +6674,16 @@ int input_default_params(
   ptsz->logR1SZ = -10; // 0.0034Mpc/h, 1.8e4  solar mass
   ptsz->logR2SZ = 10.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
 
-  ptsz->delta_cSZ = (3./20.)*pow(12.*_PI_,2./3.);
+  ptsz->delta_cSZ = (3./20.)*pow(12.*_PI_,2./3.); // this is = 1.686470199841145
 
 
-  ptsz->k_per_decade_for_tSZ = 50.; //#default 40
-  ptsz->k_min_for_pk_in_tSZ = 1.e-2; //#default 1.e-3
+  ptsz->k_per_decade_for_tSZ = 128.; //#default 40
+  ptsz->k_min_for_pk_in_tSZ = 1.e-4; //#default 1.e-3
   ptsz->k_max_for_pk_in_tSZ = 5.e1; //#default 5
 
   ptsz->z_for_pk_hm = 1.;
-  ptsz->k_min_for_pk_hm = 1e-2;
-  ptsz->k_max_for_pk_hm = 1e1;
+  ptsz->k_min_for_pk_hm = 1e-4;
+  ptsz->k_max_for_pk_hm = 1e2;
   ptsz->dlnk_for_pk_hm = 0.1;
 
 
@@ -7026,6 +7052,10 @@ int input_default_params(
   ptsz->delta_def_matter_density = 1;
   ptsz->delta_def_electron_density = 1;
   ptsz->delta_def_electron_pressure = 1;
+
+
+  ptsz->profile_matter_density = 0;
+  ptsz->matter_nfw_power_law_index = 0.;
 
 
   ptsz->integrate_wrt_m200m = 0;

@@ -1081,7 +1081,7 @@ for (i = 0; i < N; i++) {
   xarr[i] = x;
   xarr[i+N] = lnqmax_fft+i*dx;
   double arg0 = (x)/sqrt(2.*sig2);
-  kernel_scatter[i] = fac_scatter*exp(-arg0*arg0);
+  kernel_scatter[i] = fac_scatter*exp(-arg0*arg0); // this does the ym scatter
 }
 double qmin_fft_padded = ptsz->szcounts_qmin_fft_padded;
 double qmax_fft_padded = ptsz->szcounts_qmax_fft_padded;
@@ -1094,9 +1094,9 @@ for (i = 0; i < N; i++) {
   double x = qmin_fft_padded+i*dq;
   qp[i] = x;
   qp[i+N] = qmax_fft_padded+i*dq;
-  double arg0 = x/sqrt(2.);
-  double fac = 1./sqrt(2.*_PI_);
-  kernel_qobs[i] = fac*exp(-arg0*arg0); // this does the ym scatter
+  double arg0 = x/sqrt(2.)/ptsz->szcounts_obsscatter;
+  double fac = 1./sqrt(2.*_PI_)/ptsz->szcounts_obsscatter;
+  kernel_qobs[i] = fac*exp(-arg0*arg0); // this does the obs scatter
 }
 
 int index_zloop;

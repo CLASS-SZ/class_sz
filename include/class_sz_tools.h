@@ -293,6 +293,8 @@ double delta_to_delta_prime_nfw(
   double get_nl_index_at_z_and_k_no_wiggles(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl);
 
   double get_normalization_gas_density_profile(double z_asked, double m_asked, struct tszspectrum * ptsz);
+  double get_normalization_matter_density_profile(double z_asked, double m_asked, struct tszspectrum * ptsz);
+
 
   double get_completeness_at_z_and_M(double z_asked, double m_asked, double * completeness_2d_to_1d, struct tszspectrum * ptsz);
   double get_detection_proba_at_y_and_theta(double y_asked, double th_asked, double * erfs_2d_to_1d, struct tszspectrum * ptsz);
@@ -730,6 +732,9 @@ int tabulate_gas_density_profile(struct background * pba,
 
 int tabulate_gas_density_profile_fft(struct background * pba,
                                      struct tszspectrum * ptsz);
+
+int tabulate_matter_nfw_with_power_law_profile_fft(struct background * pba,
+                                                   struct tszspectrum * ptsz);
 
 int tabulate_gas_density_profile_2h(struct background * pba,
                                     struct nonlinear * pnl,
