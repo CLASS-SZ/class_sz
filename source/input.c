@@ -3054,6 +3054,26 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"gallens_lensmag_1h") != NULL) ) {
+        ptsz->has_gallens_lensmag_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"gallens_lensmag_2h") != NULL) ) {
+        ptsz->has_gallens_lensmag_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
 
       if ((strstr(string1,"gal_lensmag_1h") != NULL) ) {
         ptsz->has_gal_lensmag_1h =_TRUE_;
@@ -3927,7 +3947,7 @@ int input_read_parameters(
 
 class_read_double("A_IA",ptsz->A_IA);
 class_read_double("eta_IA",ptsz->eta_IA);
-
+class_read_double("C1_IA",ptsz->C1_IA);
 
 
 
@@ -5574,6 +5594,8 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       + ptsz->has_gal_lensmag_hf
       + ptsz->has_tSZ_lensmag_1h
       + ptsz->has_tSZ_lensmag_2h
+      + ptsz->has_gallens_lensmag_1h
+      + ptsz->has_gallens_lensmag_2h
       + ptsz->has_lensmag_lensmag_1h
       + ptsz->has_lensmag_lensmag_2h
       + ptsz->has_lensmag_lensmag_hf
@@ -6452,9 +6474,9 @@ int input_default_params(
   // ptsz->alphaGNFW = 1.33;
   // ptsz->betaGNFW = 4.13;
 
-  ptsz->A_IA = 0.1; // see https://arxiv.org/pdf/2106.08438.pdf
-  ptsz->eta_IA = -0.5; // see https://arxiv.org/pdf/2106.08438.pdf
-
+  ptsz->A_IA = 0.5; // see https://arxiv.org/pdf/2106.08438.pdf
+  ptsz->eta_IA = -1.0; // see https://arxiv.org/pdf/2106.08438.pdf
+  ptsz->C1_IA =  5e-14;
   //A10 UPP parameters
   ptsz->P0GNFW = 8.130;
   ptsz->c500 = 1.156;
@@ -6775,6 +6797,8 @@ int input_default_params(
   ptsz->has_gal_lensmag_hf = _FALSE_;
   ptsz->has_tSZ_lensmag_1h = _FALSE_;
   ptsz->has_tSZ_lensmag_2h = _FALSE_;
+  ptsz->has_gallens_lensmag_1h = _FALSE_;
+  ptsz->has_gallens_lensmag_2h = _FALSE_;
   ptsz->has_lensmag_lensmag_1h = _FALSE_;
   ptsz->has_lensmag_lensmag_2h = _FALSE_;
   ptsz->has_lensmag_lensmag_hf = _FALSE_;
@@ -7015,6 +7039,8 @@ int input_default_params(
   ptsz->index_md_tau_gal_1h = 110;
 
   ptsz->index_md_IA_gal_2h = 111;
+  ptsz->index_md_gallens_lensmag_2h = 112;
+  ptsz->index_md_gallens_lensmag_1h = 113;
 
 
   ptsz->integrate_wrt_mvir = 0;

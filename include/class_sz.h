@@ -85,6 +85,8 @@
 #define _gal_lensmag_hf_ ((ptsz->has_gal_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_gal_lensmag_hf))
 #define _tSZ_lensmag_2h_ ((ptsz->has_tSZ_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lensmag_2h))
 #define _tSZ_lensmag_1h_ ((ptsz->has_tSZ_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_lensmag_1h))
+#define _gallens_lensmag_2h_ ((ptsz->has_gallens_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_gallens_lensmag_2h))
+#define _gallens_lensmag_1h_ ((ptsz->has_gallens_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_gallens_lensmag_1h))
 #define _lensmag_lensmag_hf_ ((ptsz->has_lensmag_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_lensmag_lensmag_hf))
 #define _lensmag_lensmag_2h_ ((ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == ptsz->index_md_lensmag_lensmag_2h))
 #define _lensmag_lensmag_1h_ ((ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_lensmag_lensmag_1h))
@@ -217,6 +219,8 @@ struct tszspectrum {
   double * cl_gal_lensmag_1h;
   double * cl_tSZ_lensmag_2h;
   double * cl_tSZ_lensmag_1h;
+  double * cl_gallens_lensmag_2h;
+  double * cl_gallens_lensmag_1h;
   double * cl_lensmag_lensmag_hf;
   double * cl_lensmag_lensmag_2h;
   double * cl_lensmag_lensmag_1h;
@@ -802,8 +806,15 @@ struct tszspectrum {
   int index_integrand_id_gallens_lens_1h_first;
   int index_integrand_id_gallens_lens_1h_last;
 
+  int has_gallens_lensmag_2h;
+  int index_md_gallens_lensmag_2h;
+  int index_integrand_id_gallens_lensmag_2h_first;
+  int index_integrand_id_gallens_lensmag_2h_last;
 
-
+  int has_gallens_lensmag_1h;
+  int index_md_gallens_lensmag_1h;
+  int index_integrand_id_gallens_lensmag_1h_first;
+  int index_integrand_id_gallens_lensmag_1h_last;
 
   int has_tSZ_lensmag_2h;
   int index_md_tSZ_lensmag_2h;
@@ -1435,7 +1446,7 @@ double szcounts_ntot;
 
   double A_IA;
   double eta_IA;
-
+  double C1_IA;
   //Planck pressure profile
   double P0GNFW;
   double c500;
@@ -2138,7 +2149,12 @@ double get_tau_profile_at_z_m_l(double z,
                                 double k,
                                 struct tszspectrum * ptsz,
                                 struct background * pba);
-
+double get_A_IA_of_z(double z,
+                    double * pvecback,
+                    double * pvectsz,
+                    struct background * pba,
+                    struct tszspectrum * ptsz);
+                    
 double get_ksz_filter_at_l(double l,
                            struct tszspectrum * ptsz);
 
