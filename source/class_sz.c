@@ -9877,6 +9877,18 @@ double get_nfw_with_power_law_profile_at_x(double x,
   //   result =  pow(x,-1.)*pow(1.+ x,-2.);
   // }
 
+
+  // if (x>xout){
+  //   result = 0.;
+  // }
+  // else if (x>0.5*xout){
+  //   result =  pow(x,-1.)*pow(1.+ x,-2.)*pow(x,n);
+  // }
+  // else{
+  //   result =  pow(x,-1.)*pow(1.+ x,-2.);
+  // }
+
+
   if (x>xout){
     result = 0.;
   }
