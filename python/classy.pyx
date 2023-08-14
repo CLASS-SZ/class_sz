@@ -2236,7 +2236,7 @@ cdef class Class:
 
     def cl_kSZ_kSZ_kcmb(self):
         """
-        (class_sz) Return the 1-halo, 2-halo and 3-halo terms of kSZ x kSZ x kg power spectrum
+        (class_sz) Return the 1-halo, 2-halo and 3-halo terms of kSZ x kSZ x kcmb power spectrum
         """
         cl = {}
         cl['ell'] = []
@@ -2256,6 +2256,21 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_gal_gal_kcmb(self):
+        """
+        (class_sz) Return the 1-halo, 2-halo and 3-halo terms of gal x gal x kcmb power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['3h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_gal_gal_lens_1h_fft[index])
+            cl['2h'].append(self.tsz.cl_gal_gal_lens_2h_fft[index])
+            cl['3h'].append(self.tsz.cl_gal_gal_lens_3h_fft[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
 
 
     def cl_te_y_y(self):

@@ -59,6 +59,9 @@
 #define _kSZ_kSZ_lens_1h_fft_ ((ptsz->has_kSZ_kSZ_lens_1h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lens_1h_fft))
 #define _kSZ_kSZ_lens_2h_fft_ ((ptsz->has_kSZ_kSZ_lens_2h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lens_2h_fft))
 #define _kSZ_kSZ_lens_3h_fft_ ((ptsz->has_kSZ_kSZ_lens_3h_fft == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_lens_3h_fft))
+#define _gal_gal_lens_1h_fft_ ((ptsz->has_gal_gal_lens_1h_fft == _TRUE_) && (index_md == ptsz->index_md_gal_gal_lens_1h_fft))
+#define _gal_gal_lens_2h_fft_ ((ptsz->has_gal_gal_lens_2h_fft == _TRUE_) && (index_md == ptsz->index_md_gal_gal_lens_2h_fft))
+#define _gal_gal_lens_3h_fft_ ((ptsz->has_gal_gal_lens_3h_fft == _TRUE_) && (index_md == ptsz->index_md_gal_gal_lens_3h_fft))
 #define _kSZ_kSZ_gal_2h_ ((ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_2h))
 #define _kSZ_kSZ_gal_3h_ ((ptsz->has_kSZ_kSZ_gal_3h == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_3h))
 #define _kSZ_kSZ_gal_hf_ ((ptsz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == ptsz->index_md_kSZ_kSZ_gal_hf))
@@ -268,6 +271,9 @@ struct tszspectrum {
   double * cl_kSZ_kSZ_lens_1h_fft;
   double * cl_kSZ_kSZ_lens_2h_fft;
   double * cl_kSZ_kSZ_lens_3h_fft;
+  double * cl_gal_gal_lens_1h_fft;
+  double * cl_gal_gal_lens_2h_fft;
+  double * cl_gal_gal_lens_3h_fft;
   double * cl_kSZ_kSZ_lens_hf;
   double * cov_ll_kSZ_kSZ_lens;
   double * cl_kSZ_kSZ_lens_lensing_term;
@@ -648,6 +654,21 @@ struct tszspectrum {
   int index_md_kSZ_kSZ_lens_3h_fft;
   int index_integrand_id_kSZ_kSZ_lens_3h_fft_first;
   int index_integrand_id_kSZ_kSZ_lens_3h_fft_last;
+
+  int has_gal_gal_lens_1h_fft;
+  int index_md_gal_gal_lens_1h_fft;
+  int index_integrand_id_gal_gal_lens_1h_fft_first;
+  int index_integrand_id_gal_gal_lens_1h_fft_last;
+
+  int has_gal_gal_lens_2h_fft;
+  int index_md_gal_gal_lens_2h_fft;
+  int index_integrand_id_gal_gal_lens_2h_fft_first;
+  int index_integrand_id_gal_gal_lens_2h_fft_last;
+
+  int has_gal_gal_lens_3h_fft;
+  int index_md_gal_gal_lens_3h_fft;
+  int index_integrand_id_gal_gal_lens_3h_fft_first;
+  int index_integrand_id_gal_gal_lens_3h_fft_last;
 
   int has_kSZ_kSZ_lens_hf;
   int index_md_kSZ_kSZ_lens_hf;
@@ -2023,6 +2044,9 @@ double * steps_m;
   double * array_psi_b1kgt_multipole;
   double ** array_psi_b1kgt_psi;
 
+  double * array_psi_b1kgg_redshift;
+  double * array_psi_b1kgg_multipole;
+  double ** array_psi_b1kgg_psi;
   // int n_z_psi_b1g;
   // int n_l_psi_b1g;
 

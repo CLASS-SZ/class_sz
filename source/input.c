@@ -2503,6 +2503,34 @@ int input_read_parameters(
         ptsz->has_lensing = _TRUE_;
       }
 
+      if ((strstr(string1,"gal_gal_lens fft (1h)") != NULL) ) {
+        ptsz->has_gal_gal_lens_1h_fft =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+      if ((strstr(string1,"gal_gal_lens fft (2h)") != NULL) ) {
+        ptsz->has_gal_gal_lens_2h_fft =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+      if ((strstr(string1,"gal_gal_lens fft (3h)") != NULL) ) {
+        ptsz->has_gal_gal_lens_3h_fft =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
 
       if ((strstr(string1,"kSZ_kSZ_lens fft (1h)") != NULL) ) {
         ptsz->has_kSZ_kSZ_lens_1h_fft =_TRUE_;
@@ -5553,6 +5581,9 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       + ptsz->has_kSZ_kSZ_lens_1h_fft
       + ptsz->has_kSZ_kSZ_lens_2h_fft
       + ptsz->has_kSZ_kSZ_lens_3h_fft
+      + ptsz->has_gal_gal_lens_1h_fft
+      + ptsz->has_gal_gal_lens_2h_fft
+      + ptsz->has_gal_gal_lens_3h_fft
       + ptsz->has_kSZ_kSZ_lens_hf
       + ptsz->has_gallens_gallens_1h
       + ptsz->has_gallens_gallens_2h
@@ -6868,6 +6899,9 @@ int input_default_params(
   ptsz->has_kSZ_kSZ_lens_1h_fft = _FALSE_;
   ptsz->has_kSZ_kSZ_lens_2h_fft = _FALSE_;
   ptsz->has_kSZ_kSZ_lens_3h_fft = _FALSE_;
+  ptsz->has_gal_gal_lens_1h_fft = _FALSE_;
+  ptsz->has_gal_gal_lens_2h_fft = _FALSE_;
+  ptsz->has_gal_gal_lens_3h_fft = _FALSE_;
   ptsz->has_kSZ_kSZ_lens_covmat = _FALSE_;
   ptsz->has_kSZ_kSZ_lens_lensing_term = _FALSE_;
   ptsz->has_kSZ_kSZ_lens_hf = _FALSE_;
@@ -7041,6 +7075,10 @@ int input_default_params(
   ptsz->index_md_tau_gal_1h = 110;
 
   ptsz->index_md_IA_gal_2h = 111;
+
+  ptsz->index_md_gal_gal_lens_1h_fft = 112;
+  ptsz->index_md_gal_gal_lens_2h_fft = 113;
+  ptsz->index_md_gal_gal_lens_3h_fft = 114;
 
 
   ptsz->integrate_wrt_mvir = 0;

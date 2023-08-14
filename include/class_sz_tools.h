@@ -847,6 +847,15 @@ int tabulate_psi_b1gt(struct background * pba,
 
 double get_psi_b1gt_at_k1_k2_and_z(double l1_asked, double l2_asked, double z_asked, struct tszspectrum * ptsz);
 
+int tabulate_psi_b1kgg(struct background * pba,
+                    struct nonlinear * pnl,
+                    struct primordial * ppm,
+                    struct perturbs * ppt,
+                    struct tszspectrum * ptsz);
+
+double get_psi_b1kgg_at_k1_k2_and_z(double l1_asked, double l2_asked, double z_asked, struct tszspectrum * ptsz);
+
+
 
 int tabulate_psi_b1kgt(struct background * pba,
                     struct nonlinear * pnl,
