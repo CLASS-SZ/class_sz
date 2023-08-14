@@ -96,6 +96,10 @@ As well as other references listed there: http://class-code.net
 Compiling CLASS_SZ and getting started
 --------------------------------------
 
+A colab notebook shows you how to quick start. You could even run your calculations there (although this may not be as fast as on your computer since Colab, as of 2023 runs on two cores):
+
+`class_sz colab notebook <https://colab.research.google.com/drive/1AULgG4ZLLG1YXRI86L54-hpjWyl1X-8c?usp=sharing>`
+
 Move to the code repository
 
     $ cd class_sz
@@ -170,15 +174,15 @@ Have a look at the notebooks https://github.com/CLASS-SZ/notebooks. They all use
 Python Wrapper (Tensorflow and Cosmopower Dependency)
 ------------------------------
 
-Since recently we have implemented emulators in classy_sz, now it has an extra-dependency to tensorflow through cosmopower. 
+Since recently we have implemented emulators in classy_sz, now it has an extra-dependency to tensorflow through cosmopower.
 
-1. Install tensoflow first (see below for Mac M1 specific issues). 
+1. Install tensoflow first (see below for Mac M1 specific issues).
 2. Then install cosmopower (https://alessiospuriomancini.github.io/cosmopower/installation/).
 3. Clone the https://github.com/cosmopower-organization/notebooks repo.
 4. Open notebooks/get_quantities_cosmopower.ipynb notebook and follow the instructions there to get the cosmopower emulators.
 5. Compile the fast python wrapper:
   $ cd python/classy_szfast
-  
+
   $ pip install -e .
 
 (might need to change the path there.
@@ -187,24 +191,24 @@ change this line:
 path_to_cosmopower_organization = '/path/to/cosmopower-organization/'
 This path needs to be adapted so it matches the location of your cosmopower-organization repository where you have stored the emulators generetaed in get_quantities_cosmopower.ipynb. )
 
-6. Finally compile the python wrapper: 
+6. Finally compile the python wrapper:
   $ cd python
-  
+
   $ pip install -e .
-  
+
 7. Check you can import classy_sz in your python/jupyter notebook, e.g.,:
   $ python
-  
+
   $ from classy_sz import Class
-or try to run any of the notebooks. 
+or try to run any of the notebooks.
 
 8. To run the emulator-based computations, simply change
   M.compute()
-  
-to 
-  
+
+to
+
   M.compute_class_szfast()
-  
+
 9. There are many examples in the notebooks how to use class_szfast. See https://github.com/CLASS-SZ/notebooks.
 
 
@@ -303,11 +307,11 @@ $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^
 In setup.py:
 extra_link_args=['-lomp','-lgsl','-lfftw3','-lgslcblas'])
 
-Tensorflow. 
-To install the new version of class_sz, you will need tensorflow (needed for the cosmopower emulators). On M1/M2 make sure, you have the arch64 version of conda (if not, you need to remove your entire conda and install the arch64 version for Apple sillicon). 
+Tensorflow.
+To install the new version of class_sz, you will need tensorflow (needed for the cosmopower emulators). On M1/M2 make sure, you have the arch64 version of conda (if not, you need to remove your entire conda and install the arch64 version for Apple sillicon).
 
 This video might be helpful https://www.youtube.com/watch?v=BEUU-icPg78
-Then you can follow standard Tensorflow installation recipe for M1, e.g., https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706 or https://developer.apple.com/forums/thread/697846 . 
+Then you can follow standard Tensorflow installation recipe for M1, e.g., https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706 or https://developer.apple.com/forums/thread/697846 .
 
 Compiler - GCC version
 ------------------------------
