@@ -98,7 +98,7 @@ Compiling CLASS_SZ and getting started
 
 A colab notebook shows you how to quick start. You could even run your calculations there (although this may not be as fast as on your computer since Colab, as of 2023 runs on two cores):
 
-`class_sz colab notebook <https://colab.research.google.com/drive/1AULgG4ZLLG1YXRI86L54-hpjWyl1X-8c?usp=sharing>`
+`class_sz colab notebook <https://colab.research.google.com/drive/1AULgG4ZLLG1YXRI86L54-hpjWyl1X-8c?usp=sharing>`_.
 
 Move to the code repository
 
