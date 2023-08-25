@@ -9569,20 +9569,43 @@ int evaluate_lensing_profile(double kl,
 //
 
 double get_A_IA_of_z(double z,
-                    double * pvecback,
-                    double * pvectsz,
-                    struct background * pba,
-                    struct tszspectrum * ptsz){
-double A_IA_of_z;
+                   struct background * pba,
+                   struct tszspectrum * ptsz)
+{
+double result;
+
 // double z = pvectsz[ptsz->index_z];
-double chi =  sqrt(pvectsz[ptsz->index_chi2]);
+
+double * pvecback;
+double tau;
+int first_index_back = 0;
+class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+class_call(background_tau_of_z(pba,z,&tau),
+           pba->error_message,
+           pba->error_message);
+
+class_call(background_at_tau(pba,
+                             tau,
+                             pba->long_info,
+                             pba->inter_normal,
+                             &first_index_back,
+                             pvecback),
+           pba->error_message,
+           pba->error_message);
+
+
+
 
 double D = pvecback[pba->index_bg_D];
+//double c1_rhom0 = 0.0134; // see: https://arxiv.org/abs/astro-ph/0009499; https://arxiv.org/pdf/2108.01601.pdf
 double c1_rhom0 = ptsz->C1_IA*ptsz->Rho_crit_0*ptsz->Omega_m_0;
 double z0 = 0.62; // see: https://arxiv.org/abs/astro-ph/0009499; https://arxiv.org/pdf/2108.01601.pdf
 double A_IA = ptsz->A_IA;
 double eta_IA = ptsz->eta_IA;
 
+double A_IA_of_z;
 A_IA_of_z =  A_IA*pow((1.+z)/(1.+z0),eta_IA)*c1_rhom0/D;
 
 return A_IA_of_z;
@@ -9625,15 +9648,13 @@ double z0 = 0.62; // see: https://arxiv.org/abs/astro-ph/0009499; https://arxiv.
 double A_IA = ptsz->A_IA;
 double eta_IA = ptsz->eta_IA;
 
-//double A_IA_of_z = get_A_IA_of_z(z,pvecback,pvectsz,pba,ptsz);
-double A_IA_of_z;
-A_IA_of_z =  A_IA*pow((1.+z)/(1.+z0),eta_IA)*c1_rhom0/D;
+double A_IA_of_z = get_A_IA_of_z(z,pba,ptsz);
+// double A_IA_of_z;
+// A_IA_of_z =  A_IA*pow((1.+z)/(1.+z0),eta_IA)*c1_rhom0/D;
 
-// if (z >1e-1 && z <5e-1  ){
-// printf("z_asked = %e, Az = %e\n",z,A_IA_of_z);
-// }
-double chi = pvecback[pba->index_bg_ang_distance]*(1.+z);
-// double chi =  sqrt(pvectsz[ptsz->index_chi2]);
+
+double chi = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z);
+//double chi =  sqrt(pvectsz[ptsz->index_chi2]);
 double nz = get_source_galaxy_number_counts(z,ptsz);
 double dz_dchi = pvecback[pba->index_bg_H]/pba->h;
 
@@ -15223,20 +15244,20 @@ double z_min = 0.01;
 double z_max = 2.;
 double z;
 double IA_z;
+double A_IA_z;
+double chi;
 for (index_z=0;index_z<n_z;index_z++){
   z = z_min + (z_max-z_min)*index_z/(n_z-1.);
   IA_z = get_IA_of_z(z,pba,ptsz);
+  A_IA_z = get_A_IA_of_z(z,pba,ptsz);
+  printf("z = %e\t\t IA(z) = %e A(z) = %e \n",z,IA_z,A_IA_z);
 
-  printf("z = %e\t\t A(z) = %e \n",z,IA_z);
-
-  fprintf(fp,"%.5e\t%.5e\n",z,IA_z);
+  fprintf(fp,"%.5e\t%.5e\t%.5e\n",z,IA_z,A_IA_z);
   }
 
   fclose(fp);
 
 }
-
-
 
 
 

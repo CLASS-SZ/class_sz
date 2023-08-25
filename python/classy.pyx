@@ -2951,10 +2951,6 @@ cdef class Class:
     def get_mean_galaxy_bias_at_z(self,z):
         return get_mean_galaxy_bias_at_z(z,&self.tsz)
 
-    def get_A_IA_of_z(self, z):
-        cdef double * pvecback
-        cdef double * pvectsz
-        return get_A_IA_of_z(z, pvecback, pvectsz, &self.ba, &self.tsz)
 
     def get_gnu_tsz_of_nu_in_ghz(nu_in_ghz,Tcmb):
         r = gnu_tsz_of_nu_in_ghz(nu_in_ghz,Tcmb)

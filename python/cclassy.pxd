@@ -798,11 +798,7 @@ cdef extern from "class.h":
 
     double get_mean_galaxy_bias_at_z(double z, void * ptsz)
 
-    double get_A_IA_of_z(double z,
-                          double * pvecback,
-                          double * pvectsz,
-                          void * pba,
-                          void * ptsz)
+
 
     double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, void * ptsz)
 

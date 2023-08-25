@@ -2128,7 +2128,9 @@ double get_IA_of_z(double z,
                    struct background * pba,
                    struct tszspectrum * ptsz);
 
-
+double get_A_IA_of_z(double z,
+                   struct background * pba,
+                   struct tszspectrum * ptsz);
   int evaluate_tau_profile(double k,
                            double * pvecback,
                            double * pvectsz,
@@ -2153,11 +2155,7 @@ double get_tau_profile_at_z_m_l(double z,
                                 double k,
                                 struct tszspectrum * ptsz,
                                 struct background * pba);
-double get_A_IA_of_z(double z,
-                    double * pvecback,
-                    double * pvectsz,
-                    struct background * pba,
-                    struct tszspectrum * ptsz);
+
 
 double get_ksz_filter_at_l(double l,
                            struct tszspectrum * ptsz);
