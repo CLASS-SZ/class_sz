@@ -14,7 +14,7 @@ import pickle
 
 H_units_conv_factor = {"1/Mpc": 1, "km/s/Mpc": Const.c_km_s}
 
-class classy_szfast(object):
+class Class_szfast(object):
     def __init__(self,
                 #lowring=False,  some options if needed
                  **kwargs):

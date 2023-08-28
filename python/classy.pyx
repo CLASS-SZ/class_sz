@@ -33,7 +33,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline as _spline
 # from mcfit.transforms import *
 import mcfit
 import time
-from classy_szfast import classy_szfast
+from classy_szfast import Class_szfast
 
 
 
@@ -584,7 +584,7 @@ cdef class Class:
         # print(self.get_current_derived_parameters(['ln10^{10}A_s']))
 
         # Emulators
-        cszfast = classy_szfast(**params_settings)
+        cszfast = Class_szfast(**params_settings)
 
         if 'A_s' in self._pars:
           params_settings['ln10^{10}A_s'] = self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
