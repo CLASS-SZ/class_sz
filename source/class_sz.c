@@ -19574,8 +19574,8 @@ double evaluate_truncated_nfw_profile(//double * pvecback,
 double q = k*r_delta/c_delta*(1.+z); // uk -> 1 when q->0
 
 
-// double denominator = m_nfw(c_delta); //normalization --> this does not satisfy that m*uk = m for k->0 when xout != 1
-double denominator = m_nfw(xout*c_delta); //normalization --> this enforces that m*uk = m for k->0 for all xout
+double denominator = m_nfw(c_delta); //normalization --> this does not satisfy that m*uk = m for k->0 when xout != 1
+// double denominator = m_nfw(xout*c_delta); //normalization --> this enforces that m*uk = m for k->0 for all xout
 
 
 
