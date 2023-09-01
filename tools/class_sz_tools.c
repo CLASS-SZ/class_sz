@@ -19188,6 +19188,23 @@ double integrand_hmf_counter_terms_b1min(double lnM_halo, void *p){
       double Omega_cb = (V->pba->Omega0_cdm + V->pba->Omega0_b);
       double rho_cb = rho_crit_at_z*Omega_cb;
 
+      // here ensure the mass is the halo mass:
+      double xout = V->ptsz->x_out_truncated_nfw_profile;
+      double c_delta_matter;
+        if (V->ptsz->delta_def_matter_density == 0){
+          c_delta_matter = get_c200m_at_m_and_z(M_halo,z,V->pba,V->ptsz);
+        }
+        else if (V->ptsz->delta_def_matter_density == 1){
+          c_delta_matter = get_c200c_at_m_and_z(M_halo,z,V->pba,V->ptsz);
+        }
+        else if (V->ptsz->delta_def_matter_density == 2){
+          c_delta_matter = get_c500c_at_m_and_z(M_halo,z,V->pba,V->ptsz);
+        }
+        else if (V->ptsz->delta_def_matter_density == 3){
+          c_delta_matter = evaluate_cvir_of_mvir(M_halo,z,V->ptsz,V->pba);
+        }
+      M_halo *= m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      ///done with mass consistency.
 
       double result = hmf*M_halo/rho_cb;
 
@@ -22276,7 +22293,27 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
           double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);//*pow(1.+z,3.);
           double rho_cb = rho_crit_at_z*Omega_cb;
           double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
-          double b1_min = (1.-r)*rho_cb/m_min/n_min;
+
+      // here ensure the mass is the halo mass:
+      double xout = ptsz->x_out_truncated_nfw_profile;
+      double c_delta_matter;
+        if (ptsz->delta_def_matter_density == 0){
+          c_delta_matter = get_c200m_at_m_and_z(m_min,z,pba,ptsz);
+        }
+        else if (ptsz->delta_def_matter_density == 1){
+          c_delta_matter = get_c200c_at_m_and_z(m_min,z,pba,ptsz);
+        }
+        else if (ptsz->delta_def_matter_density == 2){
+          c_delta_matter = get_c500c_at_m_and_z(m_min,z,pba,ptsz);
+        }
+        else if (ptsz->delta_def_matter_density == 3){
+          c_delta_matter = evaluate_cvir_of_mvir(m_min,z,ptsz,pba);
+        }
+      double m_min_fac = m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      ///done with mass consistency.
+
+
+          double b1_min = (1.-r)*rho_cb/m_min/m_min_fac/n_min;
           ptsz->array_hmf_counter_terms_b1min[index_z] = b1_min;
 
        }
@@ -22348,6 +22385,23 @@ double integrand_hmf_counter_terms_b2min(double lnM_halo, void *p){
       double Omega_cb = (V->pba->Omega0_cdm + V->pba->Omega0_b);
       double rho_cb = rho_crit_at_z*Omega_cb;
 
+      // here ensure the mass is the halo mass:
+      double xout = V->ptsz->x_out_truncated_nfw_profile;
+      double c_delta_matter;
+        if (V->ptsz->delta_def_matter_density == 0){
+          c_delta_matter = get_c200m_at_m_and_z(M_halo,z,V->pba,V->ptsz);
+        }
+        else if (V->ptsz->delta_def_matter_density == 1){
+          c_delta_matter = get_c200c_at_m_and_z(M_halo,z,V->pba,V->ptsz);
+        }
+        else if (V->ptsz->delta_def_matter_density == 2){
+          c_delta_matter = get_c500c_at_m_and_z(M_halo,z,V->pba,V->ptsz);
+        }
+        else if (V->ptsz->delta_def_matter_density == 3){
+          c_delta_matter = evaluate_cvir_of_mvir(M_halo,z,V->ptsz,V->pba);
+        }
+      M_halo *= m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      ///done with mass consistency.
 
       double result = hmf*M_halo/rho_cb;
 
@@ -22425,7 +22479,26 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
           double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);//*pow(1.+z,3.);
           double rho_cb = rho_crit_at_z*Omega_cb;
           double n_min =  get_hmf_counter_term_nmin_at_z(z,ptsz);
-          double b2_min = -r*rho_cb/m_min/n_min;
+
+      // here ensure the mass is the halo mass:
+      double xout = ptsz->x_out_truncated_nfw_profile;
+      double c_delta_matter;
+        if (ptsz->delta_def_matter_density == 0){
+          c_delta_matter = get_c200m_at_m_and_z(m_min,z,pba,ptsz);
+        }
+        else if (ptsz->delta_def_matter_density == 1){
+          c_delta_matter = get_c200c_at_m_and_z(m_min,z,pba,ptsz);
+        }
+        else if (ptsz->delta_def_matter_density == 2){
+          c_delta_matter = get_c500c_at_m_and_z(m_min,z,pba,ptsz);
+        }
+        else if (ptsz->delta_def_matter_density == 3){
+          c_delta_matter = evaluate_cvir_of_mvir(m_min,z,ptsz,pba);
+        }
+      double m_min_fac = m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      ///done with mass consistency.
+
+          double b2_min = -r*rho_cb/m_min/m_min_fac/n_min;
           ptsz->array_hmf_counter_terms_b2min[index_z] = b2_min;
 
        }
@@ -22496,7 +22569,25 @@ double integrand_hmf_counter_terms_nmin(double lnM_halo, void *p){
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       double z_asked = z;
-      double  m_asked = M_halo;
+      // double  m_asked = M_halo;
+
+      // here ensure the mass is the halo mass:
+      double xout = V->ptsz->x_out_truncated_nfw_profile;
+      double c_delta_matter;
+        if (V->ptsz->delta_def_matter_density == 0){
+          c_delta_matter = get_c200m_at_m_and_z(M_halo,z,V->pba,V->ptsz);
+        }
+        else if (V->ptsz->delta_def_matter_density == 1){
+          c_delta_matter = get_c200c_at_m_and_z(M_halo,z,V->pba,V->ptsz);
+        }
+        else if (V->ptsz->delta_def_matter_density == 2){
+          c_delta_matter = get_c500c_at_m_and_z(M_halo,z,V->pba,V->ptsz);
+        }
+        else if (V->ptsz->delta_def_matter_density == 3){
+          c_delta_matter = evaluate_cvir_of_mvir(M_halo,z,V->ptsz,V->pba);
+        }
+      M_halo *= m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      ///done with mass consistency.
 
       double rho_crit_at_z = V->ptsz->Rho_crit_0;
       double Omega_cb = (V->pba->Omega0_cdm + V->pba->Omega0_b);
@@ -22585,7 +22676,26 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
           double rho_crit_at_z = ptsz->Rho_crit_0;
           double Omega_cb = (pba->Omega0_cdm + pba->Omega0_b);
           double rho_cb = rho_crit_at_z*Omega_cb;
-          double n_min = (1.-r)*rho_cb/m_min;
+
+      // here ensure the mass is the halo mass:
+      double xout = ptsz->x_out_truncated_nfw_profile;
+      double c_delta_matter;
+        if (ptsz->delta_def_matter_density == 0){
+          c_delta_matter = get_c200m_at_m_and_z(m_min,z,pba,ptsz);
+        }
+        else if (ptsz->delta_def_matter_density == 1){
+          c_delta_matter = get_c200c_at_m_and_z(m_min,z,pba,ptsz);
+        }
+        else if (ptsz->delta_def_matter_density == 2){
+          c_delta_matter = get_c500c_at_m_and_z(m_min,z,pba,ptsz);
+        }
+        else if (ptsz->delta_def_matter_density == 3){
+          c_delta_matter = evaluate_cvir_of_mvir(m_min,z,ptsz,pba);
+        }
+      double m_min_fac = m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      ///done with mass consistency.
+
+          double n_min = (1.-r)*rho_cb/m_min/m_min_fac;
           ptsz->array_hmf_counter_terms_nmin[index_z] = n_min;
 
        }

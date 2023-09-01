@@ -9417,6 +9417,8 @@ int evaluate_matter_density_profile(double k,
 
     double rho0 = 1.;
 
+    // Note when xout!=0
+    // you should double check the mass def here. 
 
     pvectsz[ptsz->index_density_profile] = density_normalisation
                                          *rho0
@@ -9439,7 +9441,8 @@ double evaluate_lensing_profile(double kl,
                                 struct tszspectrum * ptsz)
 {
 
-  double mass_nfw = m_delta;
+  double xout = ptsz->x_out_truncated_nfw_profile;
+  double mass_nfw = m_delta*m_nfw(xout*c_delta)/ m_nfw(c_delta);
 
    double rs = r_delta/c_delta;
    // pvectsz[ptsz->index_rs] = rs;
@@ -9461,7 +9464,7 @@ double evaluate_lensing_profile(double kl,
 
 
    // pvectsz[ptsz->index_multipole_for_truncated_nfw_profile] = pvectsz[ptsz->index_multipole_for_lensing_profile];  // multipole going into truncated nfw, unfortunate name
-   double xout = ptsz->x_out_truncated_nfw_profile;
+   // double xout = ptsz->x_out_truncated_nfw_profile;
    // double l = pvectsz[ptsz->index_multipole_for_truncated_nfw_profile];
    double chi = sqrt(pvectsz[ptsz->index_chi2]);
    double z = pvectsz[ptsz->index_z];
@@ -19574,8 +19577,8 @@ double evaluate_truncated_nfw_profile(//double * pvecback,
 double q = k*r_delta/c_delta*(1.+z); // uk -> 1 when q->0
 
 
-double denominator = m_nfw(c_delta); //normalization --> this does not satisfy that m*uk = m for k->0 when xout != 1
-// double denominator = m_nfw(xout*c_delta); //normalization --> this enforces that m*uk = m for k->0 for all xout
+// double denominator = m_nfw(c_delta); //normalization --> this does not satisfy that m*uk = m for k->0 when xout != 1
+double denominator = m_nfw(xout*c_delta); //normalization --> this enforces that m*uk = m for k->0 for all xout
 
 
 
