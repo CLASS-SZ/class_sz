@@ -1383,6 +1383,10 @@ double szcounts_ntot;
   double M2SZ_dndlnM;
 
 
+  double m_min_counter_terms;
+  double m_max_counter_terms;
+
+
   double y_min;
   double y_max;
 

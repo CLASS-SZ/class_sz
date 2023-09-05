@@ -22235,7 +22235,7 @@ int tabulate_hmf_counter_terms_b1min(struct background * pba,
                                     struct primordial * ppm,
                                     struct perturbs * ppt,
                                     struct tszspectrum * ptsz){
-
+// this will only be executed if hm_consistency==1
 class_alloc(ptsz->array_hmf_counter_terms_b1min,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
 
 int index_z;
@@ -22243,8 +22243,8 @@ double r;
 double m_min,m_max;
 
 
-m_min = ptsz->M1SZ;
-m_max = ptsz->M2SZ;
+m_min = ptsz->m_min_counter_terms;
+m_max = ptsz->m_max_counter_terms;
 
 double z_min = ptsz->z1SZ;
 double z_max = ptsz->z2SZ;
@@ -22419,22 +22419,20 @@ int tabulate_hmf_counter_terms_b2min(struct background * pba,
                                     struct nonlinear * pnl,
                                     struct primordial * ppm,
                                     struct tszspectrum * ptsz){
-
+// this will only be executed if hm_consistency==1
 class_alloc(ptsz->array_hmf_counter_terms_b2min,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
 
 int index_z;
 double r;
 double m_min,m_max;
-// m_min = ptsz->m_min_counter_terms;
-// m_max = ptsz->m_max_counter_terms;
-m_min = ptsz->M1SZ;//r8_min(ptsz->M1SZ,ptsz->m_min_counter_terms);
-m_max = ptsz->M2SZ;//r8_max(ptsz->M2SZ,ptsz->m_max_counter_terms);
-// double z_min = ptsz->z1SZ;
-// double z_max = ptsz->z2SZ;
-  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
-  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
-  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
-  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
+
+m_min = ptsz->m_min_counter_terms;
+m_max = ptsz->m_max_counter_terms;
+
+
+double z_min = ptsz->z1SZ;
+double z_max = ptsz->z2SZ;
+
 
 double * pvecback;
 double * pvectsz;
@@ -22605,6 +22603,8 @@ int tabulate_hmf_counter_terms_nmin(struct background * pba,
                                     struct nonlinear * pnl,
                                     struct primordial * ppm,
                                     struct tszspectrum * ptsz){
+// this will only be executed if hm_consistency==1
+
 
 class_alloc(ptsz->array_hmf_counter_terms_nmin,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
 class_alloc(ptsz->array_redshift_hmf_counter_terms,sizeof(double *)*ptsz->n_z_hmf_counter_terms,ptsz->error_message);
@@ -22613,15 +22613,8 @@ int index_z;
 double r;
 double m_min,m_max;
 
-if (ptsz->hm_consistency == 0){
-  m_min = 1e10;
-  m_max = 1e16;
-}
-else{
-m_min = ptsz->M1SZ;
-m_max = ptsz->M2SZ;
-}
-
+m_min = ptsz->m_min_counter_terms;
+m_max = ptsz->m_max_counter_terms;
 
 double z_min = ptsz->z1SZ;
 double z_max = ptsz->z2SZ;

@@ -1793,6 +1793,12 @@ int input_read_parameters(
       ptsz->M1SZ_dndlnM = ptsz->M1SZ;
       ptsz->M2SZ_dndlnM = ptsz->M2SZ;
 
+     ptsz->m_min_counter_terms = ptsz->M1SZ;
+     ptsz->m_max_counter_terms = ptsz->M2SZ;  // default M2SZ, if passed, it will be set to something different and fixed, e.g.,
+     class_read_double("m_min_counter_terms",ptsz->m_min_counter_terms );
+     class_read_double("m_max_counter_terms",ptsz->m_max_counter_terms );
+
+
 
       ptsz->M_min_ng_bar = ptsz->M1SZ;
       ptsz->M_max_ng_bar = ptsz->M2SZ;
