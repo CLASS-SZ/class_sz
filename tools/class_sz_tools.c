@@ -14021,6 +14021,7 @@ double integrand_mass(double logM, void *p){
                                            integrand_mass,
                                            params,ptsz->patterson_show_neval);
 
+if (ptsz->include_y_counterterms_in_yk){
  if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
    double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
    double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
@@ -14029,6 +14030,7 @@ double integrand_mass(double logM, void *p){
    r_m_1 += bmin_umin;
    // printf("counter terms done r_m_2\n");
  }
+}
 
   pvectsz[ptsz->index_part_id_cov_hsv] = 2;
   V.pvectsz = pvectsz;
@@ -23317,9 +23319,9 @@ num_threads(number_of_threads)
 
 // #pragma omp for schedule (dynamic)
 #pragma omp for collapse(2)
-  for (index_R=0; index_R<ptsz->ndimSZ; index_R++)
+  for (index_R=0; index_R<ptsz->ndimSZ; index_R++) // ndim_masses
   {
-  for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
+  for (index_z=0; index_z<ptsz->n_arraySZ; index_z++) // ndim_redshift
   {
 // #pragma omp flush(abort)
 

@@ -1383,6 +1383,9 @@ double szcounts_ntot;
   double M2SZ_dndlnM;
 
 
+  int include_y_counterterms_in_yk; // switch for counter term yk 2h calculation for y-part only. 
+
+
   double m_min_counter_terms;
   double m_max_counter_terms;
 

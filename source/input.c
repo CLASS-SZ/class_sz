@@ -1800,6 +1800,11 @@ int input_read_parameters(
 
 
 
+     class_read_int("include_y_counterterms_in_yk",ptsz->include_y_counterterms_in_yk);
+
+
+
+
       ptsz->M_min_ng_bar = ptsz->M1SZ;
       ptsz->M_max_ng_bar = ptsz->M2SZ;
 
@@ -6456,6 +6461,7 @@ int input_default_params(
 
   // ptsz->n_m_matter_density_profile =  100;
 
+  ptsz->include_y_counterterms_in_yk = 1;
 
   //mass limits: h^-1 Msun
   ptsz->M1SZ = 1.e10;
