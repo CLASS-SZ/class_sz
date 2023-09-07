@@ -6729,8 +6729,8 @@ int input_default_params(
 
 
   ptsz->k_per_decade_for_tSZ = 128.; //#default 40
-  ptsz->k_min_for_pk_in_tSZ = 1.e-4; //#default 1.e-3
-  ptsz->k_max_for_pk_in_tSZ = 5.e1; //#default 5
+  ptsz->k_min_for_pk_in_tSZ = 1.e-4;
+  ptsz->k_max_for_pk_in_tSZ = 5.e1; 
 
   ptsz->z_for_pk_hm = 1.;
   ptsz->k_min_for_pk_hm = 1e-4;
