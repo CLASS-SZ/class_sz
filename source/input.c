@@ -4232,9 +4232,9 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       class_read_string("UNWISE_dndz_file",ptsz->UNWISE_dndz_file);
       class_read_string("UNWISE_fdndz_file",ptsz->UNWISE_dndz_file);
       // class_read_string("path_to_class",ptsz->path_to_class);
-      class_read_string("SO_thetas_file",ptsz->SO_thetas_file);
-      class_read_string("SO_skyfracs_file",ptsz->SO_skyfracs_file);
-      class_read_string("SO_ylims_file",ptsz->SO_ylims_file);
+      class_read_string("sz_selection_function_thetas_file",ptsz->SO_thetas_file);
+      class_read_string("sz_selection_function_skyfracs_file",ptsz->SO_skyfracs_file);
+      class_read_string("sz_selection_function_ylims_file",ptsz->SO_ylims_file);
 
       class_read_string("append_name_trispectrum_ref",ptsz->append_name_trispectrum_ref);
       class_read_string("path to reference trispectrum for likelihood code",ptsz->path_to_ref_trispectrum_for_cobaya);
