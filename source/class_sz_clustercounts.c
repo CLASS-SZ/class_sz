@@ -79,7 +79,7 @@ int szcount_init(struct background * pba,
 int szcounts_free(struct szcount * pcsz,struct tszspectrum * ptsz)
 {
   if (pcsz->has_sz_counts == _TRUE_){
-  free(pcsz->redshift);
+  // free(pcsz->redshift);
   int index_z;
   for (index_z=0;index_z<pcsz->Nbins_z;index_z++){
     free(pcsz->dNdzdy_theoretical[index_z]);
@@ -2689,7 +2689,7 @@ int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount *
 
   ptsz->has_completeness = pcsz->has_completeness;
 // read_sz_catalog(ptsz);
-  //pcsz->nzSZ = 20.; //cosmomc settings
+
   //pcsz->size_logM = 105; //cosmomc settings
 
   //pcsz->rho_m_at_z = ptsz->Omega_m_0*ptsz->Rho_crit_0*pow((1.+pcsz->redshift_for_dndm),3);
@@ -2820,7 +2820,7 @@ if (ptsz->sz_verbose>1)
 printf("allocated memory for szcounts ffts.\n");
   }
 
-  class_alloc(pcsz->redshift,sizeof(double)*pcsz->nzSZ,pcsz->error_message);
+  // class_alloc(pcsz->redshift,sizeof(double)*pcsz->nzSZ,pcsz->error_message);
   // checked
 
 

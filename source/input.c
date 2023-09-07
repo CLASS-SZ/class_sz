@@ -1754,8 +1754,8 @@ int input_read_parameters(
       class_read_int("damping_1h_term",ptsz->damping_1h_term);
 
 
-      class_read_int("n_m_dndlnM",ptsz->n_m_dndlnM);
-      class_read_int("n_z_dndlnM",ptsz->n_z_dndlnM);
+
+
 
       //Redshift limits for the integration
       class_read_double("z_min",ptsz->z1SZ);
@@ -1778,9 +1778,13 @@ int input_read_parameters(
       class_read_double("csat_over_cdm",ptsz->csat_over_cdm);
 
 
-      //Array size
+      //for tabulation of sigma(m,z)
       class_read_int("ndim_redshifts",ptsz->n_arraySZ);//number of z in the interpolation for sigma
-      class_read_int("n_arraySZ_for_integral",ptsz->n_arraySZ_for_integral);//number of z in the integration
+      ptsz->n_z_dndlnM = ptsz->n_arraySZ;
+      // for tabulation of hmf:
+      class_read_int("n_z_dndlnM",ptsz->n_z_dndlnM);
+
+      // class_read_int("n_arraySZ_for_integral",ptsz->n_arraySZ_for_integral);//number of z in the integration
 
       // class_read_int("n_m_matter_density_profile",ptsz->n_m_matter_density_profile);
       // printf("%d \n",ptsz->n_m_matter_density_profile);
@@ -1910,8 +1914,12 @@ int input_read_parameters(
       class_read_double("C_ym",ptsz->C_ym);
       class_read_double("m_pivot_ym_[Msun]",ptsz->m_pivot_ym);
 
-      //For the computation of sigma2
+      //For the tabulation of sigma2
       class_read_int("ndim_masses",ptsz->ndimSZ);
+      ptsz->n_m_dndlnM = ptsz->ndimSZ;
+
+      // for the tabulation of hmf itself
+      class_read_int("n_m_dndlnM",ptsz->n_m_dndlnM);
 
       class_read_int("use_class_sz_fast_mode",ptsz->use_class_sz_fast_mode);
 
