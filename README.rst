@@ -42,11 +42,20 @@ CLASS_SZ's outputs are regularly cross-checked with other CMBxLSS codes, such as
 
 - `HaloGen <https://github.com/EmmanuelSchaan/HaloGen/tree/master>`_,
 
-- `yxg <https://github.com/nikfilippas/yxg>`_,
-
-- `halomodel_cib_tsz_cibxtsz <https://github.com/abhimaniyar/halomodel_cib_tsz_cibxtsz>`_.
+- `yxg <https://github.com/nikfilippas/yxg>`_.
 
 
+.. contents:: Table of Contents
+
+Tutorials
+--------------
+
+
+The tutorial notebooks can be found at:
+
+https://github.com/CLASS-SZ/notebooks
+
+These notebooks along with the paper (link) constitute the documentation.
 
 
 
@@ -181,22 +190,26 @@ Python Wrapper (Tensorflow and Cosmopower Dependency)
 
 Since recently we have implemented emulators in classy_sz, now it has an extra-dependency to tensorflow through cosmopower.
 
-1. Install tensoflow first (see below for Mac M1 specific issues).
-2. Then install cosmopower (https://alessiospuriomancini.github.io/cosmopower/installation/). Note that the needed tensorflow version may not be the lattest, see the requirements (https://github.com/alessiospuriomancini/cosmopower/blob/main/requirements.txt). 
-3. Clone the https://github.com/cosmopower-organization/notebooks repo.
-4. Open notebooks/get_quantities_cosmopower.ipynb notebook and follow the instructions there to get the cosmopower emulators.
-5. Compile the fast python wrapper:
+#. Install tensorflow first (see below for Mac M1 specific issues). 
+#. Then install cosmopower (https://alessiospuriomancini.github.io/cosmopower/installation/).
+#. Clone the https://github.com/cosmopower-organization/notebooks repo.
+#. Open notebooks/get_quantities_cosmopower.ipynb notebook and follow the instructions there to get the cosmopower emulators.
+
+#. In ``class_sz/python/classy_szfast/classy_szfast/config.py``, change this line: 
+
+  .. code-block::
+    path_to_cosmopower_organization = '/path/to/cosmopower-organization/'
+
+  so it matches the location of your cosmopower-organization repository where you have stored the emulators generated in ``get_quantities_cosmopower.ipynb``.
+#. Compile the fast python wrapper:
+
   $ cd python/classy_szfast
 
   $ pip install -e .
 
 (might need to change the path there.
-In class_sz/python/classy_szfast/classy_szfast/config.py:
-change this line:
-path_to_cosmopower_organization = '/path/to/cosmopower-organization/'
-This path needs to be adapted so it matches the location of your cosmopower-organization repository where you have stored the emulators generetaed in get_quantities_cosmopower.ipynb. )
-
-6. Finally compile the python wrapper:
+This path needs to be adapted  )here.
+ Finally compile the python wrapper: 
   $ cd python
 
   $ pip install -e .
@@ -278,6 +291,17 @@ And also make sure you do:
 
 if the previous modifs were not enough.
 
+Compiler - GCC version
+------------------------------
+
+The current gcc version used in the makefile is gcc-11. But this  can be changed easily to any gcc version that is available to you.
+There are two modifications:
+
+1) Line 20 of Makefile: ``CC = gcc-XX`` (where XX=11 in our case.)
+
+2) Line 12 of python/setup.py: replace ``gcc-11`` with, e.g., ``gcc-XX``.
+
+
 MacOS problem with OpenMP
 ------------------------------
 
@@ -295,25 +319,33 @@ New Mac OS with M1 chip
 
 We advise installing fftw, gsl, openmp with anaconda, i.e., conda forge etc..
 
-LD_LIBRARY_PATH becomes DYLD_LIBRARY_PATH, hence, export with, e.g.,:
+``LD_LIBRARY_PATH`` becomes ``DYLD_LIBRARY_PATH``, hence, export with: 
 
-DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/anaconda3/lib
-export DYLD_LIBRARY_PATH
+    DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/anaconda3/lib
+
+    export DYLD_LIBRARY_PATH
 
 
-In Makefile:
 
-CC = clang
-PYTHON ?= /set/path/to/anaconda3/python
-OPTFLAG = -O4 -ffast-math # dont use: -arch x86_64
-OMPFLAG   = -Xclang -fopenmp
-LDFLAG += -lomp
-INCLUDES =  -I../include -I/usr/local/include/ -I/path/to/anaconda3/include/
-$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/path/to/anaconda3/lib/ -lgsl -lgslcblas -lfftw3 -lm
+In Makefile: 
+
+    CC = clang
+
+    PYTHON ?= /set/path/to/anaconda3/python
+
+    OPTFLAG = -O4 -ffast-math # dont use: -arch x86_64
+
+    OMPFLAG   = -Xclang -fopenmp
+
+    LDFLAG += -lomp
+
+    INCLUDES =  -I../include -I/usr/local/include/ -I/path/to/anaconda3/include/
+
+    $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/path/to/anaconda3/lib/ -lgsl -lgslcblas -lfftw3 -lm
 
 In setup.py:
 
-extra_link_args=['-lomp','-lgsl','-lfftw3','-lgslcblas'])
+    extra_link_args=['-lomp','-lgsl','-lfftw3','-lgslcblas'])
 
 Tensorflow on mac M1
 ----------------------
@@ -321,25 +353,7 @@ Tensorflow on mac M1
 To install the new version of class_sz, you will need tensorflow (needed for the cosmopower emulators). On M1/M2 make sure, you have the arch64 version of conda (if not, you need to remove your entire conda and install the arch64 version for Apple sillicon).
 
 This video might be helpful https://www.youtube.com/watch?v=BEUU-icPg78
-Then you can follow standard Tensorflow installation recipe for M1, e.g., https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706 or https://developer.apple.com/forums/thread/697846 .
-
-Compiler - GCC version
-------------------------------
-
-The gcc copiler can be changed easily to any gcc version that is available to you.
-There are two modifications:
-
-1) Line 20 of Makefile: CC = gcc-XX (where XX=11 in our case.)
-
-2) Line 12 of python/setup.py: replace 'gcc-11' with, e.g., 'gcc-XX'.  
-
-
-Pre M1 Mac  
-----------------------  
-See Makefile_preM1mac for an example makefile for older Macs (without the M1 chip). Some key points include adding paths involving libomp to LDFLAG and INCLUDES.
-In python/setup.py, you may also want to modify the extra_link_args list to contain '-lomp' instead of '-lgomp' and add the libomp library path as well to that list. 
-For example, extra_link_args=['-lomp', '-lgsl','-lfftw3','-lgslcblas', '-L/usr/local/opt/libomp/lib/'].  
-
+Then you can follow standard Tensorflow installation recipe for M1, e.g., https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706 or https://developer.apple.com/forums/thread/697846 . 
 
 
 

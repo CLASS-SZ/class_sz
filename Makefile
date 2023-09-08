@@ -20,11 +20,11 @@ vpath .base build
 ########################################################
 
 # your C compiler:
-# CC       = gcc-12
+# CC       = gcc-11
 # on Mac M1:
-CC       = /usr/bin/clang
+# CC       = /usr/bin/clang
 
-#CC       = gcc  -Wunused-variable
+CC       = gcc  -Wunused-variable
 #CC       = icc
 #CC       = pgcc
 
@@ -50,9 +50,9 @@ OPTFLAG = -O3 #-ffast-math #-ffast-math #-arch x86_64
 #OPTFLAG = -fast
 
 # your openmp flag (comment for compiling without openmp)
-#OMPFLAG   = -fopenmp
+OMPFLAG   = -fopenmp
 # on Mac M1
-OMPFLAG   = -Xclang -fopenmp
+# OMPFLAG   = -Xclang -fopenmp
 #OMPFLAG   = -mp -mp=nonuma -mp=allcores -g
 #OMPFLAG   = -openmp
 
@@ -61,7 +61,7 @@ CCFLAG = -g -fPIC
 LDFLAG = -g -fPIC
 
 #on Mac M1
-LDFLAG += -lomp
+# LDFLAG += -lomp
 
 # leave blank to compile without HyRec, or put path to HyRec directory
 # (with no slash at the end: e.g. hyrec or ../hyrec)
@@ -83,7 +83,8 @@ CCFLAG += -D__CLASSDIR__='"$(MDIR)"'
 # where to find include files *.h
 #INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/gsl-2.6/include/
 # INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/miniconda/include
-INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/opt/miniconda3/include/
+INCLUDES =  -I../include -I/usr/local/include/ 
+# INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/opt/miniconda3/include/
 # INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/opt/anaconda3/include -I/opt/homebrew/include
 
 # automatically add external programs if needed. First, initialize to blank.
@@ -165,8 +166,9 @@ libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
 
 class_sz: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS_SZ)
 	#$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm -L/home/runner/work/SOLikeT/SOLikeT/gsl-2.6/lib -lgsl -lgslcblas
-	 # $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/Users/boris/miniconda/lib -lgsl -lgslcblas -lfftw3 -lm
-	 $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class_sz $(addprefix build/,$(notdir $^)) -lgsl -lgslcblas -lfftw3 -lm -L/Users/boris/opt/miniconda3/lib
+	$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -lgsl -lgslcblas -lfftw3 -lm
+	#  $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/Users/boris/miniconda/lib -lgsl -lgslcblas -lfftw3 -lm
+	#  $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class_sz $(addprefix build/,$(notdir $^)) -lgsl -lgslcblas -lfftw3 -lm -L/Users/boris/opt/miniconda3/lib
 
 	 # $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/Users/boris/opt/anaconda3/lib -L/opt/homebrew/lib -lgsl -lgslcblas -lfftw3 -lm
 	 # $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -lgsl -lgslcblas -lm
