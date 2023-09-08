@@ -131,14 +131,14 @@ for mp in ['lcdm','mnu','neff','wcdm','ede']:
     cp_pkl_nn[mp] = cosmopower_NN(restore=True,
                               restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKL'])
 
-    if (mp == 'lcdm') and (dofftlog_alphas == True):
-        cp_pkl_fftlog_alphas_real_nn[mp] = cosmopower_PCAplusNN(restore=True,
-                                 restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKLFFTLOG_ALPHAS_REAL']
-                                 )
-        cp_pkl_fftlog_alphas_imag_nn[mp] = cosmopower_PCAplusNN(restore=True,
-                                 restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKLFFTLOG_ALPHAS_IMAG']
-                                 )
-        cp_pkl_fftlog_alphas_nus[mp] = np.load(path_to_emulators + 'PK/PKL_FFTLog_alphas_nu_v1.npz')
+    # if mp == 'lcdm':
+    #     cp_pkl_fftlog_alphas_real_nn[mp] = cosmopower_PCAplusNN(restore=True,
+    #                              restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKLFFTLOG_ALPHAS_REAL']
+    #                              )
+    #     cp_pkl_fftlog_alphas_imag_nn[mp] = cosmopower_PCAplusNN(restore=True,
+    #                              restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKLFFTLOG_ALPHAS_IMAG']
+    #                              )
+    #     cp_pkl_fftlog_alphas_nus[mp] = np.load(path_to_emulators + 'PK/PKL_FFTLog_alphas_nu_v1.npz')
     cp_der_nn[mp] = cosmopower_NN(restore=True,
                               restore_filename=path_to_emulators + 'derived-parameters/' + emulator_dict[mp]['DER'])
 
