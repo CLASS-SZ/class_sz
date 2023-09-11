@@ -27174,7 +27174,7 @@ else{
                      }
 }
 
-if (isnan(y) || isinf(y)){
+if (isnan(y) || isinf(y) || (y<=0)){
   // printf("nan or inf in get_szcountsz_sigma_at_theta_in_patch at theta  = %.5e and idpatch = %d\n",
   //       theta, index_patches);
   // printf("in this patch:\n");
