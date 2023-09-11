@@ -98,6 +98,12 @@ class_sz_ptsz_parameter(n_k_pressure_profile_2h,int,50)
 class_sz_ptsz_parameter(n_m_pressure_profile,int,30)
 class_sz_ptsz_parameter(n_z_pressure_profile,int,30)
 
+class_sz_ptsz_parameter(n_k_custom1_profile,int,30)
+class_sz_ptsz_parameter(n_m_custom1_profile,int,60)
+class_sz_ptsz_parameter(n_z_custom1_profile,int,60)
+
+class_sz_ptsz_parameter(array_custom1_redshift_kernel_n_z,int,1000)
+
 class_sz_ptsz_parameter(n_z_psi_b1g,int,50)
 class_sz_ptsz_parameter(n_l_psi_b1g,int,50)
 
@@ -200,6 +206,9 @@ class_sz_ptsz_parameter(fstar_ms,double,0.)
 
 class_sz_ptsz_parameter(x_min_matter_density_fftw,double,1e-5)
 class_sz_ptsz_parameter(x_max_matter_density_fftw,double,1e2)
+
+class_sz_ptsz_parameter(x_min_custom1_fftw,double,1e-5)
+class_sz_ptsz_parameter(x_max_custom1_fftw,double,1e2)
 
 class_sz_ptsz_parameter(x_min_gas_density_fftw,double,1e-5)
 class_sz_ptsz_parameter(x_max_gas_density_fftw,double,1e2)

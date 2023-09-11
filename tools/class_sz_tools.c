@@ -1,5 +1,6 @@
 # include "class_sz.h"
 # include "class_sz_tools.h"
+# include "class_sz_custom_profiles.h"
 # include "Patterson.h"
 # include "r8lib.h"
 #include <gsl/gsl_errno.h>
@@ -5249,9 +5250,9 @@ double integrand_gas_pressure_profile_2h(double lnM_halo, void *p){
       // (Xh is the primodial hydrogen mass fraction)
       // more accurate version (see explanation below):
       // in units of Mpc^-1*micro Kelvins
-      double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283.2980000259841/0.5176*V->pba->T_cmb/2.725;
+      // double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283.2980000259841/0.5176*V->pba->T_cmb/2.725;
 
-      conv_pe_to_y =  sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb // here Tcmb is in muK
+      conv_pe_to_y =  V->ptsz->sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb // here Tcmb is in muK
                        /50. // to cancel the factor 50 above 50eV/cm^3
                        /V->pba->T_cmb
                        // *pressure_normalisation // what we get in get_pressure
@@ -8390,7 +8391,10 @@ ptsz->has_kSZ_kSZ_gal_1h = has_ksz_bkp;
 
 
 
-double get_gas_pressure_profile_at_k_m_z(double k_asked, double m_asked, double z_asked, struct tszspectrum * ptsz){
+double get_gas_pressure_profile_at_k_m_z(double k_asked,
+                                         double m_asked,
+                                         double z_asked,
+                                         struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
   double k = log(k_asked);
@@ -8442,6 +8446,155 @@ double get_gas_pressure_profile_at_k_m_z(double k_asked, double m_asked, double 
 
 
 }
+
+
+
+// Tabulate 2D Fourier transform of custom1 on a [ln1pz - ln_M - ln_k] grid
+int tabulate_custom1_profile_fft(struct background * pba,
+                                 struct tszspectrum * ptsz){
+
+
+ int n_k = ptsz->n_k_custom1_profile;
+ int n_m = ptsz->n_m_custom1_profile;
+ int n_z = ptsz->n_z_custom1_profile;
+ int index_m_z_tab[n_m][n_z];
+
+
+int index_k;
+int index_m;
+int index_z;
+
+int index_m_z = 0;
+
+
+for (index_z=0;
+     index_z<n_z;
+     index_z++)
+{
+
+
+for (index_m=0;
+     index_m<n_m;
+     index_m++){
+
+  index_m_z_tab[index_m][index_z] = index_m_z;
+  index_m_z += 1;
+}
+
+     }
+
+
+//Parallelization of profile computation
+/* initialize error management flag */
+
+int abort;
+double tstart, tstop;
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,\
+ptsz,pba,index_m_z_tab)\
+private(tstart, tstop,index_k,index_z,index_m,index_m_z) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+#pragma omp for schedule (dynamic)
+for (index_z=0;
+     index_z<n_z;
+     index_z++){
+#pragma omp flush(abort)
+
+
+
+
+double z = exp(ptsz->array_custom1_profile_ln_1pz[index_z])-1.;
+
+for (index_m=0;
+     index_m<n_m;
+     index_m++){
+
+  double m = exp(ptsz->array_custom1_profile_ln_m[index_m]);
+
+  index_m_z  = index_m_z_tab[index_m][index_z];
+
+  int ix;
+  double x[n_k], Px[n_k];
+
+
+
+  double x_out = ptsz->x_out_custom1;
+
+
+for (ix=0; ix<n_k; ix++){
+  x[ix] = exp(ptsz->array_custom1_profile_ln_x[ix]);
+  if (x[ix]>x_out){
+      Px[ix] = 0.;
+    }
+  else{
+    Px[ix] = get_custom1_profile_at_x_m_z(x[ix],m,z,ptsz);
+    }
+  }
+
+  double kp[n_k], Pkp[n_k];
+    // pk2xi(N,k,Pk1,rp,xi1,ptsz);
+  /* Compute the function
+   *   \xi_l^m(r) = \int_0^\infty \frac{dk}{2\pi^2} k^m j_l(kr) P(k)
+   * Note that the usual 2-point correlation function xi(r) is just xi_0^2(r)
+   * in this notation.  The input k-values must be logarithmically spaced.  The
+   * resulting xi_l^m(r) will be evaluated at the dual r-values
+   *   r[0] = 1/k[N-1], ..., r[N-1] = 1/k[0]. */
+  //void fftlog_ComputeXiLM(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[]);
+  fftlog_ComputeXiLMsloz(0, 2, n_k, x, Px, kp, Pkp,ptsz);
+
+
+
+  for (index_k=0;
+       index_k<n_k;
+       index_k++)
+  {
+
+
+  ptsz->array_custom1_profile_ln_k[index_k] = log(kp[index_k]);
+
+  double  result_fft = 2.*_PI_*_PI_*Pkp[index_k];
+
+  ptsz->array_custom1_profile_u_at_lnk_lnm_ln1pz[index_k][index_m_z] = log(result_fft);
+
+  } // k loop
+
+} // m loop
+
+
+} // z loop
+
+#ifdef _OPENMP
+  tstop = omp_get_wtime();
+  if (ptsz->sz_verbose > 0)
+    printf("In %s: time spent in tab fft custom1 profile parallel region (loop over z's) = %e s for thread %d\n",
+           __func__,tstop-tstart,omp_get_thread_num());
+#endif
+
+}
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+return _SUCCESS_;
+
+                                      }
+
+
 
 
 // Tabulate 2D Fourier transform of pressure profile on a [z - ln_M - ln_k] grid
@@ -8826,8 +8979,8 @@ int tabulate_gas_pressure_profile_B12(struct background * pba,
  class_alloc(ptsz->array_pressure_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
 
  // array of masses:
- double ln_m_min = log(1e8);
- double ln_m_max = log(1e17);
+ double ln_m_min = log(ptsz->M1SZ);
+ double ln_m_max = log(ptsz->M2SZ);
 
 
  class_alloc(ptsz->array_pressure_profile_ln_m,sizeof(double *)*n_m,ptsz->error_message);
@@ -13578,6 +13731,14 @@ if(
 ||((V->ptsz->has_lens_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_lens_lens_hf))
 ){
 double Wg = radial_kernel_W_cmb_lensing_at_z(z,V->pvectsz,V->pba,V->ptsz);
+result *= pow(Wg,2.);
+}
+
+
+if(
+  ((V->ptsz->has_custom1_custom1_1h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_custom1_1h))
+){
+double Wg = get_radial_kernel_W_custom1_at_z(z,V->ptsz);
 result *= pow(Wg,2.);
 }
 

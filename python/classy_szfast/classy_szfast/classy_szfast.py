@@ -59,7 +59,7 @@ class Class_szfast(object):
         self.cszfast_ldim = 20000 # used for the cls arrays
 
         self.cszfast_pk_grid_nz = 100 # has to be same as narraySZ, i.e., ndim_redshifts; it is setup hereafter if ndim_redshifts is passed
-        self.cszfast_pk_grid_zmax = 5.
+        self.cszfast_pk_grid_zmax = 5. # current max z of our pk emulators (sept 23)
         self.cszfast_pk_grid_z = np.linspace(0.,self.cszfast_pk_grid_zmax,self.cszfast_pk_grid_nz)
         self.cszfast_pk_grid_ln1pz = np.log(1.+self.cszfast_pk_grid_z)
 
@@ -314,7 +314,7 @@ class Class_szfast(object):
                         **params_values_dict):
         params_values = params_values_dict.copy()
         k = self.cszfast_pk_grid_k
-        self.cszfast_pk_grid_z
+        # self.cszfast_pk_grid_z
         # print(self.cszfast_pk_grid_pk,np.shape(self.cszfast_pk_grid_pk))
         P = self.cszfast_pk_grid_pk
         var = P.copy()
@@ -352,6 +352,12 @@ class Class_szfast(object):
         # else:
         #     return 0
         return 0
+
+    # def custom1_W(self,z,classy_sz,*params):
+    #     # e.g., we want (chi_star - chi)/chi
+    #     chi_star = classy_sz.chi_star()
+    #     chi = classy_sz.get_chi(z)
+    #     return (chi_star-chi)/chi_star
 
     def calculate_sigma8_and_der(self,
                          cosmo_model = 'lcdm',

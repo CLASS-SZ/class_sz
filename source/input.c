@@ -1840,6 +1840,8 @@ int input_read_parameters(
       class_read_double("x_inSZ",ptsz->x_inSZ);
       class_read_double("x_outSZ",ptsz->x_outSZ);
 
+      class_read_double("x_out_custom1",ptsz->x_out_custom1);
+
       class_read_double("delta_alpha",ptsz->delta_alpha);
       class_read_double("alpha_p",ptsz->alpha_p);
 
@@ -3408,6 +3410,17 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"custom1_custom1_1h") != NULL) ) {
+        ptsz->has_custom1_custom1_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+        ptsz->has_custom1 = _TRUE_;
+      }
+
       if ((strstr(string1,"tSZ_lens_1h") != NULL) ) {
         ptsz->has_tSZ_lens_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -4133,6 +4146,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
         ptsz->delta_def_matter_density = 2;
         ptsz->delta_def_electron_density = 2;
         ptsz->delta_def_electron_pressure = 2;
+        ptsz->delta_def_custom1 = 2;
       }
       // m200c is the default
       // if (ptsz->integrate_wrt_m200c == 1){
@@ -4151,6 +4165,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
         ptsz->delta_def_matter_density = 0;
         ptsz->delta_def_electron_density = 0;
         ptsz->delta_def_electron_pressure = 0;
+        ptsz->delta_def_custom1 = 0;
       }
 
       class_call(parser_read_string(pfc,"profile_for_matter_density",&string1,&flag1,errmsg),errmsg,errmsg);
@@ -4204,6 +4219,18 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
           ptsz->delta_def_matter_density=2;
         else  if ((strstr(string1,"vir") != NULL))
           ptsz->delta_def_matter_density=3;
+          }
+
+      class_call(parser_read_string(pfc,"delta_for_custom1",&string1,&flag1,errmsg),errmsg,errmsg);
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"200m") != NULL))
+          ptsz->delta_def_custom1=0;
+        else  if ((strstr(string1,"200c") != NULL))
+          ptsz->delta_def_custom1=1;
+        else  if ((strstr(string1,"500c") != NULL))
+          ptsz->delta_def_custom1=2;
+        else  if ((strstr(string1,"vir") != NULL))
+          ptsz->delta_def_custom1=3;
           }
 
 
@@ -6393,6 +6420,8 @@ int input_default_params(
   ptsz->x_out_truncated_nfw_profile = 1.; //the analytical one
   ptsz->x_out_truncated_nfw_profile_electrons = 1.; //the analytical one
   ptsz->x_out_truncated_nfw_profile_satellite_galaxies =1.;
+
+  ptsz->x_out_custom1 = 1.;
   // ptsz->x_out_nfw_profile = 2.5;
   ptsz->cvir_tau_profile_factor =  1.;
   ptsz->M1_prime_HOD_factor = 15.;
@@ -6730,7 +6759,7 @@ int input_default_params(
 
   ptsz->k_per_decade_for_tSZ = 128.; //#default 40
   ptsz->k_min_for_pk_in_tSZ = 1.e-4;
-  ptsz->k_max_for_pk_in_tSZ = 5.e1; 
+  ptsz->k_max_for_pk_in_tSZ = 5.e1;
 
   ptsz->z_for_pk_hm = 1.;
   ptsz->k_min_for_pk_hm = 1e-4;
@@ -6899,6 +6928,8 @@ int input_default_params(
   ptsz->has_bk_at_z_hf = _FALSE_;
   ptsz->has_lens_lens_1h = _FALSE_;
   ptsz->has_lens_lens_2h = _FALSE_;
+  ptsz->has_custom1 = _FALSE_;
+  ptsz->has_custom1_custom1_1h = _FALSE_;
   ptsz->has_tSZ_lens_1h = _FALSE_;
   ptsz->has_tSZ_lens_2h = _FALSE_;
   ptsz->has_kSZ_kSZ_gal_1h = _FALSE_;
@@ -7100,6 +7131,8 @@ int input_default_params(
   ptsz->index_md_gal_gal_lens_2h_fft = 113;
   ptsz->index_md_gal_gal_lens_3h_fft = 114;
 
+  ptsz->index_md_custom1_custom1_1h = 115;
+
 
   ptsz->integrate_wrt_mvir = 0;
   ptsz->integrate_wrt_m500c = 0;
@@ -7110,6 +7143,7 @@ int input_default_params(
   ptsz->delta_def_matter_density = 1;
   ptsz->delta_def_electron_density = 1;
   ptsz->delta_def_electron_pressure = 1;
+  ptsz->delta_def_custom1 = 1;
 
 
   ptsz->profile_matter_density = 0;

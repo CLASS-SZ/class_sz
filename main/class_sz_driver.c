@@ -117,9 +117,18 @@ int main(int argc, char **argv) {
   duration = ((double)end - start)/CLOCKS_PER_SEC;
 
   start = clock();
-  //BB: sz power spectrum module
-  if (szpowerspectrum_init(&ba,&th,&pt,&nl,&pm,&sp,&le,&tsz,&pr) == _FAILURE_) {
-    printf("\nError in class_sz main module\n");
+  //BB: class_sz tabulate module
+  if (class_sz_tabulate_init(&ba,&th,&pt,&nl,&pm,&sp,&le,&tsz,&pr) == _FAILURE_) {
+    printf("\nError in class_sz tabulate module\n");
+    return _FAILURE_;
+  }
+  end = clock();
+  duration = ((double)end - start)/CLOCKS_PER_SEC;
+
+  start = clock();
+  //BB: class_sz integrate module
+  if (class_sz_integrate_init(&ba,&th,&pt,&nl,&pm,&sp,&le,&tsz,&pr) == _FAILURE_) {
+    printf("\nError in class_sz integrate module\n");
     return _FAILURE_;
   }
   end = clock();
@@ -153,9 +162,9 @@ int main(int argc, char **argv) {
     return _FAILURE_;
   }
 
-  //BB: free sz power spectrum module
-  if (szpowerspectrum_free(&tsz) == _FAILURE_) {
-    printf("\n\nError in szpowerspectrum_free\n");
+  //BB: free class_sz module
+  if (class_sz_free(&tsz) == _FAILURE_) {
+    printf("\n\nError in class_sz_free\n");
     return _FAILURE_;
   }
 

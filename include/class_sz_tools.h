@@ -727,6 +727,9 @@ int tabulate_psi_b1g(struct background * pba,
                     struct perturbs * ppt,
                     struct tszspectrum * ptsz);
 
+int tabulate_custom1_profile_fft(struct background * pba,
+                                 struct tszspectrum * ptsz);
+
 int tabulate_gas_density_profile(struct background * pba,
                                  struct tszspectrum * ptsz);
 

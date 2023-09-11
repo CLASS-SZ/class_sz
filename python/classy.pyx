@@ -33,6 +33,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline as _spline
 # from mcfit.transforms import *
 import mcfit
 import time
+import classy_szfast
 from classy_szfast import Class_szfast
 
 
@@ -236,11 +237,11 @@ cdef class Class:
           return
         if self.tsz.use_class_sz_fast_mode == 1 and self.tsz.skip_class_sz == 0:
             szcounts_free(&self.csz,&self.tsz)
-            szpowerspectrum_free(&self.tsz)
+            class_sz_free(&self.tsz)
         if "szcount" in self.ncp: #BB: added for class_sz
             szcounts_free(&self.csz,&self.tsz)
-        if "szpowerspectrum" in self.ncp:  #BB: added for class_sz
-            szpowerspectrum_free(&self.tsz)
+        if "class_sz_integrate" in self.ncp:  #BB: added for class_sz
+            class_sz_free(&self.tsz)
         if "lensing" in self.ncp:
             lensing_free(&self.le)
         if "spectra" in self.ncp:
@@ -280,10 +281,13 @@ cdef class Class:
 
         """
         if "szcount" in level:  #BB: added for class_sz
-            if "szpowerspectrum" not in level:
-              level.append("szpowerspectrum")
-        if "szpowerspectrum" in level:  #BB: added for class_sz
-            if "lensing" not in level:
+            if "class_sz_integrate" not in level:
+              level.append("class_sz_integrate")
+        if "class_sz_integrate" in level:  #BB: added for class_sz
+            if "class_sz_tabulate" not in level:
+              level.append("class_sz_tabulate")
+        if "class_sz_tabulate" in level:  #BB: added for class_sz
+            if "class_sz_cosmo" not in level:
               level.append("class_sz_cosmo")
         if "class_sz_cosmo" in level:  #BB: added for class_sz
             if "lensing" not in level:
@@ -517,12 +521,19 @@ cdef class Class:
                 raise CosmoComputationError(self.tsz.error_message)
             self.ncp.add("class_sz_cosmo")
 
-        if "szpowerspectrum" in level:
-            if szpowerspectrum_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+        if "class_sz_tabulate" in level:
+            if class_sz_tabulate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
             &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.tsz.error_message)
-            self.ncp.add("szpowerspectrum")
+            self.ncp.add("class_sz_tabulate")
+
+        if "class_sz_integrate" in level:
+            if class_sz_integrate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+            &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
+                self.struct_cleanup()
+                raise CosmoComputationError(self.tsz.error_message)
+            self.ncp.add("class_sz_integrate")
 
 
         if "szcount" in level:
@@ -736,10 +747,28 @@ cdef class Class:
                       index_z_r += 1
             end = time.time()
             # print('end tabulate sigma:',end-start)
+            if class_sz_tabulate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+            &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
+                self.struct_cleanup()
+                raise CosmoComputationError(self.tsz.error_message)
+            #### fill in custom profile
+            if self.tsz.has_custom1 == 1:
+              # cszfast.calculate_custom1(**params_settings)
+              for index_z in range(self.tsz.array_custom1_redshift_kernel_n_z):
+                z = np.exp(self.tsz.array_custom1_redshift_kernel_ln1pz[index_z])-1.
+                self.tsz.array_custom1_redshift_kernel_W[index_z] = np.log(classy_szfast.custom1_W(z,self))
 
+              index_m_z = 0
+              for index_z in range(self.tsz.n_z_custom1_profile):
+                z =  np.exp(self.tsz.array_custom1_profile_ln_1pz[index_z])-1.
+                for index_m in range(self.tsz.n_m_custom1_profile):
+                  m = np.exp(self.tsz.array_custom1_profile_ln_m[index_m])
+                  for index_x in range(self.tsz.n_k_custom1_profile):
+                    x = np.exp(self.tsz.array_custom1_profile_ln_x[index_x])
+                    self.tsz.array_custom1_profile_u_at_lnx_lnm_ln1pz[index_x][index_m_z] = np.log(classy_szfast.custom1_ux(x,m,z,self))
+                  index_m_z += 1
 
-
-            if szpowerspectrum_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+            if class_sz_integrate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
             &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.tsz.error_message)
@@ -914,7 +943,11 @@ cdef class Class:
         #         index_z_r += 1
         # end = time.time()
         # print('end tabulate sigma:',end-start)
-        if szpowerspectrum_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+        if class_sz_tabulate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+        &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
+            self.struct_cleanup()
+            raise CosmoComputationError(self.tsz.error_message)
+        if class_sz_integrate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
         &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
             self.struct_cleanup()
             raise CosmoComputationError(self.tsz.error_message)
@@ -1756,6 +1789,22 @@ cdef class Class:
         self.compute(["thermodynamics"])
         return self.th.z_reio
 
+    def get_chi(self, z):
+        """
+        chi(z) in h-units
+
+        Return the comoving distance (exactly, the quantity defined by Class
+        as index_bg_ang_distance in the background module times (1+z) and multiplied by h)
+
+
+        Parameters
+        ----------
+        z : float
+                Desired redshift
+        """
+        return self.angular_distance(z)*(1.+z)*self.h()
+
+
     def angular_distance(self, z):
         """
         angular_distance(z)
@@ -2591,6 +2640,22 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_c1c1(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of kappa x kappa (lensing) power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['hf'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_custom1_custom1_1h[index])
+            cl['2h'].append(0.)
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+
     def cib_monopole(self):
         """
         (class_sz) Return the cib monopole as a function of frequency
@@ -2849,6 +2914,30 @@ cdef class Class:
         """
         return self.tsz.HSEbias
 
+    def Rho_crit_0(self):
+        """
+        (class_sz) Return the critical density in Mpc/h, Msun/h units
+        """
+        return self.tsz.Rho_crit_0
+
+    def chi_star(self):
+        """
+        (class_sz) Return the comoving distance to recombination in Mpc/h
+        """
+        return self.tsz.chi_star
+
+    def delta_def_custom1(self):
+        """
+        (class_sz) Return the overdensity definition for custom1 profile
+        """
+        return self.tsz.delta_def_custom1
+
+    def x_out_custom1(self):
+        """
+        (class_sz) Return the truncation for custom1 profile, r_cut = x_out*r_delta
+        """
+        return self.tsz.x_out_custom1
+
     def M1SZ(self):
         """
         (SZ) Return the lower mass bound
@@ -2991,6 +3080,31 @@ cdef class Class:
     def get_dydzdlnm_at_z_and_m(self,z,m,l=0):
         return get_dyldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
 
+    def get_c_delta_at_m_and_z(self,m,z,delta_def):
+        if delta_def == 0:
+          c_delta = self.get_c200m_at_m_and_z(m,z)
+        if delta_def == 1:
+          c_delta = self.get_c200c_at_m_and_z(m,z)
+        if delta_def == 2:
+          c_delta = self.get_c500c_at_m_and_z(m,z)
+        if delta_def == 3:
+          c_delta = self.get_cvir_of_mvir_at_z(m,z)
+        return c_delta
+
+    def get_delta_from_delta_def_at_z(self,delta_def,z):
+        if delta_def == 0:
+          Omega_m = self.get_Omega_m_at_z(z)
+          delta = 200.*Omega_m
+        if delta_def == 1:
+          delta = 200.
+        if delta_def == 2:
+          delta = 500.
+        if delta_def == 3:
+          Omega_m = self.get_Omega_m_at_z(z)
+          Delta_c = self.get_Delta_c_of_Omega_m(Omega_m)
+          delta = Delta_c
+        return delta
+
     def get_r_delta_of_m_delta_at_z(self,delta,m_delta,z):
         return (m_delta*3./4./np.pi/delta/self.get_rho_crit_at_z(z))**(1./3.)
 
@@ -3002,6 +3116,15 @@ cdef class Class:
 
     def get_m_to_xout_at_z_and_m(self,z_asked,m_asked):
         return get_m_to_xout_at_z_and_m(z_asked,m_asked,&self.tsz)
+
+    def get_c200m_at_m_and_z(self,m,z):
+        return get_c200m_at_m_and_z(m,z,&self.ba,&self.tsz)
+
+    def get_c200c_at_m_and_z(self,m,z):
+        return get_c200c_at_m_and_z(m,z,&self.ba,&self.tsz)
+
+    def get_c500c_at_m_and_z(self,m,z):
+        return get_c500c_at_m_and_z(m,z,&self.ba,&self.tsz)
 
     def get_c200m_at_m_and_z_D08(self,M,z):
         return get_c200m_at_m_and_z_D08(M,z)
@@ -3210,7 +3333,7 @@ cdef class Class:
     def get_cvir_of_mvir_at_z(self,m_asked,z):
         return evaluate_cvir_of_mvir(m_asked,z,&self.tsz,&self.ba)
 
-    def get_rvir_of_mvir_at_z(self,m_asked,z):
+    def get_Omega_m_at_z(self,z):
         cdef double tau
         cdef int last_index #junk
         cdef double * pvecback
@@ -3225,6 +3348,10 @@ cdef class Class:
 
         omega = pvecback[self.ba.index_bg_Omega_m]
         free(pvecback)
+        return omega
+
+    def get_rvir_of_mvir_at_z(self,m_asked,z):
+        omega = self.get_Omega_m_at_z(z)
         Delta_c = self.get_Delta_c_of_Omega_m(omega)
         rhoc =  self.get_rho_crit_at_z(z)
         return evaluate_rvir_of_mvir(m_asked,Delta_c,rhoc,&self.tsz);
@@ -3345,6 +3472,16 @@ cdef class Class:
 
     def get_radial_kernel_W_galaxy_lensing_at_z(self,double z):
         return radial_kernel_W_galaxy_lensing_at_z(z,&self.tsz)
+
+    def get_radial_kernel_W_custom1_at_z(self,double z):
+        return get_radial_kernel_W_custom1_at_z(z,&self.tsz)
+
+
+    def get_custom1_profile_at_x_m_z(self,double x, double m, double z):
+        return get_custom1_profile_at_x_m_z(x,m,z,&self.tsz)
+
+    def get_custom1_profile_at_k_m_z(self,double k, double m, double z):
+        return get_custom1_profile_at_k_m_z(k,m,z,&self.tsz)
 
     def get_ng_bar_at_z(self,double z):
         return evaluate_mean_galaxy_number_density_at_z(z, &self.tsz)

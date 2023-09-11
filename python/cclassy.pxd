@@ -248,6 +248,8 @@ cdef extern from "class.h":
         double szunbinned_loglike
         double Sigma8OmegaM_SZ
         int nlSZ
+        double chi_star
+        double Rho_crit_0
         double z1SZ
         double z2SZ
         int n_arraySZ
@@ -282,6 +284,8 @@ cdef extern from "class.h":
         double Omega_m_0
         double Omega_r_0
         double f_free
+        int delta_def_custom1
+        double x_out_custom1
         int  ndimSZ
         int nbins_M
         int n_k_for_pk_hm
@@ -366,6 +370,7 @@ cdef extern from "class.h":
         double * cl_gal_lens_1h
         double * cl_gal_lens_2h
         double * cl_lens_lens_1h
+        double * cl_custom1_custom1_1h
         double * cl_lens_lens_2h
         double * cl_lens_lens_hf
         double *** cl_cib_cib_1h
@@ -430,6 +435,17 @@ cdef extern from "class.h":
         double * array_lnk
         double * array_pknl_at_z_and_k
         double * array_pkl_at_z_and_k
+        double * array_custom1_redshift_kernel_W
+        double * array_custom1_redshift_kernel_ln1pz
+        int array_custom1_redshift_kernel_n_z
+        int n_z_custom1_profile
+        double * array_custom1_profile_ln_1pz
+        int n_m_custom1_profile
+        double * array_custom1_profile_ln_m
+        int n_k_custom1_profile
+        double * array_custom1_profile_ln_x
+        double ** array_custom1_profile_u_at_lnx_lnm_ln1pz
+        int has_custom1
         short has_tszspectrum
         short sz_verbose
         double bin_dlog10_snr_last_bin
@@ -559,7 +575,7 @@ cdef extern from "class.h":
     void thermodynamics_free(void*)
     void background_free(void*)
     void nonlinear_free(void*)
-    void szpowerspectrum_free(void*)
+    void class_sz_free(void*)
     void szcounts_free(void*,void*)
 
     cdef int _FAILURE_
@@ -576,7 +592,8 @@ cdef extern from "class.h":
     int transfer_init(void*,void*,void*,void*,void*,void*)
     int spectra_init(void*,void*,void*,void*,void*,void*,void*)
     int lensing_init(void*,void*,void*,void*,void*)
-    int szpowerspectrum_init(void*,void*,void*,void*,void*,void*,void*,void*,void*)
+    int class_sz_integrate_init(void*,void*,void*,void*,void*,void*,void*,void*,void*)
+    int class_sz_tabulate_init(void*,void*,void*,void*,void*,void*,void*,void*,void*)
     int class_sz_cosmo_init(void*,void*,void*,void*,void*,void*,void*,void*,void*)
     int szcount_init(void*,void*,void*,void*,void*)
 
@@ -897,6 +914,9 @@ cdef extern from "class.h":
     double get_c200m_at_m_and_z_D08(double M, double z)
     double get_c200c_at_m_and_z_D08(double M, double z)
     double get_c200c_at_m_and_z_B13(double M, double z, void * ba, void * tsz)
+    double get_c200m_at_m_and_z(double M, double z, void * ba, void * tsz)
+    double get_c200c_at_m_and_z(double M, double z, void * ba, void * tsz)
+    double get_c500c_at_m_and_z(double M, double z, void * ba, void * tsz)
 
     double m_nfw(double x)
 
@@ -1127,3 +1147,16 @@ cdef extern from "class.h":
                              double m_asked,
                              void * tsz,
                              void * pba)
+
+    double get_radial_kernel_W_custom1_at_z(double z,
+                                            void * ptsz)
+
+    double get_custom1_profile_at_k_m_z(double k_asked,
+                                        double m_asked,
+                                        double z_asked,
+                                        void * ptsz)
+
+    double get_custom1_profile_at_x_m_z(double x_asked,
+                                        double m_asked,
+                                        double z_asked,
+                                        void * ptsz)

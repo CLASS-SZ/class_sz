@@ -95,6 +95,7 @@
 #define _lens_lensmag_1h_ ((ptsz->has_lens_lensmag_1h == _TRUE_) && (index_md == ptsz->index_md_lens_lensmag_1h))
 #define _lens_lensmag_hf_ ((ptsz->has_lens_lensmag_hf == _TRUE_) && (index_md == ptsz->index_md_lens_lensmag_hf))
 #define _lens_lens_1h_ ((ptsz->has_lens_lens_1h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_1h))
+#define _custom1_custom1_1h_ ((ptsz->has_custom1_custom1_1h == _TRUE_) && (index_md == ptsz->index_md_custom1_custom1_1h))
 #define _lens_lens_2h_ ((ptsz->has_lens_lens_2h == _TRUE_) && (index_md == ptsz->index_md_lens_lens_2h))
 #define _lens_lens_hf_ ((ptsz->has_lens_lens_hf == _TRUE_) && (index_md == ptsz->index_md_lens_lens_hf))
 #define _tSZ_gal_1h_ ((ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == ptsz->index_md_tSZ_gal_1h))
@@ -226,6 +227,7 @@ struct tszspectrum {
   double * cl_lens_lensmag_hf;
   double * cl_lens_lensmag_2h;
   double * cl_lens_lensmag_1h;
+  double * cl_custom1_custom1_1h;
   double * cl_lens_lens_1h;
   double * cl_lens_lens_2h;
   double * cl_tSZ_gal_1h;
@@ -317,7 +319,7 @@ struct tszspectrum {
   int delta_def_matter_density;
   int delta_def_electron_pressure;
   int delta_def_electron_density;
-
+  int delta_def_custom1;
 
 
   int delta_def_HI_pressure;
@@ -394,6 +396,7 @@ struct tszspectrum {
   int index_has_lensing;
   int index_has_cib;
   int index_has_isw;
+  int index_has_custom1;
 
   int index_has_vir;
   int index_has_500c;
@@ -881,6 +884,13 @@ struct tszspectrum {
   int index_integrand_id_lens_lens_1h_first;
   int index_integrand_id_lens_lens_1h_last;
 
+  int has_custom1;
+
+  int has_custom1_custom1_1h;
+  int index_md_custom1_custom1_1h;
+  int index_integrand_id_custom1_custom1_1h_first;
+  int index_integrand_id_custom1_custom1_1h_last;
+
   int has_lens_lens_2h;
   int index_md_lens_lens_2h;
   int index_integrand_id_lens_lens_2h_first;
@@ -1100,6 +1110,7 @@ struct tszspectrum {
   int  index_m1600m;
   int  index_m500c;
   int  index_mass_for_hmf;
+  int  index_mass_for_custom1;
   int  index_mass_for_galaxies;
   int  index_mass_for_cib;
   int  index_mass_for_matter_density;
@@ -1108,6 +1119,7 @@ struct tszspectrum {
   int  index_mass_for_HI_pressure;
   int  index_mass_for_HI_density;
   int  index_concentration_for_galaxies;
+  int  index_concentration_for_custom1;
   int  index_concentration_for_cib;
   int  index_concentration_for_matter_density;
   int  index_concentration_for_electron_pressure;
@@ -1116,6 +1128,7 @@ struct tszspectrum {
   int  index_concentration_for_HI_density;
   int  index_radius_for_galaxies;
   int  index_radius_for_cib;
+  int  index_radius_for_custom1;
   int  index_radius_for_matter_density;
   int  index_radius_for_electron_pressure;
   int  index_radius_for_electron_density;
@@ -1287,6 +1300,8 @@ double szcounts_ntot;
   double cvir_tau_profile_factor;
 
 
+  double x_out_custom1;
+
   double effective_galaxy_bias;
   double * effective_galaxy_bias_ngal;
 
@@ -1383,7 +1398,7 @@ double szcounts_ntot;
   double M2SZ_dndlnM;
 
 
-  int include_y_counterterms_in_yk; // switch for counter term yk 2h calculation for y-part only. 
+  int include_y_counterterms_in_yk; // switch for counter term yk 2h calculation for y-part only.
 
 
   double m_min_counter_terms;
@@ -1734,6 +1749,8 @@ double * steps_m;
   double Tcmb_gNU_at_150GHz;
   double Tcmb_gNU;
 
+  double sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb;
+
   double Rho_crit_0;
   double D_0;
   double D_z1SZ;
@@ -1902,6 +1919,14 @@ double * steps_m;
   double * array_ln_1pz_m500c_to_m200c;
   double * array_m500c_to_m200c_at_z_and_M;
 
+  double ** array_custom1_profile_u_at_lnk_lnm_ln1pz;
+  double ** array_custom1_profile_u_at_lnx_lnm_ln1pz;
+  double * array_custom1_profile_ln_k;
+  double * array_custom1_profile_ln_x;
+  double * array_custom1_profile_ln_m;
+  double * array_custom1_profile_ln_1pz;
+
+
   double ** array_pressure_profile_ln_p_at_lnk_lnm_z;
   double * array_pressure_profile_ln_k;
   double * array_pressure_profile_2h_ln_k;
@@ -1965,6 +1990,10 @@ double * steps_m;
 
   double * array_mean_galaxy_number_density;
   double ** array_mean_galaxy_number_density_ngal;
+
+
+  double * array_custom1_redshift_kernel_W;
+  double * array_custom1_redshift_kernel_ln1pz;
 
   double * array_mean_galaxy_bias;
 
@@ -2078,7 +2107,19 @@ int class_sz_cosmo_init(struct background * pba,
                          struct tszspectrum * ptsz,
                          struct precision * ppr);
 
-int szpowerspectrum_init(struct background * pba,
+int class_sz_tabulate_init(
+                          struct background * pba,
+                          struct thermo * pth,
+                          struct perturbs * ppt,
+                          struct nonlinear * pnl,
+                          struct primordial * ppm,
+                          struct spectra * psp,
+                          struct lensing * ple,
+                          struct tszspectrum * ptsz,
+                          struct precision * ppr
+                        );
+
+int class_sz_integrate_init(struct background * pba,
                          struct thermo * pth,
                          struct perturbs * ppt,
                          struct nonlinear * pnl,
@@ -2089,7 +2130,7 @@ int szpowerspectrum_init(struct background * pba,
                          struct precision * ppr);
 
 
-  int szpowerspectrum_free(struct tszspectrum *ptsz);
+  int class_sz_free(struct tszspectrum *ptsz);
 
 
   int compute_sz(struct background * pba,
@@ -2500,6 +2541,7 @@ double radial_kernel_W_galaxy_ngal_at_z(  int index_g,
                                           struct background * pba,
                                           struct tszspectrum * ptsz);
 
+// used for the linear bias cases.
 double radial_kernel_W_lensing_at_z(double * pvecback,
                                     double * pvectsz,
                                     struct background * pba,
@@ -2518,6 +2560,8 @@ double radial_kernel_W_cmb_lensing_at_z(double z,
                                         double * pvectsz,
                                         struct background * pba,
                                         struct tszspectrum * ptsz);
+
+
 
 double radial_kernel_W_galaxy_lensing_at_z(double z,
                                            // double * pvectsz,
