@@ -27114,6 +27114,8 @@ return theta;
 
 
 double get_szcountsz_sigma_at_theta_in_patch(double theta,int index_patches,struct tszspectrum *ptsz){
+
+double y;
 if (ptsz->use_skyaveraged_noise == 0){
 
     if (theta < ptsz->thetas[0]){
@@ -27123,24 +27125,24 @@ if (ptsz->use_skyaveraged_noise == 0){
         double th2 = ptsz->thetas[l2];
         double y1 = ptsz->ylims[index_patches][l1];
         double y2 = ptsz->ylims[index_patches][l2];
-        double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
-        return y1;
+        y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
         }
-    if (theta > ptsz->thetas[ptsz->nthetas-1]){
+    else if (theta > ptsz->thetas[ptsz->nthetas-1]){
         int l1 = ptsz->nthetas - 1;
         int l2 = ptsz->nthetas - 2;
         double th1 = ptsz->thetas[l1];
         double th2 = ptsz->thetas[l2];
         double y1 = ptsz->ylims[index_patches][l1];
         double y2 = ptsz->ylims[index_patches][l2];
-        double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
-        return y1;
+        y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
         }
 
-    return pwl_value_1d(ptsz->nthetas,
+    else{
+    y = pwl_value_1d(ptsz->nthetas,
                         ptsz->thetas,
                         ptsz->ylims[index_patches],
                         theta);
+                      }
 }
 else{
 
@@ -27151,25 +27153,39 @@ else{
       double th2 = ptsz->thetas[l2];
       double y1 = ptsz->sky_averaged_ylims[l1];
       double y2 = ptsz->sky_averaged_ylims[l2];
-      double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
-      return y1;
+      y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
+
       }
-    if (theta > ptsz->thetas[ptsz->nthetas-1]){
+    else if (theta > ptsz->thetas[ptsz->nthetas-1]){
       int l1 = ptsz->nthetas - 1;
       int l2 = ptsz->nthetas - 2;
       double th1 = ptsz->thetas[l1];
       double th2 = ptsz->thetas[l2];
       double y1 = ptsz->sky_averaged_ylims[l1];
       double y2 = ptsz->sky_averaged_ylims[l2];
-      double y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
-      return y1;
+      y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
     }
+  else{
   // for sky averaged sigma's:
-  return pwl_value_1d(ptsz->nthetas,
+  y =  pwl_value_1d(ptsz->nthetas,
                        ptsz->thetas,
                        ptsz->sky_averaged_ylims,
                        theta); // ~5% difference
+                     }
 }
+
+if (isnan(y) || isinf(y)){
+  // printf("nan or inf in get_szcountsz_sigma_at_theta_in_patch at theta  = %.5e and idpatch = %d\n",
+  //       theta, index_patches);
+  // printf("in this patch:\n");
+  // int idth;
+  // for (idth = 0; idth<ptsz->nthetas; idth++){
+  //   printf("th = %.5e ylim = %.5e\n",ptsz->thetas[idth],ptsz->ylims[index_patches][idth]);
+  // }
+  y = 1e300;
+}
+return y;
+
 }
 
 

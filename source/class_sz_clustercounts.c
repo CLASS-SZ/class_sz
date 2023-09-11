@@ -1991,7 +1991,12 @@ if (pcsz->has_completeness == 1){
           // double y2 = ptsz->ylims[index_patches][l2];
           // double y = y1 + (y2-y1)/(th2-th1)*(thp-th1);
 
+
           double y_interp = get_szcountsz_sigma_at_theta_in_patch(thp,index_patches,ptsz);;
+          // if((index_m == 235)&& (index_z == 5) && (index_patches == 49)){
+          //   printf("y_interp = %.5e thp = %.9e\n",y_interp, thp);
+          //   exit(0);
+          // }
 
           // double y_interp = pwl_value_1d(ptsz->nthetas,
           //                                ptsz->thetas,
@@ -2035,7 +2040,13 @@ if (pcsz->has_completeness == 1){
           }}
 
           else {
+
             c2 = erf_compl_nicola(yp,y,ptsz->sn_cutoff,y_min,y_max,ptsz->szcc_dof);
+            // if((index_m == 235)&& (index_z == 5) && (index_patches == 49)){
+            //   printf("c2 = %.5e yp = %.5e y = %.5e y_min = %..5e y_max = %.5e\n",
+            //           c2,yp,y,y_min,y_max);
+            //   exit(0);
+            // }
           }
 
 if (ptsz->use_skyaveraged_noise){
@@ -2044,6 +2055,13 @@ if (ptsz->use_skyaveraged_noise){
         }
 else{
      completeness_2d[index_m][index_z] += c2*ptsz->skyfracs[index_patches];///fsky;
+
+//      if((index_m == 235)&& (index_z == 5))   {
+// printf("c = %.5e index_m = %d index_z = %d skyfrac = %.5e idskyfrac  = %d\n",
+//     completeness_2d[index_m][index_z],
+//     index_m,index_z,ptsz->skyfracs[index_patches],index_patches);
+//     // exit(0);
+//     }
 }
           // printf("%d\n",index_patches);
 
@@ -2055,15 +2073,23 @@ else{
         index_m_z += 1;
 
         if (completeness_2d[index_m][index_z]>1.) completeness_2d[index_m][index_z] = 1.;
-        if (completeness_2d[index_m][index_z]<0.) completeness_2d[index_m][index_z] = 0.;
+        else if (completeness_2d[index_m][index_z]<=0.) completeness_2d[index_m][index_z] = 0.;
+        // else   {printf("c = %.5e index_m = %d index_z = %d nsteps_z = %d\n",
+        //         completeness_2d[index_m][index_z],
+        //         index_m,index_z,pcsz->nsteps_z);
+        //         // exit(0);
+        //         }
+                // printf("c = %.5e index_m = %d index_z = %d nsteps_z = %d\n",
+                //         completeness_2d[index_m][index_z],
+                //         index_m,index_z,pcsz->nsteps_z);
 
-        // double comp_sky_tot = 0.;
-        // for (index_patches =0;index_patches<ptsz->nskyfracs;index_patches++){
-        // }
-
-
+// if((index_m == 235)&& (index_z == 5)) exit(0);
       }//end m loop
+      // if (index_z == 5){
+      //   exit(0);
+      // }
     }//end z loop
+    // exit(0);
   }//end if sigmaM=0
 
   else {
