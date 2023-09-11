@@ -2651,10 +2651,69 @@ cdef class Class:
         cl['hf'] = []
         for index in range(self.tsz.nlSZ):
             cl['1h'].append(self.tsz.cl_custom1_custom1_1h[index])
-            cl['2h'].append(0.)
+            cl['2h'].append(self.tsz.cl_custom1_custom1_2h[index])
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_c1_lens(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of kappa x kappa (lensing) power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['hf'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_custom1_lens_1h[index])
+            cl['2h'].append(self.tsz.cl_custom1_lens_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+    def cl_c1_tSZ(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of kappa x kappa (lensing) power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['hf'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_custom1_tSZ_1h[index])
+            cl['2h'].append(self.tsz.cl_custom1_tSZ_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+    def cl_c1_gal(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of kappa x kappa (lensing) power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['hf'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_custom1_gal_1h[index])
+            cl['2h'].append(self.tsz.cl_custom1_gal_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+    def cl_c1_gallens(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of kappa x kappa (lensing) power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['hf'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_custom1_gallens_1h[index])
+            cl['2h'].append(self.tsz.cl_custom1_gallens_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
 
     def cib_monopole(self):
         """
@@ -2767,6 +2826,25 @@ cdef class Class:
             cl_y_cib[str(int(nu1))] = cl
         return cl_y_cib
 
+
+    def cl_custom1_cib(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of custom1 x cib power spectrum
+        """
+        cl_y_cib = {}
+
+        for id_nu1 in range(self.tsz.cib_frequency_list_num):
+            nu1 = self.tsz.cib_frequency_list[id_nu1]
+            cl = {}
+            cl['ell'] = []
+            cl['1h'] = []
+            cl['2h'] = []
+            for index in range(self.tsz.nlSZ):
+                cl['1h'].append(self.tsz.cl_custom1_cib_1h[id_nu1][index])
+                cl['2h'].append(self.tsz.cl_custom1_cib_2h[id_nu1][index])
+                cl['ell'].append(self.tsz.ell[index])
+            cl_y_cib[str(int(nu1))] = cl
+        return cl_y_cib
 
     def cl_tSZ_cib(self):
         """

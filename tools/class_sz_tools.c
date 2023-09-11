@@ -13536,6 +13536,12 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lens_2h))
  || ((V->ptsz->has_tSZ_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lensmag_2h))
  || ((V->ptsz->has_sz_m_y_y_2h == _TRUE_) && (index_md == V->ptsz->index_md_m_y_y_2h))
+ || ((V->ptsz->has_custom1_custom1_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_custom1_2h))
+ || ((V->ptsz->has_custom1_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_lens_2h))
+ || ((V->ptsz->has_custom1_tSZ_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_tSZ_2h))
+ || ((V->ptsz->has_custom1_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_gal_2h))
+ || ((V->ptsz->has_custom1_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_gallens_2h))
+ || ((V->ptsz->has_custom1_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_cib_2h))
  // || ((V->ptsz->has_pk_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_at_z_2h))
  // || ((V->ptsz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->ptsz->index_md_pk_gg_at_z_2h))
  // || ((V->ptsz->has_kSZ_kSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_2h))
@@ -13594,6 +13600,8 @@ if ( ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_au
 // galaxy radial kernel
 if  (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_1h))
   || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
+  || ((V->ptsz->has_custom1_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_gal_1h))
+  || ((V->ptsz->has_custom1_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_gal_2h))
   || ((V->ptsz->has_IA_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_IA_gal_2h))
   || ((V->ptsz->has_kSZ_kSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h))
   || ((V->ptsz->has_kSZ_kSZ_gal_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gal_1h_fft))
@@ -13701,6 +13709,8 @@ if (
     ||((V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
     ||((V->ptsz->has_lens_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_1h))
     ||((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
+    ||((V->ptsz->has_custom1_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_lens_1h))
+    ||((V->ptsz->has_custom1_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_lens_2h))
     ||((V->ptsz->has_tSZ_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lens_1h))
     ||((V->ptsz->has_tSZ_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lens_2h))
     ||((V->ptsz->has_gallens_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_lens_1h))
@@ -13737,9 +13747,26 @@ result *= pow(Wg,2.);
 
 if(
   ((V->ptsz->has_custom1_custom1_1h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_custom1_1h))
+||((V->ptsz->has_custom1_custom1_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_custom1_2h))
 ){
 double Wg = get_radial_kernel_W_custom1_at_z(z,V->ptsz);
 result *= pow(Wg,2.);
+}
+
+if(
+  ((V->ptsz->has_custom1_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_lens_1h))
+||((V->ptsz->has_custom1_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_lens_2h))
+||((V->ptsz->has_custom1_tSZ_1h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_tSZ_1h))
+||((V->ptsz->has_custom1_tSZ_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_tSZ_2h))
+||((V->ptsz->has_custom1_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_cib_1h))
+||((V->ptsz->has_custom1_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_cib_2h))
+||((V->ptsz->has_custom1_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_gal_1h))
+||((V->ptsz->has_custom1_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_gal_2h))
+||((V->ptsz->has_custom1_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_gallens_1h))
+||((V->ptsz->has_custom1_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_gallens_2h))
+){
+double Wg = get_radial_kernel_W_custom1_at_z(z,V->ptsz);
+result *= pow(Wg,1.);
 }
 
 // galaxy lensing lensing needs lensing kernel:
@@ -13749,14 +13776,16 @@ if (
     ||((V->ptsz->has_gal_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_2h))
     ||((V->ptsz->has_gallens_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_cib_1h))
     ||((V->ptsz->has_gallens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_cib_2h))
+    ||((V->ptsz->has_custom1_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_gallens_1h))
+    ||((V->ptsz->has_custom1_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_gallens_2h))
     ||((V->ptsz->has_tSZ_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gallens_1h))
     ||((V->ptsz->has_tSZ_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gallens_2h))
     ||((V->ptsz->has_gallens_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_lens_1h))
     ||((V->ptsz->has_gallens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_lens_2h))
-||((V->ptsz->has_kSZ_kSZ_gallens_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_1h_fft))
-||((V->ptsz->has_kSZ_kSZ_gallens_2h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_2h_fft))
-||((V->ptsz->has_kSZ_kSZ_gallens_3h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_3h_fft))
-||((V->ptsz->has_kSZ_kSZ_gallens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_hf))
+    ||((V->ptsz->has_kSZ_kSZ_gallens_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_1h_fft))
+    ||((V->ptsz->has_kSZ_kSZ_gallens_2h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_2h_fft))
+    ||((V->ptsz->has_kSZ_kSZ_gallens_3h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_3h_fft))
+    ||((V->ptsz->has_kSZ_kSZ_gallens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_hf))
 ){
 
 double Wg = radial_kernel_W_galaxy_lensing_at_z(z,//V->pvectsz,V->pba,
@@ -13841,12 +13870,14 @@ if (V->ptsz->use_maniyar_cib_model == 0){
 }
 
 
-if  (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_1h))
+if   (((V->ptsz->has_tSZ_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_1h))
     ||((V->ptsz->has_tSZ_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_2h))
     ||((V->ptsz->has_gal_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_1h))
-    ||((V->ptsz->has_gallens_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_cib_1h))
     ||((V->ptsz->has_gal_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_2h))
+    ||((V->ptsz->has_gallens_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_cib_1h))
     ||((V->ptsz->has_gallens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_cib_2h))
+    ||((V->ptsz->has_custom1_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_cib_1h))
+    ||((V->ptsz->has_custom1_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_custom1_cib_2h))
     ||((V->ptsz->has_lens_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_1h))
     ||((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
     ||((V->ptsz->has_cib_monopole == _TRUE_) && (index_md == V->ptsz->index_md_cib_monopole))
@@ -14421,6 +14452,253 @@ else{
 
 
   else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_cib_2h )){
+
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Phi' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('cib' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  r = r_m_1*r_m_2;
+                                     }
+
+
+
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_custom1_gallens_2h )){
+
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Phi' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('cib' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  r = r_m_1*r_m_2;
+                                     }
+
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_custom1_gal_2h )){
+
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Phi' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('cib' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  r = r_m_1*r_m_2;
+                                     }
+
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_custom1_tSZ_2h )){
+
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Phi' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('cib' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  r = r_m_1*r_m_2;
+                                     }
+
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_custom1_lens_2h )){
+
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('Phi' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_1 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('cib' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+ if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+   // printf("counter terms done r_m_2\n");
+ }
+
+
+  r = r_m_1*r_m_2;
+                                     }
+
+  else if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_custom1_cib_2h )){
 
   double r_m_1; // first part of redshift integrand
   double r_m_2; // second part of redshift integrand
@@ -17920,6 +18198,7 @@ else {
          // || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_em_at_z_2h)
          || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_HI_at_z_2h)
          || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
+         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_custom1_custom1_2h)
          || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
          || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
          || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)  && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
@@ -17962,6 +18241,7 @@ if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
  // || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_em_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_HI_at_z_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
+ || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_custom1_custom1_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
  || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
  || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)
