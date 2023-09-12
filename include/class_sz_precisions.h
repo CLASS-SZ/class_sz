@@ -70,7 +70,7 @@ class_sz_ptsz_parameter(fixed_c200c,double,7.)
 class_sz_ptsz_parameter(n_m_matter_density_profile,int,100)
 class_sz_ptsz_parameter(n_z_matter_density_profile,int,100)
 
-
+class_sz_ptsz_parameter(szcc_qtrunc,double,1.)
 class_sz_ptsz_parameter(szcounts_obsscatter,double,1.)
 
 class_sz_ptsz_parameter(szcounts_qmin_fft_padded,double,-100.)

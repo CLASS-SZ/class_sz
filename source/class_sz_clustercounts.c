@@ -1177,15 +1177,35 @@ double dlnm_tab = (lnm_tab_mmax-lnm_tab_mmin)/(ntab-1.);
 for (itab = 0;itab<ntab;itab++){
     lnm_tab[itab] = lnm_tab_mmin+itab*dlnm_tab;
     double mtab = exp(lnm_tab[itab]);
-    double ytab = get_y_at_m_and_z(mtab,z,ptsz,pba);
-    double thetatab = get_theta_at_m_and_z(mtab,z,ptsz,pba);
+
+
+    double m500c = 0.;
+    double m_ym = mtab;
+        if (ptsz->integrate_wrt_m200m == 1){
+          m500c = get_m200m_to_m500c_at_z_and_M(z,mtab,ptsz);
+        }
+        if (ptsz->integrate_wrt_m200c == 1){
+          m500c = get_m200c_to_m500c_at_z_and_M(z,mtab,ptsz);
+        }
+        //
+        if (ptsz->integrate_wrt_m500c == 1){
+          m500c = mtab;
+        }
+
+        if (ptsz->use_m500c_in_ym_relation == 1){
+        m_ym = m500c;
+        }
+
+
+    double ytab = get_y_at_m_and_z(m_ym,z,ptsz,pba);
+    double thetatab = get_theta_at_m_and_z(m500c,z,ptsz,pba);
     double sigtab = get_szcountsz_sigma_at_theta_in_patch(thetatab,idpatch,ptsz);
     // if (log(sigtab)>10)
     //   lnq_tab[itab] = -100.;
     // else
 
     // lnq_tab[itab] = log(sqrt(ytab/sigtab*ytab/sigtab+ptsz->szcc_dof));
-    lnq_tab[itab] = log(sqrt(ytab/sigtab*ytab/sigtab));
+    lnq_tab[itab] = log(ytab/sigtab);
 
     if (isinf(lnq_tab[itab])||isnan(lnq_tab[itab])){
       printf("lnq_tab[itab] = %.5e ytab =%.5e sigtab = %.5e\n",lnq_tab[itab],ytab,sigtab);
@@ -1488,31 +1508,33 @@ for (i = 0; i < N; i++) {
  in[N+i][0]= 0.;
  in[N+i][1]= 0.;
 
-   // double lnqp =  log(x);
-   double lnqp =  0.5*log(x*x-3.);
-   double conv1;
+ // double lnqp =  log(x);
+ double lnqp =  0.5*log(x*x-ptsz->szcc_dof);
+ double conv1;
 
    // if (x<=0.){
-   if (x<=sqrt(ptsz->szcc_dof)){
-     conv1=0.;
+   // if (x<=sqrt(ptsz->szcc_dof)){
+  if (x<=ptsz->szcc_qtrunc){
+       conv1=0.;
+      }
+  else{
+        lnqp =   0.5*log(x*x-ptsz->szcc_dof);//log(x);
+        if (lnqp<xarr[0])
+          conv1 = 0.;
+        else if (lnqp>xarr[2*N-1])
+          conv1 = 0.;
+        else{
+          // conv1 =  pwl_value_1d(2*N,
+          //                       xarr,
+          //                       result_qmconv_all,
+          //                       lnqp)/x;
+          conv1 =  pwl_value_1d(2*N,
+                                xarr,
+                                result_qmconv_all,
+                                lnqp)*x/(pow(x,2)-ptsz->szcc_dof);
+                              }
    }
-   else{
-  lnqp =   0.5*log(x*x-ptsz->szcc_dof);//log(x);
-   if (lnqp<xarr[0])
-    conv1 = 0.;
-   else if (lnqp>xarr[2*N-1])
-    conv1 = 0.;
-   else{
-    // conv1 =  pwl_value_1d(2*N,
-    //                       xarr,
-    //                       result_qmconv_all,
-    //                       lnqp)/x;
-    conv1 =  pwl_value_1d(2*N,
-                          xarr,
-                          result_qmconv_all,
-                          lnqp)*x/(pow(x,2)-ptsz->szcc_dof);
-                        }
-   }
+
  test[i][0] = conv1;
  test[i][1] = 0.;
  test[N+i][0] = 0.;
@@ -2153,6 +2175,8 @@ else{
           else{
             y1 =  ptsz->sky_averaged_ylims[index2];
           }
+
+
           // double y1 = get_ylim_of_theta(th1,ptsz->ylims[index_patches][index2];
           // int k = index_y;
           //
@@ -2164,19 +2188,28 @@ else{
           double c2;
 
           if (ptsz->use_planck_binned_proba == 1){
-          if (index_y==0)  {c2=erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof)*(1.-erf_compl(y0,y1,y_max,ptsz->szcc_dof));}
-          else if (index_y==pcsz->Nbins_y-1) {c2=erf_compl(y0,y1,y_min,ptsz->szcc_dof)*erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof);}
-          else {c2=erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof)*erf_compl(y0,y1,y_min,ptsz->szcc_dof)*(1.-erf_compl(y0,y1,y_max,ptsz->szcc_dof));}
-          }
+              if (y0/y1<ptsz->szcc_qtrunc){
+                c2=0.;
+                }
+              else if (index_y==0)  {c2=erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof)*(1.-erf_compl(y0,y1,y_max,ptsz->szcc_dof));}
+              else if (index_y==pcsz->Nbins_y-1) {c2=erf_compl(y0,y1,y_min,ptsz->szcc_dof)*erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof);}
+              else {c2=erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof)*erf_compl(y0,y1,y_min,ptsz->szcc_dof)*(1.-erf_compl(y0,y1,y_max,ptsz->szcc_dof));}
+              }
           else{
-            c2 = erf_compl_nicola(y0,y1,ptsz->sn_cutoff,y_min,y_max,ptsz->szcc_dof);
-          }
+            if (y0/y1<ptsz->szcc_qtrunc){
+              c2=0.;
+              }
+            else
+              c2 = erf_compl_nicola(y0,y1,ptsz->sn_cutoff,y_min,y_max,ptsz->szcc_dof);
+            }
+
+
           if (ptsz->use_skyaveraged_noise == 0){
-          erfs[index1][index2]=erfs[index1][index2]+c2*ptsz->skyfracs[index_patches];
-        }
-        else{
+              erfs[index1][index2]=erfs[index1][index2]+c2*ptsz->skyfracs[index_patches];
+              }
+          else{
               erfs[index1][index2]=erfs[index1][index2]+c2*ptsz->fsky_from_skyfracs;
-        }
+              }
           // erfs_2d_to_1d[index_th_y] += c2*ptsz->skyfracs[index_patches]/fsky;
 
 
@@ -2204,15 +2237,27 @@ else{
       for (index_m=0;index_m<pcsz->nsteps_m;index_m++){
 
         double mp= exp(pcsz->steps_m[index_m]);
+        double m500c = 0.;
+        double m_ym = mp;
+
+
+
         if (ptsz->integrate_wrt_m200m == 1){
-          mp = get_m200m_to_m500c_at_z_and_M(zp,mp,ptsz);
+          m500c = get_m200m_to_m500c_at_z_and_M(zp,mp,ptsz);
         }
         if (ptsz->integrate_wrt_m200c == 1){
-          mp = get_m200c_to_m500c_at_z_and_M(zp,mp,ptsz);
+          m500c = get_m200c_to_m500c_at_z_and_M(zp,mp,ptsz);
+        }
+        //
+        if (ptsz->integrate_wrt_m500c == 1){
+          m500c = mp;
         }
 
-        double yp = get_y_at_m_and_z(mp,zp,ptsz,pba);
-        double thp = get_theta_at_m_and_z(mp,zp,ptsz,pba);
+        if (ptsz->use_m500c_in_ym_relation == 1){
+        m_ym = m500c;
+        }
+        double yp = get_y_at_m_and_z(m_ym,zp,ptsz,pba);
+        double thp = get_theta_at_m_and_z(m500c,zp,ptsz,pba);
 
         // if not planck, apply the mismatch function with C correction
         if (ptsz->experiment == 1){
