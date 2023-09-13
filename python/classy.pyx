@@ -3765,7 +3765,8 @@ cdef class Class:
         # # compute rates
         rates = []
         for index in range(self.tsz.szcat_size):
-            rates.append(self.tsz.szrate[index])
+            if self.tsz.szcat_snr[index]>= q_threshold:
+              rates.append(self.tsz.szrate[index])
         rates = np.asarray(rates)
         # # compute loglike
         loglike = - Ntot + np.sum(np.log(rates))

@@ -300,6 +300,7 @@ cdef extern from "class.h":
         double sn_cutoff
         double * szrate
         int szcat_size
+        double * szcat_snr
         int need_sigma
         double alphaSZ
         double beta0SZ

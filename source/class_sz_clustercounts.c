@@ -1199,6 +1199,12 @@ for (itab = 0;itab<ntab;itab++){
 
     double ytab = get_y_at_m_and_z(m_ym,z,ptsz,pba);
     double thetatab = get_theta_at_m_and_z(m500c,z,ptsz,pba);
+    if (ptsz->experiment == 1){
+      double m_pivot = ptsz->m_pivot_ym*pba->h;// 1. convert to msun/h //not that it used to be *0.7 as in hasselfield paper.
+      double m_over_m_pivot_500c = m500c/m_pivot;
+      thetatab = thetatab*pow(m_over_m_pivot_500c,ptsz->C_ym);
+    }
+
     double sigtab = get_szcountsz_sigma_at_theta_in_patch(thetatab,idpatch,ptsz);
     // if (log(sigtab)>10)
     //   lnq_tab[itab] = -100.;
@@ -1993,7 +1999,7 @@ if (pcsz->has_completeness == 1){
         // if not planck, apply the mismatch function with C correction
         if (ptsz->experiment == 1){
           double m_pivot = ptsz->m_pivot_ym*pba->h;// 1. convert to msun/h //not that it used to be *0.7 as in hasselfield paper.
-          double m_over_m_pivot_500c = mp/m_pivot;
+          double m_over_m_pivot_500c = m500c/m_pivot;
           thp = thp*pow(m_over_m_pivot_500c,ptsz->C_ym);
         }
 
@@ -2262,7 +2268,7 @@ else{
         // if not planck, apply the mismatch function with C correction
         if (ptsz->experiment == 1){
           double m_pivot = ptsz->m_pivot_ym*pba->h;
-          double m_over_m_pivot_500c = mp/m_pivot;
+          double m_over_m_pivot_500c = m500c/m_pivot;
           thp = thp*pow(m_over_m_pivot_500c,ptsz->C_ym);
         }
 

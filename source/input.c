@@ -1848,6 +1848,8 @@ int input_read_parameters(
       //Hydrostatic Equilibrium Mass Bias, Piffaretti & Valdarnini [arXiv:0808.1111]
 
       class_read_double("B",ptsz->HSEbias);
+      class_read_double("bias_sz",ptsz->HSEbias); // soliket/clusters.py notations
+
       class_read_double("Ap",ptsz->Ap);
       class_read_double("alpha_b",ptsz->alpha_b);
       class_read_int("mass_dependent_bias",ptsz->mass_dependent_bias);
@@ -1901,7 +1903,8 @@ int input_read_parameters(
       class_read_double("ystar_ym",ptsz->ystar_ym);
       class_read_double("alpha_ym",ptsz->alpha_ym);
       class_read_double("beta_ym",ptsz->beta_ym);
-      class_read_double("sigmaM_ym",ptsz->sigmaM_ym);
+
+
 
 
       // class_read_double("ystar_nika2",ptsz->ystar_nika2);
@@ -1911,9 +1914,18 @@ int input_read_parameters(
 
       class_read_double("alpha_thm",ptsz->alpha_theta);
 
+      class_read_double("sigmaM_ym",ptsz->sigmaM_ym);
+      class_read_double("scatter_sz",ptsz->sigmaM_ym); // soliket/clusters.py notations
+
       class_read_double("A_ym",ptsz->A_ym);
+      class_read_double("tenToA0",ptsz->A_ym); // soliket/clusters.py notations
+
       class_read_double("B_ym",ptsz->B_ym);
+      class_read_double("B0",ptsz->B_ym); // soliket/clusters.py notations
+
       class_read_double("C_ym",ptsz->C_ym);
+      class_read_double("C0",ptsz->C_ym); // soliket/clusters.py notations
+
       class_read_double("m_pivot_ym_[Msun]",ptsz->m_pivot_ym);
 
       //For the tabulation of sigma2

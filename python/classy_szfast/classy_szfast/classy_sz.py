@@ -229,7 +229,7 @@ class classy_sz(classy):
     def get_sz_unbinned_cluster_counts(self):
         cls = deepcopy(self._current_state["sz_unbinned_cluster_counts"])
         # print(cls)
-        return cls['loglike']
+        return cls['loglike'],cls['ntot'],cls['rates']
 
     # get the required new observable
     def get_sz_binned_cluster_counts(self):
