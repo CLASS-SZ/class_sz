@@ -438,6 +438,7 @@ struct tszspectrum {
 
 
   int use_m500c_in_ym_relation;
+  int use_m200c_in_ym_relation;
   //int has_sz_te_y_y;
   int has_sz_cov_N_Cl;
 

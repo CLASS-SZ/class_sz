@@ -1889,6 +1889,7 @@ int input_read_parameters(
       class_read_int("apply_relativistic_correction_to_y_m",ptsz->apply_relativistic_correction_to_y_m);
       class_read_int("has_selection_function",pcsz->has_completeness);
       class_read_int("use_m500c_in_ym_relation",ptsz->use_m500c_in_ym_relation);
+      class_read_int("use_m200c_in_ym_relation",ptsz->use_m200c_in_ym_relation);
       class_read_int("mass_range",pcsz->mass_range);
 
 
@@ -6635,6 +6636,7 @@ int input_default_params(
   ptsz->use_analytical_truncated_nfw = 1;
 
   ptsz->use_m500c_in_ym_relation = 1;
+  ptsz->use_m200c_in_ym_relation = 0;
   ptsz->use_hod = 1;
   ptsz->galaxy_sample = 0; // WIxSC
   ptsz->unwise_galaxy_sample_id = -1; // red

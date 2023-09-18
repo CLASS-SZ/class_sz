@@ -1180,22 +1180,29 @@ for (itab = 0;itab<ntab;itab++){
 
 
     double m500c = 0.;
+    double m200c = 0.;
     double m_ym = mtab;
+
         if (ptsz->integrate_wrt_m200m == 1){
           m500c = get_m200m_to_m500c_at_z_and_M(z,mtab,ptsz);
+          m200c = get_m200m_to_m200c_at_z_and_M(z,mtab,ptsz);
         }
-        if (ptsz->integrate_wrt_m200c == 1){
+        else if (ptsz->integrate_wrt_m200c == 1){
+          m200c = mtab;
           m500c = get_m200c_to_m500c_at_z_and_M(z,mtab,ptsz);
         }
         //
         if (ptsz->integrate_wrt_m500c == 1){
           m500c = mtab;
+          m200c = get_m500c_to_m200c_at_z_and_M(z,mtab,ptsz);
         }
 
         if (ptsz->use_m500c_in_ym_relation == 1){
         m_ym = m500c;
         }
-
+        else if (ptsz->use_m200c_in_ym_relation == 1){
+        m_ym = m200c;
+        }
 
     double ytab = get_y_at_m_and_z(m_ym,z,ptsz,pba);
     double thetatab = get_theta_at_m_and_z(m500c,z,ptsz,pba);
@@ -1959,25 +1966,31 @@ if (pcsz->has_completeness == 1){
         double mp= exp(pcsz->steps_m[index_m]);
 
         double m500c = 0.;
+        double m200c = 0.;
         double m_ym = mp;
 
 
 
         if (ptsz->integrate_wrt_m200m == 1){
           m500c = get_m200m_to_m500c_at_z_and_M(zp,mp,ptsz);
+          m200c = get_m200m_to_m200c_at_z_and_M(zp,mp,ptsz);
         }
-        if (ptsz->integrate_wrt_m200c == 1){
+        else if (ptsz->integrate_wrt_m200c == 1){
+          m200c = mp;
           m500c = get_m200c_to_m500c_at_z_and_M(zp,mp,ptsz);
         }
         //
         if (ptsz->integrate_wrt_m500c == 1){
           m500c = mp;
+          m200c = get_m500c_to_m200c_at_z_and_M(zp,mp,ptsz);
         }
 
         if (ptsz->use_m500c_in_ym_relation == 1){
         m_ym = m500c;
         }
-
+        else if (ptsz->use_m200c_in_ym_relation == 1){
+        m_ym = m200c;
+        }
         // printf("m_ym = %.5e\n",m_ym);
         // exit(0);
         // zp = 1.00000e-05;
@@ -2244,24 +2257,32 @@ else{
 
         double mp= exp(pcsz->steps_m[index_m]);
         double m500c = 0.;
+        double m200c = 0.;
         double m_ym = mp;
 
 
 
         if (ptsz->integrate_wrt_m200m == 1){
           m500c = get_m200m_to_m500c_at_z_and_M(zp,mp,ptsz);
+          m200c = get_m200m_to_m200c_at_z_and_M(zp,mp,ptsz);
         }
-        if (ptsz->integrate_wrt_m200c == 1){
+        else if (ptsz->integrate_wrt_m200c == 1){
+          m200c = mp;
           m500c = get_m200c_to_m500c_at_z_and_M(zp,mp,ptsz);
         }
         //
         if (ptsz->integrate_wrt_m500c == 1){
           m500c = mp;
+          m200c = get_m500c_to_m200c_at_z_and_M(zp,mp,ptsz);
         }
 
         if (ptsz->use_m500c_in_ym_relation == 1){
         m_ym = m500c;
         }
+        else if (ptsz->use_m200c_in_ym_relation == 1){
+        m_ym = m200c;
+        }
+
         double yp = get_y_at_m_and_z(m_ym,zp,ptsz,pba);
         double thp = get_theta_at_m_and_z(m500c,zp,ptsz,pba);
 
