@@ -11004,11 +11004,14 @@ if (ptsz->sz_verbose>=1){
 
 
   /** Store them */
+  // printf("normalized_source_dndz_size = %d\n",ptsz->normalized_source_dndz_size);
   for (index_x=0; index_x<ptsz->normalized_source_dndz_size; index_x++) {
     ptsz->normalized_source_dndz_z[index_x] = lnx[index_x];
     ptsz->normalized_source_dndz_phig[index_x] = lnI[index_x];
-    // printf("z=%.3e phig=%.3e\n",ptsz->normalized_dndz_z[index_x],ptsz->normalized_dndz_z[index_x]);
+    // printf("z=%.3e phig=%.3e\n",ptsz->normalized_source_dndz_z[index_x],ptsz->normalized_source_dndz_z[index_x]);
   };
+
+  // exit(0);
 
   /** Release the memory used locally */
   free(lnx);
@@ -13433,7 +13436,10 @@ else if ((V->ptsz->has_lens_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md
 
   // then quantities that require mass integration
   else {
-  // printf("integrating over mass at z = %.3e\n",z);
+
+    if (V->ptsz->sz_verbose>10)
+      printf("integrating over mass at z = %.3e\n",z);
+
   result = integrate_over_m_at_z(V->pvecback,
                                  V->pvectsz,
                                  V->pba,
@@ -13697,6 +13703,7 @@ if (((V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->ind
 ){
 
 double Wg = radial_kernel_W_galaxy_lensing_magnification_at_z(z,V->pvectsz,V->pba,V->ptsz);
+// printf("Wg  = %.5e\n",Wg);
 result *= Wg;
 }
 
@@ -13923,6 +13930,8 @@ if (V->ptsz->use_maniyar_cib_model == 0){
   result *= (1.+V->pvectsz[V->ptsz->index_z])*get_volume_at_z(V->pvectsz[V->ptsz->index_z],V->pba);
   // note : get_vol is c/H*chi2...dchi/dz*ch2
 
+
+
   if (isnan(result)||isinf(result)){
   printf("nan or inf in integrand redshift 1h\n");
   exit(0);
@@ -14009,10 +14018,15 @@ else{
 //   z_min = ptsz->normalized_dndz_ngal_z[0];
 //   z_max = .......
 // }
+if (ptsz->sz_verbose>10)
+  printf("integrating over redshift\n");
+
   r = Integrate_using_Patterson_adaptive(log(1. + z_min), log(1. + z_max),
                                          epsrel, epsabs,
                                          integrand_redshift,
                                          params,show_neval);
+if (ptsz->sz_verbose>10)
+  printf("integrating over redshift got r = %.5e\n",r);
     }
 
   Pvectsz[ptsz->index_integral] = r;
@@ -14065,6 +14079,8 @@ double integrand_mass(double logM, void *p){
                              struct tszspectrum * ptsz)
 {
 
+if (ptsz->sz_verbose>10)
+  printf("starting mass integral at z, preliminary calculations\n");
 // if ( ((int) pvectsz[ptsz->index_md] == ptsz->index_md_dndlnM)
 //   return integrand_at_m_and_z(log(1e16),
 //                               pvecback,
@@ -14114,6 +14130,10 @@ double integrand_mass(double logM, void *p){
 
   double r; //store result of mass integral
 
+if (ptsz->sz_verbose>10){
+  printf("starting mass integral at z, preliminary calculations done\n");
+  printf("now at pvectsz[ptsz->index_md] = %d\n",pvectsz[ptsz->index_md]);
+  }
 
 
 
@@ -18245,11 +18265,12 @@ else if(((int) pvectsz[ptsz->index_md] == ptsz->index_md_szrates)
 
 else {
 // here we treat all the 1-halo terms and also the 2halo terms that are auto
+// printf("integrating over mass\n");
   r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                        epsrel, epsabs,
                                        integrand_mass,
                                        params,ptsz->patterson_show_neval);
-
+// printf("got r = %.5e\n",r);
         // halo model consistency:
 
         if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
@@ -18289,6 +18310,9 @@ else {
             }
         // all of the 1-halo cases
         else {
+          if (ptsz->sz_verbose>10)
+            printf("adding counter terms 1h\n");
+            
                double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
                double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
                double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];

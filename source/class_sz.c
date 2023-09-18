@@ -1705,6 +1705,8 @@ int class_sz_integrate_init(
       + ptsz->has_gal_gallens_1h
       + ptsz->has_gal_gallens_2h
       + ptsz->has_gal_lensmag_hf
+      + ptsz->has_gallens_lensmag_1h
+      + ptsz->has_gallens_lensmag_2h
       + ptsz->has_lensmag_lensmag_1h
       + ptsz->has_lensmag_lensmag_2h
       + ptsz->has_lensmag_lensmag_hf
@@ -1760,6 +1762,7 @@ int class_sz_integrate_init(
       + ptsz->has_isw_tsz;
 
 
+// printf("ptsz->has_gallens_lensmag_1h %d\n",ptsz->has_gallens_lensmag_1h);
    // Skip the module if no SZ/halo-model computations are requested:
     if (all_comps == _FALSE_)
    {
@@ -10245,9 +10248,12 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
 
                   // int index_l = (int) pvectsz[ptsz->index_multipole];
                   // pvectsz[ptsz->index_multipole_for_lensing_profile] = ptsz->ell[index_l];
+
                   evaluate_lensing_profile(kl,m_delta_lensing,r_delta_lensing,c_delta_lensing,pvecback,pvectsz,pba,ptsz);
                   double lensing_profile_at_ell_1 = pvectsz[ptsz->index_lensing_profile];
                   double lensing_profile_at_ell_2 = lensing_profile_at_ell_1;
+
+                  // printf("evaluating profile lensing: %.5e\n",lensing_profile_at_ell_1);
 
                       pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                                         *lensing_profile_at_ell_1
@@ -10977,6 +10983,7 @@ else if (_custom1_cib_1h_){
 
 
    }
+   // printf("pvectsz[ptsz->index_integrand]  = %.5e\n",pvectsz[ptsz->index_integrand]);
    return pvectsz[ptsz->index_integrand];
 }
 

@@ -3290,7 +3290,7 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
-      if ((strstr(string1,"lens_lensmag_1h") != NULL) ) {
+      if ((strstr(string1,"lens_lensmag_1h") != NULL) && (strstr(string1,"gallens_lensmag_1h") == NULL)) {
         ptsz->has_lens_lensmag_1h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
@@ -3300,7 +3300,7 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
-      if ((strstr(string1,"lens_lensmag_2h") != NULL) ) {
+      if ((strstr(string1,"lens_lensmag_2h") != NULL) && (strstr(string1,"gallens_lensmag_2h") == NULL)) {
         ptsz->has_lens_lensmag_2h =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
@@ -7307,8 +7307,6 @@ int input_default_params(
   ptsz->index_md_tau_gal_1h = 110;
 
   ptsz->index_md_IA_gal_2h = 111;
-  ptsz->index_md_gallens_lensmag_2h = 112;
-  ptsz->index_md_gallens_lensmag_1h = 113;
 
   ptsz->index_md_gal_gal_lens_1h_fft = 112;
   ptsz->index_md_gal_gal_lens_2h_fft = 113;
@@ -7326,6 +7324,10 @@ int input_default_params(
   ptsz->index_md_custom1_gal_2h = 124;
   ptsz->index_md_custom1_gallens_1h = 125;
   ptsz->index_md_custom1_gallens_2h = 126;
+
+
+  ptsz->index_md_gallens_lensmag_1h = 127;
+  ptsz->index_md_gallens_lensmag_2h = 128;
 
 
   ptsz->integrate_wrt_mvir = 0;
