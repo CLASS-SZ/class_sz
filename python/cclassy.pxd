@@ -319,6 +319,8 @@ cdef extern from "class.h":
         double * cl_te_y_y
         double * cl_tSZ_gallens_1h
         double * cl_tSZ_gallens_2h
+        double * cl_gallens_lensmag_1h
+        double * cl_gallens_lensmag_2h
         double * cl_tSZ_gal_1h
         double * cl_tSZ_gal_2h
         double * cl_IA_gal_2h
@@ -828,6 +830,8 @@ cdef extern from "class.h":
 
     double get_mean_galaxy_bias_at_z(double z, void * ptsz)
 
+
+
     double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, void * ptsz)
 
 
@@ -945,6 +949,7 @@ cdef extern from "class.h":
                                           void * tsz)
 
     double get_volume_at_z(double z, void * pba)
+    double get_IA_of_z(double z, void * pba, void * ptsz)
     double get_delta_mean_from_delta_crit_at_z(double delta_crit,double z,void * ptsz)
     double get_dndlnM_at_z_and_M(double z_asked,
                                  double m_asked,

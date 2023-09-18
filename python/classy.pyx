@@ -2102,6 +2102,10 @@ cdef class Class:
         return get_volume_at_z(z,&self.ba)
 
 
+    def get_IA_of_z(self,z):
+        return get_IA_of_z(z,&self.ba,&self.tsz)
+
+
     def get_f_of_sigma_at_m_and_z(self,m,z):
         return get_f_of_sigma_at_m_and_z(m,z,&self.ba,&self.nl,&self.tsz)
 
@@ -2191,6 +2195,20 @@ cdef class Class:
         for index in range(self.tsz.nlSZ):
             cl['1h'].append(0.)
             cl['2h'].append(self.tsz.cl_IA_gal_2h[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
+    def cl_kg_m(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of galaxy lensing x lensing magnifications spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_gallens_lensmag_1h[index])
+            cl['2h'].append(self.tsz.cl_gallens_lensmag_2h[index])
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
@@ -3114,6 +3132,7 @@ cdef class Class:
 
     def get_mean_galaxy_bias_at_z(self,z):
         return get_mean_galaxy_bias_at_z(z,&self.tsz)
+
 
     def get_gnu_tsz_of_nu_in_ghz(nu_in_ghz,Tcmb):
         r = gnu_tsz_of_nu_in_ghz(nu_in_ghz,Tcmb)
