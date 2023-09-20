@@ -40,6 +40,6 @@ def custom1_W(z,classy_sz,*params):
     if z==0.:
         w = 1e-100
     else:
-        w = 3./2.*(H0/h)**2/Rho_crit_0*(chi/(1.+z))**-1.*(chi_star-chi)/chi_star # this is a constant: 1.66243e+18
+        w = 3./2.*(H0/h)**2/Rho_crit_0*(chi/(1.+z))**-1.*(chi_star-chi)/chi_star # 
 
     return w
