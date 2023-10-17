@@ -18312,7 +18312,7 @@ else {
         else {
           if (ptsz->sz_verbose>10)
             printf("adding counter terms 1h\n");
-            
+
                double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
                double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
                double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
@@ -27720,7 +27720,7 @@ double mp_bias = m/ptsz->HSEbias;
 double thetastar2 = ptsz->thetastar * pow(H0/70.,-2./3.);
 // below the pivot mass should always be 3e14*h, that fixes the theta_star normalisation
 double theta500_for_mp_at_zp =  thetastar2 * pow(mp_bias/3.e14* (100./H0),ptsz->alpha_theta);
-theta500_for_mp_at_zp *=    pow(Eh,-2./3) *pow(100.*d_A/(500.0*H0),-1.);
+theta500_for_mp_at_zp *=    pow(Eh,-2./3)*pow(100.*d_A/(500.0*H0),-1.);
 double thp = theta500_for_mp_at_zp;
 free(pvecback);
 
@@ -27824,7 +27824,7 @@ if (ptsz->y_m_relation == 1){
       }
 else if (ptsz->y_m_relation == 0){
 
-        double ystar2 = pow(10.,ptsz->ystar_ym)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
+        double ystar2 = pow(10.,ptsz->ystar_ym)/pow(2., ptsz->alpha_ym)*0.00472724; // this factor is : 1./(5**2*1e8)*(np.pi/60/180)**-2 = 0.004727241144016912
 
         ystar2 *=  pow(H0/70.,-2.+ptsz->alpha_ym);
         double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/ptsz->m_pivot_ym* (100./H0),ptsz->alpha_ym);

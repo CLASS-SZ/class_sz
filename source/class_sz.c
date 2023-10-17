@@ -13,6 +13,7 @@
 #include "Patterson.h"
 #include "r8lib.h"
 #include "fft.h"
+#include "time.h"
 
 
 int class_sz_cosmo_init(  struct background * pba,
@@ -1298,6 +1299,77 @@ if (ptsz->has_n5k){
   // printf("%.5e\n",pk_interp);
   // double K1_interp = get_n5k_cl_K1_at_chi(6.565659574734836212e+01,ptsz);
   // printf("%.5e\n",K1_interp);
+  printf("Place holder for non-limber calc.\n");
+  clock_t start, end;
+
+
+
+
+  int i;
+  int j;
+  int k;
+  double *** test3d;
+  int n_i = 201;
+  int n_j = 100;
+  int n_k = 50;
+
+  class_alloc(test3d,sizeof(double ***)*n_i,ptsz->error_message);
+  for (i=0;i<n_i;i++){
+    class_alloc(test3d[i],sizeof(double **)*n_j,ptsz->error_message);
+        for (j=0;j<n_j;j++){
+          class_alloc(test3d[i][j],sizeof(double *)*n_k,ptsz->error_message);
+        }
+  }
+
+  double * dchi_1d;
+
+  class_alloc(dchi_1d,sizeof(double *)*n_k,ptsz->error_message);
+  for (k=0;k<n_k;k++){
+    /// read from the file of chi's:
+    dchi_1d[k] = 0.1;
+  }
+
+
+printf("Test timing 3 for loops\n");
+  start = clock();
+
+  for (i=0;i<n_i;i++){
+
+    for (j=0;j<n_j;j++){
+
+      double sumk = 0.;
+
+      for (k=0;k<n_k;k++){
+
+        test3d[i][j][k] = 35*67;
+
+        sumk += test3d[i][j][k]*dchi_1d[k];
+      }
+
+    }// end j/"delta_chi" loop
+  }// end i/"nu" loop
+
+
+  end = clock();
+  double duration = ((double)end - start)/CLOCKS_PER_SEC;
+  printf("Time taken to execute test 3 loops in seconds : %.3e\n", duration);
+
+
+
+printf("end Test timing 3 for loops\n");
+
+for (i=0;i<n_i;i++){
+      for (j=0;j<n_j;j++){
+        free(test3d[i][j]);
+      }
+      free(test3d[i]);
+    }
+
+free(dchi_1d);
+
+printf("end Place holder for non-limber calc.\n");
+
+
   // double z_interp = get_n5k_z_of_chi(33.,ptsz);
   // printf("%.5e\n",z_interp);
   tabulate_n5k_F1(pba,pnl,ppm,ptsz);
@@ -12296,6 +12368,7 @@ double plc_x = Px;
 
 }
 
+
 // this is r_500c*P_500c
 double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double x,
                                                       double z,
@@ -12343,7 +12416,7 @@ double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double x,
    //                     *pow(m/(3.e14*0.7),2./3.+ptsz->alpha_p);
                        //*pow(m/3.e14, ptsz->delta_alpha);
 
-  // hasselfield et al 2013:
+  // hasselfield et al 2013: (pivot mass is 3e14 msun/h)
    double C_pressure = 1.65*pow(pba->h/0.7,2)
                        *pow(Eh,8./3.)
                        *pow(m/(3.e14*0.7),2./3.+ptsz->alpha_p);
@@ -12374,6 +12447,93 @@ double get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(double x,
                   /50. // to cancel the factor 50 above 50eV/cm^3
                   /pba->T_cmb
                   *pressure_normalisation
+                  *plc_x
+                  *r500c/pba->h; //in Mpc
+  free(pvecback);
+  return result;
+
+}
+
+
+
+// this is r_500c*upp
+double get_upp_from_gnfw_pressure_at_x_z_and_m500c(double x,
+                                                      double z,
+                                                      double m,
+                                                      double delta,
+                                                      struct background * pba,
+                                                      struct tszspectrum * ptsz){
+
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+        pba->bg_size*sizeof(double),
+        ptsz->error_message);
+
+  class_call(background_tau_of_z(pba,z,&tau),
+       ptsz->error_message,
+       ptsz->error_message);
+
+  class_call(background_at_tau(pba,
+                         tau,
+                         pba->long_info,
+                         pba->inter_normal,
+                         &first_index_back,
+                         pvecback),
+       ptsz->error_message,
+       ptsz->error_message);
+
+
+
+  double rho_crit = (3./(8.*_PI_*_G_*_M_sun_))
+                  *pow(_Mpc_over_m_,1)
+                  *pow(_c_,2)
+                  *pvecback[pba->index_bg_rho_crit]
+                  /pow(pba->h,2);
+
+  double r500c =  pow(3.*m/(4.*_PI_*delta*rho_crit),1./3.);
+
+  // double Eh = pvecback[pba->index_bg_H]/pba->H0;
+
+  // formula D1 of WMAP 7 year paper (normalisation of pressure profile)
+  // see also formula 5 of Planck 2013 profile paper, P500:
+   // double C_pressure = 1.65*pow(pba->h/0.7,2)
+   //                     *pow(Eh,8./3.)
+   //                     *pow(m/(3.e14*0.7),2./3.+ptsz->alpha_p);
+                       //*pow(m/3.e14, ptsz->delta_alpha);
+
+  // // hasselfield et al 2013: (pivot mass is 3e14 msun/h)
+  //  double C_pressure = 1.65*pow(pba->h/0.7,2)
+  //                      *pow(Eh,8./3.)
+  //                      *pow(m/(3.e14*0.7),2./3.+ptsz->alpha_p);
+  //                      // *pow(m/(3.e14*0.7),0.22/(1.+8.*pow(x,3.))); hasselfield et al has this part!
+
+
+   //A10:
+  double pressure_normalisation = ///C_pressure
+                                  ptsz->P0GNFW
+                                  *pow(0.7/pba->h, 1.5); // as found by dimensional analysis (X-ray data, see email with E. Komatsu and R. Makya)
+
+
+
+
+  //putting everything together
+
+
+
+  double plc_x =  (1./(pow(ptsz->c500*x,ptsz->gammaGNFW)
+                  *pow(1.+ pow(ptsz->c500*x,ptsz->alphaGNFW),
+                  (ptsz->betaGNFW-ptsz->gammaGNFW)/ptsz->alphaGNFW)));
+
+
+  // double result = plc_x*ptsz->P0GNFW*pow(0.7/pba->h, 1.5);
+
+
+  double result = //ptsz->sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb // here Tcmb is in muK
+                  ///50. // to cancel the factor 50 above 50eV/cm^3
+                  ///pba->T_cmb
+                  pressure_normalisation
                   *plc_x
                   *r500c/pba->h; //in Mpc
   free(pvecback);

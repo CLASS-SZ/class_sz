@@ -598,7 +598,7 @@ cdef class Class:
         cszfast = Class_szfast(**params_settings)
 
         if 'A_s' in self._pars:
-          params_settings['ln10^{10}A_s'] = self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
+          params_settings['ln10^{10}A_s'] = np.log(10**10*params_settings['A_s']) #self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
           params_settings.pop('A_s')
         if '100*theta_s' in self._pars:
           # print('doing theta_s -> H0')
@@ -1922,6 +1922,20 @@ cdef class Class:
         free(pvecback)
 
         return z
+
+    def get_Ez(self, z):
+        """
+        E(z)
+
+        Reduced Hubble rate at z
+
+        Parameters
+        ----------
+        z : float
+              redshift
+        """
+        return self.Hubble(z)/self.Hubble(0.)
+
 
     def Hubble(self, z):
         """
@@ -3758,6 +3772,9 @@ cdef class Class:
 
     def get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(self,z,m,x,d):
         return get_1e6xdy_from_gnfw_pressure_at_x_z_and_m500c(z,m,x,d,&self.ba,&self.tsz)
+
+    def get_upp_from_gnfw_pressure_at_x_z_and_m500c(self,z,m,x,d):
+        return get_upp_from_gnfw_pressure_at_x_z_and_m500c(z,m,x,d,&self.ba,&self.tsz)
 
     def szunbinned_loglike(self):
         return self.tsz.szunbinned_loglike

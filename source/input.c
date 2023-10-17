@@ -3987,10 +3987,13 @@ int input_read_parameters(
           ptsz->pressure_profile=0;
         else  if ((strstr(string1,"A10") != NULL))
           ptsz->pressure_profile=2;
+        // else  if ((strstr(string1,"A10XRAY") != NULL))
+        //   ptsz->pressure_profile=5;
         else  if ((strstr(string1,"Custom. GNFW") != NULL))
           ptsz->pressure_profile=3;
         else  if ((strstr(string1,"B12") != NULL))
           ptsz->pressure_profile=4;
+
         }
 
 
@@ -4180,7 +4183,14 @@ class_read_double("C1_IA",ptsz->C1_IA);
      ptsz->betaGNFW = 5.4807;
     }
 
-
+    // else if (ptsz->pressure_profile==5){
+    // //Arnaud et al pressure profile 2010, Eq 12 of https://www.aanda.org/articles/aa/pdf/2010/09/aa13416-09.pdf
+    //  ptsz->P0GNFW = 8.403;
+    //  ptsz->c500 = 1.177;
+    //  ptsz->gammaGNFW = 0.3081;
+    //  ptsz->alphaGNFW = 1.0510;
+    //  ptsz->betaGNFW = 5.4905;
+    // }
 
 
      else if (ptsz->pressure_profile==3){
