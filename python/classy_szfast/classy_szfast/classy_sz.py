@@ -11,7 +11,7 @@ class classy_sz(classy):
     use_class_sz_fast_mode = 0 # this is passed in the yaml file
     lensing_lkl = "SOLikeT"
     # skip_background_and_thermo = True
-    ell_factor = False # True for pyactlite and bplike, False for clik
+    # ell_factor = False # True for pyactlite and bplike, False for clik
 
     def initialize(self):
         """Importing CLASS from the correct path, if given, and if not, globally."""
@@ -153,18 +153,19 @@ class classy_sz(classy):
     # get the required new observable
     def get_Cl(self, ell_factor=False, units="FIRASmuK2"):
         if self.use_class_sz_fast_mode:
-            return self.get_Clfast()
+            return self.get_Clfast(ell_factor=ell_factor)
         else:
             return self._get_Cl(ell_factor=ell_factor, units=units, lensed=True)
-    def get_Clfast(self):
+
+    def get_Clfast(self,ell_factor = False):
         # print('ell_factor:',self.ell_factor)
         # exit(0)
         cls = {}
         cls = deepcopy(self._current_state["Cl"])
-        ell_factor = self.ell_factor
+        # ell_factor = self.ell_factor
         # print(cls)
         # exit(0)
-        # print(ell_factor)
+        # print('in get clfast:',ell_factor)
         # print(cls)
         lcp = np.asarray(cls['ell'])
         # print(self.lensing_lkl)
@@ -173,7 +174,7 @@ class classy_sz(classy):
             cls['te'] *= (2.7255e6)**2.*(lcp*(lcp+1.))/2./np.pi
             cls['ee'] *= (2.7255e6)**2.*(lcp*(lcp+1.))/2./np.pi
 
-        if self.lensing_lkl == "ACT":
+        if self.lensing_lkl == "ACT" and ell_factor == False:
             cls['tt'] *= (2.7255e6)**2.
             cls['te'] *= (2.7255e6)**2.
             cls['ee'] *= (2.7255e6)**2.

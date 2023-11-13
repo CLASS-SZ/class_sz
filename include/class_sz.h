@@ -1381,6 +1381,8 @@ double szcounts_ntot;
 
   int M0_Mmin_flag;
 
+  int cosmo_model;
+
   double M_min_HOD_mass_factor_unwise;
   double x_out_truncated_nfw_profile;
   double x_out_truncated_nfw_profile_electrons;

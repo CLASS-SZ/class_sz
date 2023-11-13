@@ -551,14 +551,14 @@ cdef class Class:
         return
 
 
-    def calculate_pkl_fftlog_alphas(self,zpk,cosmo_model = 'lcdm'):
+    def calculate_pkl_fftlog_alphas(self,zpk):
         params_settings = self._pars
-        cnew = self.class_szfast.calculate_pkl_fftlog_alphas(cosmo_model = cosmo_model,zpk=zpk,**params_settings)
-        return self.class_szfast.cp_pkl_fftlog_alphas_nus[cosmo_model]['arr_0'],cnew
+        cnew = self.class_szfast.calculate_pkl_fftlog_alphas(zpk=zpk,**params_settings)
+        return self.class_szfast.cp_pkl_fftlog_alphas_nus[self.class_szfast.cosmo_model]['arr_0'],cnew
 
-    def get_pkl_reconstructed_from_fftlog(self,zpk,cosmo_model = 'lcdm'):
+    def get_pkl_reconstructed_from_fftlog(self,zpk):
         params_settings = self._pars
-        return self.class_szfast.get_pkl_reconstructed_from_fftlog(cosmo_model = 'lcdm',zpk=zpk,**params_settings)
+        return self.class_szfast.get_pkl_reconstructed_from_fftlog(zpk=zpk,**params_settings)
 
     def compute_class_szfast(self):
         # print('input parameters:',self._pars)
@@ -589,13 +589,31 @@ cdef class Class:
         # print('class_sz input calculation took:',end-start) # this takes < 1e-4s
 
         # print("skip",self.tsz.skip_background_and_thermo)
+
         params_settings = self._pars
+
         # print(self._pars)
         # print('h',self.h())
         # print(self.get_current_derived_parameters(['ln10^{10}A_s']))
 
         # Emulators
+
+
+
+
+
         cszfast = Class_szfast(**params_settings)
+
+
+        # if self.tsz.cosmo_model == 0:
+        #     cszfast.cosmo_model = 'lcdm'
+        # elif self.tsz.cosmo_model == 1:
+        #     cszfast.cosmo_model = 'mnu'
+        # elif self.tsz.cosmo_model == 2:
+        #     cszfast.cosmo_model = 'neff'
+        # elif self.tsz.cosmo_model == 3:
+        #     cszfast.cosmo_model = 'wcdm'
+
 
         if 'A_s' in self._pars:
           params_settings['ln10^{10}A_s'] = np.log(10**10*params_settings['A_s']) #self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
@@ -635,8 +653,7 @@ cdef class Class:
           start = time.time()
           # print('self.tsz.want_pp:',self.tsz.want_pp)
           if self.tsz.use_cmb_cls_from_file == 0:
-            cszfast.calculate_cmb(cosmo_model = 'lcdm',
-                                  want_tt=True,
+            cszfast.calculate_cmb(want_tt=True,
                                   want_te=True,
                                   want_ee=True,
                                   # want_pp=self.tsz.want_pp,

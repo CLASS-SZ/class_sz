@@ -79,6 +79,14 @@ class Class_szfast(object):
                 self.cszfast_pk_grid_pknl_flat = np.zeros(self.cszfast_pk_grid_nz*self.cszfast_pk_grid_nk)
                 self.cszfast_pk_grid_pkl_flat = np.zeros(self.cszfast_pk_grid_nz*self.cszfast_pk_grid_nk)
 
+            if k == 'cosmo_model':
+                # print('updating cosmo model')
+                cosmo_model_dict = {0: 'lcdm',
+                                   1: 'mnu',
+                                   2: 'neff',
+                                   3: 'wcdm'}
+                self.cosmo_model = cosmo_model_dict[v]
+                # print('self.cosmo_model',self.cosmo_model)
         # print('self.cszfast_pk_grid_nk',self.cszfast_pk_grid_nk)
         # print('self.cszfast_pk_grid_nz',self.cszfast_pk_grid_nz)
 
@@ -166,15 +174,15 @@ class Class_szfast(object):
         return 1
 
 
-    def calculate_pkl_fftlog_alphas(self,cosmo_model = 'lcdm',zpk = 0.,**params_values_dict):
+    def calculate_pkl_fftlog_alphas(self,zpk = 0.,**params_values_dict):
         params_values = params_values_dict.copy()
         params_dict = {}
         for k,v in params_values.items():
             params_dict[k]=[v]
         params_dict['z_pk_save_nonclass'] = [zpk]
 
-        predicted_testing_alphas_creal = self.cp_pkl_fftlog_alphas_real_nn[cosmo_model].predictions_np(params_dict)[0]
-        predicted_testing_alphas_cimag = self.cp_pkl_fftlog_alphas_imag_nn[cosmo_model].predictions_np(params_dict)[0]
+        predicted_testing_alphas_creal = self.cp_pkl_fftlog_alphas_real_nn[self.cosmo_model].predictions_np(params_dict)[0]
+        predicted_testing_alphas_cimag = self.cp_pkl_fftlog_alphas_imag_nn[self.cosmo_model].predictions_np(params_dict)[0]
         predicted_testing_alphas_cimag = np.append(predicted_testing_alphas_cimag,0.)
         creal = predicted_testing_alphas_creal
         cimag = predicted_testing_alphas_cimag
@@ -191,10 +199,10 @@ class Class_szfast(object):
         # self.predicted_fftlog_pkl_alphas = cnew
         return cnew
 
-    def get_pkl_reconstructed_from_fftlog(self,cosmo_model = 'lcdm',zpk = 0.,**params_values_dict):
+    def get_pkl_reconstructed_from_fftlog(self,zpk = 0.,**params_values_dict):
         #c_n_math = self.predicted_fftlog_pkl_alphas
-        c_n_math = self.calculate_pkl_fftlog_alphas(cosmo_model = cosmo_model,zpk = zpk,**params_values_dict)
-        nu_n_math = self.cp_pkl_fftlog_alphas_nus[cosmo_model]['arr_0']
+        c_n_math = self.calculate_pkl_fftlog_alphas(zpk = zpk,**params_values_dict)
+        nu_n_math = self.cp_pkl_fftlog_alphas_nus[self.cosmo_model]['arr_0']
         Nmax = int(len(c_n_math)-1)
         term1 = c_n_math[int(Nmax/2)]*self.cszfast_pk_grid_k**(nu_n_math[int(Nmax/2)])
         term2_array = [c_n_math[int(Nmax/2)+i]*self.cszfast_pk_grid_k**(nu_n_math[int(Nmax/2)+i]) for i in range(1, int(Nmax/2)+1)]
@@ -202,7 +210,6 @@ class Class_szfast(object):
         return self.cszfast_pk_grid_k,pk_reconstructed
 
     def calculate_cmb(self,
-                      cosmo_model = 'lcdm',
                       want_tt=True,
                       want_te=True,
                       want_ee=True,
@@ -212,17 +219,18 @@ class Class_szfast(object):
         # params_values['ln10^{10}A_s'] = params_values.pop("logA")
         # print('in cmb:',params_values)
         params_dict = {}
+        # print('cosmo_model',self.cosmo_model)
         for k,v in params_values.items():
             params_dict[k]=[v]
 
         if want_tt:
-            self.cp_predicted_tt_spectrum = self.cp_tt_nn[cosmo_model].ten_to_predictions_np(params_dict)[0]
+            self.cp_predicted_tt_spectrum = self.cp_tt_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0]
         if want_te:
-            self.cp_predicted_te_spectrum = self.cp_te_nn[cosmo_model].predictions_np(params_dict)[0]
+            self.cp_predicted_te_spectrum = self.cp_te_nn[self.cosmo_model].predictions_np(params_dict)[0]
         if want_ee:
-            self.cp_predicted_ee_spectrum = self.cp_ee_nn[cosmo_model].ten_to_predictions_np(params_dict)[0]
+            self.cp_predicted_ee_spectrum = self.cp_ee_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0]
         if want_pp:
-            self.cp_predicted_pp_spectrum = self.cp_pp_nn[cosmo_model].ten_to_predictions_np(params_dict)[0]
+            self.cp_predicted_pp_spectrum = self.cp_pp_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0]
 
     def load_cmb_cls_from_file(self,**params_values_dict):
         cls_filename = params_values_dict['cmb_cls_filename']
@@ -245,7 +253,7 @@ class Class_szfast(object):
 
 
     def calculate_pkl(self,
-                      cosmo_model = 'lcdm',
+                      # cosmo_model = self.cosmo_model,
                       **params_values_dict):
         nz = self.cszfast_pk_grid_nz # number of z-points in redshift data [21oct22] --> set to 80
         zmax = self.cszfast_pk_grid_zmax # max redshift of redshift data [21oct22] --> set to 4 because boltzmannbase.py wants to extrapolate
@@ -267,7 +275,7 @@ class Class_szfast(object):
         for zp in z_arr:
             params_dict_pp = params_dict.copy()
             params_dict_pp['z_pk_save_nonclass'] = [zp]
-            predicted_pk_spectrum_z.append(self.cp_pkl_nn[cosmo_model].predictions_np(params_dict_pp)[0])
+            predicted_pk_spectrum_z.append(self.cp_pkl_nn[self.cosmo_model].predictions_np(params_dict_pp)[0])
 
         predicted_pk_spectrum = np.asarray(predicted_pk_spectrum_z)
 
@@ -308,7 +316,7 @@ class Class_szfast(object):
 
 
     def calculate_sigma(self,
-                        cosmo_model = 'lcdm',
+                        # cosmo_model = self.cosmo_model,
                         # z_asked = None,
                         # r_asked = None,
                         **params_values_dict):
@@ -360,7 +368,7 @@ class Class_szfast(object):
     #     return (chi_star-chi)/chi_star
 
     def calculate_sigma8_and_der(self,
-                         cosmo_model = 'lcdm',
+                         # cosmo_model = self.cosmo_model,
                          **params_values_dict):
         params_values = params_values_dict.copy()
         # print('in pkl:',params_values)
@@ -368,13 +376,13 @@ class Class_szfast(object):
         params_dict = {}
         for k,v in zip(params_values.keys(),params_values.values()):
             params_dict[k]=[v]
-        self.cp_predicted_der = self.cp_der_nn[cosmo_model].ten_to_predictions_np(params_dict)[0]
+        self.cp_predicted_der = self.cp_der_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0]
         self.sigma8 = self.cp_predicted_der[1]
         return 0
 
 
     def calculate_sigma8_at_z(self,
-                             cosmo_model = 'lcdm',
+                             # cosmo_model = self.cosmo_model,
                              **params_values_dict):
         params_values = params_values_dict.copy()
         # print('in pkl:',params_values)
@@ -383,7 +391,7 @@ class Class_szfast(object):
         for k,v in zip(params_values.keys(),params_values.values()):
             params_dict[k]=[v]
 
-        s8z  = self.cp_s8_nn[cosmo_model].predictions_np(params_dict)
+        s8z  = self.cp_s8_nn[self.cosmo_model].predictions_np(params_dict)
         # print(self.s8z)
         self.s8z_interp = scipy.interpolate.interp1d(
                                                     np.linspace(0.,20.,5000),
@@ -396,7 +404,7 @@ class Class_szfast(object):
                                                     assume_sorted=False)
 
     def calculate_pknl(self,
-                      cosmo_model = 'lcdm',
+                      # cosmo_model = self.cosmo_model,
                       **params_values_dict):
         nz = self.cszfast_pk_grid_nz # number of z-points in redshift data [21oct22] --> set to 80
         zmax = self.cszfast_pk_grid_zmax # max redshift of redshift data [21oct22] --> set to 4 because boltzmannbase.py wants to extrapolate
@@ -418,7 +426,7 @@ class Class_szfast(object):
         for zp in z_arr:
             params_dict_pp = params_dict.copy()
             params_dict_pp['z_pk_save_nonclass'] = [zp]
-            predicted_pk_spectrum_z.append(self.cp_pknl_nn[cosmo_model].predictions_np(params_dict_pp)[0])
+            predicted_pk_spectrum_z.append(self.cp_pknl_nn[self.cosmo_model].predictions_np(params_dict_pp)[0])
 
         predicted_pk_spectrum = np.asarray(predicted_pk_spectrum_z)
 
@@ -444,14 +452,14 @@ class Class_szfast(object):
 
 
     def calculate_hubble(self,
-                                 cosmo_model = 'lcdm',
+                                 # cosmo_model = self.cosmo_model,
                                  **params_values_dict):
         params_values = params_values_dict.copy()
 
         params_dict = {}
         for k,v in zip(params_values.keys(),params_values.values()):
             params_dict[k]=[v]
-        self.cp_predicted_hubble = self.cp_h_nn[cosmo_model].ten_to_predictions_np(params_dict)[0]
+        self.cp_predicted_hubble = self.cp_h_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0]
         # print(self.cp_predicted_hubble)
         # z_interp =
         self.hz_interp = scipy.interpolate.interp1d(
@@ -465,7 +473,7 @@ class Class_szfast(object):
                                             assume_sorted=False)
 
     def calculate_chi(self,
-                      cosmo_model = 'lcdm',
+                      # cosmo_model = self.cosmo_model,
                       **params_values_dict):
         # def test_integrand_func(x, alpha, beta, i, j, k, l):
         #     return x * alpha * beta + i * j * k
@@ -488,7 +496,7 @@ class Class_szfast(object):
         params_dict = {}
         for k,v in zip(params_values.keys(),params_values.values()):
             params_dict[k]=[v]
-        self.cp_predicted_da  = self.cp_da_nn[cosmo_model].predictions_np(params_dict)[0]
+        self.cp_predicted_da  = self.cp_da_nn[self.cosmo_model].predictions_np(params_dict)[0]
         self.chi_interp = scipy.interpolate.interp1d(
                                                     self.cp_z_interp,
                                                     self.cp_predicted_da*(1.+self.cp_z_interp),
