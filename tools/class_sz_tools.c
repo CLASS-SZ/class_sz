@@ -13276,7 +13276,8 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
   // V->pvectsz[V->ptsz->index_multipole_for_pk] = l; // l1,l2 or l3
   // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
   // double pk1 = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-  double pk1 = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+  double pk1 = get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+  // printf("test k = %.3e z = %.3e pk = %.3e\n",(l+0.5)/chi,z,pk1);
   result = pk1;
   evaluate_effective_galaxy_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
 

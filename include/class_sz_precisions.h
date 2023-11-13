@@ -223,6 +223,9 @@ class_sz_ptsz_parameter(x_out_truncated_gas_density_profile_normalization,double
 class_sz_ptsz_parameter(x_out_matter_density_profile_normalization,double,2.)
 class_sz_ptsz_parameter(x_out_matter_density_profile,double,2.)
 
+class_sz_ptsz_parameter(has_pk,int,0)
+class_sz_ptsz_parameter(ngal_ngal_auto_only,int,0)
+
 
 class_sz_ptsz_parameter(use_fft_for_profiles_transform,int,0)
 

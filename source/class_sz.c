@@ -301,7 +301,7 @@ if (ptsz->use_class_sz_fast_mode == 0)
 ptsz->sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283.2980000259841/0.5176*pba->T_cmb/2.725;
 
 
-if (ptsz->need_sigma == 1 || ptsz->has_vrms2){
+if (ptsz->need_sigma == 1 || ptsz->has_vrms2 || ptsz->has_pk){
 
 
       double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
@@ -4464,7 +4464,8 @@ if (ptsz->sz_verbose>10) printf("-> freeing flag 11.\n");
 // if (ptsz->need_hmf + ptsz->has_vrms2 >= 1)
 
 if (ptsz->need_sigma == 1
- || ptsz->has_vrms2){
+ || ptsz->has_vrms2
+ || ptsz->has_pk){
    free(ptsz->array_redshift);
 
  }
@@ -6014,6 +6015,11 @@ int compute_sz(struct background * pba,
                                           Pvectsz[ptsz->index_ngal_for_galaxy_profile],
                                           Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile],
                                           Pvectsz[ptsz->index_multipole]);
+
+        if (ptsz->ngal_ngal_auto_only && (index_ngal1 != index_ngal2)){
+          return _SUCCESS_;
+        }
+
        }
 
       else if (index_integrand>=ptsz->index_integrand_id_ngal_ngal_2h_first && index_integrand <= ptsz->index_integrand_id_ngal_ngal_2h_last && ptsz->has_ngal_ngal_2h){
@@ -6033,6 +6039,12 @@ int compute_sz(struct background * pba,
                                           Pvectsz[ptsz->index_ngal_for_galaxy_profile],
                                           Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile],
                                           Pvectsz[ptsz->index_multipole]);
+
+
+        if (ptsz->ngal_ngal_auto_only && (index_ngal1 != index_ngal2)){
+          return _SUCCESS_;
+        }
+
        }
 
       else if (index_integrand>=ptsz->index_integrand_id_ngal_ngal_hf_first && index_integrand <= ptsz->index_integrand_id_ngal_ngal_hf_last && ptsz->has_ngal_ngal_hf){
@@ -6052,6 +6064,10 @@ int compute_sz(struct background * pba,
                                           Pvectsz[ptsz->index_ngal_for_galaxy_profile],
                                           Pvectsz[ptsz->index_ngal_prime_for_galaxy_profile],
                                           Pvectsz[ptsz->index_multipole]);
+
+        if (ptsz->ngal_ngal_auto_only && (index_ngal1 != index_ngal2)){
+          return _SUCCESS_;
+        }
        }
       else if (index_integrand>=ptsz->index_integrand_id_ngal_lens_1h_first && index_integrand <= ptsz->index_integrand_id_ngal_lens_1h_last && ptsz->has_ngal_lens_1h){
          Pvectsz[ptsz->index_md] = ptsz->index_md_ngal_lens_1h;

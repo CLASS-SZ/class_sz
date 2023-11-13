@@ -82,9 +82,9 @@ class Class_szfast(object):
             if k == 'cosmo_model':
                 # print('updating cosmo model')
                 cosmo_model_dict = {0: 'lcdm',
-                                   1: 'mnu',
-                                   2: 'neff',
-                                   3: 'wcdm'}
+                                    1: 'mnu',
+                                    2: 'neff',
+                                    3: 'wcdm'}
                 self.cosmo_model = cosmo_model_dict[v]
                 # print('self.cosmo_model',self.cosmo_model)
         # print('self.cszfast_pk_grid_nk',self.cszfast_pk_grid_nk)

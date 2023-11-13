@@ -2377,6 +2377,7 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
         ptsz->need_sigma = 1;
+        ptsz->has_pk = _TRUE_;
       }
 
       if ((strstr(string1,"bk_ttg_at_z_hf") != NULL) ) {
@@ -2391,6 +2392,7 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->need_sigma = 1;
         ptsz->has_vrms2 = 1;
+        ptsz->has_pk = _TRUE_;
       }
 
       if ((strstr(string1,"vrms2") != NULL) ) {
@@ -2517,6 +2519,7 @@ int input_read_parameters(
         ptsz->has_knl = _TRUE_;
         ptsz->has_nl_index = _TRUE_;
         ptsz->need_hmf = 1; // need sigma at R,z
+        ptsz->has_pk = _TRUE_;
         ptsz->has_galaxy = _TRUE_;
 
 
@@ -2534,6 +2537,7 @@ int input_read_parameters(
         ptsz->has_knl = _TRUE_;
         ptsz->has_nl_index = _TRUE_;
         ptsz->need_hmf = 1; // need sigma at R,z
+        ptsz->has_pk = _TRUE_;
         ptsz->has_lensing = _TRUE_;
       }
 
@@ -2653,6 +2657,7 @@ int input_read_parameters(
         ptsz->has_nl_index = _TRUE_;
         ptsz->need_hmf = 1; // need sigma at R,z
         ptsz->has_lensing = _TRUE_;
+        ptsz->has_pk = _TRUE_;
       }
 
 
@@ -2927,6 +2932,11 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->has_pk = _TRUE_;
+        // ptsz->need_sigma = 1;
+
+        // printf("has_pk = %d\n",ptsz->has_pk);
+        // exit(0);
 
 
         // ptsz->need_hmf = 1;
@@ -2939,6 +2949,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->has_pk = _TRUE_;
 
         // class_read_double("effective_galaxy_bias",ptsz->effective_galaxy_bias);
 
@@ -3007,6 +3018,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
 
@@ -3057,6 +3069,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
 
@@ -3067,6 +3080,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
 
@@ -3079,6 +3093,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
 
@@ -3089,6 +3104,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
 
@@ -3099,6 +3115,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
 
@@ -4619,6 +4636,10 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
         else  if ((strstr(string1,"blue") != NULL))
           ptsz->unwise_galaxy_sample_id=3;
         }
+
+
+    if (ptsz->has_pk)
+        ptsz->need_sigma = _TRUE_;
     // end of class_sz parameters
 
 
