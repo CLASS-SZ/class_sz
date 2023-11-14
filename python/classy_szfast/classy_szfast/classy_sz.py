@@ -148,6 +148,27 @@ class classy_sz(classy):
                     args=[])
 
 
+        if "cl_galn_galn" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("cl_galn_galn")
+            # specify the method to collect the new observable
+            self.collectors["cl_galn_galn"] = Collector(
+                    method="cl_galn_galn", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+
+        if "cl_galn_lens" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("cl_galn_lens")
+            # specify the method to collect the new observable
+            self.collectors["cl_galn_lens"] = Collector(
+                    method="cl_galn_lens", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+
+
+
+
         super().must_provide(**requirements)
 
     # get the required new observable
@@ -224,6 +245,15 @@ class classy_sz(classy):
         cls = deepcopy(self._current_state["Cl_yxmu"])
         return cls
 
+    def get_cl_galn_galn(self):
+        cls = {}
+        cls = deepcopy(self._current_state["cl_galn_galn"])
+        return cls
+    
+    def get_cl_galn_galn(self):
+        cls = {}
+        cls = deepcopy(self._current_state["cl_galn_lens"])
+        return cls
 
 
     # get the required new observable

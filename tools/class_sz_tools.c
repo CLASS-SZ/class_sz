@@ -12917,137 +12917,7 @@ double integrand_redshift(double ln1pz, void *p){
 
 
   double kl;
-  //  if (_pk_at_z_1h_
-  //   || _pk_gg_at_z_1h_
-  //   || _pk_at_z_2h_
-  //   || _pk_gg_at_z_2h_
-  //   || _bk_at_z_1h_
-  //   || _bk_at_z_2h_
-  //   || _bk_at_z_3h_
-  //   || _bk_ttg_at_z_1h_
-  //   || _bk_ttg_at_z_2h_
-  //   || _bk_ttg_at_z_3h_
-  // ){
-  //    int index_k = (int) V->pvectsz[ptsz->index_k_for_pk_hm];
-  //    kl = V->ptsz->k_for_pk_hm[index_k];
-  //     }
-  //  else{
-  //    int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
-  //    kl = (V->ptsz->ell[index_l]+0.5)/chi;
-  //   }
-
-
-
-//   if (((V->ptsz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_lensmag_1halo))
-//     ||((V->ptsz->has_tSZ_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lensmag_1h))
-//     ||((V->ptsz->has_tSZ_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_lensmag_2h))
-//     ||((V->ptsz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_1h))
-//     ||((V->ptsz->has_gal_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lensmag_2h))
-//     ||((V->ptsz->has_lensmag_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_1h))
-//     ||((V->ptsz->has_lensmag_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lensmag_lensmag_2h))
-// ){
-//     // compute kernel for lensing magnification
-//     // lensing of galaxies
-//
-//     evaluate_redshift_int_lensmag(V->pvectsz,V->ptsz);
-//     double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_lensmag];
-//     // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
-//     V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_lensmag);
-//
-//   }
-//   else if (
-//       ((V->ptsz->has_lens_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_1h))
-//     ||((V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
-//   )
-//   {
-//
-// // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
-// double chi_star =  V->ptsz->chi_star;  // in Mpc/h
-// // sigma_crit_lensmag:
-// evaluate_redshift_int_lensmag(V->pvectsz,V->ptsz);
-// double redshift_int_lensmag = V->pvectsz[V->ptsz->index_W_lensmag];
-//
-// double sigma_crit_lensmag = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_lensmag);
-// // sigma crit kappa:
-// double sigma_crit_kappa =  pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)*chi_star/chi/(chi_star-chi);
-//
-// V->pvectsz[V->ptsz->index_lensing_Sigma_crit] =  sqrt(sigma_crit_lensmag*sigma_crit_kappa);
-//
-// // printf("%.5e %.5e %.5e\n",redshift_int_lensmag,sigma_crit_lensmag,sigma_crit_kappa);
-//
-//   }
-//   else if (
-//       ((V->ptsz->has_gal_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_1h))
-//     ||((V->ptsz->has_gal_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_gallens_2h))
-//     ||((V->ptsz->has_gallens_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_gallens_1h))
-//     ||((V->ptsz->has_gallens_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_gallens_2h))
-//   )
-//   {
-//
-//     evaluate_redshift_int_gallens_sources(V->pvectsz,V->ptsz);
-//     double redshift_int_sources = V->pvectsz[V->ptsz->index_W_gallens_sources];
-//     // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
-//     V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_sources);
-//     if (isnan(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])||isinf(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])){
-//       printf("%.3e\n",redshift_int_sources);
-//       printf("nan or inf in sigmacrit\n");
-//       exit(0);
-//     }
-//   }
-//
-//   else if (
-//     ((V->ptsz->has_gallens_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_lens_1h))
-//     ||((V->ptsz->has_gallens_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_lens_2h))
-//   )
-//   {
-//
-//     evaluate_redshift_int_gallens_sources(V->pvectsz,V->ptsz);
-//     double redshift_int_sources = V->pvectsz[V->ptsz->index_W_gallens_sources];
-//     // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
-//     double chi_star =  V->ptsz->chi_star;  // in Mpc/h
-//     double sigma_crit_kappa =  pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)*chi_star/chi/(chi_star-chi);
-//     double sigma_crit_gallens = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_sources);
-//     V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = sqrt(sigma_crit_gallens*sigma_crit_kappa);
-//
-//
-//     if (isnan(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])||isinf(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])){
-//       printf("%.3e\n",redshift_int_sources);
-//       printf("nan or inf in sigmacrit\n");
-//       exit(0);
-//     }
-//   }
-//
-//   else if (
-//     ((V->ptsz->has_kSZ_kSZ_gallens_1h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_1h_fft))
-//     ||((V->ptsz->has_kSZ_kSZ_gallens_2h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_2h_fft))
-//     ||((V->ptsz->has_kSZ_kSZ_gallens_3h_fft == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_3h_fft))
-//   )
-//   {
-//
-//     evaluate_redshift_int_gallens_sources(V->pvectsz,V->ptsz);
-//     double redshift_int_sources = V->pvectsz[V->ptsz->index_W_gallens_sources];
-//     // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
-//     V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)/(chi*redshift_int_sources);
-//
-//
-//     if (isnan(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])||isinf(V->pvectsz[V->ptsz->index_lensing_Sigma_crit])){
-//       printf("%.3e\n",redshift_int_sources);
-//       printf("nan or inf in sigmacrit\n");
-//       exit(0);
-//     }
-//   }
-//   else {
-//
-// // CMB lensing
-// // Eq. 6 of https://arxiv.org/pdf/1312.4525.pdf
-//
-// // double chi = sqrt(V->pvectsz[V->ptsz->index_chi2]);
-// double chi_star =  V->ptsz->chi_star;  // in Mpc/h
-// double sigma_crit_kappa =  pow(3.*pow(V->pba->H0/V->pba->h,2)/2./V->ptsz->Rho_crit_0,-1)*pow((1.+z),1.)*chi_star/chi/(chi_star-chi);
-// V->pvectsz[V->ptsz->index_lensing_Sigma_crit] = sigma_crit_kappa;
-//
-//
-//   }
+ 
 
   // critical density at z in (Msun/h)/(Mpc/h)^3
   V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
@@ -13117,10 +12987,13 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
   if ((V->ptsz->has_gal_gal_hf == _TRUE_) && (index_md == V->ptsz->index_md_gal_gal_hf)) {
     int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
     double l = V->ptsz->ell[index_l];
-    // V->pvectsz[V->ptsz->index_multipole_for_pk] = l; // l1,l2 or l3
-    // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-    // double pk1 = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-    double pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+    double pk1;
+    if (V->ptsz->use_pkl_in_linbias_calc){
+        pk1 =  get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+       }
+    else{
+        pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+        }
     result = pk1;
     evaluate_effective_galaxy_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
     result *= V->pvectsz[V->ptsz->index_halo_bias]*V->pvectsz[V->ptsz->index_halo_bias];
@@ -13132,10 +13005,13 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
   else if ((V->ptsz->has_ngal_ngal_hf == _TRUE_) && (index_md == V->ptsz->index_md_ngal_ngal_hf)) {
     int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
     double l = V->ptsz->ell[index_l];
-    // V->pvectsz[V->ptsz->index_multipole_for_pk] = l; // l1,l2 or l3
-    // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-    // double pk1 = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-    double pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+    double pk1;
+    if (V->ptsz->use_pkl_in_linbias_calc){
+        pk1 =  get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+       }
+    else{
+        pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+        }
     result = pk1;
     int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
     int index_g_prime = (int) V->pvectsz[V->ptsz->index_ngal_prime_for_galaxy_profile];
@@ -13273,12 +13149,15 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
 
   int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
   double l = V->ptsz->ell[index_l];
-  // V->pvectsz[V->ptsz->index_multipole_for_pk] = l; // l1,l2 or l3
-  // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-  // double pk1 = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-  double pk1 = get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
-  // printf("test k = %.3e z = %.3e pk = %.3e\n",(l+0.5)/chi,z,pk1);
-  result = pk1;
+
+    double pk1;
+    if (V->ptsz->use_pkl_in_linbias_calc){
+        pk1 =  get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+       }
+    else{
+        pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+        }
+
   evaluate_effective_galaxy_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
 
   result *= V->pvectsz[V->ptsz->index_halo_bias];
@@ -13299,7 +13178,16 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
   else if ((V->ptsz->has_ngal_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_hf)) {
     int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
     double l = V->ptsz->ell[index_l];
-    double pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+
+
+    double pk1;
+    if (V->ptsz->use_pkl_in_linbias_calc){
+        pk1 =  get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+       }
+    else{
+        pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+        }
+    
     result = pk1;
     int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
     evaluate_effective_galaxy_bias_ngal(index_g,V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -13325,10 +13213,16 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
 //printf("ok\n");
   int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
   double l = V->ptsz->ell[index_l];
-  // V->pvectsz[V->ptsz->index_multipole_for_pk] = l; // l1,l2 or l3
-  // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-  // double pk1 = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-  double pk1 = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+    
+    double pk1;
+    if (V->ptsz->use_pkl_in_linbias_calc){
+        pk1 =  get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+       }
+    else{
+        pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+        }
+
+
   result = pk1;
   evaluate_effective_galaxy_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
 
@@ -13352,10 +13246,13 @@ else if ((V->ptsz->has_lensmag_lensmag_hf == _TRUE_) && (index_md == V->ptsz->in
 
   int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
   double l = V->ptsz->ell[index_l];
-  // V->pvectsz[V->ptsz->index_multipole_for_pk] = l; // l1,l2 or l3
-  // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-  // double pk1 = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-  double pk1 = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+    double pk1;
+    if (V->ptsz->use_pkl_in_linbias_calc){
+        pk1 =  get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+       }
+    else{
+        pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+        }
   result = pk1;
 
   double W_lensmag =  radial_kernel_W_lensing_magnification_at_z(V->pvecback,
@@ -13376,10 +13273,15 @@ else if ((V->ptsz->has_lens_lensmag_hf == _TRUE_) && (index_md == V->ptsz->index
 
   int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
   double l = V->ptsz->ell[index_l];
-  // V->pvectsz[V->ptsz->index_multipole_for_pk] = l; // l1,l2 or l3
-  // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-  // double pk1 = V->pvectsz[V->ptsz->index_pk_for_halo_bias];
-  double pk1 = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+
+    double pk1;
+    if (V->ptsz->use_pkl_in_linbias_calc){
+        pk1 =  get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+       }
+    else{
+        pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+        }
+
   result = pk1;
 
   double W_lensmag =  radial_kernel_W_lensing_magnification_at_z(V->pvecback,
@@ -13407,7 +13309,15 @@ else if ((V->ptsz->has_lens_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md
   {
   int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
   double l = V->ptsz->ell[index_l];
-  double pk1 = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+
+    double pk1;
+    if (V->ptsz->use_pkl_in_linbias_calc){
+        pk1 =  get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+       }
+    else{
+        pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+        }
+
   result = pk1;
   }
 

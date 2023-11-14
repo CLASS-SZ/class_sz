@@ -560,6 +560,8 @@ cdef class Class:
         params_settings = self._pars
         return self.class_szfast.get_pkl_reconstructed_from_fftlog(zpk=zpk,**params_settings)
 
+    # @cython.boundscheck(False)
+    # @cython.wraparound(False)
     def compute_class_szfast(self):
         # print('input parameters:',self._pars)
         # oldpars = self._pars.copy()
@@ -667,7 +669,6 @@ cdef class Class:
         #  cszfast.calculate_pkl_fftlog_alphas(**params_settings)
 
 
-        #if self.pt.has_pk_matter and self.tsz.skip_pk == 0:
         if self.tsz.skip_pkl == 0:
           # print('calculating pkl')
           start = time.time()
@@ -745,23 +746,51 @@ cdef class Class:
           else:
             # print('tabulate sigma')
             start = time.time()
+
             cszfast.calculate_sigma(**params_settings)
             # print('lnsigma2',cszfast.cszfast_pk_grid_lnsigma2_flat)
             # print('dsigma2',cszfast.cszfast_pk_grid_dsigma2_flat)
             # print('ln1pz',cszfast.cszfast_pk_grid_ln1pz)
             # print('lnr',cszfast.cszfast_pk_grid_lnr)
             if self.tsz.need_sigma == 1:
+
               index_z_r = 0
-              for index_z in range(self.tsz.n_arraySZ):
+              
+            for index_z in range(self.tsz.n_arraySZ):
+
+                self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
+
                 for index_r in range(self.tsz.ndimSZ):
-                      self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
-                      self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
-                      self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
-                      self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
-                      self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
-                      self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pkl_flat[index_z_r]
-                      self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
-                      index_z_r += 1
+
+                    if index_z == 0:
+
+                        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
+                        self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
+
+                    self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
+                    self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
+                    self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
+                    self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pkl_flat[index_z_r]
+
+                    index_z_r += 1
+
+            #   for index_z in range(self.tsz.n_arraySZ):
+            #     self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
+            #   for index_r in range(self.tsz.ndimSZ):
+            #     self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
+            #     self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
+            #   copy_multiple_arrays(cszfast.cszfast_pk_grid_lnsigma2_flat,
+            #                        cszfast.cszfast_pk_grid_dsigma2_flat,
+            #                        cszfast.cszfast_pk_grid_pknl_flat,
+            #                        cszfast.cszfast_pk_grid_pkl_flat,
+            #                        self.tsz.array_pknl_at_z_and_k,
+            #                        self.tsz.array_dsigma2dR_at_z_and_R,
+            #                        self.tsz.array_pknl_at_z_and_k,
+            #                        self.tsz.array_pkl_at_z_and_k,
+            #                        self.tsz.n_arraySZ,
+            #                        self.tsz.ndimSZ)
+
+
             end = time.time()
             # print('end tabulate sigma:',end-start)
             if class_sz_tabulate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
