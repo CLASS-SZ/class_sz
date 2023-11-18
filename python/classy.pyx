@@ -1300,6 +1300,9 @@ cdef class Class:
         return cl
 
     def z_of_r (self,z_array):
+        """
+        returns chi [Mpc] vs dzdchi [1/Mpc] 
+        """
         cdef double tau=0.0
         cdef int last_index=0 #junk
         cdef double * pvecback
@@ -1308,10 +1311,14 @@ cdef class Class:
 
         pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
 
+        ###print(">>>>> This function is unclear (BB112023)\n")
+
+        ### raise CosmoSevereError(self.ba.error_message)
+
         if self.tsz.skip_background_and_thermo:
           i = 0
           for redshift in z_array:
-            r[i] = self.class_szfast.get_chi(redshift)
+            r[i] = self.class_szfast.get_chi(redshift)/self.h()
             dzdr[i] = self.class_szfast.get_hubble(redshift)
             i += 1
         else:
@@ -1883,6 +1890,40 @@ cdef class Class:
         free(pvecback)
 
         return D_A
+
+    def get_radial_kernel_W_galaxy_ngal_at_z(self, z, index_g):
+        """
+
+        Parameters
+        ----------
+        z : float
+                Desired redshift
+        """
+        cdef double tau
+        cdef int last_index #junk
+        cdef double * pvecback
+
+        pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
+
+        if self.tsz.skip_background_and_thermo:
+          raise CosmoSevereError(self.ba.error_message)
+        else:
+          if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
+              raise CosmoSevereError(self.ba.error_message)
+
+          if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+              raise CosmoSevereError(self.ba.error_message)
+
+          Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,
+                                                pvecback,
+                                                z,
+                                                &self.ba,
+                                                &self.tsz)
+
+        free(pvecback)
+
+        return Wg
+
 
 
     def scale_independent_growth_factor(self, z):

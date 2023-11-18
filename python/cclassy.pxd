@@ -936,6 +936,12 @@ cdef extern from "class.h":
     double get_c200c_at_m_and_z(double M, double z, void * ba, void * tsz)
     double get_c500c_at_m_and_z(double M, double z, void * ba, void * tsz)
 
+    double radial_kernel_W_galaxy_ngal_at_z(int index_g,
+                                            double * pvecback,
+                                            double z,
+                                            void * ba,
+                                            void * tsz)
+
     double m_nfw(double x)
 
     double get_vrms2_at_z(double z,

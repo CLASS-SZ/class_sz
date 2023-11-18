@@ -20595,13 +20595,13 @@ return result;
 
 double radial_kernel_W_galaxy_ngal_at_z( int index_g,
                                          double * pvecback,
-                                         double * pvectsz,
+                                         double z,
                                          struct background * pba,
                                          struct tszspectrum * ptsz){
 
 double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
 
-double z_asked  = pvectsz[ptsz->index_z];
+double z_asked  = z;
 double phig = 0.;
 
 if(z_asked<ptsz->normalized_dndz_ngal_z[index_g][0])

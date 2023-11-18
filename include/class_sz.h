@@ -2636,7 +2636,7 @@ double radial_kernel_W_galaxy_at_z( double * pvecback,
 
 double radial_kernel_W_galaxy_ngal_at_z(  int index_g,
                                           double * pvecback,
-                                          double * pvectsz,
+                                          double z,
                                           struct background * pba,
                                           struct tszspectrum * ptsz);
 

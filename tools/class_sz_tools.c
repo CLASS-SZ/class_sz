@@ -13581,8 +13581,18 @@ int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
 int index_g_prime = (int) V->pvectsz[V->ptsz->index_ngal_prime_for_galaxy_profile];
 
 
-double Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,V->pvecback,V->pvectsz,V->pba,V->ptsz);
-double Wg_galprime = radial_kernel_W_galaxy_ngal_at_z(index_g_prime,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+double Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,
+                                             V->pvecback,
+                                             z,
+                                             V->pba,
+                                             V->ptsz);
+
+double Wg_galprime = radial_kernel_W_galaxy_ngal_at_z(index_g_prime,
+                                                      V->pvecback,
+                                                      z,
+                                                      V->pba,
+                                                      V->ptsz);
+
 result *= Wg*Wg_galprime*pow(1/V->pvectsz[V->ptsz->index_chi2],2.);
 }
 
@@ -13593,7 +13603,11 @@ if ( ((V->ptsz->has_ngal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_ng
 // multiply by radial kernel for galaxies (squared for gxg quantities)
 
 int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
-double Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+double Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,
+                                             V->pvecback,
+                                             z,
+                                             V->pba,
+                                             V->ptsz);
 // if (index_g<2)
 // printf("index_g = %d Wg = %.5e z = %.5e\n",index_g,Wg,z);
 
