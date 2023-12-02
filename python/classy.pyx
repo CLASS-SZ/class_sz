@@ -568,7 +568,9 @@ cdef class Class:
         if 'ns' in self._pars:
           self._pars['n_s'] = self._pars.pop('ns')
         if 'As' in self._pars:
-          self._pars['A_s'] = self._pars.pop('As')
+          self._pars['ln10^{10}A_s'] = np.log(10**10*self._pars.pop('As'))
+        if 'A_s' in self._pars:
+          self._pars['ln10^{10}A_s'] = np.log(10**10*self._pars.pop('A_s'))
         if 'mnu' in self._pars:
           self._pars['m_ncdm'] = self._pars.pop('mnu')
         if 'omch2' in self._pars:
@@ -582,6 +584,9 @@ cdef class Class:
         if 'Omega_cdm' in self._pars:
           self._pars['omega_cdm'] = self._pars.pop('Omega_cdm')*(self._pars['H0']/100.)**2.
 
+        # if 'age' and 'H0' in self._pars:
+        #     del self._pars['age']
+
 
         # print('new input parameters:',self._pars)
 
@@ -592,13 +597,44 @@ cdef class Class:
 
         # print("skip",self.tsz.skip_background_and_thermo)
 
-        params_settings = self._pars
+        # Emulators
+        skip_background_and_thermo = 0
+        if 'skip_background_and_thermo' in self._pars:
+            skip_background_and_thermo = self._pars['skip_background_and_thermo']
 
-        # print(self._pars)
+        # print(">>>> skip_background_and_thermo:",skip_background_and_thermo)
+        if not skip_background_and_thermo:
+
+            #start = time.time()
+            self.compute(level=["thermodynamics"])
+            #end = time.time()
+            #print('>>> class_sz bg/th calculation took:',end-start) # this takes < 1e-4s
+
+        else:
+            #start = time.time()
+            # print("====> pars before compute:", self._pars)
+            self.compute(level=["input"])
+            #end = time.time()
+            #print('>>> class_sz input calculation took:',end-start) # this takes < 1e-4s
+
+
+        params_settings = self._pars.copy()
+
+
+        if 'age' in self._pars:
+            # print('>>> got h0 = %.8e for age = %.8e'%(self.h(),params_settings['age']))
+            params_settings['H0'] = 100.*self.h()
+            # print('>>> params_settings:',params_settings)
+            del params_settings['age']
+            # del params_settings['h']
+        
+        #print('--------> new input parameters after age found:',params_settings)
+
+        # print("pars before input:",self._pars)
         # print('h',self.h())
         # print(self.get_current_derived_parameters(['ln10^{10}A_s']))
 
-        # Emulators
+
 
 
 
@@ -617,9 +653,9 @@ cdef class Class:
         #     cszfast.cosmo_model = 'wcdm'
 
 
-        if 'A_s' in self._pars:
-          params_settings['ln10^{10}A_s'] = np.log(10**10*params_settings['A_s']) #self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
-          params_settings.pop('A_s')
+        # if 'A_s' in self._pars:
+        #   params_settings['ln10^{10}A_s'] = np.log(10**10*params_settings['A_s']) #self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
+        #   params_settings.pop('A_s')
         if '100*theta_s' in self._pars:
           # print('doing theta_s -> H0')
           cszfast.get_H0_from_thetas(params_settings)
@@ -646,7 +682,8 @@ cdef class Class:
         # exit(0)
 
         # start = time.time()
-        self.compute(level=["input"])
+        #### do i need this here??? BB nov 23
+        # self.compute(level=["input"])
         # end = time.time()
         # print('class_sz input calculation took:',end-start) # this takes < 1e-4s
 
@@ -664,6 +701,7 @@ cdef class Class:
             cszfast.load_cmb_cls_from_file(**params_settings)
           end = time.time()
           # print('cmb calculation took:',end-start)
+          # print(">>> cmb computed")
 
         #if self.tsz.skip_pkl_fftlog_alpha == 0:
         #  cszfast.calculate_pkl_fftlog_alphas(**params_settings)
@@ -711,6 +749,8 @@ cdef class Class:
           self.sigma8_fast = cszfast.sigma8
         else:
           self.sigma8_fast = 0.
+
+
         if self.tsz.skip_sigma8_at_z == 0:
           start = time.time()
           cszfast.calculate_sigma8_at_z(**params_settings)
@@ -720,7 +760,7 @@ cdef class Class:
 
 
 
-
+        # print(">>> moving to bg th")
         if self.tsz.skip_background_and_thermo:
           if self.tsz.skip_chi == 0:
             cszfast.calculate_chi(**params_settings)
@@ -731,12 +771,17 @@ cdef class Class:
           self.computed = True
           return
         else:
-          self.compute(level=["thermodynamics"])
+          # print(">>> computing bg and th with:",self._pars)
+          # start = time.time()
+          # self.compute(level=["thermodynamics"])
+          # end = time.time()
+          # print('>>> class_sz bg/th calculation took:',end-start) # this takes < 1e-4s
           self.tsz.use_class_sz_fast_mode = 1
           if class_sz_cosmo_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
           &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
               self.struct_cleanup()
               raise CosmoComputationError(self.tsz.error_message)
+          # print(">>> bg and th computed")
           if self.tsz.skip_class_sz:
               # print("skipping class_sz")
               # print("pkmatter:",self.pt.has_pk_matter)
@@ -757,8 +802,10 @@ cdef class Class:
               index_z_r = 0
               
             for index_z in range(self.tsz.n_arraySZ):
+                ln1pzc = cszfast.cszfast_pk_grid_ln1pz[index_z]
+                # print(">>> filling sig/pk array at z = %.3e"%(np.exp(ln1pzc)-1.))
 
-                self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
+                self.tsz.array_redshift[index_z] = ln1pzc
 
                 for index_r in range(self.tsz.ndimSZ):
 
@@ -833,6 +880,8 @@ cdef class Class:
     def compute_class_sz(self,pdict_to_update):
         self._fillparfile()
         for k,v in pdict_to_update.items():
+          if k == 'fNL':
+            self.tsz.fNL = pdict_to_update[k]
           if k == 'P0GNFW':
             self.tsz.P0GNFW = pdict_to_update[k]
           if k == 'c500':
@@ -1371,8 +1420,16 @@ cdef class Class:
         """
         cdef double pk
         if self.tsz.use_class_sz_fast_mode == 1:
-          pk = self.class_szfast.get_pknl_at_k_and_z(k,z)
+         
           # pk = self.get_pk_nonlin_at_k_and_z(k/self.h(), z)*self.h()**3
+          zmax = self.class_szfast.cszfast_pk_grid_zmax
+          if z>zmax:
+            pk_linzmax =  self.class_szfast.get_pkl_at_k_and_z(k,zmax)
+            Dz = self.scale_independent_growth_factor(z)
+            Dzmax = self.scale_independent_growth_factor(zmax)
+            pk = pk_linzmax*(Dz/Dzmax)**2.
+          else:
+            pk = self.class_szfast.get_pknl_at_k_and_z(k,z)
         else:
           if (self.pt.has_pk_matter == _FALSE_):
               raise CosmoSevereError("No power spectrum computed. You must add mPk to the list of outputs.")
@@ -1427,8 +1484,17 @@ cdef class Class:
         cdef double pk_lin
 
         if self.tsz.use_class_sz_fast_mode == 1:
-          pk_lin = self.class_szfast.get_pkl_at_k_and_z(k,z)
+          
           # pk_lin = self.get_pk_lin_at_k_and_z(k/self.h(), z)*self.h()**3
+          zmax = self.class_szfast.cszfast_pk_grid_zmax
+          if z>zmax:
+            pk_linzmax =  self.class_szfast.get_pkl_at_k_and_z(k,zmax)
+            Dz = self.scale_independent_growth_factor(z)
+            Dzmax = self.scale_independent_growth_factor(zmax)
+            pk_lin = pk_linzmax*(Dz/Dzmax)**2.
+          else:
+            pk_lin = self.class_szfast.get_pkl_at_k_and_z(k,z)
+
         else:
           if (self.pt.has_pk_matter == _FALSE_):
               raise CosmoSevereError("No power spectrum computed. You must add mPk to the list of outputs.")

@@ -231,6 +231,7 @@ class Class_szfast(object):
             self.cp_predicted_ee_spectrum = self.cp_ee_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0]
         if want_pp:
             self.cp_predicted_pp_spectrum = self.cp_pp_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0]
+        # print('>>> clssy_szfast.py cmb computed')
 
     def load_cmb_cls_from_file(self,**params_values_dict):
         cls_filename = params_values_dict['cmb_cls_filename']

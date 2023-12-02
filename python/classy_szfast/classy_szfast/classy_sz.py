@@ -266,7 +266,8 @@ class classy_sz(classy):
     def calculate(self, state, want_derived=True, **params_values_dict):
         # Set parameters
         params_values = params_values_dict.copy()
-        # print('class/class_sz using params:',params_values)
+        # print('\n\n')
+        # print('>>> class_sz.py: class/class_sz using params:',params_values)
 
         # exit(0)
         try:

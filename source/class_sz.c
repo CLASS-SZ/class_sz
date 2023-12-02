@@ -11839,6 +11839,8 @@ double eta_IA = ptsz->eta_IA;
 double A_IA_of_z;
 A_IA_of_z =  A_IA*pow((1.+z)/(1.+z0),eta_IA)*c1_rhom0/D;
 
+free(pvecback);
+
 return A_IA_of_z;
 }
 
@@ -11890,6 +11892,8 @@ double nz = get_source_galaxy_number_counts(z,ptsz);
 double dz_dchi = pvecback[pba->index_bg_H]/pba->h;
 
 result = A_IA_of_z*nz/chi/chi*dz_dchi;
+
+free(pvecback);
 return result;
 }
 
@@ -13225,9 +13229,75 @@ exit(0);
   }
  if (z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1]){
     // z_asked = ptsz->array_redshift[ptsz->n_arraySZ-1];
+if (ptsz->use_class_sz_fast_mode){
+
+double zmax = exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.;
+double zp = exp(z_asked) - 1.;
+// zp = zmax;
+double Dzmax, Dz;
+
+double * pvecback;
+double tau;
+int first_index_back = 0;
+class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+class_call(background_tau_of_z(pba,zmax,&tau),
+           pba->error_message,
+           pba->error_message);
+
+class_call(background_at_tau(pba,
+                             tau,
+                             pba->long_info,
+                             pba->inter_normal,
+                             &first_index_back,
+                             pvecback),
+           pba->error_message,
+           pba->error_message);
+
+
+
+
+Dzmax = pvecback[pba->index_bg_D];
+
+double z_asked_max = ptsz->array_redshift[ptsz->n_arraySZ-1];
+double sigma = exp(pwl_interp_2d(ptsz->n_arraySZ,
+                                    ptsz->ndimSZ,
+                                    ptsz->array_redshift,
+                                    ptsz->array_radius,
+                                    ptsz->array_sigma_at_z_and_R,
+                                    1,
+                                    &z_asked_max,
+                                    &R_asked));
+
+class_call(background_tau_of_z(pba,zp,&tau),
+           pba->error_message,
+           pba->error_message);
+
+class_call(background_at_tau(pba,
+                             tau,
+                             pba->long_info,
+                             pba->inter_normal,
+                             &first_index_back,
+                             pvecback),
+           pba->error_message,
+           pba->error_message);
+
+Dz = pvecback[pba->index_bg_D];
+
+
+  // printf(">>> extrapolating.\n");
+free(pvecback);
+
+return sigma*Dz/Dzmax;
+
+
+}
+else{
 printf("get_sigm: z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1].. check bounds.\n");
 printf("z_asked = %.15e ptsz->array_redshift[ptsz->n_arraySZ-1] = %.15e\n",exp(z_asked)-1.,exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.);
 exit(0);
+}
   }
 
  if (R_asked<ptsz->array_radius[0]){
@@ -13300,8 +13370,83 @@ exit(0);
   }
  if (z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1]){
     // z_asked = ptsz->array_redshift[ptsz->n_arraySZ-1];
+
+if (ptsz->use_class_sz_fast_mode){
+  
+double zmax = exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.;
+double zp = exp(z_asked) - 1.;
+// double zp = zmax;
+double Dzmax, Dz;
+
+double * pvecback;
+double tau;
+int first_index_back = 0;
+class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+class_call(background_tau_of_z(pba,zmax,&tau),
+           pba->error_message,
+           pba->error_message);
+
+class_call(background_at_tau(pba,
+                             tau,
+                             pba->long_info,
+                             pba->inter_normal,
+                             &first_index_back,
+                             pvecback),
+           pba->error_message,
+           pba->error_message);
+
+
+
+
+Dzmax = pvecback[pba->index_bg_D];
+
+double z_asked_max = ptsz->array_redshift[ptsz->n_arraySZ-1];
+
+double sigma =  pwl_interp_2d(
+                ptsz->n_arraySZ,
+                ptsz->ndimSZ,
+                ptsz->array_redshift,
+                ptsz->array_radius,
+                ptsz->array_dsigma2dR_at_z_and_R,
+                1,
+                &z_asked_max,
+                &R_asked
+                );
+
+sigma = sigma/2.;
+
+class_call(background_tau_of_z(pba,zp,&tau),
+           pba->error_message,
+           pba->error_message);
+
+class_call(background_at_tau(pba,
+                             tau,
+                             pba->long_info,
+                             pba->inter_normal,
+                             &first_index_back,
+                             pvecback),
+           pba->error_message,
+           pba->error_message);
+
+Dz = pvecback[pba->index_bg_D];
+
+
+  // printf(">>> extrapolating.\n");
+free(pvecback);
+
+return sigma*pow(Dz/Dzmax,2.);
+
+
+}
+else{
 printf("get_dlnsigm: z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1].. check bounds.\n");
+printf("z_asked = %.15e ptsz->array_redshift[ptsz->n_arraySZ-1] = %.15e\n",exp(z_asked)-1.,exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.);
 exit(0);
+}
+// printf("get_dlnsigm: z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1].. check bounds.\n");
+// exit(0);
   }
 
  if (R_asked<ptsz->array_radius[0]){
@@ -13480,31 +13625,89 @@ double get_pk_nonlin_at_k_and_z(double k, double z,
                           struct tszspectrum * ptsz){
 
 if (ptsz->use_class_sz_fast_mode){
-double pk = get_pk_nonlin_at_k_and_z_fast(k,z,pba,ppm,pnl,ptsz);
-return pk;
-}
+double pk;
+double z_asked = log(1.+z);
+if (z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1]){
+     double zmax = exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.;
+      double zp = exp(z_asked) - 1.;
+      // double zp = zmax;
+      double Dzmax, Dz;
+
+      double * pvecback;
+      double tau;
+      int first_index_back = 0;
+      class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+      class_call(background_tau_of_z(pba,zmax,&tau),
+                pba->error_message,
+                pba->error_message);
+
+      class_call(background_at_tau(pba,
+                                  tau,
+                                  pba->long_info,
+                                  pba->inter_normal,
+                                  &first_index_back,
+                                  pvecback),
+                pba->error_message,
+                pba->error_message);
+
+
+
+
+      Dzmax = pvecback[pba->index_bg_D];
+
+      class_call(background_tau_of_z(pba,zp,&tau),
+                pba->error_message,
+                pba->error_message);
+
+      class_call(background_at_tau(pba,
+                                  tau,
+                                  pba->long_info,
+                                  pba->inter_normal,
+                                  &first_index_back,
+                                  pvecback),
+                pba->error_message,
+                pba->error_message);
+
+      Dz = pvecback[pba->index_bg_D];
+      free(pvecback);
+
+      pk = get_pk_nonlin_at_k_and_z_fast(k,zmax,pba,ppm,pnl,ptsz)*pow(Dz/Dzmax,2.);
+
+  }
+
 else{
-if ((k*pba->h < exp(pnl->ln_k[0])) || (k*pba->h > exp(pnl->ln_k[pnl->k_size-1]))){
-  return 0.;
+  pk = get_pk_nonlin_at_k_and_z_fast(k,z,pba,ppm,pnl,ptsz);
+  }
+
+return pk;
+
 }
 
-double pk;
-double * pk_ic = NULL;
-          class_call(nonlinear_pk_at_k_and_z(
-                                            pba,
-                                            ppm,
-                                            pnl,
-                                            pk_nonlinear,
-                                            k*pba->h,
-                                            z,
-                                            pnl->index_pk_m,
-                                            &pk, // number *out_pk_l
-                                            pk_ic // array out_pk_ic_l[index_ic_ic]
-                                          ),
-                                          pnl->error_message,
-                                          pnl->error_message);
-return pk*pow(pba->h,3.);
-}
+
+else{
+  if ((k*pba->h < exp(pnl->ln_k[0])) || (k*pba->h > exp(pnl->ln_k[pnl->k_size-1]))){
+      return 0.;
+    }
+
+  double pk;
+  double * pk_ic = NULL;
+            class_call(nonlinear_pk_at_k_and_z(
+                                              pba,
+                                              ppm,
+                                              pnl,
+                                              pk_nonlinear,
+                                              k*pba->h,
+                                              z,
+                                              pnl->index_pk_m,
+                                              &pk, // number *out_pk_l
+                                              pk_ic // array out_pk_ic_l[index_ic_ic]
+                                            ),
+                                            pnl->error_message,
+                                            pnl->error_message);
+  return pk*pow(pba->h,3.);
+  }
                           }
 
 
@@ -13564,37 +13767,90 @@ double get_pk_lin_at_k_and_z(double k, double z,
 
 
 if (ptsz->use_class_sz_fast_mode){
-double pk = get_pk_lin_at_k_and_z_fast(k,z,pba,ppm,pnl,ptsz);
-return pk;
-}
-else{
 double pk;
-if ((k*pba->h < exp(pnl->ln_k[0])) || (k*pba->h > exp(pnl->ln_k[pnl->k_size-1]))){
-  return 0.;
-}
+double z_asked = log(1.+z);
+  if (z_asked>ptsz->array_redshift[ptsz->n_arraySZ-1]){
+      double zmax = exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.;
+      double zp = exp(z_asked) - 1.;
+      // double zp = zmax;
+      double Dzmax, Dz;
 
-double * pk_ic = NULL;
-// printf("before\n");
-        class_call(nonlinear_pk_at_k_and_z(
-                                            pba,
-                                            ppm,
-                                            pnl,
-                                            pk_linear,
-                                            k*pba->h,
-                                            z,
-                                            pnl->index_pk_m,
-                                            &pk, // number *out_pk_l
-                                            pk_ic // array out_pk_ic_l[index_ic_ic]
-                                          ),
-                                          ptsz->error_message,
-                                          ptsz->error_message);
-// printf("k=%.3e z=%.3e pklin=%.3e\n",k,z,pk*pow(pba->h,3.));
-// printf("after\n");
+      double * pvecback;
+      double tau;
+      int first_index_back = 0;
+      class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
 
-// evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
 
-return pk*pow(pba->h,3.);
-}
+      class_call(background_tau_of_z(pba,zmax,&tau),
+                pba->error_message,
+                pba->error_message);
+
+      class_call(background_at_tau(pba,
+                                  tau,
+                                  pba->long_info,
+                                  pba->inter_normal,
+                                  &first_index_back,
+                                  pvecback),
+                pba->error_message,
+                pba->error_message);
+
+
+
+
+      Dzmax = pvecback[pba->index_bg_D];
+
+      class_call(background_tau_of_z(pba,zp,&tau),
+                pba->error_message,
+                pba->error_message);
+
+      class_call(background_at_tau(pba,
+                                  tau,
+                                  pba->long_info,
+                                  pba->inter_normal,
+                                  &first_index_back,
+                                  pvecback),
+                pba->error_message,
+                pba->error_message);
+
+      Dz = pvecback[pba->index_bg_D];
+      free(pvecback);
+
+      pk = get_pk_lin_at_k_and_z_fast(k,zmax,pba,ppm,pnl,ptsz)*pow(Dz/Dzmax,2.);
+    }
+  else{
+    pk = get_pk_lin_at_k_and_z_fast(k,z,pba,ppm,pnl,ptsz);
+    }
+  return pk;
+  }
+
+else{
+  double pk;
+  if ((k*pba->h < exp(pnl->ln_k[0])) || (k*pba->h > exp(pnl->ln_k[pnl->k_size-1]))){
+      return 0.;
+    }
+
+  double * pk_ic = NULL;
+  // printf("before\n");
+          class_call(nonlinear_pk_at_k_and_z(
+                                              pba,
+                                              ppm,
+                                              pnl,
+                                              pk_linear,
+                                              k*pba->h,
+                                              z,
+                                              pnl->index_pk_m,
+                                              &pk, // number *out_pk_l
+                                              pk_ic // array out_pk_ic_l[index_ic_ic]
+                                            ),
+                                            ptsz->error_message,
+                                            ptsz->error_message);
+  // printf("k=%.3e z=%.3e pklin=%.3e\n",k,z,pk*pow(pba->h,3.));
+  // printf("after\n");
+
+  // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+
+  return pk*pow(pba->h,3.);
+  }
                           }
 
 

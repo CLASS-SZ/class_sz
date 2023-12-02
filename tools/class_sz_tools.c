@@ -19670,7 +19670,15 @@ double integrand_hmf_counter_terms_b1min(double lnM_halo, void *p){
 
       double result = hmf*M_halo/rho_cb;
 
+      // switch off non gaussian bias in all these cases:
+      int store_ng_in_bh =  V->ptsz->has_ng_in_bh;
+      V->ptsz->has_ng_in_bh = 0;
       evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ppt,V->ptsz);
+      // restore:
+      V->ptsz->has_ng_in_bh = store_ng_in_bh;
+      // done with that !
+
+      
       double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       result *= b1;
 

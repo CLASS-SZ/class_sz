@@ -284,11 +284,11 @@ int input_init(
    */
 
   char * const target_namestrings[] = {"100*theta_s","Omega_dcdmdr","omega_dcdmdr",
-                                       "Omega_scf","Omega_ini_dcdm","omega_ini_dcdm","sigma8"};
+                                       "Omega_scf","Omega_ini_dcdm","omega_ini_dcdm","sigma8","age"};
   char * const unknown_namestrings[] = {"h","Omega_ini_dcdm","Omega_ini_dcdm",
-                                        "scf_shooting_parameter","Omega_dcdmdr","omega_dcdmdr","A_s"};
+                                        "scf_shooting_parameter","Omega_dcdmdr","omega_dcdmdr","A_s","H0"};
   enum computation_stage target_cs[] = {cs_thermodynamics, cs_background, cs_background,
-                                        cs_background, cs_background, cs_background, cs_nonlinear};
+                                        cs_background, cs_background, cs_background, cs_nonlinear,cs_background};
 
   int input_verbose = 0, int1, aux_flag, shooting_failed=_FALSE_;
 
@@ -299,6 +299,7 @@ int input_init(
   unknown_parameters_size = 0;
   fzw.required_computation_stage = 0;
   for (index_target = 0; index_target < _NUM_TARGETS_; index_target++){
+    // printf(">>>%d %s\n",index_target,target_namestrings[index_target]);
     class_call(parser_read_double(pfc,
                                   target_namestrings[index_target],
                                   &param1,
@@ -324,6 +325,8 @@ int input_init(
       }
     }
   }
+
+  // printf(">>> unknown_param_size = %d\n",unknown_parameters_size);
 
   /**
    * Case with unknown parameters...
@@ -376,8 +379,9 @@ int input_init(
       fzw.unknown_parameters_index[counter]=pfc->size+counter;
       // substitute the name of the target parameter with the name of the corresponding unknown parameter
       strcpy(fzw.fc.name[fzw.unknown_parameters_index[counter]],unknown_namestrings[index_target]);
-      //printf("%d, %d: %s\n",counter,index_target,target_namestrings[index_target]);
+      // printf("%d, %d: %s\n",counter,index_target,target_namestrings[index_target]);
     }
+    // exit(0);
 
     if (unknown_parameters_size == 1){
       if (input_verbose > 0) {
@@ -787,6 +791,9 @@ int input_read_parameters(
     pba->H0 = param2 *  1.e5 / _c_;
     pba->h = param2;
   }
+
+
+  // printf(">>>> we have: hubble %.3e %.3e\n",pba->H0,pba->h);
 
   /** - Omega_0_g (photons) and T_cmb */
   class_call(parser_read_double(pfc,"T_cmb",&param1,&flag1,errmsg),
@@ -7791,6 +7798,8 @@ int input_try_unknown_parameters(double * unknown_parameter,
                       );
   }
 
+  // printf(">>> shooting:\n");
+  // exit(0);
   /** - Get the corresponding shoot variable and put into output */
   for (i=0; i < pfzw->target_size; i++) {
     switch (pfzw->target_name[i]) {
@@ -7830,6 +7839,10 @@ int input_try_unknown_parameters(double * unknown_parameter,
     case sigma8:
       output[i] = nl.sigma8[nl.index_pk_m]-pfzw->target_value[i];
       break;
+    case age:
+      output[i] = ba.age-pfzw->target_value[i];
+      break;
+
     }
   }
 
@@ -8022,6 +8035,16 @@ int input_get_guess(double *xguess,
          according to vanilla LambdaCDM. Should be good enough... */
       xguess[index_guess] = 2.43e-9/0.87659*pfzw->target_value[index_guess];
       dxdy[index_guess] = 2.43e-9/0.87659;
+      break;
+    case age:
+      xguess[index_guess] = 0.96/pfzw->target_value[index_guess]/_Gyr_over_Mpc_*_c_/1.e3;
+      dxdy[index_guess] = -0.96/pfzw->target_value[index_guess]/pfzw->target_value[index_guess]/_Gyr_over_Mpc_*_c_/1.e3;
+      /** - Update pb to reflect guess */
+      // ba.H0 = xguess[index_guess]; //in Mpc^-1
+      // ba.h = ba.H0*_c_/1.e5;
+      // printf(">>> getting guess for H0, got: %.3e inv Mpc or %.3e\n",
+      // xguess[index_guess],
+      // xguess[index_guess]);
       break;
     }
     //printf("xguess = %g\n",xguess[index_guess]);
