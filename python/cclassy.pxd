@@ -796,6 +796,12 @@ cdef extern from "class.h":
                                                 void * ptsz,
                                                 void * pba)
 
+    double get_mass_profile_at_x_M_z_nfw_200m(double x_asked,
+                                             double m_asked,
+                                             double z_asked,
+                                             void * pba,
+                                             void * ptsz)
+
 
     double get_gas_profile_at_x_M_z_nfw_200m(double x_asked,
                                              double m_asked,

@@ -3963,6 +3963,10 @@ int input_read_parameters(
      class_read_double("fNL",ptsz->fNL);
      class_read_int("cosmo_model",ptsz->cosmo_model);
 
+
+     class_read_int("use_Amod",ptsz->use_Amod);
+     class_read_double("Amod",ptsz->Amod);
+
      // FMcC edit: read in p_fNL parameter
      // class_read_double("p_fNL",ptsz->p_fNL);
      // end FMcC edit
@@ -6620,6 +6624,8 @@ int input_default_params(
   ptsz->Delta_z_lens = 0.;
   ptsz->Delta_z_source = 0.;
   ptsz->cosmo_model = 0;
+  ptsz->use_Amod = 0;
+  ptsz->Amod = 0.;
   ptsz->M_min_HOD_mass_factor_unwise = 1.;
   ptsz->M0_HOD = 0.; //DES-like HOD see https://arxiv.org/pdf/2106.08438.pdf
 

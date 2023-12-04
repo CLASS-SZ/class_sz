@@ -1383,6 +1383,9 @@ double szcounts_ntot;
 
   int cosmo_model;
 
+  int use_Amod;
+  double Amod;
+
   double M_min_HOD_mass_factor_unwise;
   double x_out_truncated_nfw_profile;
   double x_out_truncated_nfw_profile_electrons;
@@ -2864,6 +2867,12 @@ double get_gas_profile_at_x_M_z_nfw_200c(double x_asked,
                                          struct tszspectrum * ptsz);
 
 double get_rvir_of_m200c_at_z(
+                                         double m_asked,
+                                         double z_asked,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz);
+
+double get_mass_profile_at_x_M_z_nfw_200m(double x_asked,
                                          double m_asked,
                                          double z_asked,
                                          struct background * pba,

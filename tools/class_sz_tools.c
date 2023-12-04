@@ -4739,6 +4739,89 @@ return result;
 }
 
 
+double get_mass_profile_at_x_M_z_nfw_200m(double x_asked,
+                                         double m_asked,
+                                         double z_asked,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz){
+double result;
+double r_asked = 0.;
+double rho_s;
+double delta;
+double c_delta;
+double r_delta;
+double r_s;
+double rho_crit;
+// double f_b = ptsz->f_b_gas;//pba->Omega0_b/ptsz->Omega_m_0;
+double x;
+double p_x;
+
+
+
+double * pvecback;
+double * pvectsz;
+
+
+
+double tau;
+double z = z_asked;
+int first_index_back = 0;
+
+class_alloc(pvecback,
+            pba->bg_size*sizeof(double),
+            ptsz->error_message);
+
+class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+ int i;
+ for(i = 0; i<ptsz->tsz_size;i++) pvectsz[i] = 0.;
+
+class_call(background_tau_of_z(pba,z,&tau),
+           pba->error_message,
+           pba->error_message);
+
+class_call(background_at_tau(pba,
+                             tau,
+                             pba->long_info,
+                             pba->inter_normal,
+                             &first_index_back,
+                             pvecback),
+           pba->error_message,
+           pba->error_message);
+
+
+
+
+pvectsz[ptsz->index_z] = z;
+pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                *pow(_Mpc_over_m_,1)
+                                *pow(_c_,2)
+                                *pvecback[pba->index_bg_rho_crit]
+                                /pow(pba->h,2);
+
+rho_crit = pvectsz[ptsz->index_Rho_crit];
+delta = 200.*pvecback[pba->index_bg_Omega_m];
+c_delta = get_c200m_at_m_and_z(m_asked,z,pba,ptsz);
+r_delta = pow(3.*m_asked/(4.*_PI_*delta*rho_crit),1./3.); //in units of h^-1 Mpc
+
+// rho_s = pow(c_delta,3.)*delta*rho_crit/3./m_nfw(c_delta);
+
+
+
+r_s = r_delta/c_delta;
+x = r_asked/r_s;
+x = x_asked;
+p_x = 1./x*1./pow(1.+x,2);
+rho_s = m_asked/m_nfw(c_delta)/4./_PI_/pow(r_s,3.);
+
+free(pvecback);
+free(pvectsz);
+
+
+
+// result = rho_s*f_b*p_x/rho_crit/f_b;
+result = rho_s*p_x;
+return result;
+}
 
 double get_rvir_of_m200c_at_z(//double x_asked, // this is just radius
                               double m_asked,

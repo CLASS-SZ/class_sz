@@ -3544,6 +3544,9 @@ cdef class Class:
                                                            c500,
                                                            &self.ba,
                                                            &self.tsz)
+    def get_dA_z1z2(self,z1,z2):
+        return -(1./(1.+z2))*(np.vectorize(self.get_dA)(z1)*(1.+z1)-np.vectorize(self.get_dA)(z2)*(1.+z2))
+
     def get_dA(self,z):
         """
         angular_distance(z) in Mpc/h
@@ -3623,6 +3626,9 @@ cdef class Class:
     def get_gas_profile_at_x_M_z_nfw_200c(self,r_asked,m_asked,z_asked):
         return get_gas_profile_at_x_M_z_nfw_200c(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
 
+    def get_mass_profile_at_x_M_z_nfw_200m(self,r_asked,m_asked,z_asked):
+        return get_mass_profile_at_x_M_z_nfw_200m(r_asked,m_asked,z_asked,&self.ba,&self.tsz)
+
     def get_planck_sigma_at_theta500(self, theta500):
         return get_planck_sigma_at_theta500(theta500, &self.tsz)
 
@@ -3633,6 +3639,10 @@ cdef class Class:
         return get_second_order_bias_at_z_and_nu(z,nu,&self.tsz,&self.ba)
 
     def get_first_order_bias_at_z_and_nu(self,z,nu):
+        return get_first_order_bias_at_z_and_nu(z,nu,&self.tsz)
+
+    def get_first_order_bias_at_z_and_m(self,z,m):
+        nu = self.get_nu_at_z_and_m(z,m)
         return get_first_order_bias_at_z_and_nu(z,nu,&self.tsz)
 
     def get_cib_Snu_z_and_nu(self,z,nu):
@@ -3893,6 +3903,8 @@ cdef class Class:
     def get_nu_at_z_and_m(self,z,m):
         # (delc/sigma)**2
         return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)
+
+
     def get_matter_bispectrum_at_z_effective_approach_smoothed(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
         return get_matter_bispectrum_at_z_effective_approach_smoothed(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
 

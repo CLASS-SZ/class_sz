@@ -41,6 +41,8 @@ class Class_szfast(object):
             self.cp_pkl_fftlog_alphas_imag_nn = cp_pkl_fftlog_alphas_imag_nn
 
         self.cosmo_model = 'lcdm'
+        self.use_Amod = 0
+        self.Amod = 0 
 
         self.cp_lmax = cp_l_max_scalars
         self.cp_ls = np.arange(2,self.cp_lmax+1)
@@ -86,6 +88,10 @@ class Class_szfast(object):
                                     2: 'neff',
                                     3: 'wcdm'}
                 self.cosmo_model = cosmo_model_dict[v]
+
+            if k == 'use_Amod':
+                self.use_Amod = v
+                self.Amod  = kwargs['Amod']
                 # print('self.cosmo_model',self.cosmo_model)
         # print('self.cszfast_pk_grid_nk',self.cszfast_pk_grid_nk)
         # print('self.cszfast_pk_grid_nz',self.cszfast_pk_grid_nz)
@@ -273,10 +279,20 @@ class Class_szfast(object):
             params_dict[k]=[v]
         predicted_pk_spectrum_z = []
 
-        for zp in z_arr:
-            params_dict_pp = params_dict.copy()
-            params_dict_pp['z_pk_save_nonclass'] = [zp]
-            predicted_pk_spectrum_z.append(self.cp_pkl_nn[self.cosmo_model].predictions_np(params_dict_pp)[0])
+        if self.use_Amod:
+            # print(">>> using Amod :",self.Amod)
+            for zp in z_arr:
+                params_dict_pp = params_dict.copy()
+                params_dict_pp['z_pk_save_nonclass'] = [zp]
+                pkl_p = self.cp_pkl_nn[self.cosmo_model].predictions_np(params_dict_pp)[0]
+                pknl_p = self.cp_pknl_nn[self.cosmo_model].predictions_np(params_dict_pp)[0]
+                pk_ae  = pkl_p + self.Amod*(pknl_p-pkl_p)
+                predicted_pk_spectrum_z.append(pk_ae)
+        else:
+            for zp in z_arr:
+                params_dict_pp = params_dict.copy()
+                params_dict_pp['z_pk_save_nonclass'] = [zp]
+                predicted_pk_spectrum_z.append(self.cp_pkl_nn[self.cosmo_model].predictions_np(params_dict_pp)[0])
 
         predicted_pk_spectrum = np.asarray(predicted_pk_spectrum_z)
 
