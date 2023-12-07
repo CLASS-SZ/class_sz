@@ -197,7 +197,6 @@ Since recently we have implemented emulators in classy_sz, now it has an extra-d
 
 #. In ``class_sz/python/classy_szfast/classy_szfast/config.py``, change this line: 
 
-  .. code-block::
     path_to_cosmopower_organization = '/path/to/cosmopower-organization/'
 
   so it matches the location of your cosmopower-organization repository where you have stored the emulators generated in ``get_quantities_cosmopower.ipynb``.
