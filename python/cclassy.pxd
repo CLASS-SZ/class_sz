@@ -274,6 +274,7 @@ cdef extern from "class.h":
         double * array_m_dndlnM
         int n_m_dndlnM
         double P0GNFW
+        #double m_min_hod
         double c500
         double gammaGNFW
         double alphaGNFW

@@ -12109,7 +12109,7 @@ double evaluate_pressure_profile(double kl,
      // see also formula 5 of Planck 2013 profile paper, P500:
       double C_pressure = 1.65*pow(pba->h/0.7,2)
                           *pow(pvecback[pba->index_bg_H]/pba->H0,8./3.)
-                          *pow(pvectsz[ptsz->index_m500]/(3.e14*0.7),2./3.+ptsz->alpha_p)
+                          *pow(pvectsz[ptsz->index_m500]/(3.e14*0.7),2./3.+ptsz->alpha_p) // (wrt HSE biased mass, if HSE bias )
                           *pow(pvectsz[ptsz->index_m500]/3.e14, ptsz->delta_alpha);
 
 
@@ -12137,7 +12137,7 @@ double evaluate_pressure_profile(double kl,
      //                          *pow(0.7/pba->h, 1.); // assuming SZ data based pressure profile
 
 
-      characteristic_radius = pvectsz[ptsz->index_r500]/pba->h; // in Mpc
+      characteristic_radius = pvectsz[ptsz->index_r500]/pba->h; // in Mpc (wrt HSE biased mass, if HSE bias )
       characteristic_multipole = pvectsz[ptsz->index_l500];
 
 

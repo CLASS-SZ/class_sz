@@ -27823,8 +27823,9 @@ if (ptsz->y_m_relation == 1){
           f_rel = 1. + 3.79*t -28.2*t*t;
         }
 
+        double h70 = pba->h/0.70;
 
-        yp = A*pow(Eh,2.)*pow(mp_bias/(ptsz->m_pivot_ym*pba->h),1.+B)*f_rel;
+        yp = A*pow(Eh,2.)*pow(mp_bias/(ptsz->m_pivot_ym*pba->h)*h70,1.+B)*f_rel;
 
         // double a = -1.29389e-01;
         // double b = 9.991387e-01;

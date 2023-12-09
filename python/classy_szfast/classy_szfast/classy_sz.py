@@ -9,6 +9,7 @@ import time
 
 class classy_sz(classy):
     use_class_sz_fast_mode = 0 # this is passed in the yaml file
+    use_class_sz_no_cosmo_mode = 0 # this is passed in the yaml file
     lensing_lkl = "SOLikeT"
     # skip_background_and_thermo = True
     # ell_factor = False # True for pyactlite and bplike, False for clik
@@ -31,6 +32,10 @@ class classy_sz(classy):
         # Derived parameters that may not have been requested, but will be necessary later
         self.derived_extra = []
         self.log.info("Initialized!")
+
+        if self.use_class_sz_no_cosmo_mode == 1:
+            self.classy.set(initial_parameters)
+            self.classy.compute_class_szfast()
 
 
         # print(self.lensing_lkl)
@@ -283,6 +288,8 @@ class classy_sz(classy):
                 # end = time.perf_counter()
                 # print('classy_szfast took:',end-start)
             # self.classy.compute_class_szfast()
+            # elif self.use_class_sz_no_cosmo_mode == 1:
+            #     self.classy.compute_class_sz(params_values)
             else:
                 self.classy.compute()
         # "Valid" failure of CLASS: parameters too extreme -> log and report

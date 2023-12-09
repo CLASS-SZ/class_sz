@@ -880,6 +880,8 @@ cdef class Class:
     def compute_class_sz(self,pdict_to_update):
         self._fillparfile()
         for k,v in pdict_to_update.items():
+        #   if k == 'm_min_hod':
+        #     self.tsz.m_min_hod = pdict_to_update[k]
           if k == 'fNL':
             self.tsz.fNL = pdict_to_update[k]
           if k == 'P0GNFW':
