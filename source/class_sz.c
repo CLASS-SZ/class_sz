@@ -14,6 +14,7 @@
 #include "r8lib.h"
 #include "fft.h"
 #include "time.h"
+#include "omp.h"
 
 
 int class_sz_cosmo_init(  struct background * pba,
