@@ -9052,6 +9052,10 @@ return _SUCCESS_;
 int tabulate_gas_pressure_profile_B12(struct background * pba,
                                       struct tszspectrum * ptsz){
 
+
+if (ptsz->sz_verbose>1)
+  printf("---> Start tabulating B12 (class_sz_tool.c)\n");
+
  // array of multipoles:
  double ln_k_min = log(ptsz->k_min_gas_pressure_profile);
  double ln_k_max = log(ptsz->k_max_gas_pressure_profile);
@@ -9118,21 +9122,23 @@ index_m_z = 0;
 for (index_m=0;
      index_m<n_m;
      index_m++){
-//class_alloc(ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z],n_z*sizeof(double ),ptsz->error_message);
+    //class_alloc(ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z],n_z*sizeof(double ),ptsz->error_message);
 
-for (index_z=0;
-     index_z<n_z;
-     index_z++)
-{
-  // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = -100.; // initialize with super small number
-  ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k][index_m_z] = 1e-100; // initialize with super small number
-  index_m_z += 1;
+    for (index_z=0;
+        index_z<n_z;
+        index_z++)
+    {
+      // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = -100.; // initialize with super small number
+      ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k][index_m_z] = 1e-100; // initialize with super small number
+      index_m_z += 1;
+    }
+
+        }
 }
 
-     }
-}
 
-
+if (ptsz->sz_verbose>1)
+  printf("---> Start parallel region B12 (class_sz_tool.c)\n");
 //Parallelization of profile computation
 /* initialize error management flag */
 
@@ -9192,6 +9198,13 @@ for (index_m=0;
   double k = exp(ptsz->array_pressure_profile_ln_k[index_k]); // l/ls
 // printf("calling ft\n");
 
+if (ptsz->sz_verbose>1)
+  printf("--->In parallel region B12 (class_sz_tool.c) k = %.3e m = %.3e z = %.3e\n",
+        k,
+        exp(lnM),
+        z);
+
+
   double tau;
   int first_index_back = 0;
 
@@ -9241,8 +9254,16 @@ for (index_m=0;
   //                                  pba),
   //                 ptsz->error_message,
   //                 ptsz->error_message);
-  pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
+  if (ptsz->sz_verbose>1)
+    printf("----> tab B12 getting mvir\n");
 
+  if (ptsz->truncate_gas_pressure_wrt_rvir)
+    pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
+  else
+    pvectsz[ptsz->index_mVIR] = pvectsz[ptsz->index_m200c];
+    
+  if (ptsz->sz_verbose>1)
+    printf("----> tab B12 got mvir = %.3e\n",pvectsz[ptsz->index_mVIR]);
  //
  //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
   pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
@@ -9252,7 +9273,7 @@ for (index_m=0;
   pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c];///pvectsz[ptsz->index_c200c];
    double result_int;
    double kl =  k;//*(1.+z)*pvectsz[ptsz->index_r200c];
-   // printf("calling ft\n");
+  //  printf("calling ft\n");
    pvectsz[ptsz->index_md] = 0; // avoid the if condition in p_gnfw for the pk mode computation
    class_call_parallel(two_dim_ft_pressure_profile(kl,
                                                    ptsz,pba,pvectsz,&result_int),

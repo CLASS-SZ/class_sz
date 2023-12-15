@@ -4047,6 +4047,11 @@ int input_read_parameters(
       class_read_double("nfw_profile_epsrel",ptsz->nfw_profile_epsrel);
       class_read_double("nfw_profile_epsabs",ptsz->nfw_profile_epsabs);
 
+
+      class_read_double("fEDE",ptsz->fEDE);
+      class_read_double("log10z_c",ptsz->log10z_c);
+      class_read_double("thetai_scf",ptsz->thetai_scf);
+
       class_read_double("M_min_HOD",ptsz->M_min_HOD);
       class_read_double("M_min_HOD_cib",ptsz->M_min_HOD_cib);
       class_read_double("f_cen_HOD",ptsz->f_cen_HOD);

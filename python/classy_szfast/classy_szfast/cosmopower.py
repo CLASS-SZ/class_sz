@@ -27,6 +27,7 @@ emulator_dict['lcdm'] = {}
 emulator_dict['mnu'] = {}
 emulator_dict['neff'] = {}
 emulator_dict['wcdm'] = {}
+emulator_dict['ede'] = {}
 
 
 
@@ -81,6 +82,19 @@ emulator_dict['wcdm']['HZ'] = 'HZ_w_v1'
 emulator_dict['wcdm']['S8Z'] = 'S8Z_w_v1'
 
 
+emulator_dict['ede']['TT'] = 'TT_v1'
+emulator_dict['ede']['TE'] = 'TE_v1'
+emulator_dict['ede']['EE'] = 'EE_v1'
+emulator_dict['ede']['PP'] = 'PP_v1'
+emulator_dict['ede']['PKNL'] = 'PKNL_v1'
+emulator_dict['ede']['PKL'] = 'PKL_v1'
+# emulator_dict['ede']['PKLFFTLOG_ALPHAS_REAL'] = 'PKLFFTLOGALPHAS_creal_v1'
+# emulator_dict['ede']['PKLFFTLOG_ALPHAS_IMAG'] = 'PKLFFTLOGALPHAS_cimag_v1'
+emulator_dict['ede']['DER'] = 'DER_v1'
+emulator_dict['ede']['DAZ'] = 'DAZ_v1'
+emulator_dict['ede']['HZ'] = 'HZ_v1'
+emulator_dict['ede']['S8Z'] = 'S8Z_v1'
+
 
 cp_tt_nn = {}
 cp_te_nn = {}
@@ -96,7 +110,7 @@ cp_da_nn = {}
 cp_h_nn = {}
 cp_s8_nn = {}
 
-for mp in ['lcdm','mnu','neff','wcdm']:
+for mp in ['lcdm','mnu','neff','wcdm','ede']:
     path_to_emulators = path_to_cosmopower_organization + mp +'/'
 
     cp_tt_nn[mp] = cosmopower_NN(restore=True,

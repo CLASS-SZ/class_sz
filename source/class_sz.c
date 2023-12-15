@@ -680,18 +680,16 @@ while( pch != NULL ) {
 //
 // exit(0);
 
-   if ((ptsz->has_completeness_for_ps_SZ == 1)  || (ptsz->has_sz_counts  == 1)){
+  // printf("-> OK1.\n");
+    if ((ptsz->has_completeness_for_ps_SZ == 1)  || (ptsz->has_sz_counts  == 1)){
       read_Planck_noise_map(ptsz);
     }
     // exit(0);
 
-   if (ptsz->concentration_parameter == 4)
+    if (ptsz->concentration_parameter == 4)
       read_Zhao_CM_init(ptsz);
 
-
-
-
-      if (ptsz->use_maniyar_cib_model && ptsz->has_cib){
+    if (ptsz->use_maniyar_cib_model && ptsz->has_cib){
         load_cib_Snu(ptsz);
       //   exit(0);
       //double K1_interp = get_cib_Snu_z_and_nu(0.23,95,ptsz);
@@ -706,7 +704,7 @@ while( pch != NULL ) {
       // tabulate_L_sat_at_nu_and_nu_prime(pba,ptsz);
 
 
-
+// printf("-> OK2.\n");
   // printf("tabulating dndlnM quantities %d\n",ptsz->has_sigma2_hsv);
    if (ptsz->has_sigma2_hsv)
    tabulate_sigma2_hsv_from_pk(pba,pnl,ppm,ptsz);
@@ -770,17 +768,18 @@ while( pch != NULL ) {
    //exit(0);
    external_pressure_profile_init(ppr,ptsz);
 
-if (ptsz->MF==1){
-   // load alpha(z) normalisation for Tinker et al 2010 HMF
-   if (ptsz->T10_alpha_fixed==0){
-   if (ptsz->sz_verbose>1)
-    printf("-> loading alpha(z) for Tinker al 2010 HMF...\n");
-   load_T10_alpha_norm(ptsz);
-   if (ptsz->sz_verbose>1)
-    printf("-> alpha(z) for Tinker al HMF loaded.\n");
-   }
-}
+    if (ptsz->MF==1){
+        // load alpha(z) normalisation for Tinker et al 2010 HMF
+        if (ptsz->T10_alpha_fixed==0){
+        if (ptsz->sz_verbose>1)
+          printf("-> loading alpha(z) for Tinker al 2010 HMF...\n");
+        load_T10_alpha_norm(ptsz);
+        if (ptsz->sz_verbose>1)
+          printf("-> alpha(z) for Tinker al HMF loaded.\n");
+        }
+      }
 
+// printf("-> OK3.\n");
    if (ptsz->has_dndlnM == 1
     || ptsz->has_sz_counts
     || ptsz->has_sz_rates
@@ -894,7 +893,7 @@ if (ptsz->has_electron_density == 1 || ptsz->tabulate_rhob_xout_at_m_and_z == 1)
       }
   }
 
-
+// printf("-> OK4.\n");
    // exit(0);
 if (
      ptsz->has_kSZ_kSZ_gallens_1h_fft
@@ -921,6 +920,8 @@ if (
 
   load_normalized_source_dndz(ptsz);
 }
+
+// printf("-> OK5.\n");
 
    if (ptsz->has_tSZ_gal_1h
     || ptsz->has_tSZ_gal_2h
@@ -1065,7 +1066,7 @@ if (ptsz->has_tSZ_gal_1h
 tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
 }
 
-
+// printf("-> OK6.\n");
 
 if (ptsz->has_ngal_ngal_1h
    +ptsz->has_ngal_ngal_2h
@@ -1201,20 +1202,22 @@ else{
   // printf("-> start tabulation of gas pressure profile.\n");
   // printf("electron_pressure_comps = %d\n",electron_pressure_comps);
 if (electron_pressure_comps != _FALSE_){
-  // printf("-> start tabulation of gas pressure profile.\n");
- if (ptsz->pressure_profile == 3)
- tabulate_gas_pressure_profile_gNFW(pba,ptsz);
- else if (ptsz->pressure_profile == 4){
-if (ptsz->use_fft_for_profiles_transform){
- tabulate_gas_pressure_profile_B12_fft(pba,ptsz);
- // exit(0);
-}
-else{
- tabulate_gas_pressure_profile_B12(pba,ptsz);
-}
-}
-
-}
+  if (ptsz->sz_verbose>1)
+    printf("-> start tabulation of gas pressure profile.\n");
+  if (ptsz->pressure_profile == 3)
+  tabulate_gas_pressure_profile_gNFW(pba,ptsz);
+  else if (ptsz->pressure_profile == 4){
+      if (ptsz->use_fft_for_profiles_transform){
+        tabulate_gas_pressure_profile_B12_fft(pba,ptsz);
+        // exit(0);
+        }
+      else{
+        tabulate_gas_pressure_profile_B12(pba,ptsz);
+        }
+      }
+  if (ptsz->sz_verbose>1)
+    printf("-> done with tabulation of gas pressure profile.\n");
+    }
 
 
 if (ptsz->has_dcib0dz){

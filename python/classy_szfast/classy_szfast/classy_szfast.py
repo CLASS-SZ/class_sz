@@ -86,7 +86,8 @@ class Class_szfast(object):
                 cosmo_model_dict = {0: 'lcdm',
                                     1: 'mnu',
                                     2: 'neff',
-                                    3: 'wcdm'}
+                                    3: 'wcdm',
+                                    4: 'ede'}
                 self.cosmo_model = cosmo_model_dict[v]
 
             if k == 'use_Amod':
