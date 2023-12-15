@@ -1887,6 +1887,11 @@ double * steps_m;
   double Delta_z_lens;
   double Delta_z_source;
 
+  double fEDE;
+  double log10z_c;
+  double thetai_scf;
+
+
   short has_completeness_for_ps_SZ;
   short has_completeness;
   short which_ps_sz;
