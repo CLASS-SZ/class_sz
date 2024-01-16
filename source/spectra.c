@@ -837,11 +837,13 @@ int spectra_cls(
       }
     }
 
+if (ptsz->sz_verbose > 0){
 printf(">>>> spectra.c : overwritting cl^pp\n");
 printf(">>>> spectra.c : index_md_scalars = %d\n",psp->index_md_scalars);
 printf(">>>> spectra.c : ptr->l_size[index_md_scalars] = %d\n",ptr->l_size[psp->index_md_scalars]);
 printf(">>>> spectra.c : psp->ic_ic_size[index_md_scalars] = %d\n",psp->ic_ic_size[psp->index_md_scalars]);
 printf(">>>> spectra.c : index_ct_pp = %d\n",psp->index_ct_pp);
+}
 
 if (psp->overwrite_clpp_with_limber){
 
@@ -851,6 +853,7 @@ if (psp->overwrite_clpp_with_limber){
   class_sz_integrate_init(pba,pth,ppt,pnl,ppm,psp,ple,ptsz,ppr);
   ptsz->has_lens_lens_hf = 0; // switch off lensing
 
+if (ptsz->sz_verbose > 0)
   printf(">>>> spectra.c : cl^pp has been computed\n");
 
   int index_l_limb;
