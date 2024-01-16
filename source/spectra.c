@@ -13,6 +13,7 @@
  */
 
 #include "spectra.h"
+# include "r8lib.h"
 
 /**
  * Anisotropy power spectra \f$ C_l\f$'s for all types, modes and initial conditions.
@@ -266,7 +267,10 @@ int spectra_init(
                  struct primordial * ppm,
                  struct nonlinear * pnl,
                  struct transfers * ptr,
-                 struct spectra * psp
+                 struct spectra * psp,
+                 struct tszspectrum * ptsz,
+                 struct thermo * pth,
+                 struct lensing * ple
                  ) {
 
   /** Summary: */
@@ -295,7 +299,7 @@ int spectra_init(
 
   if (ppt->has_cls == _TRUE_) {
 
-    class_call(spectra_cls(pba,ppt,ptr,ppm,psp),
+    class_call(spectra_cls(pba,ppt,ptr,ppm,psp,pnl,ptsz,pth,ple,ppr),
                psp->error_message,
                psp->error_message);
 
@@ -666,7 +670,12 @@ int spectra_cls(
                 struct perturbs * ppt,
                 struct transfers * ptr,
                 struct primordial * ppm,
-                struct spectra * psp
+                struct spectra * psp,
+                struct nonlinear * pnl,
+                struct tszspectrum * ptsz,
+                struct thermo * pth,
+                struct lensing * ple,
+                struct precision * ppr
                 ) {
 
   /** Summary: */
@@ -822,11 +831,81 @@ int spectra_cls(
               psp->cl[index_md]
                 [(index_l * psp->ic_ic_size[index_md] + index_ic1_ic2) * psp->ct_size + index_ct]
                 = 0.;
-            }
-          }
+            } // index_ct 
+          } // index_l
         }
       }
     }
+
+printf(">>>> spectra.c : overwritting cl^pp\n");
+printf(">>>> spectra.c : index_md_scalars = %d\n",psp->index_md_scalars);
+printf(">>>> spectra.c : ptr->l_size[index_md_scalars] = %d\n",ptr->l_size[psp->index_md_scalars]);
+printf(">>>> spectra.c : psp->ic_ic_size[index_md_scalars] = %d\n",psp->ic_ic_size[psp->index_md_scalars]);
+printf(">>>> spectra.c : index_ct_pp = %d\n",psp->index_ct_pp);
+
+if (psp->overwrite_clpp_with_limber){
+
+  ptsz->has_lens_lens_hf = 1; // switch on lensing
+  class_sz_cosmo_init(pba,pth,ppt,pnl,ppm,psp,ple,ptsz,ppr);
+  class_sz_tabulate_init(pba,pth,ppt,pnl,ppm,psp,ple,ptsz,ppr);
+  class_sz_integrate_init(pba,pth,ppt,pnl,ppm,psp,ple,ptsz,ppr);
+  ptsz->has_lens_lens_hf = 0; // switch off lensing
+
+  printf(">>>> spectra.c : cl^pp has been computed\n");
+
+  int index_l_limb;
+  double lnl_limb[ptsz->nlSZ];
+  double lncl_limb[ptsz->nlSZ];
+  for (index_l_limb = 0; index_l_limb < ptsz->nlSZ; index_l_limb++){
+    // printf("(limber) l = %.5e cl = %.5e\n",ptsz->ell[index_l_limb],
+    //                                        ptsz->cl_lens_lens_hf[index_l_limb]);
+    lnl_limb[index_l_limb] = log(ptsz->ell[index_l_limb]);
+    lncl_limb[index_l_limb] = log(ptsz->cl_lens_lens_hf[index_l_limb]);
+  }
+
+for (index_l=0; // index_l < 50;
+     index_l < ptr->l_size[psp->index_md_scalars]; 
+     index_l++) {
+
+
+  // double ktest = 10.;
+  // double ztest = 30.;
+  // double pk = get_pk_nonlin_at_k_and_z(ktest,ztest,pba,ppm,pnl,ptsz);
+  // printf("l =  %.3e pk = %.13e\n",l,pk);
+
+  double l = psp->l[index_l];
+  double clpp_new; // =  psp->cl[psp->index_md_scalars][(index_l * psp->ic_ic_size[psp->index_md_scalars]) * psp->ct_size + psp->index_ct_pp];
+  clpp_new = exp(pwl_value_1d(ptsz->nlSZ,lnl_limb,lncl_limb,log(l)))*pow(l*(l+1.)/2.,-2.)*pow(l*(l+1.)/2./_PI_,-1.);
+
+  
+
+    // printf("index_l = %d l = %.6e cl^pp = %.6e  cl^pp new = %.6e ratio = %.6e\n",
+    //        index_l,
+    //        psp->l[index_l],
+    //        psp->cl[psp->index_md_scalars][(index_l * psp->ic_ic_size[psp->index_md_scalars]) * psp->ct_size + psp->index_ct_pp],
+    //        clpp_new,
+    //        clpp_new/psp->cl[psp->index_md_scalars][(index_l * psp->ic_ic_size[psp->index_md_scalars]) * psp->ct_size + psp->index_ct_pp]
+    //        );
+//overwrite:
+  if (l>30.)
+    psp->cl[psp->index_md_scalars][(index_l * psp->ic_ic_size[psp->index_md_scalars]) * psp->ct_size + psp->index_ct_pp] = clpp_new;
+
+  }
+
+// printf(">>>> printing into file to check clpp\n");
+//         char Filepath[_ARGUMENT_LENGTH_MAX_];
+//         FILE *fp;
+//         sprintf(Filepath,"%s%s","/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/","test_cpp.txt");
+//         fp=fopen(Filepath, "w");
+//         for (index_l=0; index_l < ptr->l_size[psp->index_md_scalars]; index_l++) {
+//           fprintf(fp,"%.5e \t %.5e\n",psp->l[index_l],psp->cl[psp->index_md_scalars][(index_l * psp->ic_ic_size[psp->index_md_scalars]) * psp->ct_size + psp->index_ct_pp]);
+//             }
+//         fclose(fp);
+
+
+
+}
+// exit(0);
 
     /** - --> (d) now that for a given mode, all possible \f$ C_l\f$'s have been computed,
         compute second derivative of the array in which they are stored,

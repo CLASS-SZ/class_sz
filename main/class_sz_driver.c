@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
   // printf("Time taken to execute transfer in seconds : %.3e\n", duration);
 
   start = clock();
-  if (spectra_init(&pr,&ba,&pt,&pm,&nl,&tr,&sp) == _FAILURE_) {
+  if (spectra_init(&pr,&ba,&pt,&pm,&nl,&tr,&sp,&tsz,&th,&le) == _FAILURE_) {
     printf("\n\nError in spectra_init \n=>%s\n",sp.error_message);
     return _FAILURE_;
   }

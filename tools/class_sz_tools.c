@@ -13703,6 +13703,7 @@ result *= Wg*Wg_galprime*pow(1/V->pvectsz[V->ptsz->index_chi2],2.);
 if ( ((V->ptsz->has_ngal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_1h))
    ||((V->ptsz->has_ngal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_2h))
    ||((V->ptsz->has_ngal_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_hf))
+   ||((V->ptsz->has_ngal_nlensmag_hf == _TRUE_) && (index_md == V->ptsz->index_md_ngal_nlensmag_hf))
   ){
 // multiply by radial kernel for galaxies (squared for gxg quantities)
 
@@ -13751,7 +13752,6 @@ if (
     ||((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
     ||((V->ptsz->has_ngal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_1h))
     ||((V->ptsz->has_ngal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_2h))
-    // ||((V->ptsz->has_ngal_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_hf))
     ||((V->ptsz->has_lens_lensmag_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_1h))
     ||((V->ptsz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_lensmag_2h))
     ||((V->ptsz->has_lens_cib_1h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_1h))

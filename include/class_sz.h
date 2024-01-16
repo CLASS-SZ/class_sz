@@ -880,6 +880,11 @@ struct tszspectrum {
   int index_integrand_id_tSZ_lensmag_1h_first;
   int index_integrand_id_tSZ_lensmag_1h_last;
 
+  int has_nlensmag_nlensmag_hf;
+  int index_md_nlensmag_nlensmag_hf;
+  int index_integrand_id_nlensmag_nlensmag_hf_first;
+  int index_integrand_id_nlensmag_nlensmag_hf_last;
+
 
   int has_lensmag_lensmag_hf;
   int index_md_lensmag_lensmag_hf;
@@ -901,6 +906,12 @@ struct tszspectrum {
   int index_md_lens_lensmag_hf;
   int index_integrand_id_lens_lensmag_hf_first;
   int index_integrand_id_lens_lensmag_hf_last;
+
+
+  int has_lens_nlensmag_hf;
+  int index_md_lens_nlensmag_hf;
+  int index_integrand_id_lens_nlensmag_hf_first;
+  int index_integrand_id_lens_nlensmag_hf_last;
 
 
   int has_lens_lensmag_2h;
@@ -1091,6 +1102,11 @@ struct tszspectrum {
   int index_integrand_id_ngal_lens_hf_first;
   int index_integrand_id_ngal_lens_hf_last;
 
+
+  int has_ngal_nlensmag_hf;
+  int index_md_ngal_nlensmag_hf;
+  int index_integrand_id_ngal_nlensmag_hf_first;
+  int index_integrand_id_ngal_nlensmag_hf_last;
 
   int has_cib_cib_1h;
   int index_md_cib_cib_1h;
