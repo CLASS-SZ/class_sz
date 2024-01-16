@@ -3,7 +3,10 @@
 #ifndef __SPECTRA__
 #define __SPECTRA__
 
+#include "common.h"
 #include "transfer.h"
+#include "class_sz.h"
+#include "lensing.h"
 
 /**
  * Structure containing everything about anisotropy and Fourier power spectra that other modules need to know.
@@ -22,6 +25,8 @@ struct spectra {
       'primordial' structures) */
 
   //@{
+
+  int overwrite_clpp_with_limber; 
 
   double z_max_pk;  /**< maximum value of z at which matter spectrum P(k,z) will be evaluated; keep fixed to zero if P(k) only needed today */
 
@@ -167,7 +172,10 @@ extern "C" {
                    struct primordial * ppm,
                    struct nonlinear *pnl,
                    struct transfers * ptr,
-                   struct spectra * psp
+                   struct spectra * psp,
+                   struct tszspectrum * ptsz,
+                   struct thermo * pth,
+                   struct lensing * ple
                    );
 
   int spectra_free(
@@ -187,7 +195,12 @@ extern "C" {
                   struct perturbs * ppt,
                   struct transfers * ptr,
                   struct primordial * ppm,
-                  struct spectra * psp
+                  struct spectra * psp,
+                  struct nonlinear * pnl,
+                  struct tszspectrum * ptsz,
+                  struct thermo * pth,
+                  struct lensing * ple,
+                  struct precision * ppr
                   );
 
   int spectra_compute_cl(

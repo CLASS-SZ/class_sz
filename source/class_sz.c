@@ -2804,11 +2804,11 @@ int number_of_threads= 1;
 //printf("number_of_threads = %d\n",number_of_threads);
 // number_of_threads= 1;
 int id;
-omp_lock_t lock;
+// omp_lock_t lock;
 
 
 #pragma omp parallel \
-   shared(abort,pba,ptsz,ppm,pnl,lock)\
+   shared(abort,pba,ptsz,ppm,pnl)\
    private(tstart,tstop,Pvectsz,Pvecback,index_integrand,id)\
    num_threads(number_of_threads)
 	 {

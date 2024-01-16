@@ -607,7 +607,7 @@ cdef extern from "class.h":
     int primordial_init(void*,void*,void*)
     int nonlinear_init(void*,void*,void*,void*,void*,void*)
     int transfer_init(void*,void*,void*,void*,void*,void*)
-    int spectra_init(void*,void*,void*,void*,void*,void*,void*)
+    int spectra_init(void*,void*,void*,void*,void*,void*,void*,void*,void*,void*)
     int lensing_init(void*,void*,void*,void*,void*)
     int class_sz_integrate_init(void*,void*,void*,void*,void*,void*,void*,void*,void*)
     int class_sz_tabulate_init(void*,void*,void*,void*,void*,void*,void*,void*,void*)

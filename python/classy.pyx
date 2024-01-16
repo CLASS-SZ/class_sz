@@ -502,7 +502,7 @@ cdef class Class:
         if "spectra" in level:
             if spectra_init(&(self.pr), &(self.ba), &(self.pt),
                             &(self.pm), &(self.nl), &(self.tr),
-                            &(self.sp)) == _FAILURE_:
+                            &(self.sp), &(self.tsz), &(self.th), &(self.le)) == _FAILURE_:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.sp.error_message)
             self.ncp.add("spectra")
@@ -3102,6 +3102,7 @@ cdef class Class:
         for index in range(self.tsz.nlSZ):
             cl['1h'].append(self.tsz.cl_lens_lensmag_1h[index])
             cl['2h'].append(self.tsz.cl_lens_lensmag_2h[index])
+            cl['hf'].append(self.tsz.cl_lens_lensmag_hf[index])
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
@@ -3157,13 +3158,14 @@ cdef class Class:
         """
         (SZ) Return the trispectrum
         """
-        T_ll = defaultdict(list)
+        #T_ll = defaultdict(list)
         cdef int index_l,index_l_prime
         T_ll_arr = np.zeros((self.tsz.nlSZ,self.tsz.nlSZ))
         for index_l in range(self.tsz.nlSZ):
             for index_l_prime in range(index_l+1):
-                T_ll[index_l].append(self.tsz.tllprime_sz[index_l][index_l_prime])
+                # T_ll[index_l].append(self.tsz.tllprime_sz[index_l][index_l_prime])
                 T_ll_arr[index_l][index_l_prime] = self.tsz.tllprime_sz[index_l][index_l_prime]
+                T_ll_arr[index_l_prime][index_l] = T_ll_arr[index_l][index_l_prime] 
         return T_ll_arr
 
 

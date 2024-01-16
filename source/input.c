@@ -3104,6 +3104,18 @@ int input_read_parameters(
         // ptsz->need_hmf = 1;
       }
 
+
+      if ((strstr(string1,"galn_lensmagn_hf") != NULL) ) {
+        ptsz->has_ngal_nlensmag_hf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->has_pk = _TRUE_;
+        // ptsz->need_hmf = 1;
+      }
+
       if ((strstr(string1,"lens_lensmag_hf") != NULL) ) {
         ptsz->has_lens_lensmag_hf =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -3165,6 +3177,8 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
+
+
 
 
       if ((strstr(string1,"gal_lensmag_1h") != NULL) ) {
@@ -3868,12 +3882,14 @@ int input_read_parameters(
       +  ptsz->has_ngal_lens_1h
       +  ptsz->has_ngal_lens_2h
       +  ptsz->has_ngal_lens_hf
+      +  ptsz->has_ngal_nlensmag_hf
     )
       != _FALSE_){
     class_read_list_of_integers("galaxy_samples_list",ptsz->galaxy_samples_list,ptsz->galaxy_samples_list_num);
 
     if (ptsz->has_ngal_ngal_hf
-       +ptsz->has_ngal_lens_hf){
+       +ptsz->has_ngal_lens_hf
+       +ptsz->has_ngal_nlensmag_hf){
     class_alloc(ptsz->effective_galaxy_bias_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     int index_g;
     // printf("reading effective bias.\n");
@@ -4482,6 +4498,8 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       class_read_double("f_b_gas",ptsz->f_b_gas);
 
       class_read_int("compute_ksz2ksz2",ptsz->compute_ksz2ksz2);
+
+      class_read_int("overwrite_clpp_with_limber",psp->overwrite_clpp_with_limber);
 
       class_call(parser_read_string(pfc,"write sz results to files",&string1,&flag1,errmsg),
                  errmsg,
@@ -5870,6 +5888,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       + ptsz->has_ngal_lens_1h
       + ptsz->has_ngal_lens_2h
       + ptsz->has_ngal_lens_hf
+      + ptsz->has_ngal_nlensmag_hf
       + ptsz->has_cib_cib_2h
       + ptsz->has_gal_gal_1h
       + ptsz->has_gal_gal_2h
@@ -6603,6 +6622,9 @@ int input_default_params(
   ple->lensing_verbose = 0;
   pop->output_verbose = 0;
 
+
+
+  psp->overwrite_clpp_with_limber = 0;
   //BB: SZ parameters default values
 
 
@@ -6628,7 +6650,7 @@ int input_default_params(
   ptsz->f_cen_HOD = 1.;
   ptsz->Delta_z_lens = 0.;
   ptsz->Delta_z_source = 0.;
-  ptsz->cosmo_model = 0;
+  ptsz->cosmo_model = 0; // 0 lcdm, 1 mnu, 2 neff, 3 wcdm, 4 ede 
   ptsz->use_Amod = 0;
   ptsz->Amod = 0.;
   ptsz->M_min_HOD_mass_factor_unwise = 1.;
@@ -7125,6 +7147,7 @@ int input_default_params(
   ptsz->has_ngal_lens_1h = _FALSE_;
   ptsz->has_ngal_lens_2h = _FALSE_;
   ptsz->has_ngal_lens_hf = _FALSE_;
+  ptsz->has_ngal_nlensmag_hf = _FALSE_;
   ptsz->has_cib_cib_1h = _FALSE_;
   ptsz->has_cib_cib_2h = _FALSE_;
   ptsz->has_pk_at_z_1h = _FALSE_;
@@ -7379,6 +7402,8 @@ int input_default_params(
 
   ptsz->index_md_gallens_lensmag_1h = 127;
   ptsz->index_md_gallens_lensmag_2h = 128;
+
+  ptsz->index_md_ngal_nlensmag_hf = 129;
 
 
   ptsz->integrate_wrt_mvir = 0;
@@ -7802,7 +7827,7 @@ int input_try_unknown_parameters(double * unknown_parameter,
     if (input_verbose>2)
       printf("Stage 7: spectra\n");
     sp.spectra_verbose = 0;
-    class_call_except(spectra_init(&pr,&ba,&pt,&pm,&nl,&tr,&sp),
+    class_call_except(spectra_init(&pr,&ba,&pt,&pm,&nl,&tr,&sp,&tsz,&th,&le),
                       sp.error_message,
                       errmsg,
                       transfer_free(&tr);nonlinear_free(&nl);primordial_free(&pm);perturb_free(&pt);thermodynamics_free(&th);background_free(&ba)
