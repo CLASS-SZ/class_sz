@@ -890,7 +890,7 @@ for (index_l=0; // index_l < 50;
     //        clpp_new/psp->cl[psp->index_md_scalars][(index_l * psp->ic_ic_size[psp->index_md_scalars]) * psp->ct_size + psp->index_ct_pp]
     //        );
 //overwrite:
-  if (l>30.)
+  if (l>ppr->l_switch_limber)
     psp->cl[psp->index_md_scalars][(index_l * psp->ic_ic_size[psp->index_md_scalars]) * psp->ct_size + psp->index_ct_pp] = clpp_new;
 
   }
