@@ -3,8 +3,12 @@ CLASS_SZ
 ==============================================
  Cosmic Linear Anisotropy Solving System with Fast and Accurate CMB, LSS and Halo Model Observables Computations
 
+To install/run class_sz on the fly, check the colab notebook: 
 
-This code is close to be as fast as it gets, with full parallelization, implementation of high-accuracy cosmopower emulators (see below for some instructions) and Fast Fourier Transforms (including FFTLog).
+`class_sz colab notebook <https://colab.research.google.com/drive/1AULgG4ZLLG1YXRI86L54-hpjWyl1X-8c?usp=sharing>`_.
+
+
+This CMB/LSS code is close to be as fast as it gets, with full parallelization, implementation of high-accuracy cosmopower emulators (see below for some instructions) and usage of Fast Fourier Transforms (including FFTLog).
 
 
 Since it is based on Lesgourgues's class code, the halo model and LSS calculations (essentially based on distances and
@@ -41,7 +45,7 @@ The tutorial notebooks can be found at:
 
 https://github.com/CLASS-SZ/notebooks
 
-These notebooks along with the paper (link) constitute the documentation.
+These notebooks along with the paper (<https://arxiv.org/abs/2310.18482>`_) constitute the current documentation.
 
 
 
@@ -61,7 +65,7 @@ The **class_sz** code is public.
 
 If you use it, please cite:
 
-`CLASS_SZ: Fast and Accurate Calculations of Cosmic Microwave Background, Large Scale Structure and Halo Model Observables (Boris Bolliet, Aleksandra Kusiak, Fiona McCarthy, Alina Sabyr, Kristen Surrao et al, to appear) <https:https://github.com/CLASS-SZ/class_sz>`_.
+`CLASS_SZ: I Overview (Boris Bolliet, Aleksandra Kusiak, Fiona McCarthy, et al, 2024) <https://arxiv.org/abs/2310.18482>`_.
 
 `Projected-field kinetic Sunyaev-Zel'dovich Cross-correlations: halo model and forecasts (Boris Bolliet, J. Colin Hill, Simone Ferraro, Aleksandra Kusiak, Alex Krolewski, 2023) <https://iopscience.iop.org/article/10.1088/1475-7516/2023/03/039>`_.
 
