@@ -76,7 +76,7 @@ int input_init(int argc,
 
   /** Initialize all parameters given the input 'file_content' structure.
       If its size is null, all parameters take their default values. */
-  class_call(input_read_from_file(&fc,ppr,pba,pth,ppt,ptr,ppm,psp,pnl,ple,pop,
+  class_call(input_read_from_file(&fc,ppr,pba,pth,ppt,ptr,ppm,psp,pnl,ple,ptsz,pcsz,pop,
                                   errmsg),
              errmsg,
              errmsg);
@@ -432,36 +432,6 @@ int input_read_from_file(struct file_content * pfc,
                errmsg);
   }
 
-  // BB: class_sz change 
-  if(ptsz->create_ref_trispectrum_for_cobaya){
-
-    sprintf(param_output_name,"%s%s%s%s",
-            ptsz->path_to_ref_trispectrum_for_cobaya,
-            "/tSZ_params_ref_",
-            ptsz->append_name_trispectrum_ref,
-            ".txt");
-
-    class_open(param_output,param_output_name,"w",errmsg);
-
-    fprintf(param_output,"# List of input/precision parameters actually read\n");
-    fprintf(param_output,"# (all other parameters set to default values)\n");
-    fprintf(param_output,"# Obtained with CLASS %s (for developers: svn version %s)\n",_VERSION_,_SVN_VERSION_);
-    fprintf(param_output,"#\n");
-    fprintf(param_output,"# This file can be used as the input file of another run\n");
-    fprintf(param_output,"#\n");
-
-
-    for (i=0; i<pfc->size; i++)
-    fprintf(param_output,"%s = %s\n",pfc->name[i],pfc->value[i]);
-
-
-    fprintf(param_output,"#\n");
-
-    fclose(param_output);
-
-  }
-
-
   /** Read the 'write_warnings' flag. This is the correct place to do it,
       since we want it to happen after all the shooting business */
   class_read_flag_or_deprecated("write_warnings","write warnings",flag);
@@ -757,7 +727,7 @@ int input_shooting(struct file_content * pfc,
     }
 
     /** Read all parameters from the fc obtained through shooting */
-    class_call(input_read_parameters(&(fzw.fc),ppr,pba,pth,ppt,ptr,ppm,psp,pnl,ple,pop,
+    class_call(input_read_parameters(&(fzw.fc),ppr,pba,pth,ppt,ptr,ppm,psp,pnl,ple,ptsz,pcsz,pop,
                                      errmsg),
                errmsg,
                errmsg);
@@ -1088,6 +1058,8 @@ int input_get_guess(double *xguess,
   struct spectra sp;          /* for output spectra */
   struct nonlinear nl;        /* for non-linear spectra */
   struct lensing le;          /* for lensed spectra */
+  struct tszspectrum tsz;     //BB: added for class_sz
+  struct szcount csz;         //BB: added for class_sz
   struct output op;           /* for output files */
   int i;
   double Omega_M, a_decay, gamma, Omega0_dcdmdr=1.0;
@@ -1096,11 +1068,11 @@ int input_get_guess(double *xguess,
   /* Cheat to read only known parameters: */
   pfzw->fc.size -= pfzw->target_size;
 
-  class_call(input_read_precisions(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&op,
+  class_call(input_read_precisions(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&op,
                                    errmsg),
              errmsg,
              errmsg);
-  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&op,
+  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&csz,&op,
                                    errmsg),
              errmsg,
              errmsg);
@@ -1233,6 +1205,8 @@ int input_try_unknown_parameters(double * unknown_parameter,
   struct spectra sp;          /* for output spectra */
   struct nonlinear nl;        /* for non-linear spectra */
   struct lensing le;          /* for lensed spectra */
+  struct tszspectrum tsz;     //BB: added for class_sz
+  struct szcount csz;         //BB: added for class_sz
   struct output op;           /* for output files */
 
   int i;
@@ -1251,12 +1225,12 @@ int input_try_unknown_parameters(double * unknown_parameter,
     sprintf(pfzw->fc.value[pfzw->unknown_parameters_index[i]],"%.20e",unknown_parameter[i]);
   }
 
-  class_call(input_read_precisions(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&op,
+  class_call(input_read_precisions(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&op,
                                    errmsg),
              errmsg,
              errmsg);
 
-  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&op,
+  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&csz,&op,
                                    errmsg),
              errmsg,
              errmsg);
@@ -1341,7 +1315,7 @@ int input_try_unknown_parameters(double * unknown_parameter,
     if (input_verbose>2)
       printf("Stage 7: spectra\n");
     sp.spectra_verbose = 0;
-    class_call_except(spectra_init(&pr,&ba,&pt,&pm,&nl,&tr,&sp),sp.error_message, errmsg, transfer_free(&tr);nonlinear_free(&nl);primordial_free(&pm);perturb_free(&pt);thermodynamics_free(&th);background_free(&ba));
+    class_call_except(spectra_init(&pr,&ba,&pt,&pm,&nl,&tr,&sp,&tsz,&th,&le),sp.error_message, errmsg, transfer_free(&tr);nonlinear_free(&nl);primordial_free(&pm);perturb_free(&pt);thermodynamics_free(&th);background_free(&ba));
   }
 
   /** Get the corresponding shoot variable and put into output */
@@ -1536,7 +1510,7 @@ int input_read_parameters(struct file_content * pfc,
   int input_verbose=0;
 
   /** Set all input parameters to default values */
-  class_call(input_default_params(pba,pth,ppt,ptr,ppm,psp,pnl,ple,pop),
+  class_call(input_default_params(pba,pth,ppt,ptr,ppm,psp,pnl,ple,ptsz,pcsz,pop),
              errmsg,
              errmsg);
 
@@ -1567,6 +1541,13 @@ int input_read_parameters(struct file_content * pfc,
              errmsg,
              errmsg);
 
+  /** BB Read parameters for class_sz quantities */
+  class_call(input_read_parameters_class_sz(pfc,ppt,pnl,psp,ple,ptsz,pcsz,
+                                            errmsg),
+             errmsg,
+             errmsg);
+
+
   /** Read parameters for nonlinear quantities */
   class_call(input_read_parameters_nonlinear(pfc,ppr,pba,pth,ppt,pnl,
                                              input_verbose,
@@ -1595,12 +1576,6 @@ int input_read_parameters(struct file_content * pfc,
   /** Read obsolete parameters */
   class_call(input_read_parameters_additional(pfc,ppr,pba,pth,
                                               errmsg),
-             errmsg,
-             errmsg);
-
-  /** BB Read parameters for class_sz quantities */
-  class_call(input_read_parameters_class_sz(pfc,ppt,pnl,psp,ptsz,pcsz,
-                                            errmsg),
              errmsg,
              errmsg);
 
@@ -1720,8 +1695,10 @@ int input_read_parameters_general(struct file_content * pfc,
     class_call(parser_check_options(string1, options_output, 33, &flag1),
                errmsg,
                errmsg);
-    class_test(flag1==_FALSE_,
-               errmsg, "The options for output are {'tCl','pCl','lCl','nCl','dCl','sCl','mPk','mTk','dTk','vTk','Sd'}, you entered '%s'",string1);
+
+    // BB: Removed this test for class_sz:
+    // class_test(flag1==_FALSE_,
+    //            errmsg, "The options for output are {'tCl','pCl','lCl','nCl','dCl','sCl','mPk','mTk','dTk','vTk','Sd'}, you entered '%s'",string1);
   }
 
   /** 1.a) Terms contributing to the temperature spectrum */
@@ -3365,6 +3342,8 @@ int input_prepare_pk_eq(struct precision * ppr,
 int input_read_parameters_class_sz(struct file_content * pfc,
                                    struct perturbs * ppt,
                                    struct nonlinear * pnl,
+                                   struct spectra *psp,
+                                   struct lensing *ple,
                                    struct tszspectrum *ptsz, //BB: added for class_sz
                                    struct szcount *pcsz, //BB: added for class_sz
                                    ErrorMsg errmsg){
@@ -5837,7 +5816,6 @@ int input_read_parameters_class_sz(struct file_content * pfc,
 
             }
 
-
 //
 // class_call(parser_read_string(pfc,"sigma_derivative",&string1,&flag1,errmsg),
 //            errmsg,
@@ -6320,7 +6298,6 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
         ptsz->need_sigma = _TRUE_;
     // end of class_sz parameters
 
-
     // update zmax accordingly: 
 
       if (ptsz->has_sz_ps
@@ -6450,6 +6427,10 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
         ppt->z_max_pk = ptsz->z2SZ;
         psp->z_max_pk = ppt->z_max_pk;
       }
+
+
+
+    return _SUCCESS_;
 
                                      }
 

@@ -268,9 +268,9 @@ int spectra_init(
                  struct nonlinear * pnl,
                  struct transfers * ptr,
                  struct spectra * psp,
-                 struct tszspectrum * ptsz,
-                 struct thermo * pth,
-                 struct lensing * ple
+                 struct tszspectrum * ptsz, // BB: added for high-l cl's hack -- superseeded by Julien's fix
+                 struct thermo * pth, // BB: added for high-l cl's hack -- superseeded by Julien's fix
+                 struct lensing * ple // BB: added for high-l cl's hack -- superseeded by Julien's fix
                  ) {
 
   /** Summary: */

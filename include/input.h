@@ -209,7 +209,7 @@
 
 enum target_names {theta_s, Omega_dcdmdr, omega_dcdmdr, Omega_scf, Omega_ini_dcdm, omega_ini_dcdm, sigma8, age};
 enum computation_stage {cs_background, cs_thermodynamics, cs_perturbations, 
-                        cs_primordial, cs_nonlinear, cs_transfer, cs_spectra, cs_background};
+                        cs_primordial, cs_nonlinear, cs_transfer, cs_spectra};
 #define _NUM_TARGETS_ 8 //Keep this number as number of target_names
 
 /**
@@ -445,6 +445,7 @@ extern "C" {
                                      struct perturbs * ppt,
                                      struct nonlinear * pnl,
                                      struct spectra * psp,
+                                     struct lensing *ple,
                                      struct tszspectrum *ptsz, //BB: added for class_sz
                                      struct szcount *pcsz, //BB: added for class_sz
                                      ErrorMsg errmsg);
