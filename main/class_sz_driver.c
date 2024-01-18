@@ -19,13 +19,14 @@ int main(int argc, char **argv) {
   struct lensing le;          /* for lensed spectra */
   struct tszspectrum tsz;     /* BB: additional structure for class_sz*/
   struct szcount csz;         /* BB: additional structure for sz cluster counts*/
+  struct distortions sd;      /* for spectral distortions */
   struct output op;           /* for output files */
   ErrorMsg errmsg;            /* for error messages */
 
   //BB: initialize w. additional class_sz structures
   clock_t start, end;
   start = clock();
-  if (input_init(argc, argv,&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&csz,&op,errmsg) == _FAILURE_) {
+  if (input_init(argc, argv,&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&csz,&sd,&op,errmsg) == _FAILURE_) {
     printf("\n\nError running input_init \n=>%s\n",errmsg);
     return _FAILURE_;
   }
@@ -107,6 +108,11 @@ int main(int argc, char **argv) {
   // printf("Time taken to execute lensing in seconds : %.3e\n", duration);
 
 
+  if (distortions_init(&pr,&ba,&th,&pt,&pm,&sd) == _FAILURE_) {
+    printf("\n\nError in distortions_init \n=>%s\n",sd.error_message);
+    return _FAILURE_;
+  }
+
   start = clock();
   //BB: class_sz_cosmo module
   if (class_sz_cosmo_init(&ba,&th,&pt,&nl,&pm,&sp,&le,&tsz,&pr) == _FAILURE_) {
@@ -146,7 +152,7 @@ int main(int argc, char **argv) {
   // printf("Time taken to execute szcountsz in seconds : %.3e\n", duration);
 
   start = clock();
-  if (output_init(&ba,&th,&pt,&pm,&tr,&sp,&nl,&le,&op) == _FAILURE_) {
+  if (output_init(&ba,&th,&pt,&pm,&tr,&sp,&nl,&le,&sd,&op) == _FAILURE_) {
     printf("\n\nError in output_init \n=>%s\n",op.error_message);
     return _FAILURE_;
   }
@@ -168,6 +174,11 @@ int main(int argc, char **argv) {
     return _FAILURE_;
   }
 
+
+  if (distortions_free(&sd) == _FAILURE_) {
+    printf("\n\nError in distortions_free \n=>%s\n",sd.error_message);
+    return _FAILURE_;
+  }
 
   if (lensing_free(&le) == _FAILURE_) {
     printf("\n\nError in lensing_free \n=>%s\n",le.error_message);
