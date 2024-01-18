@@ -8276,7 +8276,7 @@ int input_default_params(struct background *pba,
   ptsz->sn_cutoff = 5.;
   pcsz->sn_cutoff = 5.;
   //Redshift limits for the integration
-  ptsz->z1SZ = 1.e-4;
+  ptsz->z1SZ = 1e-5;
   ptsz->z2SZ = 6.;
   ppt->z_max_pk = ptsz->z2SZ;
   psp->z_max_pk = ppt->z_max_pk;

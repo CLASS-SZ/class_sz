@@ -1380,8 +1380,8 @@ cdef class Class:
               if background_tau_of_z(&self.ba,redshift,&tau)==_FAILURE_:
                   raise CosmoSevereError(self.ba.error_message)
 
-              if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
-                  raise CosmoSevereError(self.ba.error_message)
+            if background_at_tau(&self.ba,tau,long_info,inter_normal,&last_index,pvecback)==_FAILURE_:
+                raise CosmoSevereError(self.ba.error_message)
 
               # store r
               r[i] = pvecback[self.ba.index_bg_conf_distance]
@@ -1404,8 +1404,8 @@ cdef class Class:
         if background_tau_of_z(&self.ba, z, &tau)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
-        if background_at_tau(&self.ba, tau, self.ba.long_info,
-                self.ba.inter_normal, &last_index, pvecback)==_FAILURE_:
+        if background_at_tau(&self.ba, tau, long_info,
+                inter_normal, &last_index, pvecback)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
         lum_distance = pvecback[self.ba.index_bg_lum_distance]
         free(pvecback)
@@ -1871,6 +1871,10 @@ cdef class Class:
         self.compute(["background"])
         return self.ba.a_eq*self.ba.H_eq
 
+    def z_eq(self):
+        self.compute(["background"])
+        return 1./self.ba.a_eq-1.
+
     def sigma8(self):
         if self.tsz.use_class_sz_fast_mode == 1:
           return self.sigma8_fast
@@ -1952,8 +1956,8 @@ cdef class Class:
           if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
               raise CosmoSevereError(self.ba.error_message)
 
-          if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
-              raise CosmoSevereError(self.ba.error_message)
+        if background_at_tau(&self.ba,tau,long_info,inter_normal,&last_index,pvecback)==_FAILURE_:
+            raise CosmoSevereError(self.ba.error_message)
 
           D_A = pvecback[self.ba.index_bg_ang_distance]
 
@@ -1963,7 +1967,6 @@ cdef class Class:
 
     def get_radial_kernel_W_galaxy_ngal_at_z(self, z, index_g):
         """
-
         Parameters
         ----------
         z : float
@@ -1972,27 +1975,22 @@ cdef class Class:
         cdef double tau
         cdef int last_index #junk
         cdef double * pvecback
-
         pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
-
         if self.tsz.skip_background_and_thermo:
           raise CosmoSevereError(self.ba.error_message)
         else:
           if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
               raise CosmoSevereError(self.ba.error_message)
-
           if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
               raise CosmoSevereError(self.ba.error_message)
-
           Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,
                                                 pvecback,
                                                 z,
                                                 &self.ba,
                                                 &self.tsz)
-
         free(pvecback)
-
         return Wg
+
 
 
 
@@ -2017,7 +2015,7 @@ cdef class Class:
         if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
-        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+        if background_at_tau(&self.ba,tau,long_info,inter_normal,&last_index,pvecback)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
         D = pvecback[self.ba.index_bg_D]
@@ -2047,7 +2045,7 @@ cdef class Class:
         if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
-        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+        if background_at_tau(&self.ba,tau,long_info,inter_normal,&last_index,pvecback)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
         f = pvecback[self.ba.index_bg_f]
@@ -2071,7 +2069,7 @@ cdef class Class:
 
         pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
 
-        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+        if background_at_tau(&self.ba,tau,long_info,inter_normal,&last_index,pvecback)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
         z = 1./pvecback[self.ba.index_bg_a]-1.
@@ -2118,8 +2116,8 @@ cdef class Class:
           if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
               raise CosmoSevereError(self.ba.error_message)
 
-          if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
-              raise CosmoSevereError(self.ba.error_message)
+        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+            raise CosmoSevereError(self.ba.error_message)
 
           H = pvecback[self.ba.index_bg_H]
 
@@ -2148,7 +2146,7 @@ cdef class Class:
         if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
-        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+        if background_at_tau(&self.ba,tau,long_info,inter_normal,&last_index,pvecback)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
         Om_m = pvecback[self.ba.index_bg_Omega_m]
@@ -2180,10 +2178,10 @@ cdef class Class:
         if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
-        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+        if background_at_tau(&self.ba,tau,long_info,inter_normal,&last_index,pvecback)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
-        if thermodynamics_at_z(&self.ba,&self.th,z,self.th.inter_normal,&last_index,pvecback,pvecthermo) == _FAILURE_:
+        if thermodynamics_at_z(&self.ba,&self.th,z,inter_normal,&last_index,pvecback,pvecthermo) == _FAILURE_:
             raise CosmoSevereError(self.th.error_message)
 
         xe = pvecthermo[self.th.index_th_xe]
@@ -2215,10 +2213,10 @@ cdef class Class:
         if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
-        if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+        if background_at_tau(&self.ba,tau,long_info,inter_normal,&last_index,pvecback)==_FAILURE_:
             raise CosmoSevereError(self.ba.error_message)
 
-        if thermodynamics_at_z(&self.ba,&self.th,z,self.th.inter_normal,&last_index,pvecback,pvecthermo) == _FAILURE_:
+        if thermodynamics_at_z(&self.ba,&self.th,z,inter_normal,&last_index,pvecback,pvecthermo) == _FAILURE_:
             raise CosmoSevereError(self.th.error_message)
 
         Tb = pvecthermo[self.th.index_th_Tb]
