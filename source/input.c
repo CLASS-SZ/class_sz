@@ -6313,7 +6313,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
           if ((strstr(string1,"nfw") != NULL)){
             ptsz->profile_matter_density=0;
             if (ptsz->sz_verbose>0){
-              printf("using standard nfw profile for matter profile.\n",ptsz->matter_nfw_power_law_index);
+              printf("using standard nfw profile for matter profile with index = %f.\n",ptsz->matter_nfw_power_law_index);
             }
           }
           }

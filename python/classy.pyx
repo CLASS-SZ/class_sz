@@ -106,7 +106,7 @@ cdef class Class:
     # "cdefined", because they correspond to C structures
     cdef precision pr
     cdef background ba
-    cdef thermodynamicsdynamics th
+    cdef thermodynamics th
     cdef perturbations pt
     cdef primordial pm
     cdef fourier fo
@@ -1705,7 +1705,7 @@ cdef class Class:
             return out_pk
 
 
-    def get_pk_and_k_and_z(self, nonlinear=True, only_clustering_species = False):
+    def get_pk_and_k_and_z(self, nonlinear=True, only_clustering_species = False, h_units = False):
         """
         Returns a grid of matter power spectrum values and the z and k
         at which it has been fully computed. Useful for creating interpolators.
@@ -1724,64 +1724,94 @@ cdef class Class:
         cdef double z_max_nonlinear, z_max_requested
 
         if self.tsz.use_class_sz_fast_mode == 1:
-          if h_units:
-              units=1./self.ba.h
-          else:
-              units=1
-          return self.class_szfast.cszfast_pk_grid_pknl, self.class_szfast.cszfast_pk_grid_k*units,self.class_szfast.cszfast_pk_grid_z
+            if h_units:
+                units=1./self.ba.h
+            else:
+                units=1
+            return self.class_szfast.cszfast_pk_grid_pknl, self.class_szfast.cszfast_pk_grid_k*units,self.class_szfast.cszfast_pk_grid_z
         else:
-          # consistency checks
+            # consistency checks
+            if self.fo.has_pk_matter == False:
+                raise CosmoSevereError("You ask classy to return an array of P(k,z) values, but the input parameters sent to CLASS did not require any P(k,z) calculations; add 'mPk' in 'output'")
 
-          if self.fo.has_pk_matter == False:
-              raise CosmoSevereError("You ask classy to return an array of P(k,z) values, but the input parameters sent to CLASS did not require any P(k,z) calculations; add 'mPk' in 'output'")
+            if nonlinear == True and self.fo.method == nl_none:
+                raise CosmoSevereError("You ask classy to return an array of nonlinear P(k,z) values, but the input parameters sent to CLASS did not require any non-linear P(k,z) calculations; add e.g. 'halofit' or 'HMcode' in 'nonlinear'")
 
-          if nonlinear == True and self.fo.method == nl_none:
-              raise CosmoSevereError("You ask classy to return an array of nonlinear P(k,z) values, but the input parameters sent to CLASS did not require any non-linear P(k,z) calculations; add e.g. 'halofit' or 'HMcode' in 'nonlinear'")
+            # check wich type of P(k) to return (total or clustering only, i.e. without massive neutrino contribution)
+            if (only_clustering_species == True):
+                index_pk = self.fo.index_pk_cluster
+            else:
+                index_pk = self.fo.index_pk_total
 
-          # check wich type of P(k) to return (total or clustering only, i.e. without massive neutrino contribution)
-          if (only_clustering_species == True):
-              index_pk = self.fo.index_pk_cluster
-          else:
-              index_pk = self.fo.index_pk_total
+            if self.fo.has_pk_matter == False:
+                raise CosmoSevereError("You ask classy to return an array of P(k,z) values, but the input parameters sent to CLASS did not require any P(k,z) calculations; add 'mPk' in 'output'")
 
-          # get list of redshfits
+            if self.fo.ln_tau_size == 1:
+                raise CosmoSevereError("You ask classy to return an array of P(k,z) values, but the input parameters sent to CLASS did not require any P(k,z) calculations for z>0; pass either a list of z in 'z_pk' or one non-zero value in 'z_max_pk'")
+            else:
+                for index_tau in xrange(self.fo.ln_tau_size):
+                    if index_tau == self.fo.ln_tau_size-1:
+                        z[index_tau] = 0.
+                    else:
+                        z[index_tau] = self.z_of_tau(np.exp(self.fo.ln_tau[index_tau]))
 
-          if self.fo.ln_tau_size == 1:
-              raise CosmoSevereError("You ask classy to return an array of P(k,z) values, but the input parameters sent to CLASS did not require any P(k,z) calculations for z>0; pass either a list of z in 'z_pk' or one non-zero value in 'z_max_pk'")
-          else:
-              for index_tau in xrange(self.fo.ln_tau_size):
-                  if index_tau == self.fo.ln_tau_size-1:
-                      z[index_tau] = 0.
-                  else:
-                      z[index_tau] = self.z_of_tau(np.exp(self.fo.ln_tau[index_tau]))
+            # check wich type of P(k) to return (total or clustering only, i.e. without massive neutrino contribution)
+            if (only_clustering_species == True):
+                index_pk = self.fo.index_pk_cluster
+            else:
+                index_pk = self.fo.index_pk_total
 
-          # check consitency of the list of redshifts
+            if nonlinear == True:
+                z_max_nonlinear = self.z_of_tau(self.fo.tau[self.fo.index_tau_min_nl])
+                z_max_requested = z[0]
+                if ((self.fo.tau_size - self.fo.ln_tau_size) < self.fo.index_tau_min_nl):
+                    raise CosmoSevereError("get_pk_and_k_and_z() is trying to return P(k,z) up to z_max=%e (to encompass your requested maximum value of z); but the input parameters sent to CLASS were such that the non-linear P(k,z) could only be consistently computed up to z=%e; increase the input parameter 'P_k_max_h/Mpc' or 'P_k_max_1/Mpc', or increase the precision parameters 'halofit_min_k_max' and/or 'hmcode_min_k_max', or decrease your requested z_max"%(z_max_requested,z_max_nonlinear))
 
-          if nonlinear == True:
-              z_max_nonlinear = self.z_of_tau(self.fo.tau[self.fo.index_tau_min_nl])
-              z_max_requested = z[0]
-              # BB 1-04-23: i had to comment these lines because they lead to a bug in DESY1 lkl.
-              # if ((self.fo.tau_size - self.fo.ln_tau_size) < self.fo.index_tau_min_nl):
-              #     raise CosmoSevereError("get_pk_and_k_and_z() is trying to return P(k,z) up to z_max=%e (to encompass your requested maximum value of z); but the input parameters sent to CLASS were such that the non-linear P(k,z) could only be consistently computed up to z=%e; increase the input parameter 'P_k_max_h/Mpc' or 'P_k_max_1/Mpc', or increase the precision parameters 'halofit_min_k_max' and/or 'hmcode_min_k_max', or decrease your requested z_max"%(z_max_requested,z_max_nonlinear))
+            if self.fo.ln_tau_size == 1:
+                raise CosmoSevereError("You ask classy to return an array of P(k,z) values, but the input parameters sent to CLASS did not require any P(k,z) calculations for z>0; pass either a list of z in 'z_pk' or one non-zero value in 'z_max_pk'")
+            else:
+                for index_tau in xrange(self.fo.ln_tau_size):
+                    if index_tau == self.fo.ln_tau_size-1:
+                        z[index_tau] = 0.
+                    else:
+                        z[index_tau] = self.z_of_tau(np.exp(self.fo.ln_tau[index_tau]))
 
-          # get list of k
-          if h_units:
-              units=1./self.ba.h
-          else:
-              units=1
-          for index_k in xrange(self.fo.k_size):
-              k[index_k] = self.fo.k[index_k]*units
+            # check consitency of the list of redshifts
+            for index_k in xrange(self.fo.k_size):
+                k[index_k] = self.fo.k[index_k]
 
-          # get P(k,z) array
+            if nonlinear == True:
+                z_max_nonlinear = self.z_of_tau(self.fo.tau[self.fo.index_tau_min_nl])
+                z_max_requested = z[0]
+                # BB 1-04-23: i had to comment these lines because they lead to a bug in DESY1 lkl.
+                # if ((self.fo.tau_size - self.fo.ln_tau_size) < self.fo.index_tau_min_nl):
+                #     raise CosmoSevereError("get_pk_and_k_and_z() is trying to return P(k,z) up to z_max=%e (to encompass your requested maximum value of z); but the input parameters sent to CLASS were such that the non-linear P(k,z) could only be consistently computed up to z=%e; increase the input parameter 'P_k_max_h/Mpc' or 'P_k_max_1/Mpc', or increase the precision parameters 'halofit_min_k_max' and/or 'hmcode_min_k_max', or decrease your requested z_max"%(z_max_requested,z_max_nonlinear))
 
-          for index_tau in xrange(self.fo.ln_tau_size):
-              for index_k in xrange(self.fo.k_size):
-                  if nonlinear == True:
-                      pk_at_k_z[index_k, index_tau] = np.exp(self.fo.ln_pk_nl[index_pk][index_tau * self.fo.k_size + index_k])
-                  else:
-                      pk_at_k_z[index_k, index_tau] = np.exp(self.fo.ln_pk_l[index_pk][index_tau * self.fo.k_size + index_k])
+            # get list of k
+            if h_units:
+                units=1./self.ba.h
+            else:
+                units=1
+            for index_k in xrange(self.fo.k_size):
+                k[index_k] = self.fo.k[index_k]*units
 
-          return pk_at_k_z, k, z
+            for index_tau in xrange(self.fo.ln_tau_size):
+                for index_k in xrange(self.fo.k_size):
+                    if nonlinear == True:
+                        pk_at_k_z[index_k, index_tau] = np.exp(self.fo.ln_pk_nl[index_pk][index_tau * self.fo.k_size + index_k])
+                    else:
+                        pk_at_k_z[index_k, index_tau] = np.exp(self.fo.ln_pk_l[index_pk][index_tau * self.fo.k_size + index_k])
+
+            # get P(k,z) array
+
+            for index_tau in xrange(self.fo.ln_tau_size):
+                for index_k in xrange(self.fo.k_size):
+                    if nonlinear == True:
+                        pk_at_k_z[index_k, index_tau] = np.exp(self.fo.ln_pk_nl[index_pk][index_tau * self.fo.k_size + index_k])
+                    else:
+                        pk_at_k_z[index_k, index_tau] = np.exp(self.fo.ln_pk_l[index_pk][index_tau * self.fo.k_size + index_k])
+
+            return pk_at_k_z, k, z
 
     # Gives sigma(R,z) for a given (R,z)
     def sigma(self,double R,double z, h_units = False):
@@ -1813,8 +1843,8 @@ cdef class Class:
           if (self.pt.k_max_for_pk < self.ba.h):
               raise CosmoSevereError("In order to get sigma(R,z) you must set 'P_k_max_h/Mpc' to 1 or bigger, in order to have k_max > 1 h/Mpc.")
 
-          if fourier_sigmas_at_z(&self.pr,&self.ba,&self.fo,R,z,self.fo.index_pk_m,out_sigma,&sigma)==_FAILURE_:
-              raise CosmoSevereError(self.fo.error_message)
+        if fourier_sigmas_at_z(&self.pr,&self.ba,&self.fo,R,z,self.fo.index_pk_m,out_sigma,&sigma)==_FAILURE_:
+            raise CosmoSevereError(self.fo.error_message)
 
         return sigma
 

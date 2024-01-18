@@ -685,7 +685,7 @@ int fourier_pk_at_k_and_z(
 int fourier_pks_at_k_and_z(
                              struct background * pba,
                              struct primordial * ppm,
-                             struct fourier * pfo,
+                             struct fourier *pfo,
                              enum pk_outputs pk_output,
                              double k,
                              double z,

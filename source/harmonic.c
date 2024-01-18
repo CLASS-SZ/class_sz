@@ -13,7 +13,7 @@
  */
 
 #include "harmonic.h"
-# include "r8lib.h"
+#include "r8lib.h"
 
 /**
  * Anisotropy power spectra \f$ C_l\f$'s for all types, modes and initial conditions.
