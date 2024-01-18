@@ -599,7 +599,7 @@ double ClassEngine::get_sigma8(double z)
 
   //call to fill pvecback
   background_at_tau(&ba,tau,ba.long_info,ba.inter_normal, &index, pvecback);
-  //background_at_tau(pba,tau,pba->long_info,pba->inter_normal,&last_index,pvecback);
+  //background_at_tau(pba,tau,long_info,pba->inter_normal,&last_index,pvecback);
   spectra_sigma(&ba,&pm,&sp,8./ba.h,z,&sigma8);
 
 #ifdef DBUG

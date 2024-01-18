@@ -1129,13 +1129,12 @@ int number_of_threads= 1;
 
 // number_of_threads = 1; // just pretend we have one thread
 int id;
-omp_lock_t lock;
 // int npatches = 10;//ptsz->nskyfracs;
 
 // double result_qmconv_all_patches;//[ptsz->nskyfracs][2*N];
 
 #pragma omp parallel \
-   shared(N,xarr,kernel_scatter,npatches,index_zloop,abort,pba,ptsz,ppm,pnl,lock)\
+   shared(N,xarr,kernel_scatter,npatches,index_zloop,abort,pba,ptsz,ppm,pnl)\
    private(id,index_patchesloop)\
    num_threads(number_of_threads)
 	 {
