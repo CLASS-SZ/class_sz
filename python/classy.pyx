@@ -143,7 +143,7 @@ cdef class Class:
     property Omega_nu:
         def __get__(self):
             return self.ba.Omega0_ncdm_tot
-    property fourier_method:
+    property nonlinear_method:
         def __get__(self):
             return self.fo.method
 
@@ -1745,15 +1745,6 @@ cdef class Class:
 
             if self.fo.has_pk_matter == False:
                 raise CosmoSevereError("You ask classy to return an array of P(k,z) values, but the input parameters sent to CLASS did not require any P(k,z) calculations; add 'mPk' in 'output'")
-
-            if self.fo.ln_tau_size == 1:
-                raise CosmoSevereError("You ask classy to return an array of P(k,z) values, but the input parameters sent to CLASS did not require any P(k,z) calculations for z>0; pass either a list of z in 'z_pk' or one non-zero value in 'z_max_pk'")
-            else:
-                for index_tau in xrange(self.fo.ln_tau_size):
-                    if index_tau == self.fo.ln_tau_size-1:
-                        z[index_tau] = 0.
-                    else:
-                        z[index_tau] = self.z_of_tau(np.exp(self.fo.ln_tau[index_tau]))
 
             # check wich type of P(k) to return (total or clustering only, i.e. without massive neutrino contribution)
             if (only_clustering_species == True):
@@ -4611,9 +4602,9 @@ cdef class Class:
             derived[name] = value
         return derived
 
-    def fourier_scale(self, np.ndarray[DTYPE_t,ndim=1] z, int z_size):
+    def nonlinear_scale(self, np.ndarray[DTYPE_t,ndim=1] z, int z_size):
         """
-        fourier_scale(z, z_size)
+        nonlinear_scale(z, z_size)
 
         Return the nonlinear scale for all the redshift specified in z, of size
         z_size
@@ -4636,10 +4627,10 @@ cdef class Class:
 
         return k_nl
 
-    def fourier_scale_cb(self, np.ndarray[DTYPE_t,ndim=1] z, int z_size):
+    def nonlinear_scale_cb(self, np.ndarray[DTYPE_t,ndim=1] z, int z_size):
         """
 
-make        fourier_scale_cb(z, z_size)
+make        nonlinear_scale_cb(z, z_size)
 
         Return the nonlinear scale for all the redshift specified in z, of size
 
