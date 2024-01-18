@@ -25,8 +25,8 @@ int main(int argc, char **argv) {
   //BB: initialize w. additional class_sz structures
   clock_t start, end;
   start = clock();
-  if (input_init_from_arguments(argc, argv,&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&csz,&op,errmsg) == _FAILURE_) {
-    printf("\n\nError running input_init_from_arguments \n=>%s\n",errmsg);
+  if (input_init(argc, argv,&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&csz,&op,errmsg) == _FAILURE_) {
+    printf("\n\nError running input_init \n=>%s\n",errmsg);
     return _FAILURE_;
   }
   end = clock();
