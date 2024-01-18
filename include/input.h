@@ -240,12 +240,12 @@ extern "C" {
                  char **argv,
                  struct precision * ppr,
                  struct background * pba,
-                 struct thermo * pth,
-                 struct perturbs * ppt,
-                 struct transfers * ptr,
+                 struct thermodynamics * pth,
+                 struct perturbations * ppt,
+                 struct transfer * ptr,
                  struct primordial * ppm,
-                 struct spectra * psp,
-                 struct nonlinear * pnl,
+                 struct harmonic * phr,
+                 struct fourier * pfo,
                  struct lensing *ple,
                  struct tszspectrum *ptsz, //BB: added for class_sz
                  struct szcount *pcsz, //BB: added for class_sz
@@ -268,12 +268,12 @@ extern "C" {
   int input_read_from_file(struct file_content * pfc,
                            struct precision * ppr,
                            struct background *pba,
-                           struct thermo *pth,
-                           struct perturbs *ppt,
-                           struct transfers *ptr,
+                           struct thermodynamics *pth,
+                           struct perturbations *ppt,
+                           struct transfer *ptr,
                            struct primordial *ppm,
-                           struct spectra *psp,
-                           struct nonlinear *pnl,
+                           struct harmonic *phr,
+                           struct fourier *pfo,
                            struct lensing *ple,
                            struct tszspectrum *ptsz, //BB: added for class_sz
                            struct szcount *pcsz, //BB: added for class_sz
@@ -286,12 +286,12 @@ extern "C" {
   int input_shooting(struct file_content * pfc,
                      struct precision * ppr,
                      struct background * pba,
-                     struct thermo * pth,
-                     struct perturbs * ppt,
-                     struct transfers * ptr,
+                     struct thermodynamics * pth,
+                     struct perturbations * ppt,
+                     struct transfer * ptr,
                      struct primordial * ppm,
-                     struct spectra * psp,
-                     struct nonlinear * pnl,
+                     struct harmonic * phr,
+                     struct fourier * pfo,
                      struct lensing *ple,
                      struct tszspectrum *ptsz, //BB: added for class_sz
                      struct szcount *pcsz, //BB: added for class_sz
@@ -348,12 +348,12 @@ extern "C" {
   int input_read_precisions(struct file_content * pfc,
                             struct precision * ppr,
                             struct background * pba,
-                            struct thermo * pth,
-                            struct perturbs * ppt,
-                            struct transfers * ptr,
+                            struct thermodynamics * pth,
+                            struct perturbations * ppt,
+                            struct transfer * ptr,
                             struct primordial * ppm,
-                            struct spectra * psp,
-                            struct nonlinear * pnl,
+                            struct harmonic * phr,
+                            struct fourier * pfo,
                             struct lensing * ple,
                             struct tszspectrum *ptsz, //BB: added for class_sz
                             struct distortions *psd,
@@ -365,12 +365,12 @@ extern "C" {
   int input_read_parameters(struct file_content * pfc,
                             struct precision * ppr,
                             struct background * pba,
-                            struct thermo * pth,
-                            struct perturbs * ppt,
-                            struct transfers * ptr,
+                            struct thermodynamics * pth,
+                            struct perturbations * ppt,
+                            struct transfer * ptr,
                             struct primordial * ppm,
-                            struct spectra * psp,
-                            struct nonlinear * pnl,
+                            struct harmonic * phr,
+                            struct fourier * pfo,
                             struct lensing * ple,
                             struct tszspectrum *ptsz, //BB: added for class_sz
                             struct szcount *pcsz, //BB: added for class_sz
@@ -380,42 +380,42 @@ extern "C" {
 
   int input_read_parameters_general(struct file_content * pfc,
                                     struct background * pba,
-                                    struct thermo * pth,
-                                    struct perturbs * ppt,
+                                    struct thermodynamics * pth,
+                                    struct perturbations * ppt,
                                     struct distortions * psd,
                                     ErrorMsg errmsg);
 
   int input_read_parameters_species(struct file_content * pfc,
                                     struct precision * ppr,
                                     struct background * pba,
-                                    struct thermo * pth,
-                                    struct perturbs * ppt,
+                                    struct thermodynamics * pth,
+                                    struct perturbations * ppt,
                                     int input_verbose,
                                     ErrorMsg errmsg);
 
   int input_read_parameters_injection(struct file_content * pfc,
                                       struct precision * ppr,
-                                      struct thermo * pth,
+                                      struct thermodynamics * pth,
                                       ErrorMsg errmsg);
 
   int input_read_parameters_nonlinear(struct file_content * pfc,
                                       struct precision * ppr,
                                       struct background * pba,
-                                      struct thermo * pth,
-                                      struct perturbs * ppt,
-                                      struct nonlinear * pnl,
+                                      struct thermodynamics * pth,
+                                      struct perturbations * ppt,
+                                      struct fourier * pfo,
                                       int input_verbose,
                                       ErrorMsg errmsg);
 
   int input_prepare_pk_eq(struct precision * ppr,
                           struct background * pba,
-                          struct thermo * pth,
-                          struct nonlinear * pnl,
+                          struct thermodynamics * pth,
+                          struct fourier * pfo,
                           int input_verbose,
                           ErrorMsg errmsg);
 
   int input_read_parameters_primordial(struct file_content * pfc,
-                                       struct perturbs * ppt,
+                                       struct perturbations * ppt,
                                        struct primordial * ppm,
                                        ErrorMsg errmsg);
 
@@ -423,16 +423,16 @@ extern "C" {
                                     struct precision * ppr,
                                     struct background * pba,
                                     struct primordial * ppm,
-                                    struct perturbs * ppt,
-                                    struct transfers * ptr,
-                                    struct spectra * psp,
+                                    struct perturbations * ppt,
+                                    struct transfer * ptr,
+                                    struct harmonic * phr,
                                     struct output * pop,
                                     ErrorMsg errmsg);
 
   int input_read_parameters_lensing(struct file_content * pfc,
                                     struct precision * ppr,
-                                    struct perturbs * ppt,
-                                    struct transfers * ptr,
+                                    struct perturbations * ppt,
+                                    struct transfer * ptr,
                                     struct lensing * ple,
                                     ErrorMsg errmsg);
 
@@ -444,14 +444,14 @@ extern "C" {
   int input_read_parameters_additional(struct file_content * pfc,
                                        struct precision * ppr,
                                        struct background * pba,
-                                       struct thermo * pth,
+                                       struct thermodynamics * pth,
                                        ErrorMsg errmsg);
 
 
   int input_read_parameters_class_sz(struct file_content * pfc,
-                                     struct perturbs * ppt,
-                                     struct nonlinear * pnl,
-                                     struct spectra * psp,
+                                     struct perturbations * ppt,
+                                     struct fourier * pfo,
+                                     struct harmonic * phr,
                                      struct lensing *ple,
                                      struct tszspectrum *ptsz, //BB: added for class_sz
                                      struct szcount *pcsz, //BB: added for class_sz
@@ -460,12 +460,12 @@ extern "C" {
 
   int input_read_parameters_output(struct file_content * pfc,
                                    struct background * pba,
-                                   struct thermo * pth,
-                                   struct perturbs * ppt,
-                                   struct transfers * ptr,
+                                   struct thermodynamics * pth,
+                                   struct perturbations * ppt,
+                                   struct transfer * ptr,
                                    struct primordial * ppm,
-                                   struct spectra * psp,
-                                   struct nonlinear * pnl,
+                                   struct harmonic * phr,
+                                   struct fourier * pfo,
                                    struct lensing *ple,
                                    struct distortions *psd,
                                    struct output *pop,
@@ -474,12 +474,12 @@ extern "C" {
   /* Set default parameters */
 
   int input_default_params(struct background *pba,
-                           struct thermo *pth,
-                           struct perturbs *ppt,
-                           struct transfers *ptr,
+                           struct thermodynamics *pth,
+                           struct perturbations *ppt,
+                           struct transfer *ptr,
                            struct primordial *ppm,
-                           struct spectra *psp,
-                           struct nonlinear *pnl,
+                           struct harmonic *phr,
+                           struct fourier *pfo,
                            struct lensing *ple,
                            struct tszspectrum *ptsz, //BB: added for class_sz
                            struct szcount *pcsz, //BB: added for class_sz

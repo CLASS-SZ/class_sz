@@ -33,7 +33,7 @@ int y_to_m (
             // double rd,
             struct tszspectrum * ptsz,
             struct background * pba,
-            struct nonlinear * pnl,
+            struct fourier * pfo,
             struct primordial * ppm
           );
 
@@ -43,7 +43,7 @@ int solve_y_to_m(
                     double m,
                     struct tszspectrum * ptsz,
                     struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm
                   );
 
@@ -59,7 +59,7 @@ int zbrent_y_to_m(
               // double rd,
               struct tszspectrum * ptsz,
               struct background * pba,
-              struct nonlinear * pnl,
+              struct fourier * pfo,
               struct primordial * ppm
             );
 
@@ -72,7 +72,7 @@ int m_to_xout (
             double rd,
             struct tszspectrum * ptsz,
             struct background * pba,
-            struct nonlinear * pnl,
+            struct fourier * pfo,
             struct primordial * ppm
           );
 
@@ -82,7 +82,7 @@ int solve_m_to_xout(
                     double m,
                     struct tszspectrum * ptsz,
                     struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm
                   );
 
@@ -98,12 +98,12 @@ int zbrent_m_to_xout(
               double rd,
               struct tszspectrum * ptsz,
               struct background * pba,
-              struct nonlinear * pnl,
+              struct fourier * pfo,
               struct primordial * ppm
             );
 
 int tabulate_m_to_xout(struct background * pba,
-                       struct nonlinear * pnl,
+                       struct fourier * pfo,
                        struct primordial * ppm,
                        struct tszspectrum * ptsz);
 
@@ -120,7 +120,7 @@ double get_theta_at_y_and_z(double y,
                             struct background * pba);
 double get_szcountsz_sigma_at_theta_in_patch(double theta,int id_patch,struct tszspectrum *ptsz);
 int tabulate_y_to_m(struct background * pba,
-                       struct nonlinear * pnl,
+                       struct fourier * pfo,
                        struct primordial * ppm,
                        struct tszspectrum * ptsz);
 double get_y_to_m_at_z_and_y(double z_asked, double y_asked, struct tszspectrum * ptsz);
@@ -129,9 +129,9 @@ double get_dNdlny_at_z_and_y(double z_asked, double y_asked, struct background *
 double integrate_over_m_at_z(double * pvecback,
                            double * pvectsz,
                            struct background * pba,
-                           struct nonlinear * pnl,
+                           struct fourier * pfo,
                            struct primordial * ppm,
-                           struct perturbs * ppt,
+                           struct perturbations * ppt,
                            struct tszspectrum * ptsz);
 
 
@@ -289,8 +289,8 @@ double delta_to_delta_prime_nfw(
   double get_m200m_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_m200c_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_m500c_to_m200c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
-  double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl);
-  double get_nl_index_at_z_and_k_no_wiggles(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl);
+  double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct tszspectrum * ptsz, struct fourier * pfo);
+  double get_nl_index_at_z_and_k_no_wiggles(double z_asked, double k_asked, struct tszspectrum * ptsz, struct fourier * pfo);
 
   double get_normalization_gas_density_profile(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_normalization_matter_density_profile(double z_asked, double m_asked, struct tszspectrum * ptsz);
@@ -363,44 +363,44 @@ int tabulate_m500c_to_m200c(struct background * pba,
                     double * result
                   );
 
-  int spectra_sigma_prime(struct background * pba,
+  int harmonic_sigma_prime(struct background * pba,
                           struct primordial * ppm,
-                          struct nonlinear * pnl,
+                          struct fourier * pfo,
                           struct tszspectrum * ptsz,
                           double R,
                           double z,
                           double * sigma_prime);
 
-  int spectra_sigma_for_tSZ(
+  int harmonic_sigma_for_tSZ(
                             struct background * pba,
                             struct primordial * ppm,
-                            struct nonlinear * pnl,
+                            struct fourier * pfo,
                             struct tszspectrum * ptsz,
                             double R,
                             double z,
                             double *sigma
                             );
 
-  int spectra_sigma_ncdm(struct background * pba,
+  int harmonic_sigma_ncdm(struct background * pba,
                          struct primordial * ppm,
-                         struct nonlinear * pnl,
+                         struct fourier * pfo,
                          struct tszspectrum * ptsz,
                          double R,
                          double z,
                          double *sigma);
 
-  int spectra_sigma_ncdm_prime(struct background * pba,
+  int harmonic_sigma_ncdm_prime(struct background * pba,
                                struct primordial * ppm,
-                               struct nonlinear * pnl,
+                               struct fourier * pfo,
                                struct tszspectrum * ptsz,
                                double R,
                                double z,
                                double *sigma);
 
-  int spectra_vrms2(
+  int harmonic_vrms2(
                    struct background * pba,
                    struct primordial * ppm,
-                   struct nonlinear *pnl,
+                   struct fourier *pfo,
                    struct tszspectrum * ptsz,
                    double z,
                    double * vrms2
@@ -408,17 +408,17 @@ int tabulate_m500c_to_m200c(struct background * pba,
 
 
  int tabulate_vrms2_from_pk(struct background * pba,
-                            struct nonlinear * pnl,
+                            struct fourier * pfo,
                             struct primordial * ppm,
                             struct tszspectrum * ptsz);
 
  int tabulate_knl(struct background * pba,
-                  struct nonlinear * pnl,
+                  struct fourier * pfo,
                   struct primordial * ppm,
                   struct tszspectrum * ptsz);
 
  int tabulate_nl_index(struct background * pba,
-                       struct nonlinear * pnl,
+                       struct fourier * pfo,
                        struct primordial * ppm,
                        struct tszspectrum * ptsz);
 
@@ -436,7 +436,7 @@ int solve_pkl_to_knl(
               double z,
               struct tszspectrum * ptsz,
               struct background * pba,
-              struct nonlinear * pnl,
+              struct fourier * pfo,
               struct primordial * ppm
             );
 
@@ -450,7 +450,7 @@ int zbrent_pkl_to_knl(
               double z,
               struct tszspectrum * ptsz,
               struct background * pba,
-              struct nonlinear * pnl,
+              struct fourier * pfo,
               struct primordial * ppm
             );
 
@@ -460,7 +460,7 @@ int pkl_to_knl (
             double z,
             struct tszspectrum * ptsz,
             struct background * pba,
-            struct nonlinear * pnl,
+            struct fourier * pfo,
             struct primordial * ppm
           );
 
@@ -551,9 +551,9 @@ double erf_compl_nicola(double y,
   double next_z(double z_i, double dz, struct tszspectrum * ptsz);
 
   int integrate_over_redshift(struct background * pba,
-                              struct nonlinear * pnl,
+                              struct fourier * pfo,
                               struct primordial * ppm,
-                              struct perturbs * ppt,
+                              struct perturbations * ppt,
                               struct tszspectrum * ptsz,
                               double * Pvecback,
                               double * Pvectsz);
@@ -563,22 +563,22 @@ double erf_compl_nicola(double y,
   int read_sz_catalog(struct tszspectrum * ptsz);
 
   int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
-                                        struct nonlinear * pnl,
+                                        struct fourier * pfo,
                                         struct primordial * ppm,
                                         struct tszspectrum * ptsz);
 
 
-  int spectra_sigma2_hsv(
+  int harmonic_sigma2_hsv(
                    struct background * pba,
                    struct primordial * ppm,
-                   struct nonlinear *pnl,
+                   struct fourier *pfo,
                    struct tszspectrum * ptsz,
                    double z,
                    double * sigma2_hsv
                  );
 
   int tabulate_sigma2_hsv_from_pk(struct background * pba,
-                                  struct nonlinear * pnl,
+                                  struct fourier * pfo,
                                   struct primordial * ppm,
                                   struct tszspectrum * ptsz);
 
@@ -626,7 +626,7 @@ double get_dydz_at_z(double z_asked, struct tszspectrum * ptsz);
 
 
 int tabulate_dydz(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
@@ -634,31 +634,31 @@ double get_dcib0dz_at_z_and_nu(double z_asked, double nu_asked, struct tszspectr
 
 
 int tabulate_dcib0dz(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
 int tabulate_dndlnM(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
 int bispectrum_condition(double ell_1, double ell_2, double ell_3);
 
 int tabulate_mean_galaxy_bias(struct background * pba,
-                              struct nonlinear * pnl,
+                              struct fourier * pfo,
                               struct primordial * ppm,
-                              struct perturbs * ppt,
+                              struct perturbations * ppt,
                               struct tszspectrum * ptsz);
 
 
 int tabulate_mean_galaxy_number_density(struct background * pba,
-                                        struct nonlinear * pnl,
+                                        struct fourier * pfo,
                                         struct primordial * ppm,
                                         struct tszspectrum * ptsz);
 
 int tabulate_mean_galaxy_number_density_ngal(struct background * pba,
-                                             struct nonlinear * pnl,
+                                             struct fourier * pfo,
                                              struct primordial * ppm,
                                              struct tszspectrum * ptsz);
 
@@ -699,32 +699,32 @@ double get_gas_pressure_profile_at_k_m_z(double l_asked,
                                     struct tszspectrum * ptsz);
 
 int tabulate_hmf_counter_terms_nmin(struct background * pba,
-                                    struct nonlinear * pnl,
+                                    struct fourier * pfo,
                                     struct primordial * ppm,
                                     struct tszspectrum * ptsz);
 
 int tabulate_ng_bias_contribution_at_z_and_k(struct background * pba,
-                                             struct perturbs * ppt,
+                                             struct perturbations * ppt,
                                              struct tszspectrum * ptsz);
 
 
 int tabulate_hmf_counter_terms_b1min(struct background * pba,
-                                    struct nonlinear * pnl,
+                                    struct fourier * pfo,
                                     struct primordial * ppm,
-                                    struct perturbs * ppt,
+                                    struct perturbations * ppt,
                                     struct tszspectrum * ptsz);
 
 
 int tabulate_hmf_counter_terms_b2min(struct background * pba,
-                                    struct nonlinear * pnl,
+                                    struct fourier * pfo,
                                     struct primordial * ppm,
                                     struct tszspectrum * ptsz);
 
 
 int tabulate_psi_b1g(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
-                    struct perturbs * ppt,
+                    struct perturbations * ppt,
                     struct tszspectrum * ptsz);
 
 int tabulate_custom1_profile_fft(struct background * pba,
@@ -740,24 +740,24 @@ int tabulate_matter_nfw_with_power_law_profile_fft(struct background * pba,
                                                    struct tszspectrum * ptsz);
 
 int tabulate_gas_density_profile_2h(struct background * pba,
-                                    struct nonlinear * pnl,
+                                    struct fourier * pfo,
                                     struct primordial * ppm,
-                                    struct perturbs * ppt,
+                                    struct perturbations * ppt,
                                     struct tszspectrum * ptsz);
 
 int tabulate_gas_density_profile_2h_fft_at_z_and_r(struct background * pba,
-                                                   struct nonlinear * pnl,
+                                                   struct fourier * pfo,
                                                    struct primordial * ppm,
                                                    struct tszspectrum * ptsz);
 
 int tabulate_gas_pressure_profile_2h(struct background * pba,
-                                    struct nonlinear * pnl,
+                                    struct fourier * pfo,
                                     struct primordial * ppm,
-                                    struct perturbs * ppt,
+                                    struct perturbations * ppt,
                                     struct tszspectrum * ptsz);
 
 int tabulate_gas_pressure_profile_2h_fft_at_z_and_r(struct background * pba,
-                                                   struct nonlinear * pnl,
+                                                   struct fourier * pfo,
                                                    struct primordial * ppm,
                                                    struct tszspectrum * ptsz);
 
@@ -766,7 +766,7 @@ double get_psi_b1g_at_k_and_z(double l_asked, double z_asked, struct tszspectrum
 
 
 int tabulate_psi_b2g(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
@@ -774,9 +774,9 @@ double get_psi_b2g_at_k_and_z(double l_asked, double z_asked, struct tszspectrum
 
 
 int tabulate_psi_b1kg(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
-                    struct perturbs * ppt,
+                    struct perturbations * ppt,
                     struct tszspectrum * ptsz);
 
 
@@ -784,7 +784,7 @@ double get_psi_b1kg_at_k_and_z(double l_asked, double z_asked, struct tszspectru
 
 
 int tabulate_psi_b2kg(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
@@ -793,7 +793,7 @@ double get_psi_b2kg_at_k_and_z(double l_asked, double z_asked, struct tszspectru
 
 
 int tabulate_psi_b2t(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
@@ -801,7 +801,7 @@ double get_psi_b2t_at_k_and_z(double l_asked, double z_asked, struct tszspectrum
 
 
 int tabulate_n5k_F1(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
                     struct tszspectrum * ptsz);
 
@@ -810,14 +810,14 @@ double get_dkappacmbdz_at_l_and_z(double l,
                                   double z,
                                   struct background * pba,
                                   struct primordial * ppm,
-                                  struct nonlinear * pnl,
+                                  struct fourier * pfo,
                                   struct tszspectrum * ptsz);
 
 double get_dkappacmbdz_pklin_at_l_and_z(double l,
                                   double z,
                                   struct background * pba,
                                   struct primordial * ppm,
-                                  struct nonlinear * pnl,
+                                  struct fourier * pfo,
                                   struct tszspectrum * ptsz);
 
 
@@ -834,26 +834,26 @@ int load_n5k_z_of_chi(struct tszspectrum * ptsz);
 double get_n5k_z_of_chi(double chi,struct tszspectrum * ptsz);
 
 int tabulate_psi_b1t(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
-                    struct perturbs * ppt,
+                    struct perturbations * ppt,
                     struct tszspectrum * ptsz);
 
 double get_psi_b1t_at_k_and_z(double l_asked, double z_asked, struct tszspectrum * ptsz);
 
 
 int tabulate_psi_b1gt(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
-                    struct perturbs * ppt,
+                    struct perturbations * ppt,
                     struct tszspectrum * ptsz);
 
 double get_psi_b1gt_at_k1_k2_and_z(double l1_asked, double l2_asked, double z_asked, struct tszspectrum * ptsz);
 
 int tabulate_psi_b1kgg(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
-                    struct perturbs * ppt,
+                    struct perturbations * ppt,
                     struct tszspectrum * ptsz);
 
 double get_psi_b1kgg_at_k1_k2_and_z(double l1_asked, double l2_asked, double z_asked, struct tszspectrum * ptsz);
@@ -861,9 +861,9 @@ double get_psi_b1kgg_at_k1_k2_and_z(double l1_asked, double l2_asked, double z_a
 
 
 int tabulate_psi_b1kgt(struct background * pba,
-                    struct nonlinear * pnl,
+                    struct fourier * pfo,
                     struct primordial * ppm,
-                    struct perturbs * ppt,
+                    struct perturbations * ppt,
                     struct tszspectrum * ptsz);
 
 double get_psi_b1kgt_at_k1_k2_and_z(double l1_asked, double l2_asked, double z_asked, struct tszspectrum * ptsz);

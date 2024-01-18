@@ -216,14 +216,14 @@ def get_class_outputs(block, c, config):
         block[names.growth_parameters, "a"] = 1/(1+z)
 
         #print('getting nonlinear')
-        #print(c.nonlinear_method)
+        #print(c.fourier_method)
         #print(config)
-        tmp_nonlinear_method = c.nonlinear_method
+        tmp_fourier_method = c.fourier_method
         if 'class_non_linear' in config:
-            tmp_nonlinear_method = 1
+            tmp_fourier_method = 1
             #print(config['class_non_linear'])
 
-        if tmp_nonlinear_method != 0:
+        if tmp_fourier_method != 0:
             #print('entering nonlinear block')
             for i, ki in enumerate(k):
                 for j, zi in enumerate(z):

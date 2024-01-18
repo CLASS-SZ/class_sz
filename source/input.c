@@ -19,8 +19,8 @@
 #include "perturbations.h"
 #include "transfer.h"
 #include "primordial.h"
-#include "spectra.h"
-#include "nonlinear.h"
+#include "harmonic.h"
+#include "fourier.h"
 #include "lensing.h"
 #include "distortions.h"
 #include "output.h"
@@ -36,8 +36,8 @@
  * @param ppt     Input: pointer to perturbation structure
  * @param ptr     Input: pointer to transfer structure
  * @param ppm     Input: pointer to primordial structure
- * @param psp     Input: pointer to spectra structure
- * @param pnl     Input: pointer to nonlinear structure
+ * @param phr     Input: pointer to harmonic structure
+ * @param pfo     Input: pointer to fourier structure
  * @param ple     Input: pointer to lensing structure
  * @param psd     Input: pointer to distorsion structure
  * @param pop     Input: pointer to output structure
@@ -50,12 +50,12 @@ int input_init(int argc,
                char **argv,
                struct precision * ppr,
                struct background *pba,
-               struct thermo *pth,
-               struct perturbs *ppt,
-               struct transfers *ptr,
+               struct thermodynamics *pth,
+               struct perturbations *ppt,
+               struct transfer *ptr,
                struct primordial *ppm,
-               struct spectra *psp,
-               struct nonlinear * pnl,
+               struct harmonic *phr,
+               struct fourier * pfo,
                struct lensing *ple,
                struct tszspectrum *ptsz, //BB: added for class_sz
                struct szcount *pcsz, //BB: added for class_sz
@@ -79,7 +79,7 @@ int input_init(int argc,
 
   /** Initialize all parameters given the input 'file_content' structure.
       If its size is null, all parameters take their default values. */
-  class_call(input_read_from_file(&fc,ppr,pba,pth,ppt,ptr,ppm,psp,pnl,ple,ptsz,pcsz,psd,pop,
+  class_call(input_read_from_file(&fc,ppr,pba,pth,ppt,ptr,ppm,phr,pfo,ple,ptsz,pcsz,psd,pop,
                                   errmsg),
              errmsg,
              errmsg);
@@ -374,8 +374,8 @@ int input_set_root(char* input_file,
  * @param ppt     Input: pointer to perturbation structure
  * @param ptr     Input: pointer to transfer structure
  * @param ppm     Input: pointer to primordial structure
- * @param psp     Input: pointer to spectra structure
- * @param pnl     Input: pointer to nonlinear structure
+ * @param phr     Input: pointer to harmonic structure
+ * @param pfo     Input: pointer to fourier structure
  * @param ple     Input: pointer to lensing structure
  * @param psd     Input: pointer to distorsion structure
  * @param pop     Input: pointer to output structure
@@ -386,12 +386,12 @@ int input_set_root(char* input_file,
 int input_read_from_file(struct file_content * pfc,
                          struct precision * ppr,
                          struct background *pba,
-                         struct thermo *pth,
-                         struct perturbs *ppt,
-                         struct transfers *ptr,
+                         struct thermodynamics *pth,
+                         struct perturbations *ppt,
+                         struct transfer *ptr,
                          struct primordial *ppm,
-                         struct spectra *psp,
-                         struct nonlinear * pnl,
+                         struct harmonic *phr,
+                         struct fourier * pfo,
                          struct lensing *ple,
                          struct tszspectrum *ptsz, //BB: added for class_sz
                          struct szcount *pcsz, //BB: added for class_sz
@@ -412,7 +412,7 @@ int input_read_from_file(struct file_content * pfc,
       Before getting into the assignment of parameters and the shooting, we want
       to already fix our precision parameters. No precision parameter should
       depend on any input parameter  */
-  class_call(input_read_precisions(pfc,ppr,pba,pth,ppt,ptr,ppm,psp,pnl,ple,ptsz,psd,pop,
+  class_call(input_read_precisions(pfc,ppr,pba,pth,ppt,ptr,ppm,phr,pfo,ple,ptsz,psd,pop,
                                    errmsg),
              errmsg,
              errmsg);
@@ -423,7 +423,7 @@ int input_read_from_file(struct file_content * pfc,
   /** Find out if shooting necessary and, eventually, shoot and initialize
       read parameters */
 
-  class_call(input_shooting(pfc,ppr,pba,pth,ppt,ptr,ppm,psp,pnl,ple,ptsz,pcsz,psd,pop,
+  class_call(input_shooting(pfc,ppr,pba,pth,ppt,ptr,ppm,phr,pfo,ple,ptsz,pcsz,psd,pop,
                             input_verbose,
                             &has_shooting,
                             errmsg),
@@ -432,7 +432,7 @@ int input_read_from_file(struct file_content * pfc,
 
   /** If no shooting is necessary, initialize read parameters without it */
   if(has_shooting == _FALSE_){
-    class_call(input_read_parameters(pfc,ppr,pba,pth,ppt,ptr,ppm,psp,pnl,ple,ptsz,pcsz,psd,pop,
+    class_call(input_read_parameters(pfc,ppr,pba,pth,ppt,ptr,ppm,phr,pfo,ple,ptsz,pcsz,psd,pop,
                                      errmsg),
                errmsg,
                errmsg);
@@ -449,14 +449,14 @@ int input_read_from_file(struct file_content * pfc,
     }
   }
 
-  if (pnl->has_pk_eq == _TRUE_) {
+  if (pfo->has_pk_eq == _TRUE_) {
 
     if (input_verbose > 0) {
       printf(" -> since you want to use Halofit with a non-zero wa_fld and the Pk_equal method,\n");
       printf("    calling background module to extract the effective w(tau), Omega_m(tau) parameters");
       printf("    required by this method\n");
     }
-    class_call(input_prepare_pk_eq(ppr,pba,pth,pnl,input_verbose,errmsg),
+    class_call(input_prepare_pk_eq(ppr,pba,pth,pfo,input_verbose,errmsg),
                errmsg,
                errmsg);
   }
@@ -489,8 +489,8 @@ int input_read_from_file(struct file_content * pfc,
  * @param ppt               Input: pointer to perturbation structure
  * @param ptr               Input: pointer to transfer structure
  * @param ppm               Input: pointer to primordial structure
- * @param psp               Input: pointer to spectra structure
- * @param pnl               Input: pointer to nonlinear structure
+ * @param phr               Input: pointer to harmonic structure
+ * @param pfo               Input: pointer to fourier structure
  * @param ple               Input: pointer to lensing structure
  * @param psd               Input: pointer to distorsion structure
  * @param pop               Input: pointer to output structure
@@ -503,12 +503,12 @@ int input_read_from_file(struct file_content * pfc,
 int input_shooting(struct file_content * pfc,
                    struct precision * ppr,
                    struct background *pba,
-                   struct thermo *pth,
-                   struct perturbs *ppt,
-                   struct transfers *ptr,
+                   struct thermodynamics *pth,
+                   struct perturbations *ppt,
+                   struct transfer *ptr,
                    struct primordial *ppm,
-                   struct spectra *psp,
-                   struct nonlinear * pnl,
+                   struct harmonic *phr,
+                   struct fourier * pfo,
                    struct lensing *ple,
                    struct tszspectrum *ptsz, //BB: added for class_sz
                    struct szcount *pcsz, //BB: added for class_sz
@@ -735,7 +735,7 @@ int input_shooting(struct file_content * pfc,
     }
 
     /** Read all parameters from the fc obtained through shooting */
-    class_call(input_read_parameters(&(fzw.fc),ppr,pba,pth,ppt,ptr,ppm,psp,pnl,ple,ptsz,pcsz,psd,pop,
+    class_call(input_read_parameters(&(fzw.fc),ppr,pba,pth,ppt,ptr,ppm,phr,pfo,ple,ptsz,pcsz,psd,pop,
                                      errmsg),
                errmsg,
                errmsg);
@@ -1059,12 +1059,12 @@ int input_get_guess(double *xguess,
   /** Define local variables */
   struct precision pr;        /* for precision parameters */
   struct background ba;       /* for cosmological background */
-  struct thermo th;           /* for thermodynamics */
-  struct perturbs pt;         /* for source functions */
-  struct transfers tr;        /* for transfer functions */
+  struct thermodynamics th;           /* for thermodynamics */
+  struct perturbations pt;         /* for source functions */
+  struct transfer tr;        /* for transfer functions */
   struct primordial pm;       /* for primordial spectra */
-  struct spectra sp;          /* for output spectra */
-  struct nonlinear nl;        /* for non-linear spectra */
+  struct harmonic hr;          /* for output spectra */
+  struct fourier fo;        /* for non-linear spectra */
   struct lensing le;          /* for lensed spectra */
   struct tszspectrum tsz;     //BB: added for class_sz
   struct szcount csz;         //BB: added for class_sz
@@ -1077,11 +1077,11 @@ int input_get_guess(double *xguess,
   /* Cheat to read only known parameters: */
   pfzw->fc.size -= pfzw->target_size;
 
-  class_call(input_read_precisions(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&sd,&op,
+  class_call(input_read_precisions(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&tsz,&sd,&op,
                                    errmsg),
              errmsg,
              errmsg);
-  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&csz,&sd,&op,
+  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&tsz,&csz,&sd,&op,
                                    errmsg),
              errmsg,
              errmsg);
@@ -1207,12 +1207,12 @@ int input_try_unknown_parameters(double * unknown_parameter,
   /** Define local variables */
   struct precision pr;        /* for precision parameters */
   struct background ba;       /* for cosmological background */
-  struct thermo th;           /* for thermodynamics */
-  struct perturbs pt;         /* for source functions */
-  struct transfers tr;        /* for transfer functions */
+  struct thermodynamics th;           /* for thermodynamics */
+  struct perturbations pt;         /* for source functions */
+  struct transfer tr;        /* for transfer functions */
   struct primordial pm;       /* for primordial spectra */
-  struct spectra sp;          /* for output spectra */
-  struct nonlinear nl;        /* for non-linear spectra */
+  struct harmonic hr;          /* for output spectra */
+  struct fourier fo;        /* for non-linear spectra */
   struct lensing le;          /* for lensed spectra */
   struct tszspectrum tsz;     //BB: added for class_sz
   struct szcount csz;         //BB: added for class_sz
@@ -1235,12 +1235,12 @@ int input_try_unknown_parameters(double * unknown_parameter,
     sprintf(pfzw->fc.value[pfzw->unknown_parameters_index[i]],"%.20e",unknown_parameter[i]);
   }
 
-  class_call(input_read_precisions(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&sd,&op,
+  class_call(input_read_precisions(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&tsz,&sd,&op,
                                    errmsg),
              errmsg,
              errmsg);
 
-  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&sp,&nl,&le,&tsz,&csz,&sd,&op,
+  class_call(input_read_parameters(&(pfzw->fc),&pr,&ba,&th,&pt,&tr,&pm,&hr,&fo,&le,&tsz,&csz,&sd,&op,
                                    errmsg),
              errmsg,
              errmsg);
@@ -1273,8 +1273,8 @@ int input_try_unknown_parameters(double * unknown_parameter,
     pt.has_cl_lensing_potential=_FALSE_;
     pt.has_density_transfers=_FALSE_;
     pt.has_velocity_transfers=_FALSE_;
-    nl.has_pk_eq=_FALSE_;
-    nl.method=nl_none;
+    fo.has_pk_eq=_FALSE_;
+    fo.method=nl_none;
   }
 
   /** Shoot forward into class up to required stage */
@@ -1299,35 +1299,35 @@ int input_try_unknown_parameters(double * unknown_parameter,
        if (input_verbose>2)
          printf("Stage 3: perturbations\n");
     pt.perturbations_verbose = 0;
-    class_call_except(perturb_init(&pr,&ba,&th,&pt), pt.error_message, errmsg, thermodynamics_free(&th);background_free(&ba));
+    class_call_except(perturbations_init(&pr,&ba,&th,&pt), pt.error_message, errmsg, thermodynamics_free(&th);background_free(&ba));
   }
 
   if (pfzw->required_computation_stage >= cs_primordial){
     if (input_verbose>2)
       printf("Stage 4: primordial\n");
     pm.primordial_verbose = 0;
-    class_call_except(primordial_init(&pr,&pt,&pm), pm.error_message, errmsg, perturb_free(&pt);thermodynamics_free(&th);background_free(&ba));
+    class_call_except(primordial_init(&pr,&pt,&pm), pm.error_message, errmsg, perturbations_free(&pt);thermodynamics_free(&th);background_free(&ba));
   }
 
   if (pfzw->required_computation_stage >= cs_nonlinear){
     if (input_verbose>2)
       printf("Stage 5: nonlinear\n");
-    nl.nonlinear_verbose = 0;
-    class_call_except(nonlinear_init(&pr,&ba,&th,&pt,&pm,&nl), nl.error_message, errmsg, primordial_free(&pm);perturb_free(&pt);thermodynamics_free(&th);background_free(&ba));
+    fo.fourier_verbose = 0;
+    class_call_except(fourier_init(&pr,&ba,&th,&pt,&pm,&fo), fo.error_message, errmsg, primordial_free(&pm);perturbations_free(&pt);thermodynamics_free(&th);background_free(&ba));
   }
 
   if (pfzw->required_computation_stage >= cs_transfer){
     if (input_verbose>2)
       printf("Stage 6: transfer\n");
     tr.transfer_verbose = 0;
-    class_call_except(transfer_init(&pr,&ba,&th,&pt,&nl,&tr), tr.error_message, errmsg, nonlinear_free(&nl);primordial_free(&pm);perturb_free(&pt);thermodynamics_free(&th);background_free(&ba));
+    class_call_except(transfer_init(&pr,&ba,&th,&pt,&fo,&tr), tr.error_message, errmsg, fourier_free(&fo);primordial_free(&pm);perturbations_free(&pt);thermodynamics_free(&th);background_free(&ba));
   }
 
   if (pfzw->required_computation_stage >= cs_spectra){
     if (input_verbose>2)
       printf("Stage 7: spectra\n");
-    sp.spectra_verbose = 0;
-    class_call_except(spectra_init(&pr,&ba,&pt,&pm,&nl,&tr,&sp,&tsz,&th,&le),sp.error_message, errmsg, transfer_free(&tr);nonlinear_free(&nl);primordial_free(&pm);perturb_free(&pt);thermodynamics_free(&th);background_free(&ba));
+    hr.harmonic_verbose = 0;
+    class_call_except(harmonic_init(&pr,&ba,&pt,&pm,&fo,&tr,&hr,&tsz,&th,&le),hr.error_message, errmsg, transfer_free(&tr);fourier_free(&fo);primordial_free(&pm);perturbations_free(&pt);thermodynamics_free(&th);background_free(&ba));
   }
 
   /** Get the corresponding shoot variable and put into output */
@@ -1366,26 +1366,26 @@ int input_try_unknown_parameters(double * unknown_parameter,
       output[i] = -(rho_dcdm_today+rho_dr_today)/(ba.H0*ba.H0)+ba.Omega0_dcdmdr;
       break;
     case sigma8:
-      output[i] = nl.sigma8[nl.index_pk_m]-pfzw->target_value[i];
+      output[i] = fo.sigma8[fo.index_pk_m]-pfzw->target_value[i];
       break;
     }
   }
 
   /** Free structures */
   if (pfzw->required_computation_stage >= cs_spectra){
-    class_call(spectra_free(&sp), sp.error_message, errmsg);
+    class_call(harmonic_free(&hr), hr.error_message, errmsg);
   }
   if (pfzw->required_computation_stage >= cs_transfer){
     class_call(transfer_free(&tr), tr.error_message, errmsg);
   }
   if (pfzw->required_computation_stage >= cs_nonlinear){
-    class_call(nonlinear_free(&nl), nl.error_message, errmsg);
+    class_call(fourier_free(&fo), fo.error_message, errmsg);
   }
   if (pfzw->required_computation_stage >= cs_primordial){
     class_call(primordial_free(&pm), pm.error_message, errmsg);
   }
   if (pfzw->required_computation_stage >= cs_perturbations){
-    class_call(perturb_free(&pt), pt.error_message, errmsg);
+    class_call(perturbations_free(&pt), pt.error_message, errmsg);
   }
   if (pfzw->required_computation_stage >= cs_thermodynamics){
     class_call(thermodynamics_free(&th), th.error_message, errmsg);
@@ -1416,8 +1416,8 @@ int input_try_unknown_parameters(double * unknown_parameter,
  * @param ppt     Input: pointer to perturbations structure
  * @param ptr     Input: pointer to transfer structure
  * @param ppm     Input: pointer to primordial structure
- * @param psp     Input: pointer to spectra structure
- * @param pnl     Input: pointer to non-linear structure
+ * @param phr     Input: pointer to harmonic structure
+ * @param pfo     Input: pointer to non-linear structure
  * @param ple     Input: pointer to lensing structure
  * @param pop     Input: pointer to output structure
  * @param psd     Input: pointer to distorsion structure
@@ -1428,12 +1428,12 @@ int input_try_unknown_parameters(double * unknown_parameter,
 int input_read_precisions(struct file_content * pfc,
                           struct precision * ppr,
                           struct background *pba,
-                          struct thermo *pth,
-                          struct perturbs *ppt,
-                          struct transfers *ptr,
+                          struct thermodynamics *pth,
+                          struct perturbations *ppt,
+                          struct transfer *ptr,
                           struct primordial *ppm,
-                          struct spectra *psp,
-                          struct nonlinear * pnl,
+                          struct harmonic *phr,
+                          struct fourier * pfo,
                           struct lensing *ple,
                           struct tszspectrum *ptsz, //BB: added for class_sz
                           struct distortions *psd,
@@ -1495,8 +1495,8 @@ int input_read_precisions(struct file_content * pfc,
  * @param ppt     Input: pointer to perturbation structure
  * @param ptr     Input: pointer to transfer structure
  * @param ppm     Input: pointer to primordial structure
- * @param psp     Input: pointer to spectra structure
- * @param pnl     Input: pointer to nonlinear structure
+ * @param phr     Input: pointer to harmonic structure
+ * @param pfo     Input: pointer to fourier structure
  * @param ple     Input: pointer to lensing structure
  * @param psd     Input: pointer to distorsion structure
  * @param pop     Input: pointer to output structure
@@ -1507,12 +1507,12 @@ int input_read_precisions(struct file_content * pfc,
 int input_read_parameters(struct file_content * pfc,
                           struct precision * ppr,
                           struct background *pba,
-                          struct thermo *pth,
-                          struct perturbs *ppt,
-                          struct transfers *ptr,
+                          struct thermodynamics *pth,
+                          struct perturbations *ppt,
+                          struct transfer *ptr,
                           struct primordial *ppm,
-                          struct spectra *psp,
-                          struct nonlinear * pnl,
+                          struct harmonic *phr,
+                          struct fourier * pfo,
                           struct lensing *ple,
                           struct tszspectrum *ptsz, //BB: added for class_sz
                           struct szcount *pcsz, //BB: added for class_sz
@@ -1526,7 +1526,7 @@ int input_read_parameters(struct file_content * pfc,
   int input_verbose=0;
 
   /** Set all input parameters to default values */
-  class_call(input_default_params(pba,pth,ppt,ptr,ppm,psp,pnl,ple,ptsz,pcsz,psd,pop),
+  class_call(input_default_params(pba,pth,ppt,ptr,ppm,phr,pfo,ple,ptsz,pcsz,psd,pop),
              errmsg,
              errmsg);
 
@@ -1558,14 +1558,14 @@ int input_read_parameters(struct file_content * pfc,
              errmsg);
 
   /** BB Read parameters for class_sz quantities */
-  class_call(input_read_parameters_class_sz(pfc,ppt,pnl,psp,ple,ptsz,pcsz,
+  class_call(input_read_parameters_class_sz(pfc,ppt,pfo,phr,ple,ptsz,pcsz,
                                             errmsg),
              errmsg,
              errmsg);
 
 
   /** Read parameters for nonlinear quantities */
-  class_call(input_read_parameters_nonlinear(pfc,ppr,pba,pth,ppt,pnl,
+  class_call(input_read_parameters_nonlinear(pfc,ppr,pba,pth,ppt,pfo,
                                              input_verbose,
                                              errmsg),
              errmsg,
@@ -1578,7 +1578,7 @@ int input_read_parameters(struct file_content * pfc,
              errmsg);
 
   /** Read parameters for spectra quantities */
-  class_call(input_read_parameters_spectra(pfc,ppr,pba,ppm,ppt,ptr,psp,pop,
+  class_call(input_read_parameters_spectra(pfc,ppr,pba,ppm,ppt,ptr,phr,pop,
                                            errmsg),
              errmsg,
              errmsg);
@@ -1603,7 +1603,7 @@ int input_read_parameters(struct file_content * pfc,
 
 
   /** Read parameters for output quantities */
-  class_call(input_read_parameters_output(pfc,pba,pth,ppt,ptr,ppm,psp,pnl,ple,psd,pop,
+  class_call(input_read_parameters_output(pfc,pba,pth,ppt,ptr,ppm,phr,pfo,ple,psd,pop,
                                           errmsg),
              errmsg,
              errmsg);
@@ -1631,8 +1631,8 @@ int input_read_parameters(struct file_content * pfc,
 
 int input_read_parameters_general(struct file_content * pfc,
                                   struct background * pba,
-                                  struct thermo * pth,
-                                  struct perturbs * ppt,
+                                  struct thermodynamics * pth,
+                                  struct perturbations * ppt,
                                   struct distortions * psd,
                                   ErrorMsg errmsg){
 
@@ -2182,8 +2182,8 @@ int input_read_parameters_general(struct file_content * pfc,
 int input_read_parameters_species(struct file_content * pfc,
                                   struct precision * ppr,
                                   struct background * pba,
-                                  struct thermo * pth,
-                                  struct perturbs * ppt,
+                                  struct thermodynamics * pth,
+                                  struct perturbations * ppt,
                                   int input_verbose,
                                   ErrorMsg errmsg){
 
@@ -3000,7 +3000,7 @@ int input_read_parameters_species(struct file_content * pfc,
 
 int input_read_parameters_injection(struct file_content * pfc,
                                     struct precision * ppr,
-                                    struct thermo * pth,
+                                    struct thermodynamics * pth,
                                     ErrorMsg errmsg){
 
   /** Summary: */
@@ -3270,14 +3270,14 @@ int input_read_parameters_injection(struct file_content * pfc,
 
 
 /**
- * Read the parameters of nonlinear structure.
+ * Read the parameters of fourier structure.
  *
  * @param pfc            Input: pointer to local structure
  * @param ppr            Input: pointer to precision structure
  * @param pba            Input: pointer to background structure
  * @param pth            Input: pointer to thermodynamics structure
  * @param ppt            Input: pointer to perturbations structure
- * @param pnl            Input: pointer to nonlinear structure
+ * @param pfo            Input: pointer to fourier structure
  * @param input_verbose  Input: verbosity of input
  * @param errmsg         Input: Error message
  * @return the error status
@@ -3286,9 +3286,9 @@ int input_read_parameters_injection(struct file_content * pfc,
 int input_read_parameters_nonlinear(struct file_content * pfc,
                                     struct precision * ppr,
                                     struct background * pba,
-                                    struct thermo * pth,
-                                    struct perturbs * ppt,
-                                    struct nonlinear * pnl,
+                                    struct thermodynamics * pth,
+                                    struct perturbations * ppt,
+                                    struct fourier * pfo,
                                     int input_verbose,
                                     ErrorMsg errmsg){
 
@@ -3317,14 +3317,14 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
                "You requested non-linear computation but no perturbations. You must set the 'output' field.");
     /* Complete set of parameters */
     if ((strstr(string1,"halofit") != NULL) || (strstr(string1,"Halofit") != NULL) || (strstr(string1,"HALOFIT") != NULL)) {
-      pnl->method=nl_halofit;
+      pfo->method=nl_halofit;
       ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
     }
     else if((strstr(string1,"hmcode") != NULL) || (strstr(string1,"HMCODE") != NULL) || (strstr(string1,"HMcode") != NULL) || (strstr(string1,"Hmcode") != NULL)) {
-      pnl->method=nl_HMcode;
-      ppt->k_max_for_pk = MAX(ppt->k_max_for_pk,MAX(ppr->hmcode_min_k_max,ppr->nonlinear_min_k_max));
+      pfo->method=nl_HMcode;
+      ppt->k_max_for_pk = MAX(ppt->k_max_for_pk,MAX(ppr->hmcode_min_k_max,ppr->fourier_min_k_max));
       ppt->has_nl_corrections_based_on_delta_m = _TRUE_;
-      class_read_int("extrapolation_method",pnl->extrapolation_method);
+      class_read_int("extrapolation_method",pfo->extrapolation_method);
 
       class_call(parser_read_string(pfc,
                                     "feedback model",
@@ -3337,19 +3337,19 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
       if (flag1 == _TRUE_) {
 
         if (strstr(string1,"emu_dmonly") != NULL) {
-          pnl->feedback = nl_emu_dmonly;
+          pfo->feedback = nl_emu_dmonly;
         }
         if (strstr(string1,"owls_dmonly") != NULL) {
-          pnl->feedback = nl_owls_dmonly;
+          pfo->feedback = nl_owls_dmonly;
         }
         if (strstr(string1,"owls_ref") != NULL) {
-          pnl->feedback = nl_owls_ref;
+          pfo->feedback = nl_owls_ref;
         }
         if (strstr(string1,"owls_agn") != NULL) {
-          pnl->feedback = nl_owls_agn;
+          pfo->feedback = nl_owls_agn;
         }
         if (strstr(string1,"owls_dblim") != NULL) {
-          pnl->feedback = nl_owls_dblim;
+          pfo->feedback = nl_owls_dblim;
         }
       }
 
@@ -3365,25 +3365,25 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
                  "In input file, you cannot enter both a baryonic feedback model and a choice of baryonic feedback parameters, choose one of both methods");
 
       if ((flag2 == _TRUE_) && (flag3 == _TRUE_)) {
-        pnl->feedback = nl_user_defined;
-        class_read_double("eta_0", pnl->eta_0);
-        class_read_double("c_min", pnl->c_min);
+        pfo->feedback = nl_user_defined;
+        class_read_double("eta_0", pfo->eta_0);
+        class_read_double("c_min", pfo->c_min);
       }
       else if ((flag2 == _TRUE_) && (flag3 == _FALSE_)) {
-        pnl->feedback = nl_user_defined;
-        class_read_double("eta_0", pnl->eta_0);
-        pnl->c_min = (0.98 - pnl->eta_0)/0.12;
+        pfo->feedback = nl_user_defined;
+        class_read_double("eta_0", pfo->eta_0);
+        pfo->c_min = (0.98 - pfo->eta_0)/0.12;
       }
       else if ((flag2 == _FALSE_) && (flag3 == _TRUE_)) {
-        pnl->feedback = nl_user_defined;
-        class_read_double("c_min", pnl->c_min);
-        pnl->eta_0 = 0.98 - 0.12*pnl->c_min;
+        pfo->feedback = nl_user_defined;
+        class_read_double("c_min", pfo->c_min);
+        pfo->eta_0 = 0.98 - 0.12*pfo->c_min;
       }
 
-      class_read_double("z_infinity", pnl->z_infinity);
+      class_read_double("z_infinity", pfo->z_infinity);
     }
     else if(strstr(string1,"no")!=NULL){
-      pnl->method=nl_none;
+      pfo->method=nl_none;
       ppt->has_nl_corrections_based_on_delta_m = _FALSE_;
     }
     else{
@@ -3395,7 +3395,7 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
   /** - special steps if we want Halofit with wa_fld non-zero:
       so-called "Pk_equal method" of 0810.0190 and 1601.07230 */
 
-  if (pnl->method == nl_halofit) {
+  if (pfo->method == nl_halofit) {
 
     class_call(parser_read_string(pfc,"pk_eq",&string1,&flag1,errmsg),
                errmsg,
@@ -3405,7 +3405,7 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
 
       if ((pba->Omega0_fld != 0.) && (pba->wa_fld != 0.)){
 
-        pnl->has_pk_eq = _TRUE_;
+        pfo->has_pk_eq = _TRUE_;
       }
     }
   }
@@ -3423,12 +3423,12 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
  * redshift in the non-linear module.
  *
  * Returns table of values [z_i, tau_i, w0_eff_i, Omega_m_eff_i]
- * stored in nonlinear structure.
+ * stored in fourier structure.
  *
  * @param ppr           Input: pointer to precision structure
  * @param pba           Input: pointer to background structure
  * @param pth           Input: pointer to thermodynamics structure
- * @param pnl           Input/Output: pointer to nonlinear structure
+ * @param pfo           Input/Output: pointer to fourier structure
  * @param input_verbose Input: verbosity of this input module
  * @param errmsg        Input/Ouput: error message
  * @return the error status
@@ -3436,8 +3436,8 @@ int input_read_parameters_nonlinear(struct file_content * pfc,
 
 int input_prepare_pk_eq(struct precision * ppr,
                         struct background *pba,
-                        struct thermo *pth,
-                        struct nonlinear *pnl,
+                        struct thermodynamics *pth,
+                        struct fourier *pfo,
                         int input_verbose,
                         ErrorMsg errmsg) {
 
@@ -3472,35 +3472,35 @@ int input_prepare_pk_eq(struct precision * ppr,
   pth->hyrec_verbose = 0;
 
   /** Allocate indices and arrays for storing the results */
-  pnl->pk_eq_tau_size = ppr->pk_eq_Nzlog;
-  class_alloc(pnl->pk_eq_tau,
-              pnl->pk_eq_tau_size*sizeof(double),
+  pfo->pk_eq_tau_size = ppr->pk_eq_Nzlog;
+  class_alloc(pfo->pk_eq_tau,
+              pfo->pk_eq_tau_size*sizeof(double),
               errmsg);
   class_alloc(z,
-              pnl->pk_eq_tau_size*sizeof(double),
+              pfo->pk_eq_tau_size*sizeof(double),
               errmsg);
 
   index_eq = 0;
-  class_define_index(pnl->index_pk_eq_w,_TRUE_,index_eq,1);
-  class_define_index(pnl->index_pk_eq_Omega_m,_TRUE_,index_eq,1);
-  pnl->pk_eq_size = index_eq;
-  class_alloc(pnl->pk_eq_w_and_Omega,
-              pnl->pk_eq_tau_size*pnl->pk_eq_size*sizeof(double),
+  class_define_index(pfo->index_pk_eq_w,_TRUE_,index_eq,1);
+  class_define_index(pfo->index_pk_eq_Omega_m,_TRUE_,index_eq,1);
+  pfo->pk_eq_size = index_eq;
+  class_alloc(pfo->pk_eq_w_and_Omega,
+              pfo->pk_eq_tau_size*pfo->pk_eq_size*sizeof(double),
               errmsg);
-  class_alloc(pnl->pk_eq_ddw_and_ddOmega,
-              pnl->pk_eq_tau_size*pnl->pk_eq_size*sizeof(double),
+  class_alloc(pfo->pk_eq_ddw_and_ddOmega,
+              pfo->pk_eq_tau_size*pfo->pk_eq_size*sizeof(double),
               errmsg);
 
   /** Call the background module in order to fill a table of tau_i[z_i] */
   class_call(background_init(ppr,pba), pba->error_message, errmsg);
-  for (index_pk_eq_z=0; index_pk_eq_z<pnl->pk_eq_tau_size; index_pk_eq_z++) {
-    z[index_pk_eq_z] = exp(log(1.+ppr->pk_eq_z_max)/(pnl->pk_eq_tau_size-1)*index_pk_eq_z)-1.;
+  for (index_pk_eq_z=0; index_pk_eq_z<pfo->pk_eq_tau_size; index_pk_eq_z++) {
+    z[index_pk_eq_z] = exp(log(1.+ppr->pk_eq_z_max)/(pfo->pk_eq_tau_size-1)*index_pk_eq_z)-1.;
     class_call(background_tau_of_z(pba,
                                    z[index_pk_eq_z],
                                    &tau_of_z),
                pba->error_message,
                errmsg);
-    pnl->pk_eq_tau[index_pk_eq_z] = tau_of_z;
+    pfo->pk_eq_tau[index_pk_eq_z] = tau_of_z;
   }
   class_call(background_free_noinput(pba),
              pba->error_message,
@@ -3516,7 +3516,7 @@ int input_prepare_pk_eq(struct precision * ppr,
      thermodynamics module for each fake model and to re-compute
      tau_rec for each of them. Once the eqauivalent model is found we
      compute and store Omega_m_effa(z_i) of the equivalent model */
-  for (index_pk_eq_z=0; index_pk_eq_z<pnl->pk_eq_tau_size; index_pk_eq_z++) {
+  for (index_pk_eq_z=0; index_pk_eq_z<pfo->pk_eq_tau_size; index_pk_eq_z++) {
 
     if (input_verbose > 2)
       printf("    * computing Pk_equal parameters at z=%e\n",z[index_pk_eq_z]);
@@ -3529,7 +3529,7 @@ int input_prepare_pk_eq(struct precision * ppr,
     class_call(thermodynamics_init(ppr,pba,pth),
                pth->error_message,
                errmsg);
-    delta_tau = pnl->pk_eq_tau[index_pk_eq_z] - pth->tau_rec;
+    delta_tau = pfo->pk_eq_tau[index_pk_eq_z] - pth->tau_rec;
     /* launch iterations in order to coverge to effective model with wa=0 but the same chi = (tau[z_i] - tau_rec) */
     pba->wa_fld=0.;
 
@@ -3562,7 +3562,7 @@ int input_prepare_pk_eq(struct precision * ppr,
     while(fabs(error) > ppr->pk_eq_tol);
 
     /* Equivalent model found. Store w0(z) in that model. Find Omega_m(z) in that model and store it. */
-    pnl->pk_eq_w_and_Omega[pnl->pk_eq_size*index_pk_eq_z+pnl->index_pk_eq_w] = pba->w0_fld;
+    pfo->pk_eq_w_and_Omega[pfo->pk_eq_size*index_pk_eq_z+pfo->index_pk_eq_w] = pba->w0_fld;
     class_alloc(pvecback,
                 pba->bg_size*sizeof(double),
                 pba->error_message);
@@ -3573,7 +3573,7 @@ int input_prepare_pk_eq(struct precision * ppr,
                                  &last_index,
                                  pvecback),
                pba->error_message, errmsg);
-    pnl->pk_eq_w_and_Omega[pnl->pk_eq_size*index_pk_eq_z+pnl->index_pk_eq_Omega_m] = pvecback[pba->index_bg_Omega_m];
+    pfo->pk_eq_w_and_Omega[pfo->pk_eq_size*index_pk_eq_z+pfo->index_pk_eq_Omega_m] = pvecback[pba->index_bg_Omega_m];
     free(pvecback);
 
     class_call(background_free_noinput(pba),
@@ -3597,22 +3597,22 @@ int input_prepare_pk_eq(struct precision * ppr,
   if (input_verbose > 1) {
     fprintf(stdout,"    Effective parameters for Pk_equal:\n");
 
-    for (index_pk_eq_z=0; index_pk_eq_z<pnl->pk_eq_tau_size; index_pk_eq_z++) {
+    for (index_pk_eq_z=0; index_pk_eq_z<pfo->pk_eq_tau_size; index_pk_eq_z++) {
       fprintf(stdout,"    * at z=%e, tau=%e w=%e Omega_m=%e\n",
               z[index_pk_eq_z],
-              pnl->pk_eq_tau[index_pk_eq_z],
-              pnl->pk_eq_w_and_Omega[pnl->pk_eq_size*index_pk_eq_z+pnl->index_pk_eq_w],
-              pnl->pk_eq_w_and_Omega[pnl->pk_eq_size*index_pk_eq_z+pnl->index_pk_eq_Omega_m]);
+              pfo->pk_eq_tau[index_pk_eq_z],
+              pfo->pk_eq_w_and_Omega[pfo->pk_eq_size*index_pk_eq_z+pfo->index_pk_eq_w],
+              pfo->pk_eq_w_and_Omega[pfo->pk_eq_size*index_pk_eq_z+pfo->index_pk_eq_Omega_m]);
     }
   }
   free(z);
 
   /** Spline the table for later interpolation */
-  class_call(array_spline_table_lines(pnl->pk_eq_tau,
-                                      pnl->pk_eq_tau_size,
-                                      pnl->pk_eq_w_and_Omega,
-                                      pnl->pk_eq_size,
-                                      pnl->pk_eq_ddw_and_ddOmega,
+  class_call(array_spline_table_lines(pfo->pk_eq_tau,
+                                      pfo->pk_eq_tau_size,
+                                      pfo->pk_eq_w_and_Omega,
+                                      pfo->pk_eq_size,
+                                      pfo->pk_eq_ddw_and_ddOmega,
                                       _SPLINE_NATURAL_,
                                       errmsg),
              errmsg,
@@ -3624,9 +3624,9 @@ int input_prepare_pk_eq(struct precision * ppr,
 
 
 int input_read_parameters_class_sz(struct file_content * pfc,
-                                   struct perturbs * ppt,
-                                   struct nonlinear * pnl,
-                                   struct spectra *psp,
+                                   struct perturbations * ppt,
+                                   struct fourier * pfo,
+                                   struct harmonic *phr,
                                    struct lensing *ple,
                                    struct tszspectrum *ptsz, //BB: added for class_sz
                                    struct szcount *pcsz, //BB: added for class_sz
@@ -3955,8 +3955,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
 
       }
@@ -3966,8 +3966,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -3977,8 +3977,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"m_y_y_1h") != NULL) ) {
@@ -3987,8 +3987,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"te_y_y") != NULL) ) {
@@ -3998,8 +3998,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4011,8 +4011,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4028,8 +4028,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4041,8 +4041,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4052,8 +4052,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4062,8 +4062,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         // ptsz->has_completeness_for_ps_SZ = 1;
       }
@@ -4072,8 +4072,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4083,8 +4083,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4093,8 +4093,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4103,8 +4103,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4113,8 +4113,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4123,8 +4123,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4134,8 +4134,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         // printf("ok %d\n",ptsz->has_gas_pressure_profile_2h);
         // exit(0);
@@ -4146,8 +4146,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         // printf("ok %d\n",ptsz->has_gas_density_profile_2h);
         // exit(0);
@@ -4159,8 +4159,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4169,8 +4169,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4180,8 +4180,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4190,8 +4190,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4202,8 +4202,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4212,8 +4212,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4222,8 +4222,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_vrms2 = 1;
       }
@@ -4233,8 +4233,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_vrms2 = 1;
       }
@@ -4244,8 +4244,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_vrms2 = 1;
       }
@@ -4256,8 +4256,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4266,8 +4266,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4276,8 +4276,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4288,8 +4288,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_sigma = 1;
         ptsz->has_pk = _TRUE_;
       }
@@ -4302,8 +4302,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_sigma = 1;
         ptsz->has_vrms2 = 1;
         ptsz->has_pk = _TRUE_;
@@ -4314,8 +4314,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
       }
 
       if ((strstr(string1,"kSZ_kSZ_lensmag_1h") != NULL) ) {
@@ -4324,8 +4324,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4336,8 +4336,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4347,8 +4347,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4359,8 +4359,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4370,8 +4370,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4383,8 +4383,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4401,8 +4401,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ppt->l_scalar_max = 10000;
 
@@ -4416,8 +4416,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4428,8 +4428,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_knl = _TRUE_;
         ptsz->has_nl_index = _TRUE_;
         ptsz->need_hmf = 1; // need sigma at R,z
@@ -4446,8 +4446,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_knl = _TRUE_;
         ptsz->has_nl_index = _TRUE_;
         ptsz->need_hmf = 1; // need sigma at R,z
@@ -4460,8 +4460,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"gal_gal_lens fft (2h)") != NULL) ) {
@@ -4469,8 +4469,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"gal_gal_lens fft (3h)") != NULL) ) {
@@ -4478,8 +4478,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4490,8 +4490,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4502,8 +4502,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4513,8 +4513,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4531,8 +4531,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ppt->l_scalar_max = 10000;
         ptsz->need_ksz_template = 1;
@@ -4551,8 +4551,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ppt->l_scalar_max = 10000;
       }
@@ -4565,8 +4565,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_knl = _TRUE_;
         ptsz->has_nl_index = _TRUE_;
         ptsz->need_hmf = 1; // need sigma at R,z
@@ -4581,8 +4581,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4593,8 +4593,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4604,8 +4604,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4622,8 +4622,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ppt->l_scalar_max = 10000;
         ptsz->need_ksz_template = 1;
@@ -4641,8 +4641,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ppt->l_scalar_max = 10000;
       }
@@ -4654,8 +4654,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_vrms2 = _TRUE_;
       }
@@ -4664,8 +4664,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_vrms2 = _TRUE_;
       }
@@ -4674,8 +4674,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_vrms2 = _TRUE_;
       }
@@ -4684,8 +4684,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_vrms2 = _TRUE_;
       }
@@ -4695,8 +4695,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_vrms2 = _TRUE_;
       }
@@ -4706,8 +4706,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"tSZ_tSZ_tSZ_2h") != NULL) ) {
@@ -4715,8 +4715,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"tSZ_tSZ_tSZ_3h") != NULL) ) {
@@ -4724,8 +4724,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4734,8 +4734,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4744,8 +4744,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4755,8 +4755,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"cib_monopole") != NULL) ) {
@@ -4764,8 +4764,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"cib_shotnoise") != NULL) ) {
@@ -4773,8 +4773,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4783,8 +4783,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"dydz") != NULL) ) {
@@ -4792,8 +4792,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4802,8 +4802,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4812,8 +4812,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4823,8 +4823,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4834,8 +4834,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4844,8 +4844,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_pk = _TRUE_;
         // ptsz->need_sigma = 1;
 
@@ -4861,8 +4861,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_pk = _TRUE_;
 
         // class_read_double("effective_galaxy_bias",ptsz->effective_galaxy_bias);
@@ -4887,8 +4887,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ppt->l_scalar_max = 10000;
         ptsz->need_ksz_template = 1;
@@ -4910,8 +4910,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4920,8 +4920,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4930,8 +4930,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
@@ -4941,8 +4941,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4951,8 +4951,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4961,8 +4961,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4971,8 +4971,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -4981,8 +4981,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
@@ -4992,8 +4992,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
@@ -5005,8 +5005,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
@@ -5017,8 +5017,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
@@ -5028,8 +5028,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
@@ -5039,8 +5039,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
       }
@@ -5050,8 +5050,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5060,8 +5060,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5070,8 +5070,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5080,8 +5080,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5093,8 +5093,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5103,8 +5103,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5113,8 +5113,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5123,8 +5123,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5133,8 +5133,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5143,8 +5143,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5153,8 +5153,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5163,8 +5163,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5174,8 +5174,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5184,8 +5184,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5196,8 +5196,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->convert_cls_to_gamma = 1;
       }
@@ -5207,8 +5207,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->convert_cls_to_gamma = 1;
       }
@@ -5220,8 +5220,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5230,8 +5230,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5240,8 +5240,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5250,8 +5250,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5260,8 +5260,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5270,8 +5270,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5280,8 +5280,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5290,8 +5290,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5300,8 +5300,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5311,8 +5311,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5321,8 +5321,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5332,8 +5332,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5342,8 +5342,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5353,8 +5353,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5363,8 +5363,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5374,8 +5374,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"lens_lens_2h") != NULL) ) {
@@ -5383,8 +5383,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5393,8 +5393,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
       }
@@ -5404,8 +5404,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
       }
@@ -5415,8 +5415,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
         ptsz->has_lensing = _TRUE_;
@@ -5427,8 +5427,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
         ptsz->has_lensing = _TRUE_;
@@ -5439,8 +5439,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
         ptsz->has_electron_pressure = _TRUE_;
@@ -5451,8 +5451,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
         ptsz->has_electron_pressure = _TRUE_;
@@ -5464,8 +5464,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
         ptsz->has_cib = _TRUE_;
@@ -5476,8 +5476,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
         ptsz->has_cib = _TRUE_;
@@ -5488,8 +5488,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
         ptsz->has_galaxy = _TRUE_;
@@ -5500,8 +5500,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
         ptsz->has_galaxy = _TRUE_;
@@ -5512,8 +5512,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
         ptsz->has_lensing = _TRUE_;
@@ -5524,8 +5524,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
         ptsz->has_lensing = _TRUE_;
@@ -5536,8 +5536,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5546,8 +5546,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5556,8 +5556,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"isw_tsz") != NULL) ) {
@@ -5565,8 +5565,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"isw_auto") != NULL) ) {
@@ -5574,8 +5574,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
       if ((strstr(string1,"sz_cluster_counts") != NULL) ) {
@@ -5584,8 +5584,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_500c = 1;
 
@@ -5598,8 +5598,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_500c = 1;
 
@@ -5614,8 +5614,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
         ptsz->has_500c = 1;
         // ptsz->has_completeness_for_ps_SZ = 1;
@@ -5628,8 +5628,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->need_hmf = 1;
       }
 
@@ -5642,8 +5642,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
           ppt->has_density_transfers=_TRUE_;
           ppt->has_pk_matter = _TRUE_;
           ppt->has_perturbations = _TRUE_;
-          pnl->has_pk_cb = _TRUE_;
-          pnl->has_pk_m = _TRUE_;
+          pfo->has_pk_cb = _TRUE_;
+          pfo->has_pk_m = _TRUE_;
           ptsz->need_sigma = 1;
           }
       if ((strstr(string1,"m500c_to_m200c") != NULL) ) {
@@ -5651,8 +5651,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
           ppt->has_density_transfers=_TRUE_;
           ppt->has_pk_matter = _TRUE_;
           ppt->has_perturbations = _TRUE_;
-          pnl->has_pk_cb = _TRUE_;
-          pnl->has_pk_m = _TRUE_;
+          pfo->has_pk_cb = _TRUE_;
+          pfo->has_pk_m = _TRUE_;
           ptsz->need_sigma = 1;
           }
       if ((strstr(string1,"m200m_to_m500c") != NULL) ) {
@@ -5660,8 +5660,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
           ppt->has_density_transfers=_TRUE_;
           ppt->has_pk_matter = _TRUE_;
           ppt->has_perturbations = _TRUE_;
-          pnl->has_pk_cb = _TRUE_;
-          pnl->has_pk_m = _TRUE_;
+          pfo->has_pk_cb = _TRUE_;
+          pfo->has_pk_m = _TRUE_;
           ptsz->need_sigma = 1;
           }
       if ((strstr(string1,"m200m_to_m200c") != NULL) ) {
@@ -5669,8 +5669,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
           ppt->has_density_transfers=_TRUE_;
           ppt->has_pk_matter = _TRUE_;
           ppt->has_perturbations = _TRUE_;
-          pnl->has_pk_cb = _TRUE_;
-          pnl->has_pk_m = _TRUE_;
+          pfo->has_pk_cb = _TRUE_;
+          pfo->has_pk_m = _TRUE_;
           ptsz->need_sigma = 1;
           }
       if ((strstr(string1,"m200c_to_m200m") != NULL) ) {
@@ -5678,8 +5678,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
           ppt->has_density_transfers=_TRUE_;
           ppt->has_pk_matter = _TRUE_;
           ppt->has_perturbations = _TRUE_;
-          pnl->has_pk_cb = _TRUE_;
-          pnl->has_pk_m = _TRUE_;
+          pfo->has_pk_cb = _TRUE_;
+          pfo->has_pk_m = _TRUE_;
           ptsz->need_sigma = 1;
           }
       if ((strstr(string1,"tabulate_rhob_xout_at_m_and_z") != NULL) ) {
@@ -5687,8 +5687,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
           // ppt->has_density_transfers=_TRUE_;
           // ppt->has_pk_matter = _TRUE_;
           // ppt->has_perturbations = _TRUE_;
-          // pnl->has_pk_cb = _TRUE_;
-          // pnl->has_pk_m = _TRUE_;
+          // pfo->has_pk_cb = _TRUE_;
+          // pfo->has_pk_m = _TRUE_;
           // ptsz->need_sigma = 1;
           }
       if ((strstr(string1,"scale_dependent_bias") != NULL) ) {
@@ -5700,8 +5700,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
       if ((strstr(string1,"n5k") != NULL) ) {
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
-        pnl->has_pk_cb = _TRUE_;
-        pnl->has_pk_m = _TRUE_;
+        pfo->has_pk_cb = _TRUE_;
+        pfo->has_pk_m = _TRUE_;
         ptsz->has_n5k = _TRUE_;
       }
 
@@ -6023,7 +6023,7 @@ int input_read_parameters_class_sz(struct file_content * pfc,
       class_read_double("cvir_tau_profile_factor",ptsz->cvir_tau_profile_factor);
       // class_read_double("x_out_nfw_profile",ptsz->x_out_nfw_profile);
 
-      class_read_int("pk_nonlinear_for_vrms2",ptsz->pk_nonlinear_for_vrms2);
+      class_read_int("pk_fourier_for_vrms2",ptsz->pk_fourier_for_vrms2);
 
       class_read_int("hm_consistency",ptsz->hm_consistency);
       class_read_int("T10_alpha_fixed",ptsz->T10_alpha_fixed);
@@ -6077,8 +6077,8 @@ int input_read_parameters_class_sz(struct file_content * pfc,
                 ppt->has_density_transfers=_TRUE_;
                 ppt->has_pk_matter = _TRUE_;
                 ppt->has_perturbations = _TRUE_;
-                pnl->has_pk_cb = _TRUE_;
-                pnl->has_pk_m = _TRUE_;
+                pfo->has_pk_cb = _TRUE_;
+                pfo->has_pk_m = _TRUE_;
               }
 
             else
@@ -6405,7 +6405,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
 
       class_read_int("compute_ksz2ksz2",ptsz->compute_ksz2ksz2);
 
-      class_read_int("overwrite_clpp_with_limber",psp->overwrite_clpp_with_limber);
+      class_read_int("overwrite_clpp_with_limber",phr->overwrite_clpp_with_limber);
 
       class_call(parser_read_string(pfc,"write sz results to files",&string1,&flag1,errmsg),
                  errmsg,
@@ -6709,7 +6709,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       + ptsz->has_vrms2
       + ptsz->has_dndlnM != _FALSE_){
         ppt->z_max_pk = ptsz->z2SZ;
-        psp->z_max_pk = ppt->z_max_pk;
+        phr->z_max_pk = ppt->z_max_pk;
       }
 
 
@@ -6733,7 +6733,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
  */
 
 int input_read_parameters_primordial(struct file_content * pfc,
-                                     struct perturbs * ppt,
+                                     struct perturbations * ppt,
                                      struct primordial * ppm,
                                      ErrorMsg errmsg){
 
@@ -7324,7 +7324,7 @@ int input_read_parameters_primordial(struct file_content * pfc,
 
 
 /**
- * Read the parameters of spectra structure.
+ * Read the parameters of harmonic structure.
  *
  * @param pfc     Input: pointer to local structure
  * @param ppr     Input: pointer to precision structure
@@ -7332,7 +7332,7 @@ int input_read_parameters_primordial(struct file_content * pfc,
  * @param ppm     Input: pointer to primordial structure
  * @param ppt     Input: pointer to perturbations structure
  * @param ptr     Input: pointer to transfer structure
- * @param psp     Input: pointer to spectra structure
+ * @param phr     Input: pointer to harmonic structure
  * @param pop     Input: pointer to output structure
  * @param errmsg  Input: Error message
  * @return the error status
@@ -7342,9 +7342,9 @@ int input_read_parameters_spectra(struct file_content * pfc,
                                   struct precision * ppr,
                                   struct background * pba,
                                   struct primordial * ppm,
-                                  struct perturbs * ppt,
-                                  struct transfers * ptr,
-                                  struct spectra *psp,
+                                  struct perturbations * ppt,
+                                  struct transfer * ptr,
+                                  struct harmonic *phr,
                                   struct output * pop,
                                   ErrorMsg errmsg){
 
@@ -7507,10 +7507,10 @@ int input_read_parameters_spectra(struct file_content * pfc,
 
     /* Read */
     if (ppt->selection_num > 1) {
-      class_read_int("non_diagonal",psp->non_diag);
-      if ((psp->non_diag<0) || (psp->non_diag>=ppt->selection_num))
+      class_read_int("non_diagonal",phr->non_diag);
+      if ((phr->non_diag<0) || (phr->non_diag>=ppt->selection_num))
         class_stop(errmsg,"Input for non_diagonal is %d, while it is expected to be between 0 and %d\n",
-                   psp->non_diag,ppt->selection_num-1);
+                   phr->non_diag,ppt->selection_num-1);
     }
 
     /** 2.b) Selection function */
@@ -7676,8 +7676,8 @@ int input_read_parameters_spectra(struct file_content * pfc,
 
 int input_read_parameters_lensing(struct file_content * pfc,
                                   struct precision * ppr,
-                                  struct perturbs * ppt,
-                                  struct transfers * ptr,
+                                  struct perturbations * ppt,
+                                  struct transfer * ptr,
                                   struct lensing *ple,
                                   ErrorMsg errmsg){
 
@@ -7947,7 +7947,7 @@ int input_read_parameters_distortions(struct file_content * pfc,
  * @param pfc     Input: pointer to local structure
  * @param ppr     Input: pointer to precision structure
  * @param pba     Input: pointer to background structure
- * @param pth     Input: pointer to thermo structure
+ * @param pth     Input: pointer to thermodynamics structure
  * @param errmsg  Input: Error message
  * @return the error status
  */
@@ -7955,7 +7955,7 @@ int input_read_parameters_distortions(struct file_content * pfc,
 int input_read_parameters_additional(struct file_content* pfc,
                                      struct precision* ppr,
                                      struct background* pba,
-                                     struct thermo* pth,
+                                     struct thermodynamics* pth,
                                      ErrorMsg errmsg){
 
   /** Summary: */
@@ -8066,8 +8066,8 @@ int input_read_parameters_additional(struct file_content* pfc,
  * @param ppt     Input: pointer to perturbations structure
  * @param ptr     Input: pointer to transfer structure
  * @param ppm     Input: pointer to primordial structure
- * @param psp     Input: pointer to spectra structure
- * @param pnl     Input: pointer to non-linear structure
+ * @param phr     Input: pointer to harmonic structure
+ * @param pfo     Input: pointer to non-linear structure
  * @param ple     Input: pointer to lensing structure
  * @param psd     Input: pointer to distorsion structure
  * @param pop     Input: pointer to output structure
@@ -8077,12 +8077,12 @@ int input_read_parameters_additional(struct file_content* pfc,
 
 int input_read_parameters_output(struct file_content * pfc,
                                  struct background *pba,
-                                 struct thermo *pth,
-                                 struct perturbs *ppt,
-                                 struct transfers *ptr,
+                                 struct thermodynamics *pth,
+                                 struct perturbations *ppt,
+                                 struct transfer *ptr,
                                  struct primordial *ppm,
-                                 struct spectra *psp,
-                                 struct nonlinear * pnl,
+                                 struct harmonic *phr,
+                                 struct fourier * pfo,
                                  struct lensing *ple,
                                  struct distortions *psd,
                                  struct output *pop,
@@ -8195,8 +8195,8 @@ int input_read_parameters_output(struct file_content * pfc,
   class_read_int("perturbations_verbose",ppt->perturbations_verbose);
   class_read_int("transfer_verbose",ptr->transfer_verbose);
   class_read_int("primordial_verbose",ppm->primordial_verbose);
-  class_read_int("spectra_verbose",psp->spectra_verbose);
-  class_read_int("nonlinear_verbose",pnl->nonlinear_verbose);
+  class_read_int("harmonic_verbose",phr->harmonic_verbose);
+  class_read_int("fourier_verbose",pfo->fourier_verbose);
   class_read_int("lensing_verbose",ple->lensing_verbose);
   class_read_int("distortions_verbose",psd->distortions_verbose);
   class_read_int("output_verbose",pop->output_verbose);
@@ -8250,8 +8250,8 @@ int input_read_parameters_output(struct file_content * pfc,
  * @param ppt Input: pointer to perturbation structure
  * @param ptr Input: pointer to transfer structure
  * @param ppm Input: pointer to primordial structure
- * @param psp Input: pointer to spectra structure
- * @param pnl Input: pointer to nonlinear structure
+ * @param phr Input: pointer to harmonic structure
+ * @param pfo Input: pointer to fourier structure
  * @param ple Input: pointer to lensing structure
  * @param psd     Input: pointer to distorsion structure
  * @param pop Input: pointer to output structure
@@ -8260,12 +8260,12 @@ int input_read_parameters_output(struct file_content * pfc,
  */
 
 int input_default_params(struct background *pba,
-                         struct thermo *pth,
-                         struct perturbs *ppt,
-                         struct transfers *ptr,
+                         struct thermodynamics *pth,
+                         struct perturbations *ppt,
+                         struct transfer *ptr,
                          struct primordial *ppm,
-                         struct spectra *psp,
-                         struct nonlinear * pnl,
+                         struct harmonic *phr,
+                         struct fourier * pfo,
                          struct lensing *ple,
                          struct tszspectrum *ptsz, //BB: added for class_sz
                          struct szcount *pcsz, //BB: added for class_sz
@@ -8554,11 +8554,11 @@ int input_default_params(struct background *pba,
 
   /** 1) Non-linearity */
   ppt->has_nl_corrections_based_on_delta_m = _FALSE_;
-  pnl->method = nl_none;
-  pnl->has_pk_eq = _FALSE_;
-  pnl->extrapolation_method = extrap_max_scaled;
-  pnl->feedback = nl_emu_dmonly;
-  pnl->z_infinity = 10.;
+  pfo->method = nl_none;
+  pfo->has_pk_eq = _FALSE_;
+  pfo->extrapolation_method = extrap_max_scaled;
+  pfo->feedback = nl_emu_dmonly;
+  pfo->z_infinity = 10.;
 
   /**
    * Default to input_read_parameters_primordial
@@ -8681,7 +8681,7 @@ int input_default_params(struct background *pba,
   ppt->selection_width[0]=0.1;
   ptr->selection_bias[0]=1.;
   ptr->selection_magnification_bias[0]=0.;
-  psp->non_diag=0;
+  phr->non_diag=0;
   /** 2.b) Selection function */
   ptr->has_nz_analytic = _FALSE_;
   ptr->has_nz_file = _FALSE_;
@@ -8792,15 +8792,15 @@ int input_default_params(struct background *pba,
   ppt->perturbations_verbose = 0;
   ptr->transfer_verbose = 0;
   ppm->primordial_verbose = 0;
-  psp->spectra_verbose = 0;
-  pnl->nonlinear_verbose = 0;
+  phr->harmonic_verbose = 0;
+  pfo->fourier_verbose = 0;
   ple->lensing_verbose = 0;
   psd->distortions_verbose = 0;
   pop->output_verbose = 0;
 
 
 
-  psp->overwrite_clpp_with_limber = 0;
+  phr->overwrite_clpp_with_limber = 0;
   //BB: SZ parameters default values
 
 
@@ -8897,7 +8897,7 @@ int input_default_params(struct background *pba,
   ptsz->z1SZ = 1e-5;
   ptsz->z2SZ = 6.;
   ppt->z_max_pk = ptsz->z2SZ;
-  psp->z_max_pk = ppt->z_max_pk;
+  phr->z_max_pk = ppt->z_max_pk;
 
   ptsz->z1SZ_dndlnM = 5.e-3;
   ptsz->z2SZ_dndlnM = 6.;
@@ -9205,7 +9205,7 @@ int input_default_params(struct background *pba,
   ptsz->b0 = 1.69;
   ptsz->c0 = 1.30;
 
-  ptsz->pk_nonlinear_for_vrms2 = 0;
+  ptsz->pk_fourier_for_vrms2 = 0;
 
   ptsz->MF = 8; //Tinker et al 2008 @ M200c
   ptsz->SHMF = 1;

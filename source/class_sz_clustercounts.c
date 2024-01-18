@@ -16,7 +16,7 @@
 #include <gsl/gsl_rng.h>
 
 int szcount_init(struct background * pba,
-                 struct nonlinear * pnl,
+                 struct fourier * pfo,
                  struct primordial * ppm,
                  struct tszspectrum * ptsz,
                  struct szcount * pcsz)
@@ -52,7 +52,7 @@ int szcount_init(struct background * pba,
 
     if (ptsz->has_sz_counts_fft){
     class_call(compute_counts_sz_fft(pba,
-                                    pnl,
+                                    pfo,
                                     ppm,
                                     ptsz,
                                     pcsz),
@@ -61,7 +61,7 @@ int szcount_init(struct background * pba,
     }
     else{
     class_call(compute_count_sz(pba,
-                                pnl,
+                                pfo,
                                 ppm,
                                 ptsz,
                                 pcsz),
@@ -357,7 +357,7 @@ void shiftArray(double arr[], int size, int s) {
 
 
 int compute_counts_sz_fft(struct background * pba,
-                          struct nonlinear * pnl,
+                          struct fourier * pfo,
                           struct primordial * ppm,
                           struct tszspectrum * ptsz,
                           struct szcount * pcsz)
@@ -372,7 +372,7 @@ int compute_counts_sz_fft(struct background * pba,
 // double m = 5e14;
 // double y = get_y_at_m_and_z(m,z,ptsz,pba);
 // printf("z = %.5e m = %.5e y = %.5e\n",z,m,y);
-// tabulate_y_to_m(pba,pnl,ppm,ptsz);
+// tabulate_y_to_m(pba,pfo,ppm,ptsz);
 // double mrec;
 // mrec = get_y_to_m_at_z_and_y(z,y,ptsz);
 // printf("z = %.5e m = %.5e y = %.5e mrec = %.6e\n",z,m,y,mrec);
@@ -436,7 +436,7 @@ int compute_counts_sz_fft(struct background * pba,
 //
 //
 // #pragma omp parallel \
-//    shared(abort,pba,ptsz,ppm,pnl,lock,forward_plan,reverse_plan)\
+//    shared(abort,pba,ptsz,ppm,pfo,lock,forward_plan,reverse_plan)\
 //    private(id,index_parallel_zp,index_parallel_sigmayobsp)\
 //    num_threads(number_of_threads)
 // 	 {
@@ -862,7 +862,7 @@ int compute_counts_sz_fft(struct background * pba,
 //
 //
 //   #pragma omp parallel \
-//      shared(abort,pba,ptsz,ppm,pnl,lock,forward_plan,reverse_plan)\
+//      shared(abort,pba,ptsz,ppm,pfo,lock,forward_plan,reverse_plan)\
 //      private(id,index_parallel_zp,index_parallel_qp)\
 //      num_threads(number_of_threads)
 //   	 {
@@ -1134,7 +1134,7 @@ int id;
 // double result_qmconv_all_patches;//[ptsz->nskyfracs][2*N];
 
 #pragma omp parallel \
-   shared(N,xarr,kernel_scatter,npatches,index_zloop,abort,pba,ptsz,ppm,pnl)\
+   shared(N,xarr,kernel_scatter,npatches,index_zloop,abort,pba,ptsz,ppm,pfo)\
    private(id,index_patchesloop)\
    num_threads(number_of_threads)
 	 {
@@ -1787,7 +1787,7 @@ if (ptsz->sz_verbose>=1)
 }
 
 int compute_count_sz(struct background * pba,
-                     struct nonlinear * pnl,
+                     struct fourier * pfo,
                      struct primordial * ppm,
                      struct tszspectrum * ptsz,
                      struct szcount * pcsz)
@@ -1811,7 +1811,7 @@ int compute_count_sz(struct background * pba,
 
 int index_y;
 #pragma omp parallel \
-shared(abort,pba,ppm,pnl,ptsz,pcsz)\
+shared(abort,pba,ppm,pfo,ptsz,pcsz)\
 private(tstart, tstop,pvecsz,index_y)
   {
 
@@ -1833,7 +1833,7 @@ private(tstart, tstop,pvecsz,index_y)
       class_call_parallel(grid_C_2d(pvecsz,
                                     pba,
                                     ppm,
-                                    pnl,
+                                    pfo,
                                     ptsz,
                                     pcsz),
                           pcsz->error_message,
@@ -1871,7 +1871,7 @@ int grid_C_2d(
               double * pvecsz,
               struct background *pba,
               struct primordial * ppm,
-              struct nonlinear * pnl,
+              struct fourier * pfo,
               struct tszspectrum * ptsz,
               struct szcount * pcsz
               ){
