@@ -20905,7 +20905,7 @@ double evaluate_galaxy_number_counts( double * pvecback,
 //                            z_asked);
 
 pvectsz[ptsz->index_phi_galaxy_counts] = get_galaxy_number_counts(z_asked,ptsz);
-
+return pvectsz[ptsz->index_phi_galaxy_counts];
                                     }
 
 
@@ -20994,6 +20994,7 @@ double evaluate_galaxy_number_counts_fdndz( double * pvecback,
                                z_asked);
 
 pvectsz[ptsz->index_phi_galaxy_counts] = phig;
+return pvectsz[ptsz->index_phi_galaxy_counts];
 
                                     }
 
@@ -21487,24 +21488,24 @@ return result =  nc*L_gal;
 
 
 double subhalo_hmf_dndlnMs(double M_host,double M_sub,struct tszspectrum * ptsz){
-if (ptsz->SHMF==1){
-// Subhalo mass function: Equation 12 of https://iopscience.iop.org/article/10.1088/0004-637X/719/1/88/pdf
-return 0.30*pow(M_sub/M_host,-0.7)*exp(-9.9*pow(M_sub/M_host,2.5));
-}
-else if (ptsz->SHMF==2){
-// eq 3.9 in 2001.08787
-// F. Jiang and F. C. van den Bosch, Generating merger trees for dark matter haloes: a comparison of
-// methods, MNRAS 440 (2014) 193 [1311.5225].
-double g1,a1,g2,a2,b,x;
-g1 = 0.13;
-a1 = -0.83;
-g2 =  1.33;
-a2 = -0.02;
-b = 5.67;
-x = 1.19;
-double mr = M_sub/M_host;
-return (g1*pow(mr,a1)+g2*pow(mr,a2))*exp(-b*pow(mr,x));
-}
+  if (ptsz->SHMF==1){
+      // Subhalo mass function: Equation 12 of https://iopscience.iop.org/article/10.1088/0004-637X/719/1/88/pdf
+      return 0.30*pow(M_sub/M_host,-0.7)*exp(-9.9*pow(M_sub/M_host,2.5));
+      }
+  else if (ptsz->SHMF==2){
+    // eq 3.9 in 2001.08787
+    // F. Jiang and F. C. van den Bosch, Generating merger trees for dark matter haloes: a comparison of
+    // methods, MNRAS 440 (2014) 193 [1311.5225].
+    double g1,a1,g2,a2,b,x;
+    g1 = 0.13;
+    a1 = -0.83;
+    g2 =  1.33;
+    a2 = -0.02;
+    b = 5.67;
+    x = 1.19;
+    double mr = M_sub/M_host;
+    return (g1*pow(mr,a1)+g2*pow(mr,a2))*exp(-b*pow(mr,x));
+    }
 }
 
 // see https://github.com/abhimaniyar/halomodel_cib_tsz_cibxtsz/blob/master/Cell_cib.py
@@ -21772,7 +21773,7 @@ exit(0);
 //       ug_at_ell,ng_bar,nc,ns,us);
 
 pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
-
+return _SUCCESS_;
 }
 
 
@@ -21826,7 +21827,7 @@ double ug_at_ell;
 ug_at_ell  = (1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us);
 
 pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
-
+return _SUCCESS_;
 }
 
 
@@ -22004,9 +22005,9 @@ if (_ngal_lens_1h_
   // }
   }
 
-pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
-
-}
+  pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;
+  return _SUCCESS_;
+  }
 
 
 

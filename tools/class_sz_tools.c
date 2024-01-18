@@ -9973,8 +9973,8 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -10132,8 +10132,8 @@ if (ptsz->sz_verbose >= 1)
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -10307,8 +10307,8 @@ if (ptsz->sz_verbose >= 1)
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -10470,8 +10470,8 @@ for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
 
     // printf("%lf %lf\n",this_lnx,this_lnI);
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -10624,8 +10624,8 @@ if (ptsz->sz_verbose >= 1)
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -10754,8 +10754,8 @@ if (ptsz->sz_verbose >= 1)
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -10888,8 +10888,8 @@ if (ptsz->sz_verbose >= 1)
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -11047,8 +11047,8 @@ if (ptsz->sz_verbose>=1){
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -11507,8 +11507,8 @@ if (ptsz->sz_verbose>=1){
   }
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -11705,8 +11705,8 @@ printf("-> Loading fdndz unwise\n");
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -11904,8 +11904,8 @@ printf("-> Loading cosmos dndz unwise\n");
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -12023,8 +12023,8 @@ int load_M_min_of_z(struct tszspectrum * ptsz)
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -12137,8 +12137,8 @@ int load_ksz_filter(struct tszspectrum * ptsz)
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -12251,8 +12251,8 @@ int load_T10_alpha_norm(struct tszspectrum * ptsz)
 
 
 
-    /* Standard technique in C:
-     /*if too many data, double the size of the vectors */
+    /* Standard technique in C:*/
+    /*if too many data, double the size of the vectors */
     /* (it is faster and safer that reallocating every new line) */
     if((n_data+1) > n_data_guess) {
       n_data_guess *= 2;
@@ -14161,7 +14161,7 @@ if (ptsz->sz_verbose>10)
 
 if (ptsz->sz_verbose>10){
   printf("starting mass integral at z, preliminary calculations done\n");
-  printf("now at pvectsz[ptsz->index_md] = %d\n",pvectsz[ptsz->index_md]);
+  printf("now at pvectsz[ptsz->index_md] = %f\n",pvectsz[ptsz->index_md]);
   }
 
 
@@ -24122,6 +24122,8 @@ if (ptsz->sz_verbose>=1)
 printf("-> end tabulating Wz for lensing magnification\n");
  free(pvectsz);
  free(pvecback);
+
+ return _SUCCESS_;
 }
 
 int evaluate_redshift_int_lensmag(double * pvectsz,
@@ -24240,6 +24242,7 @@ if (ptsz->sz_verbose>=1)
 printf("-> end tabulating Wz for source galaxies\n");
  free(pvectsz);
  free(pvecback);
+return _SUCCESS_;
 }
 
 

@@ -2679,7 +2679,7 @@ if (ptsz->sz_verbose > 0){
   for (j=0;j<pcsz->Nbins_z;j++){
     double N_of_z = 0.;
     if (j== 0) {
-        printf("log10(snr)\t",pcsz->Nbins_y);
+        printf("log10(snr) nbins = %d\t",pcsz->Nbins_y);
         for (i=0;i<pcsz->Nbins_y;i++){
           printf("%.3e\t",pcsz->logy[i]);
         }
