@@ -1706,7 +1706,7 @@ int harmonic_tk_at_z(
 
 
   class_stop(phr->error_message,
-             "The function harmonic_tk_at_z() is obsolete, use instead perturbations_sources_at_tau(), it does the same");
+             "The function harmonic_tk_at_z() is obsolete, use instead perturbations_sources_at_z(), it does the same");
 
   return _SUCCESS_;
 
@@ -1733,7 +1733,7 @@ int harmonic_tk_at_k_and_z(
                            ) {
 
   class_stop(phr->error_message,
-             "The function harmonic_tk_at_k_and_z() is obsolete, use instead perturbations_sources_at_tau(), it does the same provided that you interpolate its output at some wavenumber k");
+             "The function harmonic_tk_at_k_and_z() is obsolete, use instead perturbations_sources_at_k_and_z(), it does the same");
 
   return _SUCCESS_;
 
