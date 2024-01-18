@@ -1,6 +1,8 @@
-#Some Makefile for CLASS_SZ.
-#Julien Lesgourgues, 28.11.2011 for the CLASS part.
-#Boris Bolliet 2015- for the class_sz part.
+#Some Makefile for CLASS.
+#Julien Lesgourgues, 28.11.2011
+#Nils Schöneberg, Matteo Lucca, 27.02.2019
+#Boris Bolliet since 2015 - for the class_sz parts.
+
 
 MDIR := $(shell pwd)
 WRKDIR = $(MDIR)/build
@@ -35,15 +37,14 @@ AR        = ar rv
 # In order to use Python 3, you can manually
 # substitute python3 to python in the line below, or you can simply
 # add a compilation option on the terminal command line:
-# "PYTHON=python3 make all" (THanks to Marius Millea for pyhton3
-# compatibility)
+# "PYTHON=python3 make all" (Thanks to Marius Millea for python3 compatibility)
 PYTHON ?= python
 #PYTHON ?= /Users/boris/opt/anaconda2/bin/python
 
 # your optimization flag
-#OPTFLAG = -O4 -ffast-math #-march=native
 # on Mac M1
 OPTFLAG = -O4 -ffast-math #-arch x86_64
+#OPTFLAG = -O3 # on v2.10.3
 #OPTFLAG = -Ofast -ffast-math #-march=native
 #OPTFLAG = -fast
 
@@ -62,8 +63,10 @@ LDFLAG = -g -fPIC
 LDFLAG += -lomp
 
 # leave blank to compile without HyRec, or put path to HyRec directory
-# (with no slash at the end: e.g. hyrec or ../hyrec)
-HYREC = hyrec
+# (with no slash at the end: e.g. "external/RecfastCLASS")
+HYREC = external/HyRec2020
+RECFAST = external/RecfastCLASS
+HEATING = external/heating
 
 #
 # GSL          = gsl
@@ -79,24 +82,35 @@ HYREC = hyrec
 CCFLAG += -D__CLASSDIR__='"$(MDIR)"'
 
 # where to find include files *.h
-#INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/gsl-2.6/include/
-# INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/miniconda/include
-INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/opt/miniconda3/include/
-# INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/opt/anaconda3/include -I/opt/homebrew/include
+INCLUDES = -I../include -I/usr/local/include/ -I/Users/boris/opt/miniconda3/include/
+HEADERFILES = $(wildcard ./include/*.h)
 
 # automatically add external programs if needed. First, initialize to blank.
 EXTERNAL =
 
-# eventually update flags for including HyRec
+vpath %.c $(RECFAST)
+#CCFLAG += -DRECFAST
+INCLUDES += -I../$(RECFAST)
+EXTERNAL += wrap_recfast.o
+HEADERFILES += $(wildcard ./$(RECFAST)/*.h)
+
+vpath %.c $(HEATING)
+#CCFLAG += -DHEATING
+INCLUDES += -I../$(HEATING)
+EXTERNAL += injection.o
+HEADERFILES += $(wildcard ./$(HEATING)/*.h)
+
+# update flags for including HyRec
 ifneq ($(HYREC),)
 vpath %.c $(HYREC)
 CCFLAG += -DHYREC
 #LDFLAGS += -DHYREC
-INCLUDES += -I../hyrec
-EXTERNAL += hyrectools.o helium.o hydrogen.o history.o
+INCLUDES += -I../$(HYREC)
+EXTERNAL += hyrectools.o helium.o hydrogen.o history.o wrap_hyrec.o energy_injection.o
+HEADERFILES += $(wildcard ./$(HYREC)/*.h)
 endif
 
-%.o:  %.c .base
+%.o:  %.c .base $(HEADERFILES)
 	cd $(WRKDIR);$(CC) $(OPTFLAG) $(OMPFLAG) $(CCFLAG) $(INCLUDES) -c ../$< -o $*.o
 
 TOOLS = growTable.o dei_rkck.o sparse.o evolver_rkck.o  evolver_ndf15.o arrays.o parser.o quadrature.o hyperspherical.o common.o trigonometric_integrals.o r8lib.o class_sz_tools.o class_sz_custom_profiles.o Patterson.o fft.o
@@ -214,3 +228,4 @@ clean: .base
 	rm -f libclass.a
 	rm -f $(MDIR)/python/classy.c
 	rm -rf $(MDIR)/python/build
+	rm -f python/autosetup.py

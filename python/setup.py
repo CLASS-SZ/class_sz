@@ -27,6 +27,9 @@ if b"mvec" not in MVEC_STRING:
 root_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 include_folder = os.path.join(root_folder, "include")
 classy_folder = os.path.join(root_folder, "python")
+heat_folder = os.path.join(os.path.join(root_folder, "external"),"heating")
+recfast_folder = os.path.join(os.path.join(root_folder, "external"),"RecfastCLASS")
+hyrec_folder = os.path.join(os.path.join(root_folder, "external"),"HyRec2020")
 
 # Recover the CLASS version
 with open(os.path.join(include_folder, 'common.h'), 'r') as v_file:
@@ -39,21 +42,15 @@ with open(os.path.join(include_folder, 'common.h'), 'r') as v_file:
 # Define cython extension and fix Python version
 classy_ext = Extension("classy_sz", [os.path.join(classy_folder, "classy.pyx")],
                            #include_dirs=[nm.get_include(), include_folder,'/Users/boris/gsl-2.6/include'],
-                           include_dirs=[nm.get_include(), include_folder],
+                           include_dirs=[nm.get_include(), include_folder, heat_folder, recfast_folder, hyrec_folder],
                            libraries=liblist,
                            library_dirs=[root_folder, GCCPATH],
-                           #extra_link_args=['-lgomp','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/','-L/Users/boris/gsl-2.6/lib/','-lgsl','-lgslcblas'])
-                           #extra_link_args=['-lgomp','-L/Users/boris/gsl-2.6/lib/','-lgsl','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/'])
-                           # extra_link_args=['-lgomp','-lgsl','-lfftw3','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/']) # BB
-                           # extra_link_args=['-lomp','-L/Users/boris/miniconda/lib','-lgsl','-lfftw3','-lgslcblas']) # BB
-                           extra_link_args=['-lgomp','-L/Users/boris/opt/miniconda3/lib','-lgsl','-lfftw3','-lgslcblas']) # BB
-                           # extra_link_args=['-lomp','-L/Users/boris/opt/anaconda3/lib','-lgsl','-lfftw3','-lgslcblas']) # BB
+                           extra_link_args=['-lgomp','-L/Users/boris/opt/miniconda3/lib','-lgsl','-lfftw3','-lgslcblas']
+                           ) # BB
 
-                           #extra_link_args=['-lgomp','-lgsl','-lfftw3_omp','-lfftw3','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/']) # BB
-                           # extra_link_args=['-lgomp','-L/home/runner/work/SOLikeT/SOLikeT/gsl-2.6/lib','-lgsl','-lgslcblas'])
 
-import six
-classy_ext.cython_directives = {'language_level': "3" if six.PY3 else "2"}
+import sys
+classy_ext.cython_directives = {'language_level': "3" if sys.version_info.major>=3 else "2"}
 
 setup(
     name='classy_sz',
