@@ -26,9 +26,11 @@ struct spectra {
 
   //@{
 
-  int overwrite_clpp_with_limber; 
 
-  double z_max_pk;  /**< maximum value of z at which matter spectrum P(k,z) will be evaluated; keep fixed to zero if P(k) only needed today */
+  int overwrite_clpp_with_limber; // added by BB for high-l hack
+
+  double z_max_pk;  // added by BB for class_sz /**< maximum value of z at which matter spectrum P(k,z) will be evaluated; keep fixed to zero if P(k) only needed today */
+
 
   int non_diag; /**< sets the number of cross-correlation spectra
                    that you want to calculate: 0 means only
