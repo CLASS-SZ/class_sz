@@ -420,7 +420,6 @@ int input_read_from_file(struct file_content * pfc,
 
   /** Find out if shooting necessary and, eventually, shoot and initialize
       read parameters */
-
   class_call(input_shooting(pfc,ppr,pba,pth,ppt,ptr,ppm,phr,pfo,ple,ptsz,pcsz,psd,pop,
                             input_verbose,
                             &has_shooting,
@@ -459,6 +458,7 @@ int input_read_from_file(struct file_content * pfc,
   return _SUCCESS_;
 
 }
+
 
 /**
  * In CLASS, we call 'shooting' the process of doing preliminary runs
@@ -581,11 +581,13 @@ int input_shooting(struct file_content * pfc,
         fzw.required_computation_stage = MAX(fzw.required_computation_stage,target_cs[index_target]);
         unknown_parameters_size++;
       }
+
     }
   }
 
   /** In the case of unknown parameters, start shooting... */
   if (unknown_parameters_size > 0) {
+
     /* We need to remember that we shot so we can clean up properly */
     *has_shooting=_TRUE_;
 
@@ -1706,7 +1708,6 @@ int input_read_parameters(struct file_content * pfc,
                                               errmsg),
              errmsg,
              errmsg);
-
 
   /** Read parameters for output quantities */
   class_call(input_read_parameters_output(pfc,pba,pth,ppt,ptr,ppm,phr,pfo,ple,psd,pop,
