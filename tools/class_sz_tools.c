@@ -8467,7 +8467,7 @@ if (abort == _TRUE_) return _FAILURE_;
 // restore initial state:
 ptsz->has_kSZ_kSZ_gal_1h = has_ksz_bkp;
 
-
+return _SUCCESS_;
                                       }
 
 
@@ -10457,7 +10457,7 @@ for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
   printf("-> [ngal] kernel file name for sample %d: %s\n",index_g,Filepath);
   class_open(process,Filepath, "r",ptsz->error_message);
   if (ptsz->sz_verbose >= 1)
-    printf("-> [ngal] kernel file for sample %d opened successfully\n");
+    printf("-> [ngal] kernel file for sample %d opened successfully\n",index_g);
 
   // exit(0);
 
@@ -18965,12 +18965,12 @@ for (index_k=0; index_k<ptsz->nk_ng_bias; index_k++)
       double z =   exp(ptsz->array_ln_1pz_ng_bias[index_z])-1.;
       double kp =  exp(ptsz->array_ln_k_ng_bias[index_k]);
 
-      perturbations_output_data(pba,
-                          ppt,
-                          class_format,
-                          0., // z_pk....
-                          number_of_titles,
-                          data);
+      perturbations_output_data_at_z(pba,
+                                     ppt,
+                                     class_format,
+                                     0., // z_pk....
+                                     number_of_titles,
+                                     data);
 
       // eq. 3 of this: https://arxiv.org/pdf/1810.13424.pdf
       // double alpha_kp = data[index_k*number_of_titles+index_d_tot]/data[index_k*number_of_titles+index_phi];
