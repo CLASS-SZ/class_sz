@@ -830,7 +830,7 @@ int input_shooting(struct file_content * pfc,
     }
 
     /* Now read the remaining parameters from the fine tuned fzw into the individual structures */
-    class_call(input_read_parameters(&(fzw.fc),ppr,pba,pth,ppt,ptr,ppm,phr,pfo,ple,psd,pop,
+    class_call(input_read_parameters(&(fzw.fc),ppr,pba,pth,ppt,ptr,ppm,phr,pfo,ple,ptsz,pcsz,psd,pop,
                                      errmsg),
                errmsg,
                errmsg);
