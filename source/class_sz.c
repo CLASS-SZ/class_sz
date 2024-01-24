@@ -291,13 +291,9 @@ if (ptsz->use_class_sz_fast_mode == 0)
       -4.);
 
     frequency_in_Hz = ptsz->nu_y_dist_GHz*1e9;
-    ptsz->Tcmb_gNU =
-    pba->T_cmb
-    *((_h_P_*frequency_in_Hz
-        /(_k_B_*pba->T_cmb))
-       *(1./tanh((_h_P_*frequency_in_Hz
-                      /(_k_B_*pba->T_cmb))
-                      /2.))-4.);
+    ptsz->Tcmb_gNU = pba->T_cmb*((_h_P_*frequency_in_Hz/(_k_B_*pba->T_cmb))
+                     *(1./tanh((_h_P_*frequency_in_Hz/(_k_B_*pba->T_cmb))/2.))-4.);
+
 
 ptsz->sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283.2980000259841/0.5176*pba->T_cmb/2.725;
 
