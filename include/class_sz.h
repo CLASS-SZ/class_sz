@@ -1402,6 +1402,9 @@ double szcounts_ntot;
   int use_Amod;
   double Amod;
 
+  int use_nl_bias;
+  double bnl;
+
   double M_min_HOD_mass_factor_unwise;
   double x_out_truncated_nfw_profile;
   double x_out_truncated_nfw_profile_electrons;

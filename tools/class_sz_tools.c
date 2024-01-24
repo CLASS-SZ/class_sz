@@ -13125,6 +13125,15 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
     double bg_prime =  V->pvectsz[V->ptsz->index_halo_bias];
     result *= bg*bg_prime;
 
+    if (V->ptsz->use_nl_bias){
+
+      double pknl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+      double pkl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+      double bnl = V->ptsz->bnl;
+      result = bg*bg_prime*pkl + bnl*bnl*(pknl-pkl);
+      
+    }
+
 
     // printf("b=%.5e pk=%.5e\n",V->pvectsz[V->ptsz->index_halo_bias],pk1);
 
@@ -13297,6 +13306,17 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
     evaluate_effective_galaxy_bias_ngal(index_g,V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
     double bg = V->pvectsz[V->ptsz->index_halo_bias];
     result *= bg;
+
+
+    if (V->ptsz->use_nl_bias){
+      
+      double pknl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+      double pkl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+      double bnl = V->ptsz->bnl;
+      result = bg*pkl + bnl*(pknl-pkl);
+      
+    }
+
 
     double W_lens =  radial_kernel_W_lensing_at_z(V->pvecback,
                                                   V->pvectsz,
