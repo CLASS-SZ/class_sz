@@ -1760,7 +1760,10 @@ int input_read_parameters(
       class_read_double("kstar_damping_1h_term (1/Mpc)",ptsz->kstar_damping_1h_term_Mpc);
       class_read_int("damping_1h_term",ptsz->damping_1h_term);
 
-
+      class_read_double("dndz_shift_source_gal",ptsz->dndz_shift_source_gal);
+      class_read_double("dndz_shift_gal",ptsz->dndz_shift_gal);
+      class_read_double("dndz_stretch_source_gal",ptsz->dndz_stretch_source_gal);
+      class_read_double("dndz_stretch_gal",ptsz->dndz_stretch_gal);
 
 
 
@@ -6631,7 +6634,10 @@ int input_default_params(
   //BB: SZ parameters default values
 
 
-
+  ptsz->dndz_shift_gal = 0;
+  ptsz->dndz_shift_source_gal = 0;
+  ptsz->dndz_stretch_gal = 1.;
+  ptsz->dndz_stretch_source_gal = 1.;
 
   ptsz->write_sz = _FALSE_;
   ptsz->ell_sz = 4;
@@ -6653,7 +6659,7 @@ int input_default_params(
   ptsz->f_cen_HOD = 1.;
   ptsz->Delta_z_lens = 0.;
   ptsz->Delta_z_source = 0.;
-  ptsz->cosmo_model = 0; // 0 lcdm, 1 mnu, 2 neff, 3 wcdm, 4 ede 
+  ptsz->cosmo_model = 0; // 0 lcdm, 1 mnu, 2 neff, 3 wcdm, 4 ede
   ptsz->use_Amod = 0;
   ptsz->Amod = 0.;
   ptsz->M_min_HOD_mass_factor_unwise = 1.;
