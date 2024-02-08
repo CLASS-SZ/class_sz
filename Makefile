@@ -43,7 +43,9 @@ PYTHON ?= python
 # your optimization flag
 #OPTFLAG = -O4 -ffast-math #-march=native
 # on Mac M1
-OPTFLAG = -O4 -ffast-math #-arch x86_64
+
+OPTFLAG = -O3 #-ffast-math #-ffast-math #-arch x86_64
+#OPTFLAG = -O3 # on v2.10.3
 #OPTFLAG = -Ofast -ffast-math #-march=native
 #OPTFLAG = -fast
 
