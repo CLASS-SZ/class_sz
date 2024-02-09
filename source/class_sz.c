@@ -20939,22 +20939,19 @@ double get_source_galaxy_number_counts(double z,
  double shift;
  double stretch;
  double result;
- float z_mean;
-
+ double z_mean;
  shift = ptsz->dndz_shift_source_gal;
  stretch = ptsz->dndz_stretch_source_gal;
- z_mean = 0.0;
+
  int i, N;
  double x_average;
+ x_average =0;
+ z_mean = 0.0;
  N = ptsz->normalized_source_dndz_size;
- // printf("N= %.8e\n",N);
-   for ( i = 0; i < N; i++ )
-   {
-   x_average   = x_average + ptsz->normalized_source_dndz_z[i];
-   }
-   z_mean = x_average / N;
- // printf("x_average= %.2f \n",z_mean);
- // printf("z_mean= %.2f\n",z_mean);
+ for ( i = 0; i < N; i++ )
+ {x_average   = x_average + ptsz->normalized_source_dndz_z[i]*ptsz->normalized_source_dndz_phig[i];}
+ z_mean = x_average / 100.;
+
  double phig_shifted = 0;
  double z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
 
@@ -20968,7 +20965,8 @@ double get_source_galaxy_number_counts(double z,
                             z_asked_shifted);
 
  result = (1./stretch) * phig_shifted;
-
+ // printf("phig= %.8e\n",phig);
+ // printf("phig_shifted= %.8e\n",result);
 return result;
 
                                     }
@@ -20995,7 +20993,7 @@ double get_galaxy_number_counts(double z,
      phig = 0.;
   else if (z_asked>ptsz->normalized_dndz_z[ptsz->normalized_dndz_size-1])
      phig = 0.;
-else  phig =  pwl_value_1d(ptsz->normalized_dndz_size,
+  else  phig =  pwl_value_1d(ptsz->normalized_dndz_size,
                            ptsz->normalized_dndz_z,
                            ptsz->normalized_dndz_phig,
                            z_asked);
@@ -21004,27 +21002,28 @@ else  phig =  pwl_value_1d(ptsz->normalized_dndz_size,
 double shift;
 double stretch;
 double result;
-float z_mean;
+double z_mean;
 //
 // printf("z_asked= %.8e\n",z_asked);
 shift = ptsz->dndz_shift_gal;
 stretch = ptsz->dndz_stretch_gal;
+// z_mean = 0.45669327716997216;
 z_mean = 0.0;
 
-
-  int i, N;
-  double x_average;
+int i, N;
+double x_average;
+x_average =0;
 N = ptsz->normalized_dndz_size;
-// printf("N= %.8e\n",N);
-  for ( i = 0; i < N; i++ )
-  {
-  x_average   = x_average + ptsz->normalized_dndz_z[i];
-  }
-  z_mean = x_average / N;
-// printf("x_average= %.2f \n",z_mean);
-// printf("z_mean= %.2f\n",z_mean);
+for ( i = 0; i < N; i++ )
+{x_average   = x_average + ptsz->normalized_dndz_z[i]*ptsz->normalized_dndz_phig[i];}
+z_mean = x_average / 100.;
+
+// printf("z_mean= %.2e\n",z_mean);
+// printf("stretch= %.2e\n",stretch);
+// printf("shift= %.2e\n",shift);
 double phig_shifted = 0;
-double z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
+double z_asked_shifted;
+z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
 
 if (z_asked_shifted<ptsz->normalized_dndz_z[0])
    phig_shifted = 0.;
@@ -21036,6 +21035,8 @@ else phig_shifted =  pwl_value_1d(ptsz->normalized_dndz_size,
                            z_asked_shifted);
 
 result = (1./stretch) * phig_shifted;
+// printf("z_asked_shifted= %.8e\n",z_asked_shifted );
+// printf("z_asked= %.8e\n",z_asked);
 // printf("phig= %.8e\n",phig);
 // printf("phig_shifted= %.8e\n",result);
 
