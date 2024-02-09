@@ -1047,6 +1047,7 @@ int fourier_sigmas_at_z(
                         double * result
                         ) {
 
+  printf("entering fourier sigmas\n");
   double * out_pk;
   double * ddout_pk;
 
@@ -1069,6 +1070,11 @@ int fourier_sigmas_at_z(
              pfo->error_message);
 
   /** - spline it along k */
+  printf("leaving fourier sigmas\n");
+  printf("R = %.8e out_pk = %.8e\n",R,out_pk);
+  printf("ppr->sigma_k_per_decade = %f\n",ppr->sigma_k_per_decade);
+
+
 
   class_call(array_spline_table_columns(pfo->ln_k,
                                         pfo->k_size,
@@ -1097,6 +1103,8 @@ int fourier_sigmas_at_z(
 
   free(out_pk);
   free(ddout_pk);
+
+
 
   return _SUCCESS_;
 }

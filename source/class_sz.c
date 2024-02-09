@@ -323,7 +323,9 @@ if (ptsz->need_sigma == 1 || ptsz->has_vrms2 || ptsz->has_pk){
 
 
 // these arrays are overwritten in fast mode (see classy_szfast.py and classy.pyx)
-   tabulate_sigma_and_dsigma_from_pk(pba,pfo,ppm,ptsz);
+   tabulate_sigma_and_dsigma_from_pk(pba,pfo,ppm,ptsz,ppr);
+  //  printf("sigma tabulated\n");
+  //  exit(0);
 
 // if (ptsz->use_class_sz_fast_mode){
 // for the class_szfast mode
@@ -7765,7 +7767,7 @@ double damping_1h_term;
    }
 
 
-   else if (_tSZ_power_spectrum_){
+   else if (_tSZ_power_spectrum_){ // _tSZ_1h_ _tSZ_1halo_
 
       // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l];
 
@@ -7776,9 +7778,10 @@ double damping_1h_term;
                                            *pow(pressure_profile_at_ell,2.)
                                            *damping_1h_term;
 
-      if (isinf(pvectsz[ptsz->index_integrand])){
-      printf("%.8e %.8e\n",pvectsz[ptsz->index_integrand],
-      pressure_profile_at_ell);
+      if (isinf(pvectsz[ptsz->index_integrand]) || isnan(pvectsz[ptsz->index_integrand])){
+      printf("integrand _tSZ_power_spectrum_ %.8e %.8e %.8e\n",pvectsz[ptsz->index_integrand],
+                                                          pvectsz[ptsz->index_hmf],
+                                                          pressure_profile_at_ell);
       exit(0);
     }
 
@@ -15005,6 +15008,10 @@ int evaluate_HMF_at_logM_and_z(
 
 
   pvectsz[ptsz->index_dlognudlogRh] = -pvectsz[ptsz->index_dlogSigma2dlogRh];
+
+  // printf("nu and dnu = %.8e %.8e\n",pvectsz[ptsz->index_logSigma2], 
+  //                                   pvectsz[ptsz->index_lognu]);
+
    //HMF evaluation:
    //Tinker et al 2010
    if (ptsz->MF==1) {

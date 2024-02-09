@@ -385,6 +385,7 @@ int tabulate_m500c_to_m200c(struct background * pba,
                          struct primordial * ppm,
                          struct fourier * pfo,
                          struct tszspectrum * ptsz,
+                         struct precision * ppr,
                          double R,
                          double z,
                          double *sigma);
@@ -565,7 +566,8 @@ double erf_compl_nicola(double y,
   int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                         struct fourier * pfo,
                                         struct primordial * ppm,
-                                        struct tszspectrum * ptsz);
+                                        struct tszspectrum * ptsz,
+                                        struct precision * ppr);
 
 
   int harmonic_sigma2_hsv(

@@ -3912,102 +3912,126 @@ int harmonic_sigma_ncdm(
                        struct primordial * ppm,
                        struct fourier *pfo,
                        struct tszspectrum * ptsz,
+                       struct precision * ppr,
                        double R,
                        double z,
                        double * sigma
                        ) {
 
-    // printf("entering \n");
+    printf("entering  harmonic_sigma_ncdm\n");
 
-  double pk;
-  double * pk_ic = NULL;
-  //double * tk = NULL; //transfer
+  // double pk;
+  // double * pk_ic = NULL;
+  // //double * tk = NULL; //transfer
 
-  double * array_for_sigma;
-  //double tk_cdm,tk_b,tk_m,tk_ncdm,Omega_cdm,Omega_b,Omega_ncdm;
-  int index_num;
-  int index_k;
-  int index_y;
-  int index_ddy;
-  int i;
+  // double * array_for_sigma;
+  // //double tk_cdm,tk_b,tk_m,tk_ncdm,Omega_cdm,Omega_b,Omega_ncdm;
+  // int index_num;
+  // int index_k;
+  // int index_y;
+  // int index_ddy;
+  // int i;
 
-  double k,W,x;
-
-
+  // double k,W,x;
 
 
 
-  i=0;
-  index_k=i;
-  i++;
-  index_y=i;
-  i++;
-  index_ddy=i;
-  i++;
-  index_num=i;
 
-  class_alloc(array_for_sigma,
-              ptsz->ln_k_size_for_tSZ*index_num*sizeof(double),
-              pfo->error_message);
+
+  // i=0;
+  // index_k=i;
+  // i++;
+  // index_y=i;
+  // i++;
+  // index_ddy=i;
+  // i++;
+  // index_num=i;
+
+  // class_alloc(array_for_sigma,
+  //             ptsz->ln_k_size_for_tSZ*index_num*sizeof(double),
+  //             pfo->error_message);
 
 
   // printf("entering2 \n");
 
-  for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
-    k=exp(ptsz->ln_k_for_tSZ[i]);
-    if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
-    x=k*R;
-    W=3./x/x/x*(sin(x)-x*cos(x));
+  // for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
+  //   k=exp(ptsz->ln_k_for_tSZ[i]);
+  //   if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
+  //   x=k*R;
+  //   W=3./x/x/x*(sin(x)-x*cos(x));
 
-  // printf("entering4 %.3e \n",R);
+  // // printf("entering4 %.3e \n",R);
 
-   class_call(fourier_pk_at_k_and_z(
-                                     pba,
-                                     ppm,
-                                     pfo,
-                                     pk_linear,
-                                     k, //Input: wavenumber in 1/Mpc
-                                     z,
-                                     pfo->index_pk_cb,
-                                     &pk, // number *out_pk_l
-                                     pk_ic // array out_pk_ic_l[index_ic_ic]
-                                   ),
-                                   pfo->error_message,
-                                   pfo->error_message);
-  // printf("entering5 jsjsjsjs %d \n",i);
-  //
-  //   printf("pk sig =%.3e\n",pk);
-  //   exit(0);
+  // //  class_call(fourier_pk_at_k_and_z(
+  // //                                    pba,
+  // //                                    ppm,
+  // //                                    pfo,
+  // //                                    pk_linear,
+  // //                                    k, //Input: wavenumber in 1/Mpc
+  // //                                    z,
+  // //                                    pfo->index_pk_cb,
+  // //                                    &pk, // number *out_pk_l
+  // //                                    pk_ic // array out_pk_ic_l[index_ic_ic]
+  // //                                  ),
+  // //                                  pfo->error_message,
+  // //                                  pfo->error_message);
+  // // printf("entering5 jsjsjsjs %d \n",i);
+  // //
+  // //   printf("pk sig =%.3e\n",pk);
+  // //   exit(0);
 
-    array_for_sigma[i*index_num+index_k]=k;
-    array_for_sigma[i*index_num+index_y]=k*k*pk*W*W;
-  }
+  //   array_for_sigma[i*index_num+index_k]=k;
+  //   array_for_sigma[i*index_num+index_y]=k*k*pk*W*W;
+  // }
 
-  class_call(array_spline(array_for_sigma,
-                          index_num,
-                          ptsz->ln_k_size_for_tSZ,
-                          index_k,
-                          index_y,
-                          index_ddy,
-                          _SPLINE_EST_DERIV_,
-                          pfo->error_message),
-             pfo->error_message,
-             pfo->error_message);
+  // class_call(array_spline(array_for_sigma,
+  //                         index_num,
+  //                         ptsz->ln_k_size_for_tSZ,
+  //                         index_k,
+  //                         index_y,
+  //                         index_ddy,
+  //                         _SPLINE_EST_DERIV_,
+  //                         pfo->error_message),
+  //            pfo->error_message,
+  //            pfo->error_message);
 
-  class_call(array_integrate_all_spline(array_for_sigma,
-                                        index_num,
-                                        ptsz->ln_k_size_for_tSZ,
-                                        index_k,
-                                        index_y,
-                                        index_ddy,
-                                        sigma,
-                                        pfo->error_message),
-             pfo->error_message,
-             pfo->error_message);
+  // class_call(array_integrate_all_spline(array_for_sigma,
+  //                                       index_num,
+  //                                       ptsz->ln_k_size_for_tSZ,
+  //                                       index_k,
+  //                                       index_y,
+  //                                       index_ddy,
+  //                                       sigma,
+  //                                       pfo->error_message),
+  //            pfo->error_message,
+  //            pfo->error_message);
 
-  free(array_for_sigma);
+  // free(array_for_sigma);
+  // *sigma = sqrt(*sigma/(2.*_PI_*_PI_));
+
+
+
+
+    class_call(fourier_sigmas_at_z(
+                                  ppr,
+                                  pba,
+                                  pfo,
+                                  R,
+                                  z,
+                                  pfo->index_pk_cb,
+                                  out_sigma,
+                                  sigma),
+               ptsz->error_message,
+               ptsz->error_message);
+
+
   *sigma = sqrt(*sigma/(2.*_PI_*_PI_));
 
+
+
+
+  printf("sigma in harmonic_sigma = %.5e\n",*sigma);
+  exit(0);
   return _SUCCESS_;
 
 }
@@ -9734,7 +9758,7 @@ int harmonic_sigma_for_tSZ(
   //            pfo->error_message,
   //            pfo->error_message);
   //
-  // // printf("sigma t = %.5e n = %.5e\n",sigmat,*sigma);
+  // printf("sigma t = %.5e n = %.5e\n",sigmat,*sigma);
 
   free(array_for_sigma);
 
@@ -13463,6 +13487,13 @@ else if ((V->ptsz->has_lens_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md
                                  V->ppt,
                                  V->ptsz);
 
+  // test result and stop if nan or inf
+  if (isnan(result)||isinf(result)){
+      printf("nan or inf in integrate_over_m_at_z\n");
+      exit(0);
+      }
+  
+
 if ((V->ptsz->has_hmf == _TRUE_) && (index_md == V->ptsz->index_md_hmf)){
  // printf("returning integrated obver mass, intm = %.3e\n",result);
  result *= (1.+V->pvectsz[V->ptsz->index_z])*get_volume_at_z(V->pvectsz[V->ptsz->index_z],V->pba);
@@ -13963,6 +13994,8 @@ if (V->ptsz->use_maniyar_cib_model == 0){
 
   if (isnan(result)||isinf(result)){
   printf("nan or inf in integrand redshift 1h\n");
+  printf(" z = %.3e\n",V->pvectsz[V->ptsz->index_z]);
+  printf(" dv = %.3e\n",get_volume_at_z(V->pvectsz[V->ptsz->index_z],V->pba));
   exit(0);
   }
   return result;
@@ -18379,7 +18412,8 @@ if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
 else
 pvectsz[ptsz->index_integral_over_m] = r;
 
-// printf("pvectsz[ptsz->index_integral_over_m] = %.3e\n",pvectsz[ptsz->index_integral_over_m]);
+printf("pvectsz[ptsz->index_integral_over_m] = %.3e\n",pvectsz[ptsz->index_integral_over_m]);
+printf("hmf = %.3e\n",pvectsz[ptsz->index_hmf]);
 
 //}
 
@@ -23742,7 +23776,8 @@ return _SUCCESS_;
 int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
                                       struct fourier * pfo,
                                       struct primordial * ppm,
-                                      struct tszspectrum * ptsz){
+                                      struct tszspectrum * ptsz,
+                                      struct precision * ppr){
 
 
 if (ptsz->use_class_sz_fast_mode){
@@ -23871,7 +23906,7 @@ int number_of_threads= 1;
 
 #pragma omp parallel \
 shared(abort,index_z_R,\
-pba,ptsz,ppm,pfo,z_min,z_max,logR_min,logR_max)\
+pba,ptsz,ppr,ppm,pfo,z_min,z_max,logR_min,logR_max)\
 private(tstart, tstop,index_R,index_z) \
 num_threads(number_of_threads)
 {
@@ -23912,6 +23947,10 @@ num_threads(number_of_threads)
 
 
   if (ptsz->need_sigma == 1){
+
+      printf("pre = %d \n",ptsz->HMF_prescription_NCDM);
+      // exit(0);
+
       if (ptsz->HMF_prescription_NCDM == 2) //No-pres
         harmonic_sigma_for_tSZ(pba,
                               ppm,
@@ -23927,6 +23966,7 @@ num_threads(number_of_threads)
                            ppm,
                            pfo,
                            ptsz,
+                           ppr,
                            exp(ptsz->array_radius[index_R]),
                            exp(ptsz->array_redshift[index_z])-1.,
                            &sigma_var//&sigma_at_z_and_R
@@ -23936,11 +23976,12 @@ num_threads(number_of_threads)
 
       //ptsz->array_sigma_at_z_and_R[index_z_R] = log(*sigma_var);//sigma_at_z_and_R); //log(sigma)
       array_sigma_at_z_and_R[index_z][index_R] = log(sigma_var);//sigma_at_z_and_R); //log(sigma)
-      // printf("s=%.6e r=%.6e z=%.6e\n",
-      // array_sigma_at_z_and_R[index_z][index_R],
-      // exp(ptsz->array_radius[index_R]),
-      // exp(ptsz->array_redshift[index_z])-1.);
-      // exit(0);
+
+      printf("s=%.6e r=%.6e z=%.6e\n",
+      array_sigma_at_z_and_R[index_z][index_R],
+      exp(ptsz->array_radius[index_R]),
+      exp(ptsz->array_redshift[index_z])-1.);
+      exit(0);
 
 
       if (ptsz->HMF_prescription_NCDM == 2) //No-pres
