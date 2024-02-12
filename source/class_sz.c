@@ -20967,7 +20967,9 @@ double get_source_galaxy_number_counts(double z,
  result = (1./stretch) * phig_shifted;
  // printf("phig= %.8e\n",phig);
  // printf("phig_shifted= %.8e\n",result);
-return result;
+double m;
+m = ptsz->shear_callibration_m;
+return (1.+m)*result;
 
                                     }
 
