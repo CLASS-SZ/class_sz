@@ -13164,8 +13164,8 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
 
     if (V->ptsz->use_nl_bias){
 
-      double pknl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
-      double pkl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+      double pknl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pfo,V->ptsz);
+      double pkl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pfo,V->ptsz);
       double bnl = V->ptsz->bnl;
       result = bg*bg_prime*pkl + bnl*bnl*(pknl-pkl);
       
@@ -13347,8 +13347,8 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
 
     if (V->ptsz->use_nl_bias){
       
-      double pknl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
-      double pkl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+      double pknl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pfo,V->ptsz);
+      double pkl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pfo,V->ptsz);
       double bnl = V->ptsz->bnl;
       result = bg*pkl + bnl*(pknl-pkl);
       
