@@ -1711,7 +1711,7 @@ int fourier_free(
       free(pfo->ddln_pk_l);
       free(pfo->ln_tau);
     }
-
+    
     free(pfo->is_non_zero);
   }
 
@@ -1737,9 +1737,6 @@ int fourier_free(
     free(pfo->pk_eq_w_and_Omega);
     free(pfo->pk_eq_ddw_and_ddOmega);
   }
-
-  // free(pfo->ln_k_for_tSZ); //BB: added for class_sz
-  free(pfo->is_non_zero);
 
   return _SUCCESS_;
 }
@@ -1771,7 +1768,8 @@ int fourier_indices(
   pfo->index_md_scalars = ppt->index_md_scalars;
   pfo->ic_size = ppm->ic_size[pfo->index_md_scalars];
   pfo->ic_ic_size = ppm->ic_ic_size[pfo->index_md_scalars];
-  class_alloc(pfo->is_non_zero,sizeof(short)*pfo->ic_ic_size,pfo->error_message);
+
+  class_alloc(pfo->is_non_zero,sizeof(short)*(pfo->ic_ic_size),pfo->error_message);
   for (index_ic1_ic2=0; index_ic1_ic2 < pfo->ic_ic_size; index_ic1_ic2++)
     pfo->is_non_zero[index_ic1_ic2] = ppm->is_non_zero[pfo->index_md_scalars][index_ic1_ic2];
 
