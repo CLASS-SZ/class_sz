@@ -5497,6 +5497,8 @@ double rho2h = get_rho_2h_at_k_and_z(x,z,ptsz);
 double pklin = get_pk_lin_at_k_and_z(x,z,pba,ppm,pfo,ptsz);
 
 *rho_nfw_x = rho2h*pklin*pow(x,2)/(r*x)/2./_PI_/_PI_;
+
+return _SUCCESS_;
                    }
 
 double integrand_rho_2h_qawo(double x, void *p){
@@ -5649,6 +5651,8 @@ for (index_z=0; index_z<ptsz->n_z_density_profile; index_z++){
 if (abort == _TRUE_) return _FAILURE_;
 //end of parallel region
 
+ return _SUCCESS_;
+
 }
 
 
@@ -5786,6 +5790,7 @@ for (index_z=0; index_z<ptsz->n_z_pressure_profile; index_z++){
 if (abort == _TRUE_) return _FAILURE_;
 //end of parallel region
 
+ return _SUCCESS_;
 }
 
 
@@ -7242,6 +7247,7 @@ if (abort == _TRUE_) return _FAILURE_;
 // restore initial state:
 ptsz->has_kSZ_kSZ_gal_1h = has_ksz_bkp;
 
+return _SUCCESS_;
 
                                       }
 

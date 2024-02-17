@@ -174,10 +174,7 @@ extern "C" {
                    struct primordial * ppm,
                    struct fourier *pfo,
                    struct transfer * ptr,
-                   struct harmonic * phr,
-                   struct tszspectrum * ptsz,
-                   struct thermodynamics * pth,
-                   struct lensing * ple
+                   struct harmonic * phr
                    );
 
   int harmonic_free(

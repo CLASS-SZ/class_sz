@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
   // printf("Time taken to execute transfer in seconds : %.3e\n", duration);
 
   start = clock();
-  if (harmonic_init(&pr,&ba,&pt,&pm,&fo,&tr,&hr,&tsz,&th,&le) == _FAILURE_) {
+  if (harmonic_init(&pr,&ba,&pt,&pm,&fo,&tr,&hr) == _FAILURE_) {
     printf("\n\nError in harmonic_init \n=>%s\n",hr.error_message);
     return _FAILURE_;
   }

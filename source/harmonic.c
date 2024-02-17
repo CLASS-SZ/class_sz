@@ -266,11 +266,8 @@ int harmonic_init(
                  struct primordial * ppm,
                  struct fourier * pfo,
                  struct transfer * ptr,
-                 struct harmonic * phr,
-                 struct tszspectrum * ptsz, // BB: added for high-l cl's hack -- superseeded by Julien's fix
-                 struct thermodynamics * pth, // BB: added for high-l cl's hack -- superseeded by Julien's fix
-                 struct lensing * ple // BB: added for high-l cl's hack -- superseeded by Julien's fix
-                 ) {
+                 struct harmonic * phr
+                  ) {
 
   /** Summary: */
 
@@ -846,77 +843,77 @@ int harmonic_cls(
       }
     }
 
-if (ptsz->sz_verbose > 0){
-printf(">>>> harmonic.c : overwritting cl^pp\n");
-printf(">>>> harmonic.c : index_md_scalars = %d\n",phr->index_md_scalars);
-printf(">>>> harmonic.c : ptr->l_size[index_md_scalars] = %d\n",ptr->l_size[phr->index_md_scalars]);
-printf(">>>> harmonic.c : phr->ic_ic_size[index_md_scalars] = %d\n",phr->ic_ic_size[phr->index_md_scalars]);
-printf(">>>> harmonic.c : index_ct_pp = %d\n",phr->index_ct_pp);
-}
+// if (ptsz->sz_verbose > 0){
+// printf(">>>> harmonic.c : overwritting cl^pp\n");
+// printf(">>>> harmonic.c : index_md_scalars = %d\n",phr->index_md_scalars);
+// printf(">>>> harmonic.c : ptr->l_size[index_md_scalars] = %d\n",ptr->l_size[phr->index_md_scalars]);
+// printf(">>>> harmonic.c : phr->ic_ic_size[index_md_scalars] = %d\n",phr->ic_ic_size[phr->index_md_scalars]);
+// printf(">>>> harmonic.c : index_ct_pp = %d\n",phr->index_ct_pp);
+// }
 
-if (phr->overwrite_clpp_with_limber){
+// if (phr->overwrite_clpp_with_limber){
 
-  ptsz->has_lens_lens_hf = 1; // switch on lensing
-  class_sz_cosmo_init(pba,pth,ppt,pfo,ppm,phr,ple,ptsz,ppr);
-  class_sz_tabulate_init(pba,pth,ppt,pfo,ppm,phr,ple,ptsz,ppr);
-  class_sz_integrate_init(pba,pth,ppt,pfo,ppm,phr,ple,ptsz,ppr);
-  ptsz->has_lens_lens_hf = 0; // switch off lensing
+//   ptsz->has_lens_lens_hf = 1; // switch on lensing
+//   class_sz_cosmo_init(pba,pth,ppt,pfo,ppm,phr,ple,ptsz,ppr);
+//   class_sz_tabulate_init(pba,pth,ppt,pfo,ppm,phr,ple,ptsz,ppr);
+//   class_sz_integrate_init(pba,pth,ppt,pfo,ppm,phr,ple,ptsz,ppr);
+//   ptsz->has_lens_lens_hf = 0; // switch off lensing
 
-if (ptsz->sz_verbose > 0)
-  printf(">>>> harmonic.c : cl^pp has been computed\n");
+// if (ptsz->sz_verbose > 0)
+//   printf(">>>> harmonic.c : cl^pp has been computed\n");
 
-  int index_l_limb;
-  double lnl_limb[ptsz->nlSZ];
-  double lncl_limb[ptsz->nlSZ];
-  for (index_l_limb = 0; index_l_limb < ptsz->nlSZ; index_l_limb++){
-    // printf("(limber) l = %.5e cl = %.5e\n",ptsz->ell[index_l_limb],
-    //                                        ptsz->cl_lens_lens_hf[index_l_limb]);
-    lnl_limb[index_l_limb] = log(ptsz->ell[index_l_limb]);
-    lncl_limb[index_l_limb] = log(ptsz->cl_lens_lens_hf[index_l_limb]);
-  }
+//   int index_l_limb;
+//   double lnl_limb[ptsz->nlSZ];
+//   double lncl_limb[ptsz->nlSZ];
+//   for (index_l_limb = 0; index_l_limb < ptsz->nlSZ; index_l_limb++){
+//     // printf("(limber) l = %.5e cl = %.5e\n",ptsz->ell[index_l_limb],
+//     //                                        ptsz->cl_lens_lens_hf[index_l_limb]);
+//     lnl_limb[index_l_limb] = log(ptsz->ell[index_l_limb]);
+//     lncl_limb[index_l_limb] = log(ptsz->cl_lens_lens_hf[index_l_limb]);
+//   }
 
-for (index_l=0; // index_l < 50;
-     index_l < ptr->l_size[phr->index_md_scalars]; 
-     index_l++) {
+// for (index_l=0; // index_l < 50;
+//      index_l < ptr->l_size[phr->index_md_scalars]; 
+//      index_l++) {
 
 
-  // double ktest = 10.;
-  // double ztest = 30.;
-  // double pk = get_pk_nonlin_at_k_and_z(ktest,ztest,pba,ppm,pfo,ptsz);
-  // printf("l =  %.3e pk = %.13e\n",l,pk);
+//   // double ktest = 10.;
+//   // double ztest = 30.;
+//   // double pk = get_pk_nonlin_at_k_and_z(ktest,ztest,pba,ppm,pfo,ptsz);
+//   // printf("l =  %.3e pk = %.13e\n",l,pk);
 
-  double l = phr->l[index_l];
-  double clpp_new; // =  phr->cl[phr->index_md_scalars][(index_l * phr->ic_ic_size[phr->index_md_scalars]) * phr->ct_size + phr->index_ct_pp];
-  clpp_new = exp(pwl_value_1d(ptsz->nlSZ,lnl_limb,lncl_limb,log(l)))*pow(l*(l+1.)/2.,-2.)*pow(l*(l+1.)/2./_PI_,-1.);
+//   double l = phr->l[index_l];
+//   double clpp_new; // =  phr->cl[phr->index_md_scalars][(index_l * phr->ic_ic_size[phr->index_md_scalars]) * phr->ct_size + phr->index_ct_pp];
+//   clpp_new = exp(pwl_value_1d(ptsz->nlSZ,lnl_limb,lncl_limb,log(l)))*pow(l*(l+1.)/2.,-2.)*pow(l*(l+1.)/2./_PI_,-1.);
 
   
 
-    // printf("index_l = %d l = %.6e cl^pp = %.6e  cl^pp new = %.6e ratio = %.6e\n",
-    //        index_l,
-    //        phr->l[index_l],
-    //        phr->cl[phr->index_md_scalars][(index_l * phr->ic_ic_size[phr->index_md_scalars]) * phr->ct_size + phr->index_ct_pp],
-    //        clpp_new,
-    //        clpp_new/phr->cl[phr->index_md_scalars][(index_l * phr->ic_ic_size[phr->index_md_scalars]) * phr->ct_size + phr->index_ct_pp]
-    //        );
-//overwrite:
-  if (l>ppr->l_switch_limber)
-    phr->cl[phr->index_md_scalars][(index_l * phr->ic_ic_size[phr->index_md_scalars]) * phr->ct_size + phr->index_ct_pp] = clpp_new;
+//     // printf("index_l = %d l = %.6e cl^pp = %.6e  cl^pp new = %.6e ratio = %.6e\n",
+//     //        index_l,
+//     //        phr->l[index_l],
+//     //        phr->cl[phr->index_md_scalars][(index_l * phr->ic_ic_size[phr->index_md_scalars]) * phr->ct_size + phr->index_ct_pp],
+//     //        clpp_new,
+//     //        clpp_new/phr->cl[phr->index_md_scalars][(index_l * phr->ic_ic_size[phr->index_md_scalars]) * phr->ct_size + phr->index_ct_pp]
+//     //        );
+// //overwrite:
+//   if (l>ppr->l_switch_limber)
+//     phr->cl[phr->index_md_scalars][(index_l * phr->ic_ic_size[phr->index_md_scalars]) * phr->ct_size + phr->index_ct_pp] = clpp_new;
 
-  }
+//   }
 
-// printf(">>>> printing into file to check clpp\n");
-//         char Filepath[_ARGUMENT_LENGTH_MAX_];
-//         FILE *fp;
-//         sprintf(Filepath,"%s%s","/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/","test_cpp.txt");
-//         fp=fopen(Filepath, "w");
-//         for (index_l=0; index_l < ptr->l_size[phr->index_md_scalars]; index_l++) {
-//           fprintf(fp,"%.5e \t %.5e\n",phr->l[index_l],phr->cl[phr->index_md_scalars][(index_l * phr->ic_ic_size[phr->index_md_scalars]) * phr->ct_size + phr->index_ct_pp]);
-//             }
-//         fclose(fp);
+// // printf(">>>> printing into file to check clpp\n");
+// //         char Filepath[_ARGUMENT_LENGTH_MAX_];
+// //         FILE *fp;
+// //         sprintf(Filepath,"%s%s","/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/output/","test_cpp.txt");
+// //         fp=fopen(Filepath, "w");
+// //         for (index_l=0; index_l < ptr->l_size[phr->index_md_scalars]; index_l++) {
+// //           fprintf(fp,"%.5e \t %.5e\n",phr->l[index_l],phr->cl[phr->index_md_scalars][(index_l * phr->ic_ic_size[phr->index_md_scalars]) * phr->ct_size + phr->index_ct_pp]);
+// //             }
+// //         fclose(fp);
 
 
 
-}
+// }
 // exit(0);
 
     /** - --> (d) now that for a given mode, all possible \f$ C_l\f$'s have been computed,
