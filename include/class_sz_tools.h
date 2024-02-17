@@ -363,19 +363,21 @@ int tabulate_m500c_to_m200c(struct background * pba,
                     double * result
                   );
 
-  int harmonic_sigma_prime(struct background * pba,
-                          struct primordial * ppm,
-                          struct fourier * pfo,
-                          struct tszspectrum * ptsz,
-                          double R,
-                          double z,
-                          double * sigma_prime);
+  int harmonic_sigma_prime_class_sz(struct background * pba,
+                                    struct primordial * ppm,
+                                    struct fourier * pfo,
+                                    struct tszspectrum * ptsz,
+                                    struct precision * ppr,
+                                    double R,
+                                    double z,
+                                    double * sigma_prime);
 
-  int harmonic_sigma_for_tSZ(
+  int harmonic_sigma_class_sz(
                             struct background * pba,
                             struct primordial * ppm,
                             struct fourier * pfo,
                             struct tszspectrum * ptsz,
+                            struct precision * ppr,
                             double R,
                             double z,
                             double *sigma
