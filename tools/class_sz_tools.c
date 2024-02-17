@@ -3918,7 +3918,7 @@ int harmonic_sigma_ncdm(
                        double * sigma
                        ) {
 
-    printf("entering  harmonic_sigma_ncdm\n");
+    // printf("entering  harmonic_sigma_ncdm\n");
 
   // double pk;
   // double * pk_ic = NULL;
@@ -4025,13 +4025,13 @@ int harmonic_sigma_ncdm(
                ptsz->error_message);
 
 
-  *sigma = sqrt(*sigma/(2.*_PI_*_PI_));
+  // *sigma = sqrt(*sigma/(2.*_PI_*_PI_));
 
 
 
 
-  printf("sigma in harmonic_sigma = %.5e\n",*sigma);
-  exit(0);
+  // printf("sigma in harmonic_sigma = %.5e\n",*sigma);
+  // exit(0);
   return _SUCCESS_;
 
 }
@@ -4048,95 +4048,108 @@ int harmonic_sigma_ncdm_prime(
                              struct primordial * ppm,
                              struct fourier *pfo,
                              struct tszspectrum * ptsz,
+                             struct precision * ppr,
                              double R,
                              double z,
                              double * sigma_prime
                              ) {
 
-  double pk;
-  double * pk_ic = NULL;
-  //double * tk = NULL; //transfer
-  //double tk_cdm,tk_b,tk_m,tk_ncdm,Omega_cdm,Omega_b,Omega_ncdm;
-  //double Omega_cdm,Omega_b,Omega_ncdm;
-  double * array_for_sigma;
-  int index_num;
-  int index_k;
-  int index_y;
-  int index_ddy;
-  int i;
+//   double pk;
+//   double * pk_ic = NULL;
+//   //double * tk = NULL; //transfer
+//   //double tk_cdm,tk_b,tk_m,tk_ncdm,Omega_cdm,Omega_b,Omega_ncdm;
+//   //double Omega_cdm,Omega_b,Omega_ncdm;
+//   double * array_for_sigma;
+//   int index_num;
+//   int index_k;
+//   int index_y;
+//   int index_ddy;
+//   int i;
 
-  double k,W,x,W_prime;
-
-
+//   double k,W,x,W_prime;
 
 
-  i=0;
-  index_k=i;
-  i++;
-  index_y=i;
-  i++;
-  index_ddy=i;
-  i++;
-  index_num=i;
-
-  class_alloc(array_for_sigma,
-              ptsz->ln_k_size_for_tSZ*index_num*sizeof(double),
-              pfo->error_message);
-
-  for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
-    k=exp(ptsz->ln_k_for_tSZ[i]);
-    if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
-    x=k*R;
-    W=3./x/x/x*(sin(x)-x*cos(x));
-    W_prime=3./x/x*sin(x)-9./x/x/x/x*(sin(x)-x*cos(x));
 
 
-class_call(fourier_pk_at_k_and_z(
+//   i=0;
+//   index_k=i;
+//   i++;
+//   index_y=i;
+//   i++;
+//   index_ddy=i;
+//   i++;
+//   index_num=i;
+
+//   class_alloc(array_for_sigma,
+//               ptsz->ln_k_size_for_tSZ*index_num*sizeof(double),
+//               pfo->error_message);
+
+//   for (i=0;i<ptsz->ln_k_size_for_tSZ;i++) {
+//     k=exp(ptsz->ln_k_for_tSZ[i]);
+//     if (i == (ptsz->ln_k_size_for_tSZ-1)) k *= 0.9999999; // to prevent rounding error leading to k being bigger than maximum value
+//     x=k*R;
+//     W=3./x/x/x*(sin(x)-x*cos(x));
+//     W_prime=3./x/x*sin(x)-9./x/x/x/x*(sin(x)-x*cos(x));
+
+
+// class_call(fourier_pk_at_k_and_z(
+//                                   pba,
+//                                   ppm,
+//                                   pfo,
+//                                   pk_linear,
+//                                   k,
+//                                   z,
+//                                   pfo->index_pk_cb,
+//                                   &pk, // number *out_pk_l
+//                                   pk_ic // array out_pk_ic_l[index_ic_ic]
+//                                 ),
+//                                 pfo->error_message,
+//                                 pfo->error_message);
+
+
+
+//     array_for_sigma[i*index_num+index_k]=k;
+//     array_for_sigma[i*index_num+index_y]=k*k*pk*k*2.*W*W_prime;
+//   }
+
+//   class_call(array_spline(array_for_sigma,
+//                           index_num,
+//                           ptsz->ln_k_size_for_tSZ,
+//                           index_k,
+//                           index_y,
+//                           index_ddy,
+//                           _SPLINE_EST_DERIV_,
+//                           pfo->error_message),
+//              pfo->error_message,
+//              pfo->error_message);
+
+//   class_call(array_integrate_all_spline(array_for_sigma,
+//                                         index_num,
+//                                         ptsz->ln_k_size_for_tSZ,
+//                                         index_k,
+//                                         index_y,
+//                                         index_ddy,
+//                                         sigma_prime,
+//                                         pfo->error_message),
+//              pfo->error_message,
+//              pfo->error_message);
+
+//   free(array_for_sigma);
+
+
+    class_call(fourier_sigmas_at_z(
+                                  ppr,
                                   pba,
-                                  ppm,
                                   pfo,
-                                  pk_linear,
-                                  k,
+                                  R,
                                   z,
                                   pfo->index_pk_cb,
-                                  &pk, // number *out_pk_l
-                                  pk_ic // array out_pk_ic_l[index_ic_ic]
-                                ),
-                                pfo->error_message,
-                                pfo->error_message);
+                                  out_sigma_prime,
+                                  sigma_prime),
+               ptsz->error_message,
+               ptsz->error_message);
 
-
-
-    array_for_sigma[i*index_num+index_k]=k;
-    array_for_sigma[i*index_num+index_y]=k*k*pk*k*2.*W*W_prime;
-  }
-
-  class_call(array_spline(array_for_sigma,
-                          index_num,
-                          ptsz->ln_k_size_for_tSZ,
-                          index_k,
-                          index_y,
-                          index_ddy,
-                          _SPLINE_EST_DERIV_,
-                          pfo->error_message),
-             pfo->error_message,
-             pfo->error_message);
-
-  class_call(array_integrate_all_spline(array_for_sigma,
-                                        index_num,
-                                        ptsz->ln_k_size_for_tSZ,
-                                        index_k,
-                                        index_y,
-                                        index_ddy,
-                                        sigma_prime,
-                                        pfo->error_message),
-             pfo->error_message,
-             pfo->error_message);
-
-  free(array_for_sigma);
-
-
-  *sigma_prime = *sigma_prime/(2.*_PI_*_PI_);
+  // *sigma_prime = *sigma_prime/(2.*_PI_*_PI_);
 
   return _SUCCESS_;
 
@@ -18412,8 +18425,8 @@ if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
 else
 pvectsz[ptsz->index_integral_over_m] = r;
 
-printf("pvectsz[ptsz->index_integral_over_m] = %.3e\n",pvectsz[ptsz->index_integral_over_m]);
-printf("hmf = %.3e\n",pvectsz[ptsz->index_hmf]);
+// printf("pvectsz[ptsz->index_integral_over_m] = %.3e\n",pvectsz[ptsz->index_integral_over_m]);
+// printf("hmf = %.3e\n",pvectsz[ptsz->index_hmf]);
 
 //}
 
@@ -23948,7 +23961,7 @@ num_threads(number_of_threads)
 
   if (ptsz->need_sigma == 1){
 
-      printf("pre = %d \n",ptsz->HMF_prescription_NCDM);
+      // printf("pre = %d \n",ptsz->HMF_prescription_NCDM);
       // exit(0);
 
       if (ptsz->HMF_prescription_NCDM == 2) //No-pres
@@ -23974,14 +23987,17 @@ num_threads(number_of_threads)
 
 
 
+
+
       //ptsz->array_sigma_at_z_and_R[index_z_R] = log(*sigma_var);//sigma_at_z_and_R); //log(sigma)
       array_sigma_at_z_and_R[index_z][index_R] = log(sigma_var);//sigma_at_z_and_R); //log(sigma)
 
-      printf("s=%.6e r=%.6e z=%.6e\n",
-      array_sigma_at_z_and_R[index_z][index_R],
-      exp(ptsz->array_radius[index_R]),
-      exp(ptsz->array_redshift[index_z])-1.);
-      exit(0);
+      // printf("s=%.6e r=%.6e z=%.6e sigma_var = %.3e\n",
+      // array_sigma_at_z_and_R[index_z][index_R],
+      // exp(ptsz->array_radius[index_R]),
+      // exp(ptsz->array_redshift[index_z])-1.,
+      // sigma_var);
+      // exit(0);
 
 
       if (ptsz->HMF_prescription_NCDM == 2) //No-pres
@@ -23998,6 +24014,7 @@ num_threads(number_of_threads)
                                  ppm,
                                  pfo,
                                  ptsz,
+                                 ppr,
                                  exp(ptsz->array_radius[index_R]),
                                  exp(ptsz->array_redshift[index_z])-1.,
                                  &dsigma_var

@@ -394,6 +394,7 @@ int tabulate_m500c_to_m200c(struct background * pba,
                                struct primordial * ppm,
                                struct fourier * pfo,
                                struct tszspectrum * ptsz,
+                               struct precision * ppr,
                                double R,
                                double z,
                                double *sigma);

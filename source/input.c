@@ -6289,9 +6289,9 @@ int input_read_parameters_class_sz(struct file_content * pfc,
      class_read_double("Dust temperature today in Kelvins",ptsz->T0_cib);  // dust temperature today in Kelvins
      class_read_double("Emissivity index of sed",ptsz->beta_cib); // emissivity index of sed
      class_read_double("Power law index of SED at high frequency",ptsz->gamma_cib); // Power law index of SED at high frequency
-     class_read_double("Redshift evolution of L − M normalisation",ptsz->delta_cib); // Redshift evolution of L − M normalisation
+     class_read_double("Redshift evolution of L - M normalisation",ptsz->delta_cib); // Redshift evolution of L − M normalisation
      class_read_double("Most efficient halo mass in Msun",ptsz->m_eff_cib); // Most efficient halo mass in Msun
-     class_read_double("Normalisation of L − M relation in [Jy MPc2/Msun]",ptsz->L0_cib); // Normalisation of L − M relation in [Jy MPc2/Msun]
+     class_read_double("Normalisation of L - M relation in [Jy MPc2/Msun]",ptsz->L0_cib); // Normalisation of L − M relation in [Jy MPc2/Msun]
      class_read_double("Size of of halo masses sourcing CIB emission",ptsz->sigma2_LM_cib); // Size of of halo masses sourcing CIB emission
      class_read_double("z_obs (CIB)",ptsz->z_obs_cib);
      class_read_double("z_plateau_cib",ptsz->z_plateau_cib);

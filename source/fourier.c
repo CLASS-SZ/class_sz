@@ -1047,7 +1047,7 @@ int fourier_sigmas_at_z(
                         double * result
                         ) {
 
-  printf("entering fourier sigmas\n");
+  // printf("entering fourier sigmas\n");
   double * out_pk;
   double * ddout_pk;
 
@@ -1070,9 +1070,9 @@ int fourier_sigmas_at_z(
              pfo->error_message);
 
   /** - spline it along k */
-  printf("leaving fourier sigmas\n");
-  printf("R = %.8e out_pk = %.8e\n",R,out_pk);
-  printf("ppr->sigma_k_per_decade = %f\n",ppr->sigma_k_per_decade);
+  // printf("leaving fourier sigmas\n");
+  // printf("R = %.8e out_pk = %.8e\n",R,out_pk);
+  // printf("ppr->sigma_k_per_decade = %f\n",ppr->sigma_k_per_decade);
 
 
 
