@@ -6314,6 +6314,9 @@ int input_read_parameters_class_sz(struct file_content * pfc,
      class_read_int("use_Amod",ptsz->use_Amod);
      class_read_double("Amod",ptsz->Amod);
 
+     class_read_int("use_nlbias",ptsz->use_nl_bias);
+     class_read_double("bnl",ptsz->bnl);
+
      // FMcC edit: read in p_fNL parameter
      // class_read_double("p_fNL",ptsz->p_fNL);
      // end FMcC edit
