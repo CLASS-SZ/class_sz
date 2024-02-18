@@ -6,6 +6,7 @@
 // #include <complex.h>
 #include <gsl/gsl_sf_gamma.h>
 # include <fftw3.h>
+#include "omp.h"
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
