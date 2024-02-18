@@ -1760,8 +1760,11 @@ int input_read_parameters(
       class_read_double("kstar_damping_1h_term (1/Mpc)",ptsz->kstar_damping_1h_term_Mpc);
       class_read_int("damping_1h_term",ptsz->damping_1h_term);
 
-
-
+      class_read_double("dndz_shift_source_gal",ptsz->dndz_shift_source_gal);
+      class_read_double("dndz_shift_gal",ptsz->dndz_shift_gal);
+      class_read_double("dndz_stretch_source_gal",ptsz->dndz_stretch_source_gal);
+      class_read_double("dndz_stretch_gal",ptsz->dndz_stretch_gal);
+      class_read_double("shear_callibration_m",ptsz->shear_callibration_m);
 
 
       //Redshift limits for the integration
@@ -6632,7 +6635,6 @@ int input_default_params(
 
 
 
-
   ptsz->write_sz = _FALSE_;
   ptsz->ell_sz = 4;
   ptsz->dlogell = .3;
@@ -6651,9 +6653,14 @@ int input_default_params(
 
   ptsz->M0_Mmin_flag = 0;
   ptsz->f_cen_HOD = 1.;
-  ptsz->Delta_z_lens = 0.;
+  ptsz->Delta_z_lens = 0.; // DES photo-z errors
   ptsz->Delta_z_source = 0.;
-  ptsz->cosmo_model = 0; // 0 lcdm, 1 mnu, 2 neff, 3 wcdm, 4 ede 
+  ptsz->dndz_shift_gal = 0; // shift and stretch params
+  ptsz->dndz_shift_source_gal = 0; //as in https://arxiv.org/pdf/2210.08633.pdf
+  ptsz->dndz_stretch_gal = 1.;
+  ptsz->dndz_stretch_source_gal = 1.;
+  ptsz->shear_callibration_m = 0.;
+  ptsz->cosmo_model = 0; // 0 lcdm, 1 mnu, 2 neff, 3 wcdm, 4 ede
   ptsz->use_Amod = 0;
   ptsz->Amod = 0.;
   ptsz->M_min_HOD_mass_factor_unwise = 1.;

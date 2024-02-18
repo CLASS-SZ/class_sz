@@ -14,6 +14,7 @@
 # include  "fft.h"
 # include <fftw3.h>
 #include <gsl/gsl_rng.h>
+#include "omp.h"
 
 int szcount_init(struct background * pba,
                  struct nonlinear * pnl,

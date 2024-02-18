@@ -325,7 +325,14 @@ There are two modifications:
 
 1) Line 20 of Makefile: CC = gcc-XX (where XX=11 in our case.)
 
-2) Line 12 of python/setup.py: replace 'gcc-11' with, e.g., 'gcc-XX'.
+2) Line 12 of python/setup.py: replace 'gcc-11' with, e.g., 'gcc-XX'.  
+
+
+Pre M1 Mac  
+----------------------  
+See Makefile_preM1mac for an example makefile for older Macs (without the M1 chip). Some key points include adding paths involving libomp to LDFLAG and INCLUDES.
+In python/setup.py, you may also want to modify the extra_link_args list to contain '-lomp' instead of '-lgomp' and add the libomp library path as well to that list. 
+For example, extra_link_args=['-lomp', '-lgsl','-lfftw3','-lgslcblas', '-L/usr/local/opt/libomp/lib/'].  
 
 
 
