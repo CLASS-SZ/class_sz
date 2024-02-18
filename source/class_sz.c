@@ -14,6 +14,7 @@
 #include "r8lib.h"
 #include "fft.h"
 #include "time.h"
+#include "omp.h"
 
 
 int class_sz_cosmo_init(  struct background * pba,
@@ -13374,7 +13375,7 @@ exit(0);
     // z_asked = ptsz->array_redshift[ptsz->n_arraySZ-1];
 
 if (ptsz->use_class_sz_fast_mode){
-  
+
 double zmax = exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.;
 double zp = exp(z_asked) - 1.;
 // double zp = zmax;
@@ -20941,7 +20942,41 @@ double get_source_galaxy_number_counts(double z,
                            ptsz->normalized_source_dndz_phig,
                            z_asked);
 
-return phig;
+// Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
+ double shift;
+ double stretch;
+ double result;
+ double z_mean;
+ shift = ptsz->dndz_shift_source_gal;
+ stretch = ptsz->dndz_stretch_source_gal;
+
+ int i, N;
+ double x_average;
+ x_average =0;
+ z_mean = 0.0;
+ N = ptsz->normalized_source_dndz_size;
+ for ( i = 0; i < N; i++ )
+ {x_average   = x_average + ptsz->normalized_source_dndz_z[i]*ptsz->normalized_source_dndz_phig[i];}
+ z_mean = x_average / 100.;
+
+ double phig_shifted = 0;
+ double z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
+
+ if (z_asked_shifted<ptsz->normalized_source_dndz_z[0])
+    phig_shifted = 0.;
+ else if (z_asked_shifted>ptsz->normalized_source_dndz_z[ptsz->normalized_source_dndz_size-1])
+    phig_shifted = 0.;
+ else phig_shifted =  pwl_value_1d(ptsz->normalized_source_dndz_size,
+                            ptsz->normalized_source_dndz_z,
+                            ptsz->normalized_source_dndz_phig,
+                            z_asked_shifted);
+
+ result = (1./stretch) * phig_shifted;
+ // printf("phig= %.8e\n",phig);
+ // printf("phig_shifted= %.8e\n",result);
+double m;
+m = ptsz->shear_callibration_m;
+return (1.+m)*result;
 
                                     }
 
@@ -20967,14 +21002,56 @@ double get_galaxy_number_counts(double z,
      phig = 0.;
   else if (z_asked>ptsz->normalized_dndz_z[ptsz->normalized_dndz_size-1])
      phig = 0.;
-else  phig =  pwl_value_1d(ptsz->normalized_dndz_size,
+  else  phig =  pwl_value_1d(ptsz->normalized_dndz_size,
                            ptsz->normalized_dndz_z,
                            ptsz->normalized_dndz_phig,
                            z_asked);
 
-return phig;
+// Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
+double shift;
+double stretch;
+double result;
+double z_mean;
+//
+// printf("z_asked= %.8e\n",z_asked);
+shift = ptsz->dndz_shift_gal;
+stretch = ptsz->dndz_stretch_gal;
+// z_mean = 0.45669327716997216;
+z_mean = 0.0;
 
-                                    }
+int i, N;
+double x_average;
+x_average =0;
+N = ptsz->normalized_dndz_size;
+for ( i = 0; i < N; i++ )
+{x_average   = x_average + ptsz->normalized_dndz_z[i]*ptsz->normalized_dndz_phig[i];}
+z_mean = x_average / 100.;
+
+// printf("z_mean= %.2e\n",z_mean);
+// printf("stretch= %.2e\n",stretch);
+// printf("shift= %.2e\n",shift);
+double phig_shifted = 0;
+double z_asked_shifted;
+z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
+
+if (z_asked_shifted<ptsz->normalized_dndz_z[0])
+   phig_shifted = 0.;
+else if (z_asked_shifted>ptsz->normalized_dndz_z[ptsz->normalized_dndz_size-1])
+   phig_shifted = 0.;
+else phig_shifted =  pwl_value_1d(ptsz->normalized_dndz_size,
+                           ptsz->normalized_dndz_z,
+                           ptsz->normalized_dndz_phig,
+                           z_asked_shifted);
+
+result = (1./stretch) * phig_shifted;
+// printf("z_asked_shifted= %.8e\n",z_asked_shifted );
+// printf("z_asked= %.8e\n",z_asked);
+// printf("phig= %.8e\n",phig);
+// printf("phig_shifted= %.8e\n",result);
+
+return result;
+
+                                  }
 
 
 

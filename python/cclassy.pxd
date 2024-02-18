@@ -384,11 +384,14 @@ cdef extern from "class.h":
         double * array_m_dndlnM
         int n_m_dndlnM
         double P0GNFW
-        #double m_min_hod
         double c500
         double gammaGNFW
         double alphaGNFW
         double betaGNFW
+        double alpha_s_HOD
+        double sigma_log10M_HOD
+        double M1_prime_HOD
+        double M_min_HOD
         double x_inSZ
         double x_outSZ
         double HSEbias

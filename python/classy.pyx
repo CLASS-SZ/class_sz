@@ -640,7 +640,7 @@ cdef class Class:
             # print('>>> params_settings:',params_settings)
             del params_settings['age']
             # del params_settings['h']
-        
+
         #print('--------> new input parameters after age found:',params_settings)
 
         # print("pars before input:",self._pars)
@@ -813,7 +813,7 @@ cdef class Class:
             if self.tsz.need_sigma == 1:
 
               index_z_r = 0
-              
+
             for index_z in range(self.tsz.n_arraySZ):
                 ln1pzc = cszfast.cszfast_pk_grid_ln1pz[index_z]
                 # print(">>> filling sig/pk array at z = %.3e"%(np.exp(ln1pzc)-1.))
@@ -893,8 +893,18 @@ cdef class Class:
     def compute_class_sz(self,pdict_to_update):
         self._fillparfile()
         for k,v in pdict_to_update.items():
-        #   if k == 'm_min_hod':
-        #     self.tsz.m_min_hod = pdict_to_update[k]
+          if k == 'betaGNFW':
+            self.tsz.betaGNFW = pdict_to_update[k]
+          if k == 'P0GNFW':
+            self.tsz.P0GNFW = pdict_to_update[k]
+          if k == 'alpha_s_HOD':
+            self.tsz.alpha_s_HOD = pdict_to_update[k]
+          if k == 'sigma_log10M_HOD':
+            self.tsz.sigma_log10M_HOD = pdict_to_update[k]
+          if k == 'M_min_HOD':
+            self.tsz.M_min_HOD = pdict_to_update[k]
+          if k == 'M1_prime_HOD':
+            self.tsz.M1_prime_HOD = pdict_to_update[k]
           if k == 'fNL':
             self.tsz.fNL = pdict_to_update[k]
           if k == 'P0GNFW':
@@ -1364,6 +1374,10 @@ cdef class Class:
         return cl
 
     def z_of_r (self,z_array):
+        """
+        returns chi [Mpc] vs dzdchi [1/Mpc]
+        """
+        cdef double tau=0.0
         cdef int last_index=0 #junk
         cdef double * pvecback
         r = np.zeros(len(z_array),'float64')
@@ -1415,7 +1429,7 @@ cdef class Class:
         """
         cdef double pk
         if self.tsz.use_class_sz_fast_mode == 1:
-         
+
           # pk = self.get_pk_nonlin_at_k_and_z(k/self.h(), z)*self.h()**3
           zmax = self.class_szfast.cszfast_pk_grid_zmax
           if z>zmax:
@@ -1479,7 +1493,7 @@ cdef class Class:
         cdef double pk_lin
 
         if self.tsz.use_class_sz_fast_mode == 1:
-          
+
           # pk_lin = self.get_pk_lin_at_k_and_z(k/self.h(), z)*self.h()**3
           zmax = self.class_szfast.cszfast_pk_grid_zmax
           if z>zmax:
