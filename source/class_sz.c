@@ -125,6 +125,8 @@ int class_sz_cosmo_init(  struct background * pba,
       + ptsz->has_gal_gal_hf
       + ptsz->has_tau_gal_1h
       + ptsz->has_tau_gal_2h
+      + ptsz->has_tau_tau_1h
+      + ptsz->has_tau_tau_2h
       + ptsz->has_gal_lens_1h
       + ptsz->has_gal_lens_2h
       + ptsz->has_gal_lens_hf
@@ -458,6 +460,8 @@ int class_sz_tabulate_init(
       + ptsz->has_gal_gal_hf
       + ptsz->has_tau_gal_1h
       + ptsz->has_tau_gal_2h
+      + ptsz->has_tau_tau_1h
+      + ptsz->has_tau_tau_2h
       + ptsz->has_gal_lens_1h
       + ptsz->has_gal_lens_2h
       + ptsz->has_gal_lens_hf
@@ -1059,7 +1063,6 @@ if (ptsz->has_tSZ_gal_1h
  // || ptsz->has_lens_lensmag_1h //not needed??
  // || ptsz->has_lens_lensmag_2h //not needed??
 ){
-
 tabulate_mean_galaxy_number_density(pba,pnl,ppm,ptsz);
 }
 
@@ -1769,6 +1772,8 @@ int class_sz_integrate_init(
       + ptsz->has_gal_gal_hf
       + ptsz->has_tau_gal_1h
       + ptsz->has_tau_gal_2h
+      + ptsz->has_tau_tau_1h
+      + ptsz->has_tau_tau_2h
       + ptsz->has_gal_lens_1h
       + ptsz->has_gal_lens_2h
       + ptsz->has_gal_lens_hf
@@ -3671,6 +3676,8 @@ int class_sz_free(struct tszspectrum *ptsz)
       + ptsz->has_gal_gal_hf
       + ptsz->has_tau_gal_1h
       + ptsz->has_tau_gal_2h
+      + ptsz->has_tau_tau_1h
+      + ptsz->has_tau_tau_2h
       + ptsz->has_gal_lens_1h
       + ptsz->has_gal_lens_2h
       + ptsz->has_gal_lens_hf
@@ -3781,6 +3788,8 @@ int class_sz_free(struct tszspectrum *ptsz)
    free(ptsz->cl_gal_gal_hf);
    free(ptsz->cl_tau_gal_1h);
    free(ptsz->cl_tau_gal_2h);
+   free(ptsz->cl_tau_tau_1h);
+   free(ptsz->cl_tau_tau_2h);
    free(ptsz->cl_gal_lens_1h);
    free(ptsz->cl_gal_lens_2h);
    free(ptsz->cl_gal_lens_hf);
@@ -4129,6 +4138,8 @@ if(ptsz->has_kSZ_kSZ_gal_1h
 || ptsz->has_kSZ_kSZ_lens_3h_fft
 || ptsz->has_tau_gal_1h
 || ptsz->has_tau_gal_2h
+|| ptsz->has_tau_tau_1h
+|| ptsz->has_tau_tau_2h
 || ptsz->has_kSZ_kSZ_1h
 || ptsz->has_kSZ_kSZ_2h
 || ptsz->has_kSZ_kSZ_tSZ_1h
@@ -5739,6 +5750,18 @@ int compute_sz(struct background * pba,
           Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_tau_gal_2h_first);
           if (ptsz->sz_verbose > 0) printf("computing cl^tau_gal_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
         }
+      else if (index_integrand>=ptsz->index_integrand_id_tau_tau_1h_first && index_integrand <= ptsz->index_integrand_id_tau_tau_1h_last && ptsz->has_tau_tau_1h){
+         Pvectsz[ptsz->index_md] = ptsz->index_md_tau_tau_1h;
+         Pvectsz[ptsz->index_has_electron_density] = 1;
+         Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_tau_tau_1h_first);
+         if (ptsz->sz_verbose > 0) printf("computing cl^tau_tau_1h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+       }
+      else if (index_integrand>=ptsz->index_integrand_id_tau_tau_2h_first && index_integrand <= ptsz->index_integrand_id_tau_tau_2h_last && ptsz->has_tau_tau_2h){
+          Pvectsz[ptsz->index_md] = ptsz->index_md_tau_tau_2h;
+          Pvectsz[ptsz->index_has_electron_density] = 1;
+          Pvectsz[ptsz->index_multipole] = (double) (index_integrand - ptsz->index_integrand_id_tau_tau_2h_first);
+          if (ptsz->sz_verbose > 0) printf("computing cl^tau_tau_2h @ ell_id = %.0f\n",Pvectsz[ptsz->index_multipole]);
+        }
        else if (index_integrand>=ptsz->index_integrand_id_gal_lens_hf_first && index_integrand <= ptsz->index_integrand_id_gal_lens_hf_last && ptsz->has_gal_lens_hf){
           Pvectsz[ptsz->index_md] = ptsz->index_md_gal_lens_hf;
           // Pvectsz[ptsz->index_has_galaxy] = 1;
@@ -6783,6 +6806,30 @@ if (_bk_ttg_at_z_3h_){
                                   /(2*_PI_);
 
 }
+
+
+// Collect exe 1-halo at each multipole:
+// result in y-units (dimensionless)
+// [l(l+1)/2pi]*cl
+if (_tau_tau_1h_){
+ int index_l = (int) Pvectsz[ptsz->index_multipole];
+ ptsz->cl_tau_tau_1h[index_l] = Pvectsz[ptsz->index_integral]
+                                 *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                                 /(2*_PI_);
+
+}
+
+// Collect exe 2-halo at each multipole:
+// result in y-units (dimensionless)
+// [l(l+1)/2pi]*cl
+if (_tau_tau_2h_){
+ int index_l = (int) Pvectsz[ptsz->index_multipole];
+ ptsz->cl_tau_tau_2h[index_l] = Pvectsz[ptsz->index_integral]
+                                 *ptsz->ell[index_l]*(ptsz->ell[index_l]+1.)
+                                 /(2*_PI_);
+
+}
+
 
 
 // Collect gxlens 1-halo at each multipole:
@@ -9880,6 +9927,62 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
                                              *pvectsz[ptsz->index_tau_profile]
                                              *pvectsz[ptsz->index_halo_bias];
             }
+        }
+
+   else if (_tau_tau_1h_){
+    // kl = 1e-1;
+    // m_delta_gal = 5e13;
+    // r_delta_gal = 0.3;
+    // c_delta_gal = 8.;
+    // pvectsz[ptsz->index_z] = 0.3;
+    // pvectsz[ptsz->index_chi2] = 13.4;
+    // pvecback[pba->index_bg_ang_distance] = 789.9;
+
+             // int index_l = (int) pvectsz[ptsz->index_multipole];
+             // pvectsz[ptsz->index_multipole_for_lensing_profile] = ptsz->ell[index_l];
+             evaluate_tau_profile(kl,pvecback,pvectsz,pba,ptsz);             // pvectsz[ptsz->index_multipole_for_galaxy_profile] =  ptsz->ell[index_l];
+             // evaluate_galaxy_profile_2h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
+    // printf("lens = %.8e gal = %.8e\n",pvectsz[ptsz->index_lensing_profile],pvectsz[ptsz->index_galaxy_profile]);
+    //
+    //          exit(0);
+             pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
+                                               *pvectsz[ptsz->index_tau_profile]
+                                               *pvectsz[ptsz->index_tau_profile]
+                                               *damping_1h_term;
+          }
+   else if (_tau_tau_2h_){
+
+
+            // if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
+
+            evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
+            int index_l = (int) pvectsz[ptsz->index_multipole];
+            pvectsz[ptsz->index_multipole_for_galaxy_profile] =  ptsz->ell[index_l];
+            evaluate_tau_profile(kl,pvecback,pvectsz,pba,ptsz);
+            // evaluate_galaxy_profile_2h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
+            pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_hmf]
+                                             *pvectsz[ptsz->index_tau_profile]
+                                             *pvectsz[ptsz->index_halo_bias];
+
+
+            // }
+
+            // if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
+
+            // evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
+
+            // int index_l = (int) pvectsz[ptsz->index_multipole];
+
+
+            // pvectsz[ptsz->index_multipole_for_lensing_profile] = ptsz->ell[index_l];
+            // evaluate_lensing_profile(kl,m_delta_lensing,r_delta_lensing,c_delta_lensing,pvecback,pvectsz,pba,ptsz);
+            // evaluate_tau_profile(kl,pvecback,pvectsz,pba,ptsz);
+            // double tau_profile_at_ell_1 = pvectsz[ptsz->index_tau_profile];
+
+            // pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_hmf]
+            //                                  *pvectsz[ptsz->index_tau_profile]
+            //                                  *pvectsz[ptsz->index_halo_bias];
+            // }
         }
 
   else if (_gal_gal_1h_){
@@ -18119,6 +18222,32 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 printf("ell = %e\t\t cl_tau_gal (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_tau_gal_2h[index_l]);
 }
 }
+
+if (ptsz->has_tau_tau_1h){
+printf("\n\n");
+printf("##########################################################\n");
+printf("electron x electron power spectrum 1-halo term:\n");
+printf("##########################################################\n");
+printf("\n");
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_tau_tau (1h) = %e \n",ptsz->ell[index_l],ptsz->cl_tau_tau_1h[index_l]);
+}
+}
+if (ptsz->has_tau_tau_2h){
+printf("\n\n");
+printf("##########################################################\n");
+printf("electron x electron power spectrum 2-halo term:\n");
+printf("##########################################################\n");
+printf("\n");
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_tau_tau (2h) = %e \n",ptsz->ell[index_l],ptsz->cl_tau_tau_2h[index_l]);
+}
+}
+
 if (ptsz->has_gal_lens_1h){
 printf("\n\n");
 printf("##########################################################\n");
@@ -19063,6 +19192,8 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       +ptsz->has_kSZ_kSZ_2h
       +ptsz->has_tau_gal_1h
       +ptsz->has_tau_gal_2h
+      +ptsz->has_tau_tau_1h
+      +ptsz->has_tau_tau_2h
       +ptsz->has_kSZ_kSZ_tSZ_3h
       +ptsz->has_kSZ_kSZ_lensmag_1halo
       +ptsz->has_electron_density != _FALSE_){
@@ -19265,17 +19396,17 @@ if (
     else if (ptsz->delta_def_electron_density == 2){
       ptsz->has_500c = 1;
     }
-    ptsz->has_galaxy = 1;
+    // ptsz->has_galaxy = 1;
 
-    if (ptsz->delta_def_galaxies == 0){
-      ptsz->has_200m = 1;
-    }
-    else if (ptsz->delta_def_galaxies == 1){
-      ptsz->has_200c = 1;
-    }
-    else if (ptsz->delta_def_galaxies == 2){
-      ptsz->has_500c = 1;
-    }
+    // if (ptsz->delta_def_galaxies == 0){
+    //   ptsz->has_200m = 1;
+    // }
+    // else if (ptsz->delta_def_galaxies == 1){
+    //   ptsz->has_200c = 1;
+    // }
+    // else if (ptsz->delta_def_galaxies == 2){
+    //   ptsz->has_500c = 1;
+    // }
 
   }
 
@@ -19794,6 +19925,8 @@ if (ptsz->need_hmf){
    //class_alloc(ptsz->cl_tSZ_cib_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_tau_gal_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_tau_gal_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   class_alloc(ptsz->cl_tau_tau_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
+   class_alloc(ptsz->cl_tau_tau_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_gal_gal_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_custom1_custom1_1h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
    class_alloc(ptsz->cl_custom1_custom1_2h,sizeof(double *)*ptsz->nlSZ,ptsz->error_message);
@@ -19930,6 +20063,8 @@ if (ptsz->need_hmf){
       //ptsz->cl_cib_cib_2h[index_l] = 0.;
       ptsz->cl_tau_gal_1h[index_l] = 0.;
       ptsz->cl_tau_gal_2h[index_l] = 0.;
+      ptsz->cl_tau_tau_1h[index_l] = 0.;
+      ptsz->cl_tau_tau_2h[index_l] = 0.;
       ptsz->cl_gal_lens_1h[index_l] = 0.;
       ptsz->cl_gal_lens_2h[index_l] = 0.;
       ptsz->cl_gal_lens_hf[index_l] = 0.;
@@ -20393,6 +20528,15 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
    ptsz->index_integrand_id_tau_gal_2h_first = last_index_integrand_id + 1;
    ptsz->index_integrand_id_tau_gal_2h_last = ptsz->index_integrand_id_tau_gal_2h_first + ptsz->nlSZ - 1;
    last_index_integrand_id = ptsz->index_integrand_id_tau_gal_2h_last;
+
+
+   ptsz->index_integrand_id_tau_tau_1h_first = last_index_integrand_id + 1;
+   ptsz->index_integrand_id_tau_tau_1h_last = ptsz->index_integrand_id_tau_tau_1h_first + ptsz->nlSZ - 1;
+   last_index_integrand_id = ptsz->index_integrand_id_tau_tau_1h_last;
+
+   ptsz->index_integrand_id_tau_tau_2h_first = last_index_integrand_id + 1;
+   ptsz->index_integrand_id_tau_tau_2h_last = ptsz->index_integrand_id_tau_tau_2h_first + ptsz->nlSZ - 1;
+   last_index_integrand_id = ptsz->index_integrand_id_tau_tau_2h_last;
 
    ptsz->index_integrand_id_lens_lensmag_hf_first = last_index_integrand_id + 1;
    ptsz->index_integrand_id_lens_lensmag_hf_last = ptsz->index_integrand_id_lens_lensmag_hf_first + ptsz->nlSZ - 1;
