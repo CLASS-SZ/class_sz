@@ -9438,8 +9438,11 @@ for (index_pvectsz=0;
 
 
   // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = log(result);
+  if (result < 0.){
+    result = 1e-100;
+  }
   ptsz->array_profile_ln_PgNFW_at_lnl_over_ls[index_l] = log(result);
-  // printf("ell/ells = %.3e ln_pgnfw = %.3e\n",exp(ptsz->array_profile_ln_k_over_ls[index_l]),log(result));
+  // printf("ell/ells = %.3e ln_pgnfw = %.3e result = %.3e\n",exp(ptsz->array_profile_ln_l_over_ls[index_l]),log(result),result);
   // printf("ell/ells = %.3e ln_pgnfw = %.3e\n",exp(ptsz->array_profile_ln_k_over_ls[index_l]),log(result));
 
 
