@@ -1204,8 +1204,15 @@ else{
 if (electron_pressure_comps != _FALSE_){
   if (ptsz->sz_verbose>1)
     printf("-> start tabulation of gas pressure profile.\n");
-  if (ptsz->pressure_profile == 3)
-  tabulate_gas_pressure_profile_gNFW(pba,ptsz);
+  if (ptsz->pressure_profile == 3){
+    if (ptsz->use_fft_for_profiles_transform){
+      tabulate_gas_pressure_profile_gNFW_fft(pba,ptsz);
+    }
+    else{
+      tabulate_gas_pressure_profile_gNFW(pba,ptsz);
+    }
+  }
+
   else if (ptsz->pressure_profile == 4){
       if (ptsz->use_fft_for_profiles_transform){
         tabulate_gas_pressure_profile_B12_fft(pba,ptsz);
@@ -4362,8 +4369,16 @@ if (ptsz->has_custom1){
 if (electron_pressure_comps != _FALSE_){
     if (ptsz->sz_verbose>5) printf("-> freeing pressure.\n");
     if (ptsz->pressure_profile == 3){
-       free(ptsz->array_profile_ln_l_over_ls);
-       free(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls);
+
+       if (ptsz->use_fft_for_profiles_transform){
+         free(ptsz->array_pressure_profile_ln_k);
+         free(ptsz->array_pressure_profile_ln_p_at_lnk);
+       }
+       else{
+          free(ptsz->array_profile_ln_l_over_ls);
+          free(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls);
+       }
+       
        }
 
     if(ptsz->pressure_profile == 4){
@@ -12085,17 +12100,26 @@ double evaluate_pressure_profile(double kl,
       // lnx_asked = log(kl*chi/pvectsz[ptsz->index_l500]);
       lnx_asked = log(kl*(1.+z)*pvectsz[ptsz->index_r500]);
 
-      if(lnx_asked<ptsz->array_profile_ln_l_over_ls[0] || _mean_y_ || _dydz_) // large scale limit
-         result = ptsz->array_profile_ln_PgNFW_at_lnl_over_ls[0];
-      else if (lnx_asked>ptsz->array_profile_ln_l_over_ls[ptsz->array_profile_ln_PgNFW_at_lnl_over_ls_size-1])
-         result = -100.;
-      else
-        result = pwl_value_1d(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls_size,
-                              ptsz->array_profile_ln_l_over_ls,
-                              ptsz->array_profile_ln_PgNFW_at_lnl_over_ls,
-                              lnx_asked);
+      if (ptsz->use_fft_for_profiles_transform){
 
-      result = exp(result);
+        result = get_gas_pressure_profile_at_k(exp(lnx_asked),ptsz);
+
+      }
+      else{
+
+        if(lnx_asked<ptsz->array_profile_ln_l_over_ls[0] || _mean_y_ || _dydz_) // large scale limit
+          result = ptsz->array_profile_ln_PgNFW_at_lnl_over_ls[0];
+        else if (lnx_asked>ptsz->array_profile_ln_l_over_ls[ptsz->array_profile_ln_PgNFW_at_lnl_over_ls_size-1])
+          result = -100.;
+        else
+          result = pwl_value_1d(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls_size,
+                                ptsz->array_profile_ln_l_over_ls,
+                                ptsz->array_profile_ln_PgNFW_at_lnl_over_ls,
+                                lnx_asked);
+
+        result = exp(result);
+
+      }
       // printf("lnx_asked = %.3e pp=%.3e\n",lnx_asked ,result);
 
    }
