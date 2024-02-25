@@ -9439,7 +9439,9 @@ for (index_pvectsz=0;
 
   // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = log(result);
   if (result < 0.){
-    result = 1e-100;
+    result = 1e-10;
+    // printf("negative result.!!\n");
+    // exit(0);
   }
   ptsz->array_profile_ln_PgNFW_at_lnl_over_ls[index_l] = log(result);
   // printf("ell/ells = %.3e ln_pgnfw = %.3e result = %.3e\n",exp(ptsz->array_profile_ln_l_over_ls[index_l]),log(result),result);
@@ -9518,7 +9520,7 @@ else{
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 3000;
+  int size_w = 20000;
   w = gsl_integration_workspace_alloc(size_w);
 
 
@@ -9530,7 +9532,7 @@ else{
 
   w0 = kl; // this is (l+1/2)/ls (see eq. 2 in komatsu & seljak)
 
-  wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,50);
+  wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,300);
 
   struct Parameters_for_integrand_gas_pressure_profile V;
   V.ptsz = ptsz;
@@ -24875,6 +24877,198 @@ free(array_m200c_to_m500c_at_z_and_M);
 return _SUCCESS_;
 }
 
+int tabulate_m500c_to_m200m(struct background * pba,
+                            struct tszspectrum * ptsz){
+
+  //Array of z
+  // double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  // z_min = r8_min(z_min,ptsz->z_for_pk_hm);
+  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  // z_max = r8_min(z_max,ptsz->z_for_pk_hm);
+  int index_z;
+
+  double tstart, tstop;
+  int index_l;
+
+  double * pvecback;
+  double * pvectsz;
+  int abort;
+
+  //Array of M in Msun/h
+  double logM_min = log(ptsz->M1SZ_dndlnM); //in Msun/h
+  double logM_max = log(ptsz->M2SZ_dndlnM); //in Msun/h
+  int index_M;
+
+  int index_z_M = 0;
+
+  double ** array_m200m_to_m500c_at_z_and_M;
+
+  class_alloc(ptsz->array_ln_1pz_m500c_to_m200m,sizeof(double *)*ptsz->n_z_dndlnM,ptsz->error_message);
+  class_alloc(ptsz->array_m_m500c_to_m200m,sizeof(double *)*ptsz->n_m_dndlnM,ptsz->error_message);
+
+
+class_alloc(ptsz->array_m500c_to_m200m_at_z_and_M,
+            sizeof(double *)*ptsz->n_z_dndlnM*ptsz->n_m_dndlnM,
+            ptsz->error_message);
+
+
+class_alloc(array_m200m_to_m500c_at_z_and_M,
+            ptsz->n_z_dndlnM*sizeof(double *),
+            ptsz->error_message);
+
+
+for (index_l=0;
+     index_l<ptsz->n_z_dndlnM;
+     index_l++)
+{
+  class_alloc(array_m200m_to_m500c_at_z_and_M[index_l],
+              ptsz->n_m_dndlnM*sizeof(double),
+              ptsz->error_message);
+}
+
+
+//Parallelization of Sigma2(R,z) computation
+/* initialize error management flag */
+abort = _FALSE_;
+/* beginning of parallel region */
+
+int number_of_threads= 1;
+#ifdef _OPENMP
+#pragma omp parallel
+  {
+    number_of_threads = omp_get_num_threads();
+  }
+#endif
+
+#pragma omp parallel \
+shared(abort,index_z_M,\
+pba,ptsz,z_min,z_max,logM_min,logM_max)\
+private(tstart, tstop,index_M,index_z,pvecback,pvectsz) \
+num_threads(number_of_threads)
+{
+
+#ifdef _OPENMP
+  tstart = omp_get_wtime();
+#endif
+
+
+  class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+
+  class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+#pragma omp for schedule (dynamic)
+for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++)
+{
+
+#pragma omp flush(abort)
+
+for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
+{
+      ptsz->array_ln_1pz_m500c_to_m200m[index_z] =
+                                      log(1.+z_min)
+                                      +index_z*(log(1.+z_max)-log(1.+z_min))
+                                      /(ptsz->n_z_dndlnM-1.); // log(1+z)
+
+      ptsz->array_m_m500c_to_m200m[index_M] =
+                                    logM_min
+                                    +index_M*(logM_max-logM_min)
+                                    /(ptsz->n_m_dndlnM-1.); //log(R)
+
+      //background quantities @ z:
+      double z =   exp(ptsz->array_ln_1pz_m500c_to_m200m[index_z])-1.;
+      double logM =   ptsz->array_m_m500c_to_m200m[index_M];
+      pvectsz[ptsz->index_m500c] = exp(logM);
+      double tau;
+      int first_index_back = 0;
+
+
+      class_call_parallel(background_tau_of_z(pba,z,&tau),
+                 pba->error_message,
+                 pba->error_message);
+
+      class_call_parallel(background_at_tau(pba,
+                                   tau,
+                                   pba->long_info,
+                                   pba->inter_normal,
+                                   &first_index_back,
+                                   pvecback),
+                 pba->error_message,
+                 pba->error_message);
+
+
+
+
+      pvectsz[ptsz->index_z] = z;
+      pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                      *pow(_Mpc_over_m_,1)
+                                      *pow(_c_,2)
+                                      *pvecback[pba->index_bg_rho_crit]
+                                      /pow(pba->h,2);
+
+
+
+    double omega = pvecback[pba->index_bg_Omega_m];///pow(Eh,2.);
+    double delc = Delta_c_of_Omega_m(omega);
+    double rhoc = pvectsz[ptsz->index_Rho_crit];
+    double delrho = 500.*rhoc; // 200m
+    double delrho_prime = 200.*rhoc; //500c
+    double mdel = pvectsz[ptsz->index_m500c];
+
+    double mdel_prime;
+    class_call_parallel(mDEL_to_mDELprime(mdel,
+                           delrho,
+                           delrho_prime,
+                           delc,
+                           rhoc,
+                           z,
+                           &mdel_prime,
+                           ptsz,
+                           pba),
+                    ptsz->error_message,
+                    ptsz->error_message);
+    pvectsz[ptsz->index_m200m] = mdel_prime;
+
+    array_m200m_to_m500c_at_z_and_M[index_z][index_M] = log(pvectsz[ptsz->index_m200m]);
+    // printf("m = %.3e\n",array_m200m_to_m500c_at_z_and_M[index_z][index_M]);
+
+    index_z_M += 1;
+    }
+  }
+#ifdef _OPENMP
+  tstop = omp_get_wtime();
+  if (ptsz->sz_verbose > 0)
+    printf("In %s: time spent in parallel region (loop over z's) = %e s for thread %d\n",
+           __func__,tstop-tstart,omp_get_thread_num());
+#endif
+
+    free(pvecback);
+    free(pvectsz);
+    }
+if (abort == _TRUE_) return _FAILURE_;
+//end of parallel region
+
+index_z_M = 0;
+for (index_M=0; index_M<ptsz->n_m_dndlnM; index_M++)
+{
+  for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++)
+  {
+    ptsz->array_m500c_to_m200m_at_z_and_M[index_z_M] = array_m200m_to_m500c_at_z_and_M[index_z][index_M];
+    index_z_M += 1;
+  }
+}
+
+// freeing memory
+for (index_z=0; index_z<ptsz->n_z_dndlnM; index_z++)
+{
+free(array_m200m_to_m500c_at_z_and_M[index_z]);
+}
+free(array_m200m_to_m500c_at_z_and_M);
+
+return _SUCCESS_;
+}
+
 
 
 
@@ -27659,6 +27853,19 @@ double get_m500c_to_m200c_at_z_and_M(double z_asked, double m_asked, struct tszs
                           &m));
 }
 
+
+double get_m500c_to_m200m_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){
+  double z = log(1.+z_asked);
+  double m = log(m_asked);
+ return exp(pwl_interp_2d(ptsz->n_z_dndlnM,
+                          ptsz->n_m_dndlnM,
+                          ptsz->array_ln_1pz_m500c_to_m200m,
+                          ptsz->array_m_m500c_to_m200m,
+                          ptsz->array_m500c_to_m200m_at_z_and_M,
+                          1,
+                          &z,
+                          &m));
+}
 
 
 double get_m200c_to_mvir_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz){

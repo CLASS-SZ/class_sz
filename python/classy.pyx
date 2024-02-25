@@ -3712,6 +3712,9 @@ cdef class Class:
         return get_m500c_to_m200c_at_z_and_M(z,m,&self.tsz)
 
 
+    def get_m500c_to_m200m_at_z_and_M(self,z,m):
+        return get_m500c_to_m200m_at_z_and_M(z,m,&self.tsz)
+
 
     def calcFRel(self,z, M500, obsFreqGHz = 148.0):
         """Calculates relativistic correction to SZ effect at specified frequency, given z, M500 in MSun.

@@ -289,6 +289,7 @@ double delta_to_delta_prime_nfw(
   double get_m200m_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_m200c_to_m500c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_m500c_to_m200c_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
+  double get_m500c_to_m200m_at_z_and_M(double z_asked, double m_asked, struct tszspectrum * ptsz);
   double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl);
   double get_nl_index_at_z_and_k_no_wiggles(double z_asked, double k_asked, struct tszspectrum * ptsz, struct nonlinear * pnl);
 
@@ -349,6 +350,9 @@ int tabulate_m200c_to_m500c(struct background * pba,
                             struct tszspectrum * ptsz);
 
 int tabulate_m500c_to_m200c(struct background * pba,
+                            struct tszspectrum * ptsz);
+
+int tabulate_m500c_to_m200m(struct background * pba,
                             struct tszspectrum * ptsz);
   int redshift_int_lensmag(
                     struct tszspectrum * ptsz,

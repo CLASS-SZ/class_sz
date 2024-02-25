@@ -2057,6 +2057,11 @@ double * steps_m;
   double * array_ln_1pz_m500c_to_m200c;
   double * array_m500c_to_m200c_at_z_and_M;
 
+
+  double * array_m_m500c_to_m200m;
+  double * array_ln_1pz_m500c_to_m200m;
+  double * array_m500c_to_m200m_at_z_and_M;
+
   double ** array_custom1_profile_u_at_lnk_lnm_ln1pz;
   double ** array_custom1_profile_u_at_lnx_lnm_ln1pz;
   double * array_custom1_profile_ln_k;

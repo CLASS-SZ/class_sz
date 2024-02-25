@@ -2262,10 +2262,15 @@ else{
         double m_ym = mp;
 
 
+    
 
         if (ptsz->integrate_wrt_m200m == 1){
+        // if (ptsz->sz_verbose > 3)
+        //   printf("figuring out masses : %.3e %.3e\n",mp, zp);
+        
           m500c = get_m200m_to_m500c_at_z_and_M(zp,mp,ptsz);
           m200c = get_m200m_to_m200c_at_z_and_M(zp,mp,ptsz);
+
         }
         else if (ptsz->integrate_wrt_m200c == 1){
           m200c = mp;
