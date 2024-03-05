@@ -9218,12 +9218,14 @@ for (index_m=0;
   double k = exp(ptsz->array_pressure_profile_ln_k[index_k]); // l/ls
 // printf("calling ft\n");
 
-if (ptsz->sz_verbose>1)
-  printf("--->In parallel region B12 (class_sz_tool.c) k = %.3e m = %.3e z = %.3e\n",
-        k,
-        exp(lnM),
-        z);
+// if (ptsz->sz_verbose>1)
+//   printf("--->In parallel region B12 (class_sz_tool.c) k = %.3e m = %.3e z = %.3e\n",
+//         k,
+//         exp(lnM),
+//         z);
 
+  double l = sqrt(pvectsz[ptsz->index_chi2])*k-0.5;
+  // printf("l = %.5e\n",l);
 
   double tau;
   int first_index_back = 0;
@@ -9264,26 +9266,32 @@ if (ptsz->sz_verbose>1)
 
   double result;
   pvectsz[ptsz->index_m200c] = exp(lnM);
-  // class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
-  //                                  200.*(pvectsz[ptsz->index_Rho_crit]),
-  //                                  pvectsz[ptsz->index_Delta_c],
-  //                                  pvectsz[ptsz->index_Rho_crit],
-  //                                  z,
-  //                                  &pvectsz[ptsz->index_mVIR],
-  //                                  ptsz,
-  //                                  pba),
-  //                 ptsz->error_message,
-  //                 ptsz->error_message);
-  if (ptsz->sz_verbose>1)
-    printf("----> tab B12 getting mvir\n");
+  class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
+                                   200.*(pvectsz[ptsz->index_Rho_crit]),
+                                   pvectsz[ptsz->index_Delta_c],
+                                   pvectsz[ptsz->index_Rho_crit],
+                                   z,
+                                   &pvectsz[ptsz->index_mVIR],
+                                   ptsz,
+                                   pba),
+                  ptsz->error_message,
+                  ptsz->error_message);
+  // if (ptsz->sz_verbose>1)
+  //   printf("----> tab B12 getting mvir = %.5e\n",pvectsz[ptsz->index_mVIR]);
+  double mvir  = pvectsz[ptsz->index_mVIR];
 
-  if (ptsz->truncate_gas_pressure_wrt_rvir)
-    pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
-  else
-    pvectsz[ptsz->index_mVIR] = pvectsz[ptsz->index_m200c];
+  // if (ptsz->truncate_gas_pressure_wrt_rvir){
+  
+  //   pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
+  //   if (ptsz->sz_verbose>1){
+  //       printf("truncating wrt rvir\n");
+  //     }
+  // }
+  // else
+  //   pvectsz[ptsz->index_mVIR] = pvectsz[ptsz->index_m200c];
     
-  if (ptsz->sz_verbose>1)
-    printf("----> tab B12 got mvir = %.3e\n",pvectsz[ptsz->index_mVIR]);
+  // if (ptsz->sz_verbose>1)
+  //   printf("----> tab B12 got mvir = %.3e ratio = %.18e\n",pvectsz[ptsz->index_mVIR], pvectsz[ptsz->index_mVIR]/mvir);
  //
  //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
   pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
@@ -9311,6 +9319,15 @@ if (ptsz->sz_verbose>1)
   // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = log(result);
   ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k][index_m_z] = result;
   // printf("ell = %.3e z = %.3e m = %.3e lnrho = %.3e\n",ell,z,exp(lnM),log(result));
+
+  printf("--------->In parallel region B12 (class_sz_tool.c) k = %.5e l = %.5e m = %.5e z = %.5e res = %.5e\n",
+        k,
+        l,
+        exp(lnM),
+        z,
+        result);
+
+
   index_m_z += 1;
      }
 
@@ -9783,7 +9800,7 @@ else{
   gsl_integration_workspace * w;
   gsl_integration_qawo_table * wf;
 
-  int size_w = 20000;
+  int size_w = 3000;
   w = gsl_integration_workspace_alloc(size_w);
 
 
@@ -9795,7 +9812,7 @@ else{
 
   w0 = kl; // this is (l+1/2)/ls (see eq. 2 in komatsu & seljak)
 
-  wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,300);
+  wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,50);
 
   struct Parameters_for_integrand_gas_pressure_profile V;
   V.ptsz = ptsz;
@@ -9825,6 +9842,8 @@ else{
   // QAWO --> END
 
   // FFTLog
+
+  // printf("class_sz.c res = %.3e\n",result_gsl);
 
 
   return _SUCCESS_;

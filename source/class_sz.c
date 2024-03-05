@@ -7841,6 +7841,15 @@ double damping_1h_term;
       exit(0);
     }
 
+    // if (ptsz->ell[index_l] == 9.950000e+03){
+    //   printf("debug in class_sz.c\n");
+    //   printf("hmf = %.3e\n",pvectsz[ptsz->index_hmf]);
+    //   printf("comp = %.3e\n",pvectsz[ptsz->index_completeness]);
+    //   printf("pressure_profile_at_ell = %.3e\n",pow(pressure_profile_at_ell,2.));
+    //   printf("damping_1h_term = %.3e\n",damping_1h_term);
+    //   exit(0);
+    // }
+
     }
 
 
@@ -12079,6 +12088,7 @@ double evaluate_pressure_profile(double kl,
          pvectsz[ptsz->index_m500] = pvectsz[ptsz->index_m500c]/ptsz->HSEbias;
          // printf("m500 = %.3e\n",pvectsz[ptsz->index_m500]);
          //r500 X-ray for the pressure profiles A10 and P13
+         // BB: careful here, r500 should be computed with m500 (i.e., biased mass) not m500c!
          pvectsz[ptsz->index_r500] = pow(3.*pvectsz[ptsz->index_m500]/(4.*_PI_*500.*pvectsz[ptsz->index_Rho_crit]),1./3.); //in units of h^-1 Mpc
          // printf("r500 = %.3e\n",pvectsz[ptsz->index_r500]);
          pvectsz[ptsz->index_l500] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r500];
@@ -12098,6 +12108,7 @@ double evaluate_pressure_profile(double kl,
        }
 
       // lnx_asked = log(kl*chi/pvectsz[ptsz->index_l500]);
+      // lnx_asked = log(kl*(1.+z)*pvectsz[ptsz->index_r500]);
       lnx_asked = log(kl*(1.+z)*pvectsz[ptsz->index_r500]);
 
       if (ptsz->use_fft_for_profiles_transform){
@@ -12388,22 +12399,27 @@ double get_pressure_P_over_P_delta_at_x_M_z_b12_200c(double x_asked,
   double x = x_asked;
   double z = z_asked;
 
-  if (m200_over_msol > mcut) {
 
-  // P0 = A_P0*pow(m200_over_msol/1e14,alpha_m_P0)*pow(1.+z,alpha_z_P0);
-  // xc = A_xc*pow(m200_over_msol/1e14,alpha_m_xc)*pow(1.+z,alpha_z_xc);
-  // beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
+  P0 = A_P0*pow(m200_over_msol/1e14,alpha_m_P0)*pow(1.+z,alpha_z_P0);
+  xc = A_xc*pow(m200_over_msol/1e14,alpha_m_xc)*pow(1.+z,alpha_z_xc);
+  beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
 
-    P0 = A_P0*pow(m200_over_msol/mcut,alpha_m_P0)*pow(1.+z,alpha_z_P0)*pow(1.+c_asked,alpha_c_P0);
-    xc = A_xc*pow(m200_over_msol/mcut,alpha_m_xc)*pow(1.+z,alpha_z_xc)*pow(1.+c_asked,alpha_c_xc);
-    beta = A_beta*pow(m200_over_msol/mcut,alpha_m_beta)*pow(1.+z,alpha_z_beta)*pow(1.+c_asked,alpha_c_beta);
+//   if (m200_over_msol > mcut) {
 
-}
-else {
-  P0 = A_P0*pow(m200_over_msol/mcut,alphap_m_P0)*pow(1.+z,alpha_z_P0)*pow(1.+c_asked,alpha_c_P0);
-  xc = A_xc*pow(m200_over_msol/mcut,alphap_m_xc)*pow(1.+z,alpha_z_xc)*pow(1.+c_asked,alpha_c_xc);
-  beta = A_beta*pow(m200_over_msol/mcut,alphap_m_beta)*pow(1.+z,alpha_z_beta)*pow(1.+c_asked,alpha_c_beta);
-}
+//   // P0 = A_P0*pow(m200_over_msol/1e14,alpha_m_P0)*pow(1.+z,alpha_z_P0);
+//   // xc = A_xc*pow(m200_over_msol/1e14,alpha_m_xc)*pow(1.+z,alpha_z_xc);
+//   // beta = A_beta*pow(m200_over_msol/1e14,alpha_m_beta)*pow(1.+z,alpha_z_beta);
+
+//     P0 = A_P0*pow(m200_over_msol/mcut,alpha_m_P0)*pow(1.+z,alpha_z_P0)*pow(1.+c_asked,alpha_c_P0);
+//     xc = A_xc*pow(m200_over_msol/mcut,alpha_m_xc)*pow(1.+z,alpha_z_xc)*pow(1.+c_asked,alpha_c_xc);
+//     beta = A_beta*pow(m200_over_msol/mcut,alpha_m_beta)*pow(1.+z,alpha_z_beta)*pow(1.+c_asked,alpha_c_beta);
+
+// }
+// else {
+//   P0 = A_P0*pow(m200_over_msol/mcut,alphap_m_P0)*pow(1.+z,alpha_z_P0)*pow(1.+c_asked,alpha_c_P0);
+//   xc = A_xc*pow(m200_over_msol/mcut,alphap_m_xc)*pow(1.+z,alpha_z_xc)*pow(1.+c_asked,alpha_c_xc);
+//   beta = A_beta*pow(m200_over_msol/mcut,alphap_m_beta)*pow(1.+z,alpha_z_beta)*pow(1.+c_asked,alpha_c_beta);
+// }
   // double gamma = -0.3;
   // double alpha = 1.0;
 
