@@ -9281,7 +9281,7 @@ if (ptsz->sz_verbose>1)
     pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
   else
     pvectsz[ptsz->index_mVIR] = pvectsz[ptsz->index_m200c];
-    
+
   if (ptsz->sz_verbose>1)
     printf("----> tab B12 got mvir = %.3e\n",pvectsz[ptsz->index_mVIR]);
  //
@@ -9401,7 +9401,7 @@ int tabulate_gas_pressure_profile_gNFW_fft(struct background * pba,
 
 
 
-////FFT part 
+////FFT part
   int n_k = ptsz->n_k_pressure_profile; // (in fact this is N_samp_fftw, see class_sz.c)
   class_alloc(ptsz->array_pressure_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
   class_alloc(ptsz->array_pressure_profile_ln_p_at_lnk,n_k*sizeof(double *),ptsz->error_message);
@@ -9423,7 +9423,7 @@ int tabulate_gas_pressure_profile_gNFW_fft(struct background * pba,
           }
         else{
 
-            double P0GNFW = 1.; // doesnt matter 
+            double P0GNFW = 1.; // doesnt matter
             double alphaGNFW = ptsz->alphaGNFW;
             double betaGNFW = ptsz->betaGNFW;
             double gammaGNFW = ptsz->gammaGNFW;
@@ -9475,7 +9475,7 @@ int tabulate_gas_pressure_profile_gNFW_fft(struct background * pba,
     // index_m_z += 1;
   } // k loop
 
-///FFT part done 
+///FFT part done
 
 
 // int abort;
@@ -9769,7 +9769,7 @@ if (ptsz->pressure_profile == 4) { //for Battaglia et al 2012 pressure profile
           }
       else{
         xout = ptsz->x_outSZ;
-        } 
+        }
     }// end Battaglia et al 2012 pressure profile
 else{
     xout = ptsz->x_outSZ; // in all other cases the truncation radius is in multiples of rs=r_delta/c_delta
@@ -10155,6 +10155,8 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
      +ptsz->has_tSZ_gallens_2h
      +ptsz->has_tSZ_gal_1h
      +ptsz->has_tSZ_gal_2h
+     +ptsz->has_ngal_tsz_1h //ola
+     +ptsz->has_ngal_tsz_2h
      +ptsz->has_tSZ_cib_1h
      +ptsz->has_tSZ_cib_2h
      +ptsz->has_tSZ_lens_1h
@@ -13293,7 +13295,7 @@ double integrand_redshift(double ln1pz, void *p){
 
 
   double kl;
- 
+
 
   // critical density at z in (Msun/h)/(Mpc/h)^3
   V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
@@ -13403,7 +13405,7 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
       double pkl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
       double bnl = V->ptsz->bnl;
       result = bg*bg_prime*pkl + bnl*bnl*(pknl-pkl);
-      
+
     }
 
 
@@ -13572,7 +13574,7 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
     else{
         pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
         }
-    
+
     result = pk1;
     int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
     evaluate_effective_galaxy_bias_ngal(index_g,V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -13581,12 +13583,12 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
 
 
     if (V->ptsz->use_nl_bias){
-      
+
       double pknl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
       double pkl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
       double bnl = V->ptsz->bnl;
       result = bg*pkl + bnl*(pknl-pkl);
-      
+
     }
 
 
@@ -13609,7 +13611,7 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
 //printf("ok\n");
   int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
   double l = V->ptsz->ell[index_l];
-    
+
     double pk1;
     if (V->ptsz->use_pkl_in_linbias_calc){
         pk1 =  get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -13839,6 +13841,7 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_tSZ_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_cib_2h))
  || ((V->ptsz->has_ngal_ngal_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_ngal_2h))
  || ((V->ptsz->has_ngal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_2h))
+ || ((V->ptsz->has_ngal_tsz_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_tsz_2h))
  || ((V->ptsz->has_gallens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gallens_cib_2h))
  || ((V->ptsz->has_gal_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_2h))
  || ((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
@@ -13997,6 +14000,8 @@ if ( ((V->ptsz->has_ngal_lens_1h == _TRUE_) && (index_md == V->ptsz->index_md_ng
    ||((V->ptsz->has_ngal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_2h))
    ||((V->ptsz->has_ngal_lens_hf == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_hf))
    ||((V->ptsz->has_ngal_nlensmag_hf == _TRUE_) && (index_md == V->ptsz->index_md_ngal_nlensmag_hf))
+   ||((V->ptsz->has_ngal_tsz_1h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_tsz_1h))
+   ||((V->ptsz->has_ngal_tsz_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_tsz_2h))
   ){
 // multiply by radial kernel for galaxies (squared for gxg quantities)
 
@@ -15660,6 +15665,52 @@ else{
   r = r_m_1*r_m_2;
   }
 
+  else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_ngal_tsz_2h){
+  double r_m_1; // first part of redshift integrand
+  double r_m_2; // second part of redshift integrand
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+  // integrate over the whole mass range ('gal' part)
+  r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+     double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+     r_m_1 += bmin_umin;
+     // printf("counter terms done r_m_1\n");
+  }
+
+
+  pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+  V.pvectsz = pvectsz;
+  params = &V;
+
+
+  // integrate over the whole mass range ('Phi' part)
+  r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                           epsrel, epsabs,
+                                           integrand_mass,
+                                           params,ptsz->patterson_show_neval);
+
+   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+   r_m_2 += bmin_umin;
+
+  }
+  r = r_m_1*r_m_2;
+  }
 
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_tSZ_2h){
   double r_m_11; // first part of redshift integrand
@@ -20077,7 +20128,7 @@ double integrand_hmf_counter_terms_b1min(double lnM_halo, void *p){
       V->ptsz->has_ng_in_bh = store_ng_in_bh;
       // done with that !
 
-      
+
       double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       result *= b1;
 
