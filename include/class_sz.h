@@ -2758,6 +2758,11 @@ double radial_kernel_W_galaxy_ngal_at_z(  int index_g,
                                           struct background * pba,
                                           struct tszspectrum * ptsz);
 
+double radial_kernel_W_galaxy_lensing_magnification_nlensmag_at_z( int index_g,
+                                                          double z,
+                                                          double * pvectsz,
+                                                          struct background * pba,
+                                                          struct tszspectrum * ptsz);
 // used for the linear bias cases.
 double radial_kernel_W_lensing_at_z(double * pvecback,
                                     double * pvectsz,
