@@ -2080,11 +2080,17 @@ double * steps_m;
   double * array_pressure_profile_ln_pressure_2h_at_k_and_z;
   double * array_pressure_profile_pressure_2h_at_r_and_z;
 
+  double * array_pressure_profilel_ln_m;
+  double * array_pressure_profilel_ln_1pz;
+  double * array_pressure_profile_ln_l;
+  double ** array_pressure_profile_ln_p_at_lnl_lnm_z;
+
   double ** array_profile_ln_rho_at_lnk_lnM_z;
   double * array_profile_ln_r;
   double * array_profile_ln_k;
   double * array_profile_ln_m;
   double * array_profile_ln_1pz;
+
 
   // int n_m_matter_density_profile;
 
@@ -2544,6 +2550,10 @@ int tabulate_gas_pressure_profile_gNFW_fft(struct background * pba,
 
 int tabulate_gas_pressure_profile_B12(struct background * pba,
                                       struct tszspectrum * ptsz);
+
+int tabulate_gas_pressure_profile_B12_l(struct background * pba,
+                                      struct tszspectrum * ptsz);
+
 
 int tabulate_gas_pressure_profile_B12_fft(struct background * pba,
                                           struct tszspectrum * ptsz);

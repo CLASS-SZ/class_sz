@@ -702,6 +702,12 @@ double get_gas_pressure_profile_at_k_m_z(double l_asked,
                                     double z_asked,
                                     struct tszspectrum * ptsz);
 
+double get_gas_pressure_profile_at_l_m_z(double l_asked,
+                                          double m_asked,
+                                          double z_asked,
+                                          struct tszspectrum * ptsz);
+
+
 double get_gas_pressure_profile_at_k(double k_asked,
                                     struct tszspectrum * ptsz);
 
