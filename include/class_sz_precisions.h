@@ -98,6 +98,7 @@ class_sz_ptsz_parameter(szcounts_fft_sigmayobs_max,double,1e-2)
 class_sz_ptsz_parameter(n_k_pressure_profile,int,50)
 class_sz_ptsz_parameter(n_k_pressure_profile_2h,int,50)
 class_sz_ptsz_parameter(n_m_pressure_profile,int,30)
+class_sz_ptsz_parameter(n_l_pressure_profile,int,30)
 class_sz_ptsz_parameter(n_z_pressure_profile,int,30)
 
 class_sz_ptsz_parameter(n_k_custom1_profile,int,30)
@@ -202,8 +203,13 @@ class_sz_ptsz_parameter(k_min_samp_fftw,double,1e-12)
 class_sz_ptsz_parameter(k_max_samp_fftw,double,1e9)
 class_sz_ptsz_parameter(k_min_gas_density_profile,double,1e-3)
 class_sz_ptsz_parameter(k_max_gas_density_profile,double,1e1)
+
 class_sz_ptsz_parameter(k_min_gas_pressure_profile,double,1e-2)
 class_sz_ptsz_parameter(k_max_gas_pressure_profile,double,1e2)
+
+
+class_sz_ptsz_parameter(l_min_gas_pressure_profile,double,1e-2)
+class_sz_ptsz_parameter(l_max_gas_pressure_profile,double,1e4)
 
 class_sz_ptsz_parameter(fstar_ms,double,0.)
 

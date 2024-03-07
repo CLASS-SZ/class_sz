@@ -541,7 +541,25 @@ int class_sz_tabulate_init(
         printf("->Class_sz computations. Initialization.\n");
 
   if (ptsz->use_fft_for_profiles_transform){
-    ptsz->n_k_pressure_profile = ptsz->N_samp_fftw;
+    // ptsz->n_k_pressure_profile = ptsz->N_samp_fftw;
+
+    // // ptsz->n_k_pressure_profile = ptsz->n_l_pressure_profile;
+    // int index_l;
+    // double lnl_min = log(ptsz->l_min_gas_pressure_profile);
+    // double lnl_max = log(ptsz->l_max_gas_pressure_profile);
+    // int n_l = ptsz->n_k_pressure_profile;
+    // class_alloc(ptsz->array_pressure_profile_ln_k,sizeof(double *)*n_l,ptsz->error_message);
+
+
+    // for (index_l=0;
+    //     index_l<n_l;
+    //     index_l++)
+    //   {
+    //     ptsz->array_pressure_profile_ln_k[index_l] = lnl_min
+    //                                         +index_l*(lnl_max-lnl_min)
+    //                                         /(n_l-1.);
+    //   }
+
     if (ptsz->tau_profile != 0) // dont change that if scaled nfw:
       ptsz->n_k_density_profile = ptsz->N_samp_fftw;
   }
@@ -1216,15 +1234,50 @@ if (electron_pressure_comps != _FALSE_){
   else if (ptsz->pressure_profile == 4){
       if (ptsz->use_fft_for_profiles_transform){
         tabulate_gas_pressure_profile_B12_fft(pba,ptsz);
-        // exit(0);
+        // tabulate_gas_pressure_profile_B12_l(pba,ptsz);
+      //   // exit(0);
         }
       else{
-        tabulate_gas_pressure_profile_B12(pba,ptsz);
+        tabulate_gas_pressure_profile_B12_l(pba,ptsz);
+      //   tabulate_gas_pressure_profile_B12_fft(pba,ptsz);
+       
         }
       }
+
   if (ptsz->sz_verbose>1)
     printf("-> done with tabulation of gas pressure profile.\n");
     }
+
+// int index_z, index_m, index_l;
+// int n_z = ptsz->n_z_pressure_profile;
+// int n_l = ptsz->n_l_pressure_profile;
+// int n_m = ptsz->n_m_pressure_profile;
+
+// int index_m_z = 0;
+//   for (index_z=0;
+//      index_z<n_z;
+//      index_z++)
+// {
+
+//   for (index_m=0;
+//      index_m<n_m;
+//      index_m++){
+
+// index_m_z += 1;
+
+//       for (index_l=0;
+//      index_l<n_l;
+//      index_l++)
+// {
+
+// printf("iz im il = %d %d %d r = %.5e\n",index_z,index_m,index_l,ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[index_l][index_m_z]);
+
+// }
+//      }
+
+// }
+
+//   exit(0);
 
 
 if (ptsz->has_dcib0dz){
@@ -4382,23 +4435,47 @@ if (electron_pressure_comps != _FALSE_){
        }
 
     if(ptsz->pressure_profile == 4){
+      
       if (ptsz->sz_verbose>5) printf("-> freeing pressure B12.\n");
-      free(ptsz->array_pressure_profile_ln_k);
+
+      free(ptsz->array_pressure_profile_ln_l);
       free(ptsz->array_pressure_profile_ln_m);
       free(ptsz->array_pressure_profile_ln_1pz);
 
-       int n_k = ptsz->n_k_pressure_profile; //hard coded
-       int index_k;
-      for (index_k=0;
-           index_k<n_k;
-           index_k++)
+
+      // free(ptsz->array_pressure_profile_ln_l);
+      // free(ptsz->array_pressure_profilel_ln_m);
+      // free(ptsz->array_pressure_profilel_ln_1pz);
+
+      int n_l = ptsz->n_l_pressure_profile; //hard coded
+      int index_l;
+
+      for (index_l=0;
+          index_l<n_l;
+          index_l++)
         {
-          free(ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k]);
+          free(ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[index_l]);
         }
 
-      free(ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z);
+        free(ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z);
+
+          
+
+      // int n_l = ptsz->n_l_pressure_profile; //hard coded
+      // int index_l;
+
+      // for (index_l=0;
+      //     index_l<n_l;
+      //     index_l++)
+      //     {
+      //       free(ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[index_l]);
+      //     }
+
+      // free(ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z);
 
       }
+
+
 
     if (ptsz->has_gas_pressure_profile_2h){
       free(ptsz->array_pressure_profile_ln_r);
@@ -12028,10 +12105,10 @@ return result;
 
 
 double evaluate_pressure_profile(double kl,
-                              double * pvecback,
-                              double * pvectsz,
-                              struct background * pba,
-                              struct tszspectrum * ptsz)
+                                 double * pvecback,
+                                 double * pvectsz,
+                                 struct background * pba,
+                                 struct tszspectrum * ptsz)
 {
   double z = pvectsz[ptsz->index_z];
   double chi =  sqrt(pvectsz[ptsz->index_chi2]);
@@ -12061,19 +12138,37 @@ double evaluate_pressure_profile(double kl,
          // double m_asked = pvectsz[ptsz->index_m200m]; // in Msun/h
          double z_asked = pvectsz[ptsz->index_z];
 
+         double l_asked =  k_asked*pvectsz[ptsz->index_l200c]-0.5;
 
-         if( (log(k_asked)<ptsz->array_pressure_profile_ln_k[0]) || _mean_y_ || _dydz_){ // get large scale limit
-           result = get_gas_pressure_profile_at_k_m_z(exp(ptsz->array_pressure_profile_ln_k[0]),m_asked,z_asked,ptsz);
+         if( (log(l_asked)<ptsz->array_pressure_profile_ln_l[0]) || _mean_y_ || _dydz_){ // get large scale limit
+           l_asked = exp(ptsz->array_pressure_profile_ln_l[0]);//*pvectsz[ptsz->index_l200c]-0.5;
+           // now takes l (BB 6 march 2024)
+           result = get_gas_pressure_profile_at_l_m_z(l_asked,m_asked,z_asked,ptsz);
+
+         
          }
          // else if(log(k_asked)<ptsz->array_pressure_profile_ln_k[0]){
          //   // also large scale limit in this case
          //   result = get_gas_pressure_profile_at_k_m_z(exp(ptsz->array_pressure_profile_ln_k[0]),m_asked,z_asked,ptsz);
          // }
          else{
-           double result_tabulated = get_gas_pressure_profile_at_k_m_z(k_asked,m_asked,z_asked,ptsz);
+
+          // printf("get_gas_pressure....\n");
+
+           //now takes l (BB 6 march 2024)
+           double result_tabulated = get_gas_pressure_profile_at_l_m_z(l_asked,m_asked,z_asked,ptsz);
+
+          //  printf("result original = %.3e\n",result_tabulated);
+
+          //  double resultl_tabulated = result_tabulated;//get_gas_pressure_profile_at_l_m_z(l_asked,m_asked,z_asked,ptsz);
+
+
+          //  printf("m %.7e z %.7e l %.7e r %.7e rl %.7e ratio %.7e\n",m_asked,z_asked,l_asked,result_tabulated,resultl_tabulated,result_tabulated/resultl_tabulated);
+
            result = result_tabulated;
+        //  printf("%.7e %.7e %.7e\n",result,result_tabulated,m_asked);
+         
          }
-         // printf("%.7e %.7e %.7e\n",result,result_tabulated,m_asked);
 
    }
    //custom gNFW pressure profile at 500c

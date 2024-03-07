@@ -8494,26 +8494,89 @@ double get_gas_pressure_profile_at_k(double k_asked,
 
 
 
-double get_gas_pressure_profile_at_k_m_z(double k_asked,
+// double get_gas_pressure_profile_at_k_m_z(double k_asked,
+//                                          double m_asked,
+//                                          double z_asked,
+//                                          struct tszspectrum * ptsz){
+//   double z = log(1.+z_asked);
+//   double m = log(m_asked);
+//   double k = log(k_asked);
+
+
+//   // if (ptsz->tau_profile == 1){
+//   // find the closest l's in the grid:
+//   int id_k_low;
+//   int id_k_up;
+//   int n_k = ptsz->n_k_pressure_profile;
+//   int n_m = ptsz->n_m_pressure_profile;
+//   int n_z = ptsz->n_z_pressure_profile;
+//   r8vec_bracket(n_k,ptsz->array_pressure_profile_ln_k,k,&id_k_low,&id_k_up);
+
+//   if (id_k_low == id_k_up){
+//     printf("class_sz_tools.c bug in get_gas_pressure_profile_at_k_m_z");
+//     exit(0);
+//   }
+
+//   if (m<ptsz->array_pressure_profile_ln_m[0])
+//     return 0.;
+//   if (m>ptsz->array_pressure_profile_ln_m[n_m-1])
+//     return 0.;
+
+//   // interpolate 2d at l_low:
+
+//  double ln_rho_low = pwl_interp_2d(n_m,
+//                                 n_z,
+//                                 ptsz->array_pressure_profile_ln_m,
+//                                 ptsz->array_pressure_profile_ln_1pz,
+//                                 ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[id_k_low-1],
+//                                 1,
+//                                 &m,
+//                                 &z);
+
+//  double ln_rho_up = pwl_interp_2d(n_m,
+//                                 n_z,
+//                                 ptsz->array_pressure_profile_ln_m,
+//                                 ptsz->array_pressure_profile_ln_1pz,
+//                                 ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[id_k_up-1],
+//                                 1,
+//                                 &m,
+//                                 &z);
+//  double ln_k_low = ptsz->array_pressure_profile_ln_k[id_k_low-1];
+//  double ln_k_up = ptsz->array_pressure_profile_ln_k[id_k_up-1];
+
+
+//  double res = ln_rho_low + ((k - ln_k_low) / (ln_k_up - ln_k_low)) * (ln_rho_up - ln_rho_low);
+// //  printf("interpolating between lmin  = %.5e and lmax = %.5e got %.5e\n",exp(ln_k_low),exp(ln_k_up), res );
+
+//  return res;
+
+
+
+// }
+
+
+
+
+double get_gas_pressure_profile_at_l_m_z(double l_asked,
                                          double m_asked,
                                          double z_asked,
                                          struct tszspectrum * ptsz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
-  double k = log(k_asked);
+  double l = log(l_asked);
 
 
   // if (ptsz->tau_profile == 1){
   // find the closest l's in the grid:
-  int id_k_low;
-  int id_k_up;
-  int n_k = ptsz->n_k_pressure_profile;
+  int id_l_low;
+  int id_l_up;
+  int n_l = ptsz->n_l_pressure_profile;
   int n_m = ptsz->n_m_pressure_profile;
   int n_z = ptsz->n_z_pressure_profile;
-  r8vec_bracket(n_k,ptsz->array_pressure_profile_ln_k,k,&id_k_low,&id_k_up);
+  r8vec_bracket(n_l,ptsz->array_pressure_profile_ln_l,l,&id_l_low,&id_l_up);
 
-  if (id_k_low == id_k_up){
-    printf("bug in get_gas_pressure_profile_at_k_m_z");
+  if (id_l_low == id_l_up){
+    printf("bug in get_gas_pressure_profile_at_l_m_z");
     exit(0);
   }
 
@@ -8528,7 +8591,7 @@ double get_gas_pressure_profile_at_k_m_z(double k_asked,
                                 n_z,
                                 ptsz->array_pressure_profile_ln_m,
                                 ptsz->array_pressure_profile_ln_1pz,
-                                ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[id_k_low-1],
+                                ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[id_l_low-1],
                                 1,
                                 &m,
                                 &z);
@@ -8537,14 +8600,14 @@ double get_gas_pressure_profile_at_k_m_z(double k_asked,
                                 n_z,
                                 ptsz->array_pressure_profile_ln_m,
                                 ptsz->array_pressure_profile_ln_1pz,
-                                ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[id_k_up-1],
+                                ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[id_l_up-1],
                                 1,
                                 &m,
                                 &z);
- double ln_k_low = ptsz->array_pressure_profile_ln_k[id_k_low-1];
- double ln_k_up = ptsz->array_pressure_profile_ln_k[id_k_up-1];
+ double ln_l_low = ptsz->array_pressure_profile_ln_l[id_l_low-1];
+ double ln_l_up = ptsz->array_pressure_profile_ln_l[id_l_up-1];
 
- return ln_rho_low + ((k - ln_k_low) / (ln_k_up - ln_k_low)) * (ln_rho_up - ln_rho_low);
+ return ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low);
 
 
 
@@ -8707,11 +8770,22 @@ int tabulate_gas_pressure_profile_B12_fft(struct background * pba,
  // // array of multipoles:
  // double ln_k_min = log(ptsz->k_min_gas_pressure_profile);
  // double ln_k_max = log(ptsz->k_max_gas_pressure_profile);
- int n_k = ptsz->n_k_pressure_profile;
+
+
+double lnl_min = log(ptsz->l_min_gas_pressure_profile);
+double lnl_max = log(ptsz->l_max_gas_pressure_profile);
+
+
+ int n_l = ptsz->n_l_pressure_profile;
  int n_m = ptsz->n_m_pressure_profile;
  int n_z = ptsz->n_z_pressure_profile;
 
- class_alloc(ptsz->array_pressure_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
+class_alloc(ptsz->array_pressure_profile_ln_l,sizeof(double *)*n_l,ptsz->error_message);
+
+
+//  printf("allocate arrays.\n");
+
+//  class_alloc(ptsz->array_pressure_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
 
  // array of masses:
  double ln_m_min = log(ptsz->M1SZ);
@@ -8729,7 +8803,9 @@ int tabulate_gas_pressure_profile_B12_fft(struct background * pba,
  class_alloc(ptsz->array_pressure_profile_ln_1pz,sizeof(double *)*n_z,ptsz->error_message);
 int index_m_z;
 int index_m_z_tab[n_m][n_z];
-int index_k;
+int index_l;
+
+//  printf("allocate arrays2.\n");
 // for (index_k=0;
 //      index_k<n_k;
 //      index_k++)
@@ -8738,6 +8814,17 @@ int index_k;
 //                                               +index_k*(ln_k_max-ln_k_min)
 //                                               /(n_k-1.);
 // }
+
+    for (index_l=0;
+         index_l<n_l;
+         index_l++)
+      {
+        ptsz->array_pressure_profile_ln_l[index_l] = lnl_min
+                                            +index_l*(lnl_max-lnl_min)
+                                            /(n_l-1.);
+      }
+
+
 
 int index_m;
 for (index_m=0;
@@ -8759,34 +8846,46 @@ for (index_z=0;
                                    /(n_z-1.);
 }
 
+//  printf("allocate arrays 3.\n");
 
-class_alloc(ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z,n_k*sizeof(double *),ptsz->error_message);
-for (index_k=0;
-     index_k<n_k;
-     index_k++)
-{
-class_alloc(ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k],n_m*n_z*sizeof(double *),ptsz->error_message);
-index_m_z = 0;
-for (index_z=0;
-     index_z<n_z;
-     index_z++)
-{
-
-for (index_m=0;
-     index_m<n_m;
-     index_m++){
-//class_alloc(ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z],n_z*sizeof(double ),ptsz->error_message);
+class_alloc(ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z,n_l*sizeof(double *),ptsz->error_message);
+for (index_l=0;
+     index_l<n_l;
+     index_l++)
+      {
+      class_alloc(ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[index_l],n_m*n_z*sizeof(double *),ptsz->error_message);
+      index_m_z = 0;
 
 
-  // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = -100.; // initialize with super small number
-  ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k][index_m_z] = 1e-100; // initialize with super small number
-  index_m_z_tab[index_m][index_z] = index_m_z;
-  index_m_z += 1;
-}
+                  //class_alloc(ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z],n_z*sizeof(double ),ptsz->error_message);
 
-     }
-}
 
+            for (index_z=0;
+                index_z<n_z;
+                index_z++)
+            {
+
+
+
+      for (index_m=0;
+          index_m<n_m;
+          index_m++){
+
+
+
+
+
+                    // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = -100.; // initialize with super small number
+                    ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[index_l][index_m_z] = 1e-100; // initialize with super small number
+                    index_m_z_tab[index_m][index_z] = index_m_z;
+                    index_m_z += 1;
+                  }
+
+                }
+      }
+
+
+// printf("starting parallel block.\n");
 
 //Parallelization of profile computation
 /* initialize error management flag */
@@ -8808,7 +8907,7 @@ int number_of_threads= 1;
 #pragma omp parallel \
 shared(abort,\
 ptsz,pba,index_m_z_tab)\
-private(tstart, tstop,index_k,index_z,index_m,index_m_z) \
+private(tstart, index_z,index_m,tstop,index_m_z) \
 num_threads(number_of_threads)
 {
 
@@ -8821,6 +8920,8 @@ for (index_z=0;
      index_z<n_z;
      index_z++){
 #pragma omp flush(abort)
+
+// int index_z,index_m;
 double * pvectsz;
 double * pvecback;
 class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
@@ -8828,13 +8929,17 @@ class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
 
 
 int index_pvectsz;
+
+// int index_l;
+// int n_l = ptsz->n_l_pressure_profile;
+
 for (index_pvectsz=0;
      index_pvectsz<ptsz->tsz_size;
      index_pvectsz++){
        pvectsz[index_pvectsz] = 0.; // set everything to 0.
      }
 
-double z = exp(ptsz->array_pressure_profile_ln_1pz[index_z])-1.;
+  double z = exp(ptsz->array_pressure_profile_ln_1pz[index_z])-1.;
   double tau;
   int first_index_back = 0;
 
@@ -8904,84 +9009,89 @@ for (index_m=0;
 
   double r200c = pvectsz[ptsz->index_r200c]; //in Mpc/h
   double x_out;
-if (ptsz->truncate_gas_pressure_wrt_rvir == 1){
+  if (ptsz->truncate_gas_pressure_wrt_rvir == 1){
 
- //  class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
- //                                   200.*(pvectsz[ptsz->index_Rho_crit]),
- //                                   pvectsz[ptsz->index_Delta_c],
- //                                   pvectsz[ptsz->index_Rho_crit],
- //                                   z,
- //                                   &pvectsz[ptsz->index_mVIR],
- //                                   ptsz,
- //                                   pba),
- //                  ptsz->error_message,
- //                  ptsz->error_message);
- // //
- // //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
- //  pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
- pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
- pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],
-                                                   pvectsz[ptsz->index_Delta_c],
-                                                   pvectsz[ptsz->index_Rho_crit],
-                                                   ptsz);
+          // class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
+          //                                   200.*(pvectsz[ptsz->index_Rho_crit]),
+          //                                   pvectsz[ptsz->index_Delta_c],
+          //                                   pvectsz[ptsz->index_Rho_crit],
+          //                                   z,
+          //                                   &pvectsz[ptsz->index_mVIR],
+          //                                   ptsz,
+          //                                   pba),
+          //                 ptsz->error_message,
+          //                 ptsz->error_message);
+          // //
+          // //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
+          //  pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+         
+          double mvir = pvectsz[ptsz->index_mVIR];
 
-  double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
+          pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
+         
+          // printf("mvir/mvir = %.5e\n",mvir/pvectsz[ptsz->index_mVIR]);
+         
+          pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],
+                                                            pvectsz[ptsz->index_Delta_c],
+                                                            pvectsz[ptsz->index_Rho_crit],
+                                                            ptsz);
 
-  x_out = ptsz->x_outSZ*rvir/r200c; // the truncation radius is in multiples of rvir
+          double rvir = pvectsz[ptsz->index_rVIR]; //in Mpc/h
 
-  }
+          x_out = ptsz->x_outSZ*rvir/r200c; // the truncation radius is in multiples of rvir
+
+          }
   else{
-  x_out = ptsz->x_outSZ;
-  }
+          x_out = ptsz->x_outSZ;
+      }
 
 for (ix=0; ix<N; ix++){
-  x[ix] = exp(log(x_min)+ix/(N-1.)*(log(x_max)-log(x_min)));
-  if (x[ix]>x_out){
-      Px[ix] = 0.;
-    }
-  else{
+    x[ix] = exp(log(x_min)+ix/(N-1.)*(log(x_max)-log(x_min)));
+    if (x[ix]>x_out){
+        Px[ix] = 0.;
+      }
+    else{
 
-        // double xc;
-        // double beta;
-        // double P0;
-        //
-        double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
-        double z = pvectsz[ptsz->index_z];
-        //
-        //
-        // P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
-        // xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
-        // beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
-        //
-        // double gamma = ptsz->gamma_B12;
-        // double alpha = ptsz->alpha_B12;
-        //
-        // double p_gnfw_x = P0*pow(x[ix]/xc,gamma)*pow(1.+ pow(x[ix]/xc,alpha),-beta);
-        // Px[ix] = p_gnfw_x;
+          // double xc;
+          // double beta;
+          // double P0;
+          //
+          double m200_over_msol = pvectsz[ptsz->index_m200c]/pba->h; // convert to Msun
+          double z = pvectsz[ptsz->index_z];
+          //
+          //
+          double P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
+          double xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
+          double beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
+          
+          double gamma = ptsz->gamma_B12;
+          double alpha = ptsz->alpha_B12;
+          
+          double p_gnfw_x = P0*pow(x[ix]/xc,gamma)*pow(1.+ pow(x[ix]/xc,alpha),-beta);
+          Px[ix] = p_gnfw_x;
 
-double c_asked = ptsz->c_B12;//what we pass there?
-Px[ix] = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x[ix],m200_over_msol,z,
-                                              c_asked,ptsz->P0_B12,
-                                              ptsz->xc_B12,ptsz->beta_B12,
-                                              ptsz->alpha_m_P0_B12,ptsz->alpha_m_xc_B12,
-                                              ptsz->alpha_m_beta_B12,ptsz->alpha_z_P0_B12,
-                                              ptsz->alpha_z_xc_B12,ptsz->alpha_z_beta_B12,
-                                              // break model
-                                  						ptsz->mcut_B12,ptsz->alphap_m_P0_B12,
-                                  						ptsz->alphap_m_xc_B12,ptsz->alphap_m_beta_B12,
-                                  						ptsz->alpha_c_P0_B12,
-                                  						ptsz->alpha_c_xc_B12,
-                                  						ptsz->alpha_c_beta_B12,
-                                                     // end break model
-                                              ptsz->alpha_B12,
-                                              ptsz->gamma_B12,
-                                              pba,ptsz);
-
-
+          // double c_asked = ptsz->c_B12;//what we pass there?
+          // Px[ix] = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x[ix],m200_over_msol,z,
+          //                                                       c_asked,ptsz->P0_B12,
+          //                                                       ptsz->xc_B12,ptsz->beta_B12,
+          //                                                       ptsz->alpha_m_P0_B12,ptsz->alpha_m_xc_B12,
+          //                                                       ptsz->alpha_m_beta_B12,ptsz->alpha_z_P0_B12,
+          //                                                       ptsz->alpha_z_xc_B12,ptsz->alpha_z_beta_B12,
+          //                                                       // break model
+          //                                                       ptsz->mcut_B12,ptsz->alphap_m_P0_B12,
+          //                                                       ptsz->alphap_m_xc_B12,ptsz->alphap_m_beta_B12,
+          //                                                       ptsz->alpha_c_P0_B12,
+          //                                                       ptsz->alpha_c_xc_B12,
+          //                                                       ptsz->alpha_c_beta_B12,
+          //                                                             // end break model
+          //                                                       ptsz->alpha_B12,
+          //                                                       ptsz->gamma_B12,
+          //                                                       pba,ptsz);
 
 
 
-    }
+
+      }
   // printf("x = %.3e Px = %.3e\n",x[ix],Px[ix]);
 
 }
@@ -8998,24 +9108,49 @@ Px[ix] = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x[ix],m200_over_msol,z,
   fftlog_ComputeXiLMsloz(0, 2, N, x, Px, kp, Pkp,ptsz);
 
 
-
-  for (index_k=0;
-       index_k<n_k;
-       index_k++)
+  // printf("FFT done.\n");
+  int index_l;
+  int n_l = ptsz->n_l_pressure_profile;
+  for (index_l=0;
+       index_l<n_l;
+       index_l++)
   {
 
 
   // double k = exp(ptsz->array_pressure_profile_ln_k[index_k]); // l/ls
   // printf("calling ft\n");
 
-  // double  result_fft = 2.*_PI_*_PI_*pwl_value_1d(N,
-  //                                               kp,
-  //                                               Pkp,
-  //                                               k);
-  //
-  ptsz->array_pressure_profile_ln_k[index_k] = log(kp[index_k]);
+  double l = exp(ptsz->array_pressure_profile_ln_l[index_l]);
+  // printf("l = %.5e\n",l);
+  double kl = (l+0.5)/pvectsz[ptsz->index_l200c];
 
-  double  result_fft = 2.*_PI_*_PI_*Pkp[index_k];
+  double result_fft;
+  // printf("interpolating....\n");
+
+  if ((kl<kp[0])||(kl>kp[N-1]))
+    result_fft = 0.;
+  else
+    result_fft = 2.*_PI_*_PI_*pwl_value_1d(N,kp,Pkp,kl);
+
+  if (result_fft<0.)  result_fft = 0.;
+
+
+  // printf("z = %.5e m = %.5e l = %.5e result_fft = %.5e\n",z,pvectsz[ptsz->index_m200c],l,result_fft);
+
+
+  // double lp = kp[index_k]*pvectsz[ptsz->index_l200c]-0.5;
+  // if (lp<0.){
+  //   Pkp[index_k] = 0.;
+  //   // lp = 1.e-100;
+  // }
+  
+  //
+  // ptsz->array_pressure_profile_ln_k[index_k] = log(kp[index_k]);
+
+  // ptsz->array_pressure_profile_ln_k[index_k] = log(lp);
+
+
+  // double  result_fft = 2.*_PI_*_PI_*Pkp[index_k];
 
 
    // double result_int;
@@ -9037,8 +9172,8 @@ Px[ix] = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x[ix],m200_over_msol,z,
 
 
   // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = log(result);
-  ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k][index_m_z] = result_fft;
-  // printf("ell = %.3e z = %.3e m = %.3e lnrho = %.3e\n",ell,z,exp(lnM),log(result));
+  ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[index_l][index_m_z] = result_fft;
+  // printf("ell = %.3e z = %.3e m = %.3e lnrho = %.3e\n",l,z,exp(lnM),ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k][index_m_z]);
   // index_m_z += 1;
 } // k loop
 
@@ -9062,28 +9197,23 @@ if (abort == _TRUE_) return _FAILURE_;
 //end of parallel region
 return _SUCCESS_;
 
+// exit(0);
+
                                       }
 
 
-
-
-
-// Tabulate 2D Fourier transform of pressure profile on a [z - ln_M - ln_ell] grid
-int tabulate_gas_pressure_profile_B12(struct background * pba,
-                                      struct tszspectrum * ptsz){
-
-
-if (ptsz->sz_verbose>1)
-  printf("---> Start tabulating B12 (class_sz_tool.c)\n");
+// // Tabulate 2D Fourier transform of pressure profile on a [z - ln_M - ln_ell] grid
+int tabulate_gas_pressure_profile_B12_l(struct background * pba,
+                                  struct tszspectrum * ptsz){
 
  // array of multipoles:
- double ln_k_min = log(ptsz->k_min_gas_pressure_profile);
- double ln_k_max = log(ptsz->k_max_gas_pressure_profile);
- int n_k = ptsz->n_k_pressure_profile;
+ double lnl_min = log(ptsz->l_min_gas_pressure_profile);
+ double lnl_max = log(ptsz->l_max_gas_pressure_profile);
+ int n_l = ptsz->n_l_pressure_profile;
  int n_m = ptsz->n_m_pressure_profile;
  int n_z = ptsz->n_z_pressure_profile;
 
- class_alloc(ptsz->array_pressure_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
+ class_alloc(ptsz->array_pressure_profile_ln_l,sizeof(double *)*n_l,ptsz->error_message);
 
  // array of masses:
  double ln_m_min = log(ptsz->M1SZ);
@@ -9101,64 +9231,74 @@ if (ptsz->sz_verbose>1)
  class_alloc(ptsz->array_pressure_profile_ln_1pz,sizeof(double *)*n_z,ptsz->error_message);
 int index_m_z;
 
-int index_k;
-for (index_k=0;
-     index_k<n_k;
-     index_k++)
-{
-  ptsz->array_pressure_profile_ln_k[index_k] = ln_k_min
-                                              +index_k*(ln_k_max-ln_k_min)
-                                              /(n_k-1.);
-}
+int index_l;
+for (index_l=0;
+     index_l<n_l;
+     index_l++)
+  {
+    ptsz->array_pressure_profile_ln_l[index_l] = lnl_min
+                                        +index_l*(lnl_max-lnl_min)
+                                        /(n_l-1.);
+  }
 
 int index_m;
 for (index_m=0;
      index_m<n_m;
      index_m++)
-{
-  ptsz->array_pressure_profile_ln_m[index_m] = ln_m_min
-                                      +index_m*(ln_m_max-ln_m_min)
-                                      /(n_m-1.);
-}
+  {
+    ptsz->array_pressure_profile_ln_m[index_m] = ln_m_min
+                                        +index_m*(ln_m_max-ln_m_min)
+                                        /(n_m-1.);
+  }
 
 int index_z;
 for (index_z=0;
      index_z<n_z;
      index_z++)
-{
-  ptsz->array_pressure_profile_ln_1pz[index_z] = ln_1pz_min
-                                   +index_z*(ln_1pz_max-ln_1pz_min)
-                                   /(n_z-1.);
-}
+  {
+    ptsz->array_pressure_profile_ln_1pz[index_z] = ln_1pz_min
+                                    +index_z*(ln_1pz_max-ln_1pz_min)
+                                    /(n_z-1.);
+  }
 
 
-class_alloc(ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z,n_k*sizeof(double *),ptsz->error_message);
-for (index_k=0;
-     index_k<n_k;
-     index_k++)
-{
-class_alloc(ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k],n_m*n_z*sizeof(double *),ptsz->error_message);
-index_m_z = 0;
-for (index_m=0;
-     index_m<n_m;
-     index_m++){
-    //class_alloc(ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z],n_z*sizeof(double ),ptsz->error_message);
-
-    for (index_z=0;
-        index_z<n_z;
-        index_z++)
-    {
-      // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = -100.; // initialize with super small number
-      ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k][index_m_z] = 1e-100; // initialize with super small number
-      index_m_z += 1;
-    }
-
-        }
-}
+class_alloc(ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z,n_l*sizeof(double *),ptsz->error_message);
+for (index_l=0;
+     index_l<n_l;
+     index_l++)
+      {
+      class_alloc(ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[index_l],n_m*n_z*sizeof(double *),ptsz->error_message);
+      index_m_z = 0;
 
 
-if (ptsz->sz_verbose>1)
-  printf("---> Start parallel region B12 (class_sz_tool.c)\n");
+      // int index_z;
+      for (index_z=0;
+          index_z<n_z;
+          index_z++)
+          {
+
+
+
+          for (index_m=0;
+              index_m<n_m;
+              index_m++){
+
+
+
+      //class_alloc(ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z],n_z*sizeof(double ),ptsz->error_message);
+
+
+                  // ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = -100.; // initialize with super small number
+                  ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[index_l][index_m_z] = 1e-100; // initialize with super small number
+                  index_m_z += 1;
+                }
+
+          }
+      }
+
+// printf("starting para...\n");
+// exit(0);
+
 //Parallelization of profile computation
 /* initialize error management flag */
 
@@ -9179,7 +9319,7 @@ int number_of_threads= 1;
 #pragma omp parallel \
 shared(abort,\
 ptsz,pba)\
-private(tstart, tstop,index_k,index_z,index_m,index_m_z) \
+private(tstart, tstop,index_l,index_z,index_m,index_m_z) \
 num_threads(number_of_threads)
 {
 
@@ -9188,9 +9328,9 @@ num_threads(number_of_threads)
 #endif
 
 #pragma omp for schedule (dynamic)
-for (index_k=0;
-     index_k<n_k;
-     index_k++)
+for (index_l=0;
+     index_l<n_l;
+     index_l++)
 {
 #pragma omp flush(abort)
 double * pvectsz;
@@ -9215,17 +9355,14 @@ for (index_m=0;
 
   double z = exp(ptsz->array_pressure_profile_ln_1pz[index_z])-1.;
   double lnM = ptsz->array_pressure_profile_ln_m[index_m];
-  double k = exp(ptsz->array_pressure_profile_ln_k[index_k]); // l/ls
-// printf("calling ft\n");
+  double ell = exp(ptsz->array_pressure_profile_ln_l[index_l]);
+
 
 // if (ptsz->sz_verbose>1)
-//   printf("--->In parallel region B12 (class_sz_tool.c) k = %.3e m = %.3e z = %.3e\n",
-//         k,
+//   printf("--->In parallel region B12 (class_sz_tool.c) l = %.3e m = %.3e z = %.3e\n",
+//         ell,
 //         exp(lnM),
 //         z);
-
-  double l = sqrt(pvectsz[ptsz->index_chi2])*k-0.5;
-  // printf("l = %.5e\n",l);
 
   double tau;
   int first_index_back = 0;
@@ -9248,18 +9385,15 @@ for (index_m=0;
   // fill relevant entries
   pvectsz[ptsz->index_z] = z;
 
-
-  pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
-  double chi = sqrt(pvectsz[ptsz->index_chi2]);
-  // pvectsz[ptsz->index_multipole_for_pressure_profile] = k*chi;
-  pvectsz[ptsz->index_md] = 0; // avoid the if condition in p_gnfw for the pk mode computation
+  pvectsz[ptsz->index_multipole_for_pressure_profile] = ell;
+  pvectsz[ptsz->index_md] = 0; // avoid the if condition in rho_nfw for the pk mode computation
 
   pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
                                 *pow(_Mpc_over_m_,1)
                                 *pow(_c_,2)
                                 *pvecback[pba->index_bg_rho_crit]
                                 /pow(pba->h,2);
-
+  pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
   double omega = pvecback[pba->index_bg_Omega_m];
   pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
 
@@ -9276,22 +9410,6 @@ for (index_m=0;
                                    pba),
                   ptsz->error_message,
                   ptsz->error_message);
-  // if (ptsz->sz_verbose>1)
-  //   printf("----> tab B12 getting mvir = %.5e\n",pvectsz[ptsz->index_mVIR]);
-  double mvir  = pvectsz[ptsz->index_mVIR];
-
-  // if (ptsz->truncate_gas_pressure_wrt_rvir){
-  
-  //   pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
-  //   if (ptsz->sz_verbose>1){
-  //       printf("truncating wrt rvir\n");
-  //     }
-  // }
-  // else
-  //   pvectsz[ptsz->index_mVIR] = pvectsz[ptsz->index_m200c];
-    
-  // if (ptsz->sz_verbose>1)
-  //   printf("----> tab B12 got mvir = %.3e ratio = %.18e\n",pvectsz[ptsz->index_mVIR], pvectsz[ptsz->index_mVIR]/mvir);
  //
  //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
   pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
@@ -9299,15 +9417,12 @@ for (index_m=0;
   pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
   // pvectsz[ptsz->index_characteristic_multipole_for_profile] = pvectsz[ptsz->index_l200c];
   pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c];///pvectsz[ptsz->index_c200c];
-   double result_int;
-   double kl =  k;//*(1.+z)*pvectsz[ptsz->index_r200c];
-  //  printf("calling ft\n");
-   pvectsz[ptsz->index_md] = 0; // avoid the if condition in p_gnfw for the pk mode computation
-   class_call_parallel(two_dim_ft_pressure_profile(kl,
-                                                   ptsz,pba,pvectsz,&result_int),
-                                                   ptsz->error_message,
-                                                   ptsz->error_message);
-   result = result_int;
+ double result_int;
+ double kl = (ell+1./2.)/pvectsz[ptsz->index_l200c];
+ class_call_parallel(two_dim_ft_pressure_profile(kl,ptsz,pba,pvectsz,&result_int),
+                                    ptsz->error_message,
+                                    ptsz->error_message);
+ result = result_int;
 
 
 
@@ -9316,18 +9431,17 @@ for (index_m=0;
  // result *= tau_normalisation;
 
 
-  // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = log(result);
-  ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k][index_m_z] = result;
-  // printf("ell = %.3e z = %.3e m = %.3e lnrho = %.3e\n",ell,z,exp(lnM),log(result));
-
-  printf("--------->In parallel region B12 (class_sz_tool.c) k = %.5e l = %.5e m = %.5e z = %.5e res = %.5e\n",
-        k,
-        l,
-        exp(lnM),
-        z,
-        result);
-
-
+  // ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = log(result);
+  ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[index_l][index_m_z] = result;
+  // printf("ell = %.3e z = %.3e m = %.3e rho = %.3e\n",ell,z,exp(lnM),log(result));
+  
+  // printf("--------->In parallel region B12 l (class_sz_tool.c)  l = %.5e m = %.5e z = %.5e res = %.5e\n",
+  //       ell,
+  //       exp(lnM),
+  //       z,
+  //       result);
+  
+  
   index_m_z += 1;
      }
 
@@ -9338,11 +9452,10 @@ free(pvectsz);
 free(pvecback);
 
 }
-
 #ifdef _OPENMP
   tstop = omp_get_wtime();
   if (ptsz->sz_verbose > 0)
-    printf("In %s: time spent in tab pressure profile parallel region (loop over k's) = %e s for thread %d\n",
+    printf("In %s: time spent in tab profile parallel region (loop over ell's) = %e s for thread %d\n",
            __func__,tstop-tstart,omp_get_thread_num());
 #endif
 
@@ -9355,11 +9468,300 @@ return _SUCCESS_;
 
 
 
+// // Tabulate 2D Fourier transform of pressure profile on a [z - ln_M - ln_ell] grid
+// int tabulate_gas_pressure_profile_B12(struct background * pba,
+//                                       struct tszspectrum * ptsz){
+
+
+// if (ptsz->sz_verbose>1)
+//   printf("---> Start tabulating B12 (class_sz_tool.c)\n");
+
+//  // array of multipoles:
+//  double ln_k_min = log(ptsz->k_min_gas_pressure_profile);
+//  double ln_k_max = log(ptsz->k_max_gas_pressure_profile);
+//  int n_k = ptsz->n_k_pressure_profile;
+//  int n_m = ptsz->n_m_pressure_profile;
+//  int n_z = ptsz->n_z_pressure_profile;
+
+//  class_alloc(ptsz->array_pressure_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
+
+//  // array of masses:
+//  double ln_m_min = log(ptsz->M1SZ);
+//  double ln_m_max = log(ptsz->M2SZ);
+
+
+//  class_alloc(ptsz->array_pressure_profile_ln_m,sizeof(double *)*n_m,ptsz->error_message);
+
+
+//  // array of redshifts:
+//  double ln_1pz_min = log(1.+ptsz->z1SZ);
+//  double ln_1pz_max = log(1.+ptsz->z2SZ);
+
+
+//  class_alloc(ptsz->array_pressure_profile_ln_1pz,sizeof(double *)*n_z,ptsz->error_message);
+// int index_m_z;
+
+// int index_k;
+// for (index_k=0;
+//      index_k<n_k;
+//      index_k++)
+// {
+//   ptsz->array_pressure_profile_ln_k[index_k] = ln_k_min
+//                                               +index_k*(ln_k_max-ln_k_min)
+//                                               /(n_k-1.);
+// }
+
+// int index_m;
+// for (index_m=0;
+//      index_m<n_m;
+//      index_m++)
+// {
+//   ptsz->array_pressure_profile_ln_m[index_m] = ln_m_min
+//                                       +index_m*(ln_m_max-ln_m_min)
+//                                       /(n_m-1.);
+// }
+
+// int index_z;
+// for (index_z=0;
+//      index_z<n_z;
+//      index_z++)
+// {
+//   ptsz->array_pressure_profile_ln_1pz[index_z] = ln_1pz_min
+//                                    +index_z*(ln_1pz_max-ln_1pz_min)
+//                                    /(n_z-1.);
+// }
+
+
+// class_alloc(ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z,n_k*sizeof(double *),ptsz->error_message);
+// for (index_k=0;
+//      index_k<n_k;
+//      index_k++)
+// {
+// class_alloc(ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k],n_m*n_z*sizeof(double *),ptsz->error_message);
+// index_m_z = 0;
+// for (index_m=0;
+//      index_m<n_m;
+//      index_m++){
+//     //class_alloc(ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z],n_z*sizeof(double ),ptsz->error_message);
+
+//     for (index_z=0;
+//         index_z<n_z;
+//         index_z++)
+//     {
+//       // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = -100.; // initialize with super small number
+//       ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k][index_m_z] = 1e-100; // initialize with super small number
+//       index_m_z += 1;
+//     }
+
+//         }
+// }
+
+
+// if (ptsz->sz_verbose>1)
+//   printf("---> Start parallel region B12 (class_sz_tool.c)\n");
+// //Parallelization of profile computation
+// /* initialize error management flag */
+
+
+// int abort;
+// double tstart, tstop;
+// abort = _FALSE_;
+// /* beginning of parallel region */
+
+// int number_of_threads= 1;
+// #ifdef _OPENMP
+// #pragma omp parallel
+//   {
+//     number_of_threads = omp_get_num_threads();
+//   }
+// #endif
+
+// #pragma omp parallel \
+// shared(abort,\
+// ptsz,pba)\
+// private(tstart, tstop,index_k,index_z,index_m,index_m_z) \
+// num_threads(number_of_threads)
+// {
+
+// #ifdef _OPENMP
+//   tstart = omp_get_wtime();
+// #endif
+
+// #pragma omp for schedule (dynamic)
+// for (index_k=0;
+//      index_k<n_k;
+//      index_k++)
+// {
+// #pragma omp flush(abort)
+// double * pvectsz;
+// double * pvecback;
+// class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+// class_alloc_parallel(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+// int index_pvectsz;
+// for (index_pvectsz=0;
+//      index_pvectsz<ptsz->tsz_size;
+//      index_pvectsz++){
+//        pvectsz[index_pvectsz] = 0.; // set everything to 0.
+//      }
+// index_m_z = 0;
+// for (index_z=0;
+//      index_z<n_z;
+//      index_z++){
+// for (index_m=0;
+//      index_m<n_m;
+//      index_m++){
+
+
+
+//   double z = exp(ptsz->array_pressure_profile_ln_1pz[index_z])-1.;
+//   double lnM = ptsz->array_pressure_profile_ln_m[index_m];
+//   double k = exp(ptsz->array_pressure_profile_ln_k[index_k]); // l/ls
+// // printf("calling ft\n");
+
+// // if (ptsz->sz_verbose>1)
+// //   printf("--->In parallel region B12 (class_sz_tool.c) k = %.3e m = %.3e z = %.3e\n",
+// //         k,
+// //         exp(lnM),
+// //         z);
+
+//   // double l = sqrt(pvectsz[ptsz->index_chi2])*k-0.5;
+//   // printf("l = %.5e\n",l);
+
+//   double tau;
+//   int first_index_back = 0;
+
+
+//   class_call_parallel(background_tau_of_z(pba,z,&tau),
+//              pba->error_message,
+//              pba->error_message);
+
+//   class_call_parallel(background_at_tau(pba,
+//                                tau,
+//                                pba->long_info,
+//                                pba->inter_normal,
+//                                &first_index_back,
+//                                pvecback),
+//              pba->error_message,
+//              pba->error_message);
+
+
+//   // fill relevant entries
+//   pvectsz[ptsz->index_z] = z;
+
+
+//   pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+//   double chi = sqrt(pvectsz[ptsz->index_chi2]);
+//   // pvectsz[ptsz->index_multipole_for_pressure_profile] = k*chi;
+//   pvectsz[ptsz->index_md] = 0; // avoid the if condition in p_gnfw for the pk mode computation
+
+//   pvectsz[ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+//                                 *pow(_Mpc_over_m_,1)
+//                                 *pow(_c_,2)
+//                                 *pvecback[pba->index_bg_rho_crit]
+//                                 /pow(pba->h,2);
+
+//   double omega = pvecback[pba->index_bg_Omega_m];
+//   pvectsz[ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+
+
+//   double result;
+//   pvectsz[ptsz->index_m200c] = exp(lnM);
+//   class_call_parallel(mDEL_to_mVIR(pvectsz[ptsz->index_m200c],
+//                                    200.*(pvectsz[ptsz->index_Rho_crit]),
+//                                    pvectsz[ptsz->index_Delta_c],
+//                                    pvectsz[ptsz->index_Rho_crit],
+//                                    z,
+//                                    &pvectsz[ptsz->index_mVIR],
+//                                    ptsz,
+//                                    pba),
+//                   ptsz->error_message,
+//                   ptsz->error_message);
+//   // if (ptsz->sz_verbose>1)
+//   //   printf("----> tab B12 getting mvir = %.5e\n",pvectsz[ptsz->index_mVIR]);
+//   double mvir  = pvectsz[ptsz->index_mVIR];
+
+//   // if (ptsz->truncate_gas_pressure_wrt_rvir){
+  
+//   //   pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
+//   //   if (ptsz->sz_verbose>1){
+//   //       printf("truncating wrt rvir\n");
+//   //     }
+//   // }
+//   // else
+//   //   pvectsz[ptsz->index_mVIR] = pvectsz[ptsz->index_m200c];
+    
+//   // if (ptsz->sz_verbose>1)
+//   //   printf("----> tab B12 got mvir = %.3e ratio = %.18e\n",pvectsz[ptsz->index_mVIR], pvectsz[ptsz->index_mVIR]/mvir);
+//  //
+//  //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
+//   pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
+//   pvectsz[ptsz->index_r200c] = pow(3.*pvectsz[ptsz->index_m200c]/(4.*_PI_*200.*pvectsz[ptsz->index_Rho_crit]),1./3.);
+//   pvectsz[ptsz->index_l200c] = sqrt(pvectsz[ptsz->index_chi2])/(1.+z)/pvectsz[ptsz->index_r200c];
+//   // pvectsz[ptsz->index_characteristic_multipole_for_profile] = pvectsz[ptsz->index_l200c];
+//   pvectsz[ptsz->index_rs] = pvectsz[ptsz->index_r200c];///pvectsz[ptsz->index_c200c];
+//    double result_int;
+//    double kl =  k; // (l+0.5)/l200c
+//   //  printf("calling ft\n");
+//    pvectsz[ptsz->index_md] = 0; // avoid the if condition in p_gnfw for the pk mode computation
+//    class_call_parallel(two_dim_ft_pressure_profile(kl,
+//                                                    ptsz,pba,pvectsz,&result_int),
+//                                                    ptsz->error_message,
+//                                                    ptsz->error_message);
+//    result = result_int;
+
+
+
+//  // double tau_normalisation = 1.;//pvectsz[ptsz->index_m200m];///(4.*_PI_*pow(pvectsz[ptsz->index_rs],3.));
+//  // tau_normalisation = 4.*_PI_*pow(pvectsz[ptsz->index_r200c],3);//*pvectsz[ptsz->index_Rho_crit];
+//  // result *= tau_normalisation;
+
+
+//   // ptsz->array_profile_ln_rho_at_lnk_lnM_z[index_l][index_m_z] = log(result);
+//   ptsz->array_pressure_profile_ln_p_at_lnk_lnm_z[index_k][index_m_z] = result;
+//   // printf("ell = %.3e z = %.3e m = %.3e lnrho = %.3e\n",ell,z,exp(lnM),log(result));
+
+//   // printf("--------->In parallel region B12 (class_sz_tool.c) k = %.5e l = %.5e m = %.5e z = %.5e res = %.5e\n",
+//   //       k,
+//   //       l,
+//   //       exp(lnM),
+//   //       z,
+//   //       result);
+
+
+//   index_m_z += 1;
+//      }
+
+
+//      }
+
+// free(pvectsz);
+// free(pvecback);
+
+// }
+
+// #ifdef _OPENMP
+//   tstop = omp_get_wtime();
+//   if (ptsz->sz_verbose > 0)
+//     printf("In %s: time spent in tab pressure profile parallel region (loop over k's) = %e s for thread %d\n",
+//            __func__,tstop-tstart,omp_get_thread_num());
+// #endif
+
+// }
+// if (abort == _TRUE_) return _FAILURE_;
+// //end of parallel region
+// return _SUCCESS_;
+
+//                                       }
+
+
+
 
 // Tabulate 2D Fourier transform of density profile on a [ln_ell_over_ell_char] grid
 int tabulate_gas_pressure_profile_gNFW_fft(struct background * pba,
                                            struct tszspectrum * ptsz){
 
+
+ptsz->n_k_pressure_profile = ptsz->N_samp_fftw;
 // if (ptsz->has_kSZ_kSZ_gal_1h + ptsz->has_kSZ_kSZ_gal_2h + ptsz->has_kSZ_kSZ_gal_3h == _FALSE_)
 //   return 0;
 
@@ -9419,7 +9821,7 @@ int tabulate_gas_pressure_profile_gNFW_fft(struct background * pba,
 
 
 ////FFT part 
-  int n_k = ptsz->n_k_pressure_profile; // (in fact this is N_samp_fftw, see class_sz.c)
+  int n_k = ptsz->n_k_pressure_profile; // 
   class_alloc(ptsz->array_pressure_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
   class_alloc(ptsz->array_pressure_profile_ln_p_at_lnk,n_k*sizeof(double *),ptsz->error_message);
 
@@ -9493,6 +9895,7 @@ int tabulate_gas_pressure_profile_gNFW_fft(struct background * pba,
   } // k loop
 
 ///FFT part done 
+
 
 
 // int abort;
@@ -9810,7 +10213,15 @@ else{
   // else
   // w0 =  (pvectsz[ptsz->index_multipole_for_pressure_profile]);
 
+
+  // correct: 
   w0 = kl; // this is (l+1/2)/ls (see eq. 2 in komatsu & seljak)
+
+  // debugging
+  // w0 = (kl+0.5)/pvectsz[ptsz->index_l200c];
+
+  // printf("w0 = %.5e\n",w0);
+  // exit(0);
 
   wf = gsl_integration_qawo_table_alloc(w0, delta_l,GSL_INTEG_SINE,50);
 
@@ -12945,6 +13356,22 @@ double Px = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x,m200_over_msol,pvect
           //               /(x*kl);
 
         *p_gnfw_x = Px*pow(x,2)/(x*kl);
+
+    double z = pvectsz[ptsz->index_z];
+    double P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
+    double xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
+    double beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
+
+    double gamma = ptsz->gamma_B12;
+    double alpha = ptsz->alpha_B12;
+
+      *p_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)
+                    *pow(x,2)
+                    // /(x*(kl+0.5)/pvectsz[ptsz->index_l200c]);
+                    /(x*kl);
+ 
+
+
 
   if (_mean_y_ || _dydz_)
         // *p_gnfw_x = P0*pow(x/xc,gamma)*pow(1.+ pow(x/xc,alpha),-beta)*pow(x,2);
