@@ -7938,7 +7938,8 @@ double damping_1h_term;
 
      int index_l_prime = (int) pvectsz[ptsz->index_multipole_prime];
      // pvectsz[ptsz->index_multipole_for_pressure_profile] = ptsz->ell[index_l_prime];
-     evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
+     double klp = (ptsz->ell[index_l_prime]+0.5)/d_A;
+     evaluate_pressure_profile(klp,pvecback,pvectsz,pba,ptsz);
      double pressure_profile_at_ell_prime = pvectsz[ptsz->index_pressure_profile];
 
      pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_hmf]
