@@ -181,7 +181,7 @@ Python Wrapper (Tensorflow and Cosmopower Dependency)
 Since recently we have implemented emulators in classy_sz, now it has an extra-dependency to tensorflow through cosmopower.
 
 1. Install tensoflow first (see below for Mac M1 specific issues).
-2. Then install cosmopower (https://alessiospuriomancini.github.io/cosmopower/installation/).
+2. Then install cosmopower (https://alessiospuriomancini.github.io/cosmopower/installation/). Note that the needed tensorflow version may not be the lattest, see the requirements (https://github.com/alessiospuriomancini/cosmopower/blob/main/requirements.txt). 
 3. Clone the https://github.com/cosmopower-organization/notebooks repo.
 4. Open notebooks/get_quantities_cosmopower.ipynb notebook and follow the instructions there to get the cosmopower emulators.
 5. Compile the fast python wrapper:

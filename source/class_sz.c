@@ -785,6 +785,8 @@ while( pch != NULL ) {
      printf("-> m500c to m200c tabulated.\n");
     }
    //exit(0);
+
+
    external_pressure_profile_init(ppr,ptsz);
 
     if (ptsz->MF==1){
@@ -11269,8 +11271,8 @@ else if (_custom1_cib_1h_){
      pvectsz[ptsz->index_integrand] =
                                        pvectsz[ptsz->index_hmf]
                                        *pvecback[pba->index_bg_D]
-                                       *pvectsz[ptsz->index_dlnMdeltadlnM]
-                                       *pvectsz[ptsz->index_completeness]
+                                      //  *pvectsz[ptsz->index_dlnMdeltadlnM]
+                                      //  *pvectsz[ptsz->index_completeness]
                                        *pvectsz[ptsz->index_halo_bias]
                                        *pressure_profile_at_ell;
 
@@ -14279,49 +14281,49 @@ else{
 //
 
 
-int evaluate_pk_at_ell_plus_one_half_over_chi_today(double * pvecback,
-                                                   double * pvectsz,
-                                                   struct background * pba,
-                                                   struct primordial * ppm,
-                                                   struct nonlinear * pnl,
-                                                   struct tszspectrum * ptsz)
-{
+// int evaluate_pk_at_ell_plus_one_half_over_chi_today(double * pvecback,
+//                                                    double * pvectsz,
+//                                                    struct background * pba,
+//                                                    struct primordial * ppm,
+//                                                    struct nonlinear * pnl,
+//                                                    struct tszspectrum * ptsz)
+// {
 
-   int index_l = (int)  pvectsz[ptsz->index_multipole];
-   double z = pvectsz[ptsz->index_z];
-   //identical to sqrt(pvectsz[index_chi2])
-   double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
+//    int index_l = (int)  pvectsz[ptsz->index_multipole];
+//    double z = pvectsz[ptsz->index_z];
+//    //identical to sqrt(pvectsz[index_chi2])
+//    double d_A = pvecback[pba->index_bg_ang_distance]*pba->h*(1.+z); //multiply by h to get in Mpc/h => conformal distance Chi
 
-   pvectsz[ptsz->index_k_value_for_halo_bias] = (ptsz->ell[index_l]+0.5)/d_A; //units h/Mpc
-
-
-   double k = pvectsz[ptsz->index_k_value_for_halo_bias]; //in h/Mpc
-
-   double pk;
-   double * pk_ic = NULL;
+//    pvectsz[ptsz->index_k_value_for_halo_bias] = (ptsz->ell[index_l]+0.5)/d_A; //units h/Mpc
 
 
-  //Input: wavenumber in 1/Mpc
-  //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-   class_call(nonlinear_pk_at_k_and_z(
-                                     pba,
-                                     ppm,
-                                     pnl,
-                                     pk_linear,
-                                     k*pba->h,
-                                     0.,
-                                     pnl->index_pk_m,
-                                     &pk, // number *out_pk_l
-                                     pk_ic // array out_pk_ic_l[index_ic_ic]
-                                   ),
-                                   pnl->error_message,
-                                   pnl->error_message);
+//    double k = pvectsz[ptsz->index_k_value_for_halo_bias]; //in h/Mpc
+
+//    double pk;
+//    double * pk_ic = NULL;
 
 
-   //now compute P(k) in units of h^-3 Mpc^3
-   pvectsz[ptsz->index_pk_for_halo_bias] = pk*pow(pba->h,3.); //in units Mpc^3/h^3
-   return _SUCCESS_;
-}
+//   //Input: wavenumber in 1/Mpc
+//   //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
+//    class_call(nonlinear_pk_at_k_and_z(
+//                                      pba,
+//                                      ppm,
+//                                      pnl,
+//                                      pk_linear,
+//                                      k*pba->h,
+//                                      0.,
+//                                      pnl->index_pk_m,
+//                                      &pk, // number *out_pk_l
+//                                      pk_ic // array out_pk_ic_l[index_ic_ic]
+//                                    ),
+//                                    pnl->error_message,
+//                                    pnl->error_message);
+
+
+//    //now compute P(k) in units of h^-3 Mpc^3
+//    pvectsz[ptsz->index_pk_for_halo_bias] = pk*pow(pba->h,3.); //in units Mpc^3/h^3
+//    return _SUCCESS_;
+// }
 
 
 int do_mass_conversions( double logM,
@@ -17785,6 +17787,20 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
 }
  }
 
+ if (ptsz->has_isw_tsz){
+
+
+printf("\n\n");
+printf("########################################\n");
+printf("ISW x tSZ power spectrum :\n");
+printf("########################################\n");
+printf("\n");
+
+int index_l;
+for (index_l=0;index_l<ptsz->nlSZ;index_l++){
+ printf("ell = %e\t\t dl_isw_tsz = %e \n",ptsz->ell[index_l],ptsz->cl_isw_tsz[index_l]);
+  }
+ }
 
 
  if (ptsz->has_mean_y)

@@ -2265,6 +2265,19 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+
+    def dl_isw_sz(self):
+        """
+        (ISW x SZ) Return the ISW x tSZ power spectrum
+        """
+        dl = {}
+        dl['ell'] = []
+        dl['d_ell'] = []
+        for index in range(self.tsz.nlSZ):
+            dl['d_ell'].append(self.tsz.cl_isw_tsz[index])
+            dl['ell'].append(self.tsz.ell[index])
+        return dl
+
     def cl_sz_at_nu_in_GHz_in_microK2(self,nu_in_GHz):
         frequency_in_Hz = nu_in_GHz*1e9
         T_cmb = self.T_cmb()

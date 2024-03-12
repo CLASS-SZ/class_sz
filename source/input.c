@@ -4363,8 +4363,14 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
         else  if ((strstr(string1,"T08") != NULL)){
           ptsz->MF=4;
           ptsz->integrate_wrt_m200m = 1;
+
+          // avoid problems here 
+          if  (strstr(string1,"T08M500c") != NULL){
+          ptsz->MF=5;
+          ptsz->integrate_wrt_m500c = 1;
+          }
         }
-        else  if ((strstr(string1,"M500") != NULL)){
+        else  if ((strstr(string1,"M500") != NULL) || (strstr(string1,"T08M500c") != NULL)){
           ptsz->MF=5;
           ptsz->integrate_wrt_m500c = 1;
         }

@@ -10599,6 +10599,7 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
      +ptsz->has_sz_ps
      +ptsz->has_mean_y
      +ptsz->has_dydz
+     +ptsz->has_isw_tsz
      == 0)
      return 0;
 
@@ -14357,11 +14358,13 @@ if ( ((V->ptsz->has_isw_auto == _TRUE_) && (index_md == V->ptsz->index_md_isw_au
  ||  ((V->ptsz->has_isw_lens == _TRUE_) && (index_md == V->ptsz->index_md_isw_lens))
     ){
 
-  evaluate_pk_at_ell_plus_one_half_over_chi_today(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
-// double pk1 =  get_pk_lin_at_k_and_z((V->ptsz->ell[index_l]+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
+  // evaluate_pk_at_ell_plus_one_half_over_chi_today(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
+  int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
+  double pk1 =  get_pk_lin_at_k_and_z((V->ptsz->ell[index_l]+0.5)/chi,0.,V->pba,V->ppm,V->pnl,V->ptsz);
+
   // For all the above cases we add the linear matter power spectrum to the redshift integrand
   // evaluated at (ell+1/2)/Chi and redshift z=0
-  result *= V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+  result *= pk1; //V->pvectsz[V->ptsz->index_pk_for_halo_bias];
 
 
 }

@@ -322,6 +322,7 @@ cdef extern from "class.h":
         double * ell
         double * cl_sz_1h
         double * cl_sz_2h
+        double * cl_isw_tsz
         double * cl_te_y_y
         double * cl_tSZ_gallens_1h
         double * cl_tSZ_gallens_2h
