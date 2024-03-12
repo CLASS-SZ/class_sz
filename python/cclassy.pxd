@@ -273,6 +273,13 @@ cdef extern from "class.h":
         double cl_gal_gal_A_sn
         double * array_m_dndlnM
         int n_m_dndlnM
+        double alpha_cib
+        double T0_cib
+        double beta_cib
+        double gamma_cib
+        double delta_cib
+        double L0_cib
+        double sigma2_LM_cib
         double P0GNFW
         double c500
         double gammaGNFW

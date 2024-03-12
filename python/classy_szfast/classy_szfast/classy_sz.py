@@ -34,8 +34,13 @@ class classy_sz(classy):
         self.log.info("Initialized!")
 
         if self.use_class_sz_no_cosmo_mode == 1:
+            self.log.info("Initializing cosmology part!")
+            initial_parameters = self.extra_args.copy()
+            # print("initial_parameters:",initial_parameters)
+
             self.classy.set(initial_parameters)
             self.classy.compute_class_szfast()
+            self.log.info("cosmology part initialized!")
 
 
         # print(self.lensing_lkl)
@@ -168,6 +173,15 @@ class classy_sz(classy):
                         method="cl_galn_lens", # name of the method in classy.pyx
                         args_names=[],
                         args=[])
+                
+        if "cl_cib_kappa" in requirements:
+                # make sure cobaya still runs as it does for standard classy
+                requirements.pop("cl_cib_kappa")
+                # specify the method to collect the new observable
+                self.collectors["cl_cib_kappa"] = Collector(
+                        method="cl_lens_cib", # name of the method in classy.pyx
+                        args_names=[],
+                        args=[])
         super().must_provide(**requirements)
 
     # get the required new observable
@@ -266,6 +280,11 @@ class classy_sz(classy):
         cls = {}
         cls = deepcopy(self._current_state["sz_binned_cluster_counts"])
         return cls
+    
+    def get_cl_cib_kappa(self):
+        cls = {}
+        cls = deepcopy(self._current_state["cl_cib_kappa"])
+        return cls
 
     # IMPORTANT: this method is imported from cobaya and modified to accomodate the emulators
     def calculate(self, state, want_derived=True, **params_values_dict):
@@ -284,7 +303,11 @@ class classy_sz(classy):
         try:
             if self.use_class_sz_fast_mode == 1:
                 # start = time.perf_counter()
-                self.classy.compute_class_szfast()
+                if self.use_class_sz_no_cosmo_mode == 1:
+                    print(params_values)
+                    self.classy.compute_class_sz(params_values)
+                else: 
+                    self.classy.compute_class_szfast()
                 # end = time.perf_counter()
                 # print('classy_szfast took:',end-start)
             # self.classy.compute_class_szfast()

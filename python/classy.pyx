@@ -986,6 +986,21 @@ cdef class Class:
               self.tsz.alpha_c_beta_B12 = pdict_to_update['alpha_c_beta_B12']
           if k == 'x_outSZ':
               self.tsz.x_outSZ = pdict_to_update['x_outSZ']
+          # CIB parameters
+          if k == 'Redshift_evolution_of_dust_temperature':
+              self.tsz.alpha_cib = pdict_to_update['Redshift_evolution_of_dust_temperature']
+          if k == 'Dust_temperature_today_in_Kelvins':
+              self.tsz.T0_cib = pdict_to_update['Dust_temperature_today_in_Kelvins']
+          if k == 'Emissivity_index_of_sed':
+              self.tsz.beta_cib = pdict_to_update['Emissivity_index_of_sed']
+          if k == 'Power_law_index_of_SED_at_high_frequency':
+              self.tsz.gamma_cib = pdict_to_update['Power_law_index_of_SED_at_high_frequency']
+          if k == 'Redshift_evolution_of_L_-_M_normalisation':
+              self.tsz.delta_cib = pdict_to_update['Redshift_evolution_of_L_-_M_normalisation']
+          if k == 'Most_efficient_halo_mass_in_Msun':
+              self.tsz.L0_cib = pdict_to_update['Most_efficient_halo_mass_in_Msun']
+          if k == 'Size_of_halo_masses_sourcing_CIB_emission':
+              self.tsz.sigma2_LM_cib = pdict_to_update['Size_of_halo_masses_sourcing_CIB_emission']
         # print('array_redshift:',
         #       self.tsz.array_redshift[0],
         #       self.tsz.array_redshift[1],
