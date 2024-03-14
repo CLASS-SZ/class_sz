@@ -21681,17 +21681,53 @@ return result;
 
 
 double radial_kernel_W_galaxy_lensing_magnification_nlensmag_at_z(int index_g,
-                                           double z,
-                                           double * pvectsz,
-                                           struct background * pba,
-                                           struct tszspectrum * ptsz){
+                                         double * pvectsz,
+                                         double z,
+                                         struct background * pba,
+                                         struct tszspectrum * ptsz){
+
+// double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
+//
+// double z_asked  = z;
+// double phig = 0.;
+//
+// if(z_asked<ptsz->normalized_dndz_ngal_z[index_g][0])
+//    phig = 0.;//1e-100;
+// else if (z_asked>ptsz->normalized_dndz_ngal_z[index_g][ptsz->normalized_dndz_ngal_size[index_g]-1])
+//    phig = 0.;//1e-100;
+// else  phig =  pwl_value_1d(ptsz->normalized_dndz_ngal_size[index_g],
+//                          ptsz->normalized_dndz_ngal_z[index_g],
+//                          ptsz->normalized_dndz_ngal_phig[index_g],
+//                          z_asked);
+//
+// //  normalized galaxy redshift distribution in the bin:
+// // double phi_galaxy_at_z = pvectsz[ptsz->index_phi_galaxy_counts];
+// //double phi_galaxy_at_z = 1.; // BB debug
+// // H_over_c_in_h_over_Mpc = dz/dChi
+// // phi_galaxy_at_z = dng/dz normalized
+// double result = H_over_c_in_h_over_Mpc*phig;
+//
+//
+// return result;
+// }
+double z = pvectsz[ptsz->index_z];
+double z_asked = log(1.+z);
+
+if (z<exp(ptsz->array_z_W_lensmag[0])-1.)
+   z_asked = ptsz->array_z_W_lensmag[0];
+if (z>exp(ptsz->array_z_W_lensmag[ptsz->n_z_W_lensmag-1])-1.)
+   z_asked =  ptsz->array_z_W_lensmag[ptsz->n_z_W_lensmag-1];
 
 
+pvectsz[ptsz->index_W_lensmag] =  exp(pwl_value_1d(ptsz->n_z_W_lensmag,
+                                                     ptsz->array_z_W_lensmag,
+                                                     ptsz->array_W_lensmag,
+                                                     z_asked));
+
+///old
     double chi = sqrt(pvectsz[ptsz->index_chi2]);
-    evaluate_redshift_int_lensmag(pvectsz,ptsz);
+    //evaluate_redshift_int_lensmag(pvectsz,ptsz);
     double redshift_int_lensmag = pvectsz[ptsz->index_W_lensmag];
-
-
 
 
     pvectsz[ptsz->index_lensing_Sigma_crit] = 1./(redshift_int_lensmag);

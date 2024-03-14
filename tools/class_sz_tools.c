@@ -14036,12 +14036,13 @@ if ( ((V->ptsz->has_nlensmag_gallens_1h == _TRUE_) && (index_md == V->ptsz->inde
    ||((V->ptsz->has_nlensmag_tsz_1h == _TRUE_) && (index_md == V->ptsz->index_md_nlensmag_tsz_1h))
    ||((V->ptsz->has_nlensmag_tsz_2h == _TRUE_) && (index_md == V->ptsz->index_md_nlensmag_tsz_2h))
   ){
-// multiply by radial kernel for galaxies (squared for gxg quantities)
 
 int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
+if (index_g<10)
+printf("index_g = %d \n",index_g);
 double Wg = radial_kernel_W_galaxy_lensing_magnification_nlensmag_at_z(index_g,
+                                            V->pvectsz,
                                              z,
-                                             V->pvecback,
                                              V->pba,
                                              V->ptsz);
 
