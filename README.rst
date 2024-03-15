@@ -34,6 +34,8 @@ CLASS_SZ modules are located in the files:
 
 CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such as:
 
+- `cosmocnc <https://github.com/inigozubeldia/cosmocnc>`_,
+
 - `hmvec <https://github.com/simonsobs/hmvec/tree/master/hmvec>`_,
 
 - `ccl <https://github.com/LSSTDESC/CCL>`_,
@@ -42,7 +44,9 @@ CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such
 
 - `yxg <https://github.com/nikfilippas/yxg>`_,
 
-- `cosmocnc <https://github.com/inigozubeldia/cosmocnc>`_.
+- `halomodel_cib_tsz_cibxtsz <https://github.com/abhimaniyar/halomodel_cib_tsz_cibxtsz>`_.
+
+
 
 
 
