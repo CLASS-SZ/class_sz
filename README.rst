@@ -32,7 +32,7 @@ CLASS_SZ modules are located in the files:
 
 - **source/class_sz_clustercounts.c** for tSZ cluster counts. Since March 2024, CLASS_SZ cluster counts calculations are superseded by `cosmocnc <https://github.com/inigozubeldia/cosmocnc>`_ (`Zubeldia & Bolliet 2024 <https://arxiv.org/abs/2403.09589>`_). 
 
-CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such as:
+CLASS_SZ's outputs are regularly cross-checked with other CMBxLSS codes, such as:
 
 - `cosmocnc <https://github.com/inigozubeldia/cosmocnc>`_,
 
