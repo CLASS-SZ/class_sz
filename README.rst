@@ -13,23 +13,16 @@ The tutorial notebooks can be found at:
 
 https://github.com/CLASS-SZ/notebooks
 
-These notebooks along with the paper (`Bolliet et al 2023<https://arxiv.org/abs/2310.18482>`_) constitute the current documentation.
-
+These notebooks along with the paper (`Bolliet et al 2023 <https://arxiv.org/abs/2310.18482>`_) constitute the current documentation.
 
 CLASS_SZ is as fast as it gets, with full parallelization, implementation of high-accuracy cosmopower emulators (see below for some instructions) and usage of Fast Fourier Transforms (including FFTLog).
-
 
 Since it is based on Lesgourgues's class code, the halo model and LSS calculations (essentially based on distances and
 matter clustering) are always consistent with the cosmological model computed by class.
 
+CLASS_SZ is an extension of Julien Lesgourgues's `CLASS <https://github.com/lesgourg/class_public>`_ code.
 
-CLASS_SZ is an extension of Julien Lesgourgues's CLASS code.
-
-For download and information on CLASS, see http://class-code.net and https://github.com/lesgourg/class_public
-
-CLASS_SZ is initially based on Eiichiro Komatsu’s fortran code SZFAST.
-
-(See http://wwwmpa.mpa-garching.mpg.de/~komatsu/CRL/clusters/szpowerspectrumks/)
+CLASS_SZ is initially based on Eiichiro Komatsu’s fortran code `SZFAST <http://wwwmpa.mpa-garching.mpg.de/~komatsu/CRL/clusters/szpowerspectrumks/>`_.
 
 CLASS_SZ modules are located in the files:
 
@@ -47,7 +40,7 @@ CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such
 
 - `HaloGen <https://github.com/EmmanuelSchaan/HaloGen/tree/master>`_,
 
-- `yxg <https://github.com/nikfilippas/yxg>`_.
+- `yxg <https://github.com/nikfilippas/yxg>`_,
 
 - `cosmocnc <https://github.com/inigozubeldia/cosmocnc>`_.
 
