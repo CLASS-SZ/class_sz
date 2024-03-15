@@ -3,12 +3,20 @@ CLASS_SZ
 ==============================================
  Cosmic Linear Anisotropy Solving System with Fast and Accurate CMB, LSS and Halo Model Observables Computations
 
-To install/run class_sz on the fly, check the colab notebook: 
+To install/run CLASS_SZ on the fly, check the colab notebook: 
 
 `class_sz colab notebook <https://colab.research.google.com/drive/1AULgG4ZLLG1YXRI86L54-hpjWyl1X-8c?usp=sharing>`_.
 
+Further informaton on dowloading and installing the code are given hereafter, for Mac, M1/2 Mac, and Linux.
 
-This CMB/LSS code is close to be as fast as it gets, with full parallelization, implementation of high-accuracy cosmopower emulators (see below for some instructions) and usage of Fast Fourier Transforms (including FFTLog).
+The tutorial notebooks can be found at:
+
+https://github.com/CLASS-SZ/notebooks
+
+These notebooks along with the paper (`Bolliet et al 2023<https://arxiv.org/abs/2310.18482>`_) constitute the current documentation.
+
+
+CLASS_SZ is as fast as it gets, with full parallelization, implementation of high-accuracy cosmopower emulators (see below for some instructions) and usage of Fast Fourier Transforms (including FFTLog).
 
 
 Since it is based on Lesgourgues's class code, the halo model and LSS calculations (essentially based on distances and
@@ -23,7 +31,13 @@ CLASS_SZ is initially based on Eiichiro Komatsu’s fortran code SZFAST.
 
 (See http://wwwmpa.mpa-garching.mpg.de/~komatsu/CRL/clusters/szpowerspectrumks/)
 
-CLASS_SZ modules are located in the files **source/class_sz.c**, **source/class_sz_clustercounts.c**  and **tools/class_sz_tools.c**.
+CLASS_SZ modules are located in the files:
+
+- **source/class_sz.c** for the main CLASS_SZ functions, 
+
+- **tools/class_sz_tools.c** for useful routines
+
+- **source/class_sz_clustercounts.c** for tSZ cluster counts. Since March 2024, CLASS_SZ cluster counts calculations are superseded by `cosmocnc <https://github.com/inigozubeldia/cosmocnc>`_ (`Zubeldia & Bolliet 2024 <https://arxiv.org/abs/2403.09589>`_). 
 
 CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such as:
 
@@ -35,17 +49,7 @@ CLASS_SZ's outputs are regularly cross-checked with other halo model codes, such
 
 - `yxg <https://github.com/nikfilippas/yxg>`_.
 
-
-
-Tutorials
---------------
-
-
-The tutorial notebooks can be found at:
-
-https://github.com/CLASS-SZ/notebooks
-
-These notebooks along with the paper (<https://arxiv.org/abs/2310.18482>`_) constitute the current documentation.
+- `cosmocnc <https://github.com/inigozubeldia/cosmocnc>`_.
 
 
 
