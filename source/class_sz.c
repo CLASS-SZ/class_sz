@@ -1277,7 +1277,7 @@ if (ptsz->has_dydz){
 
 // tabulate lensing magnificaion integral, only when requested
 tabulate_redshift_int_lensmag(ptsz,pba);
-
+tabulate_redshift_int_nlensmag(ptsz,pba); //ola2
 tabulate_redshift_int_gallens_sources(ptsz,pba);
 
 // only when requested:
@@ -21710,26 +21710,28 @@ double radial_kernel_W_galaxy_lensing_magnification_nlensmag_at_z(int index_g,
 //
 // return result;
 // }
-double z = pvectsz[ptsz->index_z];
 double z_asked = log(1.+z);
 
-if (z<exp(ptsz->array_z_W_lensmag[0])-1.)
-   z_asked = ptsz->array_z_W_lensmag[0];
-if (z>exp(ptsz->array_z_W_lensmag[ptsz->n_z_W_lensmag-1])-1.)
-   z_asked =  ptsz->array_z_W_lensmag[ptsz->n_z_W_lensmag-1];
+if (z<exp(ptsz->array_z_W_nlensmag[index_g][0])-1.)
+   z_asked = ptsz->array_z_W_nlensmag[index_g][0];
+if (z>exp(ptsz->array_z_W_nlensmag[index_g][ptsz->n_z_W_lensmag-1])-1.)
+z_asked =  ptsz->array_z_W_nlensmag[index_g][ptsz->n_z_W_lensmag-1];
+   z_asked =  ptsz->array_z_W_nlensmag[index_g][ptsz->n_z_W_lensmag-1];
 
 
 pvectsz[ptsz->index_W_lensmag] =  exp(pwl_value_1d(ptsz->n_z_W_lensmag,
-                                                     ptsz->array_z_W_lensmag,
-                                                     ptsz->array_W_lensmag,
+                                                     ptsz->array_z_W_nlensmag[index_g],
+                                                     ptsz->array_W_nlensmag[index_g],
                                                      z_asked));
+  printf("Ola 1\n");
+
 
 ///old
     double chi = sqrt(pvectsz[ptsz->index_chi2]);
     //evaluate_redshift_int_lensmag(pvectsz,ptsz);
     double redshift_int_lensmag = pvectsz[ptsz->index_W_lensmag];
 
-
+    printf("Ola 2 \n");
     pvectsz[ptsz->index_lensing_Sigma_crit] = 1./(redshift_int_lensmag);
 
     if (isnan(pvectsz[ptsz->index_lensing_Sigma_crit])||isinf(pvectsz[ptsz->index_lensing_Sigma_crit])){

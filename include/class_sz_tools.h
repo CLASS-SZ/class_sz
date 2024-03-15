@@ -321,7 +321,9 @@ double delta_to_delta_prime_nfw(
 
   int tabulate_redshift_int_lensmag(struct tszspectrum * ptsz,
                                     struct background * pba);
-
+  int tabulate_redshift_int_nlensmag(struct tszspectrum * ptsz,
+                                    struct background * pba);
+                                    
   double evaluate_redshift_int_gallens_sources(double z,
                                     struct tszspectrum * ptsz);
 
@@ -705,7 +707,7 @@ double get_gas_pressure_profile_at_k_m_z(double l_asked,
 double get_gas_pressure_profile_at_k(double k_asked,
                                     struct tszspectrum * ptsz);
 
-  
+
 int tabulate_hmf_counter_terms_nmin(struct background * pba,
                                     struct nonlinear * pnl,
                                     struct primordial * ppm,

@@ -24680,6 +24680,122 @@ int evaluate_redshift_int_lensmag(double * pvectsz,
 return _SUCCESS_;
 }
 
+int tabulate_redshift_int_nlensmag(struct tszspectrum * ptsz,
+                                  struct background * pba){
+
+if (ptsz->has_nlensmag_gallens_1h
+  + ptsz->has_nlensmag_gallens_2h
+  + ptsz->has_nlensmag_tsz_1h
+  + ptsz->has_nlensmag_tsz_2h
+   == _FALSE_){
+    // if (ptsz->sz_verbose>=1)
+    // printf("-> Not tabulating Wz for lensing magnification\n");
+    return 0;
+  }
+
+if (ptsz->sz_verbose>=1){
+printf("-> [nlensmag] Tabulating Wz for n lensing magnification\n");
+}
+  //Array of z
+  double z_min = r8_min(ptsz->z1SZ,ptsz->z1SZ_dndlnM);
+  double z_max = r8_max(ptsz->z2SZ,ptsz->z2SZ_dndlnM);
+  int index_z;
+  double ln1pz,z;
+
+  class_alloc(ptsz->array_W_nlensmag,sizeof(double **)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+  class_alloc(ptsz->array_z_W_nlensmag,sizeof(double **)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+
+  int index_g;
+  for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+  class_alloc(ptsz->array_W_nlensmag[index_g],sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+  class_alloc(ptsz->array_z_W_nlensmag[index_g],sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
+  }
+
+
+for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+
+  if (ptsz->sz_verbose>0)
+  printf("-> [nlensmag] starting computation for sample %d.\n",index_g);
+
+  double * pvectsz;
+  double * pvecback;
+  class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
+  class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+  for (index_z=0; index_z<ptsz->n_z_W_lensmag; index_z++) //ola2 n_z_W_nlensmag ???
+  {
+    if (ptsz->sz_verbose>0)
+    printf("-> [nlensmag] in the loop for sample %d.\n",index_g);
+
+    ln1pz =  log(1.+z_min)
+              +index_z*(log(1.+z_max)-log(1.+z_min))
+              /(ptsz->n_z_W_lensmag-1.); // log(1+z)
+
+    z = exp(ln1pz) - 1.;
+
+    // set redshift z
+    pvectsz[ptsz->index_z] = z;
+
+    int first_index_back = 0;
+    double tau;
+
+    // printf("-> start tabulating Wz for lensing magnification\n");
+
+    class_call(background_tau_of_z(pba,z,&tau),
+               pba->error_message,
+               pba->error_message);
+
+    class_call(background_at_tau(pba,
+                                 tau,
+                                 pba->long_info,
+                                 pba->inter_normal,
+                                 &first_index_back,
+                                 pvecback),
+               pba->error_message,
+               pba->error_message);
+
+    // set chi at redshift z in Mpc/h
+    pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+
+    printf("-> doing tabulating Wz for lensing magnification\n");
+
+    printf("-> Computing integral at z=%.3e\n",z);
+    double result;
+    redshift_int_lensmag(ptsz,pba,pvectsz,&result);
+    printf("-> 2 doing tabulating Wz for lensing magnification\n");
+    if (result <= 0.)
+      result = 1e-100;
+    ptsz->array_W_nlensmag[index_g][index_z] = log(result);
+    ptsz->array_z_W_nlensmag[index_g][index_z] = ln1pz;
+    printf("-> integral z = %.3e W = =%.3e\n",z,exp(ptsz->array_W_lensmag[index_z]));
+}
+if (ptsz->sz_verbose>=1)
+printf("-> end tabulating Wz for lensing magnification\n");
+ free(pvectsz);
+ free(pvecback);
+}
+}
+
+// int evaluate_redshift_int_nlensmag(double * pvectsz,
+//                                   struct tszspectrum * ptsz)
+//   {
+//
+//    double z = pvectsz[ptsz->index_z];
+//    double z_asked = log(1.+z);
+//
+//    if (z<exp(ptsz->array_z_W_nlensmag[0])-1.)
+//       z_asked = ptsz->array_z_W_nlensmag[0];
+//    if (z>exp(ptsz->array_z_W_nlensmag[ptsz->n_z_W_lensmag-1])-1.)
+//       z_asked =  ptsz->array_z_W_nlensmag[ptsz->n_z_W_lensmag-1];
+//
+//
+//    pvectsz[ptsz->index_W_nlensmag] =  exp(pwl_value_1d(ptsz->n_z_W_lensmag,
+//                                                         ptsz->array_z_W_nlensmag,
+//                                                         ptsz->array_W_nlensmag,
+//                                                         z_asked));
+//
+// return _SUCCESS_;
+// }
 
 
 // Tabulate redshift_int_lensmag

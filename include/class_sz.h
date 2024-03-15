@@ -2175,6 +2175,8 @@ double * steps_m;
   double ** array_L_sat_at_z_and_M_at_nu;
   //double * array_L_sat_at_z_and_M_at_nu_prime;
 
+  double ** array_z_W_nlensmag;
+  double ** array_W_nlensmag;
 
 
   double * array_z_W_lensmag;
