@@ -21231,6 +21231,8 @@ double get_source_galaxy_number_counts(double z,
                            ptsz->normalized_source_dndz_phig,
                            z_asked);
 
+
+// return phig; 
 // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
  double shift;
  double stretch;
@@ -21296,6 +21298,8 @@ double get_galaxy_number_counts(double z,
                            ptsz->normalized_dndz_phig,
                            z_asked);
 
+
+// return phig;
 // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
 double shift;
 double stretch;

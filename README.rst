@@ -24,11 +24,11 @@ CLASS_SZ is an extension of Julien Lesgourgues's `CLASS <https://github.com/lesg
 
 CLASS_SZ is initially based on Eiichiro Komatsu’s fortran code `SZFAST <http://wwwmpa.mpa-garching.mpg.de/~komatsu/CRL/clusters/szpowerspectrumks/>`_.
 
-CLASS_SZ modules are located in the files:
+CLASS_SZ functionalities are located in the files:
 
 - **source/class_sz.c** for the main CLASS_SZ functions, 
 
-- **tools/class_sz_tools.c** for useful routines
+- **tools/class_sz_tools.c** for useful routines,
 
 - **source/class_sz_clustercounts.c** for tSZ cluster counts. Since March 2024, CLASS_SZ cluster counts calculations are superseded by `cosmocnc <https://github.com/inigozubeldia/cosmocnc>`_ (`Zubeldia & Bolliet 2024 <https://arxiv.org/abs/2403.09589>`_). 
 
@@ -295,12 +295,14 @@ New Mac OS with M1 chip
 
 We advise installing fftw, gsl, openmp with anaconda, i.e., conda forge etc..
 
-LD_LIBRARY_PATH becomes DYLD_LIBRARY_PATH, hence, export with:
+LD_LIBRARY_PATH becomes DYLD_LIBRARY_PATH, hence, export with, e.g.,:
+
 DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/anaconda3/lib
 export DYLD_LIBRARY_PATH
 
 
 In Makefile:
+
 CC = clang
 PYTHON ?= /set/path/to/anaconda3/python
 OPTFLAG = -O4 -ffast-math # dont use: -arch x86_64
@@ -310,9 +312,12 @@ INCLUDES =  -I../include -I/usr/local/include/ -I/path/to/anaconda3/include/
 $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/path/to/anaconda3/lib/ -lgsl -lgslcblas -lfftw3 -lm
 
 In setup.py:
+
 extra_link_args=['-lomp','-lgsl','-lfftw3','-lgslcblas'])
 
-Tensorflow.
+Tensorflow on mac M1
+----------------------
+
 To install the new version of class_sz, you will need tensorflow (needed for the cosmopower emulators). On M1/M2 make sure, you have the arch64 version of conda (if not, you need to remove your entire conda and install the arch64 version for Apple sillicon).
 
 This video might be helpful https://www.youtube.com/watch?v=BEUU-icPg78
@@ -321,7 +326,7 @@ Then you can follow standard Tensorflow installation recipe for M1, e.g., https:
 Compiler - GCC version
 ------------------------------
 
-The current gcc version used in the makefile is gcc-11. But this  can be changed easily to any gcc version that is available to you.
+The gcc copiler can be changed easily to any gcc version that is available to you.
 There are two modifications:
 
 1) Line 20 of Makefile: CC = gcc-XX (where XX=11 in our case.)

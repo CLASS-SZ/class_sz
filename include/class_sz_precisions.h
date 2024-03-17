@@ -66,7 +66,7 @@ class_sz_ptsz_parameter(n_m_density_profile,int,100)
 class_sz_ptsz_parameter(n_z_density_profile,int,100)
 
 class_sz_ptsz_parameter(fixed_c200m,double,7.)
-class_sz_ptsz_parameter(fixed_c200c,double,7.)
+class_sz_ptsz_parameter(fixed_c200c,double,5.)
 
 
 class_sz_ptsz_parameter(n_m_matter_density_profile,int,100)

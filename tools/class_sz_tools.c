@@ -20513,7 +20513,7 @@ double integrand_hmf_counter_terms_b1min(double lnM_halo, void *p){
         else if (V->ptsz->delta_def_matter_density == 3){
           c_delta_matter = evaluate_cvir_of_mvir(M_halo,z,V->ptsz,V->pba);
         }
-      M_halo *= m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      M_halo *= 1.;//m_min_fac m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
       ///done with mass consistency.
 
       double result = hmf*M_halo/rho_cb;
@@ -23627,7 +23627,7 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
         else if (ptsz->delta_def_matter_density == 3){
           c_delta_matter = evaluate_cvir_of_mvir(m_min,z,ptsz,pba);
         }
-      double m_min_fac = m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      double m_min_fac = 1.;//m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
       ///done with mass consistency.
 
 
@@ -23718,7 +23718,7 @@ double integrand_hmf_counter_terms_b2min(double lnM_halo, void *p){
         else if (V->ptsz->delta_def_matter_density == 3){
           c_delta_matter = evaluate_cvir_of_mvir(M_halo,z,V->ptsz,V->pba);
         }
-      M_halo *= m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      M_halo *= 1.;//m_min_fac m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
       ///done with mass consistency.
 
       double result = hmf*M_halo/rho_cb;
@@ -23811,7 +23811,7 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
         else if (ptsz->delta_def_matter_density == 3){
           c_delta_matter = evaluate_cvir_of_mvir(m_min,z,ptsz,pba);
         }
-      double m_min_fac = m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      double m_min_fac = 1.;//m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
       ///done with mass consistency.
 
           double b2_min = -r*rho_cb/m_min/m_min_fac/n_min;
@@ -23902,7 +23902,7 @@ double integrand_hmf_counter_terms_nmin(double lnM_halo, void *p){
         else if (V->ptsz->delta_def_matter_density == 3){
           c_delta_matter = evaluate_cvir_of_mvir(M_halo,z,V->ptsz,V->pba);
         }
-      M_halo *= m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      M_halo *= 1.;// m_min_fac m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
       ///done with mass consistency.
 
       double rho_crit_at_z = V->ptsz->Rho_crit_0;
@@ -24003,7 +24003,7 @@ for (index_z=0; index_z<ptsz->n_z_hmf_counter_terms; index_z++)
         else if (ptsz->delta_def_matter_density == 3){
           c_delta_matter = evaluate_cvir_of_mvir(m_min,z,ptsz,pba);
         }
-      double m_min_fac = m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
+      double m_min_fac = 1.;//m_nfw(xout*c_delta_matter)/ m_nfw(c_delta_matter);
       ///done with mass consistency.
 
           double n_min = (1.-r)*rho_cb/m_min/m_min_fac;
