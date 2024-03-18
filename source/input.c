@@ -1759,7 +1759,7 @@ int input_read_parameters(
 
       class_read_double("kstar_damping_1h_term (1/Mpc)",ptsz->kstar_damping_1h_term_Mpc);
       class_read_int("damping_1h_term",ptsz->damping_1h_term);
-
+      class_read_double("photo_z_params",ptsz->photo_z_params);
       class_read_double("dndz_shift_source_gal",ptsz->dndz_shift_source_gal);
       class_read_double("dndz_shift_gal",ptsz->dndz_shift_gal);
       class_read_double("dndz_stretch_source_gal",ptsz->dndz_stretch_source_gal);
@@ -6792,6 +6792,7 @@ int input_default_params(
   ptsz->f_cen_HOD = 1.;
   ptsz->Delta_z_lens = 0.; // DES photo-z errors
   ptsz->Delta_z_source = 0.;
+  ptsz->photo_z_params = 0.; //
   ptsz->dndz_shift_gal = 0; // shift and stretch params
   ptsz->dndz_shift_source_gal = 0; //as in https://arxiv.org/pdf/2210.08633.pdf
   ptsz->dndz_stretch_gal = 1.;

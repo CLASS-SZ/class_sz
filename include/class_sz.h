@@ -1925,6 +1925,7 @@ double * steps_m;
   double * theta_kSZ2_gal_theta_grid;
   int N_kSZ2_gal_theta_grid;
 
+  int photo_z_params;
   double dndz_shift_gal;
   double dndz_shift_source_gal;
   double dndz_stretch_gal;

@@ -21832,10 +21832,12 @@ double get_source_galaxy_number_counts(double z,
                            ptsz->normalized_source_dndz_phig,
                            z_asked);
 
+ double result;
+if (ptsz->photo_z_params==1){
 // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
  double shift;
  double stretch;
- double result;
+
  double z_mean;
  shift = ptsz->dndz_shift_source_gal;
  stretch = ptsz->dndz_stretch_source_gal;
@@ -21861,13 +21863,17 @@ double get_source_galaxy_number_counts(double z,
                             ptsz->normalized_source_dndz_phig,
                             z_asked_shifted);
 
+ // double m;
+ // m = ptsz->shear_callibration_m;
  result = (1./stretch) * phig_shifted;
  // printf("phig= %.8e\n",phig);
  // printf("phig_shifted= %.8e\n",result);
-double m;
-m = ptsz->shear_callibration_m;
-return (1.+m)*result;
 
+}
+
+else result = phig;
+
+return result;
                                     }
 
 
@@ -21897,12 +21903,14 @@ double get_galaxy_number_counts(double z,
                            ptsz->normalized_dndz_phig,
                            z_asked);
 
-// Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
-double shift;
-double stretch;
-double result;
-double z_mean;
-//
+  double result;
+
+if (ptsz->photo_z_params==1){
+  // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
+  double shift;
+  double stretch;
+
+  double z_mean;
 // printf("z_asked= %.8e\n",z_asked);
 shift = ptsz->dndz_shift_gal;
 stretch = ptsz->dndz_stretch_gal;
@@ -21934,10 +21942,10 @@ else phig_shifted =  pwl_value_1d(ptsz->normalized_dndz_size,
                            z_asked_shifted);
 
 result = (1./stretch) * phig_shifted;
-// printf("z_asked_shifted= %.8e\n",z_asked_shifted );
-// printf("z_asked= %.8e\n",z_asked);
-// printf("phig= %.8e\n",phig);
-// printf("phig_shifted= %.8e\n",result);
+
+}
+
+else result =phig;
 
 return result;
 
