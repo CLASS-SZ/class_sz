@@ -1815,8 +1815,9 @@ int input_read_parameters(
 
 
      class_read_int("include_y_counterterms_in_yk",ptsz->include_y_counterterms_in_yk);
-
-
+     class_read_int("include_g_counterterms_in_gk",ptsz->include_g_counterterms_in_gk);
+     class_read_int("include_gk_counterterms_in_gk",ptsz->include_gk_counterterms_in_gk);
+     class_read_int("include_k_counterterms_in_gk",ptsz->include_k_counterterms_in_gk);
 
 
       ptsz->M_min_ng_bar = ptsz->M1SZ;
@@ -4146,6 +4147,10 @@ int input_read_parameters(
       class_read_int("pk_nonlinear_for_vrms2",ptsz->pk_nonlinear_for_vrms2);
 
       class_read_int("hm_consistency",ptsz->hm_consistency);
+      ptsz->hm_consistency_ngbar = ptsz->hm_consistency; // by default set same for ng bar as for everything else
+      class_read_int("hm_consistency_ngbar",ptsz->hm_consistency_ngbar); // read if ng bar has to be treated differently
+
+
       class_read_int("T10_alpha_fixed",ptsz->T10_alpha_fixed);
 
 
@@ -6779,7 +6784,9 @@ int input_default_params(
   // ptsz->n_m_matter_density_profile =  100;
 
   ptsz->include_y_counterterms_in_yk = 1;
-
+  ptsz->include_g_counterterms_in_gk = 1;
+  ptsz->include_k_counterterms_in_gk = 1;
+  ptsz->include_gk_counterterms_in_gk = 1;
   //mass limits: h^-1 Msun
   ptsz->M1SZ = 1.e10;
   ptsz->M2SZ = 5.e15;

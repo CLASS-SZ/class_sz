@@ -1436,6 +1436,7 @@ double szcounts_ntot;
   int use_bg_eff_in_ksz2g_eff;
 
   int hm_consistency;
+  int hm_consistency_ngbar;
 
   int use_class_sz_fast_mode;
   double * array_lnk;
@@ -1527,7 +1528,9 @@ double szcounts_ntot;
 
 
   int include_y_counterterms_in_yk; // switch for counter term yk 2h calculation for y-part only.
-
+  int include_g_counterterms_in_gk; // switch for counter term gk 2h calculation for g-part only.
+  int include_k_counterterms_in_gk; // switch for counter term gk 2h calculation for k-part only.
+  int include_gk_counterterms_in_gk; // switch for counter term gk 2h calculation for k-part only.
 
   double m_min_counter_terms;
   double m_max_counter_terms;

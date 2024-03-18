@@ -15969,14 +15969,16 @@ else{
                                            params,ptsz->patterson_show_neval);
 
 
-   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
-     double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-     double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
-     double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
-     double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-     r_m_1 += bmin_umin;
-     // printf("counter terms done r_m_1\n");
-  }
+  if (ptsz->include_g_counterterms_in_gk){
+      if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+        double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+        double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+        double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+        double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+        r_m_1 += bmin_umin;
+        // printf("counter terms done r_m_1\n");
+      }
+      }
 
 
   pvectsz[ptsz->index_part_id_cov_hsv] = 2;
@@ -15990,14 +15992,16 @@ else{
                                            integrand_mass,
                                            params,ptsz->patterson_show_neval);
 
-   if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
-   double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-   double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
-   double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
-   double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-   r_m_2 += bmin_umin;
-   // printf("counter terms done r_m_2\n");
- }
+  if (ptsz->include_k_counterterms_in_gk){
+      if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+      double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+      double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+      double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+      double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+      r_m_2 += bmin_umin;
+      // printf("counter terms done r_m_2\n");
+        }
+      }
 
 
   // corrected to match Mat M. consistency treatment in hmvec
@@ -19046,51 +19050,66 @@ else {
 
         if ( (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N
           && (int) pvectsz[ptsz->index_md] != ptsz->index_md_cov_N_N_hsv){
+
           if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
-         // autocorrelation 2-halo cases (correlation of same fields).
-         if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_bb_at_z_2h)
-         | ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_b_at_z_2h)
-         // || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_em_at_z_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_HI_at_z_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tau_tau_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_custom1_custom1_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_lensmag_2h)
-         || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)  && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_gallens_2h)
-         || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_lens_2h)
-        ){
+              // autocorrelation 2-halo cases (correlation of same fields).
+              if (( (int) pvectsz[ptsz->index_md] == ptsz->index_md_2halo)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_m_y_y_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_at_z_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_gg_at_z_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_bb_at_z_2h)
+                    | ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_b_at_z_2h)
+                    // || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_em_at_z_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_pk_HI_at_z_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lens_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_tau_tau_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_custom1_custom1_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_lensmag_2h)
+                    || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)  && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_gallens_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_lens_2h)
+                    ){
 
-             double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-             double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
-             double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
-             double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
-             r += bmin_umin;
-             if (isnan(bmin_umin)){
-              printf("nan in concistency condition bmin = %.5e n = %.5e I0 = %.5e b = %.5e.\n",
-            bmin,pvectsz[ptsz->index_hmf],I0,pvectsz[ptsz->index_halo_bias]);
-              exit(0);
-            }
-            }
-        // all of the 1-halo cases
-        else {
-          if (ptsz->sz_verbose>10)
-            printf("adding counter terms 1h\n");
+                  double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+                  double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+                  double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+                  double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+                  r += bmin_umin;
+                  if (isnan(bmin_umin)){
+                    printf("nan in concistency condition bmin = %.5e n = %.5e I0 = %.5e b = %.5e.\n",
+                  bmin,pvectsz[ptsz->index_hmf],I0,pvectsz[ptsz->index_halo_bias]);
+                    exit(0);
+                  }
+                  }
+              // all of the 1-halo cases
+              else {
 
-               double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
-               double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
-               double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
-               r += nmin_umin;
-               }
-             }
+                if (ptsz->sz_verbose>10)
+                  printf("adding counter terms 1h\n");
+
+
+                  // treat some cases seprately (e.g., useful when comparing with sims)
+                  if (((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_lens_1h)){
+                    if (ptsz->include_gk_counterterms_in_gk){
+                        double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+                        double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+                        double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
+                        r += nmin_umin;
+                        }
+                    }
+
+                  else{
+                    double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+                    double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+                    double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
+                    r += nmin_umin;
+                    }
+              }
+                  }
 
                                            }
   }
@@ -20194,7 +20213,7 @@ for (index_z=0; index_z<ptsz->n_arraySZ; index_z++)
           //   printf("-> [1gal] ngbar for sample at z = %.3e is %.3e.\n",z,r);
         // here we always impose the consistency condition.
         // add counter terms:
-        if (ptsz->hm_consistency){
+        if (ptsz->hm_consistency_ngbar){
          double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
          double I0 = integrand_mean_galaxy_number(log(m_min),params);
          double nmin_umin = nmin*I0/pvectsz[ptsz->index_hmf];
