@@ -3942,6 +3942,8 @@ int input_read_parameters(
     class_alloc(ptsz->alpha_s_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     class_alloc(ptsz->M1_prime_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     class_alloc(ptsz->M_min_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->M_max_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+
     class_alloc(ptsz->M0_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     class_alloc(ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     class_alloc(ptsz->f_cen_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
@@ -3953,6 +3955,7 @@ int input_read_parameters(
         ptsz->alpha_s_HOD_ngal[index_g] = 1.;
         ptsz->M1_prime_HOD_ngal[index_g] = 1.;
         ptsz->M_min_HOD_ngal[index_g] = 1e11;
+        ptsz->M_max_HOD_ngal[index_g] = 1e20;
         ptsz->M0_HOD_ngal[index_g] = 1e11;
         ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g] = 1.;
         ptsz->f_cen_HOD_ngal[index_g] = 1.;
@@ -3964,6 +3967,8 @@ int input_read_parameters(
         class_read_double(input_param_name,ptsz->M1_prime_HOD_ngal[index_g]);
         sprintf(input_param_name,"%s%d","M_min_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->M_min_HOD_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","M_max_HOD_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->M_max_HOD_ngal[index_g]);
         sprintf(input_param_name,"%s%d","M0_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->M0_HOD_ngal[index_g]);
         sprintf(input_param_name,"%s%d","x_out_truncated_nfw_profile_satellite_galaxies_ngal_",index_g);
@@ -4097,6 +4102,7 @@ int input_read_parameters(
       class_read_double("thetai_scf",ptsz->thetai_scf);
 
       class_read_double("M_min_HOD",ptsz->M_min_HOD);
+      class_read_double("M_max_HOD",ptsz->M_max_HOD);
       class_read_double("M_min_HOD_cib",ptsz->M_min_HOD_cib);
       class_read_double("f_cen_HOD",ptsz->f_cen_HOD);
       class_read_double("Delta_z_lens",ptsz->Delta_z_lens);
@@ -4369,7 +4375,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
           ptsz->MF=4;
           ptsz->integrate_wrt_m200m = 1;
 
-          // avoid problems here 
+          // avoid problems here
           if  (strstr(string1,"T08M500c") != NULL){
           ptsz->MF=5;
           ptsz->integrate_wrt_m500c = 1;
@@ -7520,6 +7526,7 @@ int input_default_params(
 
   //HOD
   ptsz->M_min_HOD = pow(10,11.5); //Msun/h
+  ptsz->M_max_HOD = pow(10,20.5); //Msun/h
   ptsz->M_min_HOD_cib = pow(10,11.5); //Msun/h
   ptsz->M1_prime_HOD = pow(10,12.6); //Msun/h
   ptsz->alpha_s_HOD = 1.;

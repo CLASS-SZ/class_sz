@@ -282,6 +282,7 @@ cdef extern from "class.h":
         double sigma_log10M_HOD
         double M1_prime_HOD
         double M_min_HOD
+        double M_max_HOD
         double x_inSZ
         double x_outSZ
         double HSEbias
@@ -1121,6 +1122,7 @@ cdef extern from "class.h":
                                                double M_min,
                                                double sigma_log10M,
                                                double fcen,
+                                               double M_max_HOD,
                                                void * ptsz,
                                                void * pba)
 

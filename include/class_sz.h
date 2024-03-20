@@ -1394,6 +1394,7 @@ double szcounts_ntot;
 
   //HOD
   double M_min_HOD;
+  double M_max_HOD;
   double M_min_HOD_cib;
   double M0_HOD;
   double sigma_log10M_HOD;
@@ -1401,6 +1402,7 @@ double szcounts_ntot;
   double M1_prime_HOD;
 
   double * M_min_HOD_ngal;
+  double * M_max_HOD_ngal;
   double * M0_HOD_ngal;
   double * sigma_log10M_HOD_ngal;
   double * alpha_s_HOD_ngal;
@@ -2585,6 +2587,7 @@ double HOD_mean_number_of_central_galaxies(double z,
                                            double M_min,
                                            double sigma_lnM,
                                            double f_cen,
+                                           double M_max_HOD,
                                            struct tszspectrum * ptsz,
                                            struct background * pba);
 

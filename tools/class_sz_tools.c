@@ -9024,13 +9024,13 @@ for (index_m=0;
           // //
           // //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
           //  pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
-         
+
           double mvir = pvectsz[ptsz->index_mVIR];
 
           pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
-         
+
           // printf("mvir/mvir = %.5e\n",mvir/pvectsz[ptsz->index_mVIR]);
-         
+
           pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],
                                                             pvectsz[ptsz->index_Delta_c],
                                                             pvectsz[ptsz->index_Rho_crit],
@@ -9063,10 +9063,10 @@ for (ix=0; ix<N; ix++){
           double P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
           double xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
           double beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
-          
+
           double gamma = ptsz->gamma_B12;
           double alpha = ptsz->alpha_B12;
-          
+
           double p_gnfw_x = P0*pow(x[ix]/xc,gamma)*pow(1.+ pow(x[ix]/xc,alpha),-beta);
           Px[ix] = p_gnfw_x;
 
@@ -9143,7 +9143,7 @@ for (ix=0; ix<N; ix++){
   //   Pkp[index_k] = 0.;
   //   // lp = 1.e-100;
   // }
-  
+
   //
   // ptsz->array_pressure_profile_ln_k[index_k] = log(kp[index_k]);
 
@@ -9434,14 +9434,14 @@ for (index_m=0;
   // ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = log(result);
   ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[index_l][index_m_z] = result;
   // printf("ell = %.3e z = %.3e m = %.3e rho = %.3e\n",ell,z,exp(lnM),log(result));
-  
+
   // printf("--------->In parallel region B12 l (class_sz_tool.c)  l = %.5e m = %.5e z = %.5e res = %.5e\n",
   //       ell,
   //       exp(lnM),
   //       z,
   //       result);
-  
-  
+
+
   index_m_z += 1;
      }
 
@@ -9681,7 +9681,7 @@ return _SUCCESS_;
 //   double mvir  = pvectsz[ptsz->index_mVIR];
 
 //   // if (ptsz->truncate_gas_pressure_wrt_rvir){
-  
+
 //   //   pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
 //   //   if (ptsz->sz_verbose>1){
 //   //       printf("truncating wrt rvir\n");
@@ -9689,7 +9689,7 @@ return _SUCCESS_;
 //   // }
 //   // else
 //   //   pvectsz[ptsz->index_mVIR] = pvectsz[ptsz->index_m200c];
-    
+
 //   // if (ptsz->sz_verbose>1)
 //   //   printf("----> tab B12 got mvir = %.3e ratio = %.18e\n",pvectsz[ptsz->index_mVIR], pvectsz[ptsz->index_mVIR]/mvir);
 //  //
@@ -9820,8 +9820,8 @@ ptsz->n_k_pressure_profile = ptsz->N_samp_fftw;
 
 
 
-////FFT part 
-  int n_k = ptsz->n_k_pressure_profile; // 
+////FFT part
+  int n_k = ptsz->n_k_pressure_profile; //
   class_alloc(ptsz->array_pressure_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
   class_alloc(ptsz->array_pressure_profile_ln_p_at_lnk,n_k*sizeof(double *),ptsz->error_message);
 
@@ -9842,7 +9842,7 @@ ptsz->n_k_pressure_profile = ptsz->N_samp_fftw;
           }
         else{
 
-            double P0GNFW = 1.; // doesnt matter 
+            double P0GNFW = 1.; // doesnt matter
             double alphaGNFW = ptsz->alphaGNFW;
             double betaGNFW = ptsz->betaGNFW;
             double gammaGNFW = ptsz->gammaGNFW;
@@ -9894,7 +9894,7 @@ ptsz->n_k_pressure_profile = ptsz->N_samp_fftw;
     // index_m_z += 1;
   } // k loop
 
-///FFT part done 
+///FFT part done
 
 
 
@@ -10189,7 +10189,7 @@ if (ptsz->pressure_profile == 4) { //for Battaglia et al 2012 pressure profile
           }
       else{
         xout = ptsz->x_outSZ;
-        } 
+        }
     }// end Battaglia et al 2012 pressure profile
 else{
     xout = ptsz->x_outSZ; // in all other cases the truncation radius is in multiples of rs=r_delta/c_delta
@@ -10214,7 +10214,7 @@ else{
   // w0 =  (pvectsz[ptsz->index_multipole_for_pressure_profile]);
 
 
-  // correct: 
+  // correct:
   w0 = kl; // this is (l+1/2)/ls (see eq. 2 in komatsu & seljak)
 
   // debugging
@@ -13370,7 +13370,7 @@ double Px = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x,m200_over_msol,pvect
                     *pow(x,2)
                     // /(x*(kl+0.5)/pvectsz[ptsz->index_l200c]);
                     /(x*kl);
- 
+
 
 
 
@@ -13740,7 +13740,7 @@ double integrand_redshift(double ln1pz, void *p){
 
 
   double kl;
- 
+
 
   // critical density at z in (Msun/h)/(Mpc/h)^3
   V->pvectsz[V->ptsz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
@@ -13850,7 +13850,7 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
       double pkl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
       double bnl = V->ptsz->bnl;
       result = bg*bg_prime*pkl + bnl*bnl*(pknl-pkl);
-      
+
     }
 
 
@@ -14019,7 +14019,7 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
     else{
         pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
         }
-    
+
     result = pk1;
     int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
     evaluate_effective_galaxy_bias_ngal(index_g,V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -14028,12 +14028,12 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
 
 
     if (V->ptsz->use_nl_bias){
-      
+
       double pknl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
       double pkl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
       double bnl = V->ptsz->bnl;
       result = bg*pkl + bnl*(pknl-pkl);
-      
+
     }
 
 
@@ -14056,7 +14056,7 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
 //printf("ok\n");
   int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
   double l = V->ptsz->ell[index_l];
-    
+
     double pk1;
     if (V->ptsz->use_pkl_in_linbias_calc){
         pk1 =  get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
@@ -19943,17 +19943,19 @@ double integrand_mean_galaxy_bias(double lnM_halo, void *p){
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       double M_min;
+      double M_max_HOD;
       double M0;
       double M1_prime;
       double sigma_log10M;
       double nc,ns;
 
       M_min = V->ptsz->M_min_HOD;
+      M_max_HOD = V->ptsz->M_max_HOD;
       M0 = V->ptsz->M0_HOD;
       M1_prime = V->ptsz->M1_prime_HOD;
       sigma_log10M = V->ptsz->sigma_log10M_HOD;
       // }
-      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD,V->ptsz,V->pba);
+      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD,M_max_HOD,V->ptsz,V->pba);
       ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],nc,M0,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
       evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ppt,V->ptsz);
       double result = hmf*V->pvectsz[V->ptsz->index_halo_bias]*(ns+nc);
@@ -20026,17 +20028,19 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       double M_min;
+      double M_max_HOD;
       double M0;
       double M1_prime;
       double sigma_log10M;
       double nc,ns;
 
       M_min = V->ptsz->M_min_HOD;
+      M_max_HOD = V->ptsz->M_max_HOD;
       M0 = V->ptsz->M0_HOD;
       M1_prime = V->ptsz->M1_prime_HOD;
       sigma_log10M = V->ptsz->sigma_log10M_HOD;
       // }
-      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD,V->ptsz,V->pba);
+      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD,M_max_HOD,V->ptsz,V->pba);
       ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],nc,M0,V->ptsz->alpha_s_HOD,M1_prime,V->ptsz,V->pba);
 
       if (V->ptsz->sz_verbose>3){
@@ -20104,17 +20108,19 @@ double integrand_mean_galaxy_number_ngal(double lnM_halo, void *p){
       double hmf = V->pvectsz[V->ptsz->index_hmf];
 
       double M_min;
+      double M_max_HOD;
       double M0;
       double M1_prime;
       double sigma_log10M;
       double nc,ns;
 
       M_min = V->ptsz->M_min_HOD_ngal[index_g];
+      M_max_HOD = V->ptsz->M_max_HOD_ngal[index_g];
       M0 = V->ptsz->M0_HOD_ngal[index_g];
       M1_prime = V->ptsz->M1_prime_HOD_ngal[index_g];
       sigma_log10M = V->ptsz->sigma_log10M_HOD_ngal[index_g];
       // }
-      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD_ngal[index_g],V->ptsz,V->pba);
+      nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],M_min,sigma_log10M,V->ptsz->f_cen_HOD_ngal[index_g],M_max_HOD, V->ptsz,V->pba);
       ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->ptsz->index_mass_for_galaxies],nc,M0,V->ptsz->alpha_s_HOD_ngal[index_g],M1_prime,V->ptsz,V->pba);
 
 
@@ -20545,7 +20551,7 @@ double integrand_hmf_counter_terms_b1min(double lnM_halo, void *p){
       V->ptsz->has_ng_in_bh = store_ng_in_bh;
       // done with that !
 
-      
+
       double b1 = V->pvectsz[V->ptsz->index_halo_bias];
       result *= b1;
 

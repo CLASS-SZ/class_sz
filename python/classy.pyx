@@ -3799,8 +3799,8 @@ cdef class Class:
         Ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,Nc_mean,M_min,alpha_s,M1_prime,&self.tsz,&self.ba)
         return Ns
 
-    def get_N_centrals(self,double z,double M_halo,double M_min,double sigma_log10M,double fc):
-        Nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,fc,&self.tsz,&self.ba)
+    def get_N_centrals(self,double z,double M_halo,double M_min,double sigma_log10M,double fc, M_max_HOD):
+        Nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,fc,M_max_HOD,&self.tsz,&self.ba)
         return Nc
 
 
