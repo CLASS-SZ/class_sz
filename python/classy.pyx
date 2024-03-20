@@ -894,8 +894,6 @@ cdef class Class:
             self.tsz.M1_prime_HOD = pdict_to_update[k]
           if k == 'fNL':
             self.tsz.fNL = pdict_to_update[k]
-          if k == 'P0GNFW':
-            self.tsz.P0GNFW = pdict_to_update[k]
           if k == 'c500':
             self.tsz.c500 = pdict_to_update[k]
           if k == 'M_min':
@@ -986,21 +984,6 @@ cdef class Class:
               self.tsz.alpha_c_beta_B12 = pdict_to_update['alpha_c_beta_B12']
           if k == 'x_outSZ':
               self.tsz.x_outSZ = pdict_to_update['x_outSZ']
-          # CIB parameters
-          if k == 'Redshift_evolution_of_dust_temperature':
-              self.tsz.alpha_cib = pdict_to_update['Redshift_evolution_of_dust_temperature']
-          if k == 'Dust_temperature_today_in_Kelvins':
-              self.tsz.T0_cib = pdict_to_update['Dust_temperature_today_in_Kelvins']
-          if k == 'Emissivity_index_of_sed':
-              self.tsz.beta_cib = pdict_to_update['Emissivity_index_of_sed']
-          if k == 'Power_law_index_of_SED_at_high_frequency':
-              self.tsz.gamma_cib = pdict_to_update['Power_law_index_of_SED_at_high_frequency']
-          if k == 'Redshift_evolution_of_L_-_M_normalisation':
-              self.tsz.delta_cib = pdict_to_update['Redshift_evolution_of_L_-_M_normalisation']
-          if k == 'Most_efficient_halo_mass_in_Msun':
-              self.tsz.L0_cib = pdict_to_update['Most_efficient_halo_mass_in_Msun']
-          if k == 'Size_of_halo_masses_sourcing_CIB_emission':
-              self.tsz.sigma2_LM_cib = pdict_to_update['Size_of_halo_masses_sourcing_CIB_emission']
         # print('array_redshift:',
         #       self.tsz.array_redshift[0],
         #       self.tsz.array_redshift[1],
@@ -2280,19 +2263,6 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
-
-    def dl_isw_sz(self):
-        """
-        (ISW x SZ) Return the ISW x tSZ power spectrum
-        """
-        dl = {}
-        dl['ell'] = []
-        dl['d_ell'] = []
-        for index in range(self.tsz.nlSZ):
-            dl['d_ell'].append(self.tsz.cl_isw_tsz[index])
-            dl['ell'].append(self.tsz.ell[index])
-        return dl
-
     def cl_sz_at_nu_in_GHz_in_microK2(self,nu_in_GHz):
         frequency_in_Hz = nu_in_GHz*1e9
         T_cmb = self.T_cmb()
@@ -3220,7 +3190,7 @@ cdef class Class:
             for index_l_prime in range(index_l+1):
                 # T_ll[index_l].append(self.tsz.tllprime_sz[index_l][index_l_prime])
                 T_ll_arr[index_l][index_l_prime] = self.tsz.tllprime_sz[index_l][index_l_prime]
-                T_ll_arr[index_l_prime][index_l] = T_ll_arr[index_l][index_l_prime] 
+                T_ll_arr[index_l_prime][index_l] = T_ll_arr[index_l][index_l_prime]
         return T_ll_arr
 
 

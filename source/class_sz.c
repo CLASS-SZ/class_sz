@@ -1242,7 +1242,7 @@ if (electron_pressure_comps != _FALSE_){
       else{
         tabulate_gas_pressure_profile_B12_l(pba,ptsz);
       //   tabulate_gas_pressure_profile_B12_fft(pba,ptsz);
-       
+
         }
       }
 
@@ -4433,11 +4433,11 @@ if (electron_pressure_comps != _FALSE_){
           free(ptsz->array_profile_ln_l_over_ls);
           free(ptsz->array_profile_ln_PgNFW_at_lnl_over_ls);
        }
-       
+
        }
 
     if(ptsz->pressure_profile == 4){
-      
+
       if (ptsz->sz_verbose>5) printf("-> freeing pressure B12.\n");
 
       free(ptsz->array_pressure_profile_ln_l);
@@ -4461,7 +4461,7 @@ if (electron_pressure_comps != _FALSE_){
 
         free(ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z);
 
-          
+
 
       // int n_l = ptsz->n_l_pressure_profile; //hard coded
       // int index_l;
@@ -12148,7 +12148,7 @@ double evaluate_pressure_profile(double kl,
            // now takes l (BB 6 march 2024)
            result = get_gas_pressure_profile_at_l_m_z(l_asked,m_asked,z_asked,ptsz);
 
-         
+
          }
          // else if(log(k_asked)<ptsz->array_pressure_profile_ln_k[0]){
          //   // also large scale limit in this case
@@ -12170,7 +12170,7 @@ double evaluate_pressure_profile(double kl,
 
            result = result_tabulated;
         //  printf("%.7e %.7e %.7e\n",result,result_tabulated,m_asked);
-         
+
          }
 
    }
@@ -21232,7 +21232,7 @@ double get_source_galaxy_number_counts(double z,
                            z_asked);
 
 
-// return phig; 
+// return phig;
 // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
  double shift;
  double stretch;
@@ -21396,7 +21396,7 @@ double HOD_mean_number_of_satellite_galaxies(double z,
 double result;
 if (M_halo>M_min){
 
-result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
+result = 0.0; //Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
 
  }
 else {
