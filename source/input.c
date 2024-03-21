@@ -6878,6 +6878,7 @@ int input_default_params(
 
    ptsz->c_B12 = 0.;
    ptsz->mcut_B12 = 1.e14;
+   // repeated??
    ptsz->alphap_m_P0_B12 = 0.154;
    ptsz->alphap_m_xc_B12 = -0.00865;
    ptsz->alphap_m_beta_B12 = 0.0393;

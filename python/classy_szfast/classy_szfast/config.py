@@ -18,8 +18,8 @@ import os
 root_path = os.path.abspath("")
 # assuming cosmopower organization codes are one level up:
 # path_to_cosmopower_organization = root_path + '/../cosmopower-organization/'
-path_to_cosmopower_organization = '/Users/boris/Work/CLASS-SZ/SO-SZ/cosmopower-organization/'
-# path_to_cosmopower_organization = 'cosmopower-organization/'
+# path_to_cosmopower_organization = '/Users/boris/Work/CLASS-SZ/SO-SZ/cosmopower-organization/'
+path_to_cosmopower_organization = 'cosmopower-organization/'
 # print(path_to_cosmopower_organization)
 
 # path_to_emulators = path_to_cosmopower_organization + 'lcdm/'
