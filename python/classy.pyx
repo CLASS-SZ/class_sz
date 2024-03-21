@@ -3154,6 +3154,7 @@ cdef class Class:
         cl['ell'] = []
         cl['1h'] = []
         cl['2h'] = []
+        cl['hf'] = []
         for index in range(self.tsz.nlSZ):
             cl['1h'].append(self.tsz.cl_lens_lensmag_1h[index])
             cl['2h'].append(self.tsz.cl_lens_lensmag_2h[index])
