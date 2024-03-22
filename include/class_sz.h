@@ -130,6 +130,15 @@
 #define _ngal_lens_1h_ ((ptsz->has_ngal_lens_1h == _TRUE_) && (index_md == ptsz->index_md_ngal_lens_1h))
 #define _ngal_lens_2h_ ((ptsz->has_ngal_lens_2h == _TRUE_) && (index_md == ptsz->index_md_ngal_lens_2h))
 #define _ngal_lens_hf_ ((ptsz->has_ngal_lens_hf == _TRUE_) && (index_md == ptsz->index_md_ngal_lens_hf))
+#define _ngal_tsz_1h_ ((ptsz->has_ngal_tsz_1h == _TRUE_) && (index_md == ptsz->index_md_ngal_tsz_1h))
+#define _ngal_tsz_2h_ ((ptsz->has_ngal_tsz_2h == _TRUE_) && (index_md == ptsz->index_md_ngal_tsz_2h))
+#define _ngal_gallens_1h_ ((ptsz->has_ngal_gallens_1h == _TRUE_) && (index_md == ptsz->index_md_ngal_gallens_1h))
+#define _ngal_gallens_2h_ ((ptsz->has_ngal_gallens_2h == _TRUE_) && (index_md == ptsz->index_md_ngal_gallens_2h))
+#define _ngal_IA_2h_ ((ptsz->has_ngal_IA_2h == _TRUE_) && (index_md == ptsz->index_md_ngal_IA_2h))
+#define _nlensmag_gallens_1h_ ((ptsz->has_nlensmag_gallens_1h == _TRUE_) && (index_md == ptsz->index_md_nlensmag_gallens_1h))
+#define _nlensmag_gallens_2h_ ((ptsz->has_nlensmag_gallens_2h == _TRUE_) && (index_md == ptsz->index_md_nlensmag_gallens_2h))
+#define _nlensmag_tsz_1h_ ((ptsz->has_nlensmag_tsz_1h == _TRUE_) && (index_md == ptsz->index_md_nlensmag_tsz_1h))
+#define _nlensmag_tsz_2h_ ((ptsz->has_nlensmag_tsz_2h == _TRUE_) && (index_md == ptsz->index_md_nlensmag_tsz_2h))
 #define _cib_cib_1h_ ((ptsz->has_cib_cib_1h == _TRUE_) && (index_md == ptsz->index_md_cib_cib_1h))
 #define _cib_cib_2h_ ((ptsz->has_cib_cib_2h == _TRUE_) && (index_md == ptsz->index_md_cib_cib_2h))
 #define _lens_cib_1h_ ((ptsz->has_lens_cib_1h == _TRUE_) && (index_md == ptsz->index_md_lens_cib_1h))
@@ -271,6 +280,15 @@ struct tszspectrum {
   double ** cl_ngal_lens_1h;
   double ** cl_ngal_lens_2h;
   double ** cl_ngal_lens_hf;
+  double ** cl_ngal_tsz_1h;
+  double ** cl_ngal_tsz_2h;
+  double ** cl_ngal_gallens_1h;
+  double ** cl_ngal_gallens_2h;
+  double ** cl_ngal_IA_2h;
+  double ** cl_nlensmag_gallens_1h;
+  double ** cl_nlensmag_gallens_2h;
+  double ** cl_nlensmag_tsz_1h;
+  double ** cl_nlensmag_tsz_2h;
   double *** cl_cib_cib_1h;
   double *** cl_cib_cib_2h;
   double ** cl_tSZ_cib_1h;
@@ -1122,6 +1140,51 @@ struct tszspectrum {
   int index_integrand_id_ngal_nlensmag_hf_first;
   int index_integrand_id_ngal_nlensmag_hf_last;
 
+  int has_ngal_tsz_1h;
+  int index_md_ngal_tsz_1h;
+  int index_integrand_id_ngal_tsz_1h_first;
+  int index_integrand_id_ngal_tsz_1h_last;
+
+  int has_ngal_tsz_2h;
+  int index_md_ngal_tsz_2h;
+  int index_integrand_id_ngal_tsz_2h_first;
+  int index_integrand_id_ngal_tsz_2h_last;
+
+  int has_nlensmag_tsz_1h;
+  int index_md_nlensmag_tsz_1h;
+  int index_integrand_id_nlensmag_tsz_1h_first;
+  int index_integrand_id_nlensmag_tsz_1h_last;
+
+  int has_nlensmag_tsz_2h;
+  int index_md_nlensmag_tsz_2h;
+  int index_integrand_id_nlensmag_tsz_2h_first;
+  int index_integrand_id_nlensmag_tsz_2h_last;
+
+  int has_ngal_gallens_1h;
+  int index_md_ngal_gallens_1h;
+  int index_integrand_id_ngal_gallens_1h_first;
+  int index_integrand_id_ngal_gallens_1h_last;
+
+  int has_ngal_gallens_2h;
+  int index_md_ngal_gallens_2h;
+  int index_integrand_id_ngal_gallens_2h_first;
+  int index_integrand_id_ngal_gallens_2h_last;
+
+  int has_nlensmag_gallens_1h;
+  int index_md_nlensmag_gallens_1h;
+  int index_integrand_id_nlensmag_gallens_1h_first;
+  int index_integrand_id_nlensmag_gallens_1h_last;
+
+  int has_nlensmag_gallens_2h;
+  int index_md_nlensmag_gallens_2h;
+  int index_integrand_id_nlensmag_gallens_2h_first;
+  int index_integrand_id_nlensmag_gallens_2h_last;
+
+  int has_ngal_IA_2h;
+  int index_md_ngal_IA_2h;
+  int index_integrand_id_ngal_IA_2h_first;
+  int index_integrand_id_ngal_IA_2h_last;
+
   int has_cib_cib_1h;
   int index_md_cib_cib_1h;
   int index_integrand_id_cib_cib_1h_first;
@@ -1866,6 +1929,7 @@ double * steps_m;
   double * theta_kSZ2_gal_theta_grid;
   int N_kSZ2_gal_theta_grid;
 
+  int photo_z_params;
   double dndz_shift_gal;
   double dndz_shift_source_gal;
   double dndz_stretch_gal;
@@ -2122,6 +2186,8 @@ double * steps_m;
   double ** array_L_sat_at_z_and_M_at_nu;
   //double * array_L_sat_at_z_and_M_at_nu_prime;
 
+  double ** array_z_W_nlensmag;
+  double ** array_W_nlensmag;
 
 
   double * array_z_W_lensmag;
@@ -2709,6 +2775,13 @@ double radial_kernel_W_galaxy_ngal_at_z(  int index_g,
                                           struct background * pba,
                                           struct tszspectrum * ptsz);
 
+double radial_kernel_W_galaxy_lensing_magnification_nlensmag_at_z( int index_g,
+                                                          double * pvectsz, //double * pvecback,
+                                                          double z,
+                                                          // double z,
+                                                          // double * pvectsz,
+                                                          struct background * pba,
+                                                          struct tszspectrum * ptsz);
 // used for the linear bias cases.
 double radial_kernel_W_lensing_at_z(double * pvecback,
                                     double * pvectsz,
