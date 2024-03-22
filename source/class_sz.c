@@ -21378,20 +21378,20 @@ double HOD_mean_number_of_central_galaxies(double z,
                                            double M_max_HOD,
                                            struct tszspectrum * ptsz,
                                            struct background * pba){
- double result = 0.;
- result = f_cen*0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_log10M)));
- return result;
-// double result;
-// if (M_halo<M_max_HOD){
-//   printf("inside the loop \n");
-//   printf("M_max_HOD = %.8e \n",M_max_HOD);
-//   printf("M_halo = %.8e \n",M_halo);
-// result = f_cen*0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_log10M)));
-// }
-// else {
-//  result = 0.;
-// }
-//return result;
+ // double result = 0.;
+ // result = f_cen*0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_log10M)));
+ // return result;
+double result;
+if (M_halo<M_max_HOD){
+  // printf("inside the loop \n");
+  // printf("M_max_HOD = %.8e \n",M_max_HOD);
+  // printf("M_halo = %.8e \n",M_halo);
+result = f_cen*0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_log10M)));
+}
+else {
+ result = 0.;
+}
+return result;
 }
 
 
