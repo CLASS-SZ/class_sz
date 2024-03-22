@@ -2864,6 +2864,9 @@ double integrand_kSZ2_X(double theta, void *p);
 double integrand_kSZ2_X_lensing_term_at_theta(double ell_prime, void *p);
 double integrand_kSZ2_X_lensing_term(double theta, void *p);
 
+double integrand_lensmag(double ln1pzs, void *p);
+double integrand_nlensmag(double ln1pzs, void *p);
+
 int evaluate_matter_density_profile(
                              double k,
                              double r_delta,

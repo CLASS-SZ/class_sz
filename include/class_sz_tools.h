@@ -319,6 +319,9 @@ double delta_to_delta_prime_nfw(
   int evaluate_redshift_int_lensmag(double * pvectsz,
                                     struct tszspectrum * ptsz);
 
+  int evaluate_redshift_int_nlensmag(double * pvectsz,
+                                    struct tszspectrum * ptsz);
+
   int tabulate_redshift_int_lensmag(struct tszspectrum * ptsz,
                                     struct background * pba);
   int tabulate_redshift_int_nlensmag(struct tszspectrum * ptsz,
@@ -362,6 +365,15 @@ int tabulate_m500c_to_m200m(struct background * pba,
                     double * pvectsz,
                     double * result
                   );
+
+  int redshift_int_nlensmag(
+                    int index_g,
+                    struct tszspectrum * ptsz,
+                    struct background * pba,
+                    double * pvectsz,
+                    double * result
+                  );
+
   int redshift_int_gallens_sources(
                     struct tszspectrum * ptsz,
                     struct background * pba,

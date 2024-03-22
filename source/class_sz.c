@@ -4046,22 +4046,24 @@ int class_sz_free(struct tszspectrum *ptsz)
      int index_g;
      int index_g_prime;
      for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+
            if (ptsz->has_ngal_ngal_1h
              + ptsz->has_ngal_ngal_2h
              + ptsz->has_ngal_lens_1h
              + ptsz->has_ngal_lens_2h
              + ptsz->has_ngal_tsz_1h
              + ptsz->has_ngal_tsz_2h
-             + ptsz->has_nlensmag_tsz_1h
-             + ptsz->has_nlensmag_tsz_2h
              + ptsz->has_ngal_gallens_1h
              + ptsz->has_ngal_gallens_2h
              + ptsz->has_ngal_IA_2h)
              free(ptsz->array_mean_galaxy_number_density_ngal[index_g]);
+
      free(ptsz->normalized_dndz_ngal_z[index_g]);
      free(ptsz->normalized_dndz_ngal_phig[index_g]);
      }
 
+
+//  printf("-> freeing ngal.\n");
      if (ptsz->has_ngal_ngal_1h
        + ptsz->has_ngal_ngal_2h
        + ptsz->has_ngal_lens_1h
@@ -4391,12 +4393,30 @@ if (ptsz->has_kSZ_kSZ_lensmag_1halo
 || ptsz->has_gal_lensmag_hf
 || ptsz->has_tSZ_lensmag_1h
 || ptsz->has_tSZ_lensmag_2h
-|| ptsz->has_nlensmag_tsz_1h
-|| ptsz->has_nlensmag_tsz_2h
 ){
   free(ptsz->array_W_lensmag);
   free(ptsz->array_z_W_lensmag);
 }
+
+if (   ptsz->has_nlensmag_tsz_1h
+    || ptsz->has_nlensmag_tsz_2h
+    || ptsz->has_nlensmag_gallens_1h
+    || ptsz->has_nlensmag_gallens_2h
+    ){
+
+
+      // printf("-> freeing nlensmag_tsz.\n");
+
+  int index_g;
+  for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
+
+        free(ptsz->array_W_nlensmag[index_g]);
+        free(ptsz->array_z_W_nlensmag[index_g]);
+      }
+  free(ptsz->array_W_nlensmag);
+  free(ptsz->array_z_W_nlensmag);
+  }
+
 
 if (ptsz->sz_verbose>10) printf("-> freeing kappa_g n(z).\n");
 
@@ -21811,10 +21831,10 @@ return result;
 
 
 double radial_kernel_W_galaxy_lensing_magnification_nlensmag_at_z(int index_g,
-                                         double * pvectsz,
-                                         double z,
-                                         struct background * pba,
-                                         struct tszspectrum * ptsz){
+                                                                  double * pvectsz,
+                                                                  double z,
+                                                                  struct background * pba,
+                                                                  struct tszspectrum * ptsz){
 
 // double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
 //
@@ -21841,25 +21861,34 @@ double radial_kernel_W_galaxy_lensing_magnification_nlensmag_at_z(int index_g,
 // return result;
 // }
 double z_asked = log(1.+z);
+double chi = sqrt(pvectsz[ptsz->index_chi2]);
 
 if (z<exp(ptsz->array_z_W_nlensmag[index_g][0])-1.)
    z_asked = ptsz->array_z_W_nlensmag[index_g][0];
-if (z>exp(ptsz->array_z_W_nlensmag[index_g][ptsz->n_z_W_lensmag-1])-1.)
-z_asked =  ptsz->array_z_W_nlensmag[index_g][ptsz->n_z_W_lensmag-1];
-   z_asked =  ptsz->array_z_W_nlensmag[index_g][ptsz->n_z_W_lensmag-1];
 
 
-pvectsz[ptsz->index_W_lensmag] =  exp(pwl_value_1d(ptsz->n_z_W_lensmag,
-                                                     ptsz->array_z_W_nlensmag[index_g],
-                                                     ptsz->array_W_nlensmag[index_g],
-                                                     z_asked));
-  printf("Ola 1\n");
+
+if (z>exp(ptsz->array_z_W_nlensmag[index_g][ptsz->n_z_W_lensmag-1])-1.) 
+    z_asked =  ptsz->array_z_W_nlensmag[index_g][ptsz->n_z_W_lensmag-1];
+
+
+  //  z_asked =  ptsz->array_z_W_nlensmag[index_g][ptsz->n_z_W_lensmag-1];
+
+
+// pvectsz[ptsz->index_W_lensmag] =  exp(pwl_value_1d(ptsz->n_z_W_lensmag,
+//                                                    ptsz->array_z_W_nlensmag[index_g],
+//                                                    ptsz->array_W_nlensmag[index_g],
+//                                                    z_asked));
+  printf("Ola 1-----? %.3e %.3e\n",log(1+z),z_asked);
 
 
 ///old
-    double chi = sqrt(pvectsz[ptsz->index_chi2]);
+    
     //evaluate_redshift_int_lensmag(pvectsz,ptsz);
-    double redshift_int_lensmag = pvectsz[ptsz->index_W_lensmag];
+    double redshift_int_lensmag = exp(pwl_value_1d(ptsz->n_z_W_lensmag,
+                                                   ptsz->array_z_W_nlensmag[index_g],
+                                                   ptsz->array_W_nlensmag[index_g],
+                                                   z_asked));
 
     printf("Ola 2 \n");
     pvectsz[ptsz->index_lensing_Sigma_crit] = 1./(redshift_int_lensmag);

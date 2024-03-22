@@ -3628,6 +3628,9 @@ struct Parameters_for_integrand_lensmag{
 
 
 
+
+
+
 double integrand_lensmag(double ln1pzs, void *p){
 
   struct Parameters_for_integrand_lensmag *V = ((struct Parameters_for_integrand_lensmag *) p);
@@ -3716,6 +3719,143 @@ phig = get_galaxy_number_counts(z_asked,V->ptsz);
   return integrand;
 
 }
+
+
+struct Parameters_for_integrand_nlensmag{
+  struct tszspectrum * ptsz;
+  struct background * pba;
+  double * pvectsz;
+  int index_g;
+};
+
+
+
+double integrand_nlensmag(double ln1pzs, void *p){
+
+  struct Parameters_for_integrand_nlensmag *V = ((struct Parameters_for_integrand_nlensmag *) p);
+
+  double integrand;
+  double  zs = exp(ln1pzs)-1.;
+
+
+
+
+  double W;
+
+
+  //background quantities @ zs:
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  class_alloc(pvecback,
+              V->pba->bg_size*sizeof(double),
+              V->pba->error_message);
+
+  class_call(background_tau_of_z(V->pba,zs,&tau),
+             V->pba->error_message,
+             V->pba->error_message);
+
+  class_call(background_at_tau(V->pba,
+                               tau,
+                               V->pba->long_info,
+                               V->pba->inter_normal,
+                               &first_index_back,
+                               pvecback),
+             V->pba->error_message,
+             V->pba->error_message);
+
+
+
+  double Chi_at_zs = pvecback[V->pba->index_bg_ang_distance]*(1.+zs);  //'Chi' comoving distance in Mpc
+  double Chi_at_z = sqrt(V->pvectsz[V->ptsz->index_chi2])/V->pba->h;  //'Chi' comoving distance in Mpc
+
+
+
+  free(pvecback);
+
+
+
+  W = (Chi_at_zs-Chi_at_z)/Chi_at_zs;
+
+  double dndzs = 0.;
+
+/////////////////////////////////
+  double z_asked  = zs;
+  double phig = 0.;
+
+  // if(z_asked<V->ptsz->normalized_dndz_z[0])
+  //    phig = 1e-100;
+  // else if (z_asked>V->ptsz->normalized_dndz_z[V->ptsz->normalized_dndz_size-1])
+  //    phig = 1e-100;
+  // else  phig =  pwl_value_1d(V->ptsz->normalized_dndz_size,
+  //                              V->ptsz->normalized_dndz_z,
+  //                              V->ptsz->normalized_dndz_phig,
+  //                              z_asked);
+if(z_asked<V->ptsz->normalized_dndz_ngal_z[V->index_g][0])
+   phig = 0.;//1e-100;
+else if (z_asked>V->ptsz->normalized_dndz_ngal_z[V->index_g][V->ptsz->normalized_dndz_ngal_size[V->index_g]-1])
+   phig = 0.;//1e-100;
+else  phig =  pwl_value_1d(V->ptsz->normalized_dndz_ngal_size[V->index_g],
+                         V->ptsz->normalized_dndz_ngal_z[V->index_g],
+                         V->ptsz->normalized_dndz_ngal_phig[V->index_g],
+                         z_asked);
+
+
+
+// phig = get_galaxy_number_counts(z_asked,V->ptsz);
+ dndzs = phig;
+////////////////////////////////
+
+  integrand = dndzs*W;
+
+  integrand *= (1.+zs);
+
+  // printf("-> integrand z = %.3e phig = =%.3e\n",z_asked,phig);
+
+  return integrand;
+
+}
+
+
+
+int redshift_int_nlensmag(
+                  int index_g,
+                  struct tszspectrum * ptsz,
+                  struct background * pba,
+                  double * pvectsz,
+                  double * result
+                   ) {
+
+double z =  pvectsz[ptsz->index_z];
+
+double zs_min = z;
+double zs_max = ptsz->z2SZ;
+
+
+struct Parameters_for_integrand_nlensmag V;
+  V.pvectsz = pvectsz;
+  V.ptsz = ptsz;
+  V.pba = pba;
+  V.index_g = index_g;
+
+
+  void * params = &V;
+  double r; //result of the integral
+
+  double epsrel = 1e-6;
+  double epsabs = 1e-30;
+  //int show_neval = ptsz->patterson_show_neval;
+
+  r=Integrate_using_Patterson_adaptive(log(1.+zs_min),
+                                        log(1.+zs_max),
+                                        epsrel, epsabs,
+                                        integrand_nlensmag,
+                                        params,0);
+
+
+  *result = r;
+                     }
+
 
 int redshift_int_lensmag(
                   struct tszspectrum * ptsz,
@@ -14505,10 +14645,10 @@ int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
 if (index_g<10)
 printf("index_g = %d \n",index_g);
 double Wg = radial_kernel_W_galaxy_lensing_magnification_nlensmag_at_z(index_g,
-                                            V->pvectsz,
-                                             z,
-                                             V->pba,
-                                             V->ptsz);
+                                                                       V->pvectsz,
+                                                                       z,
+                                                                       V->pba,
+                                                                       V->ptsz);
 
 // double Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,
 //                                              V->pvecback,
@@ -14518,9 +14658,9 @@ double Wg = radial_kernel_W_galaxy_lensing_magnification_nlensmag_at_z(index_g,
 // double Wg = radial_kernel_W_galaxy_lensing_magnification_at_z(z,V->pvectsz,V->pba,V->ptsz);
 // double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
 // if (index_g<10)
-// printf("index_g = %d Wg = %.5e z = %.5e\n",index_g,Wg,z);
+printf("index_g = %d Wg = %.5e z = %.5e\n",index_g,Wg,z);
 
-result *= Wg/V->pvectsz[V->ptsz->index_chi2];
+result *= Wg;///V->pvectsz[V->ptsz->index_chi2];
 }
 
 // lensing magification needs lensing kernel:
@@ -25190,9 +25330,9 @@ printf("-> [nlensmag] Tabulating Wz for n lensing magnification\n");
 
   int index_g;
   for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
-  class_alloc(ptsz->array_W_nlensmag[index_g],sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
-  class_alloc(ptsz->array_z_W_nlensmag[index_g],sizeof(double *)*ptsz->n_arraySZ,ptsz->error_message);
-  }
+    class_alloc(ptsz->array_W_nlensmag[index_g],sizeof(double *)*ptsz->n_z_W_lensmag,ptsz->error_message);
+    class_alloc(ptsz->array_z_W_nlensmag[index_g],sizeof(double *)*ptsz->n_z_W_lensmag,ptsz->error_message);
+    }
 
 
 for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
@@ -25244,14 +25384,17 @@ for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
 
     printf("-> Computing integral at z=%.3e\n",z);
     double result;
-    redshift_int_lensmag(ptsz,pba,pvectsz,&result);
-    printf("-> 2 doing tabulating Wz for lensing magnification\n");
+    /// 
+    redshift_int_nlensmag(index_g,ptsz,pba,pvectsz,&result);
+    printf("-> 2 doing tabulating Wz for lensing magnification %.3e\n",result);
+    
     if (result <= 0.)
       result = 1e-100;
+
     ptsz->array_W_nlensmag[index_g][index_z] = log(result);
     ptsz->array_z_W_nlensmag[index_g][index_z] = ln1pz;
-    printf("-> integral z = %.3e W = =%.3e\n",z,exp(ptsz->array_W_lensmag[index_z]));
-}
+    printf("-> integral z = %.3e W = %.3e\n",z,exp(ptsz->array_W_nlensmag[index_g][index_z]));
+  }
 if (ptsz->sz_verbose>=1)
 printf("-> end tabulating Wz for lensing magnification\n");
  free(pvectsz);
