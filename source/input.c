@@ -3916,6 +3916,9 @@ int input_read_parameters(
        +ptsz->has_ngal_lens_hf
        +ptsz->has_ngal_nlensmag_hf){
     class_alloc(ptsz->effective_galaxy_bias_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->effective_galaxy_bias_nl_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+
+
     int index_g;
     // printf("reading effective bias.\n");
 
@@ -3924,6 +3927,8 @@ int input_read_parameters(
       char input_param_name[_ARGUMENT_LENGTH_MAX_];
       sprintf(input_param_name,"%s%d","effective_galaxy_bias_ngal_",index_g);
       class_read_double(input_param_name,ptsz->effective_galaxy_bias_ngal[index_g]);
+      sprintf(input_param_name,"%s%d","effective_galaxy_bias_nl_ngal_",index_g);
+      class_read_double(input_param_name,ptsz->effective_galaxy_bias_nl_ngal[index_g]);
       // printf("reading effective bias %.3e.\n",ptsz->effective_galaxy_bias_ngal[index_g]);
       // if (ptsz->sz_verbose>1)
         // printf("reading effective bias b[%d] = %.3e\n",index_g,ptsz->effective_galaxy_bias_ngal[index_g]);

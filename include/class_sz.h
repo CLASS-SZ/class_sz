@@ -1432,6 +1432,7 @@ double szcounts_ntot;
 
   double effective_galaxy_bias;
   double * effective_galaxy_bias_ngal;
+  double * effective_galaxy_bias_nl_ngal;
 
   int use_bg_eff_in_ksz2g_eff;
 

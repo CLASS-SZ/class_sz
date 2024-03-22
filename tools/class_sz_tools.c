@@ -13848,8 +13848,11 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
 
       double pknl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
       double pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
-      double bnl = V->ptsz->bnl;
-      result = bg*bg_prime*pkl + bnl*bnl*(pknl-pkl);
+      // double bnl = V->ptsz->bnl;
+
+      double bnl =  V->ptsz->effective_galaxy_bias_nl_ngal[index_g];
+      double bnl_prime =  V->ptsz->effective_galaxy_bias_nl_ngal[index_g_prime];
+      result = bg*bg_prime*pkl + bnl*bnl_prime*(pknl-pkl);
       
     }
 
@@ -14031,7 +14034,9 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
       
       double pknl = get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
       double pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);
-      double bnl = V->ptsz->bnl;
+      // double bnl = V->ptsz->bnl;
+
+      double bnl = V->ptsz->effective_galaxy_bias_nl_ngal[index_g];
       result = bg*pkl + bnl*(pknl-pkl);
       
     }

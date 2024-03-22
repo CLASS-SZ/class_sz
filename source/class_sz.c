@@ -3988,8 +3988,10 @@ int class_sz_free(struct tszspectrum *ptsz)
  free(ptsz->galaxy_samples_list);
 
     if (ptsz->has_ngal_ngal_hf
-       +ptsz->has_ngal_lens_hf)
+       +ptsz->has_ngal_lens_hf){
       free(ptsz->effective_galaxy_bias_ngal);
+      free(ptsz->effective_galaxy_bias_nl_ngal);
+       }
     if (ptsz->has_ngal_ngal_1h
       + ptsz->has_ngal_ngal_2h
       + ptsz->has_ngal_lens_1h
