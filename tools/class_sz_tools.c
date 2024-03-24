@@ -9164,13 +9164,13 @@ for (index_m=0;
           // //
           // //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
           //  pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],pvectsz[ptsz->index_Delta_c],pvectsz[ptsz->index_Rho_crit],ptsz);
-         
+
           double mvir = pvectsz[ptsz->index_mVIR];
 
           pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
-         
+
           // printf("mvir/mvir = %.5e\n",mvir/pvectsz[ptsz->index_mVIR]);
-         
+
           pvectsz[ptsz->index_rVIR] = evaluate_rvir_of_mvir(pvectsz[ptsz->index_mVIR],
                                                             pvectsz[ptsz->index_Delta_c],
                                                             pvectsz[ptsz->index_Rho_crit],
@@ -9203,10 +9203,10 @@ for (ix=0; ix<N; ix++){
           double P0 = ptsz->P0_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_P0_B12)*pow(1+z,ptsz->alpha_z_P0_B12);
           double xc = ptsz->xc_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_xc_B12)*pow(1+z,ptsz->alpha_z_xc_B12);
           double beta = ptsz->beta_B12*pow(m200_over_msol/1e14,ptsz->alpha_m_beta_B12)*pow(1+z,ptsz->alpha_z_beta_B12);
-          
+
           double gamma = ptsz->gamma_B12;
           double alpha = ptsz->alpha_B12;
-          
+
           double p_gnfw_x = P0*pow(x[ix]/xc,gamma)*pow(1.+ pow(x[ix]/xc,alpha),-beta);
           Px[ix] = p_gnfw_x;
 
@@ -9283,7 +9283,7 @@ for (ix=0; ix<N; ix++){
   //   Pkp[index_k] = 0.;
   //   // lp = 1.e-100;
   // }
-  
+
   //
   // ptsz->array_pressure_profile_ln_k[index_k] = log(kp[index_k]);
 
@@ -9584,14 +9584,14 @@ for (index_m=0;
   // ptsz->array_profile_ln_rho_at_lnl_lnM_z[index_l][index_m_z] = log(result);
   ptsz->array_pressure_profile_ln_p_at_lnl_lnm_z[index_l][index_m_z] = result;
   // printf("ell = %.3e z = %.3e m = %.3e rho = %.3e\n",ell,z,exp(lnM),log(result));
-  
+
   // printf("--------->In parallel region B12 l (class_sz_tool.c)  l = %.5e m = %.5e z = %.5e res = %.5e\n",
   //       ell,
   //       exp(lnM),
   //       z,
   //       result);
-  
-  
+
+
   index_m_z += 1;
      }
 
@@ -9831,7 +9831,7 @@ return _SUCCESS_;
 //   double mvir  = pvectsz[ptsz->index_mVIR];
 
 //   // if (ptsz->truncate_gas_pressure_wrt_rvir){
-  
+
 //   //   pvectsz[ptsz->index_mVIR] = get_m200c_to_mvir_at_z_and_M(z,pvectsz[ptsz->index_m200c],ptsz);
 //   //   if (ptsz->sz_verbose>1){
 //   //       printf("truncating wrt rvir\n");
@@ -9839,7 +9839,7 @@ return _SUCCESS_;
 //   // }
 //   // else
 //   //   pvectsz[ptsz->index_mVIR] = pvectsz[ptsz->index_m200c];
-    
+
 //   // if (ptsz->sz_verbose>1)
 //   //   printf("----> tab B12 got mvir = %.3e ratio = %.18e\n",pvectsz[ptsz->index_mVIR], pvectsz[ptsz->index_mVIR]/mvir);
 //  //
@@ -9970,8 +9970,8 @@ ptsz->n_k_pressure_profile = ptsz->N_samp_fftw;
 
 
 
-////FFT part 
-  int n_k = ptsz->n_k_pressure_profile; // 
+////FFT part
+  int n_k = ptsz->n_k_pressure_profile; //
   class_alloc(ptsz->array_pressure_profile_ln_k,sizeof(double *)*n_k,ptsz->error_message);
   class_alloc(ptsz->array_pressure_profile_ln_p_at_lnk,n_k*sizeof(double *),ptsz->error_message);
 
@@ -10364,7 +10364,7 @@ else{
   // w0 =  (pvectsz[ptsz->index_multipole_for_pressure_profile]);
 
 
-  // correct: 
+  // correct:
   w0 = kl; // this is (l+1/2)/ls (see eq. 2 in komatsu & seljak)
 
   // debugging
@@ -10735,7 +10735,7 @@ if (ptsz->pressure_profile != 0 && ptsz->pressure_profile != 2 )
      +ptsz->has_tSZ_gallens_2h
      +ptsz->has_tSZ_gal_1h
      +ptsz->has_tSZ_gal_2h
-     +ptsz->has_ngal_tsz_1h //ola
+     +ptsz->has_ngal_tsz_1h
      +ptsz->has_ngal_tsz_2h
      +ptsz->has_nlensmag_tsz_1h //ola
      +ptsz->has_nlensmag_tsz_2h
@@ -11829,6 +11829,8 @@ if (
     && (ptsz->has_IA_gal_2h != _TRUE_ )
     && (ptsz->has_ngal_gallens_1h != _TRUE_ )
     && (ptsz->has_ngal_gallens_2h != _TRUE_ )
+    && (ptsz->has_nlensmag_gallens_1h != _TRUE_ )
+    && (ptsz->has_nlensmag_gallens_2h != _TRUE_ )
     && (ptsz->has_ngal_IA_2h != _TRUE_ )
     && (ptsz->has_gallens_gallens_2h != _TRUE_ )
     && (ptsz->has_gallens_gallens_2h != _TRUE_ )
@@ -13527,7 +13529,7 @@ double Px = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x,m200_over_msol,pvect
                     *pow(x,2)
                     // /(x*(kl+0.5)/pvectsz[ptsz->index_l200c]);
                     /(x*kl);
- 
+
 
 
 
@@ -14010,7 +14012,7 @@ if     (((V->ptsz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->ptsz->index_md_t
       double bnl =  V->ptsz->effective_galaxy_bias_nl_ngal[index_g];
       double bnl_prime =  V->ptsz->effective_galaxy_bias_nl_ngal[index_g_prime];
       result = bg*bg_prime*pkl + bnl*bnl_prime*(pknl-pkl);
-      
+
     }
 
 
@@ -14633,7 +14635,7 @@ double Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,
 result *= Wg/V->pvectsz[V->ptsz->index_chi2];
 }
 
-//  n lensing magification needs lensing kernel: //ola2
+//  n lensing magification needs lensing kernel:
 
 if ( ((V->ptsz->has_nlensmag_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_nlensmag_gallens_1h))
    ||((V->ptsz->has_nlensmag_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_nlensmag_gallens_2h))
@@ -14642,25 +14644,13 @@ if ( ((V->ptsz->has_nlensmag_gallens_1h == _TRUE_) && (index_md == V->ptsz->inde
   ){
 
 int index_g = (int) V->pvectsz[V->ptsz->index_ngal_for_galaxy_profile];
-if (index_g<10)
-printf("index_g = %d \n",index_g);
 double Wg = radial_kernel_W_galaxy_lensing_magnification_nlensmag_at_z(index_g,
                                                                        V->pvectsz,
                                                                        z,
                                                                        V->pba,
                                                                        V->ptsz);
 
-// double Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,
-//                                              V->pvecback,
-//                                              z,
-//                                              V->pba,
-//                                              V->ptsz);
-// double Wg = radial_kernel_W_galaxy_lensing_magnification_at_z(z,V->pvectsz,V->pba,V->ptsz);
-// double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->ptsz);
-// if (index_g<10)
-printf("index_g = %d Wg = %.5e z = %.5e\n",index_g,Wg,z);
-
-result *= Wg;///V->pvectsz[V->ptsz->index_chi2];
+result *= Wg;
 }
 
 // lensing magification needs lensing kernel:
@@ -14781,6 +14771,8 @@ if (
     ||((V->ptsz->has_kSZ_kSZ_gallens_hf == _TRUE_) && (index_md == V->ptsz->index_md_kSZ_kSZ_gallens_hf))
     ||((V->ptsz->has_ngal_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_gallens_1h))
     ||((V->ptsz->has_ngal_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_gallens_2h))
+    ||((V->ptsz->has_nlensmag_gallens_1h == _TRUE_) && (index_md == V->ptsz->index_md_nlensmag_gallens_1h))
+    ||((V->ptsz->has_nlensmag_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_nlensmag_gallens_2h))
 ){
 
 double Wg = radial_kernel_W_galaxy_lensing_at_z(z,//V->pvectsz,V->pba,
@@ -16052,6 +16044,54 @@ else{
     r = r_m_1*r_m_2;
       }
 
+      else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_nlensmag_gallens_2h){
+      double r_m_1; // first part of redshift integrand
+      double r_m_2; // second part of redshift integrand
+
+      pvectsz[ptsz->index_part_id_cov_hsv] = 1;
+      V.pvectsz = pvectsz;
+      params = &V;
+
+      // integrate over the whole mass range ('Y' part)
+      r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_mass,
+                                               params,ptsz->patterson_show_neval);
+
+     if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+       double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+       double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+       double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+       double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+       r_m_1 += bmin_umin;
+       // printf("counter terms done r_m_1\n");
+    }
+
+
+      pvectsz[ptsz->index_part_id_cov_hsv] = 2;
+      V.pvectsz = pvectsz;
+      params = &V;
+
+
+      // integrate over the whole mass range ('galaxy' part)
+      r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_mass,
+                                               params,ptsz->patterson_show_neval);
+
+       if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
+       double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
+       double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[ptsz->index_z],ptsz)*nmin;
+       double I0 = integrand_mass(log(ptsz->m_min_counter_terms),params);
+       double bmin_umin = bmin*I0/pvectsz[ptsz->index_hmf]/pvectsz[ptsz->index_halo_bias];
+       r_m_2 += bmin_umin;
+       // printf("counter terms done r_m_2\n");
+     }
+
+
+      r = r_m_1*r_m_2;
+        }
+
 
 
 
@@ -16508,6 +16548,7 @@ else{
   }
   r = r_m_1*r_m_2;
   }
+
 
   else if ((int) pvectsz[ptsz->index_md] == ptsz->index_md_kSZ_kSZ_tSZ_2h){
   double r_m_11; // first part of redshift integrand
@@ -19463,6 +19504,7 @@ else {
                     || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lensmag_lensmag_2h)
                     || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_lens_lensmag_2h)
                     || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_lensmag_2h)
+                    || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_nlensmag_gallens_2h)
                     || (((int) pvectsz[ptsz->index_md] == ptsz->index_md_cib_cib_2h)  && (pvectsz[ptsz->index_frequency_for_cib_profile] == pvectsz[ptsz->index_frequency_prime_for_cib_profile]) )
                     || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gal_gal_2h)
                     || ((int) pvectsz[ptsz->index_md] == ptsz->index_md_gallens_gallens_2h)
@@ -25269,7 +25311,7 @@ printf("-> Tabulating Wz for lensing magnification\n");
     // printf("-> Computing integral at z=%.3e\n",z);
     double result;
     redshift_int_lensmag(ptsz,pba,pvectsz,&result);
-      // printf("-> 2 doing tabulating Wz for lensing magnification\n");
+
     if (result <= 0.)
       result = 1e-100;
     ptsz->array_W_lensmag[index_z] = log(result);
@@ -25347,8 +25389,6 @@ for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
 
   for (index_z=0; index_z<ptsz->n_z_W_lensmag; index_z++) //ola2 n_z_W_nlensmag ???
   {
-    if (ptsz->sz_verbose>0)
-    printf("-> [nlensmag] in the loop for sample %d.\n",index_g);
 
     ln1pz =  log(1.+z_min)
               +index_z*(log(1.+z_max)-log(1.+z_min))
@@ -25380,23 +25420,21 @@ for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
     // set chi at redshift z in Mpc/h
     pvectsz[ptsz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
 
-    printf("-> doing tabulating Wz for lensing magnification\n");
 
-    printf("-> Computing integral at z=%.3e\n",z);
+    //printf("-> Computing integral at z=%.3e\n",z);
     double result;
-    /// 
+    ///
     redshift_int_nlensmag(index_g,ptsz,pba,pvectsz,&result);
-    printf("-> 2 doing tabulating Wz for lensing magnification %.3e\n",result);
-    
+
     if (result <= 0.)
       result = 1e-100;
 
     ptsz->array_W_nlensmag[index_g][index_z] = log(result);
     ptsz->array_z_W_nlensmag[index_g][index_z] = ln1pz;
-    printf("-> integral z = %.3e W = %.3e\n",z,exp(ptsz->array_W_nlensmag[index_g][index_z]));
+//printf("-> integral z = %.3e W = %.3e\n",z,exp(ptsz->array_W_nlensmag[index_g][index_z]));
   }
 if (ptsz->sz_verbose>=1)
-printf("-> end tabulating Wz for lensing magnification\n");
+printf("-> [nlensmag] end tabulating Wz for lensing magnification\n");
  free(pvectsz);
  free(pvecback);
 }
@@ -25434,6 +25472,8 @@ if (
   + ptsz->has_gal_gallens_1h
   + ptsz->has_ngal_gallens_2h
   + ptsz->has_ngal_gallens_1h
+  + ptsz->has_nlensmag_gallens_2h
+  + ptsz->has_nlensmag_gallens_1h
   + ptsz->has_tSZ_gallens_2h
   + ptsz->has_tSZ_gallens_1h
   + ptsz->has_gallens_gallens_2h
