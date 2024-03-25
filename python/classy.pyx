@@ -892,6 +892,21 @@ cdef class Class:
             self.tsz.M_min_HOD = pdict_to_update[k]
           if k == 'M1_prime_HOD':
             self.tsz.M1_prime_HOD = pdict_to_update[k]
+          for index_g in range(4):
+            if k == 'alpha_s_HOD_ngal'+str(index_g):
+              self.tsz.alpha_s_HOD_ngal[index_g] = pdict_to_update['alpha_s_HOD_ngal'+str(index_g)]
+          for index_g in range(4):
+            if k == 'sigma_log10M_HOD_ngal'+str(index_g):
+              self.tsz.sigma_log10M_HOD_ngal[index_g] = pdict_to_update['sigma_log10M_HOD_ngal'+str(index_g)]
+          for index_g in range(4):
+            if k == 'M_min_HOD_ngal'+str(index_g):
+              self.tsz.M_min_HOD_ngal[index_g] = pdict_to_update['M_min_HOD_ngal'+str(index_g)]
+          for index_g in range(4):
+            if k == 'M1_prime_HOD_ngal'+str(index_g):
+              self.tsz.M1_prime_HOD_ngal[index_g] = pdict_to_update['M1_prime_HOD_ngal'+str(index_g)]
+          for index_g in range(4):
+            if k == 'M0_HOD_ngal'+str(index_g):
+              self.tsz.M0_HOD_ngal[index_g] = pdict_to_update['M0_HOD_ngal'+str(index_g)]
           if k == 'fNL':
             self.tsz.fNL = pdict_to_update[k]
           if k == 'P0GNFW':
@@ -3049,6 +3064,100 @@ cdef class Class:
             cl_gk[str(int(nu1))] = cl
         return cl_gk
 
+    def cl_galn_gallens(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of gal x lens power spectrum
+        """
+        cl_gkg = {}
+
+        for id_nu1 in range(self.tsz.galaxy_samples_list_num):
+            nu1 = self.tsz.galaxy_samples_list[id_nu1]
+            cl = {}
+            cl['ell'] = []
+            cl['1h'] = []
+            cl['2h'] = []
+            for index in range(self.tsz.nlSZ):
+                cl['1h'].append(self.tsz.cl_ngal_gallens_1h[id_nu1][index])
+                cl['2h'].append(self.tsz.cl_ngal_gallens_2h[id_nu1][index])
+                cl['ell'].append(self.tsz.ell[index])
+            cl_gkg[str(int(nu1))] = cl
+        return cl_gkg
+
+    def cl_galn_tsz(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of gal x lens power spectrum
+        """
+        cl_gy = {}
+
+        for id_nu1 in range(self.tsz.galaxy_samples_list_num):
+            nu1 = self.tsz.galaxy_samples_list[id_nu1]
+            cl = {}
+            cl['ell'] = []
+            cl['1h'] = []
+            cl['2h'] = []
+            for index in range(self.tsz.nlSZ):
+                cl['1h'].append(self.tsz.cl_ngal_tsz_1h[id_nu1][index])
+                cl['2h'].append(self.tsz.cl_ngal_tsz_2h[id_nu1][index])
+                cl['ell'].append(self.tsz.ell[index])
+            cl_gy[str(int(nu1))] = cl
+        return cl_gy
+    def cl_galn_IA(self):
+        """
+        (class_sz) Return the 2-halo terms of gal x lens power spectrum
+        """
+        cl_gIA = {}
+
+        for id_nu1 in range(self.tsz.galaxy_samples_list_num):
+            nu1 = self.tsz.galaxy_samples_list[id_nu1]
+            cl = {}
+            cl['ell'] = []
+            cl['1h'] = []
+            cl['2h'] = []
+            for index in range(self.tsz.nlSZ):
+                cl['1h'].append(0.0)
+                cl['2h'].append(self.tsz.cl_ngal_IA_2h[id_nu1][index])
+                cl['ell'].append(self.tsz.ell[index])
+            cl_gIA[str(int(nu1))] = cl
+        return cl_gIA
+
+    def cl_lensmagn_gallens(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of gal x lens power spectrum
+        """
+        cl_mkg = {}
+
+        for id_nu1 in range(self.tsz.galaxy_samples_list_num):
+            nu1 = self.tsz.galaxy_samples_list[id_nu1]
+            cl = {}
+            cl['ell'] = []
+            cl['1h'] = []
+            cl['2h'] = []
+            for index in range(self.tsz.nlSZ):
+                cl['1h'].append(self.tsz.cl_nlensmag_gallens_1h[id_nu1][index])
+                cl['2h'].append(self.tsz.cl_nlensmag_gallens_2h[id_nu1][index])
+                cl['ell'].append(self.tsz.ell[index])
+            cl_mkg[str(int(nu1))] = cl
+        return cl_mkg
+
+    def cl_lensmagn_tsz(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of gal x lens power spectrum
+        """
+        cl_my = {}
+
+        for id_nu1 in range(self.tsz.galaxy_samples_list_num):
+            nu1 = self.tsz.galaxy_samples_list[id_nu1]
+            cl = {}
+            cl['ell'] = []
+            cl['1h'] = []
+            cl['2h'] = []
+            for index in range(self.tsz.nlSZ):
+                cl['1h'].append(self.tsz.cl_nlensmag_tsz_1h[id_nu1][index])
+                cl['2h'].append(self.tsz.cl_nlensmag_tsz_2h[id_nu1][index])
+                cl['ell'].append(self.tsz.ell[index])
+            cl_my[str(int(nu1))] = cl
+        return cl_my
+
     def cl_kg_cib(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of kg x cib power spectrum
@@ -3221,7 +3330,7 @@ cdef class Class:
             for index_l_prime in range(index_l+1):
                 # T_ll[index_l].append(self.tsz.tllprime_sz[index_l][index_l_prime])
                 T_ll_arr[index_l][index_l_prime] = self.tsz.tllprime_sz[index_l][index_l_prime]
-                T_ll_arr[index_l_prime][index_l] = T_ll_arr[index_l][index_l_prime] 
+                T_ll_arr[index_l_prime][index_l] = T_ll_arr[index_l][index_l_prime]
         return T_ll_arr
 
 
