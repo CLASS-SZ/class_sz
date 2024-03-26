@@ -7020,12 +7020,13 @@ int input_default_params(
   // pcsz->alpha_theta = 1./3.;
 
   ptsz->ystar_ym = -0.186; //-0.186 ref. value in SZ_plus_priors.ini (cosmomc)
-  ptsz->alpha_ym = 1.78; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
+  // ptsz->alpha_ym = 1.78; //1.789 ref. value in SZ_plus_priors.ini (cosmomc)
   // ptsz->ystar_ym = pow(10.,-0.19)/pow(2., ptsz->alpha_ym)*0.00472724; ////8.9138435358806980e-004;
-  ptsz->sigmaM_ym = 0.173; //in natural log, see tab 1 of planck cc 2015 paper
+  ptsz->alpha_ym = 5./3.+0.12;//
+  ptsz->sigmaM_ym = 0.173; //in natural log, see tab 1 of planck cc 2015 paper, intrinsic scatter
   //0.173/np.log(10.) = 0.075, in szcounts.f90. But it's wrong. It should be in natural log.
 
-  ptsz->beta_ym = 0.66;
+  ptsz->beta_ym = 2./3.;
   ptsz->thetastar = 6.997;
   ptsz->alpha_theta = 1./3.;
 
