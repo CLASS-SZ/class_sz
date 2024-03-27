@@ -14,7 +14,7 @@ class classy_sz(classy):
     # skip_background_and_thermo = True
     # ell_factor = False # True for pyactlite and bplike, False for clik
 
-    def initialize(self, **params_values_dict):
+    def initialize(self):
         """Importing CLASS from the correct path, if given, and if not, globally."""
         self.classy_module = self.is_installed()
         if not self.classy_module:
@@ -32,16 +32,15 @@ class classy_sz(classy):
         # Derived parameters that may not have been requested, but will be necessary later
         self.derived_extra = []
         self.log.info("Initialized!")
-        if self.use_class_sz_no_cosmo_mode ==1:
-            initial_parameters = self.extra_args
-            print("Initial params",initial_parameters)
-            #Set the initial parameters for nocosmo mode
-            try:
-                initial_parameters['ln10^{10}A_s'] = initial_parameters.pop("logA")
-                self.set(initial_parameters)
-            except KeyError:
-                self.set(initial_parameters)
-            self.classy.compute()
+
+        if self.use_class_sz_no_cosmo_mode == 1:
+            self.log.info("Initializing cosmology part!")
+            initial_parameters = self.extra_args.copy()
+            # print("initial_parameters:",initial_parameters)
+
+            self.classy.set(initial_parameters)
+            self.classy.compute_class_szfast()
+            self.log.info("cosmology part initialized!")
 
 
         # print(self.lensing_lkl)
@@ -138,30 +137,8 @@ class classy_sz(classy):
                     method="cl_ym", # name of the method in classy.pyx
                     args_names=[],
                     args=[])
-        if "Cl_kgxg" in requirements:
-            # make sure cobaya still runs as it does for standard classy
-            requirements.pop("Cl_kgxg")
-            # specify the method to collect the new observable
-            self.collectors["Cl_kgxg"] = Collector(
-                    method="cl_ggamma", # name of the method in classy.pyx
-                    args_names=[],
-                    args=[])
-        if "Cl_kgxmu" in requirements:
-                # make sure cobaya still runs as it does for standard classy
-                requirements.pop("Cl_kgxmu")
-                # specify the method to collect the new observable
-                self.collectors["Cl_kgxmu"] = Collector(
-                        method="cl_kg_m", # name of the method in classy.pyx
-                        args_names=[],
-                        args=[])
-        if "Cl_IAxg" in requirements:
-            # make sure cobaya still runs as it does for standard classy
-            requirements.pop("Cl_IAxg")
-            # specify the method to collect the new observable
-            self.collectors["Cl_IAxg"] = Collector(
-                    method="cl_IA_g", # name of the method in classy.pyx
-                    args_names=[],
-                    args=[])
+
+
         if "sz_binned_cluster_counts" in requirements:
             # make sure cobaya still runs as it does for standard classy
             requirements.pop("sz_binned_cluster_counts")
@@ -180,6 +157,14 @@ class classy_sz(classy):
                     args_names=[],
                     args=[])
 
+        if "cl_cib_kappa" in requirements:
+                # make sure cobaya still runs as it does for standard classy
+                requirements.pop("cl_cib_kappa")
+                # specify the method to collect the new observable
+                self.collectors["cl_cib_kappa"] = Collector(
+                        method="cl_lens_cib", # name of the method in classy.pyx
+                        args_names=[],
+                        args=[])
         if "Cl_galnxgaln" in requirements:
                 # make sure cobaya still runs as it does for standard classy
                 requirements.pop("Cl_galnxgaln")
@@ -311,24 +296,6 @@ class classy_sz(classy):
         cls = {}
         cls = deepcopy(self._current_state["Cl_yxmu"])
         return cls
-    def get_Cl_kgxg(self):
-        cls = {}
-        cls = deepcopy(self._current_state["Cl_kgxg"])
-        return cls
-    def get_Cl_kgxmu(self):
-        cls = {}
-        cls = deepcopy(self._current_state["Cl_kgxmu"])
-        return cls
-    def get_Cl_IAxg(self):
-        cls = {}
-        cls = deepcopy(self._current_state["Cl_IAxg"])
-        return cls
-
-    # get the required new observable
-    def get_sz_unbinned_cluster_counts(self):
-        cls = deepcopy(self._current_state["sz_unbinned_cluster_counts"])
-        # print(cls)
-        return cls['loglike'],cls['ntot'],cls['rates']
 
     def get_Cl_galnxlens(self):
         cls = {}
@@ -358,10 +325,23 @@ class classy_sz(classy):
         cls = {}
         cls = deepcopy(self._current_state["Cl_galnxIA"])
         return cls
+
+    # get the required new observable
+    def get_sz_unbinned_cluster_counts(self):
+        cls = deepcopy(self._current_state["sz_unbinned_cluster_counts"])
+        # print(cls)
+        return cls['loglike'],cls['ntot'],cls['rates']
+
+
     # get the required new observable
     def get_sz_binned_cluster_counts(self):
         cls = {}
         cls = deepcopy(self._current_state["sz_binned_cluster_counts"])
+        return cls
+
+    def get_cl_cib_kappa(self):
+        cls = {}
+        cls = deepcopy(self._current_state["cl_cib_kappa"])
         return cls
 
     # IMPORTANT: this method is imported from cobaya and modified to accomodate the emulators
@@ -381,14 +361,16 @@ class classy_sz(classy):
         try:
             if self.use_class_sz_fast_mode == 1:
                 # start = time.perf_counter()
-                self.classy.compute_class_szfast()
+                if self.use_class_sz_no_cosmo_mode == 1:
+                    print(params_values)
+                    self.classy.compute_class_sz(params_values)
+                else:
+                    self.classy.compute_class_szfast()
                 # end = time.perf_counter()
                 # print('classy_szfast took:',end-start)
             # self.classy.compute_class_szfast()
-            elif self.use_class_sz_no_cosmo_mode == 1:
-                # print("updated params_values:", params_values)
-                # print("P0", params_values['P0GNFW'])
-                self.classy.compute_class_sz(params_values)
+            # elif self.use_class_sz_no_cosmo_mode == 1:
+            #     self.classy.compute_class_sz(params_values)
             else:
                 self.classy.compute()
         # "Valid" failure of CLASS: parameters too extreme -> log and report
