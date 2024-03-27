@@ -1759,7 +1759,7 @@ int input_read_parameters(
 
       class_read_double("kstar_damping_1h_term (1/Mpc)",ptsz->kstar_damping_1h_term_Mpc);
       class_read_int("damping_1h_term",ptsz->damping_1h_term);
-
+      class_read_double("photo_z_params",ptsz->photo_z_params);
       class_read_double("dndz_shift_source_gal",ptsz->dndz_shift_source_gal);
       class_read_double("dndz_shift_gal",ptsz->dndz_shift_gal);
       class_read_double("dndz_stretch_source_gal",ptsz->dndz_stretch_source_gal);
@@ -3022,6 +3022,26 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
       }
 
+      if ((strstr(string1,"galn_tsz_1h") != NULL) ) {
+        ptsz->has_ngal_tsz_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"galn_tsz_2h") != NULL) ) {
+        ptsz->has_ngal_tsz_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
       if ((strstr(string1,"galn_lens_hf") != NULL) ) {
         ptsz->has_ngal_lens_hf =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
@@ -3031,6 +3051,76 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         ptsz->has_pk = _TRUE_;
         // ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"galn_gallens_1h") != NULL) ) {
+        ptsz->has_ngal_gallens_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"galn_gallens_2h") != NULL) ) {
+        ptsz->has_ngal_gallens_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"galn_IA_2h") != NULL) ) {
+        ptsz->has_ngal_IA_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"lensmagn_gallens_1h") != NULL) ) {
+        ptsz->has_nlensmag_gallens_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"lensmagn_gallens_2h") != NULL) ) {
+        ptsz->has_nlensmag_gallens_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"lensmagn_tsz_1h") != NULL) ) {
+        ptsz->has_nlensmag_tsz_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"lensmagn_tsz_2h") != NULL) ) {
+        ptsz->has_nlensmag_tsz_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        ptsz->need_hmf = 1;
       }
 
       if ((strstr(string1,"tau_gal_1h") != NULL) ) {
@@ -3906,8 +3996,17 @@ int input_read_parameters(
       +  ptsz->has_ngal_ngal_hf
       +  ptsz->has_ngal_lens_1h
       +  ptsz->has_ngal_lens_2h
+      +  ptsz->has_ngal_tsz_1h
+      +  ptsz->has_ngal_tsz_2h
       +  ptsz->has_ngal_lens_hf
       +  ptsz->has_ngal_nlensmag_hf
+      +  ptsz->has_ngal_gallens_1h
+      +  ptsz->has_ngal_gallens_2h
+      +  ptsz->has_ngal_IA_2h
+      +  ptsz->has_nlensmag_gallens_1h
+      +  ptsz->has_nlensmag_gallens_2h
+      +  ptsz->has_nlensmag_tsz_1h
+      +  ptsz->has_nlensmag_tsz_2h
     )
       != _FALSE_){
     class_read_list_of_integers("galaxy_samples_list",ptsz->galaxy_samples_list,ptsz->galaxy_samples_list_num);
@@ -3941,6 +4040,12 @@ int input_read_parameters(
       + ptsz->has_ngal_ngal_2h
       + ptsz->has_ngal_lens_1h
       + ptsz->has_ngal_lens_2h
+      + ptsz->has_ngal_tsz_1h
+      + ptsz->has_ngal_tsz_2h
+      + ptsz->has_ngal_gallens_1h
+      + ptsz->has_ngal_gallens_2h
+      + ptsz->has_ngal_IA_2h
+
     ){
 
     class_alloc(ptsz->sigma_log10M_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
@@ -3961,19 +4066,19 @@ int input_read_parameters(
         ptsz->M0_HOD_ngal[index_g] = 1e11;
         ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g] = 1.;
         ptsz->f_cen_HOD_ngal[index_g] = 1.;
-        sprintf(input_param_name,"%s%d","sigma_log10M_HOD_ngal_",index_g);
+        sprintf(input_param_name,"%s%d","sigma_log10M_HOD_ngal",index_g);
         class_read_double(input_param_name,ptsz->sigma_log10M_HOD_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","alpha_s_HOD_ngal_",index_g);
+        sprintf(input_param_name,"%s%d","alpha_s_HOD_ngal",index_g);
         class_read_double(input_param_name,ptsz->alpha_s_HOD_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","M1_prime_HOD_ngal_",index_g);
+        sprintf(input_param_name,"%s%d","M1_prime_HOD_ngal",index_g);
         class_read_double(input_param_name,ptsz->M1_prime_HOD_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","M_min_HOD_ngal_",index_g);
+        sprintf(input_param_name,"%s%d","M_min_HOD_ngal",index_g);
         class_read_double(input_param_name,ptsz->M_min_HOD_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","M0_HOD_ngal_",index_g);
+        sprintf(input_param_name,"%s%d","M0_HOD_ngal",index_g);
         class_read_double(input_param_name,ptsz->M0_HOD_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","x_out_truncated_nfw_profile_satellite_galaxies_ngal_",index_g);
+        sprintf(input_param_name,"%s%d","x_out_truncated_nfw_profile_satellite_galaxies_ngal",index_g);
         class_read_double(input_param_name,ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","f_cen_HOD_ngal_",index_g);
+        sprintf(input_param_name,"%s%d","f_cen_HOD_ngal",index_g);
         class_read_double(input_param_name,ptsz->f_cen_HOD_ngal[index_g]);
 
 
@@ -4374,7 +4479,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
           ptsz->MF=4;
           ptsz->integrate_wrt_m200m = 1;
 
-          // avoid problems here 
+          // avoid problems here
           if  (strstr(string1,"T08M500c") != NULL){
           ptsz->MF=5;
           ptsz->integrate_wrt_m500c = 1;
@@ -5932,6 +6037,15 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
       + ptsz->has_ngal_lens_2h
       + ptsz->has_ngal_lens_hf
       + ptsz->has_ngal_nlensmag_hf
+      + ptsz->has_ngal_gallens_1h
+      + ptsz->has_ngal_gallens_2h
+      + ptsz->has_ngal_IA_2h
+      + ptsz->has_nlensmag_gallens_1h
+      + ptsz->has_nlensmag_gallens_2h
+      + ptsz->has_ngal_tsz_1h
+      + ptsz->has_ngal_tsz_2h
+      + ptsz->has_nlensmag_tsz_1h
+      + ptsz->has_nlensmag_tsz_2h
       + ptsz->has_cib_cib_2h
       + ptsz->has_gal_gal_1h
       + ptsz->has_gal_gal_2h
@@ -6694,6 +6808,7 @@ int input_default_params(
   ptsz->f_cen_HOD = 1.;
   ptsz->Delta_z_lens = 0.; // DES photo-z errors
   ptsz->Delta_z_source = 0.;
+  ptsz->photo_z_params = 0.; //
   ptsz->dndz_shift_gal = 0; // shift and stretch params
   ptsz->dndz_shift_source_gal = 0; //as in https://arxiv.org/pdf/2210.08633.pdf
   ptsz->dndz_stretch_gal = 1.;
@@ -7203,6 +7318,15 @@ int input_default_params(
   ptsz->has_ngal_lens_2h = _FALSE_;
   ptsz->has_ngal_lens_hf = _FALSE_;
   ptsz->has_ngal_nlensmag_hf = _FALSE_;
+  ptsz->has_ngal_tsz_1h = _FALSE_;
+  ptsz->has_ngal_tsz_2h = _FALSE_;
+  ptsz->has_nlensmag_tsz_1h = _FALSE_;
+  ptsz->has_nlensmag_tsz_2h = _FALSE_;
+  ptsz->has_ngal_gallens_1h = _FALSE_;
+  ptsz->has_ngal_gallens_2h = _FALSE_;
+  ptsz->has_ngal_IA_2h = _FALSE_;
+  ptsz->has_nlensmag_gallens_1h = _FALSE_;
+  ptsz->has_nlensmag_gallens_2h = _FALSE_;
   ptsz->has_cib_cib_1h = _FALSE_;
   ptsz->has_cib_cib_2h = _FALSE_;
   ptsz->has_pk_at_z_1h = _FALSE_;
@@ -7463,6 +7587,16 @@ int input_default_params(
   ptsz->index_md_tau_tau_2h = 130;
   ptsz->index_md_tau_tau_1h = 131;
 
+  ptsz->index_md_ngal_tsz_1h = 132;
+  ptsz->index_md_ngal_tsz_2h = 133;
+
+  ptsz->index_md_ngal_gallens_1h = 134;
+  ptsz->index_md_ngal_gallens_2h = 135;
+  ptsz->index_md_nlensmag_gallens_1h = 136;
+  ptsz->index_md_nlensmag_gallens_2h = 137;
+  ptsz->index_md_ngal_IA_2h = 138;
+  ptsz->index_md_nlensmag_tsz_1h = 139;
+  ptsz->index_md_nlensmag_tsz_2h = 140;
 
   ptsz->integrate_wrt_mvir = 0;
   ptsz->integrate_wrt_m500c = 0;

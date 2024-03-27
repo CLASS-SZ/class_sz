@@ -289,6 +289,11 @@ cdef extern from "class.h":
         double sigma_log10M_HOD
         double M1_prime_HOD
         double M_min_HOD
+        double * alpha_s_HOD_ngal
+        double * sigma_log10M_HOD_ngal
+        double * M1_prime_HOD_ngal
+        double * M_min_HOD_ngal
+        double * M0_HOD_ngal
         double x_inSZ
         double x_outSZ
         double HSEbias
@@ -410,6 +415,15 @@ cdef extern from "class.h":
         double ** cl_ngal_lens_1h
         double ** cl_ngal_lens_2h
         double ** cl_ngal_lens_hf
+        double ** cl_ngal_gallens_1h
+        double ** cl_ngal_gallens_2h
+        double ** cl_ngal_tsz_1h
+        double ** cl_ngal_tsz_2h
+        double ** cl_ngal_IA_2h
+        double ** cl_nlensmag_gallens_1h
+        double ** cl_nlensmag_gallens_2h
+        double ** cl_nlensmag_tsz_1h
+        double ** cl_nlensmag_tsz_2h
         double *** cl_cib_cib_2h
         double **  cl_gallens_cib_1h
         double **  cl_gallens_cib_2h
