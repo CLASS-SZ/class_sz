@@ -118,7 +118,6 @@ class classy_sz(classy):
                     args_names=[],
                     args=[])
 
-
         if "Cl_kxmu" in requirements:
         # make sure cobaya still runs as it does for standard classy
             requirements.pop("Cl_kxmu")
@@ -137,7 +136,30 @@ class classy_sz(classy):
                     method="cl_ym", # name of the method in classy.pyx
                     args_names=[],
                     args=[])
-
+        if "Cl_kgxg" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("Cl_kgxg")
+            # specify the method to collect the new observable
+            self.collectors["Cl_kgxg"] = Collector(
+                    method="cl_ggamma", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
+        if "Cl_kgxmu" in requirements:
+                # make sure cobaya still runs as it does for standard classy
+                requirements.pop("Cl_kgxmu")
+                # specify the method to collect the new observable
+                self.collectors["Cl_kgxmu"] = Collector(
+                        method="cl_kg_m", # name of the method in classy.pyx
+                        args_names=[],
+                        args=[])
+        if "Cl_IAxg" in requirements:
+            # make sure cobaya still runs as it does for standard classy
+            requirements.pop("Cl_IAxg")
+            # specify the method to collect the new observable
+            self.collectors["Cl_IAxg"] = Collector(
+                    method="cl_IA_g", # name of the method in classy.pyx
+                    args_names=[],
+                    args=[])
 
         if "sz_binned_cluster_counts" in requirements:
             # make sure cobaya still runs as it does for standard classy
@@ -296,7 +318,18 @@ class classy_sz(classy):
         cls = {}
         cls = deepcopy(self._current_state["Cl_yxmu"])
         return cls
-
+    def get_Cl_kgxg(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_kgxg"])
+        return cls
+    def get_Cl_kgxmu(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_kgxmu"])
+        return cls
+    def get_Cl_IAxg(self):
+        cls = {}
+        cls = deepcopy(self._current_state["Cl_IAxg"])
+        return cls
     def get_Cl_galnxlens(self):
         cls = {}
         cls = deepcopy(self._current_state["Cl_galnxlens"])
