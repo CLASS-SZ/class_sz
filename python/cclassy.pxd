@@ -435,7 +435,7 @@ cdef extern from "class.h":
         double **  cl_lens_cib_2h
         double * cib_frequency_list
         int cib_frequency_list_num
-        double * galaxy_samples_list
+        int * galaxy_samples_list
         int galaxy_samples_list_num
         double * pk_at_z_1h
         double * pk_at_z_2h

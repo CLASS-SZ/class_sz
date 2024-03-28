@@ -25387,7 +25387,7 @@ for (index_g=0;index_g<ptsz->galaxy_samples_list_num;index_g++){
   class_alloc(pvectsz,ptsz->tsz_size*sizeof(double),ptsz->error_message);
   class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
 
-  for (index_z=0; index_z<ptsz->n_z_W_lensmag; index_z++) //ola2 n_z_W_nlensmag ???
+  for (index_z=0; index_z<ptsz->n_z_W_lensmag; index_z++) //ola2 n_z_W_nlensmag
   {
 
     ln1pz =  log(1.+z_min)
