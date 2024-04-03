@@ -190,7 +190,7 @@ int class_sz_cosmo_init(  struct background * pba,
       + ptsz->has_kSZ_kSZ_tSZ_3h
       + ptsz->has_tSZ_gal_1h
       + ptsz->has_tSZ_gal_2h
-      + ptsz->has_ngal_tsz_1h //ola
+      + ptsz->has_ngal_tsz_1h
       + ptsz->has_ngal_tsz_2h
       + ptsz->has_nlensmag_tsz_1h
       + ptsz->has_nlensmag_tsz_2h
@@ -1340,7 +1340,7 @@ if (ptsz->has_dydz){
 
 // tabulate lensing magnificaion integral, only when requested
 tabulate_redshift_int_lensmag(ptsz,pba);
-tabulate_redshift_int_nlensmag(ptsz,pba); //ola2
+tabulate_redshift_int_nlensmag(ptsz,pba);
 tabulate_redshift_int_gallens_sources(ptsz,pba);
 
 // only when requested:
@@ -4006,9 +4006,9 @@ int class_sz_free(struct tszspectrum *ptsz)
         + ptsz->has_ngal_gallens_1h
         + ptsz->has_ngal_gallens_2h
         + ptsz->has_ngal_IA_2h
-        + ptsz->has_nlensmag_tsz_1h //ola2
+        + ptsz->has_nlensmag_tsz_1h
         + ptsz->has_nlensmag_tsz_2h
-        + ptsz->has_nlensmag_gallens_1h //ola2
+        + ptsz->has_nlensmag_gallens_1h
         + ptsz->has_nlensmag_gallens_2h
       ){
 
@@ -4088,8 +4088,8 @@ int class_sz_free(struct tszspectrum *ptsz)
        + ptsz->has_ngal_lens_2h
        + ptsz->has_ngal_tsz_1h
        + ptsz->has_ngal_tsz_2h
-       + ptsz->has_nlensmag_tsz_1h //ola3
-       + ptsz->has_nlensmag_tsz_2h
+       // + ptsz->has_nlensmag_tsz_1h //ola
+       // + ptsz->has_nlensmag_tsz_2h
        + ptsz->has_ngal_gallens_1h
        + ptsz->has_ngal_gallens_2h
        + ptsz->has_ngal_IA_2h)
@@ -4445,9 +4445,9 @@ if (ptsz->sz_verbose>10) printf("-> freeing kappa_g n(z).\n");
 if (
  ptsz->has_gal_gallens_1h
 || ptsz->has_gal_gallens_2h
-|| ptsz->has_ngal_gallens_1h //ola
+|| ptsz->has_ngal_gallens_1h
 || ptsz->has_ngal_gallens_2h
-|| ptsz->has_nlensmag_gallens_1h //ola
+|| ptsz->has_nlensmag_gallens_1h
 || ptsz->has_nlensmag_gallens_2h
 || ptsz->has_tSZ_gallens_1h
 || ptsz->has_tSZ_gallens_2h
@@ -6431,7 +6431,7 @@ int compute_sz(struct background * pba,
         }
 
         else if (index_integrand>=ptsz->index_integrand_id_ngal_IA_2h_first && index_integrand <= ptsz->index_integrand_id_ngal_IA_2h_last && ptsz->has_ngal_IA_2h){
-          Pvectsz[ptsz->index_md] = ptsz->index_md_ngal_IA_2h; //ola2
+          Pvectsz[ptsz->index_md] = ptsz->index_md_ngal_IA_2h;
           int index_multipole_ngal1 = (int) (index_integrand - ptsz->index_integrand_id_ngal_IA_2h_first);
           int index_ngal1 = index_multipole_ngal1 / ptsz->nlSZ;
           int index_multipole = index_multipole_ngal1 % ptsz->nlSZ;
@@ -6476,13 +6476,13 @@ int compute_sz(struct background * pba,
         }
 
         else if (index_integrand>=ptsz->index_integrand_id_nlensmag_tsz_1h_first && index_integrand <= ptsz->index_integrand_id_nlensmag_tsz_1h_last && ptsz->has_nlensmag_tsz_1h){
-           Pvectsz[ptsz->index_md] = ptsz->index_md_nlensmag_tsz_1h; //ola2
+           Pvectsz[ptsz->index_md] = ptsz->index_md_nlensmag_tsz_1h;
            int index_multipole_ngal1 = (int) (index_integrand - ptsz->index_integrand_id_nlensmag_tsz_1h_first);
            int index_ngal1 = index_multipole_ngal1 / ptsz->nlSZ;
            int index_multipole = index_multipole_ngal1 % ptsz->nlSZ;
            Pvectsz[ptsz->index_ngal_for_galaxy_profile] = (double) index_ngal1;
            Pvectsz[ptsz->index_multipole] = (double) index_multipole;
-           // Pvectsz[ptsz->index_has_galaxy] = 1; //ola2
+           // Pvectsz[ptsz->index_has_galaxy] = 1;
            Pvectsz[ptsz->index_has_lensing] = 1;
            Pvectsz[ptsz->index_has_electron_pressure] = 1;
            if (ptsz->sz_verbose > 0) printf("computing cl^nlensmag-tsz_1h @ ngal_id = %.0f, ell_id = %.0f\n",
@@ -6507,7 +6507,7 @@ int compute_sz(struct background * pba,
          }
 
          else if (index_integrand>=ptsz->index_integrand_id_nlensmag_gallens_1h_first && index_integrand <= ptsz->index_integrand_id_nlensmag_gallens_1h_last && ptsz->has_nlensmag_gallens_1h){
-            Pvectsz[ptsz->index_md] = ptsz->index_md_nlensmag_gallens_1h; //ola2
+            Pvectsz[ptsz->index_md] = ptsz->index_md_nlensmag_gallens_1h;
             int index_multipole_ngal1 = (int) (index_integrand - ptsz->index_integrand_id_nlensmag_gallens_1h_first);
             int index_ngal1 = index_multipole_ngal1 / ptsz->nlSZ;
             int index_multipole = index_multipole_ngal1 % ptsz->nlSZ;
@@ -10723,7 +10723,7 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
     evaluate_galaxy_profile_ngal(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
     evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
     pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
-                                      *pvectsz[ptsz->index_pressure_profile] //ola
+                                      *pvectsz[ptsz->index_pressure_profile]
                                       *pvectsz[ptsz->index_galaxy_profile]
                                       *damping_1h_term;
    }
@@ -10731,7 +10731,7 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
   else if (_ngal_tsz_2h_){
 
             // pvectsz[ptsz->index_part_id_cov_hsv] = 1;
-            if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) { //ola
+            if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
 
             evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
             evaluate_galaxy_profile_ngal(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,ptsz);
@@ -10739,7 +10739,7 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
                                              *pvectsz[ptsz->index_galaxy_profile]
                                              *pvectsz[ptsz->index_halo_bias];
                                               }
-            if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) { //ola
+            if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
               evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
               evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
               double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
@@ -10762,7 +10762,7 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
           else if (_nlensmag_tsz_2h_){
 
                     // pvectsz[ptsz->index_part_id_cov_hsv] = 1;
-                    if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) { //ola
+                    if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
                       evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
                       evaluate_lensing_profile(kl,m_delta_lensing,r_delta_lensing,c_delta_lensing,pvecback,pvectsz,pba,ptsz);
                       pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_hmf]
@@ -10770,7 +10770,7 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
                                                        *pvectsz[ptsz->index_halo_bias];
 
                                                       }
-                    if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) { //ola
+                    if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
                       evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
                       evaluate_pressure_profile(kl,pvecback,pvectsz,pba,ptsz);
                       double pressure_profile_at_ell = pvectsz[ptsz->index_pressure_profile];
@@ -10783,14 +10783,14 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
             evaluate_lensing_profile(kl,m_delta_lensing,r_delta_lensing,c_delta_lensing,pvecback,pvectsz,pba,ptsz);
             pvectsz[ptsz->index_integrand] =  pvectsz[ptsz->index_hmf]
                                               *pvectsz[ptsz->index_lensing_profile]
-                                              *pvectsz[ptsz->index_lensing_profile] //ola3
+                                              *pvectsz[ptsz->index_lensing_profile]
                                               *damping_1h_term;
            }
 
           else if (_nlensmag_gallens_2h_){
 
                     // pvectsz[ptsz->index_part_id_cov_hsv] = 1;
-                    // if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) { //ola3
+                    // if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1) {
                       evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
                       evaluate_lensing_profile(kl,m_delta_lensing,r_delta_lensing,c_delta_lensing,pvecback,pvectsz,pba,ptsz);
                       pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_hmf]
@@ -10798,7 +10798,7 @@ if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  6) {
                                                        *pvectsz[ptsz->index_halo_bias];
 
                                                       // }
-                                                      // if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) { //ola
+                                                      // if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) {
                                                       //   evaluate_halo_bias(pvecback,pvectsz,pba,ppm,pnl,ppt,ptsz);
                                                       //   evaluate_lensing_profile(kl,m_delta_lensing,r_delta_lensing,c_delta_lensing,pvecback,pvectsz,pba,ptsz);
                                                       //   pvectsz[ptsz->index_integrand] = pvectsz[ptsz->index_hmf]
@@ -20023,7 +20023,7 @@ int initialise_and_allocate_memory(struct tszspectrum * ptsz){
       +ptsz->has_tSZ_gal_2h
       +ptsz->has_ngal_tsz_1h //ola
       +ptsz->has_ngal_tsz_2h
-      +ptsz->has_nlensmag_tsz_1h //ola
+      +ptsz->has_nlensmag_tsz_1h
       +ptsz->has_nlensmag_tsz_2h
       +ptsz->has_tSZ_cib_1h
       +ptsz->has_tSZ_cib_2h
@@ -20727,9 +20727,9 @@ if (ptsz->need_hmf){
        +ptsz->has_ngal_gallens_1h
        +ptsz->has_ngal_gallens_2h
        +ptsz->has_ngal_IA_2h
-       +ptsz->has_nlensmag_tsz_1h //ola2
+       +ptsz->has_nlensmag_tsz_1h
        +ptsz->has_nlensmag_tsz_2h
-       +ptsz->has_nlensmag_gallens_1h //ola2
+       +ptsz->has_nlensmag_gallens_1h
        +ptsz->has_nlensmag_gallens_2h
      )
      != _FALSE_){
@@ -21148,9 +21148,9 @@ if (ptsz->need_hmf){
      + ptsz->has_ngal_gallens_1h
      + ptsz->has_ngal_gallens_2h
      + ptsz->has_ngal_IA_2h
-     + ptsz->has_nlensmag_tsz_1h //ola2
+     + ptsz->has_nlensmag_tsz_1h
      + ptsz->has_nlensmag_tsz_2h
-     + ptsz->has_nlensmag_gallens_1h //ola2
+     + ptsz->has_nlensmag_gallens_1h
      + ptsz->has_nlensmag_gallens_2h
    ){
 
@@ -21619,9 +21619,9 @@ for (index_l=0;index_l<ptsz->nlSZ;index_l++){
      + ptsz->has_ngal_lens_hf
      + ptsz->has_ngal_tsz_1h
      + ptsz->has_ngal_tsz_2h
-     + ptsz->has_nlensmag_tsz_1h //ola2
+     + ptsz->has_nlensmag_tsz_1h
      + ptsz->has_nlensmag_tsz_2h
-     + ptsz->has_nlensmag_gallens_1h //ola2
+     + ptsz->has_nlensmag_gallens_1h
      + ptsz->has_nlensmag_gallens_2h
      + ptsz->has_ngal_gallens_1h
      + ptsz->has_ngal_gallens_2h
@@ -23240,9 +23240,9 @@ if (_ngal_ngal_1h_){
 if (_ngal_ngal_2h_
   ||_ngal_lens_1h_
   ||_ngal_lens_2h_
-  ||_ngal_tsz_1h_ //ola
+  ||_ngal_tsz_1h_
   ||_ngal_tsz_2h_
-  ||_ngal_gallens_1h_ //ola
+  ||_ngal_gallens_1h_
   ||_ngal_gallens_2h_
   ||_ngal_IA_2h_
   ){
@@ -23279,7 +23279,7 @@ if (_ngal_ngal_2h_
 
 if (_ngal_lens_1h_
   ||_ngal_lens_2h_
-  ||_ngal_tsz_1h_ //ola
+  ||_ngal_tsz_1h_
   ||_ngal_tsz_2h_
   ||_ngal_gallens_1h_
   ||_ngal_gallens_2h_
