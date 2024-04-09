@@ -285,6 +285,13 @@ class Class_szfast(object):
         params_dict = {}
         for k,v in zip(params_values.keys(),params_values.values()):
             params_dict[k]=[v]
+
+        if 'm_ncdm' in params_dict.keys():
+            if isinstance(params_dict['m_ncdm'][0],str): 
+                params_dict['m_ncdm'] =  [float(params_dict['m_ncdm'][0].split(',')[0])]
+
+
+
         predicted_pk_spectrum_z = []
 
         if self.use_Amod:
@@ -421,6 +428,11 @@ class Class_szfast(object):
         for k,v in zip(params_values.keys(),params_values.values()):
             params_dict[k]=[v]
 
+        if 'm_ncdm' in params_dict.keys():
+            if isinstance(params_dict['m_ncdm'][0],str): 
+                params_dict['m_ncdm'] =  [float(params_dict['m_ncdm'][0].split(',')[0])]
+
+
         s8z  = self.cp_s8_nn[self.cosmo_model].predictions_np(params_dict)
         # print(self.s8z)
         self.s8z_interp = scipy.interpolate.interp1d(
@@ -451,6 +463,12 @@ class Class_szfast(object):
         params_dict = {}
         for k,v in zip(params_values.keys(),params_values.values()):
             params_dict[k]=[v]
+
+        if 'm_ncdm' in params_dict.keys():
+            if isinstance(params_dict['m_ncdm'][0],str): 
+                params_dict['m_ncdm'] =  [float(params_dict['m_ncdm'][0].split(',')[0])]
+
+
         predicted_pk_spectrum_z = []
 
         for zp in z_arr:
@@ -489,6 +507,13 @@ class Class_szfast(object):
         params_dict = {}
         for k,v in zip(params_values.keys(),params_values.values()):
             params_dict[k]=[v]
+
+        if 'm_ncdm' in params_dict.keys():
+            if isinstance(params_dict['m_ncdm'][0],str): 
+                params_dict['m_ncdm'] =  [float(params_dict['m_ncdm'][0].split(',')[0])]
+
+
+
         self.cp_predicted_hubble = self.cp_h_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0]
         # print(self.cp_predicted_hubble)
         # z_interp =
@@ -526,6 +551,12 @@ class Class_szfast(object):
         params_dict = {}
         for k,v in zip(params_values.keys(),params_values.values()):
             params_dict[k]=[v]
+
+        if 'm_ncdm' in params_dict.keys():
+            if isinstance(params_dict['m_ncdm'][0],str): 
+                params_dict['m_ncdm'] =  [float(params_dict['m_ncdm'][0].split(',')[0])]
+
+
         self.cp_predicted_da  = self.cp_da_nn[self.cosmo_model].predictions_np(params_dict)[0]
         self.chi_interp = scipy.interpolate.interp1d(
                                                     self.cp_z_interp,

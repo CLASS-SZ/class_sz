@@ -381,9 +381,12 @@ class classy_sz(classy):
     def calculate(self, state, want_derived=True, **params_values_dict):
         # Set parameters
         params_values = params_values_dict.copy()
-        # print('\n\n')
-        # print('>>> class_sz.py: class/class_sz using params:',params_values)
-
+        print('\n\n')
+        print('>>> class_sz.py: class/class_sz using params:',params_values)
+        if self.extra_args['N_ncdm'] ==  3:
+            str_mncdm = str(params_values['m_ncdm'])
+            params_values['m_ncdm'] = str_mncdm+','+str_mncdm+','+str_mncdm
+        print('>>> class_sz.py: class/class_sz using params:',params_values)
         # exit(0)
         try:
             params_values['ln10^{10}A_s'] = params_values.pop("logA")
