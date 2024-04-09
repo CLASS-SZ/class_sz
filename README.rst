@@ -53,7 +53,7 @@ CLASS_SZ's outputs are regularly cross-checked with other CMBxLSS codes, such as
 Downloading the code
 --------------------
 
-Clone or download from hhttps://github.com/CLASS-SZ/class_sz
+Clone or download from https://github.com/CLASS-SZ/class_sz
 
 Note: the significant size of the repository is due to the size of the original **class** repository.
 
