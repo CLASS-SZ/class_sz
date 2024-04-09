@@ -51,7 +51,7 @@ CLASS_SZ's outputs are regularly cross-checked with other CMBxLSS codes, such as
 
 
 Downloading the code
---------------
+--------------------
 
 Clone or download from hhttps://github.com/CLASS-SZ/class_sz
 
@@ -142,7 +142,7 @@ will just run the standard class code and its calculation. All depends on what o
 
 
 Computing CMB, LSS and halo model quantities via the Python wrapper classy_sz
-------------------------------
+-----------------------------------------------------------------------------
 
 Class_sz is now very fast ! In part it's because it can run with emulators. This is available via the python wrapper (if requested).
 
@@ -177,7 +177,7 @@ Have a look at the notebooks https://github.com/CLASS-SZ/notebooks. They all use
 
 
 Python Wrapper (Tensorflow and Cosmopower Dependency)
-------------------------------
+-----------------------------------------------------
 
 Since recently we have implemented emulators in classy_sz, now it has an extra-dependency to tensorflow through cosmopower.
 
@@ -220,7 +220,7 @@ to
 
 
 Some tips to run on computer clusters
-------------------------------
+---------------------------------------
 
 Module load, module show to get gsl and fftw.
 At NERC/Cori, the code works with gsl/2.7. (There seems to be a problematic behavior during job submission with gsl/2.5.)
