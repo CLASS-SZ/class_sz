@@ -87,7 +87,8 @@ class Class_szfast(object):
                                     1: 'mnu',
                                     2: 'neff',
                                     3: 'wcdm',
-                                    4: 'ede'}
+                                    4: 'ede',
+                                    5: 'mnu-3states'}
                 self.cosmo_model = cosmo_model_dict[v]
 
             if k == 'use_Amod':
@@ -229,6 +230,12 @@ class Class_szfast(object):
         # print('cosmo_model',self.cosmo_model)
         for k,v in params_values.items():
             params_dict[k]=[v]
+
+        if 'm_ncdm' in params_dict.keys():
+            if isinstance(params_dict['m_ncdm'][0],str): 
+                params_dict['m_ncdm'] =  [float(params_dict['m_ncdm'][0].split(',')[0])]
+
+        # print('params_dict',params_dict)
 
         if want_tt:
             self.cp_predicted_tt_spectrum = self.cp_tt_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0]
@@ -394,6 +401,11 @@ class Class_szfast(object):
         params_dict = {}
         for k,v in zip(params_values.keys(),params_values.values()):
             params_dict[k]=[v]
+
+        if 'm_ncdm' in params_dict.keys():
+            if isinstance(params_dict['m_ncdm'][0],str): 
+                params_dict['m_ncdm'] =  [float(params_dict['m_ncdm'][0].split(',')[0])]
+
         self.cp_predicted_der = self.cp_der_nn[self.cosmo_model].ten_to_predictions_np(params_dict)[0]
         self.sigma8 = self.cp_predicted_der[1]
         return 0

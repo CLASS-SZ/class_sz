@@ -20,7 +20,13 @@ cosmopower_derived_params_names = ['100*theta_s',
 
 cp_l_max_scalars = 11000 # max multipole of train ing data
 
-
+cosmo_model_list = [
+    'lcdm',
+    'mnu',
+    'neff',
+    'ede',
+    'mnu-3states'
+]
 
 emulator_dict = {}
 emulator_dict['lcdm'] = {}
@@ -28,6 +34,7 @@ emulator_dict['mnu'] = {}
 emulator_dict['neff'] = {}
 emulator_dict['wcdm'] = {}
 emulator_dict['ede'] = {}
+emulator_dict['mnu-3states'] = {}
 
 
 
@@ -96,6 +103,19 @@ emulator_dict['ede']['HZ'] = 'HZ_v1'
 emulator_dict['ede']['S8Z'] = 'S8Z_v1'
 
 
+
+emulator_dict['mnu-3states']['TT'] = 'TT_v1'
+emulator_dict['mnu-3states']['TE'] = 'TE_v1'
+emulator_dict['mnu-3states']['EE'] = 'EE_v1'
+emulator_dict['mnu-3states']['PP'] = 'PP_v1'
+emulator_dict['mnu-3states']['PKNL'] = 'PKNL_v1'
+emulator_dict['mnu-3states']['PKL'] = 'PKL_v1'
+emulator_dict['mnu-3states']['DER'] = 'DER_v1'
+emulator_dict['mnu-3states']['DAZ'] = 'DAZ_v1'
+emulator_dict['mnu-3states']['HZ'] = 'HZ_v1'
+emulator_dict['mnu-3states']['S8Z'] = 'S8Z_v1'
+
+
 cp_tt_nn = {}
 cp_te_nn = {}
 cp_ee_nn = {}
@@ -110,7 +130,7 @@ cp_da_nn = {}
 cp_h_nn = {}
 cp_s8_nn = {}
 
-for mp in ['lcdm','mnu','neff','wcdm','ede']:
+for mp in cosmo_model_list:
     path_to_emulators = path_to_cosmopower_organization + mp +'/'
 
     cp_tt_nn[mp] = cosmopower_NN(restore=True,

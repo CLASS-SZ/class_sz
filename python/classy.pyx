@@ -651,7 +651,8 @@ cdef class Class:
         #     cszfast.cosmo_model = 'neff'
         # elif self.tsz.cosmo_model == 3:
         #     cszfast.cosmo_model = 'wcdm'
-
+        # elif self.tsz.cosmo_model == 4:
+        #     cszfast.cosmo_model = 'mnu-3states'
 
         # if 'A_s' in self._pars:
         #   params_settings['ln10^{10}A_s'] = np.log(10**10*params_settings['A_s']) #self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
