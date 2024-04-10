@@ -187,22 +187,23 @@ class classy_sz(classy):
                         method="cl_lens_cib", # name of the method in classy.pyx
                         args_names=[],
                         args=[])
-        if "Cl_galnxgaln" in requirements:
+        if "cl_galn_galn" in requirements:
                 # make sure cobaya still runs as it does for standard classy
-                requirements.pop("Cl_galnxgaln")
+                requirements.pop("cl_galn_galn")
                 # specify the method to collect the new observable
-                self.collectors["Cl_galnxgaln"] = Collector(
+                self.collectors["cl_galn_galn"] = Collector(
                         method="cl_galn_galn", # name of the method in classy.pyx
                         args_names=[],
                         args=[])
-        if "Cl_galnxlens" in requirements:
+        if "cl_galn_lens" in requirements:
                 # make sure cobaya still runs as it does for standard classy
-                requirements.pop("Cl_galnxlens")
+                requirements.pop("cl_galn_lens")
                 # specify the method to collect the new observable
-                self.collectors["Cl_galnxlens"] = Collector(
+                self.collectors["cl_galn_lens"] = Collector(
                         method="cl_galn_lens", # name of the method in classy.pyx
                         args_names=[],
                         args=[])
+                
         if "Cl_galnxtsz" in requirements:
                 # make sure cobaya still runs as it does for standard classy
                 requirements.pop("Cl_galnxtsz")
@@ -330,13 +331,13 @@ class classy_sz(classy):
         cls = {}
         cls = deepcopy(self._current_state["Cl_IAxg"])
         return cls
-    def get_Cl_galnxlens(self):
+    def get_cl_galn_lens(self):
         cls = {}
-        cls = deepcopy(self._current_state["Cl_galnxlens"])
+        cls = deepcopy(self._current_state["cl_galn_lens"])
         return cls
-    def get_Cl_galnxgaln(self):
+    def get_cl_galn_galn(self):
         cls = {}
-        cls = deepcopy(self._current_state["Cl_galnxgaln"])
+        cls = deepcopy(self._current_state["cl_galn_galn"])
         return cls
     def get_Cl_galnxtsz(self):
         cls = {}
