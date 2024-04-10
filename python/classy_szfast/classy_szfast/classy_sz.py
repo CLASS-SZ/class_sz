@@ -384,9 +384,10 @@ class classy_sz(classy):
         params_values = params_values_dict.copy()
         # print('\n\n')
         # print('>>> class_sz.py: class/class_sz using params:',params_values)
-        if self.extra_args['N_ncdm'] ==  3:
-            str_mncdm = str(params_values['m_ncdm'])
-            params_values['m_ncdm'] = str_mncdm+','+str_mncdm+','+str_mncdm
+        if 'N_ncdm' in self.extra_args.keys():
+            if self.extra_args['N_ncdm'] ==  3:
+                str_mncdm = str(params_values['m_ncdm'])
+                params_values['m_ncdm'] = str_mncdm+','+str_mncdm+','+str_mncdm
         # print('>>> class_sz.py: class/class_sz using params:',params_values)
         # exit(0)
         try:
