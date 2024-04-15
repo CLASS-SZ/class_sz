@@ -24,6 +24,7 @@ cosmo_model_list = [
     'lcdm',
     'mnu',
     'neff',
+    'wcdm',
     'ede',
     'mnu-3states'
 ]
