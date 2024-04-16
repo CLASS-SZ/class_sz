@@ -4055,6 +4055,7 @@ int input_read_parameters(
     class_alloc(ptsz->M0_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     class_alloc(ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     class_alloc(ptsz->f_cen_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->centrals_only_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
 
     int index_g;
     for (index_g = 0;index_g<ptsz->galaxy_samples_list_num;index_g++){
@@ -4066,6 +4067,7 @@ int input_read_parameters(
         ptsz->M0_HOD_ngal[index_g] = 1e11;
         ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g] = 1.;
         ptsz->f_cen_HOD_ngal[index_g] = 1.;
+        ptsz->centrals_only_ngal[index_g] = 0.;
         sprintf(input_param_name,"%s%d","sigma_log10M_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->sigma_log10M_HOD_ngal[index_g]);
         sprintf(input_param_name,"%s%d","alpha_s_HOD_ngal_",index_g);
@@ -4080,7 +4082,8 @@ int input_read_parameters(
         class_read_double(input_param_name,ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g]);
         sprintf(input_param_name,"%s%d","f_cen_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->f_cen_HOD_ngal[index_g]);
-
+        sprintf(input_param_name,"%s%d","centrals_only_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->centrals_only_ngal[index_g]);
 
           }
       }

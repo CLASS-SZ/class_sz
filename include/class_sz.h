@@ -1468,7 +1468,7 @@ double szcounts_ntot;
   double * sigma_log10M_HOD_ngal;
   double * alpha_s_HOD_ngal;
   double * M1_prime_HOD_ngal;
-
+  double * centrals_only_ngal;
 
   double rho_y_gal;
 
