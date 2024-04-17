@@ -4066,19 +4066,19 @@ int input_read_parameters(
         ptsz->M0_HOD_ngal[index_g] = 1e11;
         ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g] = 1.;
         ptsz->f_cen_HOD_ngal[index_g] = 1.;
-        sprintf(input_param_name,"%s%d","sigma_log10M_HOD_ngal",index_g);
+        sprintf(input_param_name,"%s%d","sigma_log10M_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->sigma_log10M_HOD_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","alpha_s_HOD_ngal",index_g);
+        sprintf(input_param_name,"%s%d","alpha_s_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->alpha_s_HOD_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","M1_prime_HOD_ngal",index_g);
+        sprintf(input_param_name,"%s%d","M1_prime_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->M1_prime_HOD_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","M_min_HOD_ngal",index_g);
+        sprintf(input_param_name,"%s%d","M_min_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->M_min_HOD_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","M0_HOD_ngal",index_g);
+        sprintf(input_param_name,"%s%d","M0_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->M0_HOD_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","x_out_truncated_nfw_profile_satellite_galaxies_ngal",index_g);
+        sprintf(input_param_name,"%s%d","x_out_truncated_nfw_profile_satellite_galaxies_ngal_",index_g);
         class_read_double(input_param_name,ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","f_cen_HOD_ngal",index_g);
+        sprintf(input_param_name,"%s%d","f_cen_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->f_cen_HOD_ngal[index_g]);
 
 
