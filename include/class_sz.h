@@ -1469,7 +1469,8 @@ double szcounts_ntot;
   double * alpha_s_HOD_ngal;
   double * M1_prime_HOD_ngal;
   double * centrals_only_ngal;
-
+  double * satellites_only_ngal;
+  
   double rho_y_gal;
 
   int M0_Mmin_flag;
