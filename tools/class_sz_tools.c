@@ -9550,7 +9550,7 @@ for (index_m=0;
   //                                  pba),
   //                 ptsz->error_message,
   //                 ptsz->error_message);
-  if (ptsz->sz_verbose>1)
+  if (ptsz->sz_verbose>2)
     printf("----> tab B12 getting mvir\n");
 
   if (ptsz->truncate_gas_pressure_wrt_rvir)
@@ -9558,7 +9558,7 @@ for (index_m=0;
   else
     pvectsz[ptsz->index_mVIR] = pvectsz[ptsz->index_m200c];
 
-  if (ptsz->sz_verbose>1)
+  if (ptsz->sz_verbose>2)
     printf("----> tab B12 got mvir = %.3e\n",pvectsz[ptsz->index_mVIR]);
  //
  //  // rvir needed to cut off the integral --> e.g., xout = 50.*rvir/r200c
