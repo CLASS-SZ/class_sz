@@ -1470,7 +1470,10 @@ double szcounts_ntot;
   double * M1_prime_HOD_ngal;
   double * centrals_only_ngal;
   double * satellites_only_ngal;
-  
+  double * photo_z_params_ngal;
+  double * dndz_shift_ngal;
+  double * dndz_stretch_ngal;
+
   double rho_y_gal;
 
   int M0_Mmin_flag;

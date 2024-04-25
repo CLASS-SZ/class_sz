@@ -4057,6 +4057,9 @@ int input_read_parameters(
     class_alloc(ptsz->f_cen_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     class_alloc(ptsz->centrals_only_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     class_alloc(ptsz->satellites_only_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->photo_z_params_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->dndz_shift_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->dndz_stretch_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
 
     int index_g;
     for (index_g = 0;index_g<ptsz->galaxy_samples_list_num;index_g++){
@@ -4070,6 +4073,9 @@ int input_read_parameters(
         ptsz->f_cen_HOD_ngal[index_g] = 1.;
         ptsz->centrals_only_ngal[index_g] = 0.;
         ptsz->satellites_only_ngal[index_g] = 0.;
+        ptsz->photo_z_params_ngal[index_g] = 0.;
+        ptsz->dndz_shift_ngal[index_g] = 0.;
+        ptsz->dndz_stretch_ngal[index_g] = 1.;
 
         sprintf(input_param_name,"%s%d","sigma_log10M_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->sigma_log10M_HOD_ngal[index_g]);
@@ -4089,7 +4095,12 @@ int input_read_parameters(
         class_read_double(input_param_name,ptsz->centrals_only_ngal[index_g]);
         sprintf(input_param_name,"%s%d","satellites_only_ngal_",index_g);
         class_read_double(input_param_name,ptsz->satellites_only_ngal[index_g]);
-
+        sprintf(input_param_name,"%s%d","photo_z_params_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->photo_z_params_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","dndz_shift_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->dndz_shift_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","dndz_stretch_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->dndz_stretch_ngal[index_g]);
           }
       }
 

@@ -22090,6 +22090,39 @@ else  phig =  pwl_value_1d(ptsz->normalized_dndz_ngal_size[index_g],
 //double phi_galaxy_at_z = 1.; // BB debug
 // H_over_c_in_h_over_Mpc = dz/dChi
 // phi_galaxy_at_z = dng/dz normalized
+
+if (ptsz->photo_z_params_ngal[index_g]==1.){
+        // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
+        double shift= ptsz->dndz_shift_ngal[index_g];
+        double stretch = ptsz->dndz_stretch_ngal[index_g];
+        double z_mean = 0.;
+
+        int i, N;
+        double dz = 1/(ptsz->normalized_dndz_ngal_z[index_g][1]-ptsz->normalized_dndz_ngal_z[index_g][0]);
+        N = ptsz->n_arraySZ;
+        for ( i = 0; i < N; i++ ){
+          z_mean   = z_mean + ptsz->normalized_dndz_ngal_z[index_g][i]*ptsz->normalized_dndz_ngal_phig[index_g][i]/dz;
+            }
+
+        // printf("z_mean= %.2e\n",z_mean);
+        // printf("stretch= %.2e\n",stretch);
+        // printf("shift= %.2e\n",shift);
+
+        double phig_shifted = 0;
+        double z_asked_shifted;
+        z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
+        if (z_asked_shifted<ptsz->normalized_dndz_ngal_z[index_g][0])
+           phig_shifted = 0.;
+        else if (z_asked_shifted>ptsz->normalized_dndz_ngal_z[index_g][ptsz->normalized_dndz_ngal_size[index_g]-1])
+           phig_shifted = 0.;
+        else phig_shifted =  pwl_value_1d(ptsz->normalized_dndz_ngal_size[index_g],
+                                   ptsz->normalized_dndz_ngal_z[index_g],
+                                   ptsz->normalized_dndz_ngal_phig[index_g],
+                                   z_asked_shifted);
+
+        phig = (1./stretch) * phig_shifted;
+      }
+
 double result = H_over_c_in_h_over_Mpc*phig;
 
 
@@ -22157,18 +22190,15 @@ if (ptsz->photo_z_params==1){
  double shift;
  double stretch;
 
- double z_mean;
+ double z_mean= 0.0;
  shift = ptsz->dndz_shift_source_gal;
  stretch = ptsz->dndz_stretch_source_gal;
 
  int i, N;
- double x_average;
- x_average =0;
- z_mean = 0.0;
  N = ptsz->normalized_source_dndz_size;
+ double dz = 1/(ptsz->normalized_source_dndz_z[1]-ptsz->normalized_source_dndz_z[0]);
  for ( i = 0; i < N; i++ )
- {x_average   = x_average + ptsz->normalized_source_dndz_z[i]*ptsz->normalized_source_dndz_phig[i];}
- z_mean = x_average / 100.;
+ {z_mean   = z_mean + ptsz->normalized_source_dndz_z[i]*ptsz->normalized_source_dndz_phig[i]/dz;}
 
  double phig_shifted = 0;
  double z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
@@ -22237,20 +22267,18 @@ stretch = ptsz->dndz_stretch_gal;
 z_mean = 0.0;
 
 int i, N;
-double x_average;
-x_average =0;
 N = ptsz->normalized_dndz_size;
+double dz = 1/(ptsz->normalized_dndz_z[1]-ptsz->normalized_dndz_z[0]);
 for ( i = 0; i < N; i++ )
-{x_average   = x_average + ptsz->normalized_dndz_z[i]*ptsz->normalized_dndz_phig[i];}
-z_mean = x_average / 100.;
-
+{z_mean   = z_mean + ptsz->normalized_dndz_z[i]*ptsz->normalized_dndz_phig[i]/dz;}
+//
 // printf("z_mean= %.2e\n",z_mean);
 // printf("stretch= %.2e\n",stretch);
 // printf("shift= %.2e\n",shift);
 double phig_shifted = 0;
 double z_asked_shifted;
 z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
-
+// printf("z_asked_shifted= %.8e\n",z_asked_shifted);
 if (z_asked_shifted<ptsz->normalized_dndz_z[0])
    phig_shifted = 0.;
 else if (z_asked_shifted>ptsz->normalized_dndz_z[ptsz->normalized_dndz_size-1])
