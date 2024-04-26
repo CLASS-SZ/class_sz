@@ -22213,7 +22213,7 @@ if (ptsz->photo_z_params==1){
                             z_asked_shifted);
 
  // double m;
- // m = ptsz->shear_callibration_m;
+ // m = ptsz->shear_calibration_m;
  result = (1./stretch) * phig_shifted;
  // printf("phig= %.8e\n",phig);
  // printf("phig_shifted= %.8e\n",result);

@@ -1938,7 +1938,7 @@ double * steps_m;
   double dndz_shift_source_gal;
   double dndz_stretch_gal;
   double dndz_stretch_source_gal;
-  double shear_callibration_m;
+  double shear_calibration_m;
 
   double dlogell;
   double dell;

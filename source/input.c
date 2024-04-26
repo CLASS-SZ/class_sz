@@ -6832,7 +6832,7 @@ int input_default_params(
   ptsz->dndz_shift_source_gal = 0; //as in https://arxiv.org/pdf/2210.08633.pdf
   ptsz->dndz_stretch_gal = 1.;
   ptsz->dndz_stretch_source_gal = 1.;
-  ptsz->shear_callibration_m = 0.;
+  ptsz->shear_calibration_m = 0.;
   ptsz->cosmo_model = 0; // 0 lcdm, 1 mnu, 2 neff, 3 wcdm, 4 ede
   ptsz->use_Amod = 0;
   ptsz->Amod = 0.;
