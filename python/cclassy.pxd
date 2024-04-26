@@ -294,6 +294,14 @@ cdef extern from "class.h":
         double * M1_prime_HOD_ngal
         double * M_min_HOD_ngal
         double * M0_HOD_ngal
+        double * dndz_stretch_ngal
+        double * dndz_shift_ngal
+        double dndz_shift_source_gal
+        double dndz_stretch_source_gal
+        double dndz_shift_gal
+        double dndz_stretch_gal
+        double shear_callibration_m
+        double A_IA
         double x_inSZ
         double x_outSZ
         double HSEbias

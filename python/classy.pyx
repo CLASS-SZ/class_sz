@@ -908,6 +908,18 @@ cdef class Class:
           for index_g in range(4):
             if k == 'M0_HOD_ngal'+str(index_g):
               self.tsz.M0_HOD_ngal[index_g] = pdict_to_update['M0_HOD_ngal'+str(index_g)]
+          for index_g in range(4):
+            if k == 'dndz_stretch_ngal'+str(index_g):
+              self.tsz.dndz_stretch_ngal[index_g] = pdict_to_update['dndz_stretch_ngal'+str(index_g)]
+          for index_g in range(4):
+            if k == 'dndz_shift_ngal'+str(index_g):
+              self.tsz.dndz_shift_ngal[index_g] = pdict_to_update['dndz_shift_ngal'+str(index_g)]
+          if k == 'dndz_shift_source_gal':
+              self.tsz.dndz_shift_source_gal = pdict_to_update[k]
+          if k == 'shear_callibration_m':
+              self.tsz.shear_callibration_m = pdict_to_update[k]
+          if k == 'A_IA':
+              self.tsz.A_IA = pdict_to_update[k]
           if k == 'fNL':
             self.tsz.fNL = pdict_to_update[k]
           if k == 'P0GNFW':
