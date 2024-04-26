@@ -300,7 +300,7 @@ cdef extern from "class.h":
         double dndz_stretch_source_gal
         double dndz_shift_gal
         double dndz_stretch_gal
-        double shear_callibration_m
+        double shear_calibration_m
         double A_IA
         double x_inSZ
         double x_outSZ

@@ -1764,7 +1764,7 @@ int input_read_parameters(
       class_read_double("dndz_shift_gal",ptsz->dndz_shift_gal);
       class_read_double("dndz_stretch_source_gal",ptsz->dndz_stretch_source_gal);
       class_read_double("dndz_stretch_gal",ptsz->dndz_stretch_gal);
-      class_read_double("shear_callibration_m",ptsz->shear_callibration_m);
+      class_read_double("shear_calibration_m",ptsz->shear_calibration_m);
 
 
       //Redshift limits for the integration
