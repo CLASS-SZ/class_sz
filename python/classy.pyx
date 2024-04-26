@@ -916,6 +916,12 @@ cdef class Class:
               self.tsz.dndz_shift_ngal[index_g] = pdict_to_update['dndz_shift_ngal'+str(index_g)]
           if k == 'dndz_shift_source_gal':
               self.tsz.dndz_shift_source_gal = pdict_to_update[k]
+          if k == 'dndz_stretch_source_gal':
+              self.tsz.dndz_stretch_source_gal = pdict_to_update[k]
+          if k == 'dndz_shift_gal':
+              self.tsz.dndz_shift_gal = pdict_to_update[k]
+          if k == 'dndz_stretch_gal':
+              self.tsz.dndz_stretch_gal = pdict_to_update[k]
           if k == 'shear_calibration_m':
               self.tsz.shear_calibration_m = pdict_to_update[k]
           if k == 'A_IA':
