@@ -909,11 +909,11 @@ cdef class Class:
             if k == 'M0_HOD_ngal_'+str(index_g):
               self.tsz.M0_HOD_ngal[index_g] = pdict_to_update['M0_HOD_ngal_'+str(index_g)]
           for index_g in range(4):
-            if k == 'dndz_stretch_ngal'+str(index_g):
-              self.tsz.dndz_stretch_ngal[index_g] = pdict_to_update['dndz_stretch_ngal'+str(index_g)]
+            if k == 'dndz_stretch_ngal_'+str(index_g):
+              self.tsz.dndz_stretch_ngal[index_g] = pdict_to_update['dndz_stretch_ngal_'+str(index_g)]
           for index_g in range(4):
-            if k == 'dndz_shift_ngal'+str(index_g):
-              self.tsz.dndz_shift_ngal[index_g] = pdict_to_update['dndz_shift_ngal'+str(index_g)]
+            if k == 'dndz_shift_ngal_'+str(index_g):
+              self.tsz.dndz_shift_ngal[index_g] = pdict_to_update['dndz_shift_ngal_'+str(index_g)]
           if k == 'dndz_shift_source_gal':
               self.tsz.dndz_shift_source_gal = pdict_to_update[k]
           if k == 'dndz_stretch_source_gal':
