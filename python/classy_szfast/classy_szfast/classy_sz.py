@@ -400,7 +400,7 @@ class classy_sz(classy):
             if self.use_class_sz_fast_mode == 1:
                 # start = time.perf_counter()
                 if self.use_class_sz_no_cosmo_mode == 1:
-                    # print(params_values)
+                    print(params_values)
                     self.classy.compute_class_sz(params_values)
                 else:
                     self.classy.compute_class_szfast()
