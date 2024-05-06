@@ -880,7 +880,6 @@ cdef class Class:
 
     def compute_class_sz(self,pdict_to_update):
         N_ngal = self._pars['galaxy_samples_list_num']
-        print("N_ngal", N_ngal)
         self._fillparfile()
         for k,v in pdict_to_update.items():
           if k == 'betaGNFW':
