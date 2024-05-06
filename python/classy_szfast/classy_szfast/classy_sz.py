@@ -36,7 +36,7 @@ class classy_sz(classy):
         if self.use_class_sz_no_cosmo_mode == 1:
             self.log.info("Initializing cosmology part!")
             initial_parameters = self.extra_args.copy()
-            # print("initial_parameters:",initial_parameters)
+            print("initial_parameters:",initial_parameters)
 
             self.classy.set(initial_parameters)
             self.classy.compute_class_szfast()
