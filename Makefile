@@ -43,7 +43,9 @@ PYTHON ?= python
 # your optimization flag
 #OPTFLAG = -O4 -ffast-math #-march=native
 # on Mac M1
-OPTFLAG = -O4 -ffast-math #-arch x86_64
+
+OPTFLAG = -O3 #-ffast-math #-ffast-math #-arch x86_64
+#OPTFLAG = -O3 # on v2.10.3
 #OPTFLAG = -Ofast -ffast-math #-march=native
 #OPTFLAG = -fast
 
@@ -81,8 +83,7 @@ CCFLAG += -D__CLASSDIR__='"$(MDIR)"'
 # where to find include files *.h
 #INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/gsl-2.6/include/
 # INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/miniconda/include
-#INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/opt/miniconda3/include/
-INCLUDES =  -I../include -I/usr/local/include/ -I/opt/homebrew/include/ -I/Users/aleksandra/software/gsl-2.7.1/include/ -I/Users/aleksandra/software/fftw-3.3.10/include/ -I/Users/aleksandra/anaconda3/include/
+INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/opt/miniconda3/include/
 # INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/opt/anaconda3/include -I/opt/homebrew/include
 
 # automatically add external programs if needed. First, initialize to blank.
@@ -165,8 +166,7 @@ libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
 class_sz: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS_SZ)
 	#$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm -L/home/runner/work/SOLikeT/SOLikeT/gsl-2.6/lib -lgsl -lgslcblas
 	 # $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/Users/boris/miniconda/lib -lgsl -lgslcblas -lfftw3 -lm
-	 #$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class_sz $(addprefix build/,$(notdir $^)) -lgsl -lgslcblas -lfftw3 -lm -L/Users/boris/opt/miniconda3/lib
-	 $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class_sz $(addprefix build/,$(notdir $^)) -L/Users/aleksandra/anaconda3/lib  -L/Users/aleksandra/software/gsl-2.7.1/lib -lgsl -lgslcblas -L/Users/aleksandra/software/fftw-3.3.10/lib -lfftw3 -lm
+	 $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class_sz $(addprefix build/,$(notdir $^)) -lgsl -lgslcblas -lfftw3 -lm -L/Users/boris/opt/miniconda3/lib
 
 	 # $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/Users/boris/opt/anaconda3/lib -L/opt/homebrew/lib -lgsl -lgslcblas -lfftw3 -lm
 	 # $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -lgsl -lgslcblas -lm
