@@ -14451,7 +14451,7 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_ngal_ngal_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_ngal_2h))
  || ((V->ptsz->has_ngal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_lens_2h))
  || ((V->ptsz->has_ngal_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_gallens_2h))
- || ((V->ptsz->has_ngal_IA_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_IA_2h))
+ // || ((V->ptsz->has_ngal_IA_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_IA_2h))
  || ((V->ptsz->has_ngal_tsz_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_tsz_2h))
  || ((V->ptsz->has_nlensmag_tsz_2h == _TRUE_) && (index_md == V->ptsz->index_md_nlensmag_tsz_2h))
  || ((V->ptsz->has_nlensmag_gallens_2h == _TRUE_) && (index_md == V->ptsz->index_md_nlensmag_gallens_2h))
@@ -14459,7 +14459,7 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
  || ((V->ptsz->has_gal_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_cib_2h))
  || ((V->ptsz->has_lens_cib_2h == _TRUE_) && (index_md == V->ptsz->index_md_lens_cib_2h))
  || ((V->ptsz->has_tSZ_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tSZ_gal_2h))
- || ((V->ptsz->has_IA_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_IA_gal_2h))
+ // || ((V->ptsz->has_IA_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_IA_gal_2h))
  || ((V->ptsz->has_tau_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_tau_gal_2h))
  || ((V->ptsz->has_tau_tau_2h == _TRUE_) && (index_md == V->ptsz->index_md_tau_tau_2h))
  || ((V->ptsz->has_gal_lens_2h == _TRUE_) && (index_md == V->ptsz->index_md_gal_lens_2h))
@@ -14518,6 +14518,21 @@ if (((V->ptsz->has_sz_2halo == _TRUE_) && (index_md == V->ptsz->index_md_2halo))
   }
 
 }
+if (((V->ptsz->has_ngal_IA_2h == _TRUE_) && (index_md == V->ptsz->index_md_ngal_IA_2h))
+    || ((V->ptsz->has_IA_gal_2h == _TRUE_) && (index_md == V->ptsz->index_md_IA_gal_2h))
+  ){
+    int index_l = (int) V->pvectsz[V->ptsz->index_multipole];
+
+    if (V->ptsz->use_pknl_in_2hterms_IA_only){
+    result *= get_pk_nonlin_at_k_and_z((V->ptsz->ell[index_l]+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);//V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+    }
+    else{
+    result *= get_pk_lin_at_k_and_z((V->ptsz->ell[index_l]+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->ptsz);//V->pvectsz[V->ptsz->index_pk_for_halo_bias];
+    }
+
+  }
+
+
 
 
 

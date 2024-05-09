@@ -58,6 +58,7 @@ class_sz_ptsz_parameter(no_spline_in_tinker,int,0)
 
 class_sz_ptsz_parameter(sigma_derivative,int,0) // 0 is gradient, and 1 is mcfit
 class_sz_ptsz_parameter(use_pknl_in_2hterms,int,0)
+class_sz_ptsz_parameter(use_pknl_in_2hterms_IA_only,int,0)
 
 class_sz_ptsz_parameter(use_pkl_in_linbias_calc,int,0)
 
