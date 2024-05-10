@@ -962,6 +962,7 @@ struct tszspectrum {
   int index_integrand_id_lens_lens_1h_last;
 
   int has_custom1;
+  int has_b_custom1;
 
   int has_custom1_custom1_1h;
   int index_md_custom1_custom1_1h;
@@ -2137,6 +2138,11 @@ double * steps_m;
   double * array_custom1_profile_ln_m;
   double * array_custom1_profile_ln_1pz;
 
+
+
+  int array_b_custom1_n_z;
+  double * array_b_custom1_ln1pz;
+  double * array_b_custom1_bias;
 
   double ** array_pressure_profile_ln_p_at_lnk_lnm_z;
   double * array_pressure_profile_ln_p_at_lnk;

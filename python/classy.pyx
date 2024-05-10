@@ -845,6 +845,15 @@ cdef class Class:
             &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.tsz.error_message)
+
+            if self.tsz.has_b_custom1 == 1:
+              # cszfast.calculate_custom1(**params_settings)
+              for index_z in range(self.tsz.array_b_custom1_n_z):
+                z = np.exp(self.tsz.array_b_custom1_ln1pz[index_z])-1.
+                self.tsz.array_b_custom1_bias[index_z] = np.log(classy_szfast.custom1_b(z,self))
+
+
+
             #### fill in custom profile
             if self.tsz.has_custom1 == 1:
               # cszfast.calculate_custom1(**params_settings)
@@ -3920,9 +3929,11 @@ cdef class Class:
     def get_radial_kernel_W_galaxy_lensing_at_z(self,double z):
         return radial_kernel_W_galaxy_lensing_at_z(z,&self.tsz)
 
+    def get_b_custom1_at_z(self,double z):
+        return get_b_custom1_at_z(z,&self.tsz)
+
     def get_radial_kernel_W_custom1_at_z(self,double z):
         return get_radial_kernel_W_custom1_at_z(z,&self.tsz)
-
 
     def get_custom1_profile_at_x_m_z(self,double x, double m, double z):
         return get_custom1_profile_at_x_m_z(x,m,z,&self.tsz)

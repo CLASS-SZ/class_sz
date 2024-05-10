@@ -393,11 +393,6 @@ class Class_szfast(object):
         #     return 0
         return 0
 
-    # def custom1_W(self,z,classy_sz,*params):
-    #     # e.g., we want (chi_star - chi)/chi
-    #     chi_star = classy_sz.chi_star()
-    #     chi = classy_sz.get_chi(z)
-    #     return (chi_star-chi)/chi_star
 
     def calculate_sigma8_and_der(self,
                          # cosmo_model = self.cosmo_model,

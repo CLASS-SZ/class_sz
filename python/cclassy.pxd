@@ -479,6 +479,9 @@ cdef extern from "class.h":
         double * array_lnk
         double * array_pknl_at_z_and_k
         double * array_pkl_at_z_and_k
+        int array_b_custom1_n_z
+        double * array_b_custom1_ln1pz
+        double * array_b_custom1_bias
         double * array_custom1_redshift_kernel_W
         double * array_custom1_redshift_kernel_ln1pz
         int array_custom1_redshift_kernel_n_z
@@ -490,6 +493,7 @@ cdef extern from "class.h":
         double * array_custom1_profile_ln_x
         double ** array_custom1_profile_u_at_lnx_lnm_ln1pz
         int has_custom1
+        int has_b_custom1
         short has_tszspectrum
         short sz_verbose
         double bin_dlog10_snr_last_bin
@@ -1230,3 +1234,6 @@ cdef extern from "class.h":
                                         double m_asked,
                                         double z_asked,
                                         void * ptsz)
+                                        
+    double get_b_custom1_at_z(double z,
+                               void * ptsz)
