@@ -846,12 +846,15 @@ cdef class Class:
                 self.struct_cleanup()
                 raise CosmoComputationError(self.tsz.error_message)
 
+            # print("before computing custom bias")
             if self.tsz.has_b_custom1 == 1:
               # cszfast.calculate_custom1(**params_settings)
+              # print("computing custom bias")
               for index_z in range(self.tsz.array_b_custom1_n_z):
                 z = np.exp(self.tsz.array_b_custom1_ln1pz[index_z])-1.
+                # print(index_z,z)
                 self.tsz.array_b_custom1_bias[index_z] = np.log(classy_szfast.custom1_b(z,self))
-
+                # print(index_z,self.tsz.array_b_custom1_bias[index_z])
 
 
             #### fill in custom profile
@@ -3929,7 +3932,7 @@ cdef class Class:
     def get_radial_kernel_W_galaxy_lensing_at_z(self,double z):
         return radial_kernel_W_galaxy_lensing_at_z(z,&self.tsz)
 
-    def get_b_custom1_at_z(self,double z):
+    def get_custom1_bias_at_z(self,double z):
         return get_b_custom1_at_z(z,&self.tsz)
 
     def get_radial_kernel_W_custom1_at_z(self,double z):

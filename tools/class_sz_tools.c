@@ -1,6 +1,7 @@
 # include "class_sz.h"
 # include "class_sz_tools.h"
 # include "class_sz_custom_profiles.h"
+# include "class_sz_custom_bias.h"
 # include "Patterson.h"
 # include "r8lib.h"
 #include <gsl/gsl_errno.h>

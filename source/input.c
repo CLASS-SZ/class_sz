@@ -1794,6 +1794,9 @@ int input_read_parameters(
       // for tabulation of hmf:
       class_read_int("n_z_dndlnM",ptsz->n_z_dndlnM);
 
+
+      class_read_int("has_b_custom1",ptsz->has_b_custom1);
+
       // class_read_int("n_arraySZ_for_integral",ptsz->n_arraySZ_for_integral);//number of z in the integration
 
       // class_read_int("n_m_matter_density_profile",ptsz->n_m_matter_density_profile);
@@ -3606,6 +3609,10 @@ int input_read_parameters(
         ptsz->need_hmf = 1;
         ptsz->has_custom1 = _TRUE_;
       }
+
+      // if ((strstr(string1,"has_b_custom1") != NULL) ) {
+      //   ptsz->has_b_custom1 = _TRUE_;
+      // }
 
       if ((strstr(string1,"custom1_custom1_2h") != NULL) ) {
         ptsz->has_custom1_custom1_2h =_TRUE_;
@@ -7352,6 +7359,7 @@ int input_default_params(
   ptsz->has_lens_lens_1h = _FALSE_;
   ptsz->has_lens_lens_2h = _FALSE_;
   ptsz->has_custom1 = _FALSE_;
+  ptsz->has_b_custom1 = 0;
   ptsz->has_custom1_custom1_1h = _FALSE_;
   ptsz->has_custom1_custom1_2h = _FALSE_;
   ptsz->has_custom1_lens_1h = _FALSE_;

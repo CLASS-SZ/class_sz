@@ -10,6 +10,7 @@
 #include "class_sz.h"
 #include "class_sz_tools.h"
 #include "class_sz_custom_profiles.h"
+#include "class_sz_custom_bias.h"
 #include "Patterson.h"
 #include "r8lib.h"
 #include "fft.h"
@@ -1648,8 +1649,28 @@ if (ptsz->has_matter_density
 // exit(0);
 
 
+if (ptsz->has_b_custom1){
+  class_alloc(ptsz->array_b_custom1_bias,
+              sizeof(double *)*ptsz->array_b_custom1_n_z,
+              ptsz->error_message);
 
+  double ln_1pz_min = log(1.+ptsz->z1SZ);
+  double ln_1pz_max = log(1.+ptsz->z2SZ);
 
+  class_alloc(ptsz->array_b_custom1_ln1pz,
+              sizeof(double *)*ptsz->array_b_custom1_n_z,
+              ptsz->error_message);
+
+  int index_z;
+  for (index_z=0;
+       index_z<ptsz->array_b_custom1_n_z;
+       index_z++)
+  {
+    ptsz->array_b_custom1_ln1pz[index_z] = ln_1pz_min
+                                            +index_z*(ln_1pz_max-ln_1pz_min)
+                                            /(ptsz->array_b_custom1_n_z-1.);
+  }
+}
 
 
 
@@ -4043,6 +4064,11 @@ int class_sz_free(struct tszspectrum *ptsz)
  if (ptsz->has_custom1){
    free(ptsz->array_custom1_redshift_kernel_W);
    free(ptsz->array_custom1_redshift_kernel_ln1pz);
+ }
+
+ if (ptsz->has_b_custom1){
+   free(ptsz->array_b_custom1_bias);
+   free(ptsz->array_b_custom1_ln1pz);
  }
 
    if (ptsz->has_ngal_ngal_1h
@@ -13662,9 +13688,13 @@ int evaluate_effective_galaxy_bias(double * pvecback,
   // }
   //
   // else{
-    b = ptsz->effective_galaxy_bias;
+    
   // }
 
+  if (ptsz->has_b_custom1)
+    b = get_b_custom1_at_z(z,ptsz);
+  else
+    b = ptsz->effective_galaxy_bias;
 
 
    pvectsz[ptsz->index_halo_bias] = b;

@@ -12,6 +12,8 @@ double get_b_custom1_at_z(double z,
                           struct tszspectrum * ptsz){
 
 double ln1pz = log(1.+z);
+
+
 return exp(pwl_value_1d(ptsz->array_b_custom1_n_z,
                         ptsz->array_b_custom1_ln1pz,
                         ptsz->array_b_custom1_bias,
