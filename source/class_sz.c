@@ -22120,6 +22120,39 @@ else  phig =  pwl_value_1d(ptsz->normalized_dndz_ngal_size[index_g],
 //double phi_galaxy_at_z = 1.; // BB debug
 // H_over_c_in_h_over_Mpc = dz/dChi
 // phi_galaxy_at_z = dng/dz normalized
+
+if (ptsz->photo_z_params_ngal[index_g]==1.){
+        // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
+        double shift= ptsz->dndz_shift_ngal[index_g];
+        double stretch = ptsz->dndz_stretch_ngal[index_g];
+        double z_mean = 0.;
+
+        int i, N;
+        double dz = 1/(ptsz->normalized_dndz_ngal_z[index_g][1]-ptsz->normalized_dndz_ngal_z[index_g][0]);
+        N = ptsz->n_arraySZ;
+        for ( i = 0; i < N; i++ ){
+          z_mean   = z_mean + ptsz->normalized_dndz_ngal_z[index_g][i]*ptsz->normalized_dndz_ngal_phig[index_g][i]/dz;
+            }
+
+        // printf("z_mean= %.2e\n",z_mean);
+        // printf("stretch= %.2e\n",stretch);
+        // printf("shift= %.2e\n",shift);
+
+        double phig_shifted = 0;
+        double z_asked_shifted;
+        z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
+        if (z_asked_shifted<ptsz->normalized_dndz_ngal_z[index_g][0])
+           phig_shifted = 0.;
+        else if (z_asked_shifted>ptsz->normalized_dndz_ngal_z[index_g][ptsz->normalized_dndz_ngal_size[index_g]-1])
+           phig_shifted = 0.;
+        else phig_shifted =  pwl_value_1d(ptsz->normalized_dndz_ngal_size[index_g],
+                                   ptsz->normalized_dndz_ngal_z[index_g],
+                                   ptsz->normalized_dndz_ngal_phig[index_g],
+                                   z_asked_shifted);
+
+        phig = (1./stretch) * phig_shifted;
+      }
+
 double result = H_over_c_in_h_over_Mpc*phig;
 
 
@@ -22187,18 +22220,15 @@ if (ptsz->photo_z_params==1){
  double shift;
  double stretch;
 
- double z_mean;
+ double z_mean= 0.0;
  shift = ptsz->dndz_shift_source_gal;
  stretch = ptsz->dndz_stretch_source_gal;
 
  int i, N;
- double x_average;
- x_average =0;
- z_mean = 0.0;
  N = ptsz->normalized_source_dndz_size;
+ double dz = 1/(ptsz->normalized_source_dndz_z[1]-ptsz->normalized_source_dndz_z[0]);
  for ( i = 0; i < N; i++ )
- {x_average   = x_average + ptsz->normalized_source_dndz_z[i]*ptsz->normalized_source_dndz_phig[i];}
- z_mean = x_average / 100.;
+ {z_mean   = z_mean + ptsz->normalized_source_dndz_z[i]*ptsz->normalized_source_dndz_phig[i]/dz;}
 
  double phig_shifted = 0;
  double z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
@@ -22213,7 +22243,7 @@ if (ptsz->photo_z_params==1){
                             z_asked_shifted);
 
  // double m;
- // m = ptsz->shear_callibration_m;
+ // m = ptsz->shear_calibration_m;
  result = (1./stretch) * phig_shifted;
  // printf("phig= %.8e\n",phig);
  // printf("phig_shifted= %.8e\n",result);
@@ -22267,20 +22297,18 @@ stretch = ptsz->dndz_stretch_gal;
 z_mean = 0.0;
 
 int i, N;
-double x_average;
-x_average =0;
 N = ptsz->normalized_dndz_size;
+double dz = 1/(ptsz->normalized_dndz_z[1]-ptsz->normalized_dndz_z[0]);
 for ( i = 0; i < N; i++ )
-{x_average   = x_average + ptsz->normalized_dndz_z[i]*ptsz->normalized_dndz_phig[i];}
-z_mean = x_average / 100.;
-
+{z_mean   = z_mean + ptsz->normalized_dndz_z[i]*ptsz->normalized_dndz_phig[i]/dz;}
+//
 // printf("z_mean= %.2e\n",z_mean);
 // printf("stretch= %.2e\n",stretch);
 // printf("shift= %.2e\n",shift);
 double phig_shifted = 0;
 double z_asked_shifted;
 z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
-
+// printf("z_asked_shifted= %.8e\n",z_asked_shifted);
 if (z_asked_shifted<ptsz->normalized_dndz_z[0])
    phig_shifted = 0.;
 else if (z_asked_shifted>ptsz->normalized_dndz_z[ptsz->normalized_dndz_size-1])
@@ -23207,14 +23235,26 @@ double M0;
 double M1_prime;
 double sigma_log10M;
 double alpha_s_HOD = ptsz->alpha_s_HOD_ngal[index_g];
-double f_cen_HOD = ptsz->f_cen_HOD_ngal[index_g];
+double f_cen_HOD;
+
+f_cen_HOD = ptsz->f_cen_HOD_ngal[index_g];
+
 
 double xout = ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g];
 
 M_min = ptsz->M_min_HOD_ngal[index_g];
 M1_prime = ptsz->M1_prime_HOD_ngal[index_g];
 sigma_log10M = ptsz->sigma_log10M_HOD_ngal[index_g];
-M0 = ptsz->M0_HOD_ngal[index_g];
+//M0 = ptsz->M0_HOD_ngal[index_g];
+if (ptsz->centrals_only_ngal[index_g]==1){
+  M0=1e100;
+    }
+if (ptsz->centrals_only_ngal[index_g]==0){
+  M0 = ptsz->M0_HOD_ngal[index_g];
+    }
+
+
+
 
 double ng_bar_galprime;
 double nc_galprime;
@@ -23235,9 +23275,6 @@ M_min_galprime = ptsz->M_min_HOD_ngal[index_g_prime];
 M1_prime_galprime = ptsz->M1_prime_HOD_ngal[index_g_prime];
 sigma_log10M_galprime = ptsz->sigma_log10M_HOD_ngal[index_g_prime];
 M0_galprime = ptsz->M0_HOD_ngal[index_g_prime];
-
-
-// if (index_g_prime == index_g){
 
 
 
@@ -23268,13 +23305,13 @@ if (_ngal_ngal_1h_){
     }
     }
 if (_ngal_ngal_2h_
-  ||_ngal_lens_1h_
-  ||_ngal_lens_2h_
-  ||_ngal_tsz_1h_
-  ||_ngal_tsz_2h_
-  ||_ngal_gallens_1h_
-  ||_ngal_gallens_2h_
-  ||_ngal_IA_2h_
+  // ||_ngal_lens_1h_
+  // ||_ngal_lens_2h_
+  // ||_ngal_tsz_1h_
+  // ||_ngal_tsz_2h_
+  // ||_ngal_gallens_1h_
+  // ||_ngal_gallens_2h_
+  // ||_ngal_IA_2h_
   ){
   // if (index_g_prime == index_g){
   //   nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,f_cen_HOD,ptsz,pba);
@@ -23315,35 +23352,22 @@ if (_ngal_lens_1h_
   ||_ngal_gallens_2h_
   ||_ngal_IA_2h_
   ){
-  // if (index_g_prime == index_g){
-  //   nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,f_cen_HOD,ptsz,pba);
-  //   ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,alpha_s_HOD,M1_prime,ptsz,pba);
-  //   us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
-  //   ng_bar = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g,ptsz);
-  //   ug_at_ell  = (1./ng_bar)*(nc+ns*us);
-  // }
-  // else{
-    // if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  1
-    //    || (int) pvectsz[ptsz->index_part_id_cov_hsv] ==  0) {
+    //printf("M0_min = %.5e\n", M0);
     nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,f_cen_HOD,ptsz,pba);
     ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,alpha_s_HOD,M1_prime,ptsz,pba);
     us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
     ng_bar = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g,ptsz);
-    ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+    if (ptsz->satellites_only_ngal[index_g]==1){
+        ug_at_ell  = (1./ng_bar)*(ns*us);
+        }
+    if (ptsz->satellites_only_ngal[index_g]==0){
+        ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+        }
 
+
+      //printf("ns = %.5e ngbar = %.5e\n", ns,ng_bar);
     // printf("ug_at_ell = %.3e ngb = %.3e nc = %.5e ns = %.5e us = %.5e\n",
     //       ug_at_ell,ng_bar,nc,ns,us);
-
-    // }
-    // if ((int) pvectsz[ptsz->index_part_id_cov_hsv] ==  2) { // gal_gal_2h for index_g_prime
-    // ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,ptsz);
-    // nc_galprime = HOD_mean_number_of_central_galaxies(z,M_halo,M_min_galprime,sigma_log10M_galprime,f_cen_HOD_galprime,ptsz,pba);
-    // ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,ptsz,pba);
-    // us_galprime = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout_galprime);
-    // ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,ptsz);
-    // ug_at_ell  = (1./ng_bar_galprime)*(nc_galprime+ns_galprime*us_galprime);
-    // }
-  // }
   }
 
 pvectsz[ptsz->index_galaxy_profile] = ug_at_ell;

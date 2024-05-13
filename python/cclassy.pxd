@@ -294,6 +294,18 @@ cdef extern from "class.h":
         double * M1_prime_HOD_ngal
         double * M_min_HOD_ngal
         double * M0_HOD_ngal
+        double * dndz_stretch_ngal
+        double * dndz_shift_ngal
+        double * f_cen_HOD_ngal
+        double * x_out_truncated_nfw_profile_satellite_galaxies_ngal
+        double * photo_z_params_ngal
+        double * centrals_only_ngal
+        double dndz_shift_source_gal
+        double dndz_stretch_source_gal
+        double dndz_shift_gal
+        double dndz_stretch_gal
+        double shear_calibration_m
+        double A_IA
         double x_inSZ
         double x_outSZ
         double HSEbias
