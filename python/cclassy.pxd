@@ -1236,4 +1236,4 @@ cdef extern from "class.h":
                                         void * ptsz)
                                         
     double get_b_custom1_at_z(double z,
-                               void * ptsz)
+                              void * ptsz)

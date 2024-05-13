@@ -17,4 +17,4 @@ def custom1_b(z,classy_sz,*params):
     # else:
     #     w = 3./2.*(H0/h)**2/Rho_crit_0*(chi/(1.+z))**-1.*(chi_star-chi)/chi_star # 
 
-    return 0.8 + 1.2*z
+    return 2.# + 2*z

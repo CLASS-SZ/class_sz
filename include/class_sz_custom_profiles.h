@@ -21,5 +21,8 @@ double get_custom1_profile_at_x_m_z(double x_asked,
                                     double z_asked,
                                     struct tszspectrum * ptsz);
 
+// double get_b_custom1_at_z(double z,
+//                           struct tszspectrum * ptsz);
+
 
 #endif

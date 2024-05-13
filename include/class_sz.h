@@ -2140,7 +2140,7 @@ double * steps_m;
 
 
 
-  int array_b_custom1_n_z;
+  // int array_b_custom1_n_z;
   double * array_b_custom1_ln1pz;
   double * array_b_custom1_bias;
 
