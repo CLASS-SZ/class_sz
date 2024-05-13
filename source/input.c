@@ -1764,7 +1764,7 @@ int input_read_parameters(
       class_read_double("dndz_shift_gal",ptsz->dndz_shift_gal);
       class_read_double("dndz_stretch_source_gal",ptsz->dndz_stretch_source_gal);
       class_read_double("dndz_stretch_gal",ptsz->dndz_stretch_gal);
-      class_read_double("shear_callibration_m",ptsz->shear_callibration_m);
+      class_read_double("shear_calibration_m",ptsz->shear_calibration_m);
 
 
       //Redshift limits for the integration
@@ -4062,6 +4062,11 @@ int input_read_parameters(
     class_alloc(ptsz->M0_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     class_alloc(ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
     class_alloc(ptsz->f_cen_HOD_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->centrals_only_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->satellites_only_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->photo_z_params_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->dndz_shift_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
+    class_alloc(ptsz->dndz_stretch_ngal,sizeof(double *)*ptsz->galaxy_samples_list_num,ptsz->error_message);
 
     int index_g;
     for (index_g = 0;index_g<ptsz->galaxy_samples_list_num;index_g++){
@@ -4073,6 +4078,12 @@ int input_read_parameters(
         ptsz->M0_HOD_ngal[index_g] = 1e11;
         ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g] = 1.;
         ptsz->f_cen_HOD_ngal[index_g] = 1.;
+        ptsz->centrals_only_ngal[index_g] = 0.;
+        ptsz->satellites_only_ngal[index_g] = 0.;
+        ptsz->photo_z_params_ngal[index_g] = 0.;
+        ptsz->dndz_shift_ngal[index_g] = 0.;
+        ptsz->dndz_stretch_ngal[index_g] = 1.;
+
         sprintf(input_param_name,"%s%d","sigma_log10M_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->sigma_log10M_HOD_ngal[index_g]);
         sprintf(input_param_name,"%s%d","alpha_s_HOD_ngal_",index_g);
@@ -4087,8 +4098,16 @@ int input_read_parameters(
         class_read_double(input_param_name,ptsz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g]);
         sprintf(input_param_name,"%s%d","f_cen_HOD_ngal_",index_g);
         class_read_double(input_param_name,ptsz->f_cen_HOD_ngal[index_g]);
-
-
+        sprintf(input_param_name,"%s%d","centrals_only_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->centrals_only_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","satellites_only_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->satellites_only_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","photo_z_params_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->photo_z_params_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","dndz_shift_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->dndz_shift_ngal[index_g]);
+        sprintf(input_param_name,"%s%d","dndz_stretch_ngal_",index_g);
+        class_read_double(input_param_name,ptsz->dndz_stretch_ngal[index_g]);
           }
       }
 
@@ -6820,7 +6839,7 @@ int input_default_params(
   ptsz->dndz_shift_source_gal = 0; //as in https://arxiv.org/pdf/2210.08633.pdf
   ptsz->dndz_stretch_gal = 1.;
   ptsz->dndz_stretch_source_gal = 1.;
-  ptsz->shear_callibration_m = 0.;
+  ptsz->shear_calibration_m = 0.;
   ptsz->cosmo_model = 0; // 0 lcdm, 1 mnu, 2 neff, 3 wcdm, 4 ede
   ptsz->use_Amod = 0;
   ptsz->Amod = 0.;

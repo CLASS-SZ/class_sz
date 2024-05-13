@@ -1469,7 +1469,11 @@ double szcounts_ntot;
   double * sigma_log10M_HOD_ngal;
   double * alpha_s_HOD_ngal;
   double * M1_prime_HOD_ngal;
-
+  double * centrals_only_ngal;
+  double * satellites_only_ngal;
+  double * photo_z_params_ngal;
+  double * dndz_shift_ngal;
+  double * dndz_stretch_ngal;
 
   double rho_y_gal;
 
@@ -1935,7 +1939,7 @@ double * steps_m;
   double dndz_shift_source_gal;
   double dndz_stretch_gal;
   double dndz_stretch_source_gal;
-  double shear_callibration_m;
+  double shear_calibration_m;
 
   double dlogell;
   double dell;
