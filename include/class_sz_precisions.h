@@ -225,7 +225,7 @@ class_sz_ptsz_parameter(x_min_gas_density_fftw,double,1e-5)
 class_sz_ptsz_parameter(x_max_gas_density_fftw,double,1e2)
 
 class_sz_ptsz_parameter(x_min_gas_pressure_fftw,double,1e-5)
-class_sz_ptsz_parameter(x_max_gas_pressure_fftw,double,1e2)
+class_sz_ptsz_parameter(x_max_gas_pressure_fftw,double,1e5)
 
 
 class_sz_ptsz_parameter(x_out_truncated_gas_density_profile_normalization,double,1.)

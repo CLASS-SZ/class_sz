@@ -891,7 +891,10 @@ cdef class Class:
 
 
     def compute_class_sz(self,pdict_to_update):
-        N_ngal = self._pars['galaxy_samples_list_num']
+        try: 
+            N_ngal = self._pars['galaxy_samples_list_num']
+        except KeyError:
+             N_gal = -1
         self._fillparfile()
         for k,v in pdict_to_update.items():
           if k == 'betaGNFW':
@@ -906,27 +909,28 @@ cdef class Class:
             self.tsz.M_min_HOD = pdict_to_update[k]
           if k == 'M1_prime_HOD':
             self.tsz.M1_prime_HOD = pdict_to_update[k]
-          for index_g in range(N_ngal):
-            if k == 'alpha_s_HOD_ngal_'+str(index_g):
-              self.tsz.alpha_s_HOD_ngal[index_g] = pdict_to_update['alpha_s_HOD_ngal_'+str(index_g)]
-          for index_g in range(N_ngal):
-            if k == 'sigma_log10M_HOD_ngal_'+str(index_g):
-              self.tsz.sigma_log10M_HOD_ngal[index_g] = pdict_to_update['sigma_log10M_HOD_ngal_'+str(index_g)]
-          for index_g in range(N_ngal):
-            if k == 'M_min_HOD_ngal_'+str(index_g):
-              self.tsz.M_min_HOD_ngal[index_g] = pdict_to_update['M_min_HOD_ngal_'+str(index_g)]
-          for index_g in range(N_ngal):
-            if k == 'M1_prime_HOD_ngal_'+str(index_g):
-              self.tsz.M1_prime_HOD_ngal[index_g] = pdict_to_update['M1_prime_HOD_ngal_'+str(index_g)]
-          for index_g in range(N_ngal):
-            if k == 'M0_HOD_ngal_'+str(index_g):
-              self.tsz.M0_HOD_ngal[index_g] = pdict_to_update['M0_HOD_ngal_'+str(index_g)]
-          for index_g in range(N_ngal):
-            if k == 'dndz_stretch_ngal_'+str(index_g):
-              self.tsz.dndz_stretch_ngal[index_g] = pdict_to_update['dndz_stretch_ngal_'+str(index_g)]
-          for index_g in range(N_ngal):
-            if k == 'dndz_shift_ngal_'+str(index_g):
-              self.tsz.dndz_shift_ngal[index_g] = pdict_to_update['dndz_shift_ngal_'+str(index_g)]
+          if N_gal != -1:
+            for index_g in range(N_ngal):
+                if k == 'alpha_s_HOD_ngal_'+str(index_g):
+                    self.tsz.alpha_s_HOD_ngal[index_g] = pdict_to_update['alpha_s_HOD_ngal_'+str(index_g)]
+            for index_g in range(N_ngal):
+                if k == 'sigma_log10M_HOD_ngal_'+str(index_g):
+                    self.tsz.sigma_log10M_HOD_ngal[index_g] = pdict_to_update['sigma_log10M_HOD_ngal_'+str(index_g)]
+            for index_g in range(N_ngal):
+                if k == 'M_min_HOD_ngal_'+str(index_g):
+                    self.tsz.M_min_HOD_ngal[index_g] = pdict_to_update['M_min_HOD_ngal_'+str(index_g)]
+            for index_g in range(N_ngal):
+                if k == 'M1_prime_HOD_ngal_'+str(index_g):
+                    self.tsz.M1_prime_HOD_ngal[index_g] = pdict_to_update['M1_prime_HOD_ngal_'+str(index_g)]
+            for index_g in range(N_ngal):
+                if k == 'M0_HOD_ngal_'+str(index_g):
+                    self.tsz.M0_HOD_ngal[index_g] = pdict_to_update['M0_HOD_ngal_'+str(index_g)]
+            for index_g in range(N_ngal):
+                if k == 'dndz_stretch_ngal_'+str(index_g):
+                    self.tsz.dndz_stretch_ngal[index_g] = pdict_to_update['dndz_stretch_ngal_'+str(index_g)]
+            for index_g in range(N_ngal):
+                if k == 'dndz_shift_ngal_'+str(index_g):
+                    self.tsz.dndz_shift_ngal[index_g] = pdict_to_update['dndz_shift_ngal_'+str(index_g)]
           if k == 'dndz_shift_source_gal':
               self.tsz.dndz_shift_source_gal = pdict_to_update[k]
           if k == 'dndz_stretch_source_gal':
