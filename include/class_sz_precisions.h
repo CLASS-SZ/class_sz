@@ -97,7 +97,7 @@ class_sz_ptsz_parameter(szcounts_fft_z_max,double,2.)
 class_sz_ptsz_parameter(szcounts_fft_sigmayobs_max,double,1e-2)
 
 class_sz_ptsz_parameter(n_k_pressure_profile,int,50)
-class_sz_ptsz_parameter(n_k_pressure_profile_2h,int,50)
+class_sz_ptsz_parameter(n_k_pressure_profile_2h,int,100)
 class_sz_ptsz_parameter(n_m_pressure_profile,int,30)
 class_sz_ptsz_parameter(n_l_pressure_profile,int,300)
 class_sz_ptsz_parameter(n_z_pressure_profile,int,30)

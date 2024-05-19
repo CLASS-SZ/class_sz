@@ -1510,7 +1510,10 @@ printf("end Place holder for non-limber calc.\n");
 // exit(0);
   // printf("-> start tabulation of gas pressure profile2h. %d\n",ptsz->has_gas_pressure_profile_2h);
 if (ptsz->has_gas_pressure_profile_2h){
-// printf("-> starting tabulation of pressure profile 2h\n");
+
+  if (ptsz->sz_verbose>2)
+    printf("-> starting tabulation of pressure profile 2h\n");
+
 
 tabulate_gas_pressure_profile_2h(pba,pnl,ppm,ppt,ptsz);
 // double k_test = 0.36e-1;
@@ -1519,6 +1522,9 @@ tabulate_gas_pressure_profile_2h(pba,pnl,ppm,ppt,ptsz);
 // printf("k_test = %.3e, z_test = %.3e, rho_test = %.8e\n",
 //         k_test,z_test,rho_test);
 // printf("-> starting tabulation of pressure profile fft 2h\n");
+
+  if (ptsz->sz_verbose>2)
+    printf("-> starting tabulation of pressure profile 2h at r\n");
 
 tabulate_gas_pressure_profile_2h_fft_at_z_and_r(pba,pnl,ppm,ptsz);
 
@@ -12757,8 +12763,18 @@ double evaluate_pressure_profile(double kl,
 
          double l_asked =  k_asked*pvectsz[ptsz->index_l200c]-0.5;
 
+
+         if (l_asked<0)
+            l_asked = 1e-100;
+
+
+        //  printf("get_gas_pressure 0.... l = %.5e\n",l_asked);
+
          if( (log(l_asked)<ptsz->array_pressure_profile_ln_l[0]) || _mean_y_ || _dydz_){ // get large scale limit
            l_asked = exp(ptsz->array_pressure_profile_ln_l[0]);//*pvectsz[ptsz->index_l200c]-0.5;
+
+        // printf("get_gas_pressure 1.... l = %.5e\n",l_asked);
+
            // now takes l (BB 6 march 2024)
            result = get_gas_pressure_profile_at_l_m_z(l_asked,m_asked,z_asked,ptsz);
 
@@ -12770,7 +12786,7 @@ double evaluate_pressure_profile(double kl,
          // }
          else{
 
-          // printf("get_gas_pressure....\n");
+          // printf("get_gas_pressure.... l = %.5e\n",l_asked);
 
            //now takes l (BB 6 march 2024)
            double result_tabulated = get_gas_pressure_profile_at_l_m_z(l_asked,m_asked,z_asked,ptsz);
@@ -15053,6 +15069,9 @@ if (pvectsz[ptsz->index_has_electron_pressure] == 1){
 //   pvectsz[ptsz->index_has_500c] = 1;
 // }
 
+
+  if (ptsz->sz_verbose>12)
+    printf("deal with mass definitions\n");
 
    // deal with mass definitions
    if (ptsz->integrate_wrt_mvir == 1){

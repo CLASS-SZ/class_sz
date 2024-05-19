@@ -5448,8 +5448,14 @@ double integrand_gas_pressure_profile_2h(double lnM_halo, void *p){
       V->pvectsz[V->ptsz->index_Delta_c]= Delta_c_of_Omega_m(omega);
       V->pvectsz[V->ptsz->index_chi2] = pow(V->pvecback[V->pba->index_bg_ang_distance]*(1.+z)*V->pba->h,2);
 
+
+      if (V->ptsz->sz_verbose>12)
+        printf("doing mass conversion and hmf.\n");
       V->pvectsz[V->ptsz->index_has_electron_pressure] = 1;
       do_mass_conversions(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->ptsz);
+      if (V->ptsz->sz_verbose>12)
+        printf("mass conversion done.\n");
+
       evaluate_HMF_at_logM_and_z(lnM_halo,z,V->pvecback,V->pvectsz,V->pba,V->pnl,V->ptsz);
 
       double hmf = V->pvectsz[V->ptsz->index_hmf];
@@ -6077,6 +6083,10 @@ int tabulate_gas_pressure_profile_2h(struct background * pba,
  int n_z = ptsz->n_z_pressure_profile;
  int n_k = ptsz->n_k_pressure_profile_2h; // dimension of ptsz->k_for_pk_hm
 
+  if (ptsz->sz_verbose>2)
+    printf("setting up grid...\n");
+    // printf("n_z = %d n_k = %d\n",n_z,n_k);
+
 
  // array of redshifts:
  double ln_1pz_min = log(1.+ptsz->z1SZ);
@@ -6087,10 +6097,16 @@ int tabulate_gas_pressure_profile_2h(struct background * pba,
   int index_z;
 
 
+if (ptsz->sz_verbose>2)
+  printf("assigning lnp array\n");
+
 class_alloc(ptsz->array_pressure_profile_ln_pressure_2h_at_k_and_z,
             n_k*n_z*sizeof(double),
             ptsz->error_message);
 
+
+// if (ptsz->sz_verbose>2)
+//   printf("assigning lnp array done\n");
 
 double ln_k_min = log(ptsz->k_min_gas_pressure_profile_2h);
 double ln_k_max = log(ptsz->k_max_gas_pressure_profile_2h);
@@ -6098,6 +6114,9 @@ double ln_k_max = log(ptsz->k_max_gas_pressure_profile_2h);
 class_alloc(ptsz->array_pressure_profile_2h_ln_k,
             n_k*sizeof(double),
             ptsz->error_message);
+
+if (ptsz->sz_verbose>2)
+  printf("assigning lmnk array\n");
 
 for (index_k=0;
      index_k<n_k;
@@ -6123,6 +6142,10 @@ for (index_k=0;
     abort = _FALSE_;
     /* beginning of parallel region */
  // printf("-> start parallel n_z = %d n_k =%d\n",n_z,n_k);
+
+if (ptsz->sz_verbose>2)
+  printf("starting parallel block\n");
+
     int number_of_threads= 1;
     #ifdef _OPENMP
     #pragma omp parallel
@@ -6187,7 +6210,8 @@ for (index_k=0;
 
               // pvectsz[ptsz->index_has_electron_density] = 1; //
 
-              // printf("-> starting intagration of pressure profile 2h\n");
+              if (ptsz->sz_verbose>2)
+                printf("-> starting integration of pressure profile 2h at z k %.5e %.5e\n",z,k);
 
               r=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
                                                    epsrel, epsabs,
@@ -6195,8 +6219,14 @@ for (index_k=0;
                                                    params,
                                                    ptsz->patterson_show_neval);
 
+if (ptsz->sz_verbose>2)
+      printf("k = %.5e, z = %.5e r = %.5e  zz = %.5e beofre ct\n",k,z,r,pvectsz[ptsz->index_z]);
 
-      // printf("k = %.5e, z = %.5e r = %.5e  zz = %.5e beofre ct\n",k,z,r,pvectsz[ptsz->index_z]);
+if (r<=0){
+  // printf("getting r<0 after integrand_gas_pressure_profile_2h.\n");
+  // exit(0);
+  r = 1e-100;
+}
 
        if (ptsz->M1SZ == ptsz->m_min_counter_terms)  {
          double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[ptsz->index_z],ptsz);
@@ -28227,6 +28257,11 @@ else {
                           &z,
                           &r);
 
+  if (isnan(result ) || isinf(result )){
+    printf("found nan in pressure_profile_pressure_2h_at_r_and_z.\n");
+    exit(0);
+  }
+
  double nu = get_nu_at_z_and_m(z_asked,m_asked,ptsz,pba);
  double b_at_m = get_first_order_bias_at_z_and_nu(z_asked,nu,ptsz);
  result *= b_at_m;
@@ -28259,7 +28294,8 @@ double get_gas_pressure_2h_at_k_and_z(double k_asked, double z_asked, struct tsz
 
 // printf("l=%.3e\n",l);
 else {
- return exp(pwl_interp_2d(
+
+ double result = pwl_interp_2d(
                           ptsz->n_z_pressure_profile,
                           ptsz->n_k_pressure_profile_2h,
 
@@ -28271,7 +28307,14 @@ else {
                           ptsz->array_pressure_profile_ln_pressure_2h_at_k_and_z,
                           1,
                           &z,
-                          &k));
+                          &k);
+
+   if (isnan(result ) || isinf(result )){
+    printf("found nan in pressure_profile_ln_pressure_2h_at_k_and_z.\n");
+    exit(0);
+    }
+
+ return exp(result);
   }
 }
 
