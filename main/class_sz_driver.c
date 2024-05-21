@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
   struct transfers tr;        /* for transfer functions */
   struct spectra sp;          /* for output spectra */
   struct lensing le;          /* for lensed spectra */
-  struct tszspectrum tsz;     /* BB: additional structure for class_sz*/
+  struct class_sz_structure tsz;     /* BB: additional structure for class_sz*/
   struct szcount csz;         /* BB: additional structure for sz cluster counts*/
   struct output op;           /* for output files */
   ErrorMsg errmsg;            /* for error messages */

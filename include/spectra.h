@@ -173,7 +173,7 @@ extern "C" {
                    struct nonlinear *pnl,
                    struct transfers * ptr,
                    struct spectra * psp,
-                   struct tszspectrum * ptsz,
+                   struct class_sz_structure * pclass_sz,
                    struct thermo * pth,
                    struct lensing * ple
                    );
@@ -197,7 +197,7 @@ extern "C" {
                   struct primordial * ppm,
                   struct spectra * psp,
                   struct nonlinear * pnl,
-                  struct tszspectrum * ptsz,
+                  struct class_sz_structure * pclass_sz,
                   struct thermo * pth,
                   struct lensing * ple,
                   struct precision * ppr

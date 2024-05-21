@@ -81,7 +81,7 @@ void compute_u_coefficients(int N, double mu, double q, double L, double kcrc, d
 }
 
 void fht(int N, const double r[], const double complex a[], double k[], double complex b[], double mu,
-         double q, double kcrc, int noring, double complex* u, struct tszspectrum * ptsz)
+         double q, double kcrc, int noring, double complex* u, struct class_sz_structure * pclass_sz)
 {
     double L = log(r[N-1]/r[0]) * N/(N-1.);
     double complex* ulocal = NULL;
@@ -114,14 +114,14 @@ void fht(int N, const double r[], const double complex a[], double k[], double c
     // fftw_execute(forward_plan);
 
     /* Compute the convolution b = a*u using FFTs */
-    fftw_execute_dft(ptsz->forward_plan, (fftw_complex*) a, (fftw_complex*) b);
+    fftw_execute_dft(pclass_sz->forward_plan, (fftw_complex*) a, (fftw_complex*) b);
 // printf("first plan executed.\n");
     // printf("My Thread num in fht 2 is: %d\n", id);
     int m;
     for(m = 0; m < N; m++)
       b[m] *= u[m] / (double)(N);       // divide by N since FFTW doesn't normalize the inverse FFT
     // fftw_execute(reverse_plan);
-    fftw_execute_dft(ptsz->reverse_plan, (fftw_complex*) b, (fftw_complex*) b);
+    fftw_execute_dft(pclass_sz->reverse_plan, (fftw_complex*) b, (fftw_complex*) b);
     // fftw_destroy_plan(forward_plan);
     // fftw_destroy_plan(reverse_plan);
     // omp_unset_lock(lock);
@@ -145,7 +145,7 @@ void fht(int N, const double r[], const double complex a[], double k[], double c
     free(ulocal);
 }
 
-void fftlog_ComputeXiLM(int l, int m, int N, const double k[], const double pk[], double r[], double xi[], struct tszspectrum * ptsz) {
+void fftlog_ComputeXiLM(int l, int m, int N, const double k[], const double pk[], double r[], double xi[], struct class_sz_structure * pclass_sz) {
   double complex* a = malloc(sizeof(complex double)*N);
   double complex* b = malloc(sizeof(complex double)*N);
       // fftw_complex* a=NULL;
@@ -156,7 +156,7 @@ void fftlog_ComputeXiLM(int l, int m, int N, const double k[], const double pk[]
     for(i = 0; i < N; i++)
         // a[i] = pow(k[i], m - 0.5) * pk[i];
         a[i] = pow(k[i], 1 ) * pk[i]; // m = 1 in our case
-    fht(N, k, a, r, b, 0, 0, 1, 1, NULL, ptsz);
+    fht(N, k, a, r, b, 0, 0, 1, 1, NULL, pclass_sz);
     for(i = 0; i < N; i++)
         xi[i] = creal(pow(2*M_PI*r[i], -1) * b[i]);
         // xi[i] = creal(pow(2*M_PI*r[i], -1.5) * b[i]);
@@ -168,14 +168,14 @@ void fftlog_ComputeXiLM(int l, int m, int N, const double k[], const double pk[]
       // fftw_free(b);
 }
 
-void fftlog_ComputeXiLMsloz(int l, int m, int N, const double k[], const double pk[], double r[], double xi[], struct tszspectrum * ptsz) {
+void fftlog_ComputeXiLMsloz(int l, int m, int N, const double k[], const double pk[], double r[], double xi[], struct class_sz_structure * pclass_sz) {
   double complex* a = malloc(sizeof(complex double)*N);
   double complex* b = malloc(sizeof(complex double)*N);
 
     for(int i = 0; i < N; i++)
         a[i] = pow(k[i], m - 0.5) * pk[i];
 
-    fht(N, k, a, r, b, l + 0.5, 0, 1, 1, NULL,ptsz);
+    fht(N, k, a, r, b, l + 0.5, 0, 1, 1, NULL,pclass_sz);
     for(int i = 0; i < N; i++)
         xi[i] = creal(pow(2*M_PI*r[i], -1.5) * b[i]);
 
@@ -185,7 +185,7 @@ void fftlog_ComputeXiLMsloz(int l, int m, int N, const double k[], const double 
 
 
 
-void fftlog_ComputeXiLM_cl2gamma(int l, int m, int N, const double k[], const double pk[], double r[], double xi[], struct tszspectrum * ptsz) {
+void fftlog_ComputeXiLM_cl2gamma(int l, int m, int N, const double k[], const double pk[], double r[], double xi[], struct class_sz_structure * pclass_sz) {
   double complex* a = malloc(sizeof(complex double)*N);
   double complex* b = malloc(sizeof(complex double)*N);
       // fftw_complex* a=NULL;
@@ -196,7 +196,7 @@ void fftlog_ComputeXiLM_cl2gamma(int l, int m, int N, const double k[], const do
     for(i = 0; i < N; i++)
         // a[i] = pow(k[i], m - 0.5) * pk[i];
         a[i] = pow(k[i], 1 ) * pk[i]; //dim = 2 in our case
-    fht(N, k, a, r, b, 2, 0, 1, 1, NULL, ptsz);
+    fht(N, k, a, r, b, 2, 0, 1, 1, NULL, pclass_sz);
     for(i = 0; i < N; i++)
         xi[i] = creal(pow(2*M_PI*r[i], -1) * b[i]);
         // xi[i] = creal(pow(2*M_PI*r[i], -1.5) * b[i]);
@@ -209,31 +209,31 @@ void fftlog_ComputeXiLM_cl2gamma(int l, int m, int N, const double k[], const do
 }
 
 
-void pk2xi(int N, const double k[], const double pk[], double r[], double xi[], struct tszspectrum * ptsz) {
-    // fftlog_ComputeXiLM(0, 2, N, k, pk, r, xi, ptsz);
-    fftlog_ComputeXiLM(0, 1, N, k, pk, r, xi, ptsz);
+void pk2xi(int N, const double k[], const double pk[], double r[], double xi[], struct class_sz_structure * pclass_sz) {
+    // fftlog_ComputeXiLM(0, 2, N, k, pk, r, xi, pclass_sz);
+    fftlog_ComputeXiLM(0, 1, N, k, pk, r, xi, pclass_sz);
 }
 
-void xi2pk(int N, const double r[], const double xi[], double k[], double pk[], struct tszspectrum * ptsz) {
+void xi2pk(int N, const double r[], const double xi[], double k[], double pk[], struct class_sz_structure * pclass_sz) {
     // static const double TwoPiCubed = 8*M_PI*M_PI*M_PI;
     double TwoPiCubed = pow(2.*M_PI,2.);///2./pow(2.*M_PI,-3)/4./pow(M_PI,3);
-    // fftlog_ComputeXiLM(0, 2, N, r, xi, k, pk, ptsz);
-    fftlog_ComputeXiLM(0, 1, N, r, xi, k, pk, ptsz);
+    // fftlog_ComputeXiLM(0, 2, N, r, xi, k, pk, pclass_sz);
+    fftlog_ComputeXiLM(0, 1, N, r, xi, k, pk, pclass_sz);
     int j;
     for(j = 0; j < N; j++)
         pk[j] *= TwoPiCubed;
 }
 
-void cl2gamma(int N, const double k[], const double pk[], double r[], double xi[], struct tszspectrum * ptsz) {
-    // fftlog_ComputeXiLM(0, 2, N, k, pk, r, xi, ptsz);
-    fftlog_ComputeXiLM_cl2gamma(0, 1, N, k, pk, r, xi, ptsz);
+void cl2gamma(int N, const double k[], const double pk[], double r[], double xi[], struct class_sz_structure * pclass_sz) {
+    // fftlog_ComputeXiLM(0, 2, N, k, pk, r, xi, pclass_sz);
+    fftlog_ComputeXiLM_cl2gamma(0, 1, N, k, pk, r, xi, pclass_sz);
 }
 
-void gamma2cl(int N, const double r[], const double xi[], double k[], double pk[], struct tszspectrum * ptsz) {
+void gamma2cl(int N, const double r[], const double xi[], double k[], double pk[], struct class_sz_structure * pclass_sz) {
     // static const double TwoPiCubed = 8*M_PI*M_PI*M_PI;
     double TwoPiCubed = pow(2.*M_PI,2.);///2./pow(2.*M_PI,-3)/4./pow(M_PI,3);
-    // fftlog_ComputeXiLM(0, 2, N, r, xi, k, pk, ptsz);
-    fftlog_ComputeXiLM_cl2gamma(0, 1, N, r, xi, k, pk, ptsz);
+    // fftlog_ComputeXiLM(0, 2, N, r, xi, k, pk, pclass_sz);
+    fftlog_ComputeXiLM_cl2gamma(0, 1, N, r, xi, k, pk, pclass_sz);
     int j;
     for(j = 0; j < N; j++)
         pk[j] *= TwoPiCubed;

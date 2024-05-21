@@ -10,8 +10,8 @@
 
 
 
-//#define _mean_y_ ((ptsz->has_mean_y == _TRUE_) && (index_md == ptsz->index_md_mean_y))
-//#define _hmf_ ((ptsz->has_hmf == _TRUE_) && (index_md == ptsz->index_md_hmf))
+//#define _mean_y_ ((pclass_sz->has_mean_y == _TRUE_) && (index_md == pclass_sz->index_md_mean_y))
+//#define _hmf_ ((pclass_sz->has_hmf == _TRUE_) && (index_md == pclass_sz->index_md_hmf))
 
 
 struct szcount {
@@ -85,23 +85,23 @@ extern "C" {
 int szcount_init(struct background * pba,
                    struct nonlinear * pnl,
                    struct primordial * ppm,
-                   struct tszspectrum * ptsz,
+                   struct class_sz_structure * pclass_sz,
                    struct szcount * pcsz);
 
 
-int szcounts_free(struct szcount * pcsz,struct tszspectrum * ptsz);
+int szcounts_free(struct szcount * pcsz,struct class_sz_structure * pclass_sz);
 
 
 int compute_count_sz(struct background * pba,
                      struct nonlinear * pnl,
                      struct primordial * ppm,
-                     struct tszspectrum * ptsz,
+                     struct class_sz_structure * pclass_sz,
                      struct szcount * pcsz);
 
 int compute_counts_sz_fft(struct background * pba,
                      struct nonlinear * pnl,
                      struct primordial * ppm,
-                     struct tszspectrum * ptsz,
+                     struct class_sz_structure * pclass_sz,
                      struct szcount * pcsz);
 
 
@@ -109,31 +109,31 @@ int compute_counts_sz_fft(struct background * pba,
                 struct background *pba,
                 struct primordial * ppm,
                 struct nonlinear * pnl,
-                struct tszspectrum * ptsz,
+                struct class_sz_structure * pclass_sz,
                 struct szcount * pcsz);
 
-  int write_output_cluster_counts(struct szcount * pcsz, struct tszspectrum * ptsz);
-  int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount * pcsz);
-  int find_theta_bin(struct tszspectrum * ptsz, double thp, int * l_array, double * theta_array);
-  int find_y_bin(struct tszspectrum * ptsz, double thp, int * l_array, double * theta_array);
+  int write_output_cluster_counts(struct szcount * pcsz, struct class_sz_structure * pclass_sz);
+  int initialise_and_allocate_memory_cc(struct class_sz_structure * pclass_sz,struct szcount * pcsz);
+  int find_theta_bin(struct class_sz_structure * pclass_sz, double thp, int * l_array, double * theta_array);
+  int find_y_bin(struct class_sz_structure * pclass_sz, double thp, int * l_array, double * theta_array);
 double integrand_cluster_counts_redshift(double z, void *p);
 double integrand_cluster_counts_mass(double lnm, void *p);
 double integrand_cluster_counts_completeness(double lny, void *p);
 struct Parameters_for_integrand_cluster_counts_redshift{
-  struct tszspectrum * ptsz;
+  struct class_sz_structure * pclass_sz;
   struct background * pba;
   double * completeness_2d_to_1d;
 };
 
 struct Parameters_for_integrand_cluster_counts_mass{
-  struct tszspectrum * ptsz;
+  struct class_sz_structure * pclass_sz;
   struct background * pba;
   double * completeness_2d_to_1d;
   double z;
 };
 
 struct Parameters_for_integrand_cluster_counts_completeness{
-  struct tszspectrum * ptsz;
+  struct class_sz_structure * pclass_sz;
   double * erfs_2d_to_1d;
   double theta;
   double theta1;
@@ -144,10 +144,10 @@ struct Parameters_for_integrand_cluster_counts_completeness{
 double  get_szcounts_rates_at_z_sigobs_qobs(double z_asked,
                                             double sig_asked,
                                             double qobs_asked,
-                                            struct tszspectrum * ptsz);
+                                            struct class_sz_structure * pclass_sz);
 
-double get_szcounts_dndzdqgt_at_z_q(double z_asked, double qobs_asked, struct tszspectrum * ptsz);
-double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, struct tszspectrum * ptsz);
+double get_szcounts_dndzdqgt_at_z_q(double z_asked, double qobs_asked, struct class_sz_structure * pclass_sz);
+double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, struct class_sz_structure * pclass_sz);
 
 #ifdef __cplusplus
 }

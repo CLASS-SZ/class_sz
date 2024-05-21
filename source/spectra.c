@@ -268,7 +268,7 @@ int spectra_init(
                  struct nonlinear * pnl,
                  struct transfers * ptr,
                  struct spectra * psp,
-                 struct tszspectrum * ptsz,
+                 struct class_sz_structure * pclass_sz,
                  struct thermo * pth,
                  struct lensing * ple
                  ) {
@@ -299,7 +299,7 @@ int spectra_init(
 
   if (ppt->has_cls == _TRUE_) {
 
-    class_call(spectra_cls(pba,ppt,ptr,ppm,psp,pnl,ptsz,pth,ple,ppr),
+    class_call(spectra_cls(pba,ppt,ptr,ppm,psp,pnl,pclass_sz,pth,ple,ppr),
                psp->error_message,
                psp->error_message);
 
@@ -672,7 +672,7 @@ int spectra_cls(
                 struct primordial * ppm,
                 struct spectra * psp,
                 struct nonlinear * pnl,
-                struct tszspectrum * ptsz,
+                struct class_sz_structure * pclass_sz,
                 struct thermo * pth,
                 struct lensing * ple,
                 struct precision * ppr
@@ -837,7 +837,7 @@ int spectra_cls(
       }
     }
 
-if (ptsz->sz_verbose > 0){
+if (pclass_sz->sz_verbose > 0){
 printf(">>>> spectra.c : overwritting cl^pp\n");
 printf(">>>> spectra.c : index_md_scalars = %d\n",psp->index_md_scalars);
 printf(">>>> spectra.c : ptr->l_size[index_md_scalars] = %d\n",ptr->l_size[psp->index_md_scalars]);
@@ -847,23 +847,23 @@ printf(">>>> spectra.c : index_ct_pp = %d\n",psp->index_ct_pp);
 
 if (psp->overwrite_clpp_with_limber){
 
-  ptsz->has_lens_lens_hf = 1; // switch on lensing
-  class_sz_cosmo_init(pba,pth,ppt,pnl,ppm,psp,ple,ptsz,ppr);
-  class_sz_tabulate_init(pba,pth,ppt,pnl,ppm,psp,ple,ptsz,ppr);
-  class_sz_integrate_init(pba,pth,ppt,pnl,ppm,psp,ple,ptsz,ppr);
-  ptsz->has_lens_lens_hf = 0; // switch off lensing
+  pclass_sz->has_lens_lens_hf = 1; // switch on lensing
+  class_sz_cosmo_init(pba,pth,ppt,pnl,ppm,psp,ple,pclass_sz,ppr);
+  class_sz_tabulate_init(pba,pth,ppt,pnl,ppm,psp,ple,pclass_sz,ppr);
+  class_sz_integrate_init(pba,pth,ppt,pnl,ppm,psp,ple,pclass_sz,ppr);
+  pclass_sz->has_lens_lens_hf = 0; // switch off lensing
 
-if (ptsz->sz_verbose > 0)
+if (pclass_sz->sz_verbose > 0)
   printf(">>>> spectra.c : cl^pp has been computed\n");
 
   int index_l_limb;
-  double lnl_limb[ptsz->nlSZ];
-  double lncl_limb[ptsz->nlSZ];
-  for (index_l_limb = 0; index_l_limb < ptsz->nlSZ; index_l_limb++){
-    // printf("(limber) l = %.5e cl = %.5e\n",ptsz->ell[index_l_limb],
-    //                                        ptsz->cl_lens_lens_hf[index_l_limb]);
-    lnl_limb[index_l_limb] = log(ptsz->ell[index_l_limb]);
-    lncl_limb[index_l_limb] = log(ptsz->cl_lens_lens_hf[index_l_limb]);
+  double lnl_limb[pclass_sz->nlSZ];
+  double lncl_limb[pclass_sz->nlSZ];
+  for (index_l_limb = 0; index_l_limb < pclass_sz->nlSZ; index_l_limb++){
+    // printf("(limber) l = %.5e cl = %.5e\n",pclass_sz->ell[index_l_limb],
+    //                                        pclass_sz->cl_lens_lens_hf[index_l_limb]);
+    lnl_limb[index_l_limb] = log(pclass_sz->ell[index_l_limb]);
+    lncl_limb[index_l_limb] = log(pclass_sz->cl_lens_lens_hf[index_l_limb]);
   }
 
 for (index_l=0; // index_l < 50;
@@ -873,12 +873,12 @@ for (index_l=0; // index_l < 50;
 
   // double ktest = 10.;
   // double ztest = 30.;
-  // double pk = get_pk_nonlin_at_k_and_z(ktest,ztest,pba,ppm,pnl,ptsz);
+  // double pk = get_pk_nonlin_at_k_and_z(ktest,ztest,pba,ppm,pnl,pclass_sz);
   // printf("l =  %.3e pk = %.13e\n",l,pk);
 
   double l = psp->l[index_l];
   double clpp_new; // =  psp->cl[psp->index_md_scalars][(index_l * psp->ic_ic_size[psp->index_md_scalars]) * psp->ct_size + psp->index_ct_pp];
-  clpp_new = exp(pwl_value_1d(ptsz->nlSZ,lnl_limb,lncl_limb,log(l)))*pow(l*(l+1.)/2.,-2.)*pow(l*(l+1.)/2./_PI_,-1.);
+  clpp_new = exp(pwl_value_1d(pclass_sz->nlSZ,lnl_limb,lncl_limb,log(l)))*pow(l*(l+1.)/2.,-2.)*pow(l*(l+1.)/2./_PI_,-1.);
 
   
 

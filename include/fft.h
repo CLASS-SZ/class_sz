@@ -127,13 +127,13 @@ These are the C++ bindings
 
 /* Compute the correlation function xi(r) from a power spectrum P(k), sampled
  * at logarithmically spaced points k[j]. */
-void pk2xi(int N,  const double k[],  const double pk[], double r[], double xi[], struct tszspectrum * ptsz);
-void cl2gamma(int N,  const double k[],  const double pk[], double r[], double xi[], struct tszspectrum * ptsz);
+void pk2xi(int N,  const double k[],  const double pk[], double r[], double xi[], struct class_sz_structure * pclass_sz);
+void cl2gamma(int N,  const double k[],  const double pk[], double r[], double xi[], struct class_sz_structure * pclass_sz);
 
 /* Compute the power spectrum P(k) from a correlation function xi(r), sampled
  * at logarithmically spaced points r[i]. */
-void xi2pk(int N,  const double r[],  const double xi[], double k[], double pk[], struct tszspectrum * ptsz);
-void gamma2cl(int N,  const double r[],  const double xi[], double k[], double pk[], struct tszspectrum * ptsz);
+void xi2pk(int N,  const double r[],  const double xi[], double k[], double pk[], struct class_sz_structure * pclass_sz);
+void gamma2cl(int N,  const double r[],  const double xi[], double k[], double pk[], struct class_sz_structure * pclass_sz);
 
 /* Compute the function
  *   \xi_l^m(r) = \int_0^\infty \frac{dk}{2\pi^2} k^m j_l(kr) P(k)
@@ -141,9 +141,9 @@ void gamma2cl(int N,  const double r[],  const double xi[], double k[], double p
  * in this notation.  The input k-values must be logarithmically spaced.  The
  * resulting xi_l^m(r) will be evaluated at the dual r-values
  *   r[0] = 1/k[N-1], ..., r[N-1] = 1/k[0]. */
-void fftlog_ComputeXiLM(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[], struct tszspectrum * ptsz);
-void fftlog_ComputeXiLM_cl2gamma(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[], struct tszspectrum * ptsz);
-void fftlog_ComputeXiLMsloz(int l, int m, int N, const double k[], const double pk[], double r[], double xi[],struct tszspectrum * ptsz);
+void fftlog_ComputeXiLM(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[], struct class_sz_structure * pclass_sz);
+void fftlog_ComputeXiLM_cl2gamma(int l, int m, int N, const double k[],  const double pk[], double r[], double xi[], struct class_sz_structure * pclass_sz);
+void fftlog_ComputeXiLMsloz(int l, int m, int N, const double k[], const double pk[], double r[], double xi[],struct class_sz_structure * pclass_sz);
 
 #include <complex.h>
 
@@ -154,7 +154,7 @@ void fftlog_ComputeXiLMsloz(int l, int m, int N, const double k[], const double 
  * afterwards.  If you plan on performing many consecutive transforms, it is
  * more efficient to pre-compute the u coefficients. */
  void fht(int N, const double r[], const double complex a[], double k[], double complex b[], double mu,
-          double q, double kcrc, int noring, double complex* u, struct tszspectrum * ptsz);
+          double q, double kcrc, int noring, double complex* u, struct class_sz_structure * pclass_sz);
 //         double q = 0, double kcrc = 1, bool noring = true, double complex* u = NULL);
 
 /* Pre-compute the coefficients that appear in the FFTLog implementation of

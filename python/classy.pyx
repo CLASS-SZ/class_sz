@@ -112,7 +112,7 @@ cdef class Class:
     cdef spectra sp
     cdef output op
     cdef lensing le
-    cdef tszspectrum tsz  #BB: added for class_sz
+    cdef class_sz_structure tsz  #BB: added for class_sz
     cdef szcount csz  #BB: added for class_sz
     cdef file_content fc
 

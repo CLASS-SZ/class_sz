@@ -9,7 +9,7 @@
 #include "gsl/gsl_sf_bessel.h"
 
 double get_b_custom1_at_z(double z,
-                          struct tszspectrum * ptsz);
+                          struct class_sz_structure * pclass_sz);
 
 
 #endif

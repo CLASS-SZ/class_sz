@@ -19,16 +19,16 @@
 int szcount_init(struct background * pba,
                  struct nonlinear * pnl,
                  struct primordial * ppm,
-                 struct tszspectrum * ptsz,
+                 struct class_sz_structure * pclass_sz,
                  struct szcount * pcsz)
 {
-  // ptsz->sz_verbose = ptsz->sz_verbose;
-  // ptsz->has_sz_counts = _FALSE_;
-  pcsz->has_sz_counts = ptsz->has_sz_counts;
-  if (ptsz->has_sz_counts == _FALSE_
-   || ptsz->has_sz_rates == _TRUE_)
+  // pclass_sz->sz_verbose = pclass_sz->sz_verbose;
+  // pclass_sz->has_sz_counts = _FALSE_;
+  pcsz->has_sz_counts = pclass_sz->has_sz_counts;
+  if (pclass_sz->has_sz_counts == _FALSE_
+   || pclass_sz->has_sz_rates == _TRUE_)
   {
-    if (ptsz->sz_verbose > 0)
+    if (pclass_sz->sz_verbose > 0)
       printf("->No SZ cluster counts requested. SZ cluster counts module skipped.\n");
       return _SUCCESS_;
   }
@@ -36,26 +36,26 @@ int szcount_init(struct background * pba,
   else
   {
 
-    if (ptsz->sz_verbose > 0)
+    if (pclass_sz->sz_verbose > 0)
       printf("->Computing SZ cluster counts.\n");
 
-      if (ptsz->sigmaM_ym == 0.){
-        if (ptsz->sz_verbose>0){
+      if (pclass_sz->sigmaM_ym == 0.){
+        if (pclass_sz->sz_verbose>0){
           printf("--> No scatter in ym relation.\n");
         }}
 
-   // // if ((ptsz->experiment == 0 && ptsz->has_completeness_for_ps_SZ == 1)
-   // //  || (ptsz->experiment == 0 && ptsz->has_sz_counts  == 1))
-   //    read_Planck_noise_map(ptsz);
+   // // if ((pclass_sz->experiment == 0 && pclass_sz->has_completeness_for_ps_SZ == 1)
+   // //  || (pclass_sz->experiment == 0 && pclass_sz->has_sz_counts  == 1))
+   //    read_Planck_noise_map(pclass_sz);
 
-    initialise_and_allocate_memory_cc(ptsz,pcsz);
+    initialise_and_allocate_memory_cc(pclass_sz,pcsz);
 
 
-    if (ptsz->has_sz_counts_fft){
+    if (pclass_sz->has_sz_counts_fft){
     class_call(compute_counts_sz_fft(pba,
                                     pnl,
                                     ppm,
-                                    ptsz,
+                                    pclass_sz,
                                     pcsz),
                    pcsz->error_message,
                    pcsz->error_message);
@@ -64,7 +64,7 @@ int szcount_init(struct background * pba,
     class_call(compute_count_sz(pba,
                                 pnl,
                                 ppm,
-                                ptsz,
+                                pclass_sz,
                                 pcsz),
                pcsz->error_message,
                pcsz->error_message);
@@ -77,7 +77,7 @@ int szcount_init(struct background * pba,
 }
 
 
-int szcounts_free(struct szcount * pcsz,struct tszspectrum * ptsz)
+int szcounts_free(struct szcount * pcsz,struct class_sz_structure * pclass_sz)
 {
   if (pcsz->has_sz_counts == _TRUE_){
   // free(pcsz->redshift);
@@ -92,44 +92,44 @@ int szcounts_free(struct szcount * pcsz,struct tszspectrum * ptsz)
   free(pcsz->logy);
   }
 
-  if (ptsz->has_sz_counts_fft == _TRUE_){
+  if (pclass_sz->has_sz_counts_fft == _TRUE_){
 
-    fftw_destroy_plan(ptsz->forward_plan_counts_fft);
-    fftw_destroy_plan(ptsz->reverse_plan_counts_fft);
+    fftw_destroy_plan(pclass_sz->forward_plan_counts_fft);
+    fftw_destroy_plan(pclass_sz->reverse_plan_counts_fft);
 
-    free(ptsz->array_y_to_m_redshift);
-    free(ptsz->array_y_to_m_y);
-    free(ptsz->array_y_to_m_at_z_y);
-    free(ptsz->szcounts_fft_z);
-    free(ptsz->szcounts_fft_qobs);
-    // free(ptsz->szcounts_fft_sigmayobs);
-    // free(ptsz->szcounts_fft_nexpected_qobs);
-    free(ptsz->szcounts_fft_dndzdq);
+    free(pclass_sz->array_y_to_m_redshift);
+    free(pclass_sz->array_y_to_m_y);
+    free(pclass_sz->array_y_to_m_at_z_y);
+    free(pclass_sz->szcounts_fft_z);
+    free(pclass_sz->szcounts_fft_qobs);
+    // free(pclass_sz->szcounts_fft_sigmayobs);
+    // free(pclass_sz->szcounts_fft_nexpected_qobs);
+    free(pclass_sz->szcounts_fft_dndzdq);
     int izsig;
-    for (izsig=0;izsig<ptsz->szcounts_fft_nz;izsig++){
-      // free(ptsz->szcounts_fft_index_zsig[izsig]);
-      // free(ptsz->szcounts_fft_index_zq[izsig]);
-      free(ptsz->szcounts_fft_index_zq_final[izsig]);
+    for (izsig=0;izsig<pclass_sz->szcounts_fft_nz;izsig++){
+      // free(pclass_sz->szcounts_fft_index_zsig[izsig]);
+      // free(pclass_sz->szcounts_fft_index_zq[izsig]);
+      free(pclass_sz->szcounts_fft_index_zq_final[izsig]);
     }
-    free(ptsz->szcounts_fft_index_zq_final);
+    free(pclass_sz->szcounts_fft_index_zq_final);
 
     int ipatches;
-    for (ipatches = 0;ipatches<ptsz->nskyfracs;ipatches++){
-      free(ptsz->szcounts_fft_qmconv_all_patches[ipatches]);
+    for (ipatches = 0;ipatches<pclass_sz->nskyfracs;ipatches++){
+      free(pclass_sz->szcounts_fft_qmconv_all_patches[ipatches]);
     }
-    free(ptsz->szcounts_fft_qmconv_all_patches);
-    // free(ptsz->szcounts_fft_index_zsig);
-    // free(ptsz->szcounts_fft_index_zq);
+    free(pclass_sz->szcounts_fft_qmconv_all_patches);
+    // free(pclass_sz->szcounts_fft_index_zsig);
+    // free(pclass_sz->szcounts_fft_index_zq);
 
-    // free(ptsz->szcounts_fft_nexpected_dndzdqgt);
+    // free(pclass_sz->szcounts_fft_nexpected_dndzdqgt);
 //     int index_qobs;
-//     for (index_qobs = 0; index_qobs<ptsz->N_samp_fftw; index_qobs++){
-//     free(ptsz->szcounts_fft_rates_at_z_sigy_qobs[index_qobs]);
+//     for (index_qobs = 0; index_qobs<pclass_sz->N_samp_fftw; index_qobs++){
+//     free(pclass_sz->szcounts_fft_rates_at_z_sigy_qobs[index_qobs]);
 // }
-// free(ptsz->szcounts_fft_rates_at_z_sigy_qobs);
+// free(pclass_sz->szcounts_fft_rates_at_z_sigy_qobs);
 
 // printf("freeing dndzdq\n");
-// // free(ptsz->szcounts_fft_dndzdq);
+// // free(pclass_sz->szcounts_fft_dndzdq);
 // printf("dndzdq freed\n");
 
   }
@@ -137,57 +137,57 @@ int szcounts_free(struct szcount * pcsz,struct tszspectrum * ptsz)
   return _SUCCESS_;
 }
 
-double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, struct tszspectrum * ptsz){
+double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, struct class_sz_structure * pclass_sz){
   double z = z_asked;
-  double nu = sqrt(qobs_asked*qobs_asked);//+ptsz->szcc_dof);
+  double nu = sqrt(qobs_asked*qobs_asked);//+pclass_sz->szcc_dof);
 
   // double z = log(1.+z_asked);
   // double m = log(m_asked);
-   if (z<ptsz->szcounts_fft_z[0]){
-      // z = ptsz->array_z_L_sat[0];
-      // printf("redshift min out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[0]);
+   if (z<pclass_sz->szcounts_fft_z[0]){
+      // z = pclass_sz->array_z_L_sat[0];
+      // printf("redshift min out of range in Lsat asked %.3e bound %.3e.\n",z,pclass_sz->szcounts_fft_z[0]);
       // exit(0);
       return 0.;
     }
         // printf("dealing with mass conversion in hmf\n");
-   if (z>ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]){
-      // z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
+   if (z>pclass_sz->szcounts_fft_z[pclass_sz->szcounts_fft_nz-1]){
+      // z =  pclass_sz->array_z_L_sat[pclass_sz->n_z_L_sat-1];
 
-      // printf("redshift max out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]);
+      // printf("redshift max out of range in Lsat asked %.3e bound %.3e.\n",z,pclass_sz->szcounts_fft_z[pclass_sz->szcounts_fft_nz-1]);
       // exit(0);
       return 0.;
     }
 
 
-   if (nu<ptsz->szcounts_fft_qobs[0]){
-    // nu = ptsz->array_nu_L_sat[0];
-      // printf("qobs  min out of range in Lsat asked %.8e bound %.8e.\n",exp(nu),exp(ptsz->szcounts_fft_qobs[0]));
+   if (nu<pclass_sz->szcounts_fft_qobs[0]){
+    // nu = pclass_sz->array_nu_L_sat[0];
+      // printf("qobs  min out of range in Lsat asked %.8e bound %.8e.\n",exp(nu),exp(pclass_sz->szcounts_fft_qobs[0]));
       // exit(0);
       return 0.;
   }
       // printf("dealing with mass conversion in hmf\n");
-   if (nu>ptsz->szcounts_fft_qobs[ptsz->szcounts_fft_nqobs-1]){
-      // nu =  ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1];
-      // printf("qobs max out of range in Lsat asked %.3e bound %.3e.\n",exp(nu),exp(ptsz->szcounts_fft_qobs[ptsz->szcounts_fft_nqobs-1]));
+   if (nu>pclass_sz->szcounts_fft_qobs[pclass_sz->szcounts_fft_nqobs-1]){
+      // nu =  pclass_sz->array_nu_L_sat[pclass_sz->n_nu_L_sat-1];
+      // printf("qobs max out of range in Lsat asked %.3e bound %.3e.\n",exp(nu),exp(pclass_sz->szcounts_fft_qobs[pclass_sz->szcounts_fft_nqobs-1]));
       // exit(0);
       return 0.;
     }
 
- double result  = pwl_interp_2d(ptsz->szcounts_fft_nqobs,
-                                ptsz->szcounts_fft_nz,
-                                ptsz->szcounts_fft_qobs,
-                                ptsz->szcounts_fft_z,
-                                ptsz->szcounts_fft_dndzdq,
+ double result  = pwl_interp_2d(pclass_sz->szcounts_fft_nqobs,
+                                pclass_sz->szcounts_fft_nz,
+                                pclass_sz->szcounts_fft_qobs,
+                                pclass_sz->szcounts_fft_z,
+                                pclass_sz->szcounts_fft_dndzdq,
                                 1,
                                 &nu,
                                 &z);
 
 // double result  = pwl_interp_2d(
-//                                ptsz->szcounts_fft_nz,
-//                                ptsz->szcounts_fft_nqobs,
-//                                ptsz->szcounts_fft_z,
-//                                ptsz->szcounts_fft_qobs,
-//                                ptsz->szcounts_fft_dndzdq,
+//                                pclass_sz->szcounts_fft_nz,
+//                                pclass_sz->szcounts_fft_nqobs,
+//                                pclass_sz->szcounts_fft_z,
+//                                pclass_sz->szcounts_fft_qobs,
+//                                pclass_sz->szcounts_fft_dndzdq,
 //                                1,
 //                                &z,
 //                                &nu);
@@ -197,52 +197,52 @@ double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, struct tsz
 }
 
 //
-// double  get_szcounts_dndzdqgt_at_z_q(double z_asked, double qobs_asked, struct tszspectrum * ptsz){
+// double  get_szcounts_dndzdqgt_at_z_q(double z_asked, double qobs_asked, struct class_sz_structure * pclass_sz){
 //   double z = z_asked;
 //   double nu = qobs_asked;
 //
 //   // double z = log(1.+z_asked);
 //   // double m = log(m_asked);
-//    if (z<ptsz->szcounts_fft_z[0]){
-//       // z = ptsz->array_z_L_sat[0];
-//       printf("redshift min out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[0]);
+//    if (z<pclass_sz->szcounts_fft_z[0]){
+//       // z = pclass_sz->array_z_L_sat[0];
+//       printf("redshift min out of range in Lsat asked %.3e bound %.3e.\n",z,pclass_sz->szcounts_fft_z[0]);
 //       exit(0);
 //     }
 //         // printf("dealing with mass conversion in hmf\n");
-//    if (z>ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]){
-//       // z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
+//    if (z>pclass_sz->szcounts_fft_z[pclass_sz->szcounts_fft_nz-1]){
+//       // z =  pclass_sz->array_z_L_sat[pclass_sz->n_z_L_sat-1];
 //
-//       printf("redshift max out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]);
+//       printf("redshift max out of range in Lsat asked %.3e bound %.3e.\n",z,pclass_sz->szcounts_fft_z[pclass_sz->szcounts_fft_nz-1]);
 //       exit(0);
 //     }
 //
 //
-//    if (nu<ptsz->szcounts_fft_nexpected_qobs[0]){
-//     // nu = ptsz->array_nu_L_sat[0];
-//       printf("qobs  min out of range in Lsat asked %.8e bound %.8e.\n",exp(nu),exp(ptsz->szcounts_fft_nexpected_qobs[0]));
+//    if (nu<pclass_sz->szcounts_fft_nexpected_qobs[0]){
+//     // nu = pclass_sz->array_nu_L_sat[0];
+//       printf("qobs  min out of range in Lsat asked %.8e bound %.8e.\n",exp(nu),exp(pclass_sz->szcounts_fft_nexpected_qobs[0]));
 //       exit(0);
 //   }
 //       // printf("dealing with mass conversion in hmf\n");
-//    if (nu>ptsz->szcounts_fft_nexpected_qobs[ptsz->szcounts_fft_nexpected_qobs_n-1]){
-//       // nu =  ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1];
-//       printf("qobs max out of range in Lsat asked %.3e bound %.3e.\n",exp(nu),exp(ptsz->szcounts_fft_nexpected_qobs[ptsz->szcounts_fft_nexpected_qobs_n-1]));
+//    if (nu>pclass_sz->szcounts_fft_nexpected_qobs[pclass_sz->szcounts_fft_nexpected_qobs_n-1]){
+//       // nu =  pclass_sz->array_nu_L_sat[pclass_sz->n_nu_L_sat-1];
+//       printf("qobs max out of range in Lsat asked %.3e bound %.3e.\n",exp(nu),exp(pclass_sz->szcounts_fft_nexpected_qobs[pclass_sz->szcounts_fft_nexpected_qobs_n-1]));
 //       exit(0);
 //     }
 //
-//  double result  = pwl_interp_2d(ptsz->szcounts_fft_nexpected_qobs_n,
-//                                 ptsz->szcounts_fft_nz,
-//                                 ptsz->szcounts_fft_nexpected_qobs,
-//                                 ptsz->szcounts_fft_z,
-//                                 ptsz->szcounts_fft_nexpected_dndzdqgt,
+//  double result  = pwl_interp_2d(pclass_sz->szcounts_fft_nexpected_qobs_n,
+//                                 pclass_sz->szcounts_fft_nz,
+//                                 pclass_sz->szcounts_fft_nexpected_qobs,
+//                                 pclass_sz->szcounts_fft_z,
+//                                 pclass_sz->szcounts_fft_nexpected_dndzdqgt,
 //                                 1,
 //                                 &nu,
 //                                 &z);
 //
-//  // double result  = pwl_interp_2d(ptsz->szcounts_fft_nexpected_qobs_n,
-//  //                                ptsz->szcounts_fft_nz,
-//  //                                ptsz->szcounts_fft_nexpected_qobs,
-//  //                                ptsz->szcounts_fft_z,
-//  //                                ptsz->szcounts_fft_nexpected_dndzdqgt,
+//  // double result  = pwl_interp_2d(pclass_sz->szcounts_fft_nexpected_qobs_n,
+//  //                                pclass_sz->szcounts_fft_nz,
+//  //                                pclass_sz->szcounts_fft_nexpected_qobs,
+//  //                                pclass_sz->szcounts_fft_z,
+//  //                                pclass_sz->szcounts_fft_nexpected_dndzdqgt,
 //  //                                1,
 //  //                                &nu,
 //  //                                &z);
@@ -252,7 +252,7 @@ double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, struct tsz
 // }
 
 //
-// double  get_szcounts_rates_at_z_sigobs_qobs(double z_asked, double sig_asked, double qobs_asked, struct tszspectrum * ptsz){
+// double  get_szcounts_rates_at_z_sigobs_qobs(double z_asked, double sig_asked, double qobs_asked, struct class_sz_structure * pclass_sz){
 //   double z = z_asked;
 //   double m = log(sig_asked);
 //   double nu = qobs_asked;
@@ -263,73 +263,73 @@ double  get_szcounts_dndzdq_at_z_q(double z_asked, double qobs_asked, struct tsz
 //
 //   // double z = log(1.+z_asked);
 //   // double m = log(m_asked);
-//    if (z<ptsz->szcounts_fft_z[0]){
-//       // z = ptsz->array_z_L_sat[0];
-//       printf("redshift min out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[0]);
+//    if (z<pclass_sz->szcounts_fft_z[0]){
+//       // z = pclass_sz->array_z_L_sat[0];
+//       printf("redshift min out of range in Lsat asked %.3e bound %.3e.\n",z,pclass_sz->szcounts_fft_z[0]);
 //       exit(0);
 //     }
 //         // printf("dealing with mass conversion in hmf\n");
-//    if (z>ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]){
-//       // z =  ptsz->array_z_L_sat[ptsz->n_z_L_sat-1];
+//    if (z>pclass_sz->szcounts_fft_z[pclass_sz->szcounts_fft_nz-1]){
+//       // z =  pclass_sz->array_z_L_sat[pclass_sz->n_z_L_sat-1];
 //
-//       printf("redshift max out of range in Lsat asked %.3e bound %.3e.\n",z,ptsz->szcounts_fft_z[ptsz->szcounts_fft_nz-1]);
+//       printf("redshift max out of range in Lsat asked %.3e bound %.3e.\n",z,pclass_sz->szcounts_fft_z[pclass_sz->szcounts_fft_nz-1]);
 //       exit(0);
 //     }
 //
-//    if (m<ptsz->szcounts_fft_sigmayobs[0]){
-//     // m = ptsz->array_m_L_sat[0];
-//       printf("mass min out of range in Lsat asked %.3e bound %.3e.\n",m,ptsz->szcounts_fft_sigmayobs[0]);
+//    if (m<pclass_sz->szcounts_fft_sigmayobs[0]){
+//     // m = pclass_sz->array_m_L_sat[0];
+//       printf("mass min out of range in Lsat asked %.3e bound %.3e.\n",m,pclass_sz->szcounts_fft_sigmayobs[0]);
 //       exit(0);
 //   }
 //       // printf("dealing with mass conversion in hmf\n");
-//    if (m>ptsz->szcounts_fft_sigmayobs[ptsz->szcounts_fft_nsigmayobs-1]){
-//       // m =  ptsz->array_m_L_sat[ptsz->n_m_L_sat-1];
-//       printf("mass max out of range in Lsat asked %.3e bound %.3e.\n",m,ptsz->szcounts_fft_sigmayobs[ptsz->szcounts_fft_nsigmayobs-1]);
+//    if (m>pclass_sz->szcounts_fft_sigmayobs[pclass_sz->szcounts_fft_nsigmayobs-1]){
+//       // m =  pclass_sz->array_m_L_sat[pclass_sz->n_m_L_sat-1];
+//       printf("mass max out of range in Lsat asked %.3e bound %.3e.\n",m,pclass_sz->szcounts_fft_sigmayobs[pclass_sz->szcounts_fft_nsigmayobs-1]);
 //       exit(0);
 //     }
 //
-//    if (nu<ptsz->szcounts_fft_qobs[0]){
-//     // nu = ptsz->array_nu_L_sat[0];
-//       printf("freq min out of range in Lsat asked %.8e bound %.8e.\n",exp(nu),exp(ptsz->szcounts_fft_qobs[0]));
+//    if (nu<pclass_sz->szcounts_fft_qobs[0]){
+//     // nu = pclass_sz->array_nu_L_sat[0];
+//       printf("freq min out of range in Lsat asked %.8e bound %.8e.\n",exp(nu),exp(pclass_sz->szcounts_fft_qobs[0]));
 //       exit(0);
 //   }
 //       // printf("dealing with mass conversion in hmf\n");
-//    if (nu>ptsz->szcounts_fft_qobs[ptsz->szcounts_fft_nqobs-1]){
-//       // nu =  ptsz->array_nu_L_sat[ptsz->n_nu_L_sat-1];
-//       printf("freq max out of range in Lsat asked %.3e bound %.3e.\n",exp(nu),exp(ptsz->szcounts_fft_qobs[ptsz->szcounts_fft_nqobs-1]));
+//    if (nu>pclass_sz->szcounts_fft_qobs[pclass_sz->szcounts_fft_nqobs-1]){
+//       // nu =  pclass_sz->array_nu_L_sat[pclass_sz->n_nu_L_sat-1];
+//       printf("freq max out of range in Lsat asked %.3e bound %.3e.\n",exp(nu),exp(pclass_sz->szcounts_fft_qobs[pclass_sz->szcounts_fft_nqobs-1]));
 //       exit(0);
 //     }
 //
-//   // if (ptsz->tau_profile == 1){
+//   // if (pclass_sz->tau_profile == 1){
 //   // find the closest l's in the grid:
 //   int id_l_low;
 //   int id_l_up;
-//   int n_nu = ptsz->szcounts_fft_nqobs;
-//   int n_m = ptsz->szcounts_fft_nsigmayobs;
-//   int n_z = ptsz->szcounts_fft_nz;
-//   r8vec_bracket(n_nu,ptsz->szcounts_fft_qobs,nu,&id_l_low,&id_l_up);
+//   int n_nu = pclass_sz->szcounts_fft_nqobs;
+//   int n_m = pclass_sz->szcounts_fft_nsigmayobs;
+//   int n_z = pclass_sz->szcounts_fft_nz;
+//   r8vec_bracket(n_nu,pclass_sz->szcounts_fft_qobs,nu,&id_l_low,&id_l_up);
 //
 //   // interpolate 2d at l_low:
 //
 //  double ln_rho_low = pwl_interp_2d(n_m,
 //                                 n_z,
-//                                 ptsz->szcounts_fft_sigmayobs,
-//                                 ptsz->szcounts_fft_z,
-//                                 ptsz->szcounts_fft_rates_at_z_sigy_qobs[id_l_low-1],
+//                                 pclass_sz->szcounts_fft_sigmayobs,
+//                                 pclass_sz->szcounts_fft_z,
+//                                 pclass_sz->szcounts_fft_rates_at_z_sigy_qobs[id_l_low-1],
 //                                 1,
 //                                 &m,
 //                                 &z);
 //
 //  double ln_rho_up = pwl_interp_2d(n_m,
 //                                 n_z,
-//                                 ptsz->szcounts_fft_sigmayobs,
-//                                 ptsz->szcounts_fft_z,
-//                                 ptsz->szcounts_fft_rates_at_z_sigy_qobs[id_l_up-1],
+//                                 pclass_sz->szcounts_fft_sigmayobs,
+//                                 pclass_sz->szcounts_fft_z,
+//                                 pclass_sz->szcounts_fft_rates_at_z_sigy_qobs[id_l_up-1],
 //                                 1,
 //                                 &m,
 //                                 &z);
-//  double ln_l_low = ptsz->szcounts_fft_qobs[id_l_low-1];
-//  double ln_l_up = ptsz->szcounts_fft_qobs[id_l_up-1];
+//  double ln_l_low = pclass_sz->szcounts_fft_qobs[id_l_low-1];
+//  double ln_l_up = pclass_sz->szcounts_fft_qobs[id_l_up-1];
 //
 //  // printf("lnrh %.5e %.5e %d %d\n",ln_rho_low,ln_rho_up,id_l_low,id_l_up);
 //
@@ -360,51 +360,51 @@ void shiftArray(double arr[], int size, int s) {
 int compute_counts_sz_fft(struct background * pba,
                           struct nonlinear * pnl,
                           struct primordial * ppm,
-                          struct tszspectrum * ptsz,
+                          struct class_sz_structure * pclass_sz,
                           struct szcount * pcsz)
 {
   //clock_t begin = clock();
-  if (ptsz->sz_verbose > 0)
+  if (pclass_sz->sz_verbose > 0)
     printf("->SZ_counts starting computations using ffts.\n");
 
 
 // test m - >y at z;
 // double z = 0.3;
 // double m = 5e14;
-// double y = get_y_at_m_and_z(m,z,ptsz,pba);
+// double y = get_y_at_m_and_z(m,z,pclass_sz,pba);
 // printf("z = %.5e m = %.5e y = %.5e\n",z,m,y);
-// tabulate_y_to_m(pba,pnl,ppm,ptsz);
+// tabulate_y_to_m(pba,pnl,ppm,pclass_sz);
 // double mrec;
-// mrec = get_y_to_m_at_z_and_y(z,y,ptsz);
+// mrec = get_y_to_m_at_z_and_y(z,y,pclass_sz);
 // printf("z = %.5e m = %.5e y = %.5e mrec = %.6e\n",z,m,y,mrec);
-// double der = get_dlnm_dlny(log(y),z,ptsz);
+// double der = get_dlnm_dlny(log(y),z,pclass_sz);
 // printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e\n",z,m,y,mrec,der);
-// double dNdlny = get_dNdlny_at_z_and_y(z,y,pba,ptsz);
+// double dNdlny = get_dNdlny_at_z_and_y(z,y,pba,pclass_sz);
 // printf("z = %.5e m = %.5e y = %.5e mrec = %.6e der = %.5e dNdlny = %.5e\n",z,m,y,mrec,der,dNdlny);
 
 // exit(0);
 
-    if(ptsz->sz_verbose>1) printf("constructing fftw plan\n");
+    if(pclass_sz->sz_verbose>1) printf("constructing fftw plan\n");
     fftw_plan forward_plan, reverse_plan;
-    // ptsz->N_samp_fftw = 100;
+    // pclass_sz->N_samp_fftw = 100;
     fftw_complex* a_tmp;
     fftw_complex* b_tmp;
-    a_tmp = fftw_alloc_complex(2*ptsz->N_samp_fftw);
-    b_tmp = fftw_alloc_complex(2*ptsz->N_samp_fftw);
-    ptsz->forward_plan_counts_fft = fftw_plan_dft_1d(2*ptsz->N_samp_fftw,
+    a_tmp = fftw_alloc_complex(2*pclass_sz->N_samp_fftw);
+    b_tmp = fftw_alloc_complex(2*pclass_sz->N_samp_fftw);
+    pclass_sz->forward_plan_counts_fft = fftw_plan_dft_1d(2*pclass_sz->N_samp_fftw,
                                     (fftw_complex*) a_tmp,
                                     (fftw_complex*) b_tmp,
                                     -1, FFTW_ESTIMATE);
-    ptsz->reverse_plan_counts_fft = fftw_plan_dft_1d(2*ptsz->N_samp_fftw,
+    pclass_sz->reverse_plan_counts_fft = fftw_plan_dft_1d(2*pclass_sz->N_samp_fftw,
                                     (fftw_complex*) b_tmp,
                                     (fftw_complex*) b_tmp,
                                     +1, FFTW_ESTIMATE);
 
-    // forward_plan = fftw_plan_dft_1d(ptsz->N_samp_fftw,
+    // forward_plan = fftw_plan_dft_1d(pclass_sz->N_samp_fftw,
     //                                 (fftw_complex*) a_tmp,
     //                                 (fftw_complex*) b_tmp,
     //                                 -1, FFTW_ESTIMATE);
-    // reverse_plan = fftw_plan_dft_1d(ptsz->N_samp_fftw,
+    // reverse_plan = fftw_plan_dft_1d(pclass_sz->N_samp_fftw,
     //                                 (fftw_complex*) b_tmp,
     //                                 (fftw_complex*) b_tmp,
     //                                 +1, FFTW_ESTIMATE);
@@ -437,7 +437,7 @@ int compute_counts_sz_fft(struct background * pba,
 //
 //
 // #pragma omp parallel \
-//    shared(abort,pba,ptsz,ppm,pnl,lock,forward_plan,reverse_plan)\
+//    shared(abort,pba,pclass_sz,ppm,pnl,lock,forward_plan,reverse_plan)\
 //    private(id,index_parallel_zp,index_parallel_sigmayobsp)\
 //    num_threads(number_of_threads)
 // 	 {
@@ -453,39 +453,39 @@ int compute_counts_sz_fft(struct background * pba,
 //
 // #pragma omp for collapse(2)
 // // for (index_parallel_zp=0; index_parallel_zp<1; index_parallel_zp++)
-// for (index_parallel_zp=0; index_parallel_zp<ptsz->szcounts_fft_nz; index_parallel_zp++)
+// for (index_parallel_zp=0; index_parallel_zp<pclass_sz->szcounts_fft_nz; index_parallel_zp++)
 // {
 // // for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<1; index_parallel_sigmayobsp++)
-// for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<ptsz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++)
+// for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<pclass_sz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++)
 //   {
 //
-// // double zp = 0.3;//ptsz->szcounts_fft_z[index_parallel_zp];
-// // double sigmay_obsp = 5e-3;//exp(ptsz->szcounts_fft_sigmayobs[index_parallel_sigmayobsp]);
-// double zp =ptsz->szcounts_fft_z[index_parallel_zp];
-// double sigmay_obsp = exp(ptsz->szcounts_fft_sigmayobs[index_parallel_sigmayobsp]);
+// // double zp = 0.3;//pclass_sz->szcounts_fft_z[index_parallel_zp];
+// // double sigmay_obsp = 5e-3;//exp(pclass_sz->szcounts_fft_sigmayobs[index_parallel_sigmayobsp]);
+// double zp =pclass_sz->szcounts_fft_z[index_parallel_zp];
+// double sigmay_obsp = exp(pclass_sz->szcounts_fft_sigmayobs[index_parallel_sigmayobsp]);
 //
-// if (ptsz->sz_verbose>10)
+// if (pclass_sz->sz_verbose>10)
 // printf("#########  zp = %.5e sigp = %.5e\n",zp,sigmay_obsp);
 //
-// int index_z_sigma = ptsz->szcounts_fft_index_zsig[index_parallel_zp][index_parallel_sigmayobsp];
+// int index_z_sigma = pclass_sz->szcounts_fft_index_zsig[index_parallel_zp][index_parallel_sigmayobsp];
 // // double *in,*out;
 // // fftw_plan myplan;
-// int N = ptsz->N_samp_fftw;
+// int N = pclass_sz->N_samp_fftw;
 // double a = 2 * M_PI/5.;
 //
 // double z_fft = zp; // pick a redshift just for testing
 // //
 //
 // // double sigma = 1.;
-// double sigma = ptsz->sigmaM_ym;
+// double sigma = pclass_sz->sigmaM_ym;
 //
 // double sig2 = pow(sigma,2.);
 // double fac =1./sqrt(2.*_PI_*sig2);
 //
 // // double lny_fft[N];
 // // double klny_fft[N];
-// double lnymin_fft =  ptsz->lnymin;//ptsz->lnymin;
-// double lnymax_fft =  ptsz->lnymax;//ptsz->lnymax;
+// double lnymin_fft =  pclass_sz->lnymin;//pclass_sz->lnymin;
+// double lnymax_fft =  pclass_sz->lnymax;//pclass_sz->lnymax;
 // // double dNdlny_fft[N];
 // // double lognormal_fft[N];
 // double xarr[2*N];
@@ -499,7 +499,7 @@ int compute_counts_sz_fft(struct background * pba,
 // // the kernel is centered at 0, we need to pad the arrays.
 // // so we preserve symmetry around 0.
 //
-// double lnymin_fft_padded = ptsz->lnymin-3.;
+// double lnymin_fft_padded = pclass_sz->lnymin-3.;
 // double lnymax_fft_padded = -lnymin_fft_padded; //lnymin is negative
 //
 //
@@ -512,11 +512,11 @@ int compute_counts_sz_fft(struct background * pba,
 //     xarr[i] = x;
 //     xarr[i+N] = lnymax_fft_padded+i*dx;
 // //
-// //     dNdlny_fft[i] = get_dNdlny_at_z_and_y(z_fft,exp(lny_fft[i]),pba,ptsz);
+// //     dNdlny_fft[i] = get_dNdlny_at_z_and_y(z_fft,exp(lny_fft[i]),pba,pclass_sz);
 // //     in_dNdlny_fft[i] = dNdlny_fft[i];
 // //
 // //
-// //     // double arg0 = lny_fft[i]/(sqrt(2.)*ptsz->sigmaM_ym);
+// //     // double arg0 = lny_fft[i]/(sqrt(2.)*pclass_sz->sigmaM_ym);
 //     double arg0 = (x)/sqrt(2.*sig2);///(sqrt(2.));
 //
 //     // in[i][0]= lognormal_fft[i];
@@ -543,7 +543,7 @@ int compute_counts_sz_fft(struct background * pba,
 //     //   test[i][0] = 2.*sin(2.*M_PI*x)/(2.*M_PI*x);
 //
 //
-//     test[i][0] = get_dNdlny_at_z_and_y(z_fft,exp(x),pba,ptsz);
+//     test[i][0] = get_dNdlny_at_z_and_y(z_fft,exp(x),pba,pclass_sz);
 //     // printf("lny %.5e test %.5e\n",x,test[i][0]);
 //     if (isinf(test[i][0]))
 //       exit(0);
@@ -581,7 +581,7 @@ int compute_counts_sz_fft(struct background * pba,
 //         // product_out[i][0] = product_out[i][0]/(double)(N);
 //         // product_out[i][1] = product_out[i][1]/(double)(N);
 //         product_out[i][0] *= dx;
-// if(ptsz->sz_verbose>10)
+// if(pclass_sz->sz_verbose>10)
 //         printf("fft thread %d i = %d r = %.5e\n",id,i,product_out[i][0]);
 //
 //         // rin2[i] = creal(in2[i])*1./N;;
@@ -600,10 +600,10 @@ int compute_counts_sz_fft(struct background * pba,
 //
 //       int shift = (int) (N/2);
 //       shiftArray(result_conv, 2*N, shift);
-// if (ptsz->sz_verbose>10){
+// if (pclass_sz->sz_verbose>10){
 //   FILE *fp;
 //   char Filepath[_ARGUMENT_LENGTH_MAX_];
-//   sprintf(Filepath,"%s%s%s",ptsz->root,"test_ffts_complex",".txt");
+//   sprintf(Filepath,"%s%s%s",pclass_sz->root,"test_ffts_complex",".txt");
 //   fp=fopen(Filepath, "w");
 //   // fftw_execute_dft(forward_plan, (fftw_complex*) in_lognormal_fft, (fftw_complex*) out_lognormal_fft);
 //   for (i = 0; i < 2*N; i++){
@@ -618,7 +618,7 @@ int compute_counts_sz_fft(struct background * pba,
 //   // at this stage we have tilde F(lny,sigma_lny):
 //   // This function/data is stored in the array result_conv.
 //   // Now we need to convolve it with the obs kernel.
-// if (ptsz->sz_verbose>10)
+// if (pclass_sz->sz_verbose>10)
 // printf("done with the scatter convolution.\n");
 // // exit(0);
 //   // example:
@@ -681,7 +681,7 @@ int compute_counts_sz_fft(struct background * pba,
 //
 //     for(i = 0; i < 2*N; i++){
 //         product_out[i][0] *= dq;
-//       if (ptsz->sz_verbose>10)
+//       if (pclass_sz->sz_verbose>10)
 //         printf("fft thread %d i = %d r = %.5e\n",id,i,product_out[i][0]);
 //       }
 //
@@ -693,7 +693,7 @@ int compute_counts_sz_fft(struct background * pba,
 //       }
 // shiftArray(result_qconv, 2*N, shift);
 //
-// if (ptsz->sz_verbose>=1){
+// if (pclass_sz->sz_verbose>=1){
 // for (i = 0; i < N; i++){
 //   if ((qp[i]>0.7) && (qp[i]<0.9) && (fabs(zp-0.3)<0.05))
 //     printf("fft thread %d i = %d z = %.3e sigma = %.3e q = %.5e r = %.5e\n",id,i,zp,sigmay_obs,qp[i],sigmay_obs*result_qconv[i]);
@@ -701,10 +701,10 @@ int compute_counts_sz_fft(struct background * pba,
 // }
 //
 //
-// if (ptsz->sz_verbose>10){
+// if (pclass_sz->sz_verbose>10){
 //   FILE *fp;
 //   char Filepath[_ARGUMENT_LENGTH_MAX_];
-//   sprintf(Filepath,"%s%s%s",ptsz->root,"test_ffts_q_complex",".txt");
+//   sprintf(Filepath,"%s%s%s",pclass_sz->root,"test_ffts_q_complex",".txt");
 //   fp=fopen(Filepath, "w");
 //   // fftw_execute_dft(forward_plan, (fftw_complex*) in_lognormal_fft, (fftw_complex*) out_lognormal_fft);
 //   for (i = 0; i < 2*N; i++){
@@ -728,8 +728,8 @@ int compute_counts_sz_fft(struct background * pba,
 //
 //
 // printf("allocating arrays for fftlogin'\n");
-// double lnymin_fftlog = ptsz->lnymin-1.;
-// double lnymax_fftlog = ptsz->lnymax+3.;
+// double lnymin_fftlog = pclass_sz->lnymin-1.;
+// double lnymax_fftlog = pclass_sz->lnymax+3.;
 //
 // // double lnqmin_fftlog = log(1e-2);
 // // double lnqmax_fftlog = log()
@@ -763,20 +763,20 @@ int compute_counts_sz_fft(struct background * pba,
 //   // int l = -1
 //   // int m = 0
 //
-//   fftlog_ComputeXiLMsloz(-1, 0, N, rp,  function1, kp, out1,ptsz);
+//   fftlog_ComputeXiLMsloz(-1, 0, N, rp,  function1, kp, out1,pclass_sz);
 //
 // printf("computed fftlog1.\n");
 //
-//   fftlog_ComputeXiLMsloz(-1, 0, N, rp,  function2, kp, out2,ptsz);
+//   fftlog_ComputeXiLMsloz(-1, 0, N, rp,  function2, kp, out2,pclass_sz);
 // for (i=0;i<N;i++){
 //   // prod[i] = (2.*M_PI*kp[i]*out1[i])*(2.*M_PI*kp[i]*out2[i]);
 //   // prod[i] = (2.*M_PI*kp[i]*out1[i]);//*(2.*M_PI*kp[i]*out2[i]);
 //   prod[i] = (out1[i]);
 // }
 //
-//  fftlog_ComputeXiLMsloz(-1, 0, N, kp, prod, rp, prod_out,ptsz);
+//  fftlog_ComputeXiLMsloz(-1, 0, N, kp, prod, rp, prod_out,pclass_sz);
 //
-//  sprintf(Filepath,"%s%s%s",ptsz->root,"test_fftlog",".txt");
+//  sprintf(Filepath,"%s%s%s",pclass_sz->root,"test_fftlog",".txt");
 //  fp=fopen(Filepath, "w");
 //  // fftw_execute_dft(forward_plan, (fftw_complex*) in_lognormal_fft, (fftw_complex*) out_lognormal_fft);
 //  for (i = 0; i < N; i++){
@@ -795,14 +795,14 @@ int compute_counts_sz_fft(struct background * pba,
 //
 //  int index_qobs;
 //  for (index_qobs = 0; index_qobs<N; index_qobs++){
-//    ptsz->szcounts_fft_rates_at_z_sigy_qobs[index_qobs][index_z_sigma] = sigmay_obs*result_qconv[index_qobs];
-//    ptsz->szcounts_fft_qobs[index_qobs] = qp[index_qobs];
+//    pclass_sz->szcounts_fft_rates_at_z_sigy_qobs[index_qobs][index_z_sigma] = sigmay_obs*result_qconv[index_qobs];
+//    pclass_sz->szcounts_fft_qobs[index_qobs] = qp[index_qobs];
 //  }
 //           }
 //         }
 // #ifdef _OPENMP
 //       tstop = omp_get_wtime();
-//       if (ptsz->sz_verbose > 0)
+//       if (pclass_sz->sz_verbose > 0)
 //          printf("In %s: time spent in parallel region (loop over cluster counts ffts) = %e s for thread %d\n",
 //                    __func__,tstop-tstart,omp_get_thread_num());
 //
@@ -819,7 +819,7 @@ int compute_counts_sz_fft(struct background * pba,
 //   // exit(0);
 //
 //
-// if (ptsz->sz_verbose >=1){
+// if (pclass_sz->sz_verbose >=1){
 // double test_counts = 0.;
 // double ztest = 0.3;
 // double sigtest = 5e-3;
@@ -828,13 +828,13 @@ int compute_counts_sz_fft(struct background * pba,
 // int Nqtest = 50;
 // for (index_qtest = 0;index_qtest<Nqtest;index_qtest++){
 // qtest = index_qtest*20./Nqtest;
-// test_counts = get_szcounts_rates_at_z_sigobs_qobs(ztest,sigtest,qtest,ptsz);
+// test_counts = get_szcounts_rates_at_z_sigobs_qobs(ztest,sigtest,qtest,pclass_sz);
 // printf("ztest = %.5e sigtest = %.5e qtest = %.5e rate = %.5e\n",
 //         ztest,sigtest,qtest,test_counts);
 // }
 // }
 //
-// if (ptsz->sz_verbose >=1)
+// if (pclass_sz->sz_verbose >=1)
 //   printf("we now computed the quantities necessary for nexpected.\n");
 //
 //
@@ -863,7 +863,7 @@ int compute_counts_sz_fft(struct background * pba,
 //
 //
 //   #pragma omp parallel \
-//      shared(abort,pba,ptsz,ppm,pnl,lock,forward_plan,reverse_plan)\
+//      shared(abort,pba,pclass_sz,ppm,pnl,lock,forward_plan,reverse_plan)\
 //      private(id,index_parallel_zp,index_parallel_qp)\
 //      num_threads(number_of_threads)
 //   	 {
@@ -876,36 +876,36 @@ int compute_counts_sz_fft(struct background * pba,
 // #pragma omp for collapse(2)
 // // for (index_parallel_zp=0; index_parallel_zp<1; index_parallel_zp++)
 // for (index_parallel_zp=0;
-//      index_parallel_zp<ptsz->szcounts_fft_nz;
+//      index_parallel_zp<pclass_sz->szcounts_fft_nz;
 //      index_parallel_zp++)
 // {
 // // for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<1; index_parallel_sigmayobsp++)
 // for (index_parallel_qp=0;
-//      index_parallel_qp<ptsz->szcounts_fft_nexpected_qobs_n;
+//      index_parallel_qp<pclass_sz->szcounts_fft_nexpected_qobs_n;
 //      index_parallel_qp++)
 //   {
 //
 //
-//     double zp =ptsz->szcounts_fft_z[index_parallel_zp];
-//     double qp = ptsz->szcounts_fft_nexpected_qobs[index_parallel_qp];
+//     double zp =pclass_sz->szcounts_fft_z[index_parallel_zp];
+//     double qp = pclass_sz->szcounts_fft_nexpected_qobs[index_parallel_qp];
 //
 //     // zp = 0.3; // test
 //     // qp = 5.2;
 //
 //
 //     id = omp_get_thread_num();
-//     int N = ptsz->N_samp_fftw;
+//     int N = pclass_sz->N_samp_fftw;
 //     double result_ymconv_all_patches[2*N];
 //     int i;
 //     for (i = 0; i < N; i++) {
 //         result_ymconv_all_patches[i] = 0.;
 //       }
 //
-//   double lnymin_fft =  ptsz->lnymin;//ptsz->lnymin;
-//   double lnymax_fft =  ptsz->lnymax;//ptsz->lnymax;
+//   double lnymin_fft =  pclass_sz->lnymin;//pclass_sz->lnymin;
+//   double lnymax_fft =  pclass_sz->lnymax;//pclass_sz->lnymax;
 //   // the kernel is centered at 0, we need to pad the arrays.
 //   // so we preserve symmetry around 0.
-//   double lnymin_fft_padded = ptsz->lnymin-3.;
+//   double lnymin_fft_padded = pclass_sz->lnymin-3.;
 //   double lnymax_fft_padded = -lnymin_fft_padded; //lnymin is negative
 //
 //
@@ -915,7 +915,7 @@ int compute_counts_sz_fft(struct background * pba,
 //
 //     int index_patches = 0;
 //     for (index_patches =0;
-//          index_patches<1;//ptsz->nskyfracs;
+//          index_patches<1;//pclass_sz->nskyfracs;
 //          index_patches++){
 //
 //     // printf("thread %d index_patches = %d zp = %.5e qp %.5e\n",id,index_patches,zp,qp);
@@ -923,7 +923,7 @@ int compute_counts_sz_fft(struct background * pba,
 //
 //
 //
-//     double sigma = ptsz->sigmaM_ym;
+//     double sigma = pclass_sz->sigmaM_ym;
 //
 //     double sig2 = pow(sigma,2.);
 //     double fac =1./sqrt(2.*_PI_*sig2);
@@ -951,10 +951,10 @@ int compute_counts_sz_fft(struct background * pba,
 //     in[N+i][0]= 0.;
 //     in[N+i][1]= 0.;
 //
-//     test[i][0] = get_dNdlny_at_z_and_y(zp,exp(x),pba,ptsz);
+//     test[i][0] = get_dNdlny_at_z_and_y(zp,exp(x),pba,pclass_sz);
 //     // get the Cumulative:
-//     double thetap = get_theta_at_y_and_z(exp(x),zp,ptsz,pba);
-//     double sn = get_szcountsz_sigma_at_theta_in_patch(thetap,index_patches,ptsz);
+//     double thetap = get_theta_at_y_and_z(exp(x),zp,pclass_sz,pba);
+//     double sn = get_szcountsz_sigma_at_theta_in_patch(thetap,index_patches,pclass_sz);
 //     double arg = (y - qp * sn)/(sqrt(2.) * sn);
 //     double phi = 0.5*(1.+erf(arg));
 //
@@ -984,14 +984,14 @@ int compute_counts_sz_fft(struct background * pba,
 //
 //     for(i = 0; i < 2*N; i++){
 //         product_out[i][0] *= dx;
-//       // if (ptsz->sz_verbose>=1)
+//       // if (pclass_sz->sz_verbose>=1)
 //       //   printf("fft nexpected thread %d i = %d r = %.5e\n",id,i,product_out[i][0]);
 //       }
 //
 //   double result_ymconv[2*N];
 //   for(i = 0; i < 2*N; i++) {
 //           result_ymconv[i] = product_out[i][0];
-//           result_ymconv[i] *= 4.*_PI_*ptsz->skyfracs[index_patches];
+//           result_ymconv[i] *= 4.*_PI_*pclass_sz->skyfracs[index_patches];
 //       }
 //   int shift = (int) (N/2);
 //   shiftArray(result_ymconv, 2*N, shift);
@@ -1009,15 +1009,15 @@ int compute_counts_sz_fft(struct background * pba,
 // // now we integrate over lny:
 //
 //
-// // double lnymin_fft =  ptsz->lnymin;//ptsz->lnymin;
-// // double lnymax_fft =  ptsz->lnymax;//ptsz->lnymax;
+// // double lnymin_fft =  pclass_sz->lnymin;//pclass_sz->lnymin;
+// // double lnymax_fft =  pclass_sz->lnymax;//pclass_sz->lnymax;
 // double xarr[2*N];
 // // int i;
 // double int_conv_lny = 0.;
 // for (i = 0; i < N; i++) {
 //   double x = lnymin_fft_padded+i*dx;
 //   xarr[i] = x;
-//   if ((x>ptsz->lnymin) || (x<ptsz->lnymax))
+//   if ((x>pclass_sz->lnymin) || (x<pclass_sz->lnymax))
 //     int_conv_lny += result_ymconv_all_patches[i]*dx;
 // }
 //
@@ -1027,8 +1027,8 @@ int compute_counts_sz_fft(struct background * pba,
 // //        qp,index_parallel_qp,
 // //        int_conv_lny);
 //
-//  int index_zq = ptsz->szcounts_fft_index_zq[index_parallel_zp][index_parallel_qp];
-//  ptsz->szcounts_fft_nexpected_dndzdqgt[index_zq] = int_conv_lny;
+//  int index_zq = pclass_sz->szcounts_fft_index_zq[index_parallel_zp][index_parallel_qp];
+//  pclass_sz->szcounts_fft_nexpected_dndzdqgt[index_zq] = int_conv_lny;
 //
 //
 //
@@ -1036,7 +1036,7 @@ int compute_counts_sz_fft(struct background * pba,
 // } // end loop 1
 // #ifdef _OPENMP
 // tstop = omp_get_wtime();
-// if (ptsz->sz_verbose > 0)
+// if (pclass_sz->sz_verbose > 0)
 // printf("In %s: time spent in parallel region (loop over cluster counts ffts) = %e s for thread %d\n",
 //          __func__,tstop-tstart,omp_get_thread_num());
 //
@@ -1051,7 +1051,7 @@ int compute_counts_sz_fft(struct background * pba,
 //
 // // double qtest = 6.83333e+00;
 // // double ztest = 5.75000e-01; //integral_conv_lny = 2.02701e-09
-// // double rtest = get_szcounts_dndzdqgt_at_z_q(ztest,qtest,ptsz);
+// // double rtest = get_szcounts_dndzdqgt_at_z_q(ztest,qtest,pclass_sz);
 // // printf("got %.5e expected %.5e\n",rtest,2.02701e-09);
 
 // printf("starting the real stuff:\n");
@@ -1063,18 +1063,18 @@ int compute_counts_sz_fft(struct background * pba,
 
 
 int npatches;
-if (ptsz->use_skyaveraged_noise)
+if (pclass_sz->use_skyaveraged_noise)
     npatches = 1;
 else
-    npatches = ptsz->nskyfracs;
-int N = ptsz->N_samp_fftw;
-double lnqmin_fft = ptsz->szcounts_lnqmin_fft; // set in class_sz_precisions.h (-5)
-double lnqmax_fft = ptsz->szcounts_lnqmax_fft; // set in class_sz_precisions.h (5)
+    npatches = pclass_sz->nskyfracs;
+int N = pclass_sz->N_samp_fftw;
+double lnqmin_fft = pclass_sz->szcounts_lnqmin_fft; // set in class_sz_precisions.h (-5)
+double lnqmax_fft = pclass_sz->szcounts_lnqmax_fft; // set in class_sz_precisions.h (5)
 double L = (lnqmax_fft-lnqmin_fft);
 double dx = L/(double) N;
 double xarr[2*N],kernel_scatter[N];
 int i;
-double sigma = ptsz->sigmaM_ym;
+double sigma = pclass_sz->sigmaM_ym;
 double sig2 = pow(sigma,2.);
 double fac_scatter =1./sqrt(2.*_PI_*sig2);
 for (i = 0; i < N; i++) {
@@ -1084,8 +1084,8 @@ for (i = 0; i < N; i++) {
   double arg0 = (x)/sqrt(2.*sig2);
   kernel_scatter[i] = fac_scatter*exp(-arg0*arg0); // this does the ym scatter
 }
-double qmin_fft_padded = ptsz->szcounts_qmin_fft_padded;
-double qmax_fft_padded = ptsz->szcounts_qmax_fft_padded;
+double qmin_fft_padded = pclass_sz->szcounts_qmin_fft_padded;
+double qmax_fft_padded = pclass_sz->szcounts_qmax_fft_padded;
 
 double L_q = (qmax_fft_padded-qmin_fft_padded);
 double dq = L_q/(double) (N);
@@ -1095,17 +1095,17 @@ for (i = 0; i < N; i++) {
   double x = qmin_fft_padded+i*dq;
   qp[i] = x;
   qp[i+N] = qmax_fft_padded+i*dq;
-  double arg0 = x/sqrt(2.)/ptsz->szcounts_obsscatter;
-  double fac = 1./sqrt(2.*_PI_)/ptsz->szcounts_obsscatter;
+  double arg0 = x/sqrt(2.)/pclass_sz->szcounts_obsscatter;
+  double fac = 1./sqrt(2.*_PI_)/pclass_sz->szcounts_obsscatter;
   kernel_qobs[i] = fac*exp(-arg0*arg0); // this does the obs scatter
 }
 
 int index_zloop;
 for (index_zloop = 0;
-     index_zloop<ptsz->szcounts_fft_nz;
+     index_zloop<pclass_sz->szcounts_fft_nz;
      index_zloop++){
 
-double z = ptsz->szcounts_fft_z[index_zloop];
+double z = pclass_sz->szcounts_fft_z[index_zloop];
 // printf("In zloop computing z = %.5e\n",z);
 // at each z we parallelize the loop over patches
 
@@ -1131,12 +1131,12 @@ int number_of_threads= 1;
 // number_of_threads = 1; // just pretend we have one thread
 int id;
 omp_lock_t lock;
-// int npatches = 10;//ptsz->nskyfracs;
+// int npatches = 10;//pclass_sz->nskyfracs;
 
-// double result_qmconv_all_patches;//[ptsz->nskyfracs][2*N];
+// double result_qmconv_all_patches;//[pclass_sz->nskyfracs][2*N];
 
 #pragma omp parallel \
-   shared(N,xarr,kernel_scatter,npatches,index_zloop,abort,pba,ptsz,ppm,pnl,lock)\
+   shared(N,xarr,kernel_scatter,npatches,index_zloop,abort,pba,pclass_sz,ppm,pnl,lock)\
    private(id,index_patchesloop)\
    num_threads(number_of_threads)
 	 {
@@ -1147,7 +1147,7 @@ omp_lock_t lock;
 
 
 #pragma omp for schedule (dynamic)
-for (index_patchesloop=0;index_patchesloop<npatches;index_patchesloop++) // number of patches: ptsz->nskyfracs;
+for (index_patchesloop=0;index_patchesloop<npatches;index_patchesloop++) // number of patches: pclass_sz->nskyfracs;
 	     {
 #pragma omp flush(abort)
 
@@ -1159,20 +1159,20 @@ id = omp_get_thread_num();
 
 // first we tabulate q as a function of m.
 int idpatch = index_patchesloop;
-int ntab = ptsz->ntab_dlnm_dlnq;
+int ntab = pclass_sz->ntab_dlnm_dlnq;
 double lnq_tab[ntab];
 double lnm_tab[ntab];
 
 int itab;
-double lnm_tab_mmin = log(ptsz->M1SZ); // add some padding
-double lnm_tab_mmax = log(ptsz->M2SZ); // add some padding
+double lnm_tab_mmin = log(pclass_sz->M1SZ); // add some padding
+double lnm_tab_mmax = log(pclass_sz->M2SZ); // add some padding
 double dlnm_tab = (lnm_tab_mmax-lnm_tab_mmin)/(ntab-1.);
 
 
 // printf("saving lnq - lnm array for iz = %d\n",index_zloop);
   // FILE *fp;
   // char Filepath[_ARGUMENT_LENGTH_MAX_];
-  // sprintf(Filepath,"%s%s%d%s",ptsz->root,"test_lnq_lnm_iz_",index_zloop,".txt");
+  // sprintf(Filepath,"%s%s%d%s",pclass_sz->root,"test_lnq_lnm_iz_",index_zloop,".txt");
   // fp=fopen(Filepath, "w");
 
 for (itab = 0;itab<ntab;itab++){
@@ -1184,41 +1184,41 @@ for (itab = 0;itab<ntab;itab++){
     double m200c = 0.;
     double m_ym = mtab;
 
-        if (ptsz->integrate_wrt_m200m == 1){
-          m500c = get_m200m_to_m500c_at_z_and_M(z,mtab,ptsz);
-          m200c = get_m200m_to_m200c_at_z_and_M(z,mtab,ptsz);
+        if (pclass_sz->integrate_wrt_m200m == 1){
+          m500c = get_m200m_to_m500c_at_z_and_M(z,mtab,pclass_sz);
+          m200c = get_m200m_to_m200c_at_z_and_M(z,mtab,pclass_sz);
         }
-        else if (ptsz->integrate_wrt_m200c == 1){
+        else if (pclass_sz->integrate_wrt_m200c == 1){
           m200c = mtab;
-          m500c = get_m200c_to_m500c_at_z_and_M(z,mtab,ptsz);
+          m500c = get_m200c_to_m500c_at_z_and_M(z,mtab,pclass_sz);
         }
         //
-        if (ptsz->integrate_wrt_m500c == 1){
+        if (pclass_sz->integrate_wrt_m500c == 1){
           m500c = mtab;
-          m200c = get_m500c_to_m200c_at_z_and_M(z,mtab,ptsz);
+          m200c = get_m500c_to_m200c_at_z_and_M(z,mtab,pclass_sz);
         }
 
-        if (ptsz->use_m500c_in_ym_relation == 1){
+        if (pclass_sz->use_m500c_in_ym_relation == 1){
         m_ym = m500c;
         }
-        else if (ptsz->use_m200c_in_ym_relation == 1){
+        else if (pclass_sz->use_m200c_in_ym_relation == 1){
         m_ym = m200c;
         }
 
-    double ytab = get_y_at_m_and_z(m_ym,z,ptsz,pba);
-    double thetatab = get_theta_at_m_and_z(m500c,z,ptsz,pba);
-    if (ptsz->experiment == 1){
-      double m_pivot = ptsz->m_pivot_ym*pba->h;// 1. convert to msun/h //not that it used to be *0.7 as in hasselfield paper.
+    double ytab = get_y_at_m_and_z(m_ym,z,pclass_sz,pba);
+    double thetatab = get_theta_at_m_and_z(m500c,z,pclass_sz,pba);
+    if (pclass_sz->experiment == 1){
+      double m_pivot = pclass_sz->m_pivot_ym*pba->h;// 1. convert to msun/h //not that it used to be *0.7 as in hasselfield paper.
       double m_over_m_pivot_500c = m500c/m_pivot;
-      thetatab = thetatab*pow(m_over_m_pivot_500c,ptsz->C_ym);
+      thetatab = thetatab*pow(m_over_m_pivot_500c,pclass_sz->C_ym);
     }
 
-    double sigtab = get_szcountsz_sigma_at_theta_in_patch(thetatab,idpatch,ptsz);
+    double sigtab = get_szcountsz_sigma_at_theta_in_patch(thetatab,idpatch,pclass_sz);
     // if (log(sigtab)>10)
     //   lnq_tab[itab] = -100.;
     // else
 
-    // lnq_tab[itab] = log(sqrt(ytab/sigtab*ytab/sigtab+ptsz->szcc_dof));
+    // lnq_tab[itab] = log(sqrt(ytab/sigtab*ytab/sigtab+pclass_sz->szcc_dof));
     lnq_tab[itab] = log(ytab/sigtab);
 
     if (isinf(lnq_tab[itab])||isnan(lnq_tab[itab])){
@@ -1239,8 +1239,8 @@ for (itab = 0;itab<ntab;itab++){
 // set up the convolutions
 
 // setup the bounds for the convolutions
-// double lnqmin_fft = ptsz->szcounts_lnqmin_fft;
-// double lnqmax_fft = ptsz->szcounts_lnqmax_fft;
+// double lnqmin_fft = pclass_sz->szcounts_lnqmin_fft;
+// double lnqmax_fft = pclass_sz->szcounts_lnqmax_fft;
 // double L = (lnqmax_fft-lnqmin_fft);
 // double dx = L/(double) N;
 
@@ -1270,7 +1270,7 @@ product_out = fftw_alloc_complex(2*N);
 // fftw_free(b_tmp);
 
     // the probability distribution of qt|qm
-    // double sigma = ptsz->sigmaM_ym;
+    // double sigma = pclass_sz->sigmaM_ym;
     // double sig2 = pow(sigma,2.);
     // double fac =1./sqrt(2.*_PI_*sig2);
 
@@ -1279,7 +1279,7 @@ product_out = fftw_alloc_complex(2*N);
 // printf("saving dlnqdlnm etc arrays for iz = %d\n",index_zloop);
 //   // FILE *fp;
 //   // char Filepath[_ARGUMENT_LENGTH_MAX_];
-//   sprintf(Filepath,"%s%s%d%s",ptsz->root,"test_lnq_dn_iz_",index_zloop,".txt");
+//   sprintf(Filepath,"%s%s%d%s",pclass_sz->root,"test_lnq_dn_iz_",index_zloop,".txt");
 //   fp=fopen(Filepath, "w");
 // }
 
@@ -1309,20 +1309,20 @@ product_out = fftw_alloc_complex(2*N);
                         lnm_tab,
                         x);
     double m = exp(lnm);
-    double dNdlnm = get_dndlnM_at_z_and_M(z,m,ptsz);
+    double dNdlnm = get_dndlnM_at_z_and_M(z,m,pclass_sz);
 
     // if (i % 100 == 0)
     //  printf("thread %d z = %.5e lnq = %.5e m = %.5e dNdlnm = %.5e\n",id,z,x,m,dNdlnm);
-if (ptsz->use_skyaveraged_noise){
+if (pclass_sz->use_skyaveraged_noise){
     // printf("using sky averaged sigma.\n");
-    dNdlnm *= get_volume_at_z(z,pba)*4.*M_PI*ptsz->fsky_from_skyfracs;
+    dNdlnm *= get_volume_at_z(z,pba)*4.*M_PI*pclass_sz->fsky_from_skyfracs;
   }
 else{
-    dNdlnm *= get_volume_at_z(z,pba)*4.*M_PI*ptsz->skyfracs[index_patchesloop];
+    dNdlnm *= get_volume_at_z(z,pba)*4.*M_PI*pclass_sz->skyfracs[index_patchesloop];
 }
 
     // compute derivative dlnmdlnq
-    double tol = ptsz->tol_dlnm_dlnq;
+    double tol = pclass_sz->tol_dlnm_dlnq;
     double lnqp = x+tol;
     double lnqm = x-tol;
     double lnmp = pwl_value_1d(ntab,
@@ -1368,8 +1368,8 @@ else{
   // printf("array saved");
 // }
 // exit(0);
-  fftw_execute_dft(ptsz->forward_plan_counts_fft, (fftw_complex*) in, (fftw_complex*) out);
-  fftw_execute_dft(ptsz->forward_plan_counts_fft, (fftw_complex*) test, (fftw_complex*) out_test);
+  fftw_execute_dft(pclass_sz->forward_plan_counts_fft, (fftw_complex*) in, (fftw_complex*) out);
+  fftw_execute_dft(pclass_sz->forward_plan_counts_fft, (fftw_complex*) test, (fftw_complex*) out_test);
 
 for (i = 0; i < 2*N; i++){
    product[i][0]= (out[i][0]*out_test[i][0]-out[i][1]*out_test[i][1])/(double)(2*N);
@@ -1377,7 +1377,7 @@ for (i = 0; i < 2*N; i++){
     }
 
 
-    fftw_execute_dft(ptsz->reverse_plan_counts_fft, (fftw_complex*) product, (fftw_complex*) product_out);
+    fftw_execute_dft(pclass_sz->reverse_plan_counts_fft, (fftw_complex*) product, (fftw_complex*) product_out);
 
 
 // printf("saving result of qm convolution iz = %d\n",index_zloop);
@@ -1389,7 +1389,7 @@ for (i = 0; i < 2*N; i++){
         result_qmconv[i] = product_out[i][0];
         if (result_qmconv[i]<0.)
           result_qmconv[i] = 0.;
-      // if (ptsz->sz_verbose>=1)
+      // if (pclass_sz->sz_verbose>=1)
       //   printf("fft nexpected thread %d i = %d r = %.5e\n",id,i,product_out[i][0]);
       }
   int shift = (int) (N/2);
@@ -1398,11 +1398,11 @@ for (i = 0; i < 2*N; i++){
 
   // FILE *fp;
   // char Filepath[_ARGUMENT_LENGTH_MAX_];
-  // sprintf(Filepath,"%s%s%d%s",ptsz->root,"test_qmconv_iz_",index_zloop,".txt");
+  // sprintf(Filepath,"%s%s%d%s",pclass_sz->root,"test_qmconv_iz_",index_zloop,".txt");
   // fp=fopen(Filepath, "w");
 
   for(i = 0; i < 2*N; i++){
-    ptsz->szcounts_fft_qmconv_all_patches[index_patchesloop][i] = result_qmconv[i];
+    pclass_sz->szcounts_fft_qmconv_all_patches[index_patchesloop][i] = result_qmconv[i];
     }
 
 // fclose(fp);
@@ -1419,7 +1419,7 @@ fftw_free(product_out);
 } // end patches loop
 #ifdef _OPENMP
 tstop = omp_get_wtime();
-if (ptsz->sz_verbose > 0)
+if (pclass_sz->sz_verbose > 0)
 printf("In %s: time spent in parallel region (loop over cluster counts final ffts) = %e s for thread %d\n",
          __func__,tstop-tstart,omp_get_thread_num());
 
@@ -1435,9 +1435,9 @@ double result_qmconv_all[2*N];
 int i;
 for(i = 0; i < 2*N; i++){
   result_qmconv_all[i] = 0.;
-for (index_patchesloop=0;index_patchesloop<npatches;index_patchesloop++) // number of patches: ptsz->nskyfracs;
+for (index_patchesloop=0;index_patchesloop<npatches;index_patchesloop++) // number of patches: pclass_sz->nskyfracs;
 	     {
-         result_qmconv_all[i] += ptsz->szcounts_fft_qmconv_all_patches[index_patchesloop][i];
+         result_qmconv_all[i] += pclass_sz->szcounts_fft_qmconv_all_patches[index_patchesloop][i];
        }
 
 
@@ -1452,8 +1452,8 @@ for (index_patchesloop=0;index_patchesloop<npatches;index_patchesloop++) // numb
 // printf("first convolution done.\n");
 //   return _SUCCESS_;
 // now we do the second convolution
-// double qmin_fft_padded = ptsz->szcounts_qmin_fft_padded;
-// double qmax_fft_padded = ptsz->szcounts_qmax_fft_padded;
+// double qmin_fft_padded = pclass_sz->szcounts_qmin_fft_padded;
+// double qmax_fft_padded = pclass_sz->szcounts_qmax_fft_padded;
 //
 // double L_q = (qmax_fft_padded-qmin_fft_padded);
 // double dq = L_q/(double) (N);
@@ -1463,8 +1463,8 @@ for (index_patchesloop=0;index_patchesloop<npatches;index_patchesloop++) // numb
 // convolution arrays
 // double xarr[2*N];
 // setup the bounds for the convolutions
-// double lnqmin_fft = ptsz->szcounts_lnqmin_fft;
-// double lnqmax_fft = ptsz->szcounts_lnqmax_fft;
+// double lnqmin_fft = pclass_sz->szcounts_lnqmin_fft;
+// double lnqmax_fft = pclass_sz->szcounts_lnqmax_fft;
 // double L = (lnqmax_fft-lnqmin_fft);
 // double dx = L/(double) N;
 
@@ -1495,7 +1495,7 @@ product_out = fftw_alloc_complex(2*N);
 //   // char Filepath[_ARGUMENT_LENGTH_MAX_];
 // FILE *fp;
 // char Filepath[_ARGUMENT_LENGTH_MAX_];
-// sprintf(Filepath,"%s%s%d%s",ptsz->root,"test_final_array_to_conv_iz_",index_zloop,".txt");
+// sprintf(Filepath,"%s%s%d%s",pclass_sz->root,"test_final_array_to_conv_iz_",index_zloop,".txt");
 // fp=fopen(Filepath, "w");
 
 // // restore the xarr array
@@ -1510,12 +1510,12 @@ for (i = 0; i < N; i++) {
 
  // double x = qmin_fft_padded+i*dq;
  // qp[i] = x;
- // // ptsz->szcounts_fft_qobs[i] = qp[i];
+ // // pclass_sz->szcounts_fft_qobs[i] = qp[i];
  //
  // qp[i+N] = qmax_fft_padded+i*dq;
- // double x = sqrt(qp[i]*qp[i]);//+ptsz->szcc_dof);
- // double x = sqrt(qp[i]*qp[i]+ptsz->szcc_dof);
- double x = qp[i];//sqrt(qp[i]*qp[i]+ptsz->szcc_dof);
+ // double x = sqrt(qp[i]*qp[i]);//+pclass_sz->szcc_dof);
+ // double x = sqrt(qp[i]*qp[i]+pclass_sz->szcc_dof);
+ double x = qp[i];//sqrt(qp[i]*qp[i]+pclass_sz->szcc_dof);
  // double arg0 = x/sqrt(2.);
  in[i][0] = kernel_qobs[i];//fac*exp(-arg0*arg0);
  in[i][1]= 0.;
@@ -1523,16 +1523,16 @@ for (i = 0; i < N; i++) {
  in[N+i][1]= 0.;
 
  // double lnqp =  log(x);
- double lnqp =  0.5*log(x*x-ptsz->szcc_dof);
+ double lnqp =  0.5*log(x*x-pclass_sz->szcc_dof);
  double conv1;
 
    // if (x<=0.){
-   // if (x<=sqrt(ptsz->szcc_dof)){
-  if (x<=ptsz->szcc_qtrunc){
+   // if (x<=sqrt(pclass_sz->szcc_dof)){
+  if (x<=pclass_sz->szcc_qtrunc){
        conv1=0.;
       }
   else{
-        lnqp =   0.5*log(x*x-ptsz->szcc_dof);//log(x);
+        lnqp =   0.5*log(x*x-pclass_sz->szcc_dof);//log(x);
         if (lnqp<xarr[0])
           conv1 = 0.;
         else if (lnqp>xarr[2*N-1])
@@ -1545,7 +1545,7 @@ for (i = 0; i < N; i++) {
           conv1 =  pwl_value_1d(2*N,
                                 xarr,
                                 result_qmconv_all,
-                                lnqp)*x/(pow(x,2)-ptsz->szcc_dof);
+                                lnqp)*x/(pow(x,2)-pclass_sz->szcc_dof);
                               }
    }
 
@@ -1561,19 +1561,19 @@ for (i = 0; i < N; i++) {
 
 // fclose(fp);
 
-fftw_execute_dft(ptsz->forward_plan_counts_fft, (fftw_complex*) in, (fftw_complex*) out);
-fftw_execute_dft(ptsz->forward_plan_counts_fft, (fftw_complex*) test, (fftw_complex*) out_test);
+fftw_execute_dft(pclass_sz->forward_plan_counts_fft, (fftw_complex*) in, (fftw_complex*) out);
+fftw_execute_dft(pclass_sz->forward_plan_counts_fft, (fftw_complex*) test, (fftw_complex*) out_test);
 
     for (i = 0; i < 2*N; i++){
        product[i][0]= (out[i][0]*out_test[i][0]-out[i][1]*out_test[i][1])/(double)(2*N);
        product[i][1]= (out[i][0]*out_test[i][1]+out[i][1]*out_test[i][0])/(double)(2*N);
         }
 
-fftw_execute_dft(ptsz->reverse_plan_counts_fft, (fftw_complex*) product, (fftw_complex*) product_out);
+fftw_execute_dft(pclass_sz->reverse_plan_counts_fft, (fftw_complex*) product, (fftw_complex*) product_out);
 
     // for(i = 0; i < 2*N; i++){
     //     product_out[i][0] *= dq;
-    //   if (ptsz->sz_verbose>10)
+    //   if (pclass_sz->sz_verbose>10)
     //     printf("fft thread %d i = %d r = %.5e\n",id,i,product_out[i][0]);
     //   }
 
@@ -1595,18 +1595,18 @@ fftw_free(product_out);
 
   // FILE *fp;
   // char Filepath[_ARGUMENT_LENGTH_MAX_];
-  // sprintf(Filepath,"%s%s%d%s",ptsz->root,"test_allpatches_final_qconv_iz_",index_zloop,".txt");
+  // sprintf(Filepath,"%s%s%d%s",pclass_sz->root,"test_allpatches_final_qconv_iz_",index_zloop,".txt");
   // fp=fopen(Filepath, "w");
 
 
 for(i = 0; i < N; i++) {
-  int index_zq = ptsz->szcounts_fft_index_zq_final[index_zloop][i];
-  ptsz->szcounts_fft_dndzdq[index_zq] = result_qconv[i];
+  int index_zq = pclass_sz->szcounts_fft_index_zq_final[index_zloop][i];
+  pclass_sz->szcounts_fft_dndzdq[index_zq] = result_qconv[i];
 
 
   // fprintf(fp,"%.5e\t%.5e\n",qp[i],result_qconv[i]);
   // if ((index_zloop%3==0)&&(i%100==0)){
-  //   printf("z = %.5e q = %.5e dndzdq = %.5e %d\n",z,qp[i],ptsz->szcounts_fft_dndzdq[index_zq],index_zq);
+  //   printf("z = %.5e q = %.5e dndzdq = %.5e %d\n",z,qp[i],pclass_sz->szcounts_fft_dndzdq[index_zq],index_zq);
   // }
 
   // if ((z>0.08) && (z<0.12) && (qp[i]>2.8) && (qp[i]<3.2)){
@@ -1616,7 +1616,7 @@ for(i = 0; i < N; i++) {
   }
   // fclose(fp);
 
-if (ptsz->sz_verbose>=1)
+if (pclass_sz->sz_verbose>=1)
   printf("second convolution done for z = %.5e.\n",z);
 
      }// end zloop
@@ -1630,43 +1630,43 @@ if (ptsz->sz_verbose>=1)
 // test
 // double ztest = 8.45000e-02;
 // double qtest = 3.02734e+00;
-// double rtest = get_szcounts_dndzdq_at_z_q(ztest,qtest,ptsz);
+// double rtest = get_szcounts_dndzdq_at_z_q(ztest,qtest,pclass_sz);
 //
 // printf("ztest = %.5e qtest = %.5e rtest = %.5e\n",ztest,qtest,rtest);
 //
 
 // now we compute the likelihoods over the catalogue.
 
-      // if (ptsz->sz_verbose>=1){
+      // if (pclass_sz->sz_verbose>=1){
 
         int icat = 0;
         int imissz = 0;
         double max_z = 0.;
         double min_z = 100.;
-        int imissz_arr[ptsz->szcat_size];
-        if (ptsz->sz_verbose>=1) printf("szcat: got %d lines.\n",ptsz->szcat_size);
-        for (icat=0;icat<ptsz->szcat_size;icat++){
-            if (ptsz->sz_verbose>=10) printf("szcat z = %.3e \t snr = %.3e\n",ptsz->szcat_z[icat],ptsz->szcat_snr[icat]);
-        if (ptsz->szcat_z[icat]<= 0) {
+        int imissz_arr[pclass_sz->szcat_size];
+        if (pclass_sz->sz_verbose>=1) printf("szcat: got %d lines.\n",pclass_sz->szcat_size);
+        for (icat=0;icat<pclass_sz->szcat_size;icat++){
+            if (pclass_sz->sz_verbose>=10) printf("szcat z = %.3e \t snr = %.3e\n",pclass_sz->szcat_z[icat],pclass_sz->szcat_snr[icat]);
+        if (pclass_sz->szcat_z[icat]<= 0) {
           imissz_arr[imissz] = icat;
           imissz += 1;
         }
         else{
-          double zc = ptsz->szcat_z[icat];
+          double zc = pclass_sz->szcat_z[icat];
           if (zc<min_z) min_z = zc;
           if (zc>max_z) max_z = zc;
         }
         }
-        if (ptsz->sz_verbose>=1) {
+        if (pclass_sz->sz_verbose>=1) {
           printf("cat min z = %.5e cat max z = %.5e\n",min_z,max_z);
         }
-        if (min_z<ptsz->szcounts_fft_z_min){
+        if (min_z<pclass_sz->szcounts_fft_z_min){
           printf("You need to decrease szcounts_fft_z_min, min z from cat is %.5e\n",min_z);
-          printf("Your current min z is %.5e\n",ptsz->szcounts_fft_z_min);
+          printf("Your current min z is %.5e\n",pclass_sz->szcounts_fft_z_min);
         }
-        if (max_z>ptsz->szcounts_fft_z_max){
+        if (max_z>pclass_sz->szcounts_fft_z_max){
           printf("You need to increase szcounts_fft_z_max, max z from cat is %.5e\n",max_z);
-          printf("Your current max z is %.5e\n",ptsz->szcounts_fft_z_max);
+          printf("Your current max z is %.5e\n",pclass_sz->szcounts_fft_z_max);
         }
 // randomly assign zs to missing:
        const gsl_rng_type * T;
@@ -1679,15 +1679,15 @@ if (ptsz->sz_verbose>=1)
        for (iimissz = 0; iimissz < imissz; iimissz++)
          {
            double u = gsl_rng_uniform (rmissz);
-           ptsz->szcat_z[imissz_arr[iimissz]] = min_z + (max_z-min_z)*u;
-           if (ptsz->sz_verbose>=1){
+           pclass_sz->szcat_z[imissz_arr[iimissz]] = min_z + (max_z-min_z)*u;
+           if (pclass_sz->sz_verbose>=1){
            printf ("cluster %d now has z = %.5f\n",imissz_arr[iimissz], u);
             }
          }
 
        gsl_rng_free (rmissz);
 
-      if (ptsz->sz_verbose>=1){
+      if (pclass_sz->sz_verbose>=1){
         printf("szcat: got %d objects with missing redshift.\n",imissz);
         printf("random z's have been assigned to them, see above.\n");
       }
@@ -1695,36 +1695,36 @@ if (ptsz->sz_verbose>=1)
       // }
 
 
-   // class_alloc(ptsz->szrate,ptsz->szcat_size*sizeof(double *),ptsz->error_message);
+   // class_alloc(pclass_sz->szrate,pclass_sz->szcat_size*sizeof(double *),pclass_sz->error_message);
    int irate;
-   for (irate = 0; irate < ptsz->szcat_size ; irate++){
-     // ptsz->szrate[irate] = 0.;
-     double qcat = ptsz->szcat_snr[irate];
-     double zcat = ptsz->szcat_z[irate];
-     ptsz->szrate[irate] = get_szcounts_dndzdq_at_z_q(zcat,qcat,ptsz);
-      if (ptsz->sz_verbose>=1){
-        printf("rate of cluster[%d] = %.5e\n",irate,ptsz->szrate[irate]);
+   for (irate = 0; irate < pclass_sz->szcat_size ; irate++){
+     // pclass_sz->szrate[irate] = 0.;
+     double qcat = pclass_sz->szcat_snr[irate];
+     double zcat = pclass_sz->szcat_z[irate];
+     pclass_sz->szrate[irate] = get_szcounts_dndzdq_at_z_q(zcat,qcat,pclass_sz);
+      if (pclass_sz->sz_verbose>=1){
+        printf("rate of cluster[%d] = %.5e\n",irate,pclass_sz->szrate[irate]);
       }
    }
 
 //    // now we just need to compute the total number of clusters above the threshold.
-//    if (ptsz->sz_verbose>=1)
-//     printf("computing nexpected above qcut = %.5e\n",ptsz->sn_cutoff);
-//    // ptsz->sn_cutoff
+//    if (pclass_sz->sz_verbose>=1)
+//     printf("computing nexpected above qcut = %.5e\n",pclass_sz->sn_cutoff);
+//    // pclass_sz->sn_cutoff
 //    int index_z;
 //    int index_q;
-//    double dz_ntot = (ptsz->szcounts_fft_z_max-ptsz->szcounts_fft_z_min)/(ptsz->szcounts_fft_nz-1.);
+//    double dz_ntot = (pclass_sz->szcounts_fft_z_max-pclass_sz->szcounts_fft_z_min)/(pclass_sz->szcounts_fft_nz-1.);
 //    int nq = 200;
-//    double dq_ntot = (ptsz->szcounts_qmax_fft_padded-ptsz->sn_cutoff)/(nq-1.);
+//    double dq_ntot = (pclass_sz->szcounts_qmax_fft_padded-pclass_sz->sn_cutoff)/(nq-1.);
 //    double ntot = 0.;
-//    double arr_dndzdq[ptsz->szcounts_fft_nz][nq];
-//    for (index_z = 0; index_z<ptsz->szcounts_fft_nz; index_z++){
+//    double arr_dndzdq[pclass_sz->szcounts_fft_nz][nq];
+//    for (index_z = 0; index_z<pclass_sz->szcounts_fft_nz; index_z++){
 //      for (index_q = 0; index_q<nq; index_q++){
-//         double zp = ptsz->szcounts_fft_z_min+index_z*dz_ntot;
-//         double qp = ptsz->sn_cutoff+index_q*dq_ntot;
-//         double dn = get_szcounts_dndzdq_at_z_q(zp,qp,ptsz);
+//         double zp = pclass_sz->szcounts_fft_z_min+index_z*dz_ntot;
+//         double qp = pclass_sz->sn_cutoff+index_q*dq_ntot;
+//         double dn = get_szcounts_dndzdq_at_z_q(zp,qp,pclass_sz);
 //         arr_dndzdq[index_z][index_q] = dn;//ntot += 0.5*()*dz*dq;
-//         // if (index_z == 0 || index_z == ptsz->szcounts_fft_nz-1 || index_q == 0 || index_q == nq-1) {
+//         // if (index_z == 0 || index_z == pclass_sz->szcounts_fft_nz-1 || index_q == 0 || index_q == nq-1) {
 //         //                 ntot += dn*dz_ntot*dq_ntot;
 //         //             } else {
 //                         ntot += dn*dz_ntot*dq_ntot;
@@ -1736,8 +1736,8 @@ if (ptsz->sz_verbose>=1)
 //
 //         // Calculating the integral value
 //         // wrt y at each point for x
-//         double ax[ptsz->szcounts_fft_nz];
-//         for (index_z = 0; index_z < ptsz->szcounts_fft_nz; ++index_z)
+//         double ax[pclass_sz->szcounts_fft_nz];
+//         for (index_z = 0; index_z < pclass_sz->szcounts_fft_nz; ++index_z)
 //         {
 //             ax[index_z] = 0;
 //             for (index_q = 0; index_q < nq; ++index_q)
@@ -1756,9 +1756,9 @@ if (ptsz->sz_verbose>=1)
 //
 //         // Calculating the final integral value
 //         // using the integral obtained in the above step
-//         for (index_z = 0; index_z < ptsz->szcounts_fft_nz; ++index_z)
+//         for (index_z = 0; index_z < pclass_sz->szcounts_fft_nz; ++index_z)
 //         {
-//             // if (index_z == 0 || index_z == ptsz->szcounts_fft_nz - 1)
+//             // if (index_z == 0 || index_z == pclass_sz->szcounts_fft_nz - 1)
 //                 ntot += ax[index_z];
 //             // else if (i % 2 == 0)
 //             //     ntot += 2 * ax[index_z];
@@ -1768,19 +1768,19 @@ if (ptsz->sz_verbose>=1)
 //         ntot *= (dz_ntot);// / 3);
 //
 //
-//   ptsz->szcounts_ntot = ntot;
+//   pclass_sz->szcounts_ntot = ntot;
 //
 //
 //
-// // if (ptsz->has_sz_rates){
-//   ptsz->szunbinned_loglike = - ntot;
+// // if (pclass_sz->has_sz_rates){
+//   pclass_sz->szunbinned_loglike = - ntot;
 //   int index_rate;
-//   for (index_rate=0;index_rate<ptsz->szcat_size;index_rate++){
-//     ptsz->szunbinned_loglike += log(ptsz->szrate[index_rate]);
-//   // printf("cluster id = %d\trate = %.4e \n",index_rate,ptsz->szrate[index_rate]);
+//   for (index_rate=0;index_rate<pclass_sz->szcat_size;index_rate++){
+//     pclass_sz->szunbinned_loglike += log(pclass_sz->szrate[index_rate]);
+//   // printf("cluster id = %d\trate = %.4e \n",index_rate,pclass_sz->szrate[index_rate]);
 //   }
-//   if (ptsz->sz_verbose >= 1 ) printf("loglike unbinned cc = %.3e\n",ptsz->szunbinned_loglike);
-//   if (ptsz->sz_verbose >= 1 ) printf("Ntot above qcut = %.3e\n",ptsz->szcounts_ntot);
+//   if (pclass_sz->sz_verbose >= 1 ) printf("loglike unbinned cc = %.3e\n",pclass_sz->szunbinned_loglike);
+//   if (pclass_sz->sz_verbose >= 1 ) printf("Ntot above qcut = %.3e\n",pclass_sz->szcounts_ntot);
 // // }
 
 
@@ -1791,7 +1791,7 @@ if (ptsz->sz_verbose>=1)
 int compute_count_sz(struct background * pba,
                      struct nonlinear * pnl,
                      struct primordial * ppm,
-                     struct tszspectrum * ptsz,
+                     struct class_sz_structure * pclass_sz,
                      struct szcount * pcsz)
 {
   //clock_t begin = clock();
@@ -1799,7 +1799,7 @@ int compute_count_sz(struct background * pba,
 // return _SUCCESS_;
 
 
-  if (ptsz->sz_verbose > 0)
+  if (pclass_sz->sz_verbose > 0)
     printf("->SZ_counts starting grid computation.\n");
   ///PARALLEL
   double * pvecsz;
@@ -1813,7 +1813,7 @@ int compute_count_sz(struct background * pba,
 
 int index_y;
 #pragma omp parallel \
-shared(abort,pba,ppm,pnl,ptsz,pcsz)\
+shared(abort,pba,ppm,pnl,pclass_sz,pcsz)\
 private(tstart, tstop,pvecsz,index_y)
   {
 
@@ -1836,7 +1836,7 @@ private(tstart, tstop,pvecsz,index_y)
                                     pba,
                                     ppm,
                                     pnl,
-                                    ptsz,
+                                    pclass_sz,
                                     pcsz),
                           pcsz->error_message,
                           pcsz->error_message);
@@ -1845,7 +1845,7 @@ private(tstart, tstop,pvecsz,index_y)
 
 #ifdef _OPENMP
     tstop = omp_get_wtime();
-    if (ptsz->sz_verbose > 0)
+    if (pclass_sz->sz_verbose > 0)
       printf("In %s: time spent in parallel region (loop over s/n's) = %e s for thread %d\n",
              __func__,tstop-tstart,omp_get_thread_num());
 #endif
@@ -1855,10 +1855,10 @@ private(tstart, tstop,pvecsz,index_y)
 
 
   //end bin in mass
-  if (ptsz->sz_verbose > 0)
+  if (pclass_sz->sz_verbose > 0)
     printf("->SZ_counts computations done.\n");
 
-  write_output_cluster_counts(pcsz,ptsz);
+  write_output_cluster_counts(pcsz,pclass_sz);
 
 
 
@@ -1874,20 +1874,20 @@ int grid_C_2d(
               struct background *pba,
               struct primordial * ppm,
               struct nonlinear * pnl,
-              struct tszspectrum * ptsz,
+              struct class_sz_structure * pclass_sz,
               struct szcount * pcsz
               ){
   //int i;
 
-  const int dim_1 = ptsz->Ny;
-  const int dim_2 = ptsz->nthetas;
+  const int dim_1 = pclass_sz->Ny;
+  const int dim_2 = pclass_sz->nthetas;
 
 
   int npatches;
-  if (ptsz->use_skyaveraged_noise)
+  if (pclass_sz->use_skyaveraged_noise)
       npatches = 1;
   else
-      npatches = ptsz->nskyfracs;
+      npatches = pclass_sz->nskyfracs;
 
   int l_array[3];
   double theta_array[3];
@@ -1907,8 +1907,8 @@ for (index_m=0;index_m<pcsz->nsteps_m;index_m++)
 
   double fsky = 0.;
   int index_patches;
-  for (index_patches=0;index_patches<ptsz->nskyfracs;index_patches++)
-    fsky += ptsz->skyfracs[index_patches];
+  for (index_patches=0;index_patches<pclass_sz->nskyfracs;index_patches++)
+    fsky += pclass_sz->skyfracs[index_patches];
 
 int index_m_z = 0;
 
@@ -1939,19 +1939,19 @@ int index_m_z = 0;
 //   }
 //   else{
 //
-//   y_min = pow(10., pcsz->logy[index_y] - ptsz->bin_dlog10_snr_last_bin/2.);
-//   y_max = 1e100;//pow(10., pcsz->logy[index_y] + ptsz->bin_dlog10_snr_last_bin/2.);
+//   y_min = pow(10., pcsz->logy[index_y] - pclass_sz->bin_dlog10_snr_last_bin/2.);
+//   y_max = 1e100;//pow(10., pcsz->logy[index_y] + pclass_sz->bin_dlog10_snr_last_bin/2.);
 // }
 
-  if (ptsz->sz_verbose > 3){
+  if (pclass_sz->sz_verbose > 3){
     printf("->SZ_counts grid_C_2d.\n");
     printf("->In signal-to-noise bin:\n");
     printf("->bin id = %d y_min = %.3e y_max = %.3e\n",index_y,y_min,y_max);
     }
 
 if (pcsz->has_completeness == 1){
-  if (ptsz->sigmaM_ym == 0.){
-    if (ptsz->sz_verbose>0){
+  if (pclass_sz->sigmaM_ym == 0.){
+    if (pclass_sz->sz_verbose>0){
       printf("--> No scatter in ym relation.\n");
     }
     int index_m_z = 0;
@@ -1972,30 +1972,30 @@ if (pcsz->has_completeness == 1){
 
 
 
-        if (ptsz->integrate_wrt_m200m == 1){
-          m500c = get_m200m_to_m500c_at_z_and_M(zp,mp,ptsz);
-          m200c = get_m200m_to_m200c_at_z_and_M(zp,mp,ptsz);
+        if (pclass_sz->integrate_wrt_m200m == 1){
+          m500c = get_m200m_to_m500c_at_z_and_M(zp,mp,pclass_sz);
+          m200c = get_m200m_to_m200c_at_z_and_M(zp,mp,pclass_sz);
         }
-        else if (ptsz->integrate_wrt_m200c == 1){
+        else if (pclass_sz->integrate_wrt_m200c == 1){
           m200c = mp;
-          m500c = get_m200c_to_m500c_at_z_and_M(zp,mp,ptsz);
+          m500c = get_m200c_to_m500c_at_z_and_M(zp,mp,pclass_sz);
         }
         //
-        if (ptsz->integrate_wrt_m500c == 1){
+        if (pclass_sz->integrate_wrt_m500c == 1){
           m500c = mp;
-          m200c = get_m500c_to_m200c_at_z_and_M(zp,mp,ptsz);
+          m200c = get_m500c_to_m200c_at_z_and_M(zp,mp,pclass_sz);
         }
 
-        if (ptsz->use_m500c_in_ym_relation == 1){
+        if (pclass_sz->use_m500c_in_ym_relation == 1){
         m_ym = m500c;
         }
-        else if (ptsz->use_m200c_in_ym_relation == 1){
+        else if (pclass_sz->use_m200c_in_ym_relation == 1){
         m_ym = m200c;
         }
         // printf("m_ym = %.5e\n",m_ym);
         // exit(0);
         // zp = 1.00000e-05;
-        double yp = get_y_at_m_and_z(m_ym,zp,ptsz,pba);
+        double yp = get_y_at_m_and_z(m_ym,zp,pclass_sz,pba);
 
         // if (index_y == 2  && index_z == 0 && index_m == 0){
         // printf("\n");
@@ -2007,18 +2007,18 @@ if (pcsz->has_completeness == 1){
         // }
 
 
-        double thp = get_theta_at_m_and_z(m500c,zp,ptsz,pba);
+        double thp = get_theta_at_m_and_z(m500c,zp,pclass_sz,pba);
         //Planck
 
         // if not planck, apply the mismatch function with C correction
-        if (ptsz->experiment == 1){
-          double m_pivot = ptsz->m_pivot_ym*pba->h;// 1. convert to msun/h //not that it used to be *0.7 as in hasselfield paper.
+        if (pclass_sz->experiment == 1){
+          double m_pivot = pclass_sz->m_pivot_ym*pba->h;// 1. convert to msun/h //not that it used to be *0.7 as in hasselfield paper.
           double m_over_m_pivot_500c = m500c/m_pivot;
-          thp = thp*pow(m_over_m_pivot_500c,ptsz->C_ym);
+          thp = thp*pow(m_over_m_pivot_500c,pclass_sz->C_ym);
         }
 
 
-        // find_theta_bin(ptsz,thp,l_array,theta_array);
+        // find_theta_bin(pclass_sz,thp,l_array,theta_array);
         // int l1 = l_array[1];
         // int l2 = l_array[2];
         // double th1 = theta_array[1];
@@ -2029,24 +2029,24 @@ if (pcsz->has_completeness == 1){
         double comp_sky_tot = 0.;
         for (index_patches =0;index_patches<npatches;index_patches++){
 
-          // double y1 = ptsz->ylims[index_patches][l1];
-          // double y2 = ptsz->ylims[index_patches][l2];
+          // double y1 = pclass_sz->ylims[index_patches][l1];
+          // double y2 = pclass_sz->ylims[index_patches][l2];
           // double y = y1 + (y2-y1)/(th2-th1)*(thp-th1);
 
 
-          double y_interp = get_szcountsz_sigma_at_theta_in_patch(thp,index_patches,ptsz);;
+          double y_interp = get_szcountsz_sigma_at_theta_in_patch(thp,index_patches,pclass_sz);;
           // if((index_m == 235)&& (index_z == 5) && (index_patches == 49)){
           //   printf("y_interp = %.5e thp = %.9e\n",y_interp, thp);
           //   exit(0);
           // }
 
-          // double y_interp = pwl_value_1d(ptsz->nthetas,
-          //                                ptsz->thetas,
-          //                                ptsz->ylims[index_patches],
+          // double y_interp = pwl_value_1d(pclass_sz->nthetas,
+          //                                pclass_sz->thetas,
+          //                                pclass_sz->ylims[index_patches],
           //                                thp);
-          // double y_interp = pwl_value_1d(ptsz->nthetas,
-          //                                ptsz->thetas,
-          //                                ptsz->sky_averaged_ylims,
+          // double y_interp = pwl_value_1d(pclass_sz->nthetas,
+          //                                pclass_sz->thetas,
+          //                                pclass_sz->sky_averaged_ylims,
           //                                thp); // ~5% difference
 
           double y = y_interp;
@@ -2054,10 +2054,10 @@ if (pcsz->has_completeness == 1){
 
           double c2;
 
-          if (ptsz->use_planck_binned_proba == 1){
-          c2 = erf_compl(yp,y,ptsz->sn_cutoff,ptsz->szcc_dof);
-          c2 *= erf_compl(yp,y,y_min,ptsz->szcc_dof);
-          c2 *= (1.-erf_compl(yp,y,y_max,ptsz->szcc_dof));
+          if (pclass_sz->use_planck_binned_proba == 1){
+          c2 = erf_compl(yp,y,pclass_sz->sn_cutoff,pclass_sz->szcc_dof);
+          c2 *= erf_compl(yp,y,y_min,pclass_sz->szcc_dof);
+          c2 *= (1.-erf_compl(yp,y,y_max,pclass_sz->szcc_dof));
 
           // if (index_y == 2 && index_patches == 0 && index_z == 0 && index_m == 0){
           // printf("\n");
@@ -2068,22 +2068,22 @@ if (pcsz->has_completeness == 1){
 
 
           if (index_y == 0){
-            c2 = erf_compl(yp,y,ptsz->sn_cutoff,ptsz->szcc_dof);
-            c2 *= (1.-erf_compl(yp,y,y_max,ptsz->szcc_dof));
+            c2 = erf_compl(yp,y,pclass_sz->sn_cutoff,pclass_sz->szcc_dof);
+            c2 *= (1.-erf_compl(yp,y,y_max,pclass_sz->szcc_dof));
 
 
           }
 
           if (index_y == pcsz->Nbins_y-1){
-            c2 = erf_compl(yp,y,ptsz->sn_cutoff,ptsz->szcc_dof) ;
-            c2 *= erf_compl(yp,y,y_min,ptsz->szcc_dof);
+            c2 = erf_compl(yp,y,pclass_sz->sn_cutoff,pclass_sz->szcc_dof) ;
+            c2 *= erf_compl(yp,y,y_min,pclass_sz->szcc_dof);
 
 
           }}
 
           else {
 
-            c2 = erf_compl_nicola(yp,y,ptsz->sn_cutoff,y_min,y_max,ptsz->szcc_dof);
+            c2 = erf_compl_nicola(yp,y,pclass_sz->sn_cutoff,y_min,y_max,pclass_sz->szcc_dof);
             // if((index_m == 235)&& (index_z == 5) && (index_patches == 49)){
             //   printf("c2 = %.5e yp = %.5e y = %.5e y_min = %..5e y_max = %.5e\n",
             //           c2,yp,y,y_min,y_max);
@@ -2091,24 +2091,24 @@ if (pcsz->has_completeness == 1){
             // }
           }
 
-if (ptsz->use_skyaveraged_noise){
-          completeness_2d[index_m][index_z] += c2*ptsz->fsky_from_skyfracs;///fsky;
+if (pclass_sz->use_skyaveraged_noise){
+          completeness_2d[index_m][index_z] += c2*pclass_sz->fsky_from_skyfracs;///fsky;
 
         }
 else{
-     completeness_2d[index_m][index_z] += c2*ptsz->skyfracs[index_patches];///fsky;
+     completeness_2d[index_m][index_z] += c2*pclass_sz->skyfracs[index_patches];///fsky;
 
 //      if((index_m == 235)&& (index_z == 5))   {
 // printf("c = %.5e index_m = %d index_z = %d skyfrac = %.5e idskyfrac  = %d\n",
 //     completeness_2d[index_m][index_z],
-//     index_m,index_z,ptsz->skyfracs[index_patches],index_patches);
+//     index_m,index_z,pclass_sz->skyfracs[index_patches],index_patches);
 //     // exit(0);
 //     }
 }
           // printf("%d\n",index_patches);
 
-          // completeness_2d_to_1d[index_m_z] += c2*ptsz->skyfracs[index_patches];
-          // completeness_2d_to_1d[index_m_z] += 1.*ptsz->skyfracs[index_patches];
+          // completeness_2d_to_1d[index_m_z] += c2*pclass_sz->skyfracs[index_patches];
+          // completeness_2d_to_1d[index_m_z] += 1.*pclass_sz->skyfracs[index_patches];
 
         } // end loop patches
         // completeness_2d_to_1d[index_m_z] = log(completeness_2d_to_1d[index_m_z]);
@@ -2135,7 +2135,7 @@ else{
   }//end if sigmaM=0
 
   else {
-    double fac =1./sqrt(2.*_PI_*pow(ptsz->sigmaM_ym,2));
+    double fac =1./sqrt(2.*_PI_*pow(pclass_sz->sigmaM_ym,2));
 
     int index1,index2;
 
@@ -2145,8 +2145,8 @@ else{
 
 
     class_alloc(erfs_2d_to_1d,
-                ptsz->Ny*ptsz->nthetas*sizeof(double *),
-                ptsz->error_message);
+                pclass_sz->Ny*pclass_sz->nthetas*sizeof(double *),
+                pclass_sz->error_message);
 
     class_alloc(erfs,
                 dim_1*sizeof(double *),
@@ -2170,7 +2170,7 @@ else{
 
 
 
-    if (ptsz->sz_verbose > 3)
+    if (pclass_sz->sz_verbose > 3)
       printf("->SZ_counts grid_C_2d debug 1.\n");
     //double fsky = 0.;
     //int index_patches;
@@ -2178,26 +2178,26 @@ else{
 
     ////// tabulate erfs as a function of theta and y in each s/n bin
     int index_th_y = 0;
-    for (index2=0;index2<ptsz->Nth;index2++){
+    for (index2=0;index2<pclass_sz->Nth;index2++){
       // double lny = pcsz->lnymin;
-      //double th1 = exp(ptsz->erfs_2d_to_1d_y_array[index2])
+      //double th1 = exp(pclass_sz->erfs_2d_to_1d_y_array[index2])
 
-      for (index1=0;index1<ptsz->Ny;index1++)
+      for (index1=0;index1<pclass_sz->Ny;index1++)
       {
-        double y0=exp(ptsz->erfs_2d_to_1d_y_array[index1]);
+        double y0=exp(pclass_sz->erfs_2d_to_1d_y_array[index1]);
         for (index_patches=0;index_patches<npatches;index_patches++){
-          //fsky += ptsz->skyfracs[index_patches];
+          //fsky += pclass_sz->skyfracs[index_patches];
 
           double y1;
-          if (ptsz->use_skyaveraged_noise == 0){
-            y1 = ptsz->ylims[index_patches][index2];
+          if (pclass_sz->use_skyaveraged_noise == 0){
+            y1 = pclass_sz->ylims[index_patches][index2];
           }
           else{
-            y1 =  ptsz->sky_averaged_ylims[index2];
+            y1 =  pclass_sz->sky_averaged_ylims[index2];
           }
 
 
-          // double y1 = get_ylim_of_theta(th1,ptsz->ylims[index_patches][index2];
+          // double y1 = get_ylim_of_theta(th1,pclass_sz->ylims[index_patches][index2];
           // int k = index_y;
           //
           // double qmin=pcsz->logy[k]-pcsz->dlogy/2.;
@@ -2207,30 +2207,30 @@ else{
 
           double c2;
 
-          if (ptsz->use_planck_binned_proba == 1){
-              if (y0/y1<ptsz->szcc_qtrunc){
+          if (pclass_sz->use_planck_binned_proba == 1){
+              if (y0/y1<pclass_sz->szcc_qtrunc){
                 c2=0.;
                 }
-              else if (index_y==0)  {c2=erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof)*(1.-erf_compl(y0,y1,y_max,ptsz->szcc_dof));}
-              else if (index_y==pcsz->Nbins_y-1) {c2=erf_compl(y0,y1,y_min,ptsz->szcc_dof)*erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof);}
-              else {c2=erf_compl(y0,y1,ptsz->sn_cutoff,ptsz->szcc_dof)*erf_compl(y0,y1,y_min,ptsz->szcc_dof)*(1.-erf_compl(y0,y1,y_max,ptsz->szcc_dof));}
+              else if (index_y==0)  {c2=erf_compl(y0,y1,pclass_sz->sn_cutoff,pclass_sz->szcc_dof)*(1.-erf_compl(y0,y1,y_max,pclass_sz->szcc_dof));}
+              else if (index_y==pcsz->Nbins_y-1) {c2=erf_compl(y0,y1,y_min,pclass_sz->szcc_dof)*erf_compl(y0,y1,pclass_sz->sn_cutoff,pclass_sz->szcc_dof);}
+              else {c2=erf_compl(y0,y1,pclass_sz->sn_cutoff,pclass_sz->szcc_dof)*erf_compl(y0,y1,y_min,pclass_sz->szcc_dof)*(1.-erf_compl(y0,y1,y_max,pclass_sz->szcc_dof));}
               }
           else{
-            if (y0/y1<ptsz->szcc_qtrunc){
+            if (y0/y1<pclass_sz->szcc_qtrunc){
               c2=0.;
               }
             else
-              c2 = erf_compl_nicola(y0,y1,ptsz->sn_cutoff,y_min,y_max,ptsz->szcc_dof);
+              c2 = erf_compl_nicola(y0,y1,pclass_sz->sn_cutoff,y_min,y_max,pclass_sz->szcc_dof);
             }
 
 
-          if (ptsz->use_skyaveraged_noise == 0){
-              erfs[index1][index2]=erfs[index1][index2]+c2*ptsz->skyfracs[index_patches];
+          if (pclass_sz->use_skyaveraged_noise == 0){
+              erfs[index1][index2]=erfs[index1][index2]+c2*pclass_sz->skyfracs[index_patches];
               }
           else{
-              erfs[index1][index2]=erfs[index1][index2]+c2*ptsz->fsky_from_skyfracs;
+              erfs[index1][index2]=erfs[index1][index2]+c2*pclass_sz->fsky_from_skyfracs;
               }
-          // erfs_2d_to_1d[index_th_y] += c2*ptsz->skyfracs[index_patches]/fsky;
+          // erfs_2d_to_1d[index_th_y] += c2*pclass_sz->skyfracs[index_patches]/fsky;
 
 
         } //end loop patches
@@ -2244,14 +2244,14 @@ else{
 
     // tabulate completeness as a function of z and m
     // integrate erfs wrt y at all (z,M) to get completeness in a z,m grid
-  if (ptsz->sz_verbose > 3)
+  if (pclass_sz->sz_verbose > 3)
       printf("->SZ_counts grid_C_2d debug 2.\n");
 
     int index_m_z = 0;
     for (index_z=0;index_z<pcsz->nsteps_z;index_z++){
 
       double zp = pcsz->steps_z[index_z];
-      // if (ptsz->sz_verbose > 3)
+      // if (pclass_sz->sz_verbose > 3)
       //   printf("->SZ_counts grid_C_2d debug 3, z = %.4e.\n",zp);
 
       for (index_m=0;index_m<pcsz->nsteps_m;index_m++){
@@ -2264,42 +2264,42 @@ else{
 
     
 
-        if (ptsz->integrate_wrt_m200m == 1){
-        // if (ptsz->sz_verbose > 3)
+        if (pclass_sz->integrate_wrt_m200m == 1){
+        // if (pclass_sz->sz_verbose > 3)
         //   printf("figuring out masses : %.3e %.3e\n",mp, zp);
         
-          m500c = get_m200m_to_m500c_at_z_and_M(zp,mp,ptsz);
-          m200c = get_m200m_to_m200c_at_z_and_M(zp,mp,ptsz);
+          m500c = get_m200m_to_m500c_at_z_and_M(zp,mp,pclass_sz);
+          m200c = get_m200m_to_m200c_at_z_and_M(zp,mp,pclass_sz);
 
         }
-        else if (ptsz->integrate_wrt_m200c == 1){
+        else if (pclass_sz->integrate_wrt_m200c == 1){
           m200c = mp;
-          m500c = get_m200c_to_m500c_at_z_and_M(zp,mp,ptsz);
+          m500c = get_m200c_to_m500c_at_z_and_M(zp,mp,pclass_sz);
         }
         //
-        if (ptsz->integrate_wrt_m500c == 1){
+        if (pclass_sz->integrate_wrt_m500c == 1){
           m500c = mp;
-          m200c = get_m500c_to_m200c_at_z_and_M(zp,mp,ptsz);
+          m200c = get_m500c_to_m200c_at_z_and_M(zp,mp,pclass_sz);
         }
 
-        if (ptsz->use_m500c_in_ym_relation == 1){
+        if (pclass_sz->use_m500c_in_ym_relation == 1){
         m_ym = m500c;
         }
-        else if (ptsz->use_m200c_in_ym_relation == 1){
+        else if (pclass_sz->use_m200c_in_ym_relation == 1){
         m_ym = m200c;
         }
 
-        double yp = get_y_at_m_and_z(m_ym,zp,ptsz,pba);
-        double thp = get_theta_at_m_and_z(m500c,zp,ptsz,pba);
+        double yp = get_y_at_m_and_z(m_ym,zp,pclass_sz,pba);
+        double thp = get_theta_at_m_and_z(m500c,zp,pclass_sz,pba);
 
         // if not planck, apply the mismatch function with C correction
-        if (ptsz->experiment == 1){
-          double m_pivot = ptsz->m_pivot_ym*pba->h;
+        if (pclass_sz->experiment == 1){
+          double m_pivot = pclass_sz->m_pivot_ym*pba->h;
           double m_over_m_pivot_500c = m500c/m_pivot;
-          thp = thp*pow(m_over_m_pivot_500c,ptsz->C_ym);
+          thp = thp*pow(m_over_m_pivot_500c,pclass_sz->C_ym);
         }
 
-        find_theta_bin(ptsz,thp,l_array,theta_array);
+        find_theta_bin(pclass_sz,thp,l_array,theta_array);
         int l1 = l_array[1];
         int l2 = l_array[2];
         double th1 = theta_array[1];
@@ -2308,17 +2308,17 @@ else{
         double mu = log(yp);
         double int_comp =1.e-300;
 
-        // double mu_high = mu + 5.*(sqrt(2.)*ptsz->sigmaM_ym);
+        // double mu_high = mu + 5.*(sqrt(2.)*pclass_sz->sigmaM_ym);
         // int l1y_high, l2y_high;
         // int l1y_low, l2y_low;
-        // find_y_bin(ptsz,mu_high,l_array,theta_array);
+        // find_y_bin(pclass_sz,mu_high,l_array,theta_array);
         // l1y_high = l_array[1];
         // l2y_high = l_array[2];
         // // double y1 = theta_array[1];
         // // double y2 = theta_array[2];
         //
-        // double mu_low = mu - 5.*(sqrt(2.)*ptsz->sigmaM_ym);
-        // find_y_bin(ptsz,mu_low,l_array,theta_array);
+        // double mu_low = mu - 5.*(sqrt(2.)*pclass_sz->sigmaM_ym);
+        // find_y_bin(pclass_sz,mu_low,l_array,theta_array);
         // l1y_low = l_array[1];
         // l2y_low = l_array[2];
         // // double y1 = theta_array[1];
@@ -2337,26 +2337,26 @@ else{
         // double lny=pcsz->lnymin;
         int k;
 
-        // if (ptsz->sz_verbose > 3)
+        // if (pclass_sz->sz_verbose > 3)
         //   printf("->SZ_counts grid_C_2d debug 5, z = %.4e.\n",zp);
 
         // at a fixed theta(z,m)
         // integrate over y, erf(theta,y)*fac/y*exp(-arg(y))
 
-        for (k=0;k<ptsz->Ny-1;k++){
+        for (k=0;k<pclass_sz->Ny-1;k++){
         // for (k=l1y_low;k<l2y_high;k++){
           // printf("k = %d int_comp1 = %e\n",k,int_comp);
           // double y0=exp(lny);
-          double y0 = exp(ptsz->erfs_2d_to_1d_y_array[k]);
+          double y0 = exp(pclass_sz->erfs_2d_to_1d_y_array[k]);
 
           // printf("k = %d int_comp2 = %e\n",k,int_comp);
           // double y=exp(lny+pcsz->dlny);
-          double y = exp(ptsz->erfs_2d_to_1d_y_array[k+1]);
-          // y = exp(ptsz->erfs_2d_to_1d_y_array[k]);
+          double y = exp(pclass_sz->erfs_2d_to_1d_y_array[k+1]);
+          // y = exp(pclass_sz->erfs_2d_to_1d_y_array[k]);
           // printf("k = %d int_comp3 = %e\n",k,int_comp);
           // double dy=y-y0;
           // // printf("k = %d int_comp4 = %e\n",k,int_comp);
-          // double arg0=((ptsz->erfs_2d_to_1d_y_array[k]-mu)/(sqrt(2.)*ptsz->sigmaM_ym));
+          // double arg0=((pclass_sz->erfs_2d_to_1d_y_array[k]-mu)/(sqrt(2.)*pclass_sz->sigmaM_ym));
           //
           // double win0=erfs[k][l1]+(erfs[k][l2]-erfs[k][l1])/(th2-th1)*(thp-th1);
           // double win=erfs[k+1][l1]+(erfs[k+1][l2]-erfs[k+1][l1])/(th2-th1)*(thp-th1);
@@ -2364,25 +2364,25 @@ else{
           /// write dlny integral:
           double dlny=pcsz->dlny;
           // printf("k = %d int_comp4 = %e\n",k,int_comp);
-          double arg0=((ptsz->erfs_2d_to_1d_y_array[k]-mu)/(sqrt(2.)*ptsz->sigmaM_ym));
+          double arg0=((pclass_sz->erfs_2d_to_1d_y_array[k]-mu)/(sqrt(2.)*pclass_sz->sigmaM_ym));
 
           /// erf(lny,theta)
           double win0=erfs[k][l1]+(erfs[k][l2]-erfs[k][l1])/(th2-th1)*(thp-th1);
           double win=erfs[k+1][l1]+(erfs[k+1][l2]-erfs[k+1][l1])/(th2-th1)*(thp-th1);
 
 
-          // double ekl1 = get_detection_proba_at_y_and_theta(y0,th1,erfs_2d_to_1d,ptsz);
-          // double ekl2 = get_detection_proba_at_y_and_theta(y0,th2,erfs_2d_to_1d,ptsz);
+          // double ekl1 = get_detection_proba_at_y_and_theta(y0,th1,erfs_2d_to_1d,pclass_sz);
+          // double ekl2 = get_detection_proba_at_y_and_theta(y0,th2,erfs_2d_to_1d,pclass_sz);
           // double win0 = ekl1+(ekl2-ekl1)/(th2-th1)*(thp-th1);
           //
-          // ekl1 = get_detection_proba_at_y_and_theta(y,th1,erfs_2d_to_1d,ptsz);
-          // ekl2 = get_detection_proba_at_y_and_theta(y,th2,erfs_2d_to_1d,ptsz);
+          // ekl1 = get_detection_proba_at_y_and_theta(y,th1,erfs_2d_to_1d,pclass_sz);
+          // ekl2 = get_detection_proba_at_y_and_theta(y,th2,erfs_2d_to_1d,pclass_sz);
           //
           // double win = ekl1+(ekl2-ekl1)/(th2-th1)*(thp-th1);
           //
 
-          //double arg=((lny+pcsz->dlny-mu)/(sqrt(2.)*ptsz->sigmaM_ym));
-          double arg=((ptsz->erfs_2d_to_1d_y_array[k+1]-mu)/(sqrt(2.)*ptsz->sigmaM_ym));
+          //double arg=((lny+pcsz->dlny-mu)/(sqrt(2.)*pclass_sz->sigmaM_ym));
+          double arg=((pclass_sz->erfs_2d_to_1d_y_array[k+1]-mu)/(sqrt(2.)*pclass_sz->sigmaM_ym));
           // double py=(win0*fac/y0*exp(-arg0*arg0)+win*fac/y*exp(-arg*arg))*0.5;
 
           double plny=(win0*fac*exp(-arg0*arg0)+win*fac*exp(-arg*arg))*0.5;
@@ -2402,7 +2402,7 @@ else{
 //
 // // printf("int_compe = %.3e\n",int_comp);
 // struct Parameters_for_integrand_cluster_counts_completeness X;
-//   X.ptsz = ptsz;
+//   X.pclass_sz = pclass_sz;
 //   X.erfs_2d_to_1d = erfs_2d_to_1d;
 //   X.theta = thp;
 //   X.theta1 = th1;
@@ -2415,8 +2415,8 @@ else{
 //   double epsrel = 1e-2;
 //   double epsabs = 1e-80;
 //
-//   double lny_min = ptsz->erfs_2d_to_1d_y_array[0];
-//   double lny_max = ptsz->erfs_2d_to_1d_y_array[ptsz->Ny-1];
+//   double lny_min = pclass_sz->erfs_2d_to_1d_y_array[0];
+//   double lny_max = pclass_sz->erfs_2d_to_1d_y_array[pclass_sz->Ny-1];
 //
 //   int_comp=Integrate_using_Patterson_adaptive(lny_min,
 //                                               lny_max,
@@ -2428,11 +2428,11 @@ else{
 
 
         if (int_comp > fsky) {
-          if (ptsz->sz_verbose>3) printf("int_comp larger than fsky.\n");
+          if (pclass_sz->sz_verbose>3) printf("int_comp larger than fsky.\n");
           int_comp=fsky;
         }
         if (int_comp <= 0. || isinf(int_comp) || isnan(int_comp)) {
-          if (ptsz->sz_verbose>3){
+          if (pclass_sz->sz_verbose>3){
               if (int_comp <= 0.) printf("int_comp<0 thp = %.5e th2 = %.5e mp = %.5e zp = %.5e\n",thp,th2,mp,zp); // This is not problematic. I forgot why. theta just too large i think.
               if (isinf(int_comp)) printf("int_comp=infty.\n");
               if (isnan(int_comp)) printf("comp=nan.\n");
@@ -2452,11 +2452,11 @@ else{
 // exit(0);
       // end tabulate completeness as a function of z and m
   //  exit(0);
-      if (ptsz->sz_verbose > 3)
+      if (pclass_sz->sz_verbose > 3)
       printf("->SZ_counts grid_C_2d debug 3.\n");
 
   // freeing memory
-  for (index1=0;index1<ptsz->Ny;index1++)
+  for (index1=0;index1<pclass_sz->Ny;index1++)
   {
     free(erfs[index1]);
   }
@@ -2474,7 +2474,7 @@ else{
       double z_bin_max = pcsz->z_center[index_z]+0.5*pcsz->dz;
 
 
-      if (ptsz->sz_verbose > 3){
+      if (pclass_sz->sz_verbose > 3){
         printf("\n\n zbin min = %.5e max = %.5e\n\n",z_bin_min,z_bin_max);
       }
 
@@ -2487,16 +2487,16 @@ else{
 
 
 // struct Parameters_for_integrand_cluster_counts_redshift V;
-//   V.ptsz = ptsz;
+//   V.pclass_sz = pclass_sz;
 //   V.pba = pba;
 //   V.completeness_2d_to_1d = completeness_2d_to_1d;
 //
 //   void * params = &V;
   double r; //result of the integral
 //
-//   double epsrel = ptsz->redshift_epsrel_cluster_counts;
-//   double epsabs = ptsz->redshift_epsabs_cluster_counts;
-//   //int show_neval = ptsz->patterson_show_neval;
+//   double epsrel = pclass_sz->redshift_epsrel_cluster_counts;
+//   double epsabs = pclass_sz->redshift_epsabs_cluster_counts;
+//   //int show_neval = pclass_sz->patterson_show_neval;
 //
 //   double z_min = z_bin_min;
 //   double z_max = z_bin_max;
@@ -2527,7 +2527,7 @@ test = 1e100;
     }
 }
 
-if (ptsz->sz_verbose>3){
+if (pclass_sz->sz_verbose>3){
 if (index_y == 0)
 printf("index_y = %d index_z = %d z_min = %.3e index_z_steps_z_min = %d stepz_min = %.6e\n",index_y,index_z,pcsz->z_center[index_z]-0.5*pcsz->dz,index_z_steps_z_min,pcsz->steps_z[index_z_steps_z_min]);
 
@@ -2540,11 +2540,11 @@ for (index_z_steps_z = index_z_steps_z_min;index_z_steps_z<index_z_steps_z_max+1
     double zp = pcsz->steps_z[index_z_steps_z];
     double zpp = pcsz->steps_z[index_z_steps_z+1];
     double mp = exp(pcsz->steps_m[index_m]);
-    double fp = get_volume_at_z(zp,pba)*get_dndlnM_at_z_and_M(zp,mp,ptsz);
+    double fp = get_volume_at_z(zp,pba)*get_dndlnM_at_z_and_M(zp,mp,pclass_sz);
     double cp = completeness_2d[index_m][index_z_steps_z];
-    double fpp = get_volume_at_z(zpp,pba)*get_dndlnM_at_z_and_M(zpp,mp,ptsz);
+    double fpp = get_volume_at_z(zpp,pba)*get_dndlnM_at_z_and_M(zpp,mp,pclass_sz);
     double cpp = completeness_2d[index_m][index_z_steps_z+1];
-      if (ptsz->sz_verbose>3)
+      if (pclass_sz->sz_verbose>3)
           printf("index_y =  %d cp = %.5e fp = %.5e zp = %.5e  zpp = %.5e  mp = %.5e\n",index_y,cp, fp, zp, zpp, mp);
     r+= 0.5*(fp*cp+fpp*cpp)*pcsz->dlnM*(zpp-zp);
   }
@@ -2552,9 +2552,9 @@ for (index_z_steps_z = index_z_steps_z_min;index_z_steps_z<index_z_steps_z_max+1
 
 
       pcsz->dNdzdy_theoretical[index_z][index_y]=4.*_PI_*r;
-    //   if (ptsz->has_completeness == 0){
+    //   if (pclass_sz->has_completeness == 0){
     //
-    //   fsky = ptsz->sky_area_deg2/41253.;
+    //   fsky = pclass_sz->sky_area_deg2/41253.;
     //   pcsz->dNdzdy_theoretical[index_z][index_y]=4.*_PI_*fsky*r;
     //   }
     //   else{
@@ -2585,13 +2585,13 @@ for (index_z_steps_z = index_z_steps_z_min;index_z_steps_z<index_z_steps_z_max+1
 //   struct Parameters_for_integrand_cluster_counts_mass *V = ((struct Parameters_for_integrand_cluster_counts_mass *) p);
 //
 //           double m_asked = exp(lnm);
-//           double f1 = get_volume_at_z(V->z,V->pba)*get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz);
-//           double c1 = get_completeness_at_z_and_M(V->z,m_asked,V->completeness_2d_to_1d,V->ptsz);
+//           double f1 = get_volume_at_z(V->z,V->pba)*get_dndlnM_at_z_and_M(V->z,m_asked,V->pclass_sz);
+//           double c1 = get_completeness_at_z_and_M(V->z,m_asked,V->completeness_2d_to_1d,V->pclass_sz);
 //           // if (pcsz->has_completeness == 0){
 //           //   c1 = 1.;
 //           // }
-//           if (isnan(get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz))){
-//             printf("z = %.3e volume = %.3e dn = %.3e c = %.3e\n",V->z,get_volume_at_z(V->z,V->pba),get_dndlnM_at_z_and_M(V->z,m_asked,V->ptsz),c1);
+//           if (isnan(get_dndlnM_at_z_and_M(V->z,m_asked,V->pclass_sz))){
+//             printf("z = %.3e volume = %.3e dn = %.3e c = %.3e\n",V->z,get_volume_at_z(V->z,V->pba),get_dndlnM_at_z_and_M(V->z,m_asked,V->pclass_sz),c1);
 //             exit(0);
 //             }
 //   result = f1*c1;
@@ -2605,15 +2605,15 @@ for (index_z_steps_z = index_z_steps_z_min;index_z_steps_z<index_z_steps_z_max+1
 //   struct Parameters_for_integrand_cluster_counts_completeness *V = ((struct Parameters_for_integrand_cluster_counts_completeness *) p);
 //
 //           double y_asked = exp(lny);
-//           double win = get_detection_proba_at_y_and_theta(y_asked,V->theta,V->erfs_2d_to_1d,V->ptsz);
+//           double win = get_detection_proba_at_y_and_theta(y_asked,V->theta,V->erfs_2d_to_1d,V->pclass_sz);
 //
-//           // double ekl1 = get_detection_proba_at_y_and_theta(y_asked,V->theta1,V->erfs_2d_to_1d,V->ptsz);
-//           // double ekl2 = get_detection_proba_at_y_and_theta(y_asked,V->theta2,V->erfs_2d_to_1d,V->ptsz);
+//           // double ekl1 = get_detection_proba_at_y_and_theta(y_asked,V->theta1,V->erfs_2d_to_1d,V->pclass_sz);
+//           // double ekl2 = get_detection_proba_at_y_and_theta(y_asked,V->theta2,V->erfs_2d_to_1d,V->pclass_sz);
 //           // double win = ekl1+(ekl2-ekl1)/(V->theta2-V->theta1)*(V->theta-V->theta1);
 //
 //           double mu = log(V->y);
-//           double arg=((lny-mu)/(sqrt(2.)*V->ptsz->sigmaM_ym));
-//           double fac =1./sqrt(2.*_PI_*pow(V->ptsz->sigmaM_ym,2));
+//           double arg=((lny-mu)/(sqrt(2.)*V->pclass_sz->sigmaM_ym));
+//           double fac =1./sqrt(2.*_PI_*pow(V->pclass_sz->sigmaM_ym,2));
 //
 //
 //   result = win*fac*exp(-arg*arg);
@@ -2628,7 +2628,7 @@ for (index_z_steps_z = index_z_steps_z_min;index_z_steps_z<index_z_steps_z_max+1
 //   struct Parameters_for_integrand_cluster_counts_redshift *W = ((struct Parameters_for_integrand_cluster_counts_redshift *) p);
 //
 // struct Parameters_for_integrand_cluster_counts_mass V;
-//   V.ptsz = W->ptsz;
+//   V.pclass_sz = W->pclass_sz;
 //   V.pba = W->pba;
 //   V.z = z;
 //   V.completeness_2d_to_1d = W->completeness_2d_to_1d;
@@ -2636,15 +2636,15 @@ for (index_z_steps_z = index_z_steps_z_min;index_z_steps_z<index_z_steps_z_max+1
 //   void * params = &V;
 //   double r; //result of the integral
 //
-//   double epsrel = W->ptsz->mass_epsrel_cluster_counts;
-//   double epsabs = W->ptsz->mass_epsabs_cluster_counts;
-//   //int show_neval = ptsz->patterson_show_neval;
+//   double epsrel = W->pclass_sz->mass_epsrel_cluster_counts;
+//   double epsabs = W->pclass_sz->mass_epsabs_cluster_counts;
+//   //int show_neval = pclass_sz->patterson_show_neval;
 //   //
-//   // double m_min = W->ptsz->M1SZ;
-//   // double m_max = W->ptsz->M2SZ;
+//   // double m_min = W->pclass_sz->M1SZ;
+//   // double m_max = W->pclass_sz->M2SZ;
 //   //
-//   double m_min = exp(W->ptsz->steps_m[0]);
-//   double m_max = exp(W->ptsz->steps_m[W->ptsz->nsteps_m-1]);
+//   double m_min = exp(W->pclass_sz->steps_m[0]);
+//   double m_max = exp(W->pclass_sz->steps_m[W->pclass_sz->nsteps_m-1]);
 //   // printf("m_min = %.5e, m_max = %.5e epsrel = %.5e epsabs = %.5e\n",m_min,m_max,epsrel,epsabs);
 //   //
 //   r=Integrate_using_Patterson_adaptive(log(m_min),
@@ -2678,10 +2678,10 @@ for (index_z_steps_z = index_z_steps_z_min;index_z_steps_z<index_z_steps_z_max+1
 
 
 
-int write_output_cluster_counts(struct szcount * pcsz, struct tszspectrum * ptsz){
+int write_output_cluster_counts(struct szcount * pcsz, struct class_sz_structure * pclass_sz){
 int i,j;
 
-if (ptsz->sz_verbose > 0){
+if (pclass_sz->sz_verbose > 0){
   double total_counts = 0.;
   for (j=0;j<pcsz->Nbins_z;j++){
     double N_of_z = 0.;
@@ -2723,7 +2723,7 @@ printf("\n");
 
   }
 
-if (ptsz->write_sz > 0)
+if (pclass_sz->write_sz > 0)
 {
   char Filepath[_ARGUMENT_LENGTH_MAX_];
   int i,index_m,index_z;
@@ -2787,59 +2787,59 @@ if (ptsz->write_sz > 0)
 
 
 
-int initialise_and_allocate_memory_cc(struct tszspectrum * ptsz,struct szcount * pcsz){
+int initialise_and_allocate_memory_cc(struct class_sz_structure * pclass_sz,struct szcount * pcsz){
 
-  pcsz->nzSZ = ptsz->n_arraySZ_for_integral;
+  pcsz->nzSZ = pclass_sz->n_arraySZ_for_integral;
 
-  ptsz->has_completeness = pcsz->has_completeness;
-// read_sz_catalog(ptsz);
+  pclass_sz->has_completeness = pcsz->has_completeness;
+// read_sz_catalog(pclass_sz);
 
   //pcsz->size_logM = 105; //cosmomc settings
 
-  //pcsz->rho_m_at_z = ptsz->Omega_m_0*ptsz->Rho_crit_0*pow((1.+pcsz->redshift_for_dndm),3);
+  //pcsz->rho_m_at_z = pclass_sz->Omega_m_0*pclass_sz->Rho_crit_0*pow((1.+pcsz->redshift_for_dndm),3);
 
 // printf("allocating memory for szcounts ffts.\n");
 // exit(0);
-  if (ptsz->has_sz_counts_fft){
-if (ptsz->sz_verbose>1)
+  if (pclass_sz->has_sz_counts_fft){
+if (pclass_sz->sz_verbose>1)
 printf("allocating memory for szcounts ffts.\n");
-ptsz->szcounts_fft_nqobs = ptsz->N_samp_fftw;
-    class_alloc(ptsz->szcounts_fft_qobs,sizeof(double)*ptsz->szcounts_fft_nqobs,ptsz->error_message);
+pclass_sz->szcounts_fft_nqobs = pclass_sz->N_samp_fftw;
+    class_alloc(pclass_sz->szcounts_fft_qobs,sizeof(double)*pclass_sz->szcounts_fft_nqobs,pclass_sz->error_message);
     // checked its well freed.
 
-    class_alloc(ptsz->szcounts_fft_z,sizeof(double)*ptsz->szcounts_fft_nz,ptsz->error_message);
+    class_alloc(pclass_sz->szcounts_fft_z,sizeof(double)*pclass_sz->szcounts_fft_nz,pclass_sz->error_message);
     // checked it's well freed.
 
-    // class_alloc(ptsz->szcounts_fft_sigmayobs,sizeof(double)*ptsz->szcounts_fft_nsigmayobs,ptsz->error_message);
-    // class_alloc(ptsz->szcounts_fft_index_zsig,sizeof(int *)*ptsz->szcounts_fft_nz,ptsz->error_message);
-    // class_alloc(ptsz->szcounts_fft_index_zq,sizeof(int *)*ptsz->szcounts_fft_nz,ptsz->error_message);
-    class_alloc(ptsz->szcounts_fft_index_zq_final,sizeof(int *)*ptsz->szcounts_fft_nz,ptsz->error_message);
+    // class_alloc(pclass_sz->szcounts_fft_sigmayobs,sizeof(double)*pclass_sz->szcounts_fft_nsigmayobs,pclass_sz->error_message);
+    // class_alloc(pclass_sz->szcounts_fft_index_zsig,sizeof(int *)*pclass_sz->szcounts_fft_nz,pclass_sz->error_message);
+    // class_alloc(pclass_sz->szcounts_fft_index_zq,sizeof(int *)*pclass_sz->szcounts_fft_nz,pclass_sz->error_message);
+    class_alloc(pclass_sz->szcounts_fft_index_zq_final,sizeof(int *)*pclass_sz->szcounts_fft_nz,pclass_sz->error_message);
     // checked.
 
-    // class_alloc(ptsz->szcounts_fft_rates_at_z_sigy_qobs,sizeof(double *)*ptsz->szcounts_fft_nqobs,ptsz->error_message);
-    class_alloc(ptsz->szcounts_fft_qmconv_all_patches,sizeof(double *)*ptsz->nskyfracs,ptsz->error_message);
+    // class_alloc(pclass_sz->szcounts_fft_rates_at_z_sigy_qobs,sizeof(double *)*pclass_sz->szcounts_fft_nqobs,pclass_sz->error_message);
+    class_alloc(pclass_sz->szcounts_fft_qmconv_all_patches,sizeof(double *)*pclass_sz->nskyfracs,pclass_sz->error_message);
     //checked
 
-ptsz->szcounts_lnqmax_fft = log(ptsz->szcounts_qmax_fft_padded);
-ptsz->szcounts_qmin_fft_padded = -ptsz->szcounts_qmax_fft_padded;
-ptsz->szcounts_lnqmin_fft = -ptsz->szcounts_lnqmax_fft;
+pclass_sz->szcounts_lnqmax_fft = log(pclass_sz->szcounts_qmax_fft_padded);
+pclass_sz->szcounts_qmin_fft_padded = -pclass_sz->szcounts_qmax_fft_padded;
+pclass_sz->szcounts_lnqmin_fft = -pclass_sz->szcounts_lnqmax_fft;
 
-class_alloc(ptsz->array_y_to_m_redshift,sizeof(double *)*ptsz->n_z_y_to_m,ptsz->error_message);
-class_alloc(ptsz->array_y_to_m_y,sizeof(double *)*ptsz->n_y_y_to_m,ptsz->error_message);
-class_alloc(ptsz->array_y_to_m_at_z_y,sizeof(double *)*ptsz->n_z_y_to_m*ptsz->n_y_y_to_m,ptsz->error_message);
+class_alloc(pclass_sz->array_y_to_m_redshift,sizeof(double *)*pclass_sz->n_z_y_to_m,pclass_sz->error_message);
+class_alloc(pclass_sz->array_y_to_m_y,sizeof(double *)*pclass_sz->n_y_y_to_m,pclass_sz->error_message);
+class_alloc(pclass_sz->array_y_to_m_at_z_y,sizeof(double *)*pclass_sz->n_z_y_to_m*pclass_sz->n_y_y_to_m,pclass_sz->error_message);
 // all three checked
 
 
 int i ;
-double L_q = (ptsz->szcounts_qmax_fft_padded-ptsz->szcounts_qmin_fft_padded);
-double dq = L_q/(double) (ptsz->szcounts_fft_nqobs);
-for (i = 0; i < ptsz->szcounts_fft_nqobs; i++) {
-   ptsz->szcounts_fft_qobs[i] = ptsz->szcounts_qmin_fft_padded+i*dq;
+double L_q = (pclass_sz->szcounts_qmax_fft_padded-pclass_sz->szcounts_qmin_fft_padded);
+double dq = L_q/(double) (pclass_sz->szcounts_fft_nqobs);
+for (i = 0; i < pclass_sz->szcounts_fft_nqobs; i++) {
+   pclass_sz->szcounts_fft_qobs[i] = pclass_sz->szcounts_qmin_fft_padded+i*dq;
 }
 
     int ipatches;
-    for (ipatches = 0;ipatches<ptsz->nskyfracs;ipatches++){
-      class_alloc(ptsz->szcounts_fft_qmconv_all_patches[ipatches],sizeof(double *)*2*ptsz->szcounts_fft_nqobs,ptsz->error_message);
+    for (ipatches = 0;ipatches<pclass_sz->nskyfracs;ipatches++){
+      class_alloc(pclass_sz->szcounts_fft_qmconv_all_patches[ipatches],sizeof(double *)*2*pclass_sz->szcounts_fft_nqobs,pclass_sz->error_message);
     }
     // checked.
 
@@ -2847,80 +2847,80 @@ for (i = 0; i < ptsz->szcounts_fft_nqobs; i++) {
     int index_parallel_sigmayobsp;
     int index_qobs;
 
-    // for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nqobs; index_qobs++){
-    //   class_alloc(ptsz->szcounts_fft_rates_at_z_sigy_qobs[index_qobs],sizeof(double *)*ptsz->szcounts_fft_nz*ptsz->szcounts_fft_nsigmayobs,ptsz->error_message);
+    // for (index_qobs = 0; index_qobs<pclass_sz->szcounts_fft_nqobs; index_qobs++){
+    //   class_alloc(pclass_sz->szcounts_fft_rates_at_z_sigy_qobs[index_qobs],sizeof(double *)*pclass_sz->szcounts_fft_nz*pclass_sz->szcounts_fft_nsigmayobs,pclass_sz->error_message);
     // }
 
 
 
     // printf("allocating dndzdq\n");
-    class_alloc(ptsz->szcounts_fft_dndzdq,
-                sizeof(double *)*ptsz->szcounts_fft_nz*ptsz->szcounts_fft_nqobs,
-                ptsz->error_message);
+    class_alloc(pclass_sz->szcounts_fft_dndzdq,
+                sizeof(double *)*pclass_sz->szcounts_fft_nz*pclass_sz->szcounts_fft_nqobs,
+                pclass_sz->error_message);
     // checked
 
     // printf("dndzdq allocated\n");
     // exit(0);
-    // class_alloc(ptsz->szcounts_fft_nexpected_dndzdqgt,
-    //             sizeof(double *)*ptsz->szcounts_fft_nz*ptsz->szcounts_fft_nexpected_qobs_n,
-    //             ptsz->error_message);
+    // class_alloc(pclass_sz->szcounts_fft_nexpected_dndzdqgt,
+    //             sizeof(double *)*pclass_sz->szcounts_fft_nz*pclass_sz->szcounts_fft_nexpected_qobs_n,
+    //             pclass_sz->error_message);
     //
-    // for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nexpected_qobs_n; index_qobs++){
-    //   ptsz->szcounts_fft_nexpected_qobs[index_qobs] = ptsz->szcounts_fft_nexpected_qobs_min + index_qobs*(ptsz->szcounts_fft_nexpected_qobs_max-ptsz->szcounts_fft_nexpected_qobs_min)/(double) ptsz->szcounts_fft_nexpected_qobs_n;
+    // for (index_qobs = 0; index_qobs<pclass_sz->szcounts_fft_nexpected_qobs_n; index_qobs++){
+    //   pclass_sz->szcounts_fft_nexpected_qobs[index_qobs] = pclass_sz->szcounts_fft_nexpected_qobs_min + index_qobs*(pclass_sz->szcounts_fft_nexpected_qobs_max-pclass_sz->szcounts_fft_nexpected_qobs_min)/(double) pclass_sz->szcounts_fft_nexpected_qobs_n;
     //
-    //       if (ptsz->sz_verbose>=1){
-    //         printf("%d qobs = %.5e\n",index_qobs,ptsz->szcounts_fft_nexpected_qobs[index_qobs]);
+    //       if (pclass_sz->sz_verbose>=1){
+    //         printf("%d qobs = %.5e\n",index_qobs,pclass_sz->szcounts_fft_nexpected_qobs[index_qobs]);
     //       }
     //   }
 
     int index_zq = 0;
     // int index_zqfinal = 0;
-    for (index_parallel_zp=0; index_parallel_zp<ptsz->szcounts_fft_nz; index_parallel_zp++)
+    for (index_parallel_zp=0; index_parallel_zp<pclass_sz->szcounts_fft_nz; index_parallel_zp++)
     {
-      // class_alloc(ptsz->szcounts_fft_index_zq[index_parallel_zp],sizeof(int)*ptsz->szcounts_fft_nexpected_qobs_n,ptsz->error_message);
-      class_alloc(ptsz->szcounts_fft_index_zq_final[index_parallel_zp],sizeof(int)*ptsz->szcounts_fft_nqobs,ptsz->error_message);
+      // class_alloc(pclass_sz->szcounts_fft_index_zq[index_parallel_zp],sizeof(int)*pclass_sz->szcounts_fft_nexpected_qobs_n,pclass_sz->error_message);
+      class_alloc(pclass_sz->szcounts_fft_index_zq_final[index_parallel_zp],sizeof(int)*pclass_sz->szcounts_fft_nqobs,pclass_sz->error_message);
       //checked
 
 
-      // for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nexpected_qobs_n; index_qobs++){
-      //     ptsz->szcounts_fft_index_zq[index_parallel_zp][index_qobs] = index_zq;
+      // for (index_qobs = 0; index_qobs<pclass_sz->szcounts_fft_nexpected_qobs_n; index_qobs++){
+      //     pclass_sz->szcounts_fft_index_zq[index_parallel_zp][index_qobs] = index_zq;
       //     index_zq += 1;
       // }
 
-      // for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nqobs; index_qobs++){
-      //     ptsz->szcounts_fft_index_zq_final[index_parallel_zp][index_qobs] = index_zqfinal;
+      // for (index_qobs = 0; index_qobs<pclass_sz->szcounts_fft_nqobs; index_qobs++){
+      //     pclass_sz->szcounts_fft_index_zq_final[index_parallel_zp][index_qobs] = index_zqfinal;
       //     index_zqfinal += 1;
       // }
     }
       // exit(0);
     int index_zqfinal = 0;
-    for (index_parallel_zp=0; index_parallel_zp<ptsz->szcounts_fft_nz; index_parallel_zp++){
-      for (index_qobs = 0; index_qobs<ptsz->szcounts_fft_nqobs; index_qobs++){
+    for (index_parallel_zp=0; index_parallel_zp<pclass_sz->szcounts_fft_nz; index_parallel_zp++){
+      for (index_qobs = 0; index_qobs<pclass_sz->szcounts_fft_nqobs; index_qobs++){
 
-          ptsz->szcounts_fft_index_zq_final[index_parallel_zp][index_qobs] = index_zqfinal;
+          pclass_sz->szcounts_fft_index_zq_final[index_parallel_zp][index_qobs] = index_zqfinal;
           index_zqfinal += 1;
       }
     }
 
-    for (index_parallel_zp=0; index_parallel_zp<ptsz->szcounts_fft_nz; index_parallel_zp++)
+    for (index_parallel_zp=0; index_parallel_zp<pclass_sz->szcounts_fft_nz; index_parallel_zp++)
     {
-      ptsz->szcounts_fft_z[index_parallel_zp] = ptsz->szcounts_fft_z_min + index_parallel_zp*(ptsz->szcounts_fft_z_max-ptsz->szcounts_fft_z_min)/(double) (ptsz->szcounts_fft_nz-1.);
+      pclass_sz->szcounts_fft_z[index_parallel_zp] = pclass_sz->szcounts_fft_z_min + index_parallel_zp*(pclass_sz->szcounts_fft_z_max-pclass_sz->szcounts_fft_z_min)/(double) (pclass_sz->szcounts_fft_nz-1.);
 
-      // class_alloc(ptsz->szcounts_fft_index_zsig[index_parallel_zp],sizeof(int)*ptsz->szcounts_fft_nsigmayobs,ptsz->error_message);
+      // class_alloc(pclass_sz->szcounts_fft_index_zsig[index_parallel_zp],sizeof(int)*pclass_sz->szcounts_fft_nsigmayobs,pclass_sz->error_message);
 
     }
-    // for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<ptsz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++)
+    // for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<pclass_sz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++)
     // {
-    //   ptsz->szcounts_fft_sigmayobs[index_parallel_sigmayobsp] = log(ptsz->szcounts_fft_sigmayobs_min) + index_parallel_sigmayobsp*(log(ptsz->szcounts_fft_sigmayobs_max)-log(ptsz->szcounts_fft_sigmayobs_min))/ptsz->szcounts_fft_nsigmayobs;
+    //   pclass_sz->szcounts_fft_sigmayobs[index_parallel_sigmayobsp] = log(pclass_sz->szcounts_fft_sigmayobs_min) + index_parallel_sigmayobsp*(log(pclass_sz->szcounts_fft_sigmayobs_max)-log(pclass_sz->szcounts_fft_sigmayobs_min))/pclass_sz->szcounts_fft_nsigmayobs;
     // }
     // int index_zsig = 0;
-    // for (index_parallel_zp=0; index_parallel_zp<ptsz->szcounts_fft_nz; index_parallel_zp++){
-    //   for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<ptsz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++){
-    //     ptsz->szcounts_fft_index_zsig[index_parallel_zp][index_parallel_sigmayobsp] =index_zsig;
+    // for (index_parallel_zp=0; index_parallel_zp<pclass_sz->szcounts_fft_nz; index_parallel_zp++){
+    //   for (index_parallel_sigmayobsp=0; index_parallel_sigmayobsp<pclass_sz->szcounts_fft_nsigmayobs; index_parallel_sigmayobsp++){
+    //     pclass_sz->szcounts_fft_index_zsig[index_parallel_zp][index_parallel_sigmayobsp] =index_zsig;
     //     index_zsig+=1;
     //   }
     // }
-if (ptsz->sz_verbose>1)
+if (pclass_sz->sz_verbose>1)
 printf("allocated memory for szcounts ffts.\n");
   }
 
@@ -2931,9 +2931,9 @@ printf("allocated memory for szcounts ffts.\n");
 
 //Planck cut_off = 6.;
 //SO cut_off = 5.;
-// if(ptsz->experiment == 0) ptsz->sn_cutoff = 6.;
-// if(ptsz->experiment == 1) ptsz->sn_cutoff = 5.;
-  // ptsz->sn_cutoff = 5.;
+// if(pclass_sz->experiment == 0) pclass_sz->sn_cutoff = 6.;
+// if(pclass_sz->experiment == 1) pclass_sz->sn_cutoff = 5.;
+  // pclass_sz->sn_cutoff = 5.;
   // pcsz->alpha;
   // //pcsz->ystar = pow(10.,pcsz->ystar)/pow(2., pcsz->alpha)*0.00472724;//8.9138435358806980e-004;
   // pcsz->beta = 0.66;
@@ -2943,8 +2943,8 @@ printf("allocated memory for szcounts ffts.\n");
 
   //grid for mass
   // if (pcsz->mass_range == 0){
-    pcsz->lnM_max = log(ptsz->M2SZ);
-    pcsz->lnM_min = log(ptsz->M1SZ);
+    pcsz->lnM_max = log(pclass_sz->M2SZ);
+    pcsz->lnM_min = log(pclass_sz->M1SZ);
     // printf("lnmmin = %.4e lnmmax = %.4e\n",pcsz->lnM_min,pcsz->lnM_max);
   // }
   //
@@ -2954,11 +2954,11 @@ printf("allocated memory for szcounts ffts.\n");
   //
   // }
 
-  pcsz->dlnM = ptsz->dlnM_cluster_count_completeness_grid; //0.05 ref value in szcounts.f90
+  pcsz->dlnM = pclass_sz->dlnM_cluster_count_completeness_grid; //0.05 ref value in szcounts.f90
 
 
   pcsz->nsteps_m = floor((pcsz->lnM_max - pcsz->lnM_min) /pcsz->dlnM);
-  ptsz->nsteps_m = pcsz->nsteps_m;
+  pclass_sz->nsteps_m = pcsz->nsteps_m;
 
   double lnM = pcsz->lnM_min;
   int index_m;
@@ -2973,16 +2973,16 @@ printf("allocated memory for szcounts ffts.\n");
     lnM += pcsz->dlnM;
   }
 
-  class_alloc(ptsz->steps_m,
-                //ptsz->steps_m,
-                ptsz->nsteps_m*sizeof(double *),
-                ptsz->error_message
+  class_alloc(pclass_sz->steps_m,
+                //pclass_sz->steps_m,
+                pclass_sz->nsteps_m*sizeof(double *),
+                pclass_sz->error_message
                 );
 
-  for (index_m=0; index_m<ptsz->nsteps_m; index_m++){
-    ptsz->steps_m[index_m] = pcsz->steps_m[index_m];
+  for (index_m=0; index_m<pclass_sz->nsteps_m; index_m++){
+    pclass_sz->steps_m[index_m] = pcsz->steps_m[index_m];
   }
-if (ptsz->sz_verbose>3){
+if (pclass_sz->sz_verbose>3){
     printf("steps_m [%d]:\n",pcsz->nsteps_m);
     for (index_m=0;index_m<pcsz->nsteps_m;index_m++){
 
@@ -2993,9 +2993,9 @@ if (ptsz->sz_verbose>3){
 // printf("nsteps_z=%d\n", 1);
   //grid for redshift
   //# Redshift bin parameters
-  pcsz->z_0 = ptsz->bin_z_min_cluster_counts;
-  pcsz->z_max = ptsz->bin_z_max_cluster_counts;
-  pcsz->dz = ptsz->bin_dz_cluster_counts;
+  pcsz->z_0 = pclass_sz->bin_z_min_cluster_counts;
+  pcsz->z_max = pclass_sz->bin_z_max_cluster_counts;
+  pcsz->dz = pclass_sz->bin_dz_cluster_counts;
 
   pcsz->Nbins_z =floor((pcsz->z_max - pcsz->z_0)/pcsz->dz); // BB commented to match planck cc: "-1";
 
@@ -3017,16 +3017,16 @@ if (ptsz->sz_verbose>3){
   double z_i = pcsz->z_0;//commented to match planck cc: + 0.5*pcsz->dz;
   pcsz->nsteps_z = 0;
 
-// if (ptsz->sz_verbose>3)
+// if (pclass_sz->sz_verbose>3)
 //   printf("zmax = %.5e\n",z_max);
 
   while (z_i < z_max) {
-    z_i = next_z(z_i,binz,ptsz);
+    z_i = next_z(z_i,binz,pclass_sz);
     pcsz->nsteps_z += 1;
   }
   //commented to match planck cc: pcsz->nsteps_z += -2;
 
-  ptsz->nsteps_z = pcsz->nsteps_z;
+  pclass_sz->nsteps_z = pcsz->nsteps_z;
 
 // exit(0);
 
@@ -3034,25 +3034,25 @@ if (ptsz->sz_verbose>3){
               pcsz->nsteps_z*sizeof(double *),
               pcsz->error_message);
 
-  class_alloc(ptsz->steps_z,
-              //ptsz->steps_z,
-              ptsz->nsteps_z*sizeof(double *),
-              ptsz->error_message);
+  class_alloc(pclass_sz->steps_z,
+              //pclass_sz->steps_z,
+              pclass_sz->nsteps_z*sizeof(double *),
+              pclass_sz->error_message);
 
   z_i = pcsz->z_0;// commented to match planck cc: + 0.5*pcsz->dz;;
 
   for(index_z = 0; index_z<pcsz->nsteps_z; index_z++){
     pcsz->steps_z[index_z] = z_i;
-    z_i = next_z(z_i,binz,ptsz);
+    z_i = next_z(z_i,binz,pclass_sz);
   }
 
   if (pcsz->steps_z[0]==0) pcsz->steps_z[0] = 1.e-5;
 
 for(index_z = 0; index_z<pcsz->nsteps_z; index_z++)
-   ptsz->steps_z[index_z] = pcsz->steps_z[index_z];
+   pclass_sz->steps_z[index_z] = pcsz->steps_z[index_z];
   //grid for s/n
 
-if (ptsz->sz_verbose>3){
+if (pclass_sz->sz_verbose>3){
     printf("steps_z [%d]:\n",pcsz->nsteps_z);
     for (index_z=0;index_z<pcsz->nsteps_z;index_z++){
 
@@ -3064,15 +3064,15 @@ if (ptsz->sz_verbose>3){
   //# y bin parameters
   //# Logymin corresponds to log10 of S/N_min (5 or 6)
   //# Logymax corresponds to log10 of S/N_max  (~32 for planck) (but the s/n is higher in the next to last bin)
-  if (ptsz->experiment==0){
-  pcsz->logy_min = ptsz->log10_snr_min;//0.7;
+  if (pclass_sz->experiment==0){
+  pcsz->logy_min = pclass_sz->log10_snr_min;//0.7;
   pcsz->logy_max = 1.5;
-  pcsz->dlogy = ptsz->bin_dlog10_snr;
+  pcsz->dlogy = pclass_sz->bin_dlog10_snr;
 }
-else if (ptsz->experiment==1){
-  pcsz->logy_min = ptsz->log10_snr_min; //log10(ptsz->sn_cutoff);
-  pcsz->logy_max = ptsz->log10_snr_max;//1.8124259665302023;
-  pcsz->dlogy =ptsz->bin_dlog10_snr;
+else if (pclass_sz->experiment==1){
+  pcsz->logy_min = pclass_sz->log10_snr_min; //log10(pclass_sz->sn_cutoff);
+  pcsz->logy_max = pclass_sz->log10_snr_max;//1.8124259665302023;
+  pcsz->dlogy =pclass_sz->bin_dlog10_snr;
 }
   pcsz->Nbins_y = floor((pcsz->logy_max - pcsz->logy_min)/pcsz->dlogy)+1;
   // printf("%d\n",pcsz->Nbins_y);
@@ -3094,19 +3094,19 @@ else if (ptsz->experiment==1){
   class_alloc(pcsz->logy,(pcsz->Nbins_y)*sizeof(double),pcsz->error_message);
   for (index_y = 0; index_y<pcsz->Nbins_y; index_y ++){
     pcsz->logy[index_y] = logy[index_y];
-if (ptsz->sz_verbose>3){
+if (pclass_sz->sz_verbose>3){
     printf("index_y=%d, logy=%e\n",index_y,logy[index_y]);
   }
 }
   // if (pcsz->logy_max <= pcsz->logy[pcsz->Nbins_y-1]){
   //   pcsz->logy_max = pcsz->logy[pcsz->Nbins_y-1] + pcsz->dlogy;
   // }
-  ptsz->bin_dlog10_snr_last_bin = pcsz->dlogy;
-  // ptsz->bin_dlog10_snr_last_bin = (pcsz->logy_max-pcsz->logy[pcsz->Nbins_y-1]);
-  // pcsz->logy[pcsz->Nbins_y] = pcsz->logy[pcsz->Nbins_y-1]+pcsz->dlogy/2.+ptsz->bin_dlog10_snr_last_bin/2.;
+  pclass_sz->bin_dlog10_snr_last_bin = pcsz->dlogy;
+  // pclass_sz->bin_dlog10_snr_last_bin = (pcsz->logy_max-pcsz->logy[pcsz->Nbins_y-1]);
+  // pcsz->logy[pcsz->Nbins_y] = pcsz->logy[pcsz->Nbins_y-1]+pcsz->dlogy/2.+pclass_sz->bin_dlog10_snr_last_bin/2.;
 
 // for (index_y = 0; index_y<pcsz->Nbins_y+1; index_y ++){
-//   printf("index_y=%d, logy=%e dl=%e dllb=%e\n",index_y,pcsz->logy[index_y],pcsz->dlogy,ptsz->bin_dlog10_snr_last_bin);
+//   printf("index_y=%d, logy=%e dl=%e dllb=%e\n",index_y,pcsz->logy[index_y],pcsz->dlogy,pclass_sz->bin_dlog10_snr_last_bin);
 // }
 // exit(0);
 free(logy);
@@ -3114,25 +3114,25 @@ free(logy);
   // pcsz->lnymin = -11.5;
   // pcsz->lnymax = 10.;
 
-  pcsz->lnymin = ptsz->lnymin;
-  pcsz->lnymax = ptsz->lnymax;
-  pcsz->dlny = ptsz->dlny; // 0.05 in planck
+  pcsz->lnymin = pclass_sz->lnymin;
+  pcsz->lnymax = pclass_sz->lnymax;
+  pcsz->dlny = pclass_sz->dlny; // 0.05 in planck
 
-  ptsz->Ny = floor((pcsz->lnymax-pcsz->lnymin)/pcsz->dlny);
+  pclass_sz->Ny = floor((pcsz->lnymax-pcsz->lnymin)/pcsz->dlny);
 
-  class_alloc(ptsz->erfs_2d_to_1d_y_array,
-              //ptsz->erfs_2d_to_1d_y_array,
-              ptsz->Ny*sizeof(double *),
-              ptsz->error_message);
+  class_alloc(pclass_sz->erfs_2d_to_1d_y_array,
+              //pclass_sz->erfs_2d_to_1d_y_array,
+              pclass_sz->Ny*sizeof(double *),
+              pclass_sz->error_message);
 
   int iy;
-  for (iy = 0; iy < ptsz->Ny; iy++){
-    ptsz->erfs_2d_to_1d_y_array[iy] = pcsz->lnymin + iy*pcsz->dlny;
+  for (iy = 0; iy < pclass_sz->Ny; iy++){
+    pclass_sz->erfs_2d_to_1d_y_array[iy] = pcsz->lnymin + iy*pcsz->dlny;
   }
 
   // printf("index_y=%e, logy=%e\n",
-  // ptsz->erfs_2d_to_1d_y_array[0],
-  // ptsz->erfs_2d_to_1d_y_array[ptsz->Ny-1]);
+  // pclass_sz->erfs_2d_to_1d_y_array[0],
+  // pclass_sz->erfs_2d_to_1d_y_array[pclass_sz->Ny-1]);
   // exit(0);
 
   class_alloc(pcsz->dNdzdy_theoretical,
@@ -3160,50 +3160,50 @@ free(logy);
 // double get_ylim_at_theta(double thp,)
 
 
-int find_theta_bin(struct tszspectrum * ptsz, double thp, int * l_array, double * theta_array){
+int find_theta_bin(struct class_sz_structure * pclass_sz, double thp, int * l_array, double * theta_array){
   int l1,l2;
   double th1,th2;
 
-  if (thp > ptsz->theta_bin_max){
-    l1 = ptsz->nthetas - 2;
-    l2 = ptsz->nthetas - 1;
-    th1 = ptsz->thetas[l1];
-    th2 = ptsz->thetas[l2];
+  if (thp > pclass_sz->theta_bin_max){
+    l1 = pclass_sz->nthetas - 2;
+    l2 = pclass_sz->nthetas - 1;
+    th1 = pclass_sz->thetas[l1];
+    th2 = pclass_sz->thetas[l2];
     //printf("above\n");
 
   }
 
-  else if (thp < ptsz->theta_bin_min){
+  else if (thp < pclass_sz->theta_bin_min){
     l1 = 0;
     l2 = 1;
-    th1 = ptsz->thetas[l1];
-    th2 = ptsz->thetas[l2];
+    th1 = pclass_sz->thetas[l1];
+    th2 = pclass_sz->thetas[l2];
     //printf("bellow\n");
   }
 
   else{
     //find index where thp is closest to theta
-    double dif_theta_min = fabs(ptsz->thetas[0]-thp);
+    double dif_theta_min = fabs(pclass_sz->thetas[0]-thp);
     int P=0;
     int c;
-    for (c = 1; c < ptsz->nthetas; c++)
+    for (c = 1; c < pclass_sz->nthetas; c++)
     {
-      if (fabs(ptsz->thetas[c] -thp)< dif_theta_min)
+      if (fabs(pclass_sz->thetas[c] -thp)< dif_theta_min)
       {
-        dif_theta_min = fabs(ptsz->thetas[c]-thp);
+        dif_theta_min = fabs(pclass_sz->thetas[c]-thp);
         P = c;
       }
     }
 
     l1 = P;
-    th1 = ptsz->thetas[l1];
+    th1 = pclass_sz->thetas[l1];
     l2 = l1 +1;
     if (thp<th1){
       l2 = l1;
       l1 = l2 -1;
     }
-    th1 = ptsz->thetas[l1];
-    th2 = ptsz->thetas[l2];
+    th1 = pclass_sz->thetas[l1];
+    th2 = pclass_sz->thetas[l2];
   }
 
   l_array[0] = 0;
@@ -3217,11 +3217,11 @@ int find_theta_bin(struct tszspectrum * ptsz, double thp, int * l_array, double 
   return _SUCCESS_;
 }
 
-int find_y_bin(struct tszspectrum * ptsz, double thp, int * l_array, double * theta_array){
+int find_y_bin(struct class_sz_structure * pclass_sz, double thp, int * l_array, double * theta_array){
   int l1,l2;
   double th1,th2;
 
-  if (thp > ptsz->erfs_2d_to_1d_y_array[ptsz->Ny-1]){
+  if (thp > pclass_sz->erfs_2d_to_1d_y_array[pclass_sz->Ny-1]){
 
     printf("yp above y_max\n");
     l_array[0] = 0;
@@ -3232,7 +3232,7 @@ int find_y_bin(struct tszspectrum * ptsz, double thp, int * l_array, double * th
 
   }
 
-  else if (thp < ptsz->erfs_2d_to_1d_y_array[0]){
+  else if (thp < pclass_sz->erfs_2d_to_1d_y_array[0]){
 
     // printf("yp below y_min\n");
     l_array[0] = 0;
@@ -3243,27 +3243,27 @@ int find_y_bin(struct tszspectrum * ptsz, double thp, int * l_array, double * th
 
   else{
     //find index where thp is closest to theta
-    double dif_theta_min = fabs(ptsz->erfs_2d_to_1d_y_array[0]-thp);
+    double dif_theta_min = fabs(pclass_sz->erfs_2d_to_1d_y_array[0]-thp);
     int P=0;
     int c;
-    for (c = 1; c < ptsz->Ny; c++)
+    for (c = 1; c < pclass_sz->Ny; c++)
     {
-      if (fabs(ptsz->erfs_2d_to_1d_y_array[c] -thp)< dif_theta_min)
+      if (fabs(pclass_sz->erfs_2d_to_1d_y_array[c] -thp)< dif_theta_min)
       {
-        dif_theta_min = fabs(ptsz->erfs_2d_to_1d_y_array[c]-thp);
+        dif_theta_min = fabs(pclass_sz->erfs_2d_to_1d_y_array[c]-thp);
         P = c;
       }
     }
 
     l1 = P;
-    th1 = ptsz->erfs_2d_to_1d_y_array[l1];
+    th1 = pclass_sz->erfs_2d_to_1d_y_array[l1];
     l2 = l1 +1;
     if (thp<th1){
       l2 = l1;
       l1 = l2 -1;
     }
-    th1 = ptsz->erfs_2d_to_1d_y_array[l1];
-    th2 = ptsz->erfs_2d_to_1d_y_array[l2];
+    th1 = pclass_sz->erfs_2d_to_1d_y_array[l1];
+    th2 = pclass_sz->erfs_2d_to_1d_y_array[l2];
 
 
   l_array[0] = 0;

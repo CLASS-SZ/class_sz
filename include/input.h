@@ -179,7 +179,7 @@ extern "C" {
 		 struct spectra *psp,
 		 struct nonlinear *pnl,
 		 struct lensing *ple,
-     struct tszspectrum *ptsz, //BB: added for class_sz
+     struct class_sz_structure *pclass_sz, //BB: added for class_sz
      struct szcount *pcsz, //BB: added for class_sz
 		 struct output *pop,
 		 ErrorMsg errmsg
@@ -196,7 +196,7 @@ extern "C" {
 		 struct spectra *psp,
 		 struct nonlinear *pnl,
 		 struct lensing *ple,
-     struct tszspectrum *ptsz, //BB: added for class_sz
+     struct class_sz_structure *pclass_sz, //BB: added for class_sz
      struct szcount *pcsz, //BB: added for class_sz
 		 struct output *pop,
 		 ErrorMsg errmsg
@@ -213,7 +213,7 @@ extern "C" {
                             struct spectra *psp,
                             struct nonlinear *pnl,
                             struct lensing *ple,
-                            struct tszspectrum *ptsz, //BB: added for class_sz
+                            struct class_sz_structure *pclass_sz, //BB: added for class_sz
                             struct szcount *pcsz, //BB: added for class_sz
                             struct output *pop,
                             ErrorMsg errmsg
@@ -230,7 +230,7 @@ extern "C" {
                             struct spectra *psp,
                             struct nonlinear *pnl,
                             struct lensing *ple,
-                            struct tszspectrum *ptsz,
+                            struct class_sz_structure *pclass_sz,
                             struct output *pop,
                             ErrorMsg errmsg
                             );
@@ -244,7 +244,7 @@ extern "C" {
 			   struct spectra *psp,
 			   struct nonlinear *pnl,
 			   struct lensing *ple,
-         struct tszspectrum *ptsz, //BB: added for class_sz
+         struct class_sz_structure *pclass_sz, //BB: added for class_sz
          struct szcount *pcsz, //BB: added for class_sz
 			   struct output *pop
 			   );
