@@ -40,8 +40,8 @@ M.set({
 'maniyar_cib_zc' : 1.5,
 'maniyar_cib_tau' : 8.25475287e-01,#1.17,
 'maniyar_cib_fsub' : 0.,#0.134*np.log(10.),
-'Most efficient halo mass in Msun' : 5.34372069e+12,#10.**12.94,
-'Size of of halo masses sourcing CIB emission' :  1.5583436676980493,#1.75**2.,
+'Most_efficient_halo_mass_in_Msun' : 5.34372069e+12,#10.**12.94,
+'Size_of_halo_masses_sourcing_CIB_emission' :  1.5583436676980493,#1.75**2.,
 #for the monopole computation:
 'freq_min': 9e1,
 'freq_max': 8e2,
