@@ -7011,6 +7011,12 @@ double get_cib_Snu_z_and_nu(double z_asked, double nu_asked, struct class_sz_str
                                1,
                                &k,
                                &z));
+
+    if (isnan(result) || isinf(result)) {
+      printf("Error in get_cib_Snu_z_and_nu: Non-finite result detected!\n");
+      printf("Parameters: z = %.5e, nu = %.5e, result = %.5e\n", z, k, result);
+      exit(1);
+    }
   }
   return result;
 }
@@ -12176,7 +12182,9 @@ class_open(process,pclass_sz->cib_Snu_file_snu, "r",pclass_sz->error_message);
     double val;
     while (*p) {
       val = strtod(p, &err);
-      logC[z][i] = log(val); //printf("%d-%.3e ",i,val);
+      logC[z][i] = log(val); 
+      
+      if (val<0) printf("z %d i %d %.3e %.3e\n",z,i,val,logC[z][i]);
       p = err + 1;
       i+=1;
     }
@@ -24574,8 +24582,15 @@ else{
 }
   double result = L_gal_at_nu*dNdlnMs;
 
-  // printf("result Lsat integrand = %.5e\n",result);
-
+  if (isnan(result) ||  isinf(result)){
+  printf("result z = %.5e m = %.5e nu = %.5e Lsat integrand = %.5e L_gal_at_nu = %.5e\n",
+                                                                                        z,
+                                                                                        exp(lnM_sub),
+                                                                                        nu,
+                                                                                        result,
+                                                                                        L_gal_at_nu);
+  exit(0);
+  }
 
   return result;
 }
@@ -24630,7 +24645,20 @@ for (index_nu=0;index_nu<pclass_sz->n_nu_L_sat;index_nu++){
   double z_max = r8_max(pclass_sz->z2SZ,pclass_sz->z2SZ_L_sat);
   double logM_min = r8_min(log(pclass_sz->M1SZ/pba->h),log(pclass_sz->M1SZ_L_sat)); //in Msun
   double logM_max = r8_max(log(pclass_sz->M2SZ/pba->h),log(pclass_sz->M2SZ_L_sat)); //in Msun
-//
+
+
+if (pclass_sz->sz_verbose>1){
+  printf("Tabulating Lsat.\n");
+  printf("n_m_L_sat = %d\n",pclass_sz->n_m_L_sat);
+  printf("M_min = %.4e\n",exp(logM_min));
+  printf("M_max = %.4e\n", exp(logM_max));
+
+  printf("Tabulating Lsat for z.\n");
+  printf("n_z_L_sat = %d\n", pclass_sz->n_z_L_sat);
+  printf("z_min = %.4e\n", z_min);
+  printf("z_max = %.4e\n", z_max);
+}
+
 // if (
 //       pclass_sz->has_tSZ_cib_1h
 //     + pclass_sz->has_tSZ_cib_2h
@@ -24777,18 +24805,28 @@ for (index_nu=0; index_nu<pclass_sz->n_nu_L_sat; index_nu++)
                                                params,pclass_sz->patterson_show_neval);
       }
 
-          if (r==0.){
+          if (r==0. || r<1e-100){
             r = 1e-100;
           }
           pclass_sz->array_L_sat_at_M_z_nu[index_nu][index_M_z] = log(1.+r);
-          // printf("z = %.8e M = %.8e nu = %.8e L = %.8e\n",z,exp(logM),exp(pclass_sz->array_nu_L_sat[index_nu]),r);
+
           if (isnan(pclass_sz->array_L_sat_at_M_z_nu[index_nu][index_M_z])){
             printf("nan in interp L_sat table\n");
+          printf("-->z = %.8e M = %.8e expL = %.8e expnu = %.8e nu = %.5e r = %.5e\n",z,
+                                                                                  exp(logM),pclass_sz->array_L_sat_at_M_z_nu[index_nu][index_M_z],
+                                                                                  exp(pclass_sz->array_nu_L_sat[index_nu]),
+                                                                                  pclass_sz->array_nu_L_sat[index_nu],
+                                                                                  r);
             exit(0);
           }
           if (isinf(pclass_sz->array_L_sat_at_M_z_nu[index_nu][index_M_z])){
             printf("inf in interp L_sat table\n");
             printf("r = %.3e\n",r);
+          printf("-->z = %.8e M = %.8e expL = %.8e expnu = %.8e nu = %.5e r = %.5e\n",z,
+                                                                                  exp(logM),pclass_sz->array_L_sat_at_M_z_nu[index_nu][index_M_z],
+                                                                                  exp(pclass_sz->array_nu_L_sat[index_nu]),
+                                                                                  pclass_sz->array_nu_L_sat[index_nu],
+                                                                                  r);
             exit(0);
           }
 
@@ -24817,182 +24855,182 @@ return _SUCCESS_;
 
 // tabulate L_nu^sat as a function of M (M_host) and z at frequency nu
 
-int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
-                                      struct class_sz_structure * pclass_sz){
+// int tabulate_L_sat_at_nu_and_nu_prime(struct background * pba,
+//                                       struct class_sz_structure * pclass_sz){
 
-// if (
-//       pclass_sz->has_tSZ_cib_1h
-//     + pclass_sz->has_tSZ_cib_2h
-//     + pclass_sz->has_cib_cib_1h
-//     // + pclass_sz->has_cib_monopole
-//     + pclass_sz->has_cib_cib_2h
-//     + pclass_sz->has_lens_cib_1h
-//     + pclass_sz->has_lens_cib_2h
-//     + pclass_sz->has_gal_cib_1h
-//     + pclass_sz->has_gal_cib_2h
-//     == _FALSE_
-//     )
-// return 0;
+// // if (
+// //       pclass_sz->has_tSZ_cib_1h
+// //     + pclass_sz->has_tSZ_cib_2h
+// //     + pclass_sz->has_cib_cib_1h
+// //     // + pclass_sz->has_cib_monopole
+// //     + pclass_sz->has_cib_cib_2h
+// //     + pclass_sz->has_lens_cib_1h
+// //     + pclass_sz->has_lens_cib_2h
+// //     + pclass_sz->has_gal_cib_1h
+// //     + pclass_sz->has_gal_cib_2h
+// //     == _FALSE_
+// //     )
+// // return 0;
 
-  //Array of z
-  double z_min = r8_min(pclass_sz->z1SZ,pclass_sz->z1SZ_L_sat);
-  double z_max = r8_max(pclass_sz->z2SZ,pclass_sz->z2SZ_L_sat);
-  int index_z;
+//   //Array of z
+//   double z_min = r8_min(pclass_sz->z1SZ,pclass_sz->z1SZ_L_sat);
+//   double z_max = r8_max(pclass_sz->z2SZ,pclass_sz->z2SZ_L_sat);
+//   int index_z;
 
-  double tstart, tstop;
-  int index_l;
+//   double tstart, tstop;
+//   int index_l;
 
-  // double * pvecback;
-  // double * pvectsz;
-  int abort;
+//   // double * pvecback;
+//   // double * pvectsz;
+//   int abort;
 
-  //Array of M in Msun
-  double logM_min = r8_min(log(pclass_sz->M1SZ/pba->h),log(pclass_sz->M1SZ_L_sat)); //in Msun
-  double logM_max = r8_max(log(pclass_sz->M2SZ/pba->h),log(pclass_sz->M2SZ_L_sat)); //in Msun
-  int index_M;
+//   //Array of M in Msun
+//   double logM_min = r8_min(log(pclass_sz->M1SZ/pba->h),log(pclass_sz->M1SZ_L_sat)); //in Msun
+//   double logM_max = r8_max(log(pclass_sz->M2SZ/pba->h),log(pclass_sz->M2SZ_L_sat)); //in Msun
+//   int index_M;
 
-  int index_z_M = 0;
+//   int index_z_M = 0;
 
-  double ** array_L_sat_at_z_and_M_at_nu;
-  // double ** array_L_sat_at_z_and_M_at_nu_prime;
+//   double ** array_L_sat_at_z_and_M_at_nu;
+//   // double ** array_L_sat_at_z_and_M_at_nu_prime;
 
-  // class_alloc(pclass_sz->array_z_L_sat,sizeof(double *)*pclass_sz->n_z_L_sat,pclass_sz->error_message);
-  // class_alloc(pclass_sz->array_m_L_sat,sizeof(double *)*pclass_sz->n_m_L_sat,pclass_sz->error_message);
-
-
-  class_alloc(pclass_sz->array_L_sat_at_z_and_M_at_nu,
-              pclass_sz->cib_frequency_list_num*sizeof(double *),
-              pclass_sz->error_message);
-
-int index_nu;
-for (index_nu=0;index_nu<pclass_sz->cib_frequency_list_num;index_nu++){
-
-class_alloc(pclass_sz->array_L_sat_at_z_and_M_at_nu[index_nu],
-            pclass_sz->n_z_L_sat*pclass_sz->n_m_L_sat*sizeof(double),
-            pclass_sz->error_message);
+//   // class_alloc(pclass_sz->array_z_L_sat,sizeof(double *)*pclass_sz->n_z_L_sat,pclass_sz->error_message);
+//   // class_alloc(pclass_sz->array_m_L_sat,sizeof(double *)*pclass_sz->n_m_L_sat,pclass_sz->error_message);
 
 
-class_alloc(array_L_sat_at_z_and_M_at_nu,
-            pclass_sz->n_z_L_sat*sizeof(double *),
-            pclass_sz->error_message);
+//   class_alloc(pclass_sz->array_L_sat_at_z_and_M_at_nu,
+//               pclass_sz->cib_frequency_list_num*sizeof(double *),
+//               pclass_sz->error_message);
+
+// int index_nu;
+// for (index_nu=0;index_nu<pclass_sz->cib_frequency_list_num;index_nu++){
+
+// class_alloc(pclass_sz->array_L_sat_at_z_and_M_at_nu[index_nu],
+//             pclass_sz->n_z_L_sat*pclass_sz->n_m_L_sat*sizeof(double),
+//             pclass_sz->error_message);
+
+
+// class_alloc(array_L_sat_at_z_and_M_at_nu,
+//             pclass_sz->n_z_L_sat*sizeof(double *),
+//             pclass_sz->error_message);
 
 
 
-for (index_l=0;
-     index_l<pclass_sz->n_z_L_sat;
-     index_l++)
-{
-  class_alloc(array_L_sat_at_z_and_M_at_nu[index_l],
-              pclass_sz->n_m_L_sat*sizeof(double),
-              pclass_sz->error_message);
-}
+// for (index_l=0;
+//      index_l<pclass_sz->n_z_L_sat;
+//      index_l++)
+// {
+//   class_alloc(array_L_sat_at_z_and_M_at_nu[index_l],
+//               pclass_sz->n_m_L_sat*sizeof(double),
+//               pclass_sz->error_message);
+// }
 
-/* initialize error management flag */
-abort = _FALSE_;
-/* beginning of parallel region */
-
-
-int number_of_threads= 1;
-#ifdef _OPENMP
-#pragma omp parallel
-  {
-    number_of_threads = omp_get_num_threads();
-  }
-#endif
-
-#pragma omp parallel \
-shared(abort,index_nu,index_z_M,\
-pba,pclass_sz,z_min,z_max,logM_min,logM_max)\
-private(tstart, tstop,index_M,index_z) \
-num_threads(number_of_threads)
-{
-
-#ifdef _OPENMP
-  tstart = omp_get_wtime();
-#endif
+// /* initialize error management flag */
+// abort = _FALSE_;
+// /* beginning of parallel region */
 
 
-#pragma omp for schedule (dynamic)
-for (index_z=0; index_z<pclass_sz->n_z_L_sat; index_z++)
-{
+// int number_of_threads= 1;
+// #ifdef _OPENMP
+// #pragma omp parallel
+//   {
+//     number_of_threads = omp_get_num_threads();
+//   }
+// #endif
 
-#pragma omp flush(abort)
+// #pragma omp parallel \
+// shared(abort,index_nu,index_z_M,\
+// pba,pclass_sz,z_min,z_max,logM_min,logM_max)\
+// private(tstart, tstop,index_M,index_z) \
+// num_threads(number_of_threads)
+// {
 
-for (index_M=0; index_M<pclass_sz->n_m_L_sat; index_M++)
-{
-      // pclass_sz->array_z_L_sat[index_z] =
-      //                                 log(1.+z_min)
-      //                                 +index_z*(log(1.+z_max)-log(1.+z_min))
-      //                                 /(pclass_sz->n_z_L_sat-1.); // log(1+z)
-      //
-      // pclass_sz->array_m_L_sat[index_M] =
-      //                               logM_min
-      //                               +index_M*(logM_max-logM_min)
-      //                               /(pclass_sz->n_m_L_sat-1.); //log(R)
-
-
-      double z =   exp(pclass_sz->array_z_L_sat[index_z])-1.;
-      double logM =   pclass_sz->array_m_L_sat[index_M];
-
-      double lnMs_min = log(pclass_sz->M_min_HOD_cib);
-      double lnMs_max = logM;//log(1e11);
-
-      double epsrel = pclass_sz->epsrel_L_sat;
-      double epsabs = pclass_sz->epsabs_L_sat;
-
-      struct Parameters_for_integrand_mass_L_sat V;
-      V.nu = pclass_sz->cib_frequency_list[index_nu];
-      V.z = z;
-      V.pclass_sz = pclass_sz;
-      V.M_host = exp(logM);
+// #ifdef _OPENMP
+//   tstart = omp_get_wtime();
+// #endif
 
 
-      void * params = &V;
-      params = &V;
+// #pragma omp for schedule (dynamic)
+// for (index_z=0; index_z<pclass_sz->n_z_L_sat; index_z++)
+// {
 
-      double L_sat_at_nu = Integrate_using_Patterson_adaptive(lnMs_min, lnMs_max,
-                                                               epsrel, epsabs,
-                                                               integrand_patterson_L_sat,
-                                                               params,pclass_sz->patterson_show_neval);
+// #pragma omp flush(abort)
 
-      array_L_sat_at_z_and_M_at_nu[index_z][index_M] = log(1.+L_sat_at_nu);
-      index_z_M += 1;
-    }
-  }
-#ifdef _OPENMP
-  tstop = omp_get_wtime();
-  if (pclass_sz->sz_verbose > 0)
-    printf("In %s: time spent in parallel region (L_sat) at %.3e GHz = %e s for thread %d\n",
-           __func__,pclass_sz->cib_frequency_list[index_nu],tstop-tstart,omp_get_thread_num());
-#endif
-
-    }
-if (abort == _TRUE_) return _FAILURE_;
-//end of parallel region
-
-index_z_M = 0;
-for (index_M=0; index_M<pclass_sz->n_m_L_sat; index_M++)
-{
-  for (index_z=0; index_z<pclass_sz->n_z_L_sat; index_z++)
-  {
-    pclass_sz->array_L_sat_at_z_and_M_at_nu[index_nu][index_z_M] = array_L_sat_at_z_and_M_at_nu[index_z][index_M];
-    index_z_M += 1;
-  }
-}
-
-for (index_z=0;index_z<pclass_sz->n_z_L_sat;index_z++){
-  free(array_L_sat_at_z_and_M_at_nu[index_z]);
-}
-  free(array_L_sat_at_z_and_M_at_nu);
+// for (index_M=0; index_M<pclass_sz->n_m_L_sat; index_M++)
+// {
+//       // pclass_sz->array_z_L_sat[index_z] =
+//       //                                 log(1.+z_min)
+//       //                                 +index_z*(log(1.+z_max)-log(1.+z_min))
+//       //                                 /(pclass_sz->n_z_L_sat-1.); // log(1+z)
+//       //
+//       // pclass_sz->array_m_L_sat[index_M] =
+//       //                               logM_min
+//       //                               +index_M*(logM_max-logM_min)
+//       //                               /(pclass_sz->n_m_L_sat-1.); //log(R)
 
 
-}
+//       double z =   exp(pclass_sz->array_z_L_sat[index_z])-1.;
+//       double logM =   pclass_sz->array_m_L_sat[index_M];
 
-//exit(0);
+//       double lnMs_min = log(pclass_sz->M_min_HOD_cib);
+//       double lnMs_max = logM;//log(1e11);
 
-return _SUCCESS_;
+//       double epsrel = pclass_sz->epsrel_L_sat;
+//       double epsabs = pclass_sz->epsabs_L_sat;
 
-                                      }
+//       struct Parameters_for_integrand_mass_L_sat V;
+//       V.nu = pclass_sz->cib_frequency_list[index_nu];
+//       V.z = z;
+//       V.pclass_sz = pclass_sz;
+//       V.M_host = exp(logM);
+
+
+//       void * params = &V;
+//       params = &V;
+
+//       double L_sat_at_nu = Integrate_using_Patterson_adaptive(lnMs_min, lnMs_max,
+//                                                                epsrel, epsabs,
+//                                                                integrand_patterson_L_sat,
+//                                                                params,pclass_sz->patterson_show_neval);
+
+//       array_L_sat_at_z_and_M_at_nu[index_z][index_M] = log(1.+L_sat_at_nu);
+//       index_z_M += 1;
+//     }
+//   }
+// #ifdef _OPENMP
+//   tstop = omp_get_wtime();
+//   if (pclass_sz->sz_verbose > 0)
+//     printf("In %s: time spent in parallel region (L_sat) at %.3e GHz = %e s for thread %d\n",
+//            __func__,pclass_sz->cib_frequency_list[index_nu],tstop-tstart,omp_get_thread_num());
+// #endif
+
+//     }
+// if (abort == _TRUE_) return _FAILURE_;
+// //end of parallel region
+
+// index_z_M = 0;
+// for (index_M=0; index_M<pclass_sz->n_m_L_sat; index_M++)
+// {
+//   for (index_z=0; index_z<pclass_sz->n_z_L_sat; index_z++)
+//   {
+//     pclass_sz->array_L_sat_at_z_and_M_at_nu[index_nu][index_z_M] = array_L_sat_at_z_and_M_at_nu[index_z][index_M];
+//     index_z_M += 1;
+//   }
+// }
+
+// for (index_z=0;index_z<pclass_sz->n_z_L_sat;index_z++){
+//   free(array_L_sat_at_z_and_M_at_nu[index_z]);
+// }
+//   free(array_L_sat_at_z_and_M_at_nu);
+
+
+// }
+
+// //exit(0);
+
+// return _SUCCESS_;
+
+//                                       }
 
 
 
@@ -29581,7 +29619,9 @@ double  get_L_sat_at_z_M_nu(double z_asked, double m_asked, double nu_asked, str
  double ln_l_low = pclass_sz->array_nu_L_sat[id_l_low-1];
  double ln_l_up = pclass_sz->array_nu_L_sat[id_l_up-1];
 
- // printf("lnrh %.5e %.5e %d %d\n",ln_rho_low,ln_rho_up,id_l_low,id_l_up);
+//  printf("lnrh %.5e %.5e %d %d\n",ln_rho_low,ln_rho_up,id_l_low,id_l_up);
+//  printf("nu %.5e %.5e %d %d %.5e\n",ln_l_low,ln_l_up,id_l_low,id_l_up,nu);
+//  printf("expnu %.5e %.5e %d %d %.5e\n",exp(ln_l_low),exp(ln_l_up),id_l_low,id_l_up,exp(nu));
 
  return exp(ln_rho_low + ((nu - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low))-1.;
  // return ln_rho_low + ((l - ln_l_low) / (ln_l_up - ln_l_low)) * (ln_rho_up - ln_rho_low);
@@ -29591,34 +29631,34 @@ double  get_L_sat_at_z_M_nu(double z_asked, double m_asked, double nu_asked, str
 
 
 
-// not used :
-double get_L_sat_at_z_and_M_at_nu(double z_asked,
-                                  double m_asked,
-                                  int index_nu,
-                                  struct background * pba,
-                                  struct class_sz_structure * pclass_sz){
-  double z = log(1.+z_asked);
-  double m = log(m_asked);
-   if (z<pclass_sz->array_z_L_sat[0])
-      z = pclass_sz->array_z_L_sat[0];
-        // printf("dealing with mass conversion in hmf\n");
-   if (z>pclass_sz->array_z_L_sat[pclass_sz->n_z_L_sat-1])
-      z =  pclass_sz->array_z_L_sat[pclass_sz->n_z_L_sat-1];
-   if (m<pclass_sz->array_m_L_sat[0])
-    m = pclass_sz->array_m_L_sat[0];
-      // printf("dealing with mass conversion in hmf\n");
-   if (m>pclass_sz->array_m_L_sat[pclass_sz->n_m_L_sat-1])
-      m =  pclass_sz->array_m_L_sat[pclass_sz->n_m_L_sat-1];
- // printf("index_nu = %d\n",index_nu);
- return exp(pwl_interp_2d(pclass_sz->n_z_L_sat,
-                          pclass_sz->n_m_L_sat,
-                          pclass_sz->array_z_L_sat,
-                          pclass_sz->array_m_L_sat,
-                          pclass_sz->array_L_sat_at_z_and_M_at_nu[index_nu],
-                          1,
-                          &z,
-                          &m))-1.;
-}
+// // not used :
+// double get_L_sat_at_z_and_M_at_nu(double z_asked,
+//                                   double m_asked,
+//                                   int index_nu,
+//                                   struct background * pba,
+//                                   struct class_sz_structure * pclass_sz){
+//   double z = log(1.+z_asked);
+//   double m = log(m_asked);
+//    if (z<pclass_sz->array_z_L_sat[0])
+//       z = pclass_sz->array_z_L_sat[0];
+//         // printf("dealing with mass conversion in hmf\n");
+//    if (z>pclass_sz->array_z_L_sat[pclass_sz->n_z_L_sat-1])
+//       z =  pclass_sz->array_z_L_sat[pclass_sz->n_z_L_sat-1];
+//    if (m<pclass_sz->array_m_L_sat[0])
+//     m = pclass_sz->array_m_L_sat[0];
+//       // printf("dealing with mass conversion in hmf\n");
+//    if (m>pclass_sz->array_m_L_sat[pclass_sz->n_m_L_sat-1])
+//       m =  pclass_sz->array_m_L_sat[pclass_sz->n_m_L_sat-1];
+//  // printf("index_nu = %d\n",index_nu);
+//  return exp(pwl_interp_2d(pclass_sz->n_z_L_sat,
+//                           pclass_sz->n_m_L_sat,
+//                           pclass_sz->array_z_L_sat,
+//                           pclass_sz->array_m_L_sat,
+//                           pclass_sz->array_L_sat_at_z_and_M_at_nu[index_nu],
+//                           1,
+//                           &z,
+//                           &m))-1.;
+// }
 
 // double get_L_sat_at_z_and_M_at_nu_prime(double z_asked,
 //                                   double m_asked,

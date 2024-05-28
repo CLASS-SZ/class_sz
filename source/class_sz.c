@@ -744,8 +744,22 @@ while( pch != NULL ) {
       }
 
    tabulate_L_sat_at_z_m_nu(pba,pclass_sz);
-   // printf("%.8e\n",get_L_sat_at_z_M_nu(5.04783496e-01,2.91975583e+16,3.62095835e+02,pclass_sz)); // should fund  1.78986876e+07
-   // exit(0);
+//    double ltest1 = get_L_sat_at_z_M_nu(5.04783496e-01,
+//                                        2.91975583e+14,
+//                                        3.12095835e+02,
+//                                        pclass_sz);
+//    printf("%.8e\n",ltest1); // should fund  1.78986876e+07
+//    double ztest = 3.05311483e-01;
+//    double Mtest = 1.24345809e+12;
+//    double nutest = 700;
+//    // L = 8.96414309e-05
+
+//    double ltestcomp = get_L_sat_at_z_M_nu(ztest,
+//                                     Mtest,
+//                                     nutest,
+//                                     pclass_sz);
+// printf("8.96414309e-05 %.8e\n",ltestcomp);
+//    exit(0);
 
       // tabulate_L_sat_at_nu_and_nu_prime(pba,pclass_sz);
 
@@ -23002,7 +23016,14 @@ double result = 0.;
 
 if (pclass_sz->use_maniyar_cib_model){
   // printf("M = %.3e z = %.3e nu = %.3e Lgal = %.3e\n",M,z,nu,result);
- result = 4.*_PI_*maniyar_cib_sfr(M,z,pclass_sz)*get_cib_Snu_z_and_nu(z,nu,pclass_sz);
+  double snu = get_cib_Snu_z_and_nu(z,nu,pclass_sz);
+  double sfr = maniyar_cib_sfr(M,z,pclass_sz);
+ result = 4.*_PI_*sfr*snu;
+ if (isnan(result) ||  isinf(result)){
+ printf("M = %.3e, z = %.3e, nu = %.3e, Lgal = %.3e, Snu = %.3e, SFR = %.3e\n", M, z, nu, result, snu, sfr);
+ exit(0);
+ }
+
  // printf("M = %.3e z = %.3e nu = %.3e Lgal = %.3e\n",M,z,nu,result);
 }
 else{
