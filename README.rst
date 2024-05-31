@@ -48,8 +48,6 @@ CLASS_SZ's outputs are regularly cross-checked with other CMBxLSS codes, such as
 
 
 
-
-
 Downloading the code
 --------------------
 
@@ -220,31 +218,48 @@ $ make -j
 Have a look at the notebooks https://github.com/CLASS-SZ/notebooks. They all use the python wrapper.
 
 
-Python Wrapper (Tensorflow and Cosmopower Dependency)
+Python Wrapper (TensorFlow and Cosmopower Dependency)
 -----------------------------------------------------
 
-Since recently we have implemented emulators in classy_sz, now it has an extra-dependency to tensorflow through cosmopower.
+We have implemented emulators in classy_sz, now it has an extra dependency on TensorFlow through Cosmopower.
 
-1. Install tensoflow first (see below for Mac M1 specific issues).
-2. Then install cosmopower (https://alessiospuriomancini.github.io/cosmopower/installation/). Note that the needed tensorflow version may not be the lattest, see the requirements (https://github.com/alessiospuriomancini/cosmopower/blob/main/requirements.txt). 
-3. Clone the https://github.com/cosmopower-organization/notebooks repo.
-4. Open notebooks/get_quantities_cosmopower.ipynb notebook and follow the instructions there to get the cosmopower emulators.
-5. $ make -j
-6. Check you can import classy_sz in your python/jupyter notebook, e.g.,:
-  $ python
+1. The installation of tensorflow and cosmopower should be automatic (although, see below for Mac M1 specific issues).
+2. Then install Cosmopower following the instructions here: https://alessiospuriomancini.github.io/cosmopower/installation/. Note that the needed TensorFlow version may not be the latest, see the requirements: https://github.com/alessiospuriomancini/cosmopower/blob/main/requirements.txt.
+3. Clone the Cosmopower notebooks repository:
 
-  $ from classy_sz import Class
-or try to run any of the notebooks.
+    .. code-block:: bash
 
-7. To run the emulator-based computations, simply change
-  M.compute()
+        git clone https://github.com/cosmopower-organization/notebooks
 
-to
+4. Open `notebooks/get_quantities_cosmopower.ipynb` and follow the instructions there to get the Cosmopower emulators.
+5. Compile classy_sz:
 
-  M.compute_class_szfast()
+    .. code-block:: bash
 
-8. There are many examples in the notebooks how to use class_szfast. See https://github.com/CLASS-SZ/notebooks.
+        $ make -j
 
+6. Check you can import classy_sz in your Python/Jupyter notebook, e.g.:
+
+    .. code-block:: bash
+
+        $ python
+        >>> from classy_sz import Class
+
+   Or try to run any of the notebooks.
+
+7. To run the emulator-based computations, simply change:
+
+    .. code-block:: python
+
+        M.compute()
+
+   to:
+
+    .. code-block:: python
+
+        M.compute_class_szfast()
+
+8. There are many examples in the notebooks on how to use class_szfast. See https://github.com/CLASS-SZ/notebooks.
 
 
 
@@ -252,96 +267,11 @@ Some tips to run on computer clusters
 ---------------------------------------
 
 Module load, module show to get gsl and fftw.
-At NERC/Cori, the code works with gsl/2.7. (There seems to be a problematic behavior during job submission with gsl/2.5.)
+At NERSC/Cori/Perlmutter, the code works with gsl/2.7. (There seems to be a problematic behavior during job submission with gsl/2.5.)
 
-Mpi4py needs to be correctly installed. Follow:
+For Monte Carlo analyses, we also recall that Mpi4py needs to be correctly installed. Follow:
 https://cobaya.readthedocs.io/en/latest/installation.html#mpi-parallelization-optional-but-encouraged
-You may need to activate an environment to run the install comment.
-To make sure you use the same openmpi compiler, example:
-env MPICC=/global/common/software/m3169/cori/openmpi/4.1.2/intel/bin/mpicc python -m pip install mpi4py
 
-
-
-GSL library
-------------------------------
-
-
-New version of class_sz requires gsl (for the integration routines).
-One may need to edit the **Makefile** adding the include path for gsl libraries, e.g.,:
-
-
-    INCLUDES = -I../include -I/usr/local/include/ **-I/path_to_gsl/gsl-2.6/include/**
-
-    class: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS) $(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -lm **-L/path_to_gsl/gsl-2.6/lib/ -lgsl -lgslcblas** -lfftw3
-
-For the python wrapper, one also may need to add the absolute path to gsl libraries, e.g.,:
-
-in **class_sz/python/setup.py**:
-
-    classy_ext = Extension("classy", [os.path.join(classy_folder, "classy.pyx")], include_dirs=[nm.get_include(), include_folder, '**/path/to/gsl-2.6/include**'], libraries=liblist,library_dirs=[root_folder, GCCPATH],extra_link_args=['-lgomp','**-L/path_to_gsl/gsl-2.6/lib/**','**-lgsl**','**-lgslcblas**',-lfftw3])
-
-
-
-When running, the gsl library also need to be included in the environment variables, i.e., one may
-need to do:
-
-    $ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path_to_gsl/gsl-2.6/lib
-
-    $ export LD_LIBRARY_PATH
-
-Note that these prescriptions are system dependent: you may not need them if your path and environment variables are such that gsl and its libraries are well linked.
-If you are tired of having to execute these lines each time you run codes in a fresh terminal, just paste them in your bash profile file (the one that ends with .sh).
-
-FFTLog library
-------------------------------
-
-class_sz now requires FFTW3 library.
-
-If the code complains about the library not being found, just make sure you followed the same installation instruction as you did for gsl.
-Namely, edit the the Makefile with the path to the include files (the ones that end with '.h') -I/path_to_fftw3/fftw3/include/, the path to the library files (the ones that end with .so,.a, .dylib, and so on) -L/path_to_fftw3/fftw3/lib/. The setup.py file may also need to be amended accordingly.
-And also make sure you do:
-
-    $ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path_to_fftw3/fftw3/lib
-
-    $ export LD_LIBRARY_PATH
-
-if the previous modifs were not enough.
-
-MacOS problem with OpenMP
-------------------------------
-
-To run the code in parallel, you may run into a problem on a mac. The solution is provided here:
-
-https://github.com/lesgourg/class_public/issues/208
-
-Essentially, you need to edit a line in python/setup.py such as the code knows about the mpi libraries to be used with your compiler (gcc-11 in the example below).
-In our case the modif looks like this:
-
-  extra_link_args=['-lgomp','-lgsl','-lgslcblas','**-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/**']
-
-Mac OS with M1 chip
-----------------------
-
-We advise installing fftw, gsl, openmp with anaconda, i.e., conda forge etc..
-
-LD_LIBRARY_PATH becomes DYLD_LIBRARY_PATH, hence, export with, e.g.,:
-
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/anaconda3/lib
-
-
-In Makefile:
-
-CC = clang
-PYTHON ?= /set/path/to/anaconda3/python
-OPTFLAG = -O4 -ffast-math # dont use: -arch x86_64
-OMPFLAG   = -Xclang -fopenmp
-LDFLAG += -lomp
-INCLUDES =  -I../include -I/usr/local/include/ -I/path/to/anaconda3/include/
-$(CC) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class $(addprefix build/,$(notdir $^)) -L/usr/local/lib -L/path/to/anaconda3/lib/ -lgsl -lgslcblas -lfftw3 -lm
-
-In setup.py:
-
-extra_link_args=['-lomp','-lgsl','-lfftw3','-lgslcblas'])
 
 Tensorflow on mac M1
 ----------------------
@@ -349,26 +279,25 @@ Tensorflow on mac M1
 To install the new version of class_sz, you will need tensorflow (needed for the cosmopower emulators). On M1/M2 make sure, you have the arch64 version of conda (if not, you need to remove your entire conda and install the arch64 version for Apple sillicon).
 
 This video might be helpful https://www.youtube.com/watch?v=BEUU-icPg78
-Then you can follow standard Tensorflow installation recipe for M1, e.g., https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706 or https://developer.apple.com/forums/thread/697846 .
+Then you can follow standard Tensorflow installation recipe for M1, e.g., https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706 or https://developer.apple.com/forums/thread/697846. 
 
-Compiler - GCC version
-------------------------------
+The following two lines should fix most issues:
 
-The gcc copiler can be changed easily to any gcc version that is available to you.
-There are two modifications:
+.. code-block:: bash
 
-1) Line 20 of Makefile: CC = gcc-XX (where XX=11 in our case.)
+    pip install tensorflow-metal-1.1.0
+    conda install -c apple tensorflow-deps 
 
-2) Line 12 of python/setup.py: replace 'gcc-11' with, e.g., 'gcc-XX'.  
 
 
 Pre M1 Mac  
 ----------------------  
+
 See Makefile_preM1mac for an example makefile for older Macs (without the M1 chip). Some key points include adding paths involving libomp to LDFLAG and INCLUDES.
 In python/setup.py, you may also want to modify the extra_link_args list to contain '-lomp' instead of '-lgomp' and add the libomp library path as well to that list. 
 For example, extra_link_args=['-lomp', '-lgsl','-lfftw3','-lgslcblas', '-L/usr/local/opt/libomp/lib/'].  
 
-
+This makefile is not maintained anymore but we keep it for reference. If you need to run class_sz on a pre-M1 Mac and have serious issues, please contact us.
 
 
 
