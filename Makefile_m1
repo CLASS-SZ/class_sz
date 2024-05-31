@@ -110,7 +110,7 @@ HYREC = hyrec
 CCFLAG += -D__CLASSDIR__='"$(MDIR)"'
 
 # where to find include files *.h
-INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/opt/miniconda3/include/
+INCLUDES =  -I../include -I/usr/local/include/ 
 
 
 # automatically add external programs if needed. First, initialize to blank.
@@ -180,7 +180,7 @@ libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
 	$(AR)  $@ $(addprefix build/, $(TOOLS) $(SOURCE) $(EXTERNAL))
 
 class_sz: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS_SZ) 
-	$(CC) $(CFLAGS) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class_sz $(addprefix build/,$(notdir $^)) -lgsl -lgslcblas -lfftw3 -lm -L/Users/boris/opt/miniconda3/lib
+	$(CC) $(CFLAGS) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class_sz $(addprefix build/,$(notdir $^)) -lgsl -lgslcblas -lfftw3 -lm
 
 
 tar: $(C_ALL) $(C_TEST) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
