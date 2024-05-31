@@ -1,7 +1,7 @@
 ==============================================
 CLASS_SZ
 ==============================================
- Cosmic Linear Anisotropy Solving System with Fast and Accurate CMB, LSS and Halo Model Observables Computations
+Cosmic Linear Anisotropy Solving System with Machine Learning Acelerated and Accurate CMB, LSS and Halo Model Observables Computations
 
 To install/run CLASS_SZ on the fly, check the colab notebook: 
 
@@ -15,7 +15,7 @@ https://github.com/CLASS-SZ/notebooks
 
 These notebooks along with the paper (`Bolliet et al 2023 <https://arxiv.org/abs/2310.18482>`_) constitute the current documentation.
 
-CLASS_SZ is as fast as it gets, with full parallelization, implementation of high-accuracy cosmopower emulators (see below for some instructions) and usage of Fast Fourier Transforms (including FFTLog).
+CLASS_SZ is as fast as it gets, with full parallelization, implementation of high-accuracy neural network emulators and Fast Fourier Transforms.
 
 Since it is based on Lesgourgues's class code, the halo model and LSS calculations (essentially based on distances and
 matter clustering) are always consistent with the cosmological model computed by class.
@@ -178,7 +178,6 @@ To apply the changes immediately:
 
 
 
-
 Running the Code
 ----------------
 
@@ -218,36 +217,11 @@ $ make -j
 Have a look at the notebooks https://github.com/CLASS-SZ/notebooks. They all use the python wrapper.
 
 
-Python Wrapper (TensorFlow and Cosmopower Dependency)
+Accelerated Computations
 -----------------------------------------------------
 
-We have implemented emulators in classy_sz, now it has an extra dependency on TensorFlow through Cosmopower.
 
-1. The installation of tensorflow and cosmopower should be automatic (although, see below for Mac M1 specific issues).
-2. Then install Cosmopower following the instructions here: https://alessiospuriomancini.github.io/cosmopower/installation/. Note that the needed TensorFlow version may not be the latest, see the requirements: https://github.com/alessiospuriomancini/cosmopower/blob/main/requirements.txt.
-3. Clone the Cosmopower notebooks repository:
-
-    .. code-block:: bash
-
-        git clone https://github.com/cosmopower-organization/notebooks
-
-4. Open `notebooks/get_quantities_cosmopower.ipynb` and follow the instructions there to get the Cosmopower emulators.
-5. Compile classy_sz:
-
-    .. code-block:: bash
-
-        $ make -j
-
-6. Check you can import classy_sz in your Python/Jupyter notebook, e.g.:
-
-    .. code-block:: bash
-
-        $ python
-        >>> from classy_sz import Class
-
-   Or try to run any of the notebooks.
-
-7. To run the emulator-based computations, simply change:
+To run the emulator-based computations, simply change:
 
     .. code-block:: python
 
@@ -259,7 +233,7 @@ We have implemented emulators in classy_sz, now it has an extra dependency on Te
 
         M.compute_class_szfast()
 
-8. There are many examples in the notebooks on how to use class_szfast. See https://github.com/CLASS-SZ/notebooks.
+There are many examples in the notebooks on how to use class_szfast. See https://github.com/CLASS-SZ/notebooks.
 
 
 
