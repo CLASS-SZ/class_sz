@@ -218,8 +218,8 @@ TensorFlow on Mac M1
 
 To install the new version of CLASS_SZ, you will need TensorFlow (needed for the Cosmopower emulators). On M1/M2, make sure you have the arm64 version of conda (if not, you need to remove your entire conda and install the arm64 version for Apple Silicon).
 
-This video might be helpful: https://www.youtube.com/watch?v=BEUU-icPg78
-Then you can follow the standard TensorFlow installation recipe for M1, e.g., https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706 or https://developer.apple.com/forums/thread/697846.
+This video might be helpful: `Installing TensorFlow on M1 Mac <https://www.youtube.com/watch?v=BEUU-icPg78>`_.
+Then you can follow the standard TensorFlow installation recipe for M1, e.g., `Medium Article <https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706>`_ or the `Apple Developer Forums <https://developer.apple.com/forums/thread/697846>`_.
 
 The following two lines should fix most issues:
 
