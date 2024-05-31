@@ -211,7 +211,7 @@ Use module load, module show to get GSL and FFTW.
 At NERSC/Cori/Perlmutter, the code works with gsl/2.7. (There seems to be a problematic behavior during job submission with gsl/2.5.)
 
 For Monte Carlo analyses, we also recall that Mpi4py needs to be correctly installed. Follow:
-https://cobaya.readthedocs.io/en/latest/installation.html#mpi-parallelization-optional-but-encouraged
+`Cobaya MPI Installation Guide <https://cobaya.readthedocs.io/en/latest/installation.html#mpi-parallelization-optional-but-encouraged>`_.
 
 TensorFlow on Mac M1
 --------------------
@@ -219,6 +219,7 @@ TensorFlow on Mac M1
 To install the new version of CLASS_SZ, you will need TensorFlow (needed for the Cosmopower emulators). On M1/M2, make sure you have the arm64 version of conda (if not, you need to remove your entire conda and install the arm64 version for Apple Silicon).
 
 This video might be helpful: `Installing TensorFlow on M1 Mac <https://www.youtube.com/watch?v=BEUU-icPg78>`_.
+
 Then you can follow the standard TensorFlow installation recipe for M1, e.g., `Medium Article <https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706>`_ or the `Apple Developer Forums <https://developer.apple.com/forums/thread/697846>`_.
 
 The following two lines should fix most issues:
