@@ -98,55 +98,107 @@ As well as other references listed there: http://class-code.net
 
 
 
-Compiling CLASS_SZ and getting started
---------------------------------------
+Compiling CLASS_SZ and Getting Started
+======================================
 
-A colab notebook shows you how to quick start. You could even run your calculations there (although this may not be as fast as on your computer since Colab, as of 2023 runs on two cores):
+A Colab notebook shows you how to quick start. You can even run your calculations there (although this may not be as fast as on your computer since Colab, as of 2023, runs on two cores):
 
-`class_sz colab notebook <https://colab.research.google.com/drive/1AULgG4ZLLG1YXRI86L54-hpjWyl1X-8c?usp=sharing>`_.
+`class_sz Colab notebook <https://colab.research.google.com/drive/1AULgG4ZLLG1YXRI86L54-hpjWyl1X-8c?usp=sharing>`_.
 
-Move to the code repository
+Move to the code repository:
+
+.. code-block:: bash
 
     $ cd class_sz
 
-Pick the correct Makefile.
+Pick the correct Makefile:
 
 For Mac M1:
+
+.. code-block:: bash
 
     $ cp Makefile_m1 Makefile
 
 For Linux:
 
+.. code-block:: bash
+
     $ cp Makefile_linux Makefile
 
-Clean up and Compile
+Clean up and compile:
+
+.. code-block:: bash
 
     $ make clean
-
     $ make -j
 
-(You may need to do a ‘$ sudo make’.)
+(You may need to use `$ sudo make`.)
 
-The code **class_sz** runs in parallel, so you need a **gcc** compiler that is not **clang**.
+The previous commands compile both the executable and the Python wrapper. The `-j` flag speeds up the compilation process by using multiple cores.
 
-The previous commands compile both the executable and the python wrapper.
-If you do not want to compile the **classy** python module do ‘$ make class_sz’. Or even faster: ‘$ make -j class_sz’.
+For Mac users, class_sz also works on the Mac M1 chips. M2 chips have not been tested yet.
+
+Library Path Configuration
+--------------------------
+
+It is often the case that some libraries are not found. In general, setting the following paths appropriately should solve your issues:
+
+.. code-block:: bash
+
+    export LIBRARY_PATH=/Users/boris/opt/miniconda3/lib:path/to/gsl/:path/to/fftw/:$LIBRARY_PATH
+    export C_INCLUDE_PATH=/Users/boris/opt/miniconda3/include/:path/to/gsl/:path/to/fftw/:$C_INCLUDE_PATH
+    export DYLD_LIBRARY_PATH="/Users/boris/opt/miniconda3/lib:$DYLD_LIBRARY_PATH" # (Mac M1 users only)
 
 
-(class_sz also works on the mac M1 chips. M2 chips have not been tested yet.)
+
+To ensure these paths are set every time you open a terminal, you can add these lines to your `~/.bashrc` or `~/.bash_profile` file automatically using the `echo` command.
+
+For `~/.bashrc` (common for most Linux systems):
+
+.. code-block:: bash
+
+    echo -e "\n# Set library paths for class_sz\nexport LIBRARY_PATH=/Users/boris/opt/miniconda3/lib:path/to/gsl/:path/to/fftw/:$LIBRARY_PATH\nexport C_INCLUDE_PATH=/Users/boris/opt/miniconda3/include/:path/to/gsl/:path/to/fftw/:$C_INCLUDE_PATH\nexport DYLD_LIBRARY_PATH=\"/Users/boris/opt/miniconda3/lib:\$DYLD_LIBRARY_PATH\" # (Mac M1 users only)" >> ~/.bashrc
+
+To apply the changes immediately:
+
+.. code-block:: bash
+
+    source ~/.bashrc
+
+For `~/.bash_profile` (common for macOS):
+
+.. code-block:: bash
+
+    echo -e "\n# Set library paths for class_sz\nexport LIBRARY_PATH=/Users/boris/opt/miniconda3/lib:path/to/gsl/:path/to/fftw/:$LIBRARY_PATH\nexport C_INCLUDE_PATH=/Users/boris/opt/miniconda3/include/:path/to/gsl/:path/to/fftw/:$C_INCLUDE_PATH\nexport DYLD_LIBRARY_PATH=\"/Users/boris/opt/miniconda3/lib:\$DYLD_LIBRARY_PATH\" # (Mac M1 users only)" >> ~/.bash_profile
+
+To apply the changes immediately:
+
+.. code-block:: bash
+
+    source ~/.bash_profile
+
+
+
+
+
+Running the Code
+----------------
 
 Run the code with most of the power spectra output:
 
+.. code-block:: bash
+
     $ ./class_sz class_sz_test.ini
 
+The `.ini` files are the parameter files.
 
-The  'ini' files are the parameter files.
+If you want to run CLASS and not do the class_sz part, you can! For example:
 
-If you want to run class and not do the class_sz part, you can! For example:
+.. code-block:: bash
 
     $ ./class_sz explanatory.ini
 
-will just run the standard class code and its calculation. All depends on what output you request: if you request a class_sz observable or not.
+This will just run the standard CLASS code and its calculations. All depends on what output you request: if you request a class_sz observable or not.
 
 
 Computing CMB, LSS and halo model quantities via the Python wrapper classy_sz
@@ -267,15 +319,14 @@ In our case the modif looks like this:
 
   extra_link_args=['-lgomp','-lgsl','-lgslcblas','**-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/**']
 
-New Mac OS with M1 chip
+Mac OS with M1 chip
 ----------------------
 
 We advise installing fftw, gsl, openmp with anaconda, i.e., conda forge etc..
 
 LD_LIBRARY_PATH becomes DYLD_LIBRARY_PATH, hence, export with, e.g.,:
 
-DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/anaconda3/lib
-export DYLD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/anaconda3/lib
 
 
 In Makefile:
