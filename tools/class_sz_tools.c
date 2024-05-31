@@ -15166,7 +15166,6 @@ if (pclass_sz->sz_verbose>10)
 
 if (pclass_sz->sz_verbose>10){
   printf("starting mass integral at z, preliminary calculations done\n");
-  printf("now at pvectsz[pclass_sz->index_md] = %d\n",pvectsz[pclass_sz->index_md]);
   }
 
 

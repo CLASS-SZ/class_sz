@@ -24,17 +24,13 @@ from scipy import interpolate
 from scipy import integrate
 from scipy.interpolate import InterpolatedUnivariateSpline as _spline
 
-# testing stuffsL: BB
-# import tensorflow as tf
-# import cosmopower
-# path_to_cosmopower_organization = '/Users/boris/Work/CLASS-SZ/SO-SZ/cosmopower-organization'
-# path_to_emulators = path_to_cosmopower_organization + 'lcdm/'
-# from mcfit import P2xi
-# from mcfit.transforms import *
+
 import mcfit
 import time
-import classy_szfast
-from classy_szfast import Class_szfast
+from suppress_warnings import suppress_warnings
+with suppress_warnings():
+    import classy_szfast
+    from classy_szfast import Class_szfast
 
 
 

@@ -1,6 +1,10 @@
 from .utils import *
 from .config import *
 
+from cosmopower import cosmopower_NN
+from cosmopower import cosmopower_PCAplusNN
+from suppress_warnings import suppress_warnings
+
 dofftlog_alphas = False
 
 cosmopower_derived_params_names = ['100*theta_s',
@@ -131,24 +135,45 @@ cp_da_nn = {}
 cp_h_nn = {}
 cp_s8_nn = {}
 
-for mp in cosmo_model_list:
-    path_to_emulators = path_to_cosmopower_organization + mp +'/'
+import warnings
+from contextlib import contextmanager
+import logging
 
+# Suppress absl warnings
+import absl.logging
+absl.logging.set_verbosity('error')
+# Suppress TensorFlow warnings
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+with suppress_warnings():
+    import tensorflow as tf
+    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+
+
+
+
+
+
+for mp in cosmo_model_list:
+    
+    path_to_emulators = path_to_cosmopower_organization + '/' + mp +'/'
+    
     cp_tt_nn[mp] = cosmopower_NN(restore=True,
                              restore_filename=path_to_emulators + 'TTTEEE/' + emulator_dict[mp]['TT'])
-
+    
     cp_te_nn[mp] = cosmopower_PCAplusNN(restore=True,
                                     restore_filename=path_to_emulators + 'TTTEEE/' + emulator_dict[mp]['TE'])
-
-    cp_ee_nn[mp] = cosmopower_NN(restore=True,
-                             restore_filename=path_to_emulators + 'TTTEEE/' + emulator_dict[mp]['EE'])
-
+    
+    with suppress_warnings():
+        cp_ee_nn[mp] = cosmopower_NN(restore=True,
+                                restore_filename=path_to_emulators + 'TTTEEE/' + emulator_dict[mp]['EE'])
+    
     cp_pp_nn[mp] = cosmopower_NN(restore=True,
                              restore_filename=path_to_emulators + 'PP/' + emulator_dict[mp]['PP'])
-
+    
     cp_pknl_nn[mp] = cosmopower_NN(restore=True,
                                restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKNL'])
-
+    
     cp_pkl_nn[mp] = cosmopower_NN(restore=True,
                               restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKL'])
 
@@ -160,14 +185,19 @@ for mp in cosmo_model_list:
                                  restore_filename=path_to_emulators + 'PK/' + emulator_dict[mp]['PKLFFTLOG_ALPHAS_IMAG']
                                  )
         cp_pkl_fftlog_alphas_nus[mp] = np.load(path_to_emulators + 'PK/PKL_FFTLog_alphas_nu_v1.npz')
+    
     cp_der_nn[mp] = cosmopower_NN(restore=True,
                               restore_filename=path_to_emulators + 'derived-parameters/' + emulator_dict[mp]['DER'])
-
+    
     cp_da_nn[mp] = cosmopower_NN(restore=True,
                              restore_filename=path_to_emulators + 'growth-and-distances/' + emulator_dict[mp]['DAZ'])
-
+    
     cp_h_nn[mp] = cosmopower_NN(restore=True,
                             restore_filename=path_to_emulators + 'growth-and-distances/' + emulator_dict[mp]['HZ'])
-
+    
     cp_s8_nn[mp] = cosmopower_NN(restore=True,
                              restore_filename=path_to_emulators + 'growth-and-distances/' + emulator_dict[mp]['S8Z'])
+    
+
+
+
