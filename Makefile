@@ -15,32 +15,6 @@ PATH_TO_COSMOPOWER_ORGANIZATION=
 
 
 
-
-
-# .base:
-# 	if ! [ -e $(WRKDIR) ]; then mkdir $(WRKDIR) ; mkdir $(WRKDIR)/lib; fi;
-# 	touch build/.base
-# 	if ! [ -e $(OUTDIR) ]; then mkdir $(OUTDIR) ; fi;
-
-# 	DEPTH=3; \
-# 	COSMOPOWER_DIR=$$(find .. -maxdepth $$DEPTH -type d -name "cosmopower-organization" -print -quit); \
-# 	if [ -z "$$COSMOPOWER_DIR" ]; then \
-# 		COSMOPOWER_DIR=$$(find . -maxdepth $$DEPTH -type d -name "cosmopower-organization" -print -quit); \
-# 	fi; \
-# 	if [ -n "$$COSMOPOWER_DIR" ]; then \
-# 		echo "Found cosmopower-organization directory at: $$(realpath "$$COSMOPOWER_DIR")"; \
-# 		export PATH_TO_COSMOPOWER_ORGANIZATION=$$(realpath "$$COSMOPOWER_DIR"); \
-# 	else \
-# 		echo "cosmopower-organization directory not found within $$DEPTH levels up or down. You need to check it is there and set the path manually in the Makefile!"; \
-# 		exit 1; \
-# 	fi
-
-# 	rm -f $(file_path);
-# 	echo "path_to_cosmopower_organization = '$$(realpath "$$COSMOPOWER_DIR")'" > $(file_path);
-
-# 	exit 1
-
-
 .base:
 	if ! [ -e $(WRKDIR) ]; then mkdir -p $(WRKDIR)/lib; fi;
 	if ! [ -e $(OUTDIR) ]; then mkdir $(OUTDIR); fi;
@@ -56,8 +30,18 @@ PATH_TO_COSMOPOWER_ORGANIZATION=
 			echo "Found cosmopower-organization directory at: $$(realpath "$$COSMOPOWER_DIR")"; \
 			PATH_TO_COSMOPOWER_ORGANIZATION=$$(realpath "$$COSMOPOWER_DIR"); \
 		else \
-			echo "cosmopower-organization directory not found within $$DEPTH levels up or down. You need to check it is there and set the path manually in the Makefile!"; \
-			exit 1; \
+			echo "--> cosmopower-organization directory not found within $$DEPTH levels up or down.\n\
+--> We will install it one level up!"; \
+			cd ..;\
+			mkdir cosmopower-organization;\
+			cd cosmopower-organization;\
+			git clone https://github.com/cosmopower-organization/lcdm.git;\
+			git clone https://github.com/cosmopower-organization/mnu.git;\
+			git clone https://github.com/cosmopower-organization/mnu-3states.git;\
+			git clone https://github.com/cosmopower-organization/ede.git;\
+			git clone https://github.com/cosmopower-organization/neff.git;\
+			git clone https://github.com/cosmopower-organization/wcdm.git;\
+			cd ..;\
 		fi; \
 	else \
 		echo "Using provided PATH_TO_COSMOPOWER_ORGANIZATION: $(PATH_TO_COSMOPOWER_ORGANIZATION)"; \
