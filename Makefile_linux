@@ -127,8 +127,7 @@ endif
 
 
 # if you would like to print the warnings, make sure you dont set the following flags
-CFLAGS = -Wno-parentheses-equality -Wno-format -Wno-return-type -Wno-comment -Wno-incompatible-pointer-types -Wno-deprecated-non-prototype -Wno-return-type -Wno-visibility
-
+CFLAGS = -w
 
 %.o:  %.c .base
 	cd $(WRKDIR);$(CC) $(OPTFLAG) $(OMPFLAG) $(CCFLAG) $(CFLAGS) $(INCLUDES) -c ../$< -o $*.o
