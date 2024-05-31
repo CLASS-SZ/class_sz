@@ -16,8 +16,7 @@ from mcfit import P2xi
 import cosmopower
 # import classy_sz as csz
 
-from cosmopower import cosmopower_NN
-from cosmopower import cosmopower_PCAplusNN
+
 
 from scipy.interpolate import LinearNDInterpolator
 from scipy.interpolate import CloughTocher2DInterpolator

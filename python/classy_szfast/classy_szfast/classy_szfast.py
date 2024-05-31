@@ -5,8 +5,6 @@ from .cosmopower import *
 from .pks_and_sigmas import *
 import scipy
 import time
-# import pyquad
-# from classy_sz import Class
 from multiprocessing import Process
 from mcfit import TophatVar
 from scipy.interpolate import CubicSpline
@@ -23,7 +21,7 @@ class Class_szfast(object):
         # self.lowring = lowring
 
         # cosmopower emulators
-        self.cp_path_to_cosmopower_organization = path_to_cosmopower_organization
+        self.cp_path_to_cosmopower_organization = path_to_cosmopower_organization + '/'
         self.cp_tt_nn = cp_tt_nn
         self.cp_te_nn = cp_te_nn
         self.cp_ee_nn = cp_ee_nn
