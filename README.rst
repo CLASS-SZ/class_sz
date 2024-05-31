@@ -109,11 +109,21 @@ Move to the code repository
 
     $ cd class_sz
 
+Pick the correct Makefile.
+
+For Mac M1:
+
+    $ cp Makefile_m1 Makefile
+
+For Linux:
+
+    $ cp Makefile_linux Makefile
+
 Clean up and Compile
 
     $ make clean
 
-    $ make
+    $ make -j
 
 (You may need to do a ‘$ sudo make’.)
 
@@ -122,10 +132,8 @@ The code **class_sz** runs in parallel, so you need a **gcc** compiler that is n
 The previous commands compile both the executable and the python wrapper.
 If you do not want to compile the **classy** python module do ‘$ make class_sz’. Or even faster: ‘$ make -j class_sz’.
 
-For the python module, you need the prerequisites such as **numpy**, **scipy**
-and **Cython** installed on your computer.
 
-(class_sz also works on the new mac M1 chips.)
+(class_sz also works on the mac M1 chips. M2 chips have not been tested yet.)
 
 Run the code with most of the power spectra output:
 
@@ -153,25 +161,9 @@ First, make sure that you have compiled the python wrapper with:
 
 $ make clean
 
-$ make
+$ make -j
 
-(Note that the second command must be 'make', and not 'make class' for the python wrappper to be compiled.)
-
-With more recent python/Setuptools version, the python wrapper may not compile, hence you may need to do:
-
-
-$ cd python
-
-$ pip install -e .
-
-(When everything seems broken, its often possible that several classy_sz are installed on your system and there is confusion.
-In this case you need to take great care on cleanup and making sure that when you load the module, it loads the files you just compiled!
-This is true for all code installations in general.)
-
-
-That's it!
-
-To check the install is fine, try "import classy_sz" in some python code. It shouldn't crash.
+(Note that the second command must be 'make -j', and not 'make -j class_sz' for the python wrappper to be compiled.)
 
 Have a look at the notebooks https://github.com/CLASS-SZ/notebooks. They all use the python wrapper.
 
@@ -185,36 +177,21 @@ Since recently we have implemented emulators in classy_sz, now it has an extra-d
 2. Then install cosmopower (https://alessiospuriomancini.github.io/cosmopower/installation/). Note that the needed tensorflow version may not be the lattest, see the requirements (https://github.com/alessiospuriomancini/cosmopower/blob/main/requirements.txt). 
 3. Clone the https://github.com/cosmopower-organization/notebooks repo.
 4. Open notebooks/get_quantities_cosmopower.ipynb notebook and follow the instructions there to get the cosmopower emulators.
-5. Compile the fast python wrapper:
-  $ cd python/classy_szfast
-
-  $ pip install -e .
-
-(might need to change the path there.
-In class_sz/python/classy_szfast/classy_szfast/config.py:
-change this line:
-path_to_cosmopower_organization = '/path/to/cosmopower-organization/'
-This path needs to be adapted so it matches the location of your cosmopower-organization repository where you have stored the emulators generetaed in get_quantities_cosmopower.ipynb. )
-
-6. Finally compile the python wrapper:
-  $ cd python
-
-  $ pip install -e .
-
-7. Check you can import classy_sz in your python/jupyter notebook, e.g.,:
+5. $ make -j
+6. Check you can import classy_sz in your python/jupyter notebook, e.g.,:
   $ python
 
   $ from classy_sz import Class
 or try to run any of the notebooks.
 
-8. To run the emulator-based computations, simply change
+7. To run the emulator-based computations, simply change
   M.compute()
 
 to
 
   M.compute_class_szfast()
 
-9. There are many examples in the notebooks how to use class_szfast. See https://github.com/CLASS-SZ/notebooks.
+8. There are many examples in the notebooks how to use class_szfast. See https://github.com/CLASS-SZ/notebooks.
 
 
 
@@ -266,7 +243,7 @@ If you are tired of having to execute these lines each time you run codes in a f
 FFTLog library
 ------------------------------
 
-class_sz now requires FFTW3 library, used for the computations of kSZ^2 x LSS power spectra and bispectra.
+class_sz now requires FFTW3 library.
 
 If the code complains about the library not being found, just make sure you followed the same installation instruction as you did for gsl.
 Namely, edit the the Makefile with the path to the include files (the ones that end with '.h') -I/path_to_fftw3/fftw3/include/, the path to the library files (the ones that end with .so,.a, .dylib, and so on) -L/path_to_fftw3/fftw3/lib/. The setup.py file may also need to be amended accordingly.
