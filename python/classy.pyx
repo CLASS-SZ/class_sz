@@ -1623,16 +1623,16 @@ cdef class Class:
 
         return pk_cb_lin
 
-    def get_pk(self, np.ndarray[DTYPE_t,ndim=3] k, np.ndarray[DTYPE_t,ndim=1] z, int k_size, int z_size, int mu_size):
-        """ Fast function to get the power spectrum on a k and z array """
-        cdef np.ndarray[DTYPE_t, ndim=3] pk = np.zeros((k_size,z_size,mu_size),'float64')
-        cdef int index_k, index_z, index_mu
+    #def get_pk(self, np.ndarray[DTYPE_t,ndim=3] k, np.ndarray[DTYPE_t,ndim=1] z, int k_size, int z_size, int mu_size):
+    #    """ Fast function to get the power spectrum on a k and z array """
+    #    cdef np.ndarray[DTYPE_t, ndim=3] pk = np.zeros((k_size,z_size,mu_size),'float64')
+    #    cdef int index_k, index_z, index_mu
 
-        for index_k in xrange(k_size):
-            for index_z in xrange(z_size):
-                for index_mu in xrange(mu_size):
-                    pk[index_k,index_z,index_mu] = self.pk(k[index_k,index_z,index_mu],z[index_z])
-        return pk
+    #    for index_k in xrange(k_size):
+    #        for index_z in xrange(z_size):
+    #            for index_mu in xrange(mu_size):
+    #                pk[index_k,index_z,index_mu] = self.pk(k[index_k,index_z,index_mu],z[index_z])
+    #    return pk
 
     def get_pk_cb(self, np.ndarray[DTYPE_t,ndim=3] k, np.ndarray[DTYPE_t,ndim=1] z, int k_size, int z_size, int mu_size):
         """ Fast function to get the power spectrum on a k and z array """
@@ -2354,6 +2354,41 @@ cdef class Class:
 
     def get_volume_dVdzdOmega_at_z(self,z):
         return get_volume_at_z(z,&self.ba)
+
+ 
+    # Define the vectorized method
+    def get_comoving_volume(self, z_input):
+        """
+        Vectorized computation of the comoving volume at given redshifts.
+
+        This method handles both scalar and array inputs for redshifts (z_input).
+        It returns the comoving volume for each redshift.
+
+        Parameters:
+        z_input (float or np.ndarray): A scalar or 1D array of redshifts.
+
+        Returns:
+        np.ndarray: An array of comoving volume values corresponding to the input redshifts.
+
+        Raises:
+        TypeError: If the inputs are not floats or 1D arrays of floats.
+        """
+        # Check if input is a scalar
+        if isinstance(z_input, (float, np.float64)):
+            return self.get_volume_dVdzdOmega_at_z(z_input)
+        
+        # Check if z_input is an array
+        elif isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64:
+            n = z_input.shape[0]
+            result = np.empty(n, dtype=np.float64)
+            
+            for i in range(n):
+                result[i] = self.get_volume_dVdzdOmega_at_z(z_input[i])
+            
+            return result
+        
+        else:
+            raise TypeError("Input should be a float or a 1D NumPy array of type float64.")
 
 
     def get_IA_of_z(self,z):
@@ -3384,6 +3419,24 @@ cdef class Class:
         """
         return self.tsz.Rho_crit_0
 
+    def rho0_crit(self):
+        """
+        (class_sz) Return the critical density in mpc/h, msun/h units at present time.
+        """
+        return self.Rho_crit_0()
+
+    def rho0_cb(self):
+        """
+        (class_sz) Return the cdm+baryon density in mpc/h, msun/h units at present time.
+        """
+        return self.rho0_crit()*(self.Omega0_b()+self.Omega0_cdm())
+
+    def rho0_m(self):
+        """
+        (class_sz) Return the mean density of the sum of Omega0 for all non-relativistic components in mpc/h, msun/h units at present time.
+        """
+        return self.rho0_crit()*(self.Omega0_m())
+
     def chi_star(self):
         """
         (class_sz) Return the comoving distance to recombination in Mpc/h
@@ -3478,13 +3531,70 @@ cdef class Class:
         return get_T10_alpha_at_z(z,&self.tsz)
 
     def get_dndlnM_at_z_and_M(self,z,m):
-        #try:
         r = get_dndlnM_at_z_and_M(z,m,&self.tsz)
-        #except:
-        #print("You are asking for a quantity that hasn't been computed properly.")
-        #print("Check your settings and try again?")
-        #r = 0.
         return r
+
+   
+    # Define the vectorized method
+    def get_dndlnm(self, z_input, m_input):
+        """
+        Vectorized computation of dndlnM at given redshifts and masses.
+
+        This method handles both scalar and array inputs for redshifts (z_input) and masses (m_input).
+        It returns dndlnM for each pair of redshift and mass.
+
+        Parameters:
+        z_input (float or np.ndarray): A scalar or 1D array of redshifts.
+        m_input (float or np.ndarray): A scalar or 1D array of masses.
+
+        Returns:
+        np.ndarray: An array of dndlnM values corresponding to the input redshifts and masses.
+
+        Raises:
+        TypeError: If the inputs are not floats or 1D arrays of floats, or if the lengths of the input arrays do not match.
+        """
+        # Check if both inputs are scalars
+        if isinstance(z_input, (float, np.float64)) and isinstance(m_input, (float, np.float64)):
+            return self.get_dndlnM_at_z_and_M_unvectorized(z_input, m_input)
+        
+        # Check if z_input is a scalar and m_input is an array
+        elif isinstance(z_input, (float, np.float64)) and isinstance(m_input, np.ndarray) and m_input.ndim == 1 and m_input.dtype == np.float64:
+            n = m_input.shape[0]
+            result = np.empty(n, dtype=np.float64)
+            
+            for i in range(n):
+                result[i] = self.get_dndlnM_at_z_and_M(z_input, m_input[i])
+            
+            return result
+        
+        # Check if z_input is an array and m_input is a scalar
+        elif isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64 and isinstance(m_input, (float, np.float64)):
+            n = z_input.shape[0]
+            result = np.empty(n, dtype=np.float64)
+            
+            for i in range(n):
+                result[i] = self.get_dndlnM_at_z_and_M(z_input[i], m_input)
+            
+            return result
+        
+        # Check if both inputs are arrays of the same length
+        elif (isinstance(z_input, np.ndarray) and isinstance(m_input, np.ndarray) and
+              z_input.ndim == 1 and m_input.ndim == 1 and
+              z_input.dtype == np.float64 and m_input.dtype == np.float64 and
+              z_input.shape[0] == m_input.shape[0]):
+            n = z_input.shape[0]
+            result = np.empty(n, dtype=np.float64)
+            
+            for i in range(n):
+                result[i] = self.get_dndlnM_at_z_and_M(z_input[i], m_input[i])
+            
+            return result
+        
+        else:
+            raise TypeError("Inputs should be floats or 1D NumPy arrays of type float64, and when both are arrays, they should have the same length.")
+
+
+
 
     def get_dcib0dz_at_z_and_nu(self,z,nu):
         r = get_dcib0dz_at_z_and_nu(z,nu,&self.tsz)
@@ -3619,6 +3729,173 @@ cdef class Class:
 
     def get_rho_crit_at_z(self,z_asked):
         return get_rho_crit_at_z(z_asked,&self.ba,&self.tsz)
+
+
+    def get_pkl_unvectorized(self,kh, z):
+        """
+        Compute the linear power spectrum at a given scale and redshift.
+         
+        Parameters
+        ----------
+        kh : float
+            The wavenumber in units of h/Mpc.
+        z : float
+            The redshift at which the power spectrum is evaluated.
+
+        Returns
+        -------
+        float
+            The value of the linear power spectrum at the given wavenumber and redshift in (Mpc/h)**3.
+        """
+        k = kh*self.ba.h
+        return self.pk_lin(k,z)*self.ba.h**3
+
+
+    def get_pknl_unvectorized(self,kh, z):
+        """
+        Compute the non-linear power spectrum at a given scale and redshift.
+         
+        Parameters
+        ----------
+        kh : float
+            The wavenumber in units of h/Mpc.
+        z : float
+            The redshift at which the power spectrum is evaluated.
+
+        Returns
+        -------
+        float
+            The value of the non-linear power spectrum at the given wavenumber and redshift in (Mpc/h)**3.
+        """
+        k = kh*self.ba.h
+        return self.pk(k,z)*self.ba.h**3
+
+
+    def get_pkl(self, kh_input, z_input):
+        """
+        Vectorized computation of the linear power spectrum at given wavenumbers and redshifts.
+        
+        Parameters
+        ----------
+        kh_input : float or np.ndarray
+            The wavenumber in units of h/Mpc.
+        z_input : float or np.ndarray
+            The redshift at which the power spectrum is evaluated.
+
+        Returns
+        -------
+        np.ndarray
+            An array of the linear power spectrum values.
+        """
+        # Helper function to compute the linear power spectrum for given kh and z
+        def compute_pkl(double kh, double z):
+            k = kh * self.ba.h
+            return self.pk_lin(k, z) * self.ba.h**3
+
+        # Handle the cases where inputs can be scalars or arrays
+        if isinstance(kh_input, (float, np.float64)):
+            kh_input = np.array([kh_input], dtype=np.float64)
+        if isinstance(z_input, (float, np.float64)):
+            z_input = np.array([z_input], dtype=np.float64)
+
+        # Ensure all inputs are 1D numpy arrays
+        if not (isinstance(kh_input, np.ndarray) and kh_input.ndim == 1 and kh_input.dtype == np.float64 and
+                isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64):
+            raise TypeError("All inputs should be floats or 1D NumPy arrays of type float64.")
+
+        # Function to handle all combinations of inputs
+        def handle_combinations(kh_vals, z_vals):
+            kh_len = len(kh_vals)
+            z_len = len(z_vals)
+            result = np.empty((kh_len, z_len), dtype=np.float64)
+            for i in range(kh_len):
+                for j in range(z_len):
+                    result[i, j] = compute_pkl(kh_vals[i], z_vals[j])
+            return result
+
+        # Compute the linear power spectrum for all combinations of inputs
+        return handle_combinations(kh_input, z_input)
+
+    def get_pknl(self, kh_input, z_input):
+        """
+        Vectorized computation of the non-linear power spectrum at given wavenumbers and redshifts.
+        
+        Parameters
+        ----------
+        kh_input : float or np.ndarray
+            The wavenumber in units of h/Mpc.
+        z_input : float or np.ndarray
+            The redshift at which the power spectrum is evaluated.
+
+        Returns
+        -------
+        np.ndarray
+            An array of the non-linear power spectrum values.
+        """
+        # Helper function to compute the non-linear power spectrum for given kh and z
+        def compute_pknl(double kh, double z):
+            k = kh * self.ba.h
+            return self.pk(k, z) * self.ba.h**3
+
+        # Handle the cases where inputs can be scalars or arrays
+        if isinstance(kh_input, (float, np.float64)):
+            kh_input = np.array([kh_input], dtype=np.float64)
+        if isinstance(z_input, (float, np.float64)):
+            z_input = np.array([z_input], dtype=np.float64)
+
+        # Ensure all inputs are 1D numpy arrays
+        if not (isinstance(kh_input, np.ndarray) and kh_input.ndim == 1 and kh_input.dtype == np.float64 and
+                isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64):
+            raise TypeError("All inputs should be floats or 1D NumPy arrays of type float64.")
+
+        # Function to handle all combinations of inputs
+        def handle_combinations(kh_vals, z_vals):
+            kh_len = len(kh_vals)
+            z_len = len(z_vals)
+            result = np.empty((kh_len, z_len), dtype=np.float64)
+            for i in range(kh_len):
+                for j in range(z_len):
+                    result[i, j] = compute_pknl(kh_vals[i], z_vals[j])
+            return result
+
+        # Compute the non-linear power spectrum for all combinations of inputs
+        return handle_combinations(kh_input, z_input)
+
+    def get_pk(self, kh_input, z_input, type="lin"):
+        """
+        General computation of the power spectrum at given wavenumbers and redshifts.
+
+        This method handles both scalar and array inputs for wavenumbers (kh_input) and redshifts (z_input).
+        It returns the corresponding power spectrum based on the specified profile type.
+
+        Parameters
+        ----------
+        kh_input : float or np.ndarray
+            The wavenumber in units of h/Mpc.
+        z_input : float or np.ndarray
+            The redshift at which the power spectrum is evaluated.
+        profile : str
+            Optional; the type, default is "lin". Available types are "lin" and "nonlin".
+
+        Returns
+        -------
+        np.ndarray
+            An array of power spectrum values corresponding to the input wavenumbers and redshifts for the specified profile type.
+
+        Raises
+        ------
+        TypeError
+            If the inputs are not floats or 1D arrays of floats.
+        NotImplementedError
+            If the specified type is not implemented.
+        """
+        if type == "lin":
+            return self.get_pkl(kh_input, z_input)
+        elif type == "nonlin":
+            return self.get_pknl(kh_input, z_input)
+        else:
+            raise NotImplementedError(f"Type '{type}' is not implemented yet. Available types are 'lin' and 'nonlin'.")
+
 
     def get_pk_nonlin_at_k_and_z(self,k, z):
         return get_pk_nonlin_at_k_and_z(k,z,&self.ba,&self.pm,&self.nl,&self.tsz)
@@ -3779,8 +4056,105 @@ cdef class Class:
     def get_rad_to_arcmin(self,theta_rad):
         return (60.*180.)/np.pi*theta_rad
 
-    def get_truncated_nfw_profile_at_z_k_rd_cd_xout(self,z,k,r_delta,c_delta,xout):
-        return evaluate_truncated_nfw_profile(z,k,r_delta,c_delta,xout)
+    def get_truncated_nfw_profile_at_z_k_rd_cd_xout(self, double z, double k, double r_delta, double c_delta, double xout=1):
+        return evaluate_truncated_nfw_profile(z, k, r_delta, c_delta, xout)
+
+
+    def get_truncated_nfw_profile_at_z_k_m_xout(self, double z, double k, double m, double xout=1):
+        delta_def = self.tsz.delta_def_matter_density
+        delta = self.get_delta_from_delta_def_at_z(delta_def,z) 
+        r_delta = self.get_r_delta_of_m_delta_at_z(delta,m,z)
+        c_delta = self.get_c_delta_at_m_and_z(m,z,delta_def) 
+        return evaluate_truncated_nfw_profile(z, k, r_delta, c_delta, xout)
+
+
+
+    # Define the vectorized method
+    def get_uk_nfw(self, z_input, k_input, m_input, double xout=1):
+        """
+        Vectorized computation of the truncated NFW profile at given redshifts, wavenumbers, and masses.
+
+        This method handles both scalar and array inputs for redshifts (z_input), wavenumbers (k_input), and masses (m_input).
+
+        Parameters:
+        z_input (float or np.ndarray): A scalar or 1D array of redshifts.
+        k_input (float or np.ndarray): A scalar or 1D array of wavenumbers in mpc/h.
+        m_input (float or np.ndarray): A scalar or 1D array of masses in msun/h.
+        xout (float): Optional; the xout parameter, setting the truncation radius at xout*r_delta, default is 1.
+
+        Returns:
+        np.ndarray: An array of profile values corresponding to the input redshifts, wavenumbers, and masses.
+
+        Raises:
+        TypeError: If the inputs are not floats or 1D arrays of floats.
+        """
+        # Helper function to calculate the profile for a given set of inputs
+        def compute_profile(double z, double k, double m, double xout):
+            delta_def = self.tsz.delta_def_matter_density
+            delta = self.get_delta_from_delta_def_at_z(delta_def,z) 
+            r_delta = self.get_r_delta_of_m_delta_at_z(delta, m, z)
+            c_delta = self.get_c_delta_at_m_and_z(m, z, delta_def)
+            return evaluate_truncated_nfw_profile(z, k, r_delta, c_delta, xout)
+
+        # Function to handle all combinations of inputs
+        def handle_combinations(z_vals, k_vals, m_vals):
+            z_len = len(z_vals)
+            k_len = len(k_vals)
+            m_len = len(m_vals)
+            result = np.empty((z_len, k_len, m_len), dtype=np.float64)
+            for i in range(z_len):
+                for j in range(k_len):
+                    for k in range(m_len):
+                        result[i, j, k] = compute_profile(z_vals[i], k_vals[j], m_vals[k], xout)
+            return result
+
+        # Handle the cases where inputs can be scalars or arrays
+        if isinstance(z_input, (float, np.float64)):
+            z_input = np.array([z_input], dtype=np.float64)
+        if isinstance(k_input, (float, np.float64)):
+            k_input = np.array([k_input], dtype=np.float64)
+        if isinstance(m_input, (float, np.float64)):
+            m_input = np.array([m_input], dtype=np.float64)
+
+        # Ensure all inputs are 1D numpy arrays
+        if not (isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64 and
+                isinstance(k_input, np.ndarray) and k_input.ndim == 1 and k_input.dtype == np.float64 and
+                isinstance(m_input, np.ndarray) and m_input.ndim == 1 and m_input.dtype == np.float64):
+            raise TypeError("All inputs should be floats or 1D NumPy arrays of type float64.")
+
+        # Compute the profile for all combinations of inputs
+        return handle_combinations(z_input, k_input, m_input)
+
+
+
+
+    # Define the general method
+    def get_uk(self, z_input, k_input, m_input, double xout=1, profile="nfw"):
+        """
+        General computation of the profile at given redshifts, wavenumbers, and masses.
+
+        This method handles both scalar and array inputs for redshifts (z_input), wavenumbers (k_input), and masses (m_input).
+        It returns the corresponding profile based on the specified profile type.
+
+        Parameters:
+        z_input (float or np.ndarray): A scalar or 1D array of redshifts.
+        k_input (float or np.ndarray): A scalar or 1D array of wavenumbers in mpc/h.
+        m_input (float or np.ndarray): A scalar or 1D array of masses in msun/h.
+        xout (float): Optional; the xout parameter, setting the truncation radius at xout*r_delta, default is 1.
+        profile (str): Optional; the profile type, default is "nfw".
+
+        Returns:
+        np.ndarray: An array of profile values corresponding to the input redshifts, wavenumbers, and masses for the specified profile type.
+
+        Raises:
+        TypeError: If the inputs are not floats or 1D arrays of floats.
+        NotImplementedError: If the specified profile type is not implemented.
+        """
+        if profile == "nfw":
+            return self.get_uk_nfw(z_input, k_input, m_input, xout)
+        else:
+            raise NotImplementedError(f"Profile '{profile}' is not implemented yet.")
+
 
     def get_arcmin_to_rad(self,theta_arcmin):
         return np.pi/(60.*180.)*theta_arcmin
@@ -3842,9 +4216,67 @@ cdef class Class:
     def get_first_order_bias_at_z_and_nu(self,z,nu):
         return get_first_order_bias_at_z_and_nu(z,nu,&self.tsz)
 
-    def get_first_order_bias_at_z_and_m(self,z,m):
+    def get_first_order_bias_at_z_and_m_unvectorized(self,z,m):
         nu = self.get_nu_at_z_and_m(z,m)
         return get_first_order_bias_at_z_and_nu(z,nu,&self.tsz)
+
+    # Define the vectorized method
+    def get_first_order_bias_at_z_and_m(self, z_input, m_input):
+        """
+        Vectorized computation of the first order bias at given redshifts and masses.
+
+        This method handles both scalar and array inputs for redshifts (z_input) and masses (m_input).
+        It returns the first order bias for each pair of redshift and mass.
+
+        Parameters:
+        z_input (float or np.ndarray): A scalar or 1D array of redshifts.
+        m_input (float or np.ndarray): A scalar or 1D array of masses.
+
+        Returns:
+        np.ndarray: An array of first order bias values corresponding to the input redshifts and masses.
+
+        Raises:
+        TypeError: If the inputs are not floats or 1D arrays of floats, or if the lengths of the input arrays do not match.
+        """
+        # Check if both inputs are scalars
+        if isinstance(z_input, (float, np.float64)) and isinstance(m_input, (float, np.float64)):
+            return self.get_first_order_bias_at_z_and_m(z_input, m_input)
+        
+        # Check if z_input is a scalar and m_input is an array
+        elif isinstance(z_input, (float, np.float64)) and isinstance(m_input, np.ndarray) and m_input.ndim == 1 and m_input.dtype == np.float64:
+            n = m_input.shape[0]
+            result = np.empty(n, dtype=np.float64)
+            
+            for i in range(n):
+                result[i] = self.get_first_order_bias_at_z_and_m_unvectorized(z_input, m_input[i])
+            
+            return result
+        
+        # Check if z_input is an array and m_input is a scalar
+        elif isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64 and isinstance(m_input, (float, np.float64)):
+            n = z_input.shape[0]
+            result = np.empty(n, dtype=np.float64)
+            
+            for i in range(n):
+                result[i] = self.get_first_order_bias_at_z_and_m_unvectorized(z_input[i], m_input)
+            
+            return result
+        
+        # Check if both inputs are arrays of the same length
+        elif (isinstance(z_input, np.ndarray) and isinstance(m_input, np.ndarray) and
+              z_input.ndim == 1 and m_input.ndim == 1 and
+              z_input.dtype == np.float64 and m_input.dtype == np.float64 and
+              z_input.shape[0] == m_input.shape[0]):
+            n = z_input.shape[0]
+            result = np.empty(n, dtype=np.float64)
+            
+            for i in range(n):
+                result[i] = self.get_first_order_bias_at_z_and_m_unvectorized(z_input[i], m_input[i])
+            
+            return result
+        
+        else:
+            raise TypeError("Inputs should be floats or 1D NumPy arrays of type float64, and when both are arrays, they should have the same length.")
 
     def get_cib_Snu_z_and_nu(self,z,nu):
         return get_cib_Snu_z_and_nu(z,nu,&self.tsz)
@@ -4971,4 +5403,22 @@ make        nonlinear_scale_cb(z, z_size)
         return self.ba.Omega0_k
 
     def Omega0_cdm(self):
+        """
+        Return the cold dark matter density parameter at present time.
+
+        Returns:
+            float: The current value of the Omega0_cdm parameter from the background structure.
+        """
         return self.ba.Omega0_cdm
+
+    def Omega0_b(self):
+        """
+        Return the baryon density parameter at present time.
+
+        Returns:
+            float: The current value of the Omega0_b parameter from the background structure.
+        """
+        return self.ba.Omega0_b
+
+
+

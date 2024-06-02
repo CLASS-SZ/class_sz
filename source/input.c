@@ -3837,10 +3837,9 @@ int input_read_parameters(
 
       }
 
-      if ((strstr(string1,"dndlnM") != NULL) ) {
-        pclass_sz->has_dndlnM =_TRUE_;
-        //pclass_sz->has_sz_counts =_TRUE_;
-        ppt->has_density_transfers=_TRUE_;
+      if (strstr(string1, "dndM") || strstr(string1, "dndm") || strstr(string1, "dndlnM") || strstr(string1, "dndlnm")) {
+        pclass_sz->has_dndlnM = _TRUE_;
+        ppt->has_density_transfers = _TRUE_;
         ppt->has_pk_matter = _TRUE_;
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
@@ -4609,6 +4608,21 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
           }
 
       class_call(parser_read_string(pfc,"delta for matter density",&string1,&flag1,errmsg),errmsg,errmsg);
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"delta_for_matter_density",&string1,&flag1,errmsg),errmsg,errmsg);
+      }
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"delta_matter_density",&string1,&flag1,errmsg),errmsg,errmsg);
+      }
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"delta_matter",&string1,&flag1,errmsg),errmsg,errmsg);
+      }  
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"delta_def_matter_density",&string1,&flag1,errmsg),errmsg,errmsg);
+      }
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"delta_def_matter",&string1,&flag1,errmsg),errmsg,errmsg);
+      }     
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"200m") != NULL))
           pclass_sz->delta_def_matter_density=0;

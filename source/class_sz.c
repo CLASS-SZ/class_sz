@@ -23562,15 +23562,12 @@ return uk;
 
 // analytical truncated NFW profile
 // truncated at r_out = xout*r_delta
-double evaluate_truncated_nfw_profile(//double * pvecback,
+double evaluate_truncated_nfw_profile(
                                       double z,
                                       double k,
                                       double r_delta,
                                       double c_delta,
                                       double xout)//, // so: r_out = xout*r_delta
-                                      //double * pvectsz,
-                                      // struct background * pba,
-                                      // struct class_sz_structure * pclass_sz)
 {
 // c_delta = 2.;
 //double z = pvectsz[pclass_sz->index_z];

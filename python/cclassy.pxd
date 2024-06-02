@@ -270,7 +270,8 @@ cdef extern from "class.h":
         int skip_sigma8_at_z
         int skip_sigma8_and_der
         int skip_background_and_thermo
-        double cl_gal_gal_A_sn
+        int delta_def_matter_density
+        double cl_gal_gal_A_sn 
         double * array_m_dndlnM
         int n_m_dndlnM
         double alpha_cib
