@@ -275,3 +275,10 @@ class_sz_simple_alinasims.ini
 test_b12_sz_isw.ini
 test_b12_sz_isw.py
 test_pk_nl.dat
+class_sz_auxiliary_files/LSST_bin7.txt
+class_sz_auxiliary_files/LSST_bin6.txt
+class_sz_auxiliary_files/LSST_bin5.txt
+class_sz_auxiliary_files/LSST_bin4.txt
+class_sz_auxiliary_files/LSST_bin3.txt
+class_sz_auxiliary_files/LSST_bin2.txt
+class_sz_auxiliary_files/LSST_bin1.txt
