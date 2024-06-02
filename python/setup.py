@@ -16,7 +16,6 @@ GCCPATH = osp.normpath(osp.dirname(GCCPATH_STRING)).decode()
 
 liblist = ["class"]
 MVEC_STRING = sbp.Popen(
-    # ['gcc-11', '-lmvec'],
     ['gcc', '-lmvec'],
     stderr=sbp.PIPE).communicate()[1]
 if b"mvec" not in MVEC_STRING:
