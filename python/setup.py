@@ -10,7 +10,6 @@ import os.path as osp
 # this file is currently what works on M1.
 # Recover the gcc compiler
 GCCPATH_STRING = sbp.Popen(
-    # ['gcc-11', '-print-libgcc-file-name'],
     ['gcc', '-print-libgcc-file-name'],
     stdout=sbp.PIPE).communicate()[0]
 GCCPATH = osp.normpath(osp.dirname(GCCPATH_STRING)).decode()
@@ -38,20 +37,10 @@ with open(os.path.join(include_folder, 'common.h'), 'r') as v_file:
 
 # Define cython extension and fix Python version
 classy_ext = Extension("classy_sz", [os.path.join(classy_folder, "classy.pyx")],
-                           #include_dirs=[nm.get_include(), include_folder,'/Users/boris/gsl-2.6/include'],
                            include_dirs=[nm.get_include(), include_folder],
                            libraries=liblist,
                            library_dirs=[root_folder, GCCPATH],
-                           #extra_link_args=['-lgomp','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/','-L/Users/boris/gsl-2.6/lib/','-lgsl','-lgslcblas'])
-                           #extra_link_args=['-lgomp','-L/Users/boris/gsl-2.6/lib/','-lgsl','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/10/'])
-                           # extra_link_args=['-lgomp','-lgsl','-lfftw3','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/']) # BB
-                           # extra_link_args=['-lomp','-L/Users/boris/miniconda/lib','-lgsl','-lfftw3','-lgslcblas']) # BB
-                           extra_link_args=['-lgomp','-L/Users/boris/opt/miniconda3/lib','-lgsl','-lfftw3','-lgslcblas']) # BB
-                           # extra_link_args=['-lomp','-L/Users/boris/opt/anaconda3/lib','-lgsl','-lfftw3','-lgslcblas']) # BB
-
-                           #extra_link_args=['-lgomp','-lgsl','-lfftw3_omp','-lfftw3','-lgslcblas','-Wl,-rpath,/usr/local/opt/gcc/lib/gcc/11/']) # BB
-                           # extra_link_args=['-lgomp','-L/home/runner/work/SOLikeT/SOLikeT/gsl-2.6/lib','-lgsl','-lgslcblas'])
-
+                           extra_link_args=['-lgomp','-L/Users/boris/opt/miniconda3/lib','-lgsl','-lfftw3','-lgslcblas']) 
 import six
 classy_ext.cython_directives = {'language_level': "3" if six.PY3 else "2"}
 
