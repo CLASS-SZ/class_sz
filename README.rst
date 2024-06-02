@@ -190,17 +190,25 @@ Have a look at the notebooks `CLASS_SZ Notebooks <https://github.com/CLASS-SZ/no
 Accelerated Computations
 ------------------------
 
+After you have initialized class_sz, e.g.,
+
+.. code-block:: python
+
+    class_sz = Class()
+    class_sz.set(cosmo_params_3mnu)
+    class_sz.set({'output':'tCl pCl lCl mPk'})
+
 To run the emulator-based computations, simply change:
 
 .. code-block:: python
 
-    M.compute()
-
+    class_sz.compute()
+    
 to:
 
 .. code-block:: python
 
-    M.compute_class_szfast()
+    class_sz.compute_class_szfast()
 
 There are many examples in the notebooks on how to use class_szfast. See `CLASS_SZ Notebooks <https://github.com/CLASS-SZ/notebooks>`_.
 
