@@ -195,7 +195,6 @@ After you have initialized class_sz, e.g.,
 .. code-block:: python
 
     class_sz = Class()
-    class_sz.set(cosmo_params_3mnu)
     class_sz.set({'output':'tCl pCl lCl mPk'})
 
 To run the emulator-based computations, simply change:
