@@ -1,10 +1,10 @@
-/** @file szpowerspectrum.c Documented SZ module. 2017-2021
+/** @file class_sz_clustercounts.c since 2017
  *
- * Boris Bolliet with inputs from Florian Ruppin, Thejs Brinckmann, Eunseong Lee++
- * based on the original Planck code szcounts.f90 in cosmomc
+ * Boris Bolliet thanks to Inigo Zubeldia, Florian Ruppin, Thejs Brinckmann, Eunseong Lee and colleagues
+ * 
  *
  *This module is dedicated to the computation of
- *the number counts from Halo Mass Functions (HMF)
+ *cluster number counts from the halo mass function. 
  */
 
 #include "class_sz_clustercounts.h"
