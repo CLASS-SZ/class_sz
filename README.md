@@ -33,9 +33,9 @@ CLASS_SZ functionalities are located in the files:
 And importantly, in the python and cython files:
 
 - [**python/classy.pyx**](https://github.com/CLASS-SZ/class_sz/blob/master/python/classy.pyx) for the Python wrapper,
-- [**python/classy_szfast/classy_szfast/classy_szfast.py**](https://github.com/CLASS-SZ/class_sz/blob/master/python/classy_szfast/classy_szfast.py) for the Python wrapper for the emulators
-- [**python/classy_szfast/classy_szfast/classy_sz.py**](https://github.com/CLASS-SZ/class_sz/blob/master/python/classy_szfast/classy_sz.py) for the Python wrapper for cobaya
-- [**python/classy_szfast/classy_szfast/cosmosis_classy_szfast_interface.py**](https://github.com/CLASS-SZ/class_sz/blob/master/python/classy_szfast/cosmosis_classy_szfast_interface.py) for the Python wrapper for cosmosis. 
+- [**python/classy_szfast/classy_szfast/classy_szfast.py**](https://github.com/CLASS-SZ/class_sz/blob/master/python/classy_szfast/classy_szfast/classy_szfast.py) for the Python wrapper for the emulators,
+- [**python/classy_szfast/classy_szfast/classy_sz.py**](https://github.com/CLASS-SZ/class_sz/blob/master/python/classy_szfast/classy_szfast/classy_sz.py) for the Python wrapper for cobaya,
+- [**python/classy_szfast/classy_szfast/cosmosis_classy_szfast_interface.py**](https://github.com/CLASS-SZ/class_sz/blob/master/python/classy_szfast/classy_szfast/cosmosis_classy_szfast_interface.py) for the Python wrapper for cosmosis. 
 
 CLASS_SZ's outputs are regularly cross-checked with other CMBxLSS codes, such as:
 
