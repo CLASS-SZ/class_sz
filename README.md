@@ -1,5 +1,3 @@
-Here is the converted Markdown text:
-
 # CLASS_SZ
 
 Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated and Accurate CMB, LSS, and Halo Model Observables Computations
