@@ -1,14 +1,13 @@
 """
-.. module:: classy
-    :synopsis: Python wrapper around CLASS
-.. moduleauthor:: Karim Benabed <benabed@iap.fr>
-.. moduleauthor:: Benjamin Audren <benjamin.audren@epfl.ch>
-.. moduleauthor:: Julien Lesgourgues <lesgourg@cern.ch>
+.. module:: classy_sz
+    :synopsis: Python wrapper around CLASS_SZ
+.. moduleauthor:: Boris Bolliet <bb667@cam.ac.uk>
 
-This module defines a class called Class. It is used with Monte Python to
-extract cosmological parameters.
 
-# JL 14.06.2017: TODO: check whether we should free somewhere the allocated fc.filename and titles, data (4 times)
+This module is a Python wrapper around the CLASS_SZ code. 
+All CLASS specific functions were written by Karim Benabed <benabed@iap.fr>,
+Benjamin Audren <benjamin.audren@epfl.ch>, and Julien Lesgourgues <lesgourg@cern.ch>. 
+
 
 """
 from math import exp,log
