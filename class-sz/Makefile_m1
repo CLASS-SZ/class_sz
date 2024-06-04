@@ -6,18 +6,13 @@
 # PATH_TO_COSMOPOWER_ORGANIZATION to the path to the cosmopower-organization directory
 # and then run the makefile.
 
-
 MDIR := $(shell pwd)
 WRKDIR = $(MDIR)/build
 OUTDIR = $(MDIR)/output
-file_path=$(MDIR)/python/classy_szfast/classy_szfast/config.py
-PATH_TO_COSMOPOWER_ORGANIZATION=
-
-
 
 .base:
-	if ! [ -e $(WRKDIR) ]; then mkdir -p $(WRKDIR)/lib; fi;
-	if ! [ -e $(OUTDIR) ]; then mkdir $(OUTDIR); fi;
+	if ! [ -e $(WRKDIR) ]; then mkdir -p $(WRKDIR)/lib; fi
+	if ! [ -e $(OUTDIR) ]; then mkdir $(OUTDIR); fi
 	touch build/.base
 
 	DEPTH=3; \
@@ -30,27 +25,28 @@ PATH_TO_COSMOPOWER_ORGANIZATION=
 			echo "Found cosmopower-organization directory at: $$(realpath "$$COSMOPOWER_DIR")"; \
 			PATH_TO_COSMOPOWER_ORGANIZATION=$$(realpath "$$COSMOPOWER_DIR"); \
 		else \
-			echo "--> cosmopower-organization directory not found within $$DEPTH levels up or down.\n\
---> We will install it one level up!"; \
-			cd ..;\
-			mkdir cosmopower-organization;\
-			cd cosmopower-organization;\
-			git clone https://github.com/cosmopower-organization/lcdm.git;\
-			git clone https://github.com/cosmopower-organization/mnu.git;\
-			git clone https://github.com/cosmopower-organization/mnu-3states.git;\
-			git clone https://github.com/cosmopower-organization/ede.git;\
-			git clone https://github.com/cosmopower-organization/neff.git;\
-			git clone https://github.com/cosmopower-organization/wcdm.git;\
-			cd ..;\
+			echo "--> cosmopower-organization directory not found within $$DEPTH levels up or down."; \
+			echo "--> We will install it one level up!"; \
+			cd ..; \
+			mkdir cosmopower-organization; \
+			cd cosmopower-organization; \
+			git clone https://github.com/cosmopower-organization/lcdm.git; \
+			git clone https://github.com/cosmopower-organization/mnu.git; \
+			git clone https://github.com/cosmopower-organization/mnu-3states.git; \
+			git clone https://github.com/cosmopower-organization/ede.git; \
+			git clone https://github.com/cosmopower-organization/neff.git; \
+			git clone https://github.com/cosmopower-organization/wcdm.git; \
+			cd ..; \
 		fi; \
 	else \
 		echo "Using provided PATH_TO_COSMOPOWER_ORGANIZATION: $(PATH_TO_COSMOPOWER_ORGANIZATION)"; \
 		PATH_TO_COSMOPOWER_ORGANIZATION=$$(realpath "$(PATH_TO_COSMOPOWER_ORGANIZATION)"); \
 	fi; \
-	export PATH_TO_COSMOPOWER_ORGANIZATION; \
-	rm -f $(file_path); \
-	touch $(file_path); \
-	echo "path_to_cosmopower_organization = '$$PATH_TO_COSMOPOWER_ORGANIZATION'" >> $(file_path)
+	touch $(WRKDIR)/set_class_sz_env.sh; \
+	echo "export PATH_TO_COSMOPOWER_ORGANIZATION=$$PATH_TO_COSMOPOWER_ORGANIZATION" > $(MDIR)/set_class_sz_env.sh; \
+	echo "PATH_TO_COSMOPOWER_ORGANIZATION is set to $$PATH_TO_COSMOPOWER_ORGANIZATION"; \
+	export PATH_TO_COSMOPOWER_ORGANIZATION=$$PATH_TO_COSMOPOWER_ORGANIZATION
+
 
 
 vpath %.c source:tools:main:test
@@ -189,6 +185,7 @@ tar: $(C_ALL) $(C_TEST) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(
 classy_sz: libclass.a python/classy.pyx python/cclassy.pxd
 	cd python/classy_szfast; pip install -r requirements.txt -e . 
 	cd python; pip install -e .
+	echo "export PYTHONPATH=$(MDIR)/python/classy_szfast:$(MDIR)/python:PYTHONPATH" >> $(MDIR)/set_class_sz_env.sh
 
 	
 
