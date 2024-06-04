@@ -187,6 +187,7 @@ tar: $(C_ALL) $(C_TEST) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(
 
 classy_sz: libclass.a python/classy.pyx python/cclassy.pxd
 	cd python/classy_szfast; pip install -r requirements.txt -e . 
+	cd python; pip install -e .
 
 
 clean: 
