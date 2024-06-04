@@ -284,6 +284,7 @@ class-sz/test_pk_nl.dat
 class-sz/ORTHOGONAL_NG_matrices
 class-sz/pt_matrices 
 class-sz/external_Pk
+cosmopower-organization
 cosmopower-organization/wcdm/
 cosmopower-organization/neff/
 cosmopower-organization/mnu/
@@ -291,3 +292,4 @@ cosmopower-organization/mnu-3states/
 cosmopower-organization/lcdm/
 cosmopower-organization/ede/
 class-sz/class_sz_auxiliary_files/excludes
+class_sz-*
