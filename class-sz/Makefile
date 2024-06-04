@@ -186,8 +186,8 @@ class_sz: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS_SZ)
 tar: $(C_ALL) $(C_TEST) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
 	tar czvf class_sz.tar.gz $(C_ALL) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
 
-# classy_sz: libclass.a python/classy.pyx python/cclassy.pxd
-# 	cd python/classy_szfast; pip install -r requirements.txt -e . 
+classy_sz: libclass.a python/classy.pyx python/cclassy.pxd
+
 
 	
 
