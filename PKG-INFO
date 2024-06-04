@@ -1,3 +1,13 @@
+Metadata-Version: 2.1
+Name: classy_sz
+Version: 0.0.8
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: cython
+Requires-Dist: classy_sfast
+
+
+
 # CLASS_SZ
 
 Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated and Accurate CMB, LSS, and Halo Model Observables Computations

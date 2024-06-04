@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess as sbp
 from setuptools import setup, find_packages, Extension
+# from setuptools.command.install import install
 from Cython.Distutils import build_ext
 import numpy as np
 import site
@@ -60,21 +61,24 @@ class ClassyBuildExt(build_ext):
         # Run the script to select the correct Makefile and build
         sbp.run(["chmod", "+x", "select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
         sbp.run(["./select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
+        sbp.Popen("make libclass.a -j",shell=True,cwd=os.path.join(os.getcwd(),"class-sz"),env=run_env).wait()
+        sbp.run(["chmod", "+x", "download_emulators.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
+        sbp.run(["./download_emulators.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
         
         # Proceed with the standard build_ext behavior
         build_ext.run(self)
 
-class CustomInstallCommand(install):
-    """Customized setuptools install command to run a shell script."""
-    def run(self):
-        run_env = dict(CLASSDIR=path_install, **os.environ.copy())
+# class CustomInstallCommand(install):
+#     """Customized setuptools install command to run a shell script."""
+#     def run(self):
+#         run_env = dict(CLASSDIR=path_install, **os.environ.copy())
         
-        # Run the script to select the correct Makefile and build
-        sbp.run(["chmod", "+x", "select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
-        sbp.run(["./select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
+#         # Run the script to select the correct Makefile and build
+#         sbp.run(["chmod", "+x", "download_emulators.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
+#         sbp.run(["./download_emulators.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
         
-        # Proceed with the standard install behavior
-        install.run(self)
+#         # Proceed with the standard install behavior
+#         install.run(self)
 
 # Long description for the package
 long_description = "See ('https://github.com/CLASS-SZ')."
@@ -88,11 +92,11 @@ setup(
     description='CLASS-SZ in Python',
     long_description=long_description,
     url='https://github.com/CLASS-SZ',
-    cmdclass={'install': CustomInstallCommand, 'build_ext': ClassyBuildExt},
+    cmdclass={ 'build_ext': ClassyBuildExt},#,'install': CustomInstallCommand},
     ext_modules=[classy_sz_ext],
     packages=find_packages(where='class-sz/python'),
     package_dir={'': 'class-sz/python'},
     package_data={'': pck_files},
     include_package_data=True,
-    install_requires=["classy_szfast>=0.0.7"],
+    install_requires=["classy_szfast>=0.0.7","cython"],
 )

@@ -296,3 +296,5 @@ class_sz-*
 class-sz/python/classy.c
 class-sz/Makefile
 class-sz/python/classy_szfast
+class-sz/set_class_sz_env.sh
+set_class_sz_env.sh
