@@ -1,0 +1,5 @@
+recursive-include class-sz *
+recursive-exclude class-sz/output *
+recursive-exclude class-sz/ORTHOGONAL_NG_matrices *
+recursive-exclude class-sz/pt_matrices *
+prune .git
