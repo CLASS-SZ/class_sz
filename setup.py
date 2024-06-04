@@ -69,7 +69,7 @@ class ClassyBuildExt(build_ext):
         build_ext.run(self)
 
 # Long description for the package
-long_description = "The official repository for the classy_sz code ('https://github.com/CLASS-SZ')."
+long_description = "See ('https://github.com/CLASS-SZ')."
 
 # Setup function
 setup(
@@ -82,9 +82,7 @@ setup(
     url='https://github.com/CLASS-SZ',
     cmdclass={'build_ext': ClassyBuildExt},
     ext_modules=[classy_sz_ext],
-    packages=find_packages(where='class-sz/python', exclude=['class-sz.output', 
-                                                            'class-sz.ORTHOGONAL_NG_matrices',
-                                                            'class-sz.pt_matrices']),
+    packages=find_packages(where='class-sz/python'),
     package_dir={'': 'class-sz/python'},
     package_data={'': pck_files},
     include_package_data=True,

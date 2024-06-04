@@ -46,10 +46,10 @@ classy_ext.cython_directives = {'language_level': "3" if six.PY3 else "2"}
 
 setup(
     name='classy_sz',
-    version=VERSION,
-    author="Boris Bolliet",
-    author_email="bb667@cam.ac.uk",
-    description='Python interface to the CMBxLSS code CLASS-SZ',
+    version="0.0.8",
+    author="Boris Bolliet, Ola Kusiak",
+    author_email="bb667@cam.ac.uk, akk2175@columbia.edu",
+    description='CLASS-SZ in Python',
     url='https://github.com/CLASS-SZ',
     cmdclass={'build_ext': build_ext},
     ext_modules=[classy_ext],
