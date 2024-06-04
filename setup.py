@@ -21,11 +21,7 @@ def package_files(directory, exclude_dirs):
     return paths
 
 # Define directories to exclude
-exclude_dirs = [
-    os.path.join('class-sz', 'output'),
-    os.path.join('class-sz', 'ORTHOGONAL_NG_matrices'),
-    os.path.join('class-sz', 'pt_matrices')
-]
+exclude_dirs = []
 
 # Gather all package files, excluding specific directories
 pck_files = package_files('class-sz', exclude_dirs)
@@ -68,6 +64,18 @@ class ClassyBuildExt(build_ext):
         # Proceed with the standard build_ext behavior
         build_ext.run(self)
 
+class CustomInstallCommand(install):
+    """Customized setuptools install command to run a shell script."""
+    def run(self):
+        run_env = dict(CLASSDIR=path_install, **os.environ.copy())
+        
+        # Run the script to select the correct Makefile and build
+        sbp.run(["chmod", "+x", "select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
+        sbp.run(["./select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
+        
+        # Proceed with the standard install behavior
+        install.run(self)
+
 # Long description for the package
 long_description = "See ('https://github.com/CLASS-SZ')."
 
@@ -80,7 +88,7 @@ setup(
     description='CLASS-SZ in Python',
     long_description=long_description,
     url='https://github.com/CLASS-SZ',
-    cmdclass={'build_ext': ClassyBuildExt},
+    cmdclass={'install': CustomInstallCommand, 'build_ext': ClassyBuildExt},
     ext_modules=[classy_sz_ext],
     packages=find_packages(where='class-sz/python'),
     package_dir={'': 'class-sz/python'},

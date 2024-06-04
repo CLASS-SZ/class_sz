@@ -1,5 +1,10 @@
 #include "class_sz_macros.h"
 class_sz_string_parameter(root,"root","root")
+class_sz_string_parameter(A10_file,"/class_sz_auxiliary_files/includes/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt","A10 file")
+class_sz_string_parameter(P13_file,"/class_sz_auxiliary_files/includes/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_P13.txt","P13 file")
+class_sz_string_parameter(Tinker_et_al_10_alpha_consistency_msyriac_file,"/class_sz_auxiliary_files/includes/Tinker_et_al_10_alpha_consistency_msyriac.txt","Tinker_et_al_10_alpha_consistency_msyriac_file")
+
+
 class_sz_string_parameter(append_name_trispectrum_ref,"append_name_trispectrum_ref","append_name_trispectrum_ref")
 class_sz_string_parameter(path_to_ref_trispectrum_for_cobaya,"path_to_ref_trispectrum_for_cobaya","path_to_ref_trispectrum_for_cobaya")
 class_sz_string_parameter(full_path_to_noise_curve_for_y_y,"full_path_to_noise_curve_for_y_y","full_path_to_noise_curve_for_y_y")
@@ -20,9 +25,7 @@ class_sz_string_parameter(WISC3_dndz_file,"/class_sz_auxiliary_files/WISC_bin3.t
 class_sz_string_parameter(cib_Snu_file_snu,"/class_sz_auxiliary_files/filtered_snu_planck_fine.txt","cib_Snu_file_snu")
 class_sz_string_parameter(cib_Snu_file_z,"/class_sz_auxiliary_files/filtered_snu_planck_z_fine.txt","cib_Snu_file_z")
 class_sz_string_parameter(cib_Snu_file_nu,"/class_sz_auxiliary_files/filtered_snu_planck_nu_fine.txt","cib_Snu_file_nu")
-class_sz_string_parameter(A10_file,"/class_sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt","A10 file")
-class_sz_string_parameter(P13_file,"/class_sz_auxiliary_files/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_P13.txt","P13 file")
-class_sz_string_parameter(Tinker_et_al_10_alpha_consistency_msyriac_file,"/class_sz_auxiliary_files/Tinker_et_al_10_alpha_consistency_msyriac.txt","Tinker_et_al_10_alpha_consistency_msyriac_file")
+
 
 class_sz_string_parameter(ksz_filter_file,"/class_sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt","ksz filter file")
 class_sz_string_parameter(ksz_template_file,"/class_sz_auxiliary_files/cl_ksz_bat.dat","ksz template file")

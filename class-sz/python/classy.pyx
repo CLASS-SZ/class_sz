@@ -1445,6 +1445,7 @@ cdef class Class:
         pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
 
         ###print(">>>>> This function is unclear (BB112023)\n")
+        ## check Mat M's code: https://github.com/simonsobs/hmvec/blob/f35865c32088ce22af3279e829d770dfc1b6e186/hmvec/cosmology.py#L642 Thanks Mat!
 
         ### raise CosmoSevereError(self.ba.error_message)
 
