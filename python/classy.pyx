@@ -889,7 +889,7 @@ cdef class Class:
         try: 
             N_ngal = self._pars['galaxy_samples_list_num']
         except KeyError:
-             N_gal = -1
+             N_ngal = -1
         self._fillparfile()
         for k,v in pdict_to_update.items():
           if k == 'betaGNFW':
@@ -904,7 +904,7 @@ cdef class Class:
             self.tsz.M_min_HOD = pdict_to_update[k]
           if k == 'M1_prime_HOD':
             self.tsz.M1_prime_HOD = pdict_to_update[k]
-          if N_gal != -1:
+          if N_ngal != -1:
             for index_g in range(N_ngal):
                 if k == 'alpha_s_HOD_ngal_'+str(index_g):
                     self.tsz.alpha_s_HOD_ngal[index_g] = pdict_to_update['alpha_s_HOD_ngal_'+str(index_g)]
