@@ -4124,6 +4124,7 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
 
      free(pclass_sz->normalized_dndz_ngal_z[index_g]);
      free(pclass_sz->normalized_dndz_ngal_phig[index_g]);
+     free(pclass_sz->normalized_dndz_ngal_size[index_g]);
      }
 
 
@@ -4143,7 +4144,7 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
 
  free(pclass_sz->normalized_dndz_ngal_z);
  free(pclass_sz->normalized_dndz_ngal_phig);
-
+ free(pclass_sz->normalized_dndz_ngal_size);
  free(pclass_sz->galaxy_samples_list);
 
     if (pclass_sz->has_ngal_ngal_hf
@@ -4167,6 +4168,12 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
           free(pclass_sz->M0_HOD_ngal);//[index_g] = 1e11;
           free(pclass_sz->x_out_truncated_nfw_profile_satellite_galaxies_ngal);//[index_g] = 1.;
           free(pclass_sz->f_cen_HOD_ngal);//[index_g] = 1.;
+          free(pclass_sz->centrals_only_ngal);
+          free(pclass_sz->satellites_only_ngal);
+          free(pclass_sz->photo_z_params_ngal);
+          free(pclass_sz->dndz_shift_ngal);
+          free(pclass_sz->dndz_stretch_ngal);
+
         }
 }
 
@@ -4247,6 +4254,8 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
    free(pclass_sz->cl_kSZ_kSZ_gallens_hf);
    free(pclass_sz->cl_kSZ_kSZ_lens_hf);
    free(pclass_sz->cl_kSZ_kSZ_lensmag_1h);
+   free(pclass_sz->cl_kSZ_kSZ);
+   free(pclass_sz->cl_kSZ_kSZ);
    free(pclass_sz->b_tSZ_tSZ_tSZ_1halo);
    free(pclass_sz->b_tSZ_tSZ_tSZ_2h);
    free(pclass_sz->b_tSZ_tSZ_tSZ_3h);
