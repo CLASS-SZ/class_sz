@@ -333,6 +333,7 @@ cdef extern from "class.h":
         double * szcat_snr
         int need_sigma
         int has_pk
+        double effective_galaxy_bias
         double alphaSZ
         double beta0SZ
         double gamma0SZ

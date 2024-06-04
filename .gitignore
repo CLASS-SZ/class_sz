@@ -293,3 +293,5 @@ cosmopower-organization/lcdm/
 cosmopower-organization/ede/
 class-sz/class_sz_auxiliary_files/excludes
 class_sz-*
+class-sz/python/classy.c
+class-sz/Makefile

@@ -3459,6 +3459,14 @@ cdef class Class:
         """
         return self.tsz.delta_def_custom1
 
+    def effective_galaxy_bias(self):
+        """
+        (class_sz) Return the effective galaxy bias
+        """
+        return self.tsz.effective_galaxy_bias
+
+    
+
     def x_out_custom1(self):
         """
         (class_sz) Return the truncation for custom1 profile, r_cut = x_out*r_delta
