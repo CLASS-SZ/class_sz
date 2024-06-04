@@ -4254,8 +4254,8 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
    free(pclass_sz->cl_kSZ_kSZ_gallens_hf);
    free(pclass_sz->cl_kSZ_kSZ_lens_hf);
    free(pclass_sz->cl_kSZ_kSZ_lensmag_1h);
-   free(pclass_sz->cl_kSZ_kSZ);
-   free(pclass_sz->cl_kSZ_kSZ);
+   free(pclass_sz->cl_kSZ_kSZ_1h);
+   free(pclass_sz->cl_kSZ_kSZ_2h);
    free(pclass_sz->b_tSZ_tSZ_tSZ_1halo);
    free(pclass_sz->b_tSZ_tSZ_tSZ_2h);
    free(pclass_sz->b_tSZ_tSZ_tSZ_3h);
