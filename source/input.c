@@ -1754,6 +1754,10 @@ int input_read_parameters(
       class_read_double("k_min_for_pk_hm",pclass_sz->k_min_for_pk_hm);
       class_read_double("k_max_for_pk_hm",pclass_sz->k_max_for_pk_hm);
       class_read_double("dlnk_for_pk_hm",pclass_sz->dlnk_for_pk_hm);
+      // for the vrms2 calculation
+      class_read_double("k_per_decade_for_vrms2",pclass_sz->k_per_decade_for_vrms2);
+      class_read_double("k_min_for_pk_in_vrms2",pclass_sz->k_min_for_pk_in_vrms2);
+      class_read_double("k_max_for_pk_in_vrms2",pclass_sz->k_max_for_pk_in_vrms2);
 
       class_read_double("z_for_pk_hm",pclass_sz->z_for_pk_hm);
 
