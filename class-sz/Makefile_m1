@@ -15,39 +15,6 @@ OUTDIR = $(MDIR)/output
 	if ! [ -e $(OUTDIR) ]; then mkdir $(OUTDIR); fi
 	touch build/.base
 
-	DEPTH=3; \
-	if [ -z "$(PATH_TO_COSMOPOWER_ORGANIZATION)" ]; then \
-		COSMOPOWER_DIR=$$(find .. -maxdepth $$DEPTH -type d -name "cosmopower-organization" -print -quit); \
-		if [ -z "$$COSMOPOWER_DIR" ]; then \
-			COSMOPOWER_DIR=$$(find . -maxdepth $$DEPTH -type d -name "cosmopower-organization" -print -quit); \
-		fi; \
-		if [ -n "$$COSMOPOWER_DIR" ]; then \
-			echo "Found cosmopower-organization directory at: $$(realpath "$$COSMOPOWER_DIR")"; \
-			PATH_TO_COSMOPOWER_ORGANIZATION=$$(realpath "$$COSMOPOWER_DIR"); \
-		else \
-			echo "--> cosmopower-organization directory not found within $$DEPTH levels up or down."; \
-			echo "--> We will install it one level up!"; \
-			cd ..; \
-			mkdir cosmopower-organization; \
-			cd cosmopower-organization; \
-			git clone https://github.com/cosmopower-organization/lcdm.git; \
-			git clone https://github.com/cosmopower-organization/mnu.git; \
-			git clone https://github.com/cosmopower-organization/mnu-3states.git; \
-			git clone https://github.com/cosmopower-organization/ede.git; \
-			git clone https://github.com/cosmopower-organization/neff.git; \
-			git clone https://github.com/cosmopower-organization/wcdm.git; \
-			cd ..; \
-		fi; \
-	else \
-		echo "Using provided PATH_TO_COSMOPOWER_ORGANIZATION: $(PATH_TO_COSMOPOWER_ORGANIZATION)"; \
-		PATH_TO_COSMOPOWER_ORGANIZATION=$$(realpath "$(PATH_TO_COSMOPOWER_ORGANIZATION)"); \
-	fi; \
-	touch $(WRKDIR)/set_class_sz_env.sh; \
-	echo "export PATH_TO_COSMOPOWER_ORGANIZATION=$$PATH_TO_COSMOPOWER_ORGANIZATION" > $(MDIR)/set_class_sz_env.sh; \
-	echo "PATH_TO_COSMOPOWER_ORGANIZATION is set to $$PATH_TO_COSMOPOWER_ORGANIZATION"; \
-	export PATH_TO_COSMOPOWER_ORGANIZATION=$$PATH_TO_COSMOPOWER_ORGANIZATION
-
-
 
 vpath %.c source:tools:main:test
 vpath %.o build
