@@ -48,7 +48,7 @@ else
     git clone https://github.com/cosmopower-organization/neff.git
     git clone https://github.com/cosmopower-organization/wcdm.git
     cd ..
-    PATH_TO_COSMOPOWER_ORGANIZATION=$(realpath "../cosmopower-organization")
+    PATH_TO_COSMOPOWER_ORGANIZATION=$(realpath "cosmopower-organization")
 fi
 
 
