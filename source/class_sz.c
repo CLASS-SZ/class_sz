@@ -4119,7 +4119,7 @@ int class_sz_free(struct tszspectrum *ptsz)
    free(ptsz->r_cl_clp);
    free(ptsz->trispectrum_ref);
    free(ptsz->ln_k_for_tSZ); //BB: added for class_sz
-
+   free(ptsz->ln_k_for_vrms2); //BB: added for class_sz
 // printf("free 1\n");
 
   if (ptsz->has_sz_rates || ptsz->has_sz_counts_fft){
