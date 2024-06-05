@@ -2041,6 +2041,11 @@ int input_read_parameters(
       class_read_double("k_min_for_pk_class_sz",ptsz->k_min_for_pk_in_tSZ);
       class_read_double("k_max_for_pk_class_sz",ptsz->k_max_for_pk_in_tSZ);
 
+      // for the vrms2 calculation
+      class_read_double("k_per_decade_vrms2",ptsz->k_per_decade_for_vrms2);
+      class_read_double("k_min_for_pk_in_vrms2",ptsz->k_min_for_pk_in_vrms2);
+      class_read_double("k_max_for_pk_in_vrms2",ptsz->k_max_for_pk_in_vrms2);
+
 
       //BB: read the quantities to be computed by class_sz
       class_call(parser_read_string(pfc,"output",&string1,&flag1,errmsg),
@@ -7053,6 +7058,11 @@ int input_default_params(
   ptsz->k_per_decade_for_tSZ = 128.; //#default 40
   ptsz->k_min_for_pk_in_tSZ = 1.e-4;
   ptsz->k_max_for_pk_in_tSZ = 5.e1;
+
+//for vrms2 calculation
+  ptsz->k_per_decade_for_vrms2 = 128.; //#default 40
+  ptsz->k_min_for_pk_in_vrms2 = 1.e-4;
+  ptsz->k_max_for_pk_in_vrms2 = 5.e1;
 
   ptsz->z_for_pk_hm = 1.;
   ptsz->k_min_for_pk_hm = 1e-4;
