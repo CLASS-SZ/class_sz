@@ -7214,6 +7214,12 @@ int input_default_params(
   pclass_sz->k_min_for_pk_in_tSZ = 1.e-4;
   pclass_sz->k_max_for_pk_in_tSZ = 5.e1;
 
+// for vrms2 calculation 
+  pclass_sz->k_per_decade_for_vrms2 = 128.; //#default 40
+  pclass_sz->k_min_for_pk_in_vrms2 = 1.e-4;
+  pclass_sz->k_max_for_pk_in_vrms2 = 5.e1;
+
+
   pclass_sz->z_for_pk_hm = 1.;
   pclass_sz->k_min_for_pk_hm = 1e-4;
   pclass_sz->k_max_for_pk_hm = 1e2;

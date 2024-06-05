@@ -4311,7 +4311,7 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
    free(pclass_sz->r_cl_clp);
    free(pclass_sz->trispectrum_ref);
    free(pclass_sz->ln_k_for_tSZ); //BB: added for class_sz
-
+  free(pclass_sz->ln_k_for_vrms2); //BB: added for class_sz
 // printf("free 1\n");
 
   if (pclass_sz->has_sz_rates || pclass_sz->has_sz_counts_fft){
