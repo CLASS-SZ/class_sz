@@ -4135,7 +4135,7 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
 
      free(pclass_sz->normalized_dndz_ngal_z[index_g]);
      free(pclass_sz->normalized_dndz_ngal_phig[index_g]);
-     free(pclass_sz->normalized_dndz_ngal_size[index_g]);
+     //free(pclass_sz->normalized_dndz_ngal_size[index_g]);
      }
 
 
