@@ -892,6 +892,8 @@ cdef class Class:
              N_ngal = -1
         self._fillparfile()
         for k,v in pdict_to_update.items():
+          if k == 'B':
+            self.tsz.HSEbias = pdict_to_update[k]
           if k == 'betaGNFW':
             self.tsz.betaGNFW = pdict_to_update[k]
           if k == 'P0GNFW':
