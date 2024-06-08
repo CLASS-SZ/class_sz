@@ -25,6 +25,14 @@ double get_delta_mean_from_delta_crit_at_z(double delta_crit,
                                            struct class_sz_structure * pclass_sz);
 
 
+
+
+double get_z_of_chi(
+                    double chi,
+                    struct class_sz_structure * pclass_sz,
+                    struct background * pba);
+
+
 int y_to_m (
             double xout,
             double * mRES,
@@ -62,6 +70,36 @@ int zbrent_y_to_m(
               struct nonlinear * pnl,
               struct primordial * ppm
             );
+
+
+int chi_to_z (
+            double xout,
+            double * zRES,
+            double chi,
+            struct class_sz_structure * pclass_sz,
+            struct background * pba
+          );
+
+int solve_chi_to_z(
+                    double * result,
+                    double chi,
+                    struct class_sz_structure * pclass_sz,
+                    struct background * pba
+                  );
+
+
+
+int zbrent_chi_to_z(
+              double x1,
+              double x2,
+              double tol,
+              double fa,
+              double fb,
+              double * knl,
+              double chi,
+              struct class_sz_structure * pclass_sz,
+              struct background * pba
+            );          
 
 
 int m_to_xout (

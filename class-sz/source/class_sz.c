@@ -341,15 +341,15 @@ if (pclass_sz->need_sigma == 1 || pclass_sz->has_vrms2 || pclass_sz->has_pk){
 // if (pclass_sz->use_class_sz_fast_mode){
 // for the class_szfast mode
   class_alloc(pclass_sz->array_pkl_at_z_and_k,
-              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
               pclass_sz->error_message);
 
   class_alloc(pclass_sz->array_pknl_at_z_and_k,
-              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
               pclass_sz->error_message);
 
   class_alloc(pclass_sz->array_lnk,
-              sizeof(double *)*pclass_sz->ndimSZ,
+              sizeof(double *)*pclass_sz->ndim_redshifts,
               pclass_sz->error_message);
 
 // }
@@ -639,15 +639,15 @@ int class_sz_tabulate_init(
 // // if (pclass_sz->use_class_sz_fast_mode){
 // // for the class_szfast mode
 //   class_alloc(pclass_sz->array_pkl_at_z_and_k,
-//               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+//               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
 //               pclass_sz->error_message);
 //
 //   class_alloc(pclass_sz->array_pknl_at_z_and_k,
-//               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+//               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
 //               pclass_sz->error_message);
 //
 //   class_alloc(pclass_sz->array_lnk,
-//               sizeof(double *)*pclass_sz->ndimSZ,
+//               sizeof(double *)*pclass_sz->ndim_redshifts,
 //               pclass_sz->error_message);
 //
 // // }
@@ -1419,94 +1419,24 @@ if (pclass_sz->has_n5k){
   load_n5k_pk_zk(pclass_sz);
   load_n5k_cl_K1(pclass_sz);
   load_n5k_z_of_chi(pclass_sz);
-  // load_n5k_cl_K2(pclass_sz);
-  // double pk_interp = get_n5k_pk_at_z_and_k(3.428571428571428381e+00,9.329304026284677320e+01,pclass_sz);
-  // printf("%.5e\n",pk_interp);
-  // double K1_interp = get_n5k_cl_K1_at_chi(6.565659574734836212e+01,pclass_sz);
-  // printf("%.5e\n",K1_interp);
-  printf("Place holder for non-limber calc.\n");
-  clock_t start, end;
 
-
-
-
-  int i;
-  int j;
-  int k;
-  double *** test3d;
-  int n_i = 201;
-  int n_j = 100;
-  int n_k = 50;
-
-  class_alloc(test3d,sizeof(double ***)*n_i,pclass_sz->error_message);
-  for (i=0;i<n_i;i++){
-    class_alloc(test3d[i],sizeof(double **)*n_j,pclass_sz->error_message);
-        for (j=0;j<n_j;j++){
-          class_alloc(test3d[i][j],sizeof(double *)*n_k,pclass_sz->error_message);
-        }
-  }
-
-  double * dchi_1d;
-
-  class_alloc(dchi_1d,sizeof(double *)*n_k,pclass_sz->error_message);
-  for (k=0;k<n_k;k++){
-    /// read from the file of chi's:
-    dchi_1d[k] = 0.1;
-  }
-
-
-printf("Test timing 3 for loops\n");
-  start = clock();
-
-  for (i=0;i<n_i;i++){
-
-    for (j=0;j<n_j;j++){
-
-      double sumk = 0.;
-
-      for (k=0;k<n_k;k++){
-
-        test3d[i][j][k] = 35*67;
-
-        sumk += test3d[i][j][k]*dchi_1d[k];
-      }
-
-    }// end j/"delta_chi" loop
-  }// end i/"nu" loop
-
-
-  end = clock();
-  double duration = ((double)end - start)/CLOCKS_PER_SEC;
-  printf("Time taken to execute test 3 loops in seconds : %.3e\n", duration);
-
-
-
-printf("end Test timing 3 for loops\n");
-
-for (i=0;i<n_i;i++){
-      for (j=0;j<n_j;j++){
-        free(test3d[i][j]);
-      }
-      free(test3d[i]);
-    }
-
-free(dchi_1d);
-
-printf("end Place holder for non-limber calc.\n");
 
 
   // double z_interp = get_n5k_z_of_chi(33.,pclass_sz);
   // printf("%.5e\n",z_interp);
   tabulate_n5k_F1(pba,pnl,ppm,pclass_sz);
   int index_l;
-  printf("\n");
+  // printf("\n");
+  // printf("\n");
   // printf("ell\n");
   // for (index_l=0; index_l<pclass_sz->n_l_n5k; index_l++){
-  //
-  //   printf("%d,\n",pclass_sz->array_n5k_F1_l[index_l]);
+  
+  //   printf("%d \t %.3e\n",pclass_sz->array_n5k_F1_l[index_l],pclass_sz->array_n5k_F1_F[index_l]);
+  //   exit(0);
   // }
-  printf("\n");
-  printf("printing cls to file\n");
+  // printf("\n");
+  // printf("\n");
+  // printf("printing cls to file\n");
   char Filepath[_ARGUMENT_LENGTH_MAX_];
   FILE *fp;
 
@@ -2072,15 +2002,15 @@ if (pclass_sz->has_custom1){
 // // // if (pclass_sz->use_class_sz_fast_mode){
 // // // for the class_szfast mode
 // //   class_alloc(pclass_sz->array_pkl_at_z_and_k,
-// //               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+// //               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
 // //               pclass_sz->error_message);
 // //
 // //   class_alloc(pclass_sz->array_pknl_at_z_and_k,
-// //               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+// //               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
 // //               pclass_sz->error_message);
 // //
 // //   class_alloc(pclass_sz->array_lnk,
-// //               sizeof(double *)*pclass_sz->ndimSZ,
+// //               sizeof(double *)*pclass_sz->ndim_redshifts,
 // //               pclass_sz->error_message);
 // //
 // // // }
@@ -14088,7 +14018,7 @@ double get_sigma8_at_z(double z,
 double z_asked = log(1.+z);
 double R_asked = log(8./pba->h); //log(R) in Mpc
 double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                           pclass_sz->ndimSZ,
+                           pclass_sz->ndim_redshifts,
                            pclass_sz->array_redshift,
                            pclass_sz->array_radius,
                            pclass_sz->array_sigma_at_z_and_R,
@@ -14158,7 +14088,7 @@ Dzmax = pvecback[pba->index_bg_D];
 
 double z_asked_max = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
 double sigma = exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                                    pclass_sz->ndimSZ,
+                                    pclass_sz->ndim_redshifts,
                                     pclass_sz->array_redshift,
                                     pclass_sz->array_radius,
                                     pclass_sz->array_sigma_at_z_and_R,
@@ -14202,16 +14132,16 @@ printf("get_sigm: R_asked<pclass_sz->array_radius[0].. check bounds.\n");
 exit(0);
   }
       // printf("dealing with mass conversion in hmf3\n");
- if (R_asked>pclass_sz->array_radius[pclass_sz->ndimSZ-1]){
-   // R_asked =  pclass_sz->array_radius[pclass_sz->ndimSZ-1];
-printf("get_sigm: R_asked>pclass_sz->array_radius[pclass_sz->ndimSZ-1].. check bounds.\n");
+ if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1]){
+   // R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
+printf("get_sigm: R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1].. check bounds.\n");
 exit(0);
  }
 
 
 
    double sigma = exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                                    pclass_sz->ndimSZ,
+                                    pclass_sz->ndim_redshifts,
                                     pclass_sz->array_redshift,
                                     pclass_sz->array_radius,
                                     pclass_sz->array_sigma_at_z_and_R,
@@ -14256,8 +14186,8 @@ double get_dlnsigma_dlnR_at_z_and_m(double z,
  // if (R_asked<pclass_sz->array_radius[0])
  //    R_asked = pclass_sz->array_radius[0];
  //      // printf("dealing with mass conversion in hmf3\n");
- // if (R_asked>pclass_sz->array_radius[pclass_sz->ndimSZ-1])
- //    R_asked =  pclass_sz->array_radius[pclass_sz->ndimSZ-1];
+ // if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1])
+ //    R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
 
  if (z_asked<pclass_sz->array_redshift[0]){
     // z_asked = pclass_sz->array_redshift[0];
@@ -14302,7 +14232,7 @@ double z_asked_max = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
 
 double sigma =  pwl_interp_2d(
                 pclass_sz->n_arraySZ,
-                pclass_sz->ndimSZ,
+                pclass_sz->ndim_redshifts,
                 pclass_sz->array_redshift,
                 pclass_sz->array_radius,
                 pclass_sz->array_dsigma2dR_at_z_and_R,
@@ -14351,9 +14281,9 @@ printf("get_dlnsigm: R_asked<pclass_sz->array_radius[0].. check bounds.\n");
 exit(0);
   }
       // printf("dealing with mass conversion in hmf3\n");
- if (R_asked>pclass_sz->array_radius[pclass_sz->ndimSZ-1]){
-   // R_asked =  pclass_sz->array_radius[pclass_sz->ndimSZ-1];
-printf("get_dlnsigm: R_asked>pclass_sz->array_radius[pclass_sz->ndimSZ-1].. check bounds.\n");
+ if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1]){
+   // R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
+printf("get_dlnsigm: R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1].. check bounds.\n");
 exit(0);
  }
 
@@ -14361,7 +14291,7 @@ exit(0);
 
    double sigma =  pwl_interp_2d(
                    pclass_sz->n_arraySZ,
-                   pclass_sz->ndimSZ,
+                   pclass_sz->ndim_redshifts,
                    pclass_sz->array_redshift,
                    pclass_sz->array_radius,
                    pclass_sz->array_dsigma2dR_at_z_and_R,
@@ -14612,14 +14542,14 @@ double get_pk_lin_at_k_and_z_fast(double k, double z,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
                           struct class_sz_structure * pclass_sz){
-  if ((k*pba->h < exp(pclass_sz->array_lnk[0])) || (k*pba->h > exp(pclass_sz->array_lnk[pclass_sz->ndimSZ-1]))){
+  if ((k*pba->h < exp(pclass_sz->array_lnk[0])) || (k*pba->h > exp(pclass_sz->array_lnk[pclass_sz->ndim_redshifts-1]))){
     return 0.;
   }
 
    double zp = log(1.+z);
    double kp = log(k*pba->h);
    double pk = pwl_interp_2d(pclass_sz->n_arraySZ,
-                      pclass_sz->ndimSZ,
+                      pclass_sz->ndim_redshifts,
                       pclass_sz->array_redshift,
                       pclass_sz->array_lnk,
                       pclass_sz->array_pkl_at_z_and_k,
@@ -14635,14 +14565,14 @@ double get_pk_nonlin_at_k_and_z_fast(double k, double z,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
                           struct class_sz_structure * pclass_sz){
-  if ((k*pba->h < exp(pclass_sz->array_lnk[0])) || (k*pba->h > exp(pclass_sz->array_lnk[pclass_sz->ndimSZ-1]))){
+  if ((k*pba->h < exp(pclass_sz->array_lnk[0])) || (k*pba->h > exp(pclass_sz->array_lnk[pclass_sz->ndim_redshifts-1]))){
     return 0.;
   }
 
    double zp = log(1.+z);
    double kp = log(k*pba->h);
    double pk = pwl_interp_2d(pclass_sz->n_arraySZ,
-                             pclass_sz->ndimSZ,
+                             pclass_sz->ndim_redshifts,
                              pclass_sz->array_redshift,
                              pclass_sz->array_lnk,
                              pclass_sz->array_pknl_at_z_and_k,
@@ -15647,8 +15577,8 @@ class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
    // if (log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h)<pclass_sz->array_radius[0])
    //    R_asked = pclass_sz->array_radius[0];
    //      // printf("dealing with mass conversion in hmf3\n");
-   // if (log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h)>pclass_sz->array_radius[pclass_sz->ndimSZ-1])
-   //    R_asked =  pclass_sz->array_radius[pclass_sz->ndimSZ-1];
+   // if (log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h)>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1])
+   //    R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
    //
 
   pvectsz[pclass_sz->index_logSigma2] = 2.*log(get_sigma_at_z_and_m(exp(z_asked)-1.,m_for_hmf,pclass_sz,pba));
@@ -15658,7 +15588,7 @@ class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
   pvectsz[pclass_sz->index_dlogSigma2dlogRh] = 2.*get_dlnsigma_dlnR_at_z_and_m(z,m_for_hmf,pclass_sz,pba);
   // pwl_interp_2d(
   //               pclass_sz->n_arraySZ,
-  //               pclass_sz->ndimSZ,
+  //               pclass_sz->ndim_redshifts,
   //               pclass_sz->array_redshift,
   //               pclass_sz->array_radius,
   //               pclass_sz->array_dsigma2dR_at_z_and_R,
@@ -15874,8 +15804,8 @@ int evaluate_HMF_at_logM_and_z(
    // if (log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h)<pclass_sz->array_radius[0])
    //    R_asked = pclass_sz->array_radius[0];
    //      // printf("dealing with mass conversion in hmf3\n");
-   // if (log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h)>pclass_sz->array_radius[pclass_sz->ndimSZ-1])
-   //    R_asked =  pclass_sz->array_radius[pclass_sz->ndimSZ-1];
+   // if (log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h)>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1])
+   //    R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
    //
 
   pvectsz[pclass_sz->index_logSigma2] = 2.*log(get_sigma_at_z_and_m(exp(z_asked)-1.,m_for_hmf,pclass_sz,pba));
@@ -15885,7 +15815,7 @@ int evaluate_HMF_at_logM_and_z(
   pvectsz[pclass_sz->index_dlogSigma2dlogRh] = 2.*get_dlnsigma_dlnR_at_z_and_m(z,m_for_hmf,pclass_sz,pba);
   // pwl_interp_2d(
   //               pclass_sz->n_arraySZ,
-  //               pclass_sz->ndimSZ,
+  //               pclass_sz->ndim_redshifts,
   //               pclass_sz->array_redshift,
   //               pclass_sz->array_radius,
   //               pclass_sz->array_dsigma2dR_at_z_and_R,
@@ -16312,7 +16242,7 @@ pk3 *= pow(pba->h,3.);
   double z_asked = log(1.+z);
   double R_asked = log(8./pba->h); //log(R) in Mpc
   double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                             pclass_sz->ndimSZ,
+                             pclass_sz->ndim_redshifts,
                              pclass_sz->array_redshift,
                              pclass_sz->array_radius,
                              pclass_sz->array_sigma_at_z_and_R,
@@ -16668,7 +16598,7 @@ pk3 *= pow(pba->h,3.);
   double z_asked = log(1.+z);
   double R_asked = log(8./pba->h); //log(R) in Mpc
   double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                             pclass_sz->ndimSZ,
+                             pclass_sz->ndim_redshifts,
                              pclass_sz->array_redshift,
                              pclass_sz->array_radius,
                              pclass_sz->array_sigma_at_z_and_R,
@@ -16774,7 +16704,7 @@ pk3 *= pow(pba->h,3.);
   double z_asked = log(1.+z);
   double R_asked = log(8./pba->h); //log(R) in Mpc
   double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                             pclass_sz->ndimSZ,
+                             pclass_sz->ndim_redshifts,
                              pclass_sz->array_redshift,
                              pclass_sz->array_radius,
                              pclass_sz->array_sigma_at_z_and_R,
@@ -17090,11 +17020,11 @@ int write_redshift_dependent_quantities(struct background * pba,
       z_asked =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
    if (R_asked<pclass_sz->array_radius[0])
       R_asked = pclass_sz->array_radius[0];
-   if (R_asked>pclass_sz->array_radius[pclass_sz->ndimSZ-1])
-      R_asked =  pclass_sz->array_radius[pclass_sz->ndimSZ-1];
+   if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1])
+      R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
 
     sigma8 =  exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                       pclass_sz->ndimSZ,
+                       pclass_sz->ndim_redshifts,
                        pclass_sz->array_redshift,
                        pclass_sz->array_radius,
                        pclass_sz->array_sigma_at_z_and_R,

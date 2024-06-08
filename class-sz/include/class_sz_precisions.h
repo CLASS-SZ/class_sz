@@ -9,9 +9,9 @@ class_sz_string_parameter(append_name_trispectrum_ref,"append_name_trispectrum_r
 class_sz_string_parameter(path_to_ref_trispectrum_for_cobaya,"path_to_ref_trispectrum_for_cobaya","path_to_ref_trispectrum_for_cobaya")
 class_sz_string_parameter(full_path_to_noise_curve_for_y_y,"full_path_to_noise_curve_for_y_y","full_path_to_noise_curve_for_y_y")
 class_sz_string_parameter(full_path_to_noise_curve_for_t_t,"full_path_to_noise_curve_for_t_t","full_path_to_noise_curve_for_t_t")
-class_sz_string_parameter(full_path_to_dndz_gal,"/class_sz_auxiliary_files/WISC_bin3.txt","custom dndz file")
-class_sz_string_parameter(full_path_and_prefix_to_dndz_ngal,"/class_sz_auxiliary_files/WISC_bin3_ngal_example","custom dndz file")
-class_sz_string_parameter(full_path_to_source_dndz_gal,"/class_sz_auxiliary_files/WISC_bin3.txt","custom dndz file")
+class_sz_string_parameter(full_path_to_dndz_gal,"/class_sz_auxiliary_files/includes/WISC_bin3.txt","custom dndz file")
+class_sz_string_parameter(full_path_and_prefix_to_dndz_ngal,"/class_sz_auxiliary_files/includes/WISC_bin3_ngal_example","custom dndz file")
+class_sz_string_parameter(full_path_to_source_dndz_gal,"/class_sz_auxiliary_files/includes/WISC_bin3.txt","custom dndz file")
 class_sz_string_parameter(full_path_to_redshift_dependent_M_min,"/class_sz_auxiliary_files/websky_halo_mass_completion_z_Mmin_in_Msun_over_h.txt","custom M_min file")
 
 class_sz_string_parameter(cmb_cls_filename,"/class_sz_auxiliary_files/cmb_cls_test.pickle","cmb_cls_filename")
@@ -22,9 +22,9 @@ class_sz_string_parameter(UNWISE_dndz_file,"/class_sz_auxiliary_files/UNWISE_gal
 class_sz_string_parameter(UNWISE_fdndz_file,"/class_sz_auxiliary_files/UNWISE_galaxy_distributions/normalised_fdndz.txt","unWISE fdndz file")
 class_sz_string_parameter(UNWISE_cosmos_dndz_file,"/class_sz_auxiliary_files/UNWISE_galaxy_distributions/normalised_dndz_cosmos.txt","unWISE fdndz file")
 class_sz_string_parameter(WISC3_dndz_file,"/class_sz_auxiliary_files/WISC_bin3.txt","WISC bin 3 file")
-class_sz_string_parameter(cib_Snu_file_snu,"/class_sz_auxiliary_files/filtered_snu_planck_fine.txt","cib_Snu_file_snu")
-class_sz_string_parameter(cib_Snu_file_z,"/class_sz_auxiliary_files/filtered_snu_planck_z_fine.txt","cib_Snu_file_z")
-class_sz_string_parameter(cib_Snu_file_nu,"/class_sz_auxiliary_files/filtered_snu_planck_nu_fine.txt","cib_Snu_file_nu")
+class_sz_string_parameter(cib_Snu_file_snu,"/class_sz_auxiliary_files/includes/filtered_snu_planck_fine.txt","cib_Snu_file_snu")
+class_sz_string_parameter(cib_Snu_file_z,"/class_sz_auxiliary_files/includes/filtered_snu_planck_z_fine.txt","cib_Snu_file_z")
+class_sz_string_parameter(cib_Snu_file_nu,"/class_sz_auxiliary_files/includes/filtered_snu_planck_nu_fine.txt","cib_Snu_file_nu")
 
 
 class_sz_string_parameter(ksz_filter_file,"/class_sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt","ksz filter file")
@@ -45,16 +45,16 @@ class_sz_string_parameter(cmb_lensing_noise_file,"cmb_lensing_noise_file","cmb_l
 // columns in the original file are :
 // ell, TT, TE, EE, TB, EB, EE+EB, TT+TE+EE+EB, TT (curl), TE (curl), EE (curl), TB (curl), EB (curl), EE+EB (curl), TT+TE+EE+EB (curl)
 
-class_sz_string_parameter(SZ_cat_file,"/class_sz_auxiliary_files/SZ_cat.txt","SZ_cat_file")
+class_sz_string_parameter(SZ_cat_file,"/class_sz_auxiliary_files/includes/SZ_cat.txt","SZ_cat_file")
 
 
-class_sz_string_parameter(Planck_thetas_file,"/class_sz_auxiliary_files/SZ_thetas.txt","Planck_thetas_file")
+class_sz_string_parameter(Planck_thetas_file,"/class_sz_auxiliary_files/includes/SZ_thetas.txt","Planck_thetas_file")
 class_sz_string_parameter(SO_thetas_file,"/class_sz_auxiliary_files/nemo_sim_thetas_030722_50bins.txt","sz_selection_function_thetas_file")
 
-class_sz_string_parameter(Planck_skyfracs_file,"/class_sz_auxiliary_files/SZ_skyfracs.txt","Planck_skyfracs_file")
+class_sz_string_parameter(Planck_skyfracs_file,"/class_sz_auxiliary_files/includes/SZ_skyfracs.txt","Planck_skyfracs_file")
 class_sz_string_parameter(SO_skyfracs_file,"/class_sz_auxiliary_files/nemo_sims_skyfracs_030722_50bins.txt","sz_selection_function_skyfracs_file")
 
-class_sz_string_parameter(Planck_ylims_file,"/class_sz_auxiliary_files/SZ_ylims.txt","Planck_ylims_file")
+class_sz_string_parameter(Planck_ylims_file,"/class_sz_auxiliary_files/includes/SZ_ylims.txt","Planck_ylims_file")
 class_sz_string_parameter(SO_ylims_file,"/class_sz_auxiliary_files/nemo_sim_ylims_030722_50bins.txt","sz_selection_function_ylims_file")
 
 class_sz_pclass_sz_parameter(no_spline_in_tinker,int,0)

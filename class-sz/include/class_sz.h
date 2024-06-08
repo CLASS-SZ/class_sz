@@ -1771,7 +1771,7 @@ double szcounts_ntot;
   double HSEbias;
 
   /*For the computation of sigma2*/
-  int  ndimSZ;
+  int  ndim_redshifts;
   double logR1SZ; // 0.0034Mpc/h, 1.8e4  solar mass
   double logR2SZ; // 54.9Mpc/h, 7.5e16 solar mass
   double delta_cSZ;

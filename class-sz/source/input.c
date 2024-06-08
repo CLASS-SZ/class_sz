@@ -1944,8 +1944,8 @@ int input_read_parameters(
       class_read_double("m_pivot_ym_[Msun]",pclass_sz->m_pivot_ym);
 
       //For the tabulation of sigma2
-      class_read_int("ndim_masses",pclass_sz->ndimSZ);
-      pclass_sz->n_m_dndlnM = pclass_sz->ndimSZ;
+      class_read_int("ndim_masses",pclass_sz->ndim_redshifts);
+      pclass_sz->n_m_dndlnM = pclass_sz->ndim_redshifts;
 
       // for the tabulation of hmf itself
       class_read_int("n_m_dndlnM",pclass_sz->n_m_dndlnM);
@@ -7199,7 +7199,7 @@ int input_default_params(
   //Array size
   pclass_sz->n_arraySZ = 100;//number of z in the sigma Interpolation
 
-  pclass_sz->ndimSZ = 100;
+  pclass_sz->ndim_redshifts = 100;
   pclass_sz->logR1SZ = -10; // 0.0034Mpc/h, 1.8e4  solar mass
   pclass_sz->logR2SZ = 10.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
 

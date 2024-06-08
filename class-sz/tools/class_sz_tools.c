@@ -803,6 +803,167 @@ int zbrent_pkl_to_knl(
 
 
 
+//Root finding algorithm
+//for finding z of chi
+int zbrent_chi_to_z(
+              double x1,
+              double x2,
+              double tol,
+              double fa,
+              double fb,
+              double * knl,
+              double chi,
+              struct class_sz_structure * pclass_sz,
+              struct background * pba
+              )
+{
+  int iter;
+  int ITMAX = 100;
+
+  double a;
+  double b;
+  double c;
+  double d;
+  double e;
+  double min1;
+  double min2;
+  double fc;
+  double p;
+  double q;
+  double r;
+  double tol1;
+  double s;
+  double xm;
+  double EPS2;
+
+  double knl_test;
+
+
+
+
+  EPS2=3.e-8;
+  a =x1;
+  b =x2;
+
+
+  // knl_test = exp(a);
+
+
+  class_call(
+             chi_to_z(
+                        a,
+                        &fa,
+                        chi,
+                        pclass_sz,
+                        pba
+                        ),
+             pclass_sz->error_message,
+             pclass_sz->error_message);
+
+  // knl_test = exp(b);
+
+
+  class_call(
+             chi_to_z(
+                    b,
+                    &fb,
+                    chi,
+                    pclass_sz,
+                    pba
+                    ),
+             pclass_sz->error_message,
+             pclass_sz->error_message);
+
+
+  if ((fb)*(fa) > 0.0)  {
+    printf("Root must be bracketed in ZBRENT\n");
+    return _FAILURE_;
+  }
+
+  fc=fb;
+
+  for (iter=1;iter<=ITMAX;iter++) {
+    if ((fb)*(fc) > 0.0) {
+      c=a;
+      fc=fa;
+      e=d=b-a;
+    }
+
+    if (fabs(fc) < fabs(fb)) {
+      a=b;
+      b=c;
+      c=a;
+      fa=fb;
+      fb=fc;
+      fc=fa;
+    }
+    tol1=2.0*(EPS2)*fabs(b)+0.5*tol;
+    xm=0.5*(c-b);
+    if (fabs(xm) <= tol1 || fb == 0.0)  {
+      *knl = b;
+
+
+      return _SUCCESS_;
+    }
+
+    if (fabs(e) >= tol1 && fabs(fa) > fabs(fb)) {
+      s=fb/(fa);
+      if (a == c) {
+        p=2.0*(xm)*(s);
+        q=1.0-s;
+      }
+      else {
+        q=fa/(fc);
+        r=fb/(fc);
+        p=s*(2.0*(xm)*(q)*(q-r)-(b-a)*(r-1.0));
+        q=(q-1.0)*(r-1.0)*(s-1.0);
+      }
+      if (p > 0.0)  q = -q;
+      p=fabs(p);
+      min1=3.0*(xm)*(q)-fabs(tol1*(q));
+      min2=fabs(e*(q));
+      if (2.0*(p) < (min1 < min2 ? min1 : min2))
+      {
+        e=d;
+        d=p/(q);
+      }
+      else {
+        d=xm;
+        e=d;
+      }
+    }
+    else {
+      d=xm;
+      e=d;
+    }
+    a=b;
+    fa=fb;
+    if (fabs(d) > tol1)
+      b += d;
+    else
+      b += (xm > 0.0 ? fabs(tol1) : -fabs(tol1));
+
+
+
+    class_call(
+               chi_to_z(
+                      b,
+                      &fb,
+                      chi,
+                      pclass_sz,
+                      pba
+                      ),
+               pclass_sz->error_message,
+               pclass_sz->error_message);
+  }
+
+  printf("Max. num. of ite. exceeded in ZBRENT\n");
+
+  return _FAILURE_;
+}
+
+
+
 
 //Root finding algorithm
 //for the inverting ym relation
@@ -1189,7 +1350,7 @@ int load_n5k_pk_zk(
 
 
 
-class_open(process,"class_sz_auxiliary_files/n5k_z.txt", "r",pclass_sz->error_message);
+class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_z.txt", "r",pclass_sz->error_message);
 
   while (fgets(line, sizeof(line)-1, process) != NULL) {
     sscanf(line, "%lf", &this_lnx);
@@ -1237,7 +1398,7 @@ class_open(process,"class_sz_auxiliary_files/n5k_z.txt", "r",pclass_sz->error_me
   lnx   = (double *)malloc(n_data_guess*sizeof(double));
 
 
-  class_open(process,"class_sz_auxiliary_files/n5k_k.txt", "r",pclass_sz->error_message);
+  class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_k.txt", "r",pclass_sz->error_message);
 
   // printf("-> %s\n",Filepath);
 
@@ -1304,7 +1465,7 @@ class_open(process,"class_sz_auxiliary_files/n5k_z.txt", "r",pclass_sz->error_me
   }
 
 
-  class_open(process,"class_sz_auxiliary_files/n5k_pk_nl.txt", "r",pclass_sz->error_message);
+  class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_pk_nl.txt", "r",pclass_sz->error_message);
 
 
   int z =0;
@@ -2042,11 +2203,16 @@ double integrand_n5k_at_k(double lk, void *p){
   const int N = V->pclass_sz->N_samp_fftw; //precision parameter
   int ichi;
   double chi[N], Pchi[N];
+
+  // printf("k = %.5e, chi_min = %.5e, chi_max = %.5e, N = %d\n", k, chi_min, chi_max, N);
+
+
   for (ichi=0; ichi<N; ichi++){
     chi[ichi] =  exp(log(chi_min)+ichi/(N-1.)*(log(chi_max)-log(chi_min)));
     double zchi = get_n5k_z_of_chi(chi[ichi],V->pclass_sz);
     Pchi[ichi] = sqrt(get_n5k_pk_at_z_and_k(zchi,k,V->pclass_sz))*get_n5k_cl_K1_at_chi(chi[ichi],V->pclass_sz);
-    // printf("Pchi = %.3e\n",Pchi[ichi]);
+    // if (ichi==101)
+    // printf("ichi = %d Pchi = %.3e chi = %.3e zchi = %.5e K1 = %.5e\n",ichi,Pchi[ichi],chi[ichi],zchi,get_n5k_cl_K1_at_chi(chi[ichi],V->pclass_sz));
   }
 
   double chit[N], Pchit[N];
@@ -2167,6 +2333,51 @@ int y_to_m(
 
   return _SUCCESS_;
 }
+
+
+
+//Routine used for
+//finding z of chi
+int chi_to_z(
+            double xout,
+            double * mRES,
+            double chi,
+            struct class_sz_structure * pclass_sz,
+            struct background * pba
+            )
+{
+
+
+  double z = xout;
+  double chitest;
+  double * pvecback;
+  double tau;
+  int first_index_back = 0;
+  class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+
+
+  class_call(background_tau_of_z(pba,z,&tau),
+            pba->error_message,
+            pba->error_message);
+
+  class_call(background_at_tau(pba,
+                              tau,
+                              pba->long_info,
+                              pba->inter_normal,
+                              &first_index_back,
+                              pvecback),
+            pba->error_message,
+            pba->error_message);
+
+  chitest = pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h;
+  *mRES = chitest - chi;
+
+  free(pvecback);
+
+  return _SUCCESS_;
+}
+
+
 
 
 
@@ -2322,7 +2533,16 @@ if (isinf(r)){
 if (abort == _TRUE_) return _FAILURE_;
 }
 
+double get_z_of_chi(
+                    double chi,
+                    struct class_sz_structure * pclass_sz,
+                    struct background * pba){
 
+double z; 
+solve_chi_to_z(&z,chi,pclass_sz,pba);
+return z;
+
+  }
 
 
 int tabulate_m_to_xout(struct background * pba,
@@ -3037,6 +3257,138 @@ int solve_y_to_m(
                                pba,
                                pnl,
                                ppm
+                               ),
+             pclass_sz->error_message,
+             pclass_sz->error_message);
+
+  mDEL = logMDEL;
+  *result = mDEL;
+
+  free(mTEST);
+  return _SUCCESS_;
+}
+
+
+
+
+
+//Routine used for
+//the invert chi(z)relation
+int solve_chi_to_z(
+                    double * result,
+                    double chi,
+                    struct class_sz_structure * pclass_sz,
+                    struct background * pba
+                    )
+{
+
+
+  double  mDEL;
+  double  var;
+
+  double  lTEST;
+
+  double  fa;
+  double  fb;
+  double  m1;
+  double  m2;
+  double  mLO;
+  double  mUP;
+  double  logMDEL;
+
+
+
+  int  i;
+  int iMAX = 50;
+
+  double * mTEST;
+  class_alloc(mTEST,
+              iMAX*sizeof( double ),
+              pclass_sz->error_message);
+
+
+
+  mTEST[0] = 1.;
+ 
+ // printf("res 0 ini : %.3e\n",y);
+  class_call(
+             chi_to_z(
+                    mTEST[0],
+                    &lTEST,
+                    chi,
+                    pclass_sz,
+                    pba
+                    ),
+             pclass_sz->error_message,
+             pclass_sz->error_message
+             );
+ // printf("res 0 : %.3e\n",lTEST);
+ // exit(0);
+
+  if (lTEST <= 0.) {
+    for (i=1;i<iMAX;i++ ) {
+
+      mTEST[i] = 2.*mTEST[i-1];
+
+      class_call(
+                 chi_to_z(
+                        mTEST[i],
+                        &lTEST,
+                        chi,
+                        pclass_sz,
+                        pba
+                        ),
+                 pclass_sz->error_message,
+                 pclass_sz->error_message
+                 );
+
+      if (lTEST > 0.)
+      {
+        m1 = mTEST[i];
+        m2 = mTEST[i-1];
+        break;
+      }
+    }
+  }
+  else
+  {
+    for (i=1;i<iMAX;i++ )
+    {
+      mTEST[i] = mTEST[i-1]/2.;
+
+      class_call(
+                 chi_to_z(
+                        mTEST[i],
+                        &lTEST,
+                        chi,
+                        pclass_sz,
+                        pba
+                        ),
+                 pclass_sz->error_message,
+                 pclass_sz->error_message);
+
+      if(lTEST < 0.)
+      {
+        m1 = mTEST[i];
+        m2 = mTEST[i-1];
+        break;
+      }
+    }
+  }
+
+  mLO=MIN(m1,m2);
+  mUP=MAX(m1,m2);
+
+  class_call(zbrent_chi_to_z(
+                               mLO,
+                               mUP,
+                               1.e-4,
+                               fa,
+                               fb,
+                               &logMDEL,
+                               chi,
+                               pclass_sz,
+                               pba
                                ),
              pclass_sz->error_message,
              pclass_sz->error_message);
@@ -11188,7 +11540,7 @@ if (pclass_sz->sz_verbose >= 1)
   // char Filepath[_ARGUMENT_LENGTH_MAX_];
   // if (pclass_sz->sz_verbose >= 1)
   //   printf("-> File Name: %s\n",pclass_sz->cmb_lensing_noise_file);
-  class_open(process,"class_sz_auxiliary_files/n5k_gg_chi_K0.txt", "r",pclass_sz->error_message);
+  class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_gg_chi_K0.txt", "r",pclass_sz->error_message);
   // if (pclass_sz->sz_verbose >= 1)
   //   printf("-> File Name: %s\n",pclass_sz->cmb_lensing_noise_file);
 
@@ -11505,7 +11857,7 @@ if (pclass_sz->sz_verbose >= 1)
   // char Filepath[_ARGUMENT_LENGTH_MAX_];
   // if (pclass_sz->sz_verbose >= 1)
   //   printf("-> File Name: %s\n",pclass_sz->cmb_lensing_noise_file);
-  class_open(process,"class_sz_auxiliary_files/n5k_z_chi.txt", "r",pclass_sz->error_message);
+  class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_z_chi.txt", "r",pclass_sz->error_message);
   // if (pclass_sz->sz_verbose >= 1)
   //   printf("-> File Name: %s\n",pclass_sz->cmb_lensing_noise_file);
 
@@ -22723,10 +23075,9 @@ int tabulate_n5k_F1(struct background * pba,
                     struct primordial * ppm,
                     struct class_sz_structure * pclass_sz){
 
-printf("tabulating n5k_F\n");
+// printf("tabulating n5k_F\n");
 class_alloc(pclass_sz->array_n5k_F1_l,sizeof(int *)*pclass_sz->n_l_n5k,pclass_sz->error_message);
 class_alloc(pclass_sz->array_n5k_F1_k,sizeof(double *)*pclass_sz->n_k_n5k,pclass_sz->error_message);
-// class_alloc(pclass_sz->array_n5k_F1_F,sizeof(double *)*pclass_sz->n_l_n5k*pclass_sz->n_k_n5k,pclass_sz->error_message);
 class_alloc(pclass_sz->array_n5k_F1_F,sizeof(double *)*pclass_sz->n_l_n5k,pclass_sz->error_message);
 
 
@@ -22753,14 +23104,10 @@ double l_n5k[103] = {   2.,    3.,    4.,    5.,    6.,    7.,    8.,    9.,   1
        1041., 1099., 1160., 1225., 1294., 1366., 1443., 1523., 1608.,
        1698., 1793., 1894., 2000.};
 
-// double l_min = 2;
-// double l_max = 2e3;
+
 for (index_l=0; index_l<pclass_sz->n_l_n5k; index_l++)
         {
-          // double lp =log(l_min)
-          //           +index_l*(log(l_max)-log(l_min))
-          //           /(pclass_sz->n_l_n5k-1.); // log(l)
-          // pclass_sz->array_n5k_F1_l[index_l] = (int) exp(lp);
+
           pclass_sz->array_n5k_F1_l[index_l] = l_n5k[index_l];
 
         }
@@ -22885,6 +23232,13 @@ int l = pclass_sz->array_n5k_F1_l[index_l];
   double epsrel= pclass_sz->integrand_n5k_epsrel;
   double epsabs= pclass_sz->integrand_n5k_epsabs;
   int show_neval = pclass_sz->patterson_show_neval;
+
+  // printf("evaluating integrand_n5k_at_k at one k for l = %d\n",l);
+  // double result = integrand_n5k_at_k(log(1e-3), params);
+  // printf("Result of integrand_n5k_at_k: %.5e\n", result);
+  // exit(0);
+
+
   //integral of density profile.
   double sumk_patterson= Integrate_using_Patterson_adaptive(log(pclass_sz->k_min_n5k),
                                                         log(pclass_sz->k_max_n5k),
@@ -25042,7 +25396,7 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
 
 
 if (pclass_sz->use_class_sz_fast_mode){
-pclass_sz->ndimSZ = 500;
+pclass_sz->ndim_redshifts = 500;
 }
 
 if (pclass_sz->need_sigma == 0)
@@ -25055,42 +25409,42 @@ if (pclass_sz->need_sigma == 0)
 
 if (pclass_sz->use_class_sz_fast_mode){
    // fixed by cosmopower emulator k-sampling
-  class_alloc(pclass_sz->array_radius,sizeof(double *)*pclass_sz->ndimSZ,pclass_sz->error_message);
+  class_alloc(pclass_sz->array_radius,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 
 
   class_alloc(pclass_sz->array_sigma_at_z_and_R,
-              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
               pclass_sz->error_message);
 
   class_alloc( pclass_sz->array_dsigma2dR_at_z_and_R,
-              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
               pclass_sz->error_message);
 
   // class_alloc(pclass_sz->array_pkl_at_z_and_k,
-  //             sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+  //             sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
   //             pclass_sz->error_message);
   //
   // class_alloc(pclass_sz->array_pknl_at_z_and_k,
-  //             sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+  //             sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
   //             pclass_sz->error_message);
   //
   // class_alloc(pclass_sz->array_lnk,
-  //             sizeof(double *)*pclass_sz->ndimSZ,
+  //             sizeof(double *)*pclass_sz->ndim_redshifts,
   //             pclass_sz->error_message);
 
   return _SUCCESS_;
 }
 else{
 
-class_alloc(pclass_sz->array_radius,sizeof(double *)*pclass_sz->ndimSZ,pclass_sz->error_message);
+class_alloc(pclass_sz->array_radius,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 
 
 class_alloc(pclass_sz->array_sigma_at_z_and_R,
-            sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+            sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
             pclass_sz->error_message);
 
 class_alloc( pclass_sz->array_dsigma2dR_at_z_and_R,
-            sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndimSZ,
+            sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
             pclass_sz->error_message);
 
 // printf("tabulating sigma\n");
@@ -25143,11 +25497,11 @@ for (index_l=0;
      index_l++)
 {
   class_alloc(array_sigma_at_z_and_R[index_l],
-              pclass_sz->ndimSZ*sizeof(double),
+              pclass_sz->ndim_redshifts*sizeof(double),
               pclass_sz->error_message);
 
   class_alloc(array_dsigma2dR_at_z_and_R[index_l],
-              pclass_sz->ndimSZ*sizeof(double),
+              pclass_sz->ndim_redshifts*sizeof(double),
               pclass_sz->error_message);
 }
 
@@ -25187,7 +25541,7 @@ num_threads(number_of_threads)
 
 // #pragma omp for schedule (dynamic)
 #pragma omp for collapse(2)
-  for (index_R=0; index_R<pclass_sz->ndimSZ; index_R++) // ndim_masses
+  for (index_R=0; index_R<pclass_sz->ndim_redshifts; index_R++) // ndim_masses
   {
   for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++) // ndim_redshift
   {
@@ -25197,7 +25551,7 @@ num_threads(number_of_threads)
     pclass_sz->array_radius[index_R] =
                                 logR_min
                                 +index_R*(logR_max-logR_min)
-                                /(pclass_sz->ndimSZ-1.); //log(R)
+                                /(pclass_sz->ndim_redshifts-1.); //log(R)
 
     // for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
     // {
@@ -25286,7 +25640,7 @@ if (abort == _TRUE_) return _FAILURE_;
 //end of parallel region
 
 index_z_R = 0;
-for (index_R=0; index_R<pclass_sz->ndimSZ; index_R++)
+for (index_R=0; index_R<pclass_sz->ndim_redshifts; index_R++)
 {
   for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
   {

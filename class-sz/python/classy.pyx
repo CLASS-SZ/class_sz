@@ -649,6 +649,7 @@ cdef class Class:
         cszfast = Class_szfast(**params_settings)
 
 
+
         # if self.tsz.cosmo_model == 0:
         #     cszfast.cosmo_model = 'lcdm'
         # elif self.tsz.cosmo_model == 1:
@@ -688,6 +689,9 @@ cdef class Class:
           # self._pars['ln10^{10}A_s'] = params_settings['ln10^{10}A_s']
         # exit(0)
 
+        # set correct dictionnary of parameters for emulators
+        cszfast.params_for_emulators = params_settings
+
         # start = time.time()
         #### do i need this here??? BB nov 23
         # self.compute(level=["input"])
@@ -722,7 +726,7 @@ cdef class Class:
           # print('pk calculation took:',end-start)
           #index_z_r = 0
           #for index_z in range(self.tsz.n_arraySZ):
-          #  for index_r in range(self.tsz.ndimSZ):
+          #  for index_r in range(self.tsz.ndim_redshifts):
           #        self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
           #        self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
           #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
@@ -737,7 +741,7 @@ cdef class Class:
 
           #index_z_r = 0
           #for index_z in range(self.tsz.n_arraySZ):
-          #  for index_r in range(self.tsz.ndimSZ):
+          #  for index_r in range(self.tsz.ndim_redshifts):
           #        self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
           #        self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
           #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
@@ -814,7 +818,7 @@ cdef class Class:
 
                 self.tsz.array_redshift[index_z] = ln1pzc
 
-                for index_r in range(self.tsz.ndimSZ):
+                for index_r in range(self.tsz.ndim_redshifts):
 
                     if index_z == 0:
 
@@ -830,7 +834,7 @@ cdef class Class:
 
             #   for index_z in range(self.tsz.n_arraySZ):
             #     self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
-            #   for index_r in range(self.tsz.ndimSZ):
+            #   for index_r in range(self.tsz.ndim_redshifts):
             #     self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
             #     self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
             #   copy_multiple_arrays(cszfast.cszfast_pk_grid_lnsigma2_flat,
@@ -842,7 +846,7 @@ cdef class Class:
             #                        self.tsz.array_pknl_at_z_and_k,
             #                        self.tsz.array_pkl_at_z_and_k,
             #                        self.tsz.n_arraySZ,
-            #                        self.tsz.ndimSZ)
+            #                        self.tsz.ndim_redshifts)
 
 
             end = time.time()
@@ -1065,15 +1069,15 @@ cdef class Class:
         # print('array_radius:',
         #       self.tsz.array_radius[0],
         #       self.tsz.array_radius[1],
-        #       self.tsz.array_radius[self.tsz.ndimSZ-1])
+        #       self.tsz.array_radius[self.tsz.ndim_redshifts-1])
         # print('array_dsigma2dR_at_z_and_R:',
         #       self.tsz.array_dsigma2dR_at_z_and_R[0],
         #       self.tsz.array_dsigma2dR_at_z_and_R[1],
-        #       self.tsz.array_dsigma2dR_at_z_and_R[self.tsz.n_arraySZ*self.tsz.ndimSZ-1])
+        #       self.tsz.array_dsigma2dR_at_z_and_R[self.tsz.n_arraySZ*self.tsz.ndim_redshifts-1])
         # print('array_sigma_at_z_and_R:',
         #       self.tsz.array_sigma_at_z_and_R[0],
         #       self.tsz.array_sigma_at_z_and_R[1],
-        #       self.tsz.array_sigma_at_z_and_R[self.tsz.n_arraySZ*self.tsz.ndimSZ-1])
+        #       self.tsz.array_sigma_at_z_and_R[self.tsz.n_arraySZ*self.tsz.ndim_redshifts-1])
 
         # # BB playground for emulators
 
@@ -1111,7 +1115,7 @@ cdef class Class:
         # print('lnr',cszfast.cszfast_pk_grid_lnr)
         # index_z_r = 0
         # for index_z in range(self.tsz.n_arraySZ):
-        #   for index_r in range(self.tsz.ndimSZ):
+        #   for index_r in range(self.tsz.ndim_redshifts):
         #         self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
         #         self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
         #         self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
@@ -1491,6 +1495,9 @@ cdef class Class:
         lum_distance = pvecback[self.ba.index_bg_lum_distance]
         free(pvecback)
         return lum_distance
+
+    def get_pkl_at_z(self, z_asked, params_values_dict=None):
+        return self.class_szfast.calculate_pkl_at_z(z_asked, params_values_dict = params_values_dict)
 
     # Gives the total matter pk for a given (k,z)
     def pk(self,double k,double z):
@@ -2006,7 +2013,12 @@ cdef class Class:
         z : float
                 Desired redshift
         """
-        return self.angular_distance(z)*(1.+z)*self.h()
+        h = self.h()
+        if np.isscalar(z):
+            return self.angular_distance(z) * (1. + z) * h
+        else:
+            return np.array([self.angular_distance(zi) * (1. + zi) * h for zi in z])
+        
 
 
     def angular_distance(self, z):
@@ -2184,29 +2196,87 @@ cdef class Class:
 
         Parameters
         ----------
-        z : float
-                Desired redshift
+        z : float or array-like
+            Desired redshift
+
+        Returns
+        -------
+        float or array-like
+            Hubble rate
         """
         cdef double tau
         cdef int last_index #junk
         cdef double * pvecback
+        cdef np.ndarray z_array
+        cdef np.ndarray H_array
 
-        pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
-
-        if self.tsz.skip_background_and_thermo:
-          H = self.class_szfast.get_hubble(z)
+        if isinstance(z, (float, int)):
+            z_array = np.array([z], dtype=np.float64)
         else:
-          if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
-              raise CosmoSevereError(self.ba.error_message)
+            z_array = np.array(z, dtype=np.float64)
 
-          if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
-              raise CosmoSevereError(self.ba.error_message)
+        H_array = np.empty_like(z_array)
 
-          H = pvecback[self.ba.index_bg_H]
+        for i in range(z_array.size):
+            pvecback = <double*> calloc(self.ba.bg_size, sizeof(double))
 
-        free(pvecback)
+            if self.tsz.skip_background_and_thermo:
+                H_array[i] = self.class_szfast.get_hubble(z_array[i])
+            else:
+                if background_tau_of_z(&self.ba, z_array[i], &tau) == _FAILURE_:
+                    free(pvecback)
+                    raise CosmoSevereError(self.ba.error_message)
 
-        return H
+                if background_at_tau(&self.ba, tau, self.ba.long_info, self.ba.inter_normal, &last_index, pvecback) == _FAILURE_:
+                    free(pvecback)
+                    raise CosmoSevereError(self.ba.error_message)
+
+                H_array[i] = pvecback[self.ba.index_bg_H]
+
+            free(pvecback)
+
+        if H_array.size == 1:
+            return H_array[0]
+        else:
+            return H_array
+
+    def get_H(self, z):
+        """
+        get_H(z)
+
+        Return the Hubble rate divided by the speed of light c
+        in units of h/Mpc. This is a convenience function to convert the output 
+        of the Hubble function to the desired units.
+
+        Parameters
+        ----------
+        z : float or array-like
+            Desired redshift
+
+        Returns
+        -------
+        float or array-like
+            Hubble rate divided by h in units of h/Mpc
+        """
+        cdef np.ndarray z_array
+        cdef np.ndarray H_over_c_in_h_over_Mpc_array
+
+        if isinstance(z, (float, int)):
+            z_array = np.array([z], dtype=np.float64)
+        else:
+            z_array = np.array(z, dtype=np.float64)
+
+        H_over_c_in_h_over_Mpc_array = np.empty_like(z_array)
+
+        for i in range(z_array.size):
+            H = self.Hubble(z_array[i])
+            h = self.ba.h
+            H_over_c_in_h_over_Mpc_array[i] = H / h
+
+        if H_over_c_in_h_over_Mpc_array.size == 1:
+            return H_over_c_in_h_over_Mpc_array[0]
+        else:
+            return H_over_c_in_h_over_Mpc_array
 
     def Om_m(self, z):
         """
@@ -2367,6 +2437,31 @@ cdef class Class:
         return get_volume_at_z(z,&self.ba)
 
  
+    def get_z_of_chi_unvectorized(self,chi):
+        return get_z_of_chi(chi,&self.tsz,&self.ba)
+
+
+    def get_z_of_chi(self,chi):
+         # Check if input is a scalar
+        if isinstance(chi, (float, np.float64)):
+            return self.get_z_of_chi_unvectorized(chi)
+        
+        # Check if chi is an array
+        elif isinstance(chi, np.ndarray) and chi.ndim == 1 and chi.dtype == np.float64:
+            n = chi.shape[0]
+            result = np.empty(n, dtype=np.float64)
+            
+            for i in range(n):
+                result[i] = self.get_z_of_chi_unvectorized(chi[i])
+            
+            return result
+        
+        else:
+            raise TypeError("Input should be a float or a 1D NumPy array of type float64.")
+   
+ 
+
+
     # Define the vectorized method
     def get_comoving_volume(self, z_input):
         """

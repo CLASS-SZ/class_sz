@@ -316,7 +316,7 @@ cdef extern from "class.h":
         double f_free
         int delta_def_custom1
         double x_out_custom1
-        int  ndimSZ
+        int  ndim_redshifts
         int nbins_M
         int n_k_for_pk_hm
         double logR1SZ
@@ -795,6 +795,8 @@ cdef extern from "class.h":
                   double * pk_tot_out,
                   double * pk_cb_tot_out,
                   int nonlinear)
+
+    double get_z_of_chi(double chi, void * pclass_sz, void * pba)
 
     double get_scale_dependent_bias_at_z_and_k(double z_asked,
                                                double k_asked,

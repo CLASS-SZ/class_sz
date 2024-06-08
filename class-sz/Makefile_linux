@@ -151,10 +151,11 @@ tar: $(C_ALL) $(C_TEST) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(
 	tar czvf class_sz.tar.gz $(C_ALL) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(PYTHON_FILES)
 
 classy_sz: libclass.a python/classy.pyx python/cclassy.pxd
-	cd python/classy_szfast; pip install -r requirements.txt -e . 
 	cd python; pip install -e .
-	echo "export PYTHONPATH=$(MDIR)/python/classy_szfast:$(MDIR)/python:PYTHONPATH" >> $(MDIR)/set_class_sz_env.sh
-
+	if [ -d "$(MDIR)/python/classy_szfast" ]; then \
+	  cd python/classy_szfast; pip install -r requirements.txt -e . ; \
+	  echo "export PYTHONPATH=$(MDIR)/python/classy_szfast:$(MDIR)/python:PYTHONPATH" >> $(MDIR)/set_class_sz_env.sh; \
+	fi
 	
 
 clean: 
