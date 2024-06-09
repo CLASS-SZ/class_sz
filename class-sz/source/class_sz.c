@@ -17446,8 +17446,8 @@ if (pclass_sz->create_ref_trispectrum_for_cobaya){
       fp=fopen(Filepath, "w");
 
 
-      fprintf(fp,"# Input mass bias b = %e\n",
-                  1.-1./pclass_sz->HSEbias);
+      // fprintf(fp,"# Input mass bias b = %e\n",
+      //             1.-1./pclass_sz->HSEbias);
       fprintf(fp,"# sigma8 = %e\n",
                   pnl->sigma8[pnl->index_pk_m]);
       fprintf(fp,"# Omega_m = %e\n",
@@ -18848,6 +18848,19 @@ printf("cluster id = %d\trate = %.4e \n",pclass_sz->szcat_size-1,pclass_sz->szra
 // printf("ell = %e\t\t cl_gal_cib (2h) = %e \n",pclass_sz->ell[index_l],pclass_sz->cl_gal_cib_2h[index_l]);
 // }
 // }
+
+if (pclass_sz->has_pk_at_z_1h){
+printf("\n\n");
+printf("########################################\n");
+printf("halo-model power spectrum matter x matter 1-halo term:\n");
+printf("########################################\n");
+printf("\n");
+int index_k;
+for (index_k=0;index_k<pclass_sz->n_k_for_pk_hm;index_k++){
+
+printf("k = %e\t\t pk (1h) = %e \n",pclass_sz->k_for_pk_hm[index_k],pclass_sz->pk_at_z_1h[index_k]);
+}
+}
 
 
 if (pclass_sz->has_gal_gal_1h){
