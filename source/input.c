@@ -4396,12 +4396,18 @@ class_read_double("C1_IA",pclass_sz->C1_IA);
     }
 
     else if (pclass_sz->pressure_profile==2){
-    //Arnaud et al pressure profile 2010, Eq B2 of [arXiv:0910.1234].
-     pclass_sz->P0GNFW = 8.130;
-     pclass_sz->c500 = 1.156;
-     pclass_sz->gammaGNFW = 0.3292;
-     pclass_sz->alphaGNFW = 1.0620;
-     pclass_sz->betaGNFW = 5.4807;
+    // //Arnaud et al pressure profile 2010, Eq B2 of [arXiv:0910.1234].
+    //  pclass_sz->P0GNFW = 8.130;
+    //  pclass_sz->c500 = 1.156;
+    //  pclass_sz->gammaGNFW = 0.3292;
+    //  pclass_sz->alphaGNFW = 1.0620;
+    //  pclass_sz->betaGNFW = 5.4807;
+        //Arnaud et al pressure profile 2010, Eq 12 of https://www.aanda.org/articles/aa/pdf/2010/09/aa13416-09.pdf
+     pclass_sz->P0GNFW = 8.403;
+     pclass_sz->c500 = 1.177;
+     pclass_sz->gammaGNFW = 0.3081;
+     pclass_sz->alphaGNFW = 1.0510;
+     pclass_sz->betaGNFW = 5.4905;
     }
 
     // else if (pclass_sz->pressure_profile==5){
