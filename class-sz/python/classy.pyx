@@ -157,11 +157,23 @@ cdef class Class:
 #        self.set(**_pars)
 # BB: modified for class_sz
     def set_default(self):
+        # print('setting default')
         _pars = {
-            "output":"tSZ",}
+            "output":"tCl",
+            'skip_input': 1,
+            'skip_background_and_thermo': 1,
+            'skip_pknl': 1,
+            'skip_pkl': 1,
+            'skip_chi': 1,
+            'skip_hubble': 1,
+            'skip_class_sz': 1,
+            'skip_sigma8_at_z': 1,
+            'skip_sigma8_and_der':1,
+            'skip_cmb': 0,
+            }
         self.set(**_pars)
 
-    def __cinit__(self, default=False):
+    def __cinit__(self, default=True):
         cdef char* dumc
         self.allocated = False
         self.computed = False
@@ -619,7 +631,8 @@ cdef class Class:
         else:
             #start = time.time()
             # print("====> pars before compute:", self._pars)
-            self.compute(level=["input"])
+            if not self._pars['skip_input']:
+              self.compute(level=["input"])
             #end = time.time()
             #print('>>> class_sz input calculation took:',end-start) # this takes < 1e-4s
 
@@ -648,18 +661,6 @@ cdef class Class:
 
         cszfast = Class_szfast(**params_settings)
 
-
-
-        # if self.tsz.cosmo_model == 0:
-        #     cszfast.cosmo_model = 'lcdm'
-        # elif self.tsz.cosmo_model == 1:
-        #     cszfast.cosmo_model = 'mnu'
-        # elif self.tsz.cosmo_model == 2:
-        #     cszfast.cosmo_model = 'neff'
-        # elif self.tsz.cosmo_model == 3:
-        #     cszfast.cosmo_model = 'wcdm'
-        # elif self.tsz.cosmo_model == 4:
-        #     cszfast.cosmo_model = 'mnu-3states'
 
         # if 'A_s' in self._pars:
         #   params_settings['ln10^{10}A_s'] = np.log(10**10*params_settings['A_s']) #self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
@@ -698,10 +699,10 @@ cdef class Class:
         # end = time.time()
         # print('class_sz input calculation took:',end-start) # this takes < 1e-4s
 
-        if self.tsz.skip_cmb == 0:
+        if self._pars['skip_cmb'] == 0:
           # print('calculating cmb')
           start = time.time()
-          # print('self.tsz.want_pp:',self.tsz.want_pp)
+          #print('self.tsz.want_pp:',self.tsz.want_pp)
           if self.tsz.use_cmb_cls_from_file == 0:
             cszfast.calculate_cmb(want_tt=True,
                                   want_te=True,
@@ -718,7 +719,7 @@ cdef class Class:
         #  cszfast.calculate_pkl_fftlog_alphas(**params_settings)
 
 
-        if self.tsz.skip_pkl == 0:
+        if self._pars['skip_pkl'] == 0:
           # print('calculating pkl')
           start = time.time()
           cszfast.calculate_pkl(**params_settings)
@@ -732,7 +733,7 @@ cdef class Class:
           #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
           #        index_z_r += 1
 
-        if self.tsz.skip_pknl == 0:
+        if self._pars['skip_pknl'] == 0:
           # print('calculating pknl')
           start = time.time()
           cszfast.calculate_pknl(**params_settings)
@@ -751,7 +752,7 @@ cdef class Class:
 
 
         # print('calculating sigma8')
-        if self.tsz.skip_sigma8_and_der == 0:
+        if self._pars['skip_sigma8_and_der'] == 0:
           start = time.time()
           cszfast.calculate_sigma8_and_der(**params_settings)
           end = time.time()
@@ -762,7 +763,7 @@ cdef class Class:
           self.sigma8_fast = 0.
 
 
-        if self.tsz.skip_sigma8_at_z == 0:
+        if self._pars['skip_sigma8_at_z'] == 0:
           start = time.time()
           cszfast.calculate_sigma8_at_z(**params_settings)
           end = time.time()
@@ -772,10 +773,10 @@ cdef class Class:
 
 
         # print(">>> moving to bg th")
-        if self.tsz.skip_background_and_thermo:
-          if self.tsz.skip_chi == 0:
+        if self._pars['skip_background_and_thermo']:
+          if self._pars['skip_chi'] == 0:
             cszfast.calculate_chi(**params_settings)
-          if self.tsz.skip_hubble == 0:
+          if self._pars['skip_hubble'] == 0:
             cszfast.calculate_hubble(**params_settings)
           self.tsz.use_class_sz_fast_mode = 1
           self.class_szfast = cszfast
@@ -1267,19 +1268,21 @@ cdef class Class:
 
           nl = len(self.class_szfast.cp_predicted_tt_spectrum)
           lcp = np.asarray(cls['ell'][2:nl+2])
-          # print('nl:',nl)
+
           cls['tt'][2:nl+2] = self.class_szfast.cp_predicted_tt_spectrum
-          cls['tt'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
+          # cls['tt'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
           cls['te'][2:nl+2] = self.class_szfast.cp_predicted_te_spectrum
-          cls['te'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
+          # cls['te'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
           cls['ee'][2:nl+2] = self.class_szfast.cp_predicted_ee_spectrum
-          cls['ee'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
+          # cls['ee'][2:nl+2] *= 1./(lcp*(lcp+1.)/2./np.pi)
           # cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum/4. ## this is clkk... works for so lensinglite lkl
-          if self.tsz.want_pp:
-            cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
-          # # here for the planck lensing lkl, using lfactor option gives:
-          # cls['pp'][2:nl+2] = self.cp_predicted_pp_spectrum/(lcp*(lcp+1.))**2.
-          # cls['pp'][2:nl+2] *= (lcp*(lcp+1.))**2./2./np.pi
+          if self._pars['skip_input'] == 0:
+            if self.tsz.want_pp:
+              cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum # /(lcp*(lcp+1.))**2.
+          else:
+            cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum # /(lcp*(lcp+1.))**2.
+            
+        
           free(lcl)
           return cls
         else:

@@ -135,6 +135,7 @@ class_sz_pclass_sz_parameter(want_pp,int,1)
 class_sz_pclass_sz_parameter(skip_class_sz,int,0)
 class_sz_pclass_sz_parameter(do_real_space_with_mcfit,int,0)
 class_sz_pclass_sz_parameter(skip_background_and_thermo,int,0)
+class_sz_pclass_sz_parameter(skip_input,int,0)
 
 class_sz_pclass_sz_parameter(n_z_dydz,int,68)
 

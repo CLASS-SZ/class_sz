@@ -6854,7 +6854,7 @@ int input_default_params(
   pclass_sz->dndz_stretch_gal = 1.;
   pclass_sz->dndz_stretch_source_gal = 1.;
   pclass_sz->shear_calibration_m = 0.;
-  pclass_sz->cosmo_model = 0; // 0 lcdm, 1 mnu, 2 neff, 3 wcdm, 4 ede
+  pclass_sz->cosmo_model = 0; // 0 lcdm, 1 mnu, 2 neff, 3 wcdm, 4 ede, 5 mnu-3states, 6 ede-3states
   pclass_sz->use_Amod = 0;
   pclass_sz->Amod = 0.;
   pclass_sz->M_min_HOD_mass_factor_unwise = 1.;
