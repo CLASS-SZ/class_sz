@@ -2,10 +2,6 @@
 #Julien Lesgourgues, 28.11.2011 for the CLASS part.
 #Boris Bolliet 2015- for the class_sz part.
 
-# To install class_sz all you need to do is to set the environment variable
-# PATH_TO_COSMOPOWER_ORGANIZATION to the path to the cosmopower-organization directory
-# and then run the makefile.
-
 MDIR := $(shell pwd)
 WRKDIR = $(MDIR)/build
 OUTDIR = $(MDIR)/output

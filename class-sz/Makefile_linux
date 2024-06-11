@@ -2,9 +2,6 @@
 #Julien Lesgourgues, 28.11.2011 for the CLASS part.
 #Boris Bolliet 2015- for the class_sz part.
 
-# To install class_sz all you need to do is to set the environment variable
-# PATH_TO_COSMOPOWER_ORGANIZATION to the path to the cosmopower-organization directory
-# and then run the makefile.
 
 MDIR := $(shell pwd)
 WRKDIR = $(MDIR)/build
@@ -75,8 +72,7 @@ HYREC = hyrec
 CCFLAG += -D__CLASSDIR__='"$(MDIR)"'
 
 # where to find include files *.h
-# INCLUDES =  -I../include -I/usr/local/include/ -I/Users/boris/opt/miniconda3/include/
-INCLUDES =  -I../include -I/usr/local/include/ -I/mnt/sw/nix/store/hvk062l60nqlpzpx1svxphw1lv4rkcqn-gsl-2.7/include
+INCLUDES =  -I../include -I/usr/local/include/ 
 
 # automatically add external programs if needed. First, initialize to blank.
 EXTERNAL =
