@@ -4751,10 +4751,22 @@ cdef class Class:
         for index_y in range(self.csz.Nbins_y):
             log10y_center.append(self.csz.logy[index_y])
             log10y_edges.append(self.csz.logy[index_y]-0.5*self.csz.dlogy)
-        #log10y_center.append(self.csz.logy[self.csz.Nbins_y-1])
-        #log10y_edges.append(self.csz.logy[self.csz.Nbins_y-1]-0.5*self.tsz.bin_dlog10_snr_last_bin)
         log10y_edges.append(self.csz.logy[self.csz.Nbins_y-1]+0.5*self.csz.dlogy)
-        return {'dndzdy':dndzdy,'z_center':z_center,'z_edges':z_edges,'log10y_center':log10y_center,'log10y_edges':log10y_edges}
+
+        szcat_z = []
+        szcat_snr = []
+        for index_z in range(self.tsz.szcat_size):
+            szcat_z.append(self.tsz.szcat_z[index_z])
+            szcat_snr.append(self.tsz.szcat_snr[index_z])
+
+
+        return {'dndzdy':dndzdy,
+                'z_center':z_center,
+                'z_edges':z_edges,
+                'log10y_center':log10y_center,
+                'log10y_edges':log10y_edges,
+                'szcat_z':szcat_z,
+                'szcat_snr':szcat_snr}
 
 
     def get_background(self):

@@ -331,6 +331,7 @@ cdef extern from "class.h":
         double * szrate
         int szcat_size
         double * szcat_snr
+        double * szcat_z
         int need_sigma
         int has_pk
         double effective_galaxy_bias
@@ -551,6 +552,8 @@ cdef extern from "class.h":
         double alpha_c_beta
         double xc_B16
         double gamma_B16
+        
+
 
     cdef struct szcount:
         double ** dNdzdy_theoretical

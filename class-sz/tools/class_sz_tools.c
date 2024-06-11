@@ -20421,16 +20421,7 @@ int read_sz_catalog(struct class_sz_structure * pclass_sz){
       pclass_sz->szcat_z   = (double *)malloc(n_data_guess*sizeof(double));
       pclass_sz->szcat_snr   = (double *)malloc(n_data_guess*sizeof(double));
 
-      // char Filepath[_ARGUMENT_LENGTH_MAX_];
-      // sprintf(Filepath,
-      //         "%s%s",
-      //         // "%s%s%s",
-      //         "cat ",
-      //         // pclass_sz->path_to_class,
-      //         "/class_sz_auxiliary_files/SO_files/SOSim_3freq_small_Qfit_comp_test.txt");
-      //
-      // process = popen(Filepath, "r");
-      // class_open(process,"class_sz_auxiliary_files/SZ_cat.txt", "r",pclass_sz->error_message);
+
       class_open(process,pclass_sz->SZ_cat_file, "r",pclass_sz->error_message);
 
       while (fgets(line, sizeof(line)-1, process) != NULL) {

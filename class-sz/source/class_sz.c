@@ -694,7 +694,7 @@ while( pch != NULL ) {
 
 
 
-   if (pclass_sz->has_sz_rates || pclass_sz->has_sz_counts_fft){
+   if (pclass_sz->has_sz_rates || pclass_sz->has_sz_counts_fft || pclass_sz->has_sz_counts){
       read_sz_catalog(pclass_sz);
 
       if (pclass_sz->sz_verbose>1){
@@ -4237,6 +4237,7 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
 
    if ((pclass_sz->has_completeness_for_ps_SZ == 1)
     || (pclass_sz->has_sz_counts  == 1)
+    || pclass_sz->has_sz_rates
     || pclass_sz->has_sz_counts_fft == 1){
    free(pclass_sz->thetas);
    free(pclass_sz->skyfracs);

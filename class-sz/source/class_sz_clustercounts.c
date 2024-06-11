@@ -2792,7 +2792,7 @@ int initialise_and_allocate_memory_cc(struct class_sz_structure * pclass_sz,stru
   pcsz->nzSZ = pclass_sz->n_arraySZ_for_integral;
 
   pclass_sz->has_completeness = pcsz->has_completeness;
-// read_sz_catalog(pclass_sz);
+
 
   //pcsz->size_logM = 105; //cosmomc settings
 
