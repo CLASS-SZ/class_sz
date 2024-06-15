@@ -2050,7 +2050,7 @@ int input_read_parameters(
                  errmsg,
                  errmsg);
 
-      if ((strstr(string1,"tSZ_1h") != NULL) || (strstr(string1,"tSZCl") != NULL) || (strstr(string1,"tszCL") != NULL)) {
+      if ((strstr(string1,"tSZ_tSZ_1h") != NULL) || (strstr(string1,"tSZ_1h") != NULL) || (strstr(string1,"tSZCl") != NULL) || (strstr(string1,"tszCL") != NULL)) {
         pclass_sz->has_sz_ps =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
@@ -2061,7 +2061,7 @@ int input_read_parameters(
 
       }
 
-      if ((strstr(string1,"tSZ_2h") != NULL) ) {
+      if ((strstr(string1,"tSZ_2h") != NULL) || (strstr(string1,"tSZ_tSZ_2h") != NULL)) {
         pclass_sz->has_sz_2halo =_TRUE_;
         ppt->has_density_transfers=_TRUE_;
         ppt->has_pk_matter = _TRUE_;
@@ -4186,20 +4186,41 @@ int input_read_parameters(
 
 
 
-      /* pressure profile SZ */
+      /* pressure profile for thermal SZ effect */
       class_call(parser_read_string(pfc,"pressure profile",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
+
+
       if (flag1 == _TRUE_) {
-        if ((strstr(string1,"P13") != NULL))
+
+        if ((strstr(string1,"P13") != NULL)
+         || (strstr(string1,"Planck2013") != NULL)
+         || (strstr(string1,"Planck13") != NULL))
+        
           pclass_sz->pressure_profile=0;
-        else  if ((strstr(string1,"A10") != NULL))
+        
+        else  if ((strstr(string1,"A10") != NULL) 
+               || (strstr(string1,"Arnaud10") != NULL) 
+               || (strstr(string1,"Arnaud2010") != NULL))
+
           pclass_sz->pressure_profile=2;
+        
         // else  if ((strstr(string1,"A10XRAY") != NULL))
+        
         //   pclass_sz->pressure_profile=5;
-        else  if ((strstr(string1,"Custom. GNFW") != NULL))
+
+        else  if ((strstr(string1,"Custom. GNFW") != NULL)
+               || (strstr(string1,"custom_gnfw") != NULL)
+               || (strstr(string1,"custom_GNFW") != NULL)
+               || (strstr(string1,"Custom_GNFW") != NULL))
+
           pclass_sz->pressure_profile=3;
-        else  if ((strstr(string1,"B12") != NULL))
+        
+        else  if ((strstr(string1,"B12") != NULL)
+               || (strstr(string1,"Battaglia12") != NULL)
+               || (strstr(string1,"Battaglia2012") != NULL))
+
           pclass_sz->pressure_profile=4;
 
         }

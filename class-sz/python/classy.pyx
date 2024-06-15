@@ -22,13 +22,31 @@ cimport cython
 from scipy import interpolate
 from scipy import integrate
 from scipy.interpolate import InterpolatedUnivariateSpline as _spline
-
+from libc.math cimport pow
 
 import mcfit
 import time
 
 import warnings
 from contextlib import contextmanager
+
+import logging
+
+def configure_logging(level=logging.INFO):
+    logging.basicConfig(
+        format='%(levelname)s - %(message)s',
+        level=level
+    )
+
+def set_verbosity(verbosity):
+    levels = {
+        'none': logging.CRITICAL,
+        'minimal': logging.INFO,
+        'extensive': logging.DEBUG
+    }
+    # print(f'Setting verbosity to {verbosity}')
+    level = levels.get(verbosity, logging.INFO)
+    configure_logging(level)
 
 @contextmanager
 def suppress_warnings():
@@ -41,6 +59,91 @@ def suppress_warnings():
 with suppress_warnings():
     import classy_szfast
     from classy_szfast import Class_szfast
+
+
+
+
+def class_sz_in_dict_output(d):
+    # Define the allowed keys
+    non_class_sz_keys = {"mPk", "tCl", "lCl", "pCl"}
+    
+    # Extract the string from dict["output"]
+    output_string = d.get("output", "")
+    
+    # Split the string into individual keys
+    output_keys = {key.strip() for key in output_string.split(",") if key.strip()}
+    
+    # Check if all keys are within the allowed keys
+    for key in output_keys:
+        if key not in non_class_sz_keys:
+            return True
+    
+    return False
+
+
+def contains_specific_keys(d,specific_keys = {"tCl", "lCl", "pCl"}):
+    # Define the specific keys to check
+    
+    
+    # Extract the string from dict["output"]
+    output_string = d.get("output", "")
+    
+    # Split the string into individual keys
+    output_keys = {key.strip() for key in output_string.split(",") if key.strip()}
+    
+    # Check if any of the specific keys are in output_keys
+    for key in specific_keys:
+        if key in output_keys:
+            return True
+    
+    return False
+
+
+import re
+
+def contains_specific_pattern_or_keys(d):
+    # Extract the string from dict["output"]
+    output_string = d.get("output", "")
+    
+    # Split the string into individual keys
+    output_keys = {key.strip() for key in output_string.split(",") if key.strip()}
+    
+    # Define the regular expression pattern
+    pattern1 = re.compile(r'^[^,]+_(1h|2h|hf|3h|covmat|lensing_term|hsv)$')
+    pattern2 = re.compile(r'^m\d+[a-zA-Z]*_to_m\d+[a-zA-Z]*$')
+    pattern3 = re.compile(r'^\((1h|2h|3h)\)$')
+    
+
+    other_class_sz_keys = {"tabulate_rhob_xout_at_m_and_z", 
+                            "scale_dependent_bias", 
+                            "n5k",
+                            "sz_unbinned_cluster_counts",
+                            "sz_cluster_counts_fft",
+                            "dndM","dndm","dndlnM","dndlnm",
+                            "sz_cluster_counts",
+                            "isw_auto",
+                            "isw_tsz",
+                            "isw_lens",
+                            "vrms2",
+                            "hmf",
+                            "cov(N,N)",
+                            "te_y_y",
+                            "dydz"
+                            }
+    
+    # Check if any key matches the patterns
+    for key in output_keys:
+        if pattern1.match(key) or pattern2.match(key) or pattern3.match(key):
+            return True
+
+
+        if key in other_class_sz_keys:
+            return True
+    
+    return False
+
+
+
 
 
 
@@ -124,13 +227,17 @@ cdef class Class:
 
     cdef int computed # Flag to see if classy has already computed with the given pars
     cdef int allocated # Flag to see if classy structs are allocated already
+
     cdef object _pars # Dictionary of the parameters
     cdef object ncp   # Keeps track of the structures initialized, in view of cleaning.
+
+    cdef object logger # Logger for the classy_sz
 
 
 
 
     cdef double sigma8_fast
+    cdef double Neff_fast
     cdef object class_szfast
 
     # Defining two new properties to recover, respectively, the parameters used
@@ -151,10 +258,7 @@ cdef class Class:
             return self.nl.method
 
 
-#    def set_default(self):
-#        _pars = {
-#            "output":"tCl mPk",}
-#        self.set(**_pars)
+
 # BB: modified for class_sz
     def set_default(self):
         # print('setting default')
@@ -170,6 +274,8 @@ cdef class Class:
             'skip_sigma8_at_z': 1,
             'skip_sigma8_and_der':1,
             'skip_cmb': 0,
+            'cosmo_model': 6, # set ede-v2 emulators as default
+            'classy_sz_verbose': 'none',
             }
         self.set(**_pars)
 
@@ -209,6 +315,8 @@ cdef class Class:
         if viewdictitems(self._pars) <= viewdictitems(oldpars):
           return # Don't change the computed states, if the new dict was already contained in the previous dict
         self.computed=False
+        set_verbosity(self._pars["classy_sz_verbose"])
+        self.logger = logging.getLogger(__name__)
         return True
 
     def empty(self):
@@ -414,39 +522,6 @@ cdef class Class:
         # (And then we successively keep track of the ones we allocate additionally)
         self.allocated = True
 
-        # BB playground for emulators
-        # cszfast = classy_szfast()
-        # print(self._pars)
-        # params_settings = self._pars
-
-
-        # print('calculating cmb')
-        # start = time.time()
-        # cszfast.calculate_cmb(**params_settings)
-        # end = time.time()
-        # print('cmb calculation took:',end-start)
-
-
-        # print('calculating pkl')
-        # start = time.time()
-        # cszfast.calculate_pkl(**params_settings)
-        # end = time.time()
-        # print('pk calculation took:',end-start)
-
-        # print('calculating pknl')
-        # start = time.time()
-        # cszfast.calculate_pknl(**params_settings)
-        # end = time.time()
-        # print('pknl calculation took:',end-start)
-
-        # print('tabulate sigma')
-        # start = time.time()
-        # cszfast.calculate_sigma(**params_settings)
-        # end = time.time()
-        # print('end tabulate sigma:',end-start)
-        # print(cszfast.cszfast_pk_grid_dsigma2_flat[:10],np.shape(cszfast.cszfast_pk_grid_dsigma2_flat))
-        # print(cszfast.cszfast_pk_grid_sigma2_flat[:10],np.shape(cszfast.cszfast_pk_grid_sigma2_flat))
-
 
         # --------------------------------------------------------------------
         # Check the presence for all CLASS modules in the list 'level'. If a
@@ -581,198 +656,216 @@ cdef class Class:
     # @cython.boundscheck(False)
     # @cython.wraparound(False)
     def compute_class_szfast(self):
-        # print('input parameters:',self._pars)
-        # oldpars = self._pars.copy()
+        
+
+        ## deal with names 
+
         if 'ns' in self._pars:
+
           self._pars['n_s'] = self._pars.pop('ns')
+
         if 'As' in self._pars:
+
           self._pars['ln10^{10}A_s'] = np.log(10**10*self._pars.pop('As'))
+
         if 'A_s' in self._pars:
+
           self._pars['ln10^{10}A_s'] = np.log(10**10*self._pars.pop('A_s'))
+
         if 'mnu' in self._pars:
+
           self._pars['m_ncdm'] = self._pars.pop('mnu')
+
         if 'omch2' in self._pars:
+          
           self._pars['omega_cdm'] = self._pars.pop('omch2')
+        
         if 'ombh2' in self._pars:
+        
           self._pars['omega_b'] = self._pars.pop('ombh2')
+        
         if 'h' in self._pars:
+        
           self._pars['H0'] = 100.*self._pars.pop('h')
+        
         if 'Omega_b' in self._pars:
+        
           self._pars['omega_b'] = self._pars.pop('Omega_b')*(self._pars['H0']/100.)**2.
+        
         if 'Omega_cdm' in self._pars:
+        
           self._pars['omega_cdm'] = self._pars.pop('Omega_cdm')*(self._pars['H0']/100.)**2.
 
-        # if 'age' and 'H0' in self._pars:
-        #     del self._pars['age']
+
+        if "pressure_profile" in self._pars: 
+
+            self._pars["pressure profile"] = self._pars.pop("pressure_profile")
+
+        if "mass_function" in self._pars: 
+
+            self._pars["mass function"] = self._pars.pop("mass_function")
 
 
-        # print('new input parameters:',self._pars)
+        if "concentration_parameter" in self._pars: 
 
-        # start = time.time()
-        # self.compute(level=["input"])
-        # end = time.time()
-        # print('class_sz input calculation took:',end-start) # this takes < 1e-4s
+            self._pars["concentration parameter"] = self._pars.pop("concentration_parameter")
 
-        # print("skip",self.tsz.skip_background_and_thermo)
 
-        # Emulators
-        skip_background_and_thermo = 0
-        if 'skip_background_and_thermo' in self._pars:
-            skip_background_and_thermo = self._pars['skip_background_and_thermo']
 
-        # print(">>>> skip_background_and_thermo:",skip_background_and_thermo)
-        if not skip_background_and_thermo:
+        if contains_specific_keys(self._pars,{"tCl", "lCl", "pCl"}):
 
-            #start = time.time()
-            self.compute(level=["thermodynamics"])
-            #end = time.time()
-            #print('>>> class_sz bg/th calculation took:',end-start) # this takes < 1e-4s
+            self._pars['skip_cmb'] = 0
 
         else:
-            #start = time.time()
-            # print("====> pars before compute:", self._pars)
+
+            self._pars['skip_cmb'] = 1
+
+        if contains_specific_keys(self._pars,{"mPk"}):
+
+            self._pars['skip_pkl'] = 0
+
+            non_linear_check = 'non_linear' in self._pars
+
+            if non_linear_check:
+
+                self._pars['skip_pknl'] = 0
+
+            else:
+
+                self._pars['skip_pknl'] = 1
+
+
+        # test is anything else than class quantities are requested.
+        # if so make sure we run at least input. 
+        if class_sz_in_dict_output(self._pars):
+
+            self._pars['skip_input'] = 0
+
+
+
+            if contains_specific_pattern_or_keys(self._pars):
+
+                self._pars['skip_class_sz'] = 0
+                self._pars['skip_background_and_thermo'] = 0
+                self._pars['skip_pkl'] = 0
+
+
+                ## check if we need pknl : 
+
+                pknl_in_output = re.compile(r'^hf$').match(self._pars['output'])
+
+                pknl_key_value_checks = any(self._pars.get(key) == 1 for key in ['use_pknl_in_2hterms_IA_only', 'use_pknl_in_2hterms'])
+
+                non_linear_check = 'non_linear' in self._pars
+                
+                if pknl_in_output or pknl_key_value_checks or non_linear_check:
+
+                    self._pars['skip_pknl'] = 0
+
+                ## done with check of pknl 
+
+
+            else:
+
+                self._pars['skip_class_sz'] = 1
+
+
+        skip_background_and_thermo = self._pars['skip_background_and_thermo']
+
+
+        if not skip_background_and_thermo:
+
+            self.compute(level=["thermodynamics"])
+
+
+        else:
+
             if not self._pars['skip_input']:
               self.compute(level=["input"])
-            #end = time.time()
-            #print('>>> class_sz input calculation took:',end-start) # this takes < 1e-4s
-
 
         params_settings = self._pars.copy()
 
 
         if 'age' in self._pars:
-            # print('>>> got h0 = %.8e for age = %.8e'%(self.h(),params_settings['age']))
+
             params_settings['H0'] = 100.*self.h()
-            # print('>>> params_settings:',params_settings)
-            del params_settings['age']
-            # del params_settings['h']
 
-        #print('--------> new input parameters after age found:',params_settings)
-
-        # print("pars before input:",self._pars)
-        # print('h',self.h())
-        # print(self.get_current_derived_parameters(['ln10^{10}A_s']))
-
-
-
-
-
+            del params_settings['age'] 
 
 
         cszfast = Class_szfast(**params_settings)
 
 
-        # if 'A_s' in self._pars:
-        #   params_settings['ln10^{10}A_s'] = np.log(10**10*params_settings['A_s']) #self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
-        #   params_settings.pop('A_s')
         if '100*theta_s' in self._pars:
-          # print('doing theta_s -> H0')
-          cszfast.get_H0_from_thetas(params_settings)
-          # print('We will compute that, but this is not what to do for fast-mode.\n')
-          # print('It is ok for testing, but....\n')
-          # print('You should pass H0 or h for maximum speed.\n')
-          # print('You can always recover 100*theta_s as a derived parameter.\n')
-          #params_settings['H0'] = 100.*self.h()
-          # print('self.pars',self._pars)
-          # self._pars.pop('100*theta_s')
-          # self._pars['H0'] = params_settings['H0']
-        if 'sigma8' in self._pars:
-          # print('We will compute that, but this is not what to do for fast-mode.\n')
-          # print('It is ok for testing, but....\n')
-          # print('You should pass A_s or ln10^{10}A_s for maximum speed.\n')
-          # print('You can always recover sigma8 as a derived parameter.\n')
-          # params_settings['ln10^{10}A_s'] = self.get_current_derived_parameters(['ln10^{10}A_s'])['ln10^{10}A_s']
-          cszfast.find_As(params_settings)
-          # params_settings['ln10^{10}A_s'] = np.log(1.e10*cszfast.find_As(params_settings['sigma8'],params_settings))
-          # params_settings.pop('sigma8')
-          # print('self.pars',self._pars)
-          # self._pars.pop('sigma8')
-          # self._pars['ln10^{10}A_s'] = params_settings['ln10^{10}A_s']
-        # exit(0)
 
-        # set correct dictionnary of parameters for emulators
+          cszfast.get_H0_from_thetas(params_settings)
+
+        if 'sigma8' in self._pars:
+
+          cszfast.find_As(params_settings)
+
+
+
         cszfast.params_for_emulators = params_settings
 
-        # start = time.time()
-        #### do i need this here??? BB nov 23
-        # self.compute(level=["input"])
-        # end = time.time()
-        # print('class_sz input calculation took:',end-start) # this takes < 1e-4s
 
         if self._pars['skip_cmb'] == 0:
-          # print('calculating cmb')
+
           start = time.time()
-          #print('self.tsz.want_pp:',self.tsz.want_pp)
+
           if self.tsz.use_cmb_cls_from_file == 0:
+
             cszfast.calculate_cmb(want_tt=True,
                                   want_te=True,
                                   want_ee=True,
-                                  # want_pp=self.tsz.want_pp,
                                   **params_settings)
           else:
-            cszfast.load_cmb_cls_from_file(**params_settings)
-          end = time.time()
-          # print('cmb calculation took:',end-start)
-          # print(">>> cmb computed")
 
-        #if self.tsz.skip_pkl_fftlog_alpha == 0:
-        #  cszfast.calculate_pkl_fftlog_alphas(**params_settings)
+            cszfast.load_cmb_cls_from_file(**params_settings)
+
+          end = time.time()
+
+
 
 
         if self._pars['skip_pkl'] == 0:
-          # print('calculating pkl')
+
+
           start = time.time()
           cszfast.calculate_pkl(**params_settings)
           end = time.time()
-          # print('pk calculation took:',end-start)
-          #index_z_r = 0
-          #for index_z in range(self.tsz.n_arraySZ):
-          #  for index_r in range(self.tsz.ndim_redshifts):
-          #        self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
-          #        self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
-          #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
-          #        index_z_r += 1
-
+ 
         if self._pars['skip_pknl'] == 0:
-          # print('calculating pknl')
+
+
           start = time.time()
           cszfast.calculate_pknl(**params_settings)
           end = time.time()
-          # print('pknl calculation took:',end-start)
-
-          #index_z_r = 0
-          #for index_z in range(self.tsz.n_arraySZ):
-          #  for index_r in range(self.tsz.ndim_redshifts):
-          #        self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
-          #        self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
-          #        self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
-          #        index_z_r += 1
 
 
 
-
-        # print('calculating sigma8')
         if self._pars['skip_sigma8_and_der'] == 0:
+
           start = time.time()
           cszfast.calculate_sigma8_and_der(**params_settings)
           end = time.time()
-          # print('sigma8_and_der calculation took:',end-start)
-          # print('sigma8:',cszfast.sigma8)
+
           self.sigma8_fast = cszfast.sigma8
+          self.Neff_fast = cszfast.Neff
         else:
           self.sigma8_fast = 0.
 
 
         if self._pars['skip_sigma8_at_z'] == 0:
+
           start = time.time()
           cszfast.calculate_sigma8_at_z(**params_settings)
           end = time.time()
-          # print('sigma8_at_z calculation took:',end-start)
 
 
 
 
-        # print(">>> moving to bg th")
+
         if self._pars['skip_background_and_thermo']:
           if self._pars['skip_chi'] == 0:
             cszfast.calculate_chi(**params_settings)
@@ -783,7 +876,7 @@ cdef class Class:
           self.computed = True
           return
         else:
-          # print(">>> computing bg and th with:",self._pars)
+
           # start = time.time()
           # self.compute(level=["thermodynamics"])
           # end = time.time()
@@ -793,15 +886,15 @@ cdef class Class:
           &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
               self.struct_cleanup()
               raise CosmoComputationError(self.tsz.error_message)
-          # print(">>> bg and th computed")
+
           if self.tsz.skip_class_sz:
-              # print("skipping class_sz")
-              # print("pkmatter:",self.pt.has_pk_matter)
+
               self.computed = True
               self.class_szfast = cszfast
               return
+
           else:
-            # print('tabulate sigma')
+
             start = time.time()
 
             cszfast.calculate_sigma(**params_settings)
@@ -833,21 +926,6 @@ cdef class Class:
 
                     index_z_r += 1
 
-            #   for index_z in range(self.tsz.n_arraySZ):
-            #     self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
-            #   for index_r in range(self.tsz.ndim_redshifts):
-            #     self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
-            #     self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
-            #   copy_multiple_arrays(cszfast.cszfast_pk_grid_lnsigma2_flat,
-            #                        cszfast.cszfast_pk_grid_dsigma2_flat,
-            #                        cszfast.cszfast_pk_grid_pknl_flat,
-            #                        cszfast.cszfast_pk_grid_pkl_flat,
-            #                        self.tsz.array_pknl_at_z_and_k,
-            #                        self.tsz.array_dsigma2dR_at_z_and_R,
-            #                        self.tsz.array_pknl_at_z_and_k,
-            #                        self.tsz.array_pkl_at_z_and_k,
-            #                        self.tsz.n_arraySZ,
-            #                        self.tsz.ndim_redshifts)
 
 
             end = time.time()
@@ -1502,8 +1580,11 @@ cdef class Class:
     def get_pkl_at_z(self, z_asked, params_values_dict=None):
         return self.class_szfast.calculate_pkl_at_z(z_asked, params_values_dict = params_values_dict)
 
+    def get_pknl_at_z(self, z_asked, params_values_dict=None):
+        return self.class_szfast.calculate_pknl_at_z(z_asked, params_values_dict = params_values_dict)
+
     # Gives the total matter pk for a given (k,z)
-    def pk(self,double k,double z):
+    def pk_unvectorized(self,double k,double z):
         """
         Gives the total matter pk (in Mpc**3) for a given k (in 1/Mpc) and z (will be non linear if requested to Class, linear otherwise)
 
@@ -1538,6 +1619,67 @@ cdef class Class:
 
         return pk
 
+
+    # Gives the total matter pk for a given (k,z)
+    def pk(self, k, z):
+        """
+        Gives the total matter pk (in Mpc**3) for a given k (in 1/Mpc) and z.
+        This function handles both scalar and array inputs for k and z.
+
+        .. note::
+
+            there is an additional check that output contains `mPk`,
+            because otherwise a segfault will occur
+        """
+        cdef double pk
+        cdef np.ndarray k_array, z_array, pk_array
+        cdef int i, n
+
+        # Convert inputs to arrays if they are not already
+        k_array = np.atleast_1d(np.array(k, dtype=np.float64))
+        z_array = np.atleast_1d(np.array(z, dtype=np.float64))
+
+        # Check if shapes are broadcastable
+        if k_array.shape != z_array.shape:
+            try:
+                k_array, z_array = np.broadcast_arrays(k_array, z_array)
+            except ValueError:
+                raise ValueError("k and z must be broadcastable to the same shape.")
+
+        n = k_array.size
+        pk_array = np.empty(n, dtype=np.float64)
+
+        if self.tsz.use_class_sz_fast_mode == 1:
+            zmax = self.class_szfast.cszfast_pk_grid_zmax
+            for i in range(n):
+                if z_array[i] > zmax:
+                    pk_linzmax = self.class_szfast.get_pkl_at_k_and_z(k_array[i], zmax)
+                    Dz = self.scale_independent_growth_factor(z_array[i])
+                    Dzmax = self.scale_independent_growth_factor(zmax)
+                    pk_array[i] = pk_linzmax * pow(Dz / Dzmax, 2.0)
+                else:
+                    pk_array[i] = self.class_szfast.get_pknl_at_k_and_z(k_array[i], z_array[i])
+        else:
+            if (self.pt.has_pk_matter == _FALSE_):
+                raise CosmoSevereError("No power spectrum computed. You must add mPk to the list of outputs.")
+
+            for i in range(n):
+                if self.nl.method == nl_none:
+                    if nonlinear_pk_at_k_and_z(&self.ba, &self.pm, &self.nl, pk_linear, k_array[i], z_array[i], self.nl.index_pk_m, &pk, NULL) == _FAILURE_:
+                        raise CosmoSevereError(self.nl.error_message)
+                else:
+                    if nonlinear_pk_at_k_and_z(&self.ba, &self.pm, &self.nl, pk_nonlinear, k_array[i], z_array[i], self.nl.index_pk_m, &pk, NULL) == _FAILURE_:
+                        raise CosmoSevereError(self.nl.error_message)
+                pk_array[i] = pk
+
+        # Return a scalar if the input was scalar, otherwise return the array
+        if pk_array.size == 1:
+            return pk_array[0]
+        else:
+            return pk_array
+
+
+
     # Gives the cdm+b pk for a given (k,z)
     def pk_cb(self,double k,double z):
         """
@@ -1566,7 +1708,7 @@ cdef class Class:
         return pk_cb
 
     # Gives the total matter pk for a given (k,z)
-    def pk_lin(self,double k,double z):
+    def pk_lin_unvectorized(self,double k,double z):
         """
         Gives the linear total matter pk (in Mpc**3) for a given k (in 1/Mpc) and z
 
@@ -1598,6 +1740,65 @@ cdef class Class:
               raise CosmoSevereError(self.nl.error_message)
 
         return pk_lin
+
+
+
+    # Gives the total matter pk for a given (k,z)
+    def pk_lin(self, k, z):
+        """
+        Gives the linear total matter pk (in Mpc**3) for a given k (in 1/Mpc) and z.
+        This function handles both scalar and array inputs for k and z.
+
+        .. note::
+
+            there is an additional check that output contains `mPk`,
+            because otherwise a segfault will occur
+        """
+        cdef double pk_lin
+        cdef np.ndarray k_array, z_array, pk_lin_array
+        cdef int i, n
+
+        # Convert inputs to arrays if they are not already
+        k_array = np.atleast_1d(np.array(k, dtype=np.float64))
+        z_array = np.atleast_1d(np.array(z, dtype=np.float64))
+
+        # Check if shapes are broadcastable
+        if k_array.shape != z_array.shape:
+            try:
+                k_array, z_array = np.broadcast_arrays(k_array, z_array)
+            except ValueError:
+                raise ValueError("k and z must be broadcastable to the same shape.")
+
+        n = k_array.size
+        pk_lin_array = np.empty(n, dtype=np.float64)
+
+        if self.tsz.use_class_sz_fast_mode == 1:
+            zmax = self.class_szfast.cszfast_pk_grid_zmax
+            for i in range(n):
+                if z_array[i] > zmax:
+                    pk_linzmax = self.class_szfast.get_pkl_at_k_and_z(k_array[i], zmax)
+                    Dz = self.scale_independent_growth_factor(z_array[i])
+                    Dzmax = self.scale_independent_growth_factor(zmax)
+                    pk_lin_array[i] = pk_linzmax * pow(Dz / Dzmax, 2.0)
+                else:
+                    pk_lin_array[i] = self.class_szfast.get_pkl_at_k_and_z(k_array[i], z_array[i])
+        else:
+            if (self.pt.has_pk_matter == _FALSE_):
+                raise CosmoSevereError("No power spectrum computed. You must add mPk to the list of outputs.")
+
+            for i in range(n):
+                if nonlinear_pk_at_k_and_z(&self.ba, &self.pm, &self.nl, pk_linear, k_array[i], z_array[i], self.nl.index_pk_m, &pk_lin, NULL) == _FAILURE_:
+                    raise CosmoSevereError(self.nl.error_message)
+                pk_lin_array[i] = pk_lin
+
+        # Return a scalar if the input was scalar, otherwise return the array
+        if pk_lin_array.size == 1:
+            return pk_lin_array[0]
+        else:
+            return pk_lin_array
+
+
+
 
     # Gives the total matter pk for a given (k,z)
     def pk_nonlin(self,double k,double z):
@@ -1956,7 +2157,10 @@ cdef class Class:
         return self.ba.Omega0_b * self.ba.h * self.ba.h
 
     def Neff(self):
-        return self.ba.Neff
+        if self.tsz.use_class_sz_fast_mode == 1:
+          return self.Neff_fast
+        else:
+          return self.ba.Neff
 
     def k_eq(self):
         self.compute(["background"])
@@ -5087,6 +5291,10 @@ cdef class Class:
                 value = self.ba.Omega0_ncdm_tot*self.ba.h*self.ba.h*93.14
             elif name == 'Neff':
                 value = self.ba.Neff
+                if self.tsz.use_class_sz_fast_mode == 1:
+                  value = self.Neff_fast
+                else:
+                  value = self.ba.Neff
             elif name == 'Omega_m':
                 if self.tsz.skip_background_and_thermo:
                   params_settings = self._pars

@@ -48,6 +48,9 @@ class_sz_string_parameter(cmb_lensing_noise_file,"cmb_lensing_noise_file","cmb_l
 class_sz_string_parameter(SZ_cat_file,"/class_sz_auxiliary_files/includes/SZ_cat.txt","SZ_cat_file")
 
 
+class_sz_string_parameter(classy_sz_verbose,"none","classy_sz_verbose")
+
+
 class_sz_string_parameter(Planck_thetas_file,"/class_sz_auxiliary_files/includes/SZ_thetas.txt","Planck_thetas_file")
 class_sz_string_parameter(SO_thetas_file,"/class_sz_auxiliary_files/nemo_sim_thetas_030722_50bins.txt","sz_selection_function_thetas_file")
 

@@ -14035,113 +14035,135 @@ double get_sigma_at_z_and_m(double z,
                             struct background * pba){
 
   double rh;
+
   if (pclass_sz->HMF_prescription_NCDM == 0) //Matter
+  
     rh = pow(3.*m/(4*_PI_*(pba->Omega0_cdm+pba->Omega0_b)*pclass_sz->Rho_crit_0),1./3.);
 
   else if (pclass_sz->HMF_prescription_NCDM == 1) //CDM
+  
     rh = pow(3.*m/(4*_PI_*(pba->Omega0_cdm+pba->Omega0_b)*pclass_sz->Rho_crit_0),1./3.);
 
   else if (pclass_sz->HMF_prescription_NCDM == 2) //No-pres
+  
     rh = pow(3.*m/(4*_PI_*pclass_sz->Omega_m_0*pclass_sz->Rho_crit_0),1./3.);
 
-   double z_asked = log(1.+z);
-   // double R_asked = log(exp(log(rh))/pba->h);
-   double R_asked = log(rh/pba->h); // this is in Mpc
+  double z_asked = log(1.+z);
+
+  double R_asked = log(rh/pba->h); // this is in Mpc
 
 
- if (z_asked<pclass_sz->array_redshift[0]){
-    // z_asked = pclass_sz->array_redshift[0];
-printf("get_sigm: z_asked<pclass_sz->array_redshift[0].. check bounds.\n");
-exit(0);
-  }
- if (z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1]){
-    // z_asked = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
-if (pclass_sz->use_class_sz_fast_mode){
+  if (z_asked<pclass_sz->array_redshift[0]){
 
-double zmax = exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.;
-double zp = exp(z_asked) - 1.;
-// zp = zmax;
-double Dzmax, Dz;
+    if (pclass_sz->sz_verbose > 2)
+  
+      printf("get_sigm: z_asked<pclass_sz->array_redshift[0].. check bounds.\n");
+  
+    return 1e100;
+  
+    }
 
-double * pvecback;
-double tau;
-int first_index_back = 0;
-class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+    if (z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1]){
 
+          if (pclass_sz->use_class_sz_fast_mode){
 
-class_call(background_tau_of_z(pba,zmax,&tau),
-           pba->error_message,
-           pba->error_message);
+              double zmax = exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.;
+              double zp = exp(z_asked) - 1.;
+              // zp = zmax;
+              double Dzmax, Dz;
 
-class_call(background_at_tau(pba,
-                             tau,
-                             pba->long_info,
-                             pba->inter_normal,
-                             &first_index_back,
-                             pvecback),
-           pba->error_message,
-           pba->error_message);
+              double * pvecback;
+              double tau;
+              int first_index_back = 0;
+              class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
 
 
+              class_call(background_tau_of_z(pba,zmax,&tau),
+                        pba->error_message,
+                        pba->error_message);
 
-
-Dzmax = pvecback[pba->index_bg_D];
-
-double z_asked_max = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
-double sigma = exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                                    pclass_sz->ndim_redshifts,
-                                    pclass_sz->array_redshift,
-                                    pclass_sz->array_radius,
-                                    pclass_sz->array_sigma_at_z_and_R,
-                                    1,
-                                    &z_asked_max,
-                                    &R_asked));
-
-class_call(background_tau_of_z(pba,zp,&tau),
-           pba->error_message,
-           pba->error_message);
-
-class_call(background_at_tau(pba,
-                             tau,
-                             pba->long_info,
-                             pba->inter_normal,
-                             &first_index_back,
-                             pvecback),
-           pba->error_message,
-           pba->error_message);
-
-Dz = pvecback[pba->index_bg_D];
-
-
-  // printf(">>> extrapolating.\n");
-free(pvecback);
-
-return sigma*Dz/Dzmax;
-
-
-}
-else{
-printf("get_sigm: z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1].. check bounds.\n");
-printf("z_asked = %.15e pclass_sz->array_redshift[pclass_sz->n_arraySZ-1] = %.15e\n",exp(z_asked)-1.,exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.);
-exit(0);
-}
-  }
-
- if (R_asked<pclass_sz->array_radius[0]){
-    // R_asked = pclass_sz->array_radius[0];
-printf("get_sigm: R_asked<pclass_sz->array_radius[0].. check bounds.\n");
-exit(0);
-  }
-      // printf("dealing with mass conversion in hmf3\n");
- if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1]){
-   // R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
-printf("get_sigm: R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1].. check bounds.\n");
-exit(0);
- }
+              class_call(background_at_tau(pba,
+                                          tau,
+                                          pba->long_info,
+                                          pba->inter_normal,
+                                          &first_index_back,
+                                          pvecback),
+                        pba->error_message,
+                        pba->error_message);
 
 
 
-   double sigma = exp(pwl_interp_2d(pclass_sz->n_arraySZ,
+
+              Dzmax = pvecback[pba->index_bg_D];
+
+              double z_asked_max = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+              double sigma = exp(pwl_interp_2d(pclass_sz->n_arraySZ,
+                                                  pclass_sz->ndim_redshifts,
+                                                  pclass_sz->array_redshift,
+                                                  pclass_sz->array_radius,
+                                                  pclass_sz->array_sigma_at_z_and_R,
+                                                  1,
+                                                  &z_asked_max,
+                                                  &R_asked));
+
+              class_call(background_tau_of_z(pba,zp,&tau),
+                        pba->error_message,
+                        pba->error_message);
+
+              class_call(background_at_tau(pba,
+                                          tau,
+                                          pba->long_info,
+                                          pba->inter_normal,
+                                          &first_index_back,
+                                          pvecback),
+                        pba->error_message,
+                        pba->error_message);
+
+              Dz = pvecback[pba->index_bg_D];
+
+              free(pvecback);
+
+              return sigma*Dz/Dzmax;
+
+              }
+    else{
+
+          if (pclass_sz->sz_verbose > 2){
+          
+              printf("get_sigm: z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1].. check bounds.\n");
+              printf("z_asked = %.15e pclass_sz->array_redshift[pclass_sz->n_arraySZ-1] = %.15e\n",exp(z_asked)-1.,exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.);
+          
+              }
+          
+          return 1e100;
+              
+          }
+    }
+
+    if (R_asked<pclass_sz->array_radius[0]){
+
+        if (pclass_sz->sz_verbose > 2)
+
+          printf("get_sigm: R_asked<pclass_sz->array_radius[0].. check bounds.\n");
+          
+        return 1e100;
+
+    }
+      
+    if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1]){
+
+      if (pclass_sz->sz_verbose > 2){
+
+          printf("get_sigm: R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1].. check bounds.\n");
+          printf("R_asked = %.3e Rmax = %.3e\n",R_asked,pclass_sz->array_radius[pclass_sz->ndim_redshifts-1]);
+      }
+
+    return 1e100;
+
+    }
+
+
+    double sigma = exp(pwl_interp_2d(pclass_sz->n_arraySZ,
                                     pclass_sz->ndim_redshifts,
                                     pclass_sz->array_redshift,
                                     pclass_sz->array_radius,
@@ -14149,14 +14171,15 @@ exit(0);
                                     1,
                                     &z_asked,
                                     &R_asked));
-  if (isnan(sigma) || isinf(sigma)){
-    printf("failed interpolation of sigma.\n");
-    printf("z=%.8e zmin=%.8e m=%.8e\n",z,pclass_sz->array_redshift[0],m);
-    exit(0);
-  }
 
-   return sigma;
-                            }
+  if (isnan(sigma) || isinf(sigma)){
+      printf("failed interpolation of sigma.\n");
+      printf("z=%.8e zmin=%.8e m=%.8e\n",z,pclass_sz->array_redshift[0],m);
+      exit(0);
+    }
+
+  return sigma;
+  }
 
 
 double get_dlnsigma_dlnR_at_z_and_m(double z,
@@ -14165,128 +14188,141 @@ double get_dlnsigma_dlnR_at_z_and_m(double z,
                                     struct background * pba){
 
   double rh;
+
   if (pclass_sz->HMF_prescription_NCDM == 0) //Matter
+  
     rh = pow(3.*m/(4*_PI_*(pba->Omega0_cdm+pba->Omega0_b)*pclass_sz->Rho_crit_0),1./3.);
 
   else if (pclass_sz->HMF_prescription_NCDM == 1) //CDM
+  
     rh = pow(3.*m/(4*_PI_*(pba->Omega0_cdm+pba->Omega0_b)*pclass_sz->Rho_crit_0),1./3.);
 
   else if (pclass_sz->HMF_prescription_NCDM == 2) //No-pres
+  
     rh = pow(3.*m/(4*_PI_*pclass_sz->Omega_m_0*pclass_sz->Rho_crit_0),1./3.);
 
    double z_asked = log(1.+z);
-   // double R_asked = log(exp(log(rh))/pba->h);
+
    double R_asked = log(rh/pba->h); // in Mpc
 
 
- // if (z_asked<pclass_sz->array_redshift[0])
- //    z_asked = pclass_sz->array_redshift[0];
- // if (z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])
- //    z_asked = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
- //
- // if (R_asked<pclass_sz->array_radius[0])
- //    R_asked = pclass_sz->array_radius[0];
- //      // printf("dealing with mass conversion in hmf3\n");
- // if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1])
- //    R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
 
- if (z_asked<pclass_sz->array_redshift[0]){
-    // z_asked = pclass_sz->array_redshift[0];
-printf("get_dlnsigm: z_asked<pclass_sz->array_redshift[0].. check bounds.\n");
-exit(0);
+  if (z_asked<pclass_sz->array_redshift[0]){
+
+    if (pclass_sz->sz_verbose > 2)
+
+      printf("get_dlnsigm: z_asked<pclass_sz->array_redshift[0].. check bounds.\n");
+
+  return 1e100;
+
   }
- if (z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1]){
-    // z_asked = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+ 
 
-if (pclass_sz->use_class_sz_fast_mode){
-
-double zmax = exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.;
-double zp = exp(z_asked) - 1.;
-// double zp = zmax;
-double Dzmax, Dz;
-
-double * pvecback;
-double tau;
-int first_index_back = 0;
-class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
+  if (z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1]){
 
 
-class_call(background_tau_of_z(pba,zmax,&tau),
-           pba->error_message,
-           pba->error_message);
+    if (pclass_sz->use_class_sz_fast_mode){
 
-class_call(background_at_tau(pba,
-                             tau,
-                             pba->long_info,
-                             pba->inter_normal,
-                             &first_index_back,
-                             pvecback),
-           pba->error_message,
-           pba->error_message);
+        double zmax = exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.;
+        double zp = exp(z_asked) - 1.;
 
+        double Dzmax, Dz;
+
+        double * pvecback;
+        double tau;
+        int first_index_back = 0;
+        class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
 
 
+        class_call(background_tau_of_z(pba,zmax,&tau),
+                  pba->error_message,
+                  pba->error_message);
 
-Dzmax = pvecback[pba->index_bg_D];
-
-double z_asked_max = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
-
-double sigma =  pwl_interp_2d(
-                pclass_sz->n_arraySZ,
-                pclass_sz->ndim_redshifts,
-                pclass_sz->array_redshift,
-                pclass_sz->array_radius,
-                pclass_sz->array_dsigma2dR_at_z_and_R,
-                1,
-                &z_asked_max,
-                &R_asked
-                );
-
-sigma = sigma/2.;
-
-class_call(background_tau_of_z(pba,zp,&tau),
-           pba->error_message,
-           pba->error_message);
-
-class_call(background_at_tau(pba,
-                             tau,
-                             pba->long_info,
-                             pba->inter_normal,
-                             &first_index_back,
-                             pvecback),
-           pba->error_message,
-           pba->error_message);
-
-Dz = pvecback[pba->index_bg_D];
+        class_call(background_at_tau(pba,
+                                    tau,
+                                    pba->long_info,
+                                    pba->inter_normal,
+                                    &first_index_back,
+                                    pvecback),
+                  pba->error_message,
+                  pba->error_message);
 
 
-  // printf(">>> extrapolating.\n");
-free(pvecback);
-
-return sigma*pow(Dz/Dzmax,2.);
 
 
-}
-else{
-printf("get_dlnsigm: z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1].. check bounds.\n");
-printf("z_asked = %.15e pclass_sz->array_redshift[pclass_sz->n_arraySZ-1] = %.15e\n",exp(z_asked)-1.,exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.);
-exit(0);
-}
-// printf("get_dlnsigm: z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1].. check bounds.\n");
-// exit(0);
+        Dzmax = pvecback[pba->index_bg_D];
+
+        double z_asked_max = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+
+        double sigma =  pwl_interp_2d(
+                        pclass_sz->n_arraySZ,
+                        pclass_sz->ndim_redshifts,
+                        pclass_sz->array_redshift,
+                        pclass_sz->array_radius,
+                        pclass_sz->array_dsigma2dR_at_z_and_R,
+                        1,
+                        &z_asked_max,
+                        &R_asked
+                        );
+
+        sigma = sigma/2.;
+
+        class_call(background_tau_of_z(pba,zp,&tau),
+                  pba->error_message,
+                  pba->error_message);
+
+        class_call(background_at_tau(pba,
+                                    tau,
+                                    pba->long_info,
+                                    pba->inter_normal,
+                                    &first_index_back,
+                                    pvecback),
+                  pba->error_message,
+                  pba->error_message);
+
+        Dz = pvecback[pba->index_bg_D];
+
+
+
+        free(pvecback);
+
+        return sigma*pow(Dz/Dzmax,2.);
+
+
+        }
+        
+        else{
+
+            if (pclass_sz->sz_verbose>2){
+                
+                printf("get_dlnsigm: z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1].. check bounds.\n");
+                printf("z_asked = %.15e pclass_sz->array_redshift[pclass_sz->n_arraySZ-1] = %.15e\n",exp(z_asked)-1.,exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.);
+
+            }
+        return 1e100;
+        }
+
   }
 
- if (R_asked<pclass_sz->array_radius[0]){
-    // R_asked = pclass_sz->array_radius[0];
-printf("get_dlnsigm: R_asked<pclass_sz->array_radius[0].. check bounds.\n");
-exit(0);
-  }
-      // printf("dealing with mass conversion in hmf3\n");
- if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1]){
-   // R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
-printf("get_dlnsigm: R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1].. check bounds.\n");
-exit(0);
- }
+    if (R_asked<pclass_sz->array_radius[0]){
+
+      if (pclass_sz->sz_verbose>2)
+
+        printf("get_dlnsigm: R_asked<pclass_sz->array_radius[0].. check bounds.\n");
+
+    return 1e100;
+
+    }
+
+    if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1]){
+
+        if (pclass_sz->sz_verbose>2)
+          
+          printf("get_dlnsigm: R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1].. check bounds.\n");
+
+    return 1e100;
+
+    }
 
 
 
@@ -14300,6 +14336,8 @@ exit(0);
                    &z_asked,
                    &R_asked
                    );
+
+
   sigma = sigma/2.;
 
 
