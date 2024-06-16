@@ -1656,8 +1656,10 @@ double szcounts_ntot;
   int n_z_W_gallens_sources;
 
   /*Array size*/
-  int n_arraySZ;//number of z in the interpolation
-  int n_arraySZ_for_integral;//number of z in the integration
+  int ndim_redshifts;//number of z in the interpolation
+  int ndim_redshifts_for_integral;//number of z in the integration
+
+
 
   int n_k;
   int n_z_dndlnM;
@@ -1771,7 +1773,7 @@ double szcounts_ntot;
   double HSEbias;
 
   /*For the computation of sigma2*/
-  int  ndim_redshifts;
+  int  ndim_masses;
   double logR1SZ; // 0.0034Mpc/h, 1.8e4  solar mass
   double logR2SZ; // 54.9Mpc/h, 7.5e16 solar mass
   double delta_cSZ;

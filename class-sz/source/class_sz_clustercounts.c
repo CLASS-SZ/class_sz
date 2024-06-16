@@ -2789,7 +2789,7 @@ if (pclass_sz->write_sz > 0)
 
 int initialise_and_allocate_memory_cc(struct class_sz_structure * pclass_sz,struct szcount * pcsz){
 
-  pcsz->nzSZ = pclass_sz->n_arraySZ_for_integral;
+  pcsz->nzSZ = pclass_sz->ndim_redshifts_for_integral;
 
   pclass_sz->has_completeness = pcsz->has_completeness;
 

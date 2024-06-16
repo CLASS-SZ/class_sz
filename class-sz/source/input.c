@@ -1789,15 +1789,15 @@ int input_read_parameters(
 
 
       //for tabulation of sigma(m,z)
-      class_read_int("ndim_redshifts",pclass_sz->n_arraySZ);//number of z in the interpolation for sigma
-      pclass_sz->n_z_dndlnM = pclass_sz->n_arraySZ;
+      class_read_int("ndim_redshifts",pclass_sz->ndim_redshifts);//number of z in the interpolation for sigma
+      pclass_sz->n_z_dndlnM = pclass_sz->ndim_redshifts;
       // for tabulation of hmf:
       class_read_int("n_z_dndlnM",pclass_sz->n_z_dndlnM);
 
 
       class_read_int("has_b_custom1",pclass_sz->has_b_custom1);
 
-      // class_read_int("n_arraySZ_for_integral",pclass_sz->n_arraySZ_for_integral);//number of z in the integration
+      // class_read_int("ndim_redshifts_for_integral",pclass_sz->ndim_redshifts_for_integral);//number of z in the integration
 
       // class_read_int("n_m_matter_density_profile",pclass_sz->n_m_matter_density_profile);
       // printf("%d \n",pclass_sz->n_m_matter_density_profile);
@@ -1944,8 +1944,8 @@ int input_read_parameters(
       class_read_double("m_pivot_ym_[Msun]",pclass_sz->m_pivot_ym);
 
       //For the tabulation of sigma2
-      class_read_int("ndim_masses",pclass_sz->ndim_redshifts);
-      pclass_sz->n_m_dndlnM = pclass_sz->ndim_redshifts;
+      class_read_int("ndim_masses",pclass_sz->ndim_masses);
+      pclass_sz->n_m_dndlnM = pclass_sz->ndim_masses;
 
       // for the tabulation of hmf itself
       class_read_int("n_m_dndlnM",pclass_sz->n_m_dndlnM);
@@ -6958,7 +6958,7 @@ int input_default_params(
 
   pclass_sz->kstar_damping_1h_term_Mpc = 0.01; //same as hmvec default value in inverse Mpc
 
-  pclass_sz->n_arraySZ_for_integral = 30; //used in redshift integral
+  pclass_sz->ndim_redshifts_for_integral = 30; //used in redshift integral
 
 
 
@@ -7218,7 +7218,7 @@ int input_default_params(
   //For the computation of sigma2
 
   //Array size
-  pclass_sz->n_arraySZ = 100;//number of z in the sigma Interpolation
+  pclass_sz->ndim_redshifts = 100;//number of z in the sigma Interpolation
 
   pclass_sz->ndim_redshifts = 100;
   pclass_sz->logR1SZ = -10; // 0.0034Mpc/h, 1.8e4  solar mass

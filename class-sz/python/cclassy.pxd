@@ -252,8 +252,8 @@ cdef extern from "class.h":
         double Rho_crit_0
         double z1SZ
         double z2SZ
-        int n_arraySZ
-        int n_arraySZ_for_integral
+        int ndim_redshifts
+        int ndim_redshifts_for_integral
         double M1SZ
         double M2SZ
         int do_real_space_with_mcfit
@@ -316,7 +316,7 @@ cdef extern from "class.h":
         double f_free
         int delta_def_custom1
         double x_out_custom1
-        int  ndim_redshifts
+        int  ndim_masses
         int nbins_M
         int n_k_for_pk_hm
         double logR1SZ

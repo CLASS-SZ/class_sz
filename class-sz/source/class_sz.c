@@ -322,14 +322,14 @@ if (pclass_sz->need_sigma == 1 || pclass_sz->has_vrms2 || pclass_sz->has_pk){
       double z_max = 1.0001*r8_max(pclass_sz->z2SZ,pclass_sz->z2SZ_dndlnM);
       int index_z;
 
-      class_alloc(pclass_sz->array_redshift,sizeof(double *)*pclass_sz->n_arraySZ,pclass_sz->error_message);
+      class_alloc(pclass_sz->array_redshift,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 /// this array is overwritten in fast mode (see classy_szfast.py and classy.pyx)
-      for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+      for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
       {
         pclass_sz->array_redshift[index_z] =
                                         log(1.+z_min)
                                         +index_z*(log(1.+z_max)-log(1.+z_min))
-                                        /(pclass_sz->n_arraySZ-1.); // log(1+z)
+                                        /(pclass_sz->ndim_redshifts-1.); // log(1+z)
 
                                       }
                                     }
@@ -341,15 +341,15 @@ if (pclass_sz->need_sigma == 1 || pclass_sz->has_vrms2 || pclass_sz->has_pk){
 // if (pclass_sz->use_class_sz_fast_mode){
 // for the class_szfast mode
   class_alloc(pclass_sz->array_pkl_at_z_and_k,
-              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
+              sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ndim_masses,
               pclass_sz->error_message);
 
   class_alloc(pclass_sz->array_pknl_at_z_and_k,
-              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
+              sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ndim_masses,
               pclass_sz->error_message);
 
   class_alloc(pclass_sz->array_lnk,
-              sizeof(double *)*pclass_sz->ndim_redshifts,
+              sizeof(double *)*pclass_sz->ndim_masses,
               pclass_sz->error_message);
 
 // }
@@ -616,14 +616,14 @@ int class_sz_tabulate_init(
 //       double z_max = 1.0001*r8_max(pclass_sz->z2SZ,pclass_sz->z2SZ_dndlnM);
 //       int index_z;
 //
-//       class_alloc(pclass_sz->array_redshift,sizeof(double *)*pclass_sz->n_arraySZ,pclass_sz->error_message);
+//       class_alloc(pclass_sz->array_redshift,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 //
-//       for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+//       for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
 //       {
 //         pclass_sz->array_redshift[index_z] =
 //                                         log(1.+z_min)
 //                                         +index_z*(log(1.+z_max)-log(1.+z_min))
-//                                         /(pclass_sz->n_arraySZ-1.); // log(1+z)
+//                                         /(pclass_sz->ndim_redshifts-1.); // log(1+z)
 //
 //                                       }
 //                                     }
@@ -639,15 +639,15 @@ int class_sz_tabulate_init(
 // // if (pclass_sz->use_class_sz_fast_mode){
 // // for the class_szfast mode
 //   class_alloc(pclass_sz->array_pkl_at_z_and_k,
-//               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
+//               sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ndim_masses,
 //               pclass_sz->error_message);
 //
 //   class_alloc(pclass_sz->array_pknl_at_z_and_k,
-//               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
+//               sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ndim_masses,
 //               pclass_sz->error_message);
 //
 //   class_alloc(pclass_sz->array_lnk,
-//               sizeof(double *)*pclass_sz->ndim_redshifts,
+//               sizeof(double *)*pclass_sz->ndim_masses,
 //               pclass_sz->error_message);
 //
 // // }
@@ -1979,14 +1979,14 @@ if (pclass_sz->has_custom1){
 // //       double z_max = 1.0001*r8_max(pclass_sz->z2SZ,pclass_sz->z2SZ_dndlnM);
 // //       int index_z;
 // //
-// //       class_alloc(pclass_sz->array_redshift,sizeof(double *)*pclass_sz->n_arraySZ,pclass_sz->error_message);
+// //       class_alloc(pclass_sz->array_redshift,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 // //
-// //       for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+// //       for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
 // //       {
 // //         pclass_sz->array_redshift[index_z] =
 // //                                         log(1.+z_min)
 // //                                         +index_z*(log(1.+z_max)-log(1.+z_min))
-// //                                         /(pclass_sz->n_arraySZ-1.); // log(1+z)
+// //                                         /(pclass_sz->ndim_redshifts-1.); // log(1+z)
 // //
 // //                                       }
 // //                                     }
@@ -2002,15 +2002,15 @@ if (pclass_sz->has_custom1){
 // // // if (pclass_sz->use_class_sz_fast_mode){
 // // // for the class_szfast mode
 // //   class_alloc(pclass_sz->array_pkl_at_z_and_k,
-// //               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
+// //               sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ndim_masses,
 // //               pclass_sz->error_message);
 // //
 // //   class_alloc(pclass_sz->array_pknl_at_z_and_k,
-// //               sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
+// //               sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ndim_masses,
 // //               pclass_sz->error_message);
 // //
 // //   class_alloc(pclass_sz->array_lnk,
-// //               sizeof(double *)*pclass_sz->ndim_redshifts,
+// //               sizeof(double *)*pclass_sz->ndim_masses,
 // //               pclass_sz->error_message);
 // //
 // // // }
@@ -3928,10 +3928,14 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
    free(pclass_sz->cl_IA_gal_2h);
    free(pclass_sz->cl_tSZ_gallens_1h);
    free(pclass_sz->cl_tSZ_gallens_2h);
+
   if (pclass_sz->sz_verbose>10) printf("-> freeing l and cl's cib.\n");
+   
    int index_nu;
    int index_nu_prime;
+   
    for (index_nu=0;index_nu<pclass_sz->cib_frequency_list_num;index_nu++){
+   
        for (index_nu_prime=0;index_nu_prime<pclass_sz->cib_frequency_list_num;index_nu_prime++){
          free(pclass_sz->cl_cib_cib_1h[index_nu][index_nu_prime]);
          free(pclass_sz->cl_cib_cib_2h[index_nu][index_nu_prime]);
@@ -3986,12 +3990,21 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
   if (pclass_sz->sz_verbose>10) printf("-> freeing l and cl's ngals.\n");
    int index_g;
    int index_g_prime;
+
    for (index_g=0;index_g<pclass_sz->galaxy_samples_list_num;index_g++){
+   
+    if (pclass_sz->sz_verbose>10) printf("-> freeing l and cl's ngals auto %d.\n",index_g);
+
        for (index_g_prime=0;index_g_prime<pclass_sz->galaxy_samples_list_num;index_g_prime++){
+   
          free(pclass_sz->cl_ngal_ngal_1h[index_g][index_g_prime]);
          free(pclass_sz->cl_ngal_ngal_2h[index_g][index_g_prime]);
          free(pclass_sz->cl_ngal_ngal_hf[index_g][index_g_prime]);
+   
+
        }
+    if (pclass_sz->sz_verbose>10) printf("-> freeing l and cl's ngals auto done %d.\n",index_g);
+   
      free(pclass_sz->cl_ngal_ngal_1h[index_g]);
      free(pclass_sz->cl_ngal_ngal_2h[index_g]);
      free(pclass_sz->cl_ngal_ngal_hf[index_g]);
@@ -4007,16 +4020,26 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
      free(pclass_sz->cl_nlensmag_tsz_2h[index_g]);
      free(pclass_sz->cl_nlensmag_gallens_1h[index_g]);
      free(pclass_sz->cl_nlensmag_gallens_2h[index_g]);
+
+    if (pclass_sz->sz_verbose>10) printf("-> freeing l and cl's ngals cross done %d.\n",index_g);
+   
    }
  }
 
 
  if (pclass_sz->has_custom1){
-   free(pclass_sz->array_custom1_redshift_kernel_W);
-   free(pclass_sz->array_custom1_redshift_kernel_ln1pz);
+
+  if (pclass_sz->sz_verbose>10) printf("-> freeing custom1\n");
+
+  free(pclass_sz->array_custom1_redshift_kernel_W);
+  free(pclass_sz->array_custom1_redshift_kernel_ln1pz);
+ 
  }
 
  if (pclass_sz->has_b_custom1){
+
+  if (pclass_sz->sz_verbose>10) printf("-> freeing b custom1\n");
+
    free(pclass_sz->array_b_custom1_bias);
    free(pclass_sz->array_b_custom1_ln1pz);
  }
@@ -4037,9 +4060,13 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
      + pclass_sz->has_ngal_gallens_2h
      + pclass_sz->has_ngal_IA_2h
    ){
+     
      int index_g;
      int index_g_prime;
+
      for (index_g=0;index_g<pclass_sz->galaxy_samples_list_num;index_g++){
+
+      if (pclass_sz->sz_verbose>10) printf("-> freeing ngbad and dndz gals\n");
 
            if (pclass_sz->has_ngal_ngal_1h
              + pclass_sz->has_ngal_ngal_2h
@@ -4054,18 +4081,22 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
      free(pclass_sz->array_mean_galaxy_number_density_ngal[index_g]);
      free(pclass_sz->normalized_dndz_ngal_z[index_g]);
      free(pclass_sz->normalized_dndz_ngal_phig[index_g]);
+
+
+     if (pclass_sz->sz_verbose>10) printf("-> freeing ngbad and dndz gals done\n");
+
+
+
      }
 
 
-//  printf("-> freeing ngal.\n");
+
      if (pclass_sz->has_ngal_ngal_1h
        + pclass_sz->has_ngal_ngal_2h
        + pclass_sz->has_ngal_lens_1h
        + pclass_sz->has_ngal_lens_2h
        + pclass_sz->has_ngal_tsz_1h
        + pclass_sz->has_ngal_tsz_2h
-       // + pclass_sz->has_nlensmag_tsz_1h //ola
-       // + pclass_sz->has_nlensmag_tsz_2h
        + pclass_sz->has_ngal_gallens_1h
        + pclass_sz->has_ngal_gallens_2h
        + pclass_sz->has_ngal_IA_2h)
@@ -4074,7 +4105,7 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
  free(pclass_sz->normalized_dndz_ngal_z);
  free(pclass_sz->normalized_dndz_ngal_phig);
  free(pclass_sz->galaxy_samples_list);
- free(pclass_sz->galaxy_samples_list);
+
 
     if (pclass_sz->has_ngal_ngal_hf
        +pclass_sz->has_ngal_lens_hf){
@@ -14018,8 +14049,8 @@ double get_sigma8_at_z(double z,
                       struct background * pba){
 double z_asked = log(1.+z);
 double R_asked = log(8./pba->h); //log(R) in Mpc
-double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                           pclass_sz->ndim_redshifts,
+double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->ndim_redshifts,
+                           pclass_sz->ndim_masses,
                            pclass_sz->array_redshift,
                            pclass_sz->array_radius,
                            pclass_sz->array_sigma_at_z_and_R,
@@ -14063,11 +14094,11 @@ double get_sigma_at_z_and_m(double z,
   
     }
 
-    if (z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1]){
+    if (z_asked>pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1]){
 
           if (pclass_sz->use_class_sz_fast_mode){
 
-              double zmax = exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.;
+              double zmax = exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.;
               double zp = exp(z_asked) - 1.;
               // zp = zmax;
               double Dzmax, Dz;
@@ -14096,9 +14127,9 @@ double get_sigma_at_z_and_m(double z,
 
               Dzmax = pvecback[pba->index_bg_D];
 
-              double z_asked_max = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
-              double sigma = exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                                                  pclass_sz->ndim_redshifts,
+              double z_asked_max = pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
+              double sigma = exp(pwl_interp_2d(pclass_sz->ndim_redshifts,
+                                                  pclass_sz->ndim_masses,
                                                   pclass_sz->array_redshift,
                                                   pclass_sz->array_radius,
                                                   pclass_sz->array_sigma_at_z_and_R,
@@ -14130,8 +14161,8 @@ double get_sigma_at_z_and_m(double z,
 
           if (pclass_sz->sz_verbose > 2){
           
-              printf("get_sigm: z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1].. check bounds.\n");
-              printf("z_asked = %.15e pclass_sz->array_redshift[pclass_sz->n_arraySZ-1] = %.15e\n",exp(z_asked)-1.,exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.);
+              printf("get_sigm: z_asked>pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1].. check bounds.\n");
+              printf("z_asked = %.15e pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1] = %.15e\n",exp(z_asked)-1.,exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.);
           
               }
           
@@ -14150,12 +14181,12 @@ double get_sigma_at_z_and_m(double z,
 
     }
       
-    if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1]){
+    if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_masses-1]){
 
       if (pclass_sz->sz_verbose > 2){
 
-          printf("get_sigm: R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1].. check bounds.\n");
-          printf("R_asked = %.3e Rmax = %.3e\n",R_asked,pclass_sz->array_radius[pclass_sz->ndim_redshifts-1]);
+          printf("get_sigm: R_asked>pclass_sz->array_radius[pclass_sz->ndim_masses-1].. check bounds.\n");
+          printf("R_asked = %.3e Rmax = %.3e\n",R_asked,pclass_sz->array_radius[pclass_sz->ndim_masses-1]);
       }
 
     return 1e100;
@@ -14163,8 +14194,8 @@ double get_sigma_at_z_and_m(double z,
     }
 
 
-    double sigma = exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                                    pclass_sz->ndim_redshifts,
+    double sigma = exp(pwl_interp_2d(pclass_sz->ndim_redshifts,
+                                    pclass_sz->ndim_masses,
                                     pclass_sz->array_redshift,
                                     pclass_sz->array_radius,
                                     pclass_sz->array_sigma_at_z_and_R,
@@ -14218,12 +14249,12 @@ double get_dlnsigma_dlnR_at_z_and_m(double z,
   }
  
 
-  if (z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1]){
+  if (z_asked>pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1]){
 
 
     if (pclass_sz->use_class_sz_fast_mode){
 
-        double zmax = exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.;
+        double zmax = exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.;
         double zp = exp(z_asked) - 1.;
 
         double Dzmax, Dz;
@@ -14252,11 +14283,11 @@ double get_dlnsigma_dlnR_at_z_and_m(double z,
 
         Dzmax = pvecback[pba->index_bg_D];
 
-        double z_asked_max = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+        double z_asked_max = pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
 
         double sigma =  pwl_interp_2d(
-                        pclass_sz->n_arraySZ,
                         pclass_sz->ndim_redshifts,
+                        pclass_sz->ndim_masses,
                         pclass_sz->array_redshift,
                         pclass_sz->array_radius,
                         pclass_sz->array_dsigma2dR_at_z_and_R,
@@ -14295,8 +14326,8 @@ double get_dlnsigma_dlnR_at_z_and_m(double z,
 
             if (pclass_sz->sz_verbose>2){
                 
-                printf("get_dlnsigm: z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1].. check bounds.\n");
-                printf("z_asked = %.15e pclass_sz->array_redshift[pclass_sz->n_arraySZ-1] = %.15e\n",exp(z_asked)-1.,exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.);
+                printf("get_dlnsigm: z_asked>pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1].. check bounds.\n");
+                printf("z_asked = %.15e pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1] = %.15e\n",exp(z_asked)-1.,exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.);
 
             }
         return 1e100;
@@ -14314,11 +14345,11 @@ double get_dlnsigma_dlnR_at_z_and_m(double z,
 
     }
 
-    if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1]){
+    if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_masses-1]){
 
         if (pclass_sz->sz_verbose>2)
           
-          printf("get_dlnsigm: R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1].. check bounds.\n");
+          printf("get_dlnsigm: R_asked>pclass_sz->array_radius[pclass_sz->ndim_masses-1].. check bounds.\n");
 
     return 1e100;
 
@@ -14327,8 +14358,8 @@ double get_dlnsigma_dlnR_at_z_and_m(double z,
 
 
    double sigma =  pwl_interp_2d(
-                   pclass_sz->n_arraySZ,
                    pclass_sz->ndim_redshifts,
+                   pclass_sz->ndim_masses,
                    pclass_sz->array_redshift,
                    pclass_sz->array_radius,
                    pclass_sz->array_dsigma2dR_at_z_and_R,
@@ -14492,8 +14523,8 @@ double get_pk_nonlin_at_k_and_z(double k, double z,
 if (pclass_sz->use_class_sz_fast_mode){
 double pk;
 double z_asked = log(1.+z);
-if (z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1]){
-     double zmax = exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.;
+if (z_asked>pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1]){
+     double zmax = exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.;
       double zp = exp(z_asked) - 1.;
       // double zp = zmax;
       double Dzmax, Dz;
@@ -14581,14 +14612,14 @@ double get_pk_lin_at_k_and_z_fast(double k, double z,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
                           struct class_sz_structure * pclass_sz){
-  if ((k*pba->h < exp(pclass_sz->array_lnk[0])) || (k*pba->h > exp(pclass_sz->array_lnk[pclass_sz->ndim_redshifts-1]))){
+  if ((k*pba->h < exp(pclass_sz->array_lnk[0])) || (k*pba->h > exp(pclass_sz->array_lnk[pclass_sz->ndim_masses-1]))){
     return 0.;
   }
 
    double zp = log(1.+z);
    double kp = log(k*pba->h);
-   double pk = pwl_interp_2d(pclass_sz->n_arraySZ,
-                      pclass_sz->ndim_redshifts,
+   double pk = pwl_interp_2d(pclass_sz->ndim_redshifts,
+                      pclass_sz->ndim_masses,
                       pclass_sz->array_redshift,
                       pclass_sz->array_lnk,
                       pclass_sz->array_pkl_at_z_and_k,
@@ -14604,14 +14635,14 @@ double get_pk_nonlin_at_k_and_z_fast(double k, double z,
                           struct primordial * ppm,
                           struct nonlinear * pnl,
                           struct class_sz_structure * pclass_sz){
-  if ((k*pba->h < exp(pclass_sz->array_lnk[0])) || (k*pba->h > exp(pclass_sz->array_lnk[pclass_sz->ndim_redshifts-1]))){
+  if ((k*pba->h < exp(pclass_sz->array_lnk[0])) || (k*pba->h > exp(pclass_sz->array_lnk[pclass_sz->ndim_masses-1]))){
     return 0.;
   }
 
    double zp = log(1.+z);
    double kp = log(k*pba->h);
-   double pk = pwl_interp_2d(pclass_sz->n_arraySZ,
-                             pclass_sz->ndim_redshifts,
+   double pk = pwl_interp_2d(pclass_sz->ndim_redshifts,
+                             pclass_sz->ndim_masses,
                              pclass_sz->array_redshift,
                              pclass_sz->array_lnk,
                              pclass_sz->array_pknl_at_z_and_k,
@@ -14634,8 +14665,8 @@ double get_pk_lin_at_k_and_z(double k, double z,
 if (pclass_sz->use_class_sz_fast_mode){
 double pk;
 double z_asked = log(1.+z);
-  if (z_asked>pclass_sz->array_redshift[pclass_sz->n_arraySZ-1]){
-      double zmax = exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.;
+  if (z_asked>pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1]){
+      double zmax = exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.;
       double zp = exp(z_asked) - 1.;
       // double zp = zmax;
       double Dzmax, Dz;
@@ -15610,14 +15641,14 @@ class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
    // if (z<exp(pclass_sz->array_redshift[0])-1.)
    //    z_asked = pclass_sz->array_redshift[0];
    //      // printf("dealing with mass conversion in hmf\n");
-   // if (z>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
-   //    z_asked =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+   // if (z>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
+   //    z_asked =  pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
    //      // printf("dealing with mass conversion in hmf2\n");
    // if (log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h)<pclass_sz->array_radius[0])
    //    R_asked = pclass_sz->array_radius[0];
    //      // printf("dealing with mass conversion in hmf3\n");
-   // if (log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h)>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1])
-   //    R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
+   // if (log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h)>pclass_sz->array_radius[pclass_sz->ndim_masses-1])
+   //    R_asked =  pclass_sz->array_radius[pclass_sz->ndim_masses-1];
    //
 
   pvectsz[pclass_sz->index_logSigma2] = 2.*log(get_sigma_at_z_and_m(exp(z_asked)-1.,m_for_hmf,pclass_sz,pba));
@@ -15626,8 +15657,8 @@ class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
 
   pvectsz[pclass_sz->index_dlogSigma2dlogRh] = 2.*get_dlnsigma_dlnR_at_z_and_m(z,m_for_hmf,pclass_sz,pba);
   // pwl_interp_2d(
-  //               pclass_sz->n_arraySZ,
   //               pclass_sz->ndim_redshifts,
+  //               pclass_sz->ndim_masses,
   //               pclass_sz->array_redshift,
   //               pclass_sz->array_radius,
   //               pclass_sz->array_dsigma2dR_at_z_and_R,
@@ -15832,36 +15863,14 @@ int evaluate_HMF_at_logM_and_z(
 
    double z_asked = log(1.+z);
 
-   // double R_asked = log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h);
-// printf("dealing with mass conversion in hmf0 %.3e\n",pclass_sz->array_redshift[0]);
-   // if (z<exp(pclass_sz->array_redshift[0])-1.)
-   //    z_asked = pclass_sz->array_redshift[0];
-   //      // printf("dealing with mass conversion in hmf\n");
-   // if (z>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
-   //    z_asked =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
-   //      // printf("dealing with mass conversion in hmf2\n");
-   // if (log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h)<pclass_sz->array_radius[0])
-   //    R_asked = pclass_sz->array_radius[0];
-   //      // printf("dealing with mass conversion in hmf3\n");
-   // if (log(exp(log(pvectsz[pclass_sz->index_Rh]))/pba->h)>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1])
-   //    R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
-   //
+
 
   pvectsz[pclass_sz->index_logSigma2] = 2.*log(get_sigma_at_z_and_m(exp(z_asked)-1.,m_for_hmf,pclass_sz,pba));
 
   pvectsz[pclass_sz->index_lognu] = log(get_nu_at_z_and_m(exp(z_asked)-1.,m_for_hmf,pclass_sz,pba));
 
   pvectsz[pclass_sz->index_dlogSigma2dlogRh] = 2.*get_dlnsigma_dlnR_at_z_and_m(z,m_for_hmf,pclass_sz,pba);
-  // pwl_interp_2d(
-  //               pclass_sz->n_arraySZ,
-  //               pclass_sz->ndim_redshifts,
-  //               pclass_sz->array_redshift,
-  //               pclass_sz->array_radius,
-  //               pclass_sz->array_dsigma2dR_at_z_and_R,
-  //               1,
-  //               &z_asked,
-  //               &R_asked
-  //               );
+
 
 
 
@@ -16039,11 +16048,11 @@ int evaluate_vrms2(double * pvecback,
 
    if (z<exp(pclass_sz->array_redshift[0])-1.)
       z_asked = pclass_sz->array_redshift[0];
-   if (z>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
-      z_asked =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+   if (z>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
+      z_asked =  pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
 
 
-   pvectsz[pclass_sz->index_vrms2] =  exp(pwl_value_1d(pclass_sz->n_arraySZ,
+   pvectsz[pclass_sz->index_vrms2] =  exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                                                   pclass_sz->array_redshift,
                                                   pclass_sz->array_vrms2_at_z,
                                                   z_asked));
@@ -16280,8 +16289,8 @@ pk3 *= pow(pba->h,3.);
 
   double z_asked = log(1.+z);
   double R_asked = log(8./pba->h); //log(R) in Mpc
-  double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                             pclass_sz->ndim_redshifts,
+  double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->ndim_redshifts,
+                             pclass_sz->ndim_masses,
                              pclass_sz->array_redshift,
                              pclass_sz->array_radius,
                              pclass_sz->array_sigma_at_z_and_R,
@@ -16636,8 +16645,8 @@ pk3 *= pow(pba->h,3.);
 
   double z_asked = log(1.+z);
   double R_asked = log(8./pba->h); //log(R) in Mpc
-  double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                             pclass_sz->ndim_redshifts,
+  double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->ndim_redshifts,
+                             pclass_sz->ndim_masses,
                              pclass_sz->array_redshift,
                              pclass_sz->array_radius,
                              pclass_sz->array_sigma_at_z_and_R,
@@ -16742,8 +16751,8 @@ pk3 *= pow(pba->h,3.);
 
   double z_asked = log(1.+z);
   double R_asked = log(8./pba->h); //log(R) in Mpc
-  double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                             pclass_sz->ndim_redshifts,
+  double sigma8_at_z =  exp(pwl_interp_2d(pclass_sz->ndim_redshifts,
+                             pclass_sz->ndim_masses,
                              pclass_sz->array_redshift,
                              pclass_sz->array_radius,
                              pclass_sz->array_sigma_at_z_and_R,
@@ -16781,11 +16790,11 @@ double z_asked = log(1.+z);
 
 if (z<exp(pclass_sz->array_redshift[0])-1.)
   z_asked = pclass_sz->array_redshift[0];
-if (z>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
-  z_asked =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+if (z>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
+  z_asked =  pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
 
 
-double vrms2 =  exp(pwl_value_1d(pclass_sz->n_arraySZ,
+double vrms2 =  exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                                  pclass_sz->array_redshift,
                                  pclass_sz->array_vrms2_at_z,
                                  z_asked));
@@ -16809,8 +16818,8 @@ double evaluate_mean_galaxy_number_density_at_z_ngal(
 
    if (z<exp(pclass_sz->array_redshift[0])-1.)
       z_asked = pclass_sz->array_redshift[0];
-   if (z>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
-      z_asked =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+   if (z>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
+      z_asked =  pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
 
 // int i = 0;
 // for (i = 0 ; i<10; i++){
@@ -16818,7 +16827,7 @@ double evaluate_mean_galaxy_number_density_at_z_ngal(
 //           i, pclass_sz->array_redshift[i],pclass_sz->array_mean_galaxy_number_density_ngal[index_g][i]);
 // }
 
-    return exp(pwl_value_1d(pclass_sz->n_arraySZ,
+    return exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                             pclass_sz->array_redshift,
                             pclass_sz->array_mean_galaxy_number_density_ngal[index_g],
                             z_asked));
@@ -16839,8 +16848,8 @@ double evaluate_mean_galaxy_number_density_at_z(
 
    if (z<exp(pclass_sz->array_redshift[0])-1.)
       z_asked = pclass_sz->array_redshift[0];
-   if (z>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
-      z_asked =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+   if (z>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
+      z_asked =  pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
 
 // int i = 0;
 // for (i = 0 ; i<10; i++){
@@ -16848,7 +16857,7 @@ double evaluate_mean_galaxy_number_density_at_z(
 //           i, pclass_sz->array_redshift[i],pclass_sz->array_mean_galaxy_number_density[i]);
 // }
 
-    return exp(pwl_value_1d(pclass_sz->n_arraySZ,
+    return exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                             pclass_sz->array_redshift,
                             pclass_sz->array_mean_galaxy_number_density,
                             z_asked));
@@ -16868,10 +16877,10 @@ double get_mean_galaxy_bias_at_z(
 
    if (z<exp(pclass_sz->array_redshift[0])-1.)
       return 0.;
-   if (z>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
+   if (z>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
       return 0.;
 
-    return exp(pwl_value_1d(pclass_sz->n_arraySZ,
+    return exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                             pclass_sz->array_redshift,
                             pclass_sz->array_mean_galaxy_bias,
                             z_asked));
@@ -16891,11 +16900,11 @@ int evaluate_sigma2_hsv(double * pvecback,
 
    if (z<exp(pclass_sz->array_redshift[0])-1.)
       z_asked = pclass_sz->array_redshift[0];
-   if (z>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
-      z_asked =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+   if (z>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
+      z_asked =  pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
 
 
-   pvectsz[pclass_sz->index_sigma2_hsv] =  exp(pwl_value_1d(pclass_sz->n_arraySZ,
+   pvectsz[pclass_sz->index_sigma2_hsv] =  exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                                                         pclass_sz->array_redshift,
                                                         pclass_sz->array_sigma2_hsv_at_z,
                                                         z_asked));
@@ -17055,15 +17064,15 @@ int write_redshift_dependent_quantities(struct background * pba,
 
    if (z<exp(pclass_sz->array_redshift[0])-1.)
       z_asked = pclass_sz->array_redshift[0];
-   if (z>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
-      z_asked =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+   if (z>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
+      z_asked =  pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
    if (R_asked<pclass_sz->array_radius[0])
       R_asked = pclass_sz->array_radius[0];
-   if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_redshifts-1])
-      R_asked =  pclass_sz->array_radius[pclass_sz->ndim_redshifts-1];
+   if (R_asked>pclass_sz->array_radius[pclass_sz->ndim_masses-1])
+      R_asked =  pclass_sz->array_radius[pclass_sz->ndim_masses-1];
 
-    sigma8 =  exp(pwl_interp_2d(pclass_sz->n_arraySZ,
-                       pclass_sz->ndim_redshifts,
+    sigma8 =  exp(pwl_interp_2d(pclass_sz->ndim_redshifts,
+                       pclass_sz->ndim_masses,
                        pclass_sz->array_redshift,
                        pclass_sz->array_radius,
                        pclass_sz->array_sigma_at_z_and_R,
@@ -17074,13 +17083,13 @@ int write_redshift_dependent_quantities(struct background * pba,
 
   double vrms2 = 0.;
     if (pclass_sz->has_vrms2)
-   vrms2 =  exp(pwl_value_1d(pclass_sz->n_arraySZ,
+   vrms2 =  exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                                     pclass_sz->array_redshift,
                                     pclass_sz->array_vrms2_at_z,
                                     z_asked));
   double sigma2_hsv = 0.;
     if (pclass_sz->has_sigma2_hsv)
-  sigma2_hsv = exp(pwl_value_1d(pclass_sz->n_arraySZ,
+  sigma2_hsv = exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                                    pclass_sz->array_redshift,
                                    pclass_sz->array_sigma2_hsv_at_z,
                                    z_asked));
@@ -17095,7 +17104,7 @@ int write_redshift_dependent_quantities(struct background * pba,
      || pclass_sz->has_gal_lensmag_1h
      || pclass_sz->has_gal_lensmag_2h
      || pclass_sz->has_kSZ_kSZ_gal_1h)
-  ng  = exp(pwl_value_1d(pclass_sz->n_arraySZ,
+  ng  = exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                           pclass_sz->array_redshift,
                           pclass_sz->array_mean_galaxy_number_density,
                           z_asked));
@@ -22151,7 +22160,7 @@ if (pclass_sz->photo_z_params_ngal[index_g]==1.){
 
         int i, N;
         double dz = 1/(pclass_sz->normalized_dndz_ngal_z[index_g][1]-pclass_sz->normalized_dndz_ngal_z[index_g][0]);
-        N = pclass_sz->n_arraySZ;
+        N = pclass_sz->ndim_redshifts;
         for ( i = 0; i < N; i++ ){
           z_mean   = z_mean + pclass_sz->normalized_dndz_ngal_z[index_g][i]*pclass_sz->normalized_dndz_ngal_phig[index_g][i]/dz;
             }

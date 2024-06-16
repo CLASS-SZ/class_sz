@@ -20679,7 +20679,7 @@ return _SUCCESS_;
 
 // double z_min,z_max;
 // if (pclass_sz->need_sigma==0){
-//   class_alloc(pclass_sz->array_redshift,sizeof(double *)*pclass_sz->n_arraySZ,pclass_sz->error_message);
+//   class_alloc(pclass_sz->array_redshift,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 //   double z_min = r8_min(pclass_sz->z1SZ,pclass_sz->z1SZ_dndlnM);
 //   // z_min = r8_min(z_min,pclass_sz->z_for_pk_hm);
 //   double z_max = r8_max(pclass_sz->z2SZ,pclass_sz->z2SZ_dndlnM);
@@ -20694,19 +20694,19 @@ class_alloc(vrms2_var,
             pclass_sz->error_message);
 
 
-class_alloc(pclass_sz->array_vrms2_at_z,sizeof(double *)*pclass_sz->n_arraySZ,pclass_sz->error_message);
+class_alloc(pclass_sz->array_vrms2_at_z,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 
 int index_z;
 
 
 
-    for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+    for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
     {
       // if (pclass_sz->need_sigma== 0){
       // pclass_sz->array_redshift[index_z] =
       //                                 log(1.+z_min)
       //                                 +index_z*(log(1.+z_max)-log(1.+z_min))
-      //                                 /(pclass_sz->n_arraySZ-1.); // log(1+z)
+      //                                 /(pclass_sz->ndim_redshifts-1.); // log(1+z)
       //                               }
 
             spectra_vrms2(pba,
@@ -20983,7 +20983,7 @@ int tabulate_mean_galaxy_number_density(struct background * pba,
                                         struct primordial * ppm,
                                         struct class_sz_structure * pclass_sz){
 
-class_alloc(pclass_sz->array_mean_galaxy_number_density,sizeof(double *)*pclass_sz->n_arraySZ,pclass_sz->error_message);
+class_alloc(pclass_sz->array_mean_galaxy_number_density,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 
 int index_z;
 double r;
@@ -21026,7 +21026,7 @@ double * pvectsz;
  else if (pclass_sz->delta_def_galaxies == 2)
    pvectsz[pclass_sz->index_has_500c] = 1;
 
-for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
         {
           double z = exp(pclass_sz->array_redshift[index_z])-1.;
           if (pclass_sz->sz_verbose>3){
@@ -21104,7 +21104,7 @@ if (pclass_sz->sz_verbose>0){
 class_alloc(pclass_sz->array_mean_galaxy_number_density_ngal,sizeof(double **)*pclass_sz->galaxy_samples_list_num,pclass_sz->error_message);
 int index_g;
 for (index_g=0;index_g<pclass_sz->galaxy_samples_list_num;index_g++){
- class_alloc(pclass_sz->array_mean_galaxy_number_density_ngal[index_g],sizeof(double *)*pclass_sz->n_arraySZ,pclass_sz->error_message);
+ class_alloc(pclass_sz->array_mean_galaxy_number_density_ngal[index_g],sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 }
 
 if (pclass_sz->sz_verbose>0)
@@ -21150,7 +21150,7 @@ double * pvectsz;
  else if (pclass_sz->delta_def_galaxies == 2)
    pvectsz[pclass_sz->index_has_500c] = 1;
 
-for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
         {
 
 
@@ -21218,7 +21218,7 @@ int tabulate_mean_galaxy_bias(struct background * pba,
                               struct perturbs * ppt,
                               struct class_sz_structure * pclass_sz){
 
-class_alloc(pclass_sz->array_mean_galaxy_bias,sizeof(double *)*pclass_sz->n_arraySZ,pclass_sz->error_message);
+class_alloc(pclass_sz->array_mean_galaxy_bias,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 
 int index_z;
 double r;
@@ -21249,7 +21249,7 @@ double * pvectsz;
 
  // printf("tabulating dndlnM quantities0\n");
 
-for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
         {
           double z = exp(pclass_sz->array_redshift[index_z])-1.;
 
@@ -25387,55 +25387,55 @@ int tabulate_sigma_and_dsigma_from_pk(struct background * pba,
 
 
 if (pclass_sz->use_class_sz_fast_mode){
-pclass_sz->ndim_redshifts = 500;
-}
+
+    if (pclass_sz->cosmo_model == 6)
+
+        pclass_sz->ndim_masses = 1000;
+        
+    
+    else
+    
+        pclass_sz->ndim_masses = 500;
+
+    pclass_sz->n_m_dndlnM = pclass_sz->ndim_masses;
+    
+    }
 
 if (pclass_sz->need_sigma == 0)
     return 0;
 
 
 
-// class_alloc(pclass_sz->array_redshift,sizeof(double *)*pclass_sz->n_arraySZ,pclass_sz->error_message);
+// class_alloc(pclass_sz->array_redshift,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 
 
 if (pclass_sz->use_class_sz_fast_mode){
    // fixed by cosmopower emulator k-sampling
-  class_alloc(pclass_sz->array_radius,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
+  class_alloc(pclass_sz->array_radius,sizeof(double *)*pclass_sz->ndim_masses,pclass_sz->error_message);
 
 
   class_alloc(pclass_sz->array_sigma_at_z_and_R,
-              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
+              sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ndim_masses,
               pclass_sz->error_message);
 
   class_alloc( pclass_sz->array_dsigma2dR_at_z_and_R,
-              sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
+              sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ndim_masses,
               pclass_sz->error_message);
 
-  // class_alloc(pclass_sz->array_pkl_at_z_and_k,
-  //             sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
-  //             pclass_sz->error_message);
-  //
-  // class_alloc(pclass_sz->array_pknl_at_z_and_k,
-  //             sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
-  //             pclass_sz->error_message);
-  //
-  // class_alloc(pclass_sz->array_lnk,
-  //             sizeof(double *)*pclass_sz->ndim_redshifts,
-  //             pclass_sz->error_message);
 
   return _SUCCESS_;
 }
 else{
 
-class_alloc(pclass_sz->array_radius,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
+class_alloc(pclass_sz->array_radius,sizeof(double *)*pclass_sz->ndim_masses,pclass_sz->error_message);
 
 
 class_alloc(pclass_sz->array_sigma_at_z_and_R,
-            sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
+            sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ndim_masses,
             pclass_sz->error_message);
 
 class_alloc( pclass_sz->array_dsigma2dR_at_z_and_R,
-            sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ndim_redshifts,
+            sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ndim_masses,
             pclass_sz->error_message);
 
 // printf("tabulating sigma\n");
@@ -25476,23 +25476,23 @@ class_alloc( pclass_sz->array_dsigma2dR_at_z_and_R,
 
 
 class_alloc(array_sigma_at_z_and_R,
-            pclass_sz->n_arraySZ*sizeof(double *),
+            pclass_sz->ndim_redshifts*sizeof(double *),
             pclass_sz->error_message);
 
 class_alloc(array_dsigma2dR_at_z_and_R,
-            pclass_sz->n_arraySZ*sizeof(double *),
+            pclass_sz->ndim_redshifts*sizeof(double *),
             pclass_sz->error_message);
 
 for (index_l=0;
-     index_l<pclass_sz->n_arraySZ;
+     index_l<pclass_sz->ndim_redshifts;
      index_l++)
 {
   class_alloc(array_sigma_at_z_and_R[index_l],
-              pclass_sz->ndim_redshifts*sizeof(double),
+              pclass_sz->ndim_masses*sizeof(double),
               pclass_sz->error_message);
 
   class_alloc(array_dsigma2dR_at_z_and_R[index_l],
-              pclass_sz->ndim_redshifts*sizeof(double),
+              pclass_sz->ndim_masses*sizeof(double),
               pclass_sz->error_message);
 }
 
@@ -25532,9 +25532,9 @@ num_threads(number_of_threads)
 
 // #pragma omp for schedule (dynamic)
 #pragma omp for collapse(2)
-  for (index_R=0; index_R<pclass_sz->ndim_redshifts; index_R++) // ndim_masses
+  for (index_R=0; index_R<pclass_sz->ndim_masses; index_R++) // ndim_masses
   {
-  for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++) // ndim_redshift
+  for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++) // ndim_redshift
   {
 // #pragma omp flush(abort)
 
@@ -25542,14 +25542,14 @@ num_threads(number_of_threads)
     pclass_sz->array_radius[index_R] =
                                 logR_min
                                 +index_R*(logR_max-logR_min)
-                                /(pclass_sz->ndim_redshifts-1.); //log(R)
+                                /(pclass_sz->ndim_masses-1.); //log(R)
 
-    // for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+    // for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
     // {
       // pclass_sz->array_redshift[index_z] =
       //                                 log(1.+z_min)
       //                                 +index_z*(log(1.+z_max)-log(1.+z_min))
-      //                                 /(pclass_sz->n_arraySZ-1.); // log(1+z)
+      //                                 /(pclass_sz->ndim_redshifts-1.); // log(1+z)
 
 
   if (pclass_sz->need_sigma == 1){
@@ -25631,9 +25631,9 @@ if (abort == _TRUE_) return _FAILURE_;
 //end of parallel region
 
 index_z_R = 0;
-for (index_R=0; index_R<pclass_sz->ndim_redshifts; index_R++)
+for (index_R=0; index_R<pclass_sz->ndim_masses; index_R++)
 {
-  for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+  for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
   {
 
     pclass_sz->array_sigma_at_z_and_R[index_z_R] = array_sigma_at_z_and_R[index_z][index_R];
@@ -25656,7 +25656,7 @@ for (index_R=0; index_R<pclass_sz->ndim_redshifts; index_R++)
 
 // freeing memory
 for (index_l=0;
-     index_l<pclass_sz->n_arraySZ;
+     index_l<pclass_sz->ndim_redshifts;
      index_l++)
 {
   free(array_sigma_at_z_and_R[index_l]);
@@ -27794,7 +27794,7 @@ struct Parameters_for_nl_fitting_function{
 
   //Array of z
   double z_min = pclass_sz->array_redshift[0];
-  double z_max = pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+  double z_max = pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
   int index_z;
 
   double tstart, tstop;
@@ -27817,32 +27817,32 @@ struct Parameters_for_nl_fitting_function{
 
 
 class_alloc(pclass_sz->array_nl_index_at_z_and_k,
-            sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ln_k_size_for_tSZ,
+            sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ln_k_size_for_tSZ,
             pclass_sz->error_message);
 class_alloc(pclass_sz->array_nl_index_at_z_and_k_no_wiggles,
-            sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ln_k_size_for_tSZ,
+            sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ln_k_size_for_tSZ,
             pclass_sz->error_message);
 
 
 class_alloc(array_nl_index_at_z_and_k,
-            pclass_sz->n_arraySZ*sizeof(double *),
+            pclass_sz->ndim_redshifts*sizeof(double *),
             pclass_sz->error_message);
 class_alloc(array_nl_index_at_z_and_k_no_wiggles,
-            pclass_sz->n_arraySZ*sizeof(double *),
+            pclass_sz->ndim_redshifts*sizeof(double *),
             pclass_sz->error_message);
 
 
 // class_alloc(pclass_sz->array_nl_index_at_z_and_k_splined,
-//             sizeof(double *)*pclass_sz->n_arraySZ*pclass_sz->ln_k_size_for_tSZ,
+//             sizeof(double *)*pclass_sz->ndim_redshifts*pclass_sz->ln_k_size_for_tSZ,
 //             pclass_sz->error_message);
 //
 //
 // class_alloc(array_nl_index_at_z_and_k_splined,
-//             pclass_sz->n_arraySZ*sizeof(double *),
+//             pclass_sz->ndim_redshifts*sizeof(double *),
 //             pclass_sz->error_message);
 
 for (index_l=0;
-     index_l<pclass_sz->n_arraySZ;
+     index_l<pclass_sz->ndim_redshifts;
      index_l++)
 {
   class_alloc(array_nl_index_at_z_and_k[index_l],
@@ -27884,7 +27884,7 @@ num_threads(number_of_threads)
   // class_alloc_parallel(pvecback,pba->bg_size*sizeof(double),pba->error_message);
 
 #pragma omp for schedule (dynamic)
-for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
 {
 
 #pragma omp flush(abort)
@@ -28244,7 +28244,7 @@ if (abort == _TRUE_) return _FAILURE_;
 index_z_k = 0;
 for (index_k=0; index_k<pclass_sz->ln_k_size_for_tSZ; index_k++)
 {
-  for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+  for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
   {
     pclass_sz->array_nl_index_at_z_and_k[index_z_k] = array_nl_index_at_z_and_k[index_z][index_k];
     pclass_sz->array_nl_index_at_z_and_k_no_wiggles[index_z_k] = array_nl_index_at_z_and_k_no_wiggles[index_z][index_k];
@@ -28255,7 +28255,7 @@ for (index_k=0; index_k<pclass_sz->ln_k_size_for_tSZ; index_k++)
   }
 }
 
-for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++){
+for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++){
 free(array_nl_index_at_z_and_k[index_z]);
 }
   free(array_nl_index_at_z_and_k);
@@ -28288,11 +28288,11 @@ class_alloc(sigma2_hsv_var,
             pclass_sz->error_message);
 
 
-class_alloc(pclass_sz->array_sigma2_hsv_at_z,sizeof(double *)*pclass_sz->n_arraySZ,pclass_sz->error_message);
+class_alloc(pclass_sz->array_sigma2_hsv_at_z,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 
 int index_z;
 
-for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
         {
 
             spectra_sigma2_hsv(pba,
@@ -28324,11 +28324,11 @@ int tabulate_knl(struct background * pba,
 
 
 double knl_var;
-class_alloc(pclass_sz->array_knl_at_z,sizeof(double *)*pclass_sz->n_arraySZ,pclass_sz->error_message);
+class_alloc(pclass_sz->array_knl_at_z,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 
 int index_z;
 double z;
-for (index_z=0; index_z<pclass_sz->n_arraySZ; index_z++)
+for (index_z=0; index_z<pclass_sz->ndim_redshifts; index_z++)
         {
           z = exp(pclass_sz->array_redshift[index_z])-1.;
           solve_pkl_to_knl(&knl_var,
@@ -28385,9 +28385,9 @@ double get_knl_at_z(double z, struct class_sz_structure * pclass_sz){
    double z_asked = log(1.+z);
  if (z<exp(pclass_sz->array_redshift[0])-1.)
     z_asked = pclass_sz->array_redshift[0];
- if (z>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
-    z_asked =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
- return  exp(pwl_value_1d(pclass_sz->n_arraySZ,
+ if (z>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
+    z_asked =  pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
+ return  exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                           pclass_sz->array_redshift,
                           pclass_sz->array_knl_at_z,
                           z_asked));
@@ -28399,15 +28399,15 @@ double get_nl_index_at_z_and_k(double z_asked, double k_asked, struct class_sz_s
 
  if (z_asked<exp(pclass_sz->array_redshift[0])-1.)
     z = pclass_sz->array_redshift[0];
- if (z_asked>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
-    z =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+ if (z_asked>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
+    z =  pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
 
  if (k_asked<exp(pclass_sz->ln_k_for_tSZ[0]))
     k =  pclass_sz->ln_k_for_tSZ[0];
  if (k_asked>exp(pclass_sz->ln_k_for_tSZ[pclass_sz->ln_k_size_for_tSZ-1]))
     k =  pclass_sz->ln_k_for_tSZ[pclass_sz->ln_k_size_for_tSZ-1];
 
- return pwl_interp_2d(pclass_sz->n_arraySZ,
+ return pwl_interp_2d(pclass_sz->ndim_redshifts,
                       pclass_sz->ln_k_size_for_tSZ,
                       pclass_sz->array_redshift,
                       pclass_sz->ln_k_for_tSZ,
@@ -28423,15 +28423,15 @@ double get_nl_index_at_z_and_k_no_wiggles(double z_asked, double k_asked, struct
 
  if (z_asked<exp(pclass_sz->array_redshift[0])-1.)
     z = pclass_sz->array_redshift[0];
- if (z_asked>exp(pclass_sz->array_redshift[pclass_sz->n_arraySZ-1])-1.)
-    z =  pclass_sz->array_redshift[pclass_sz->n_arraySZ-1];
+ if (z_asked>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
+    z =  pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
 
  if (k_asked<exp(pclass_sz->ln_k_for_tSZ[0]))
     k =  pclass_sz->ln_k_for_tSZ[0];
  if (k_asked>exp(pclass_sz->ln_k_for_tSZ[pclass_sz->ln_k_size_for_tSZ-1]))
     k =  pclass_sz->ln_k_for_tSZ[pclass_sz->ln_k_size_for_tSZ-1];
 
- return pwl_interp_2d(pclass_sz->n_arraySZ,
+ return pwl_interp_2d(pclass_sz->ndim_redshifts,
                       pclass_sz->ln_k_size_for_tSZ,
                       pclass_sz->array_redshift,
                       pclass_sz->ln_k_for_tSZ,

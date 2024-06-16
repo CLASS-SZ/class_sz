@@ -26,6 +26,7 @@ from libc.math cimport pow
 
 import mcfit
 import time
+import re
 
 import warnings
 from contextlib import contextmanager
@@ -70,18 +71,22 @@ def class_sz_in_dict_output(d):
     # Extract the string from dict["output"]
     output_string = d.get("output", "")
     
-    # Split the string into individual keys
-    output_keys = {key.strip() for key in output_string.split(",") if key.strip()}
+
+    # Split the string into individual keys using a regular expression to handle commas and spaces
+    output_keys = {key.strip() for key in re.split(r'[,\s]+', output_string) if key.strip()}
     
+  
     # Check if all keys are within the allowed keys
     for key in output_keys:
+
         if key not in non_class_sz_keys:
+
             return True
     
     return False
 
 
-def contains_specific_keys(d,specific_keys = {"tCl", "lCl", "pCl"}):
+def contains_specific_keys(d,specific_keys = {"tCl", "lCl", "pCl", "mPk"}):
     # Define the specific keys to check
     
     
@@ -89,7 +94,7 @@ def contains_specific_keys(d,specific_keys = {"tCl", "lCl", "pCl"}):
     output_string = d.get("output", "")
     
     # Split the string into individual keys
-    output_keys = {key.strip() for key in output_string.split(",") if key.strip()}
+    output_keys = {key.strip() for key in re.split(r'[,\s]+', output_string)  if key.strip()}
     
     # Check if any of the specific keys are in output_keys
     for key in specific_keys:
@@ -99,7 +104,7 @@ def contains_specific_keys(d,specific_keys = {"tCl", "lCl", "pCl"}):
     return False
 
 
-import re
+
 
 def contains_specific_pattern_or_keys(d):
     # Extract the string from dict["output"]
@@ -237,6 +242,8 @@ cdef class Class:
 
 
     cdef double sigma8_fast
+    cdef double A_s_fast
+    cdef double logA_fast
     cdef double Neff_fast
     cdef object class_szfast
 
@@ -272,10 +279,18 @@ cdef class Class:
             'skip_hubble': 1,
             'skip_class_sz': 1,
             'skip_sigma8_at_z': 1,
-            'skip_sigma8_and_der':1,
+            'skip_sigma8_and_der':0,
             'skip_cmb': 0,
             'cosmo_model': 6, # set ede-v2 emulators as default
+            # here we set the default values for these emulator parameters. 
+            # they can be overwritten by the user. 
+            'N_ur': 0.00441,
+            'N_ncdm': 1,
+            'deg_ncdm': 3,
+            'm_ncdm': 0.02,
             'classy_sz_verbose': 'none',
+            'omega_b': 0.022383,
+            'n_s': 0.9665,
             }
         self.set(**_pars)
 
@@ -659,6 +674,10 @@ cdef class Class:
         
 
         ## deal with names 
+        if 'sigma_8' in self._pars:
+
+          self._pars['sigma8'] = self._pars.pop('sigma_8')
+
 
         if 'ns' in self._pars:
 
@@ -672,6 +691,16 @@ cdef class Class:
 
           self._pars['ln10^{10}A_s'] = np.log(10**10*self._pars.pop('A_s'))
 
+        if 'logA' in self._pars:
+
+          self._pars['ln10^{10}A_s'] = self._pars.pop('logA')
+
+
+        if 'tau' in self._pars:
+
+          self._pars['tau_reio'] = self._pars.pop('tau')
+
+
         if 'mnu' in self._pars:
 
           self._pars['m_ncdm'] = self._pars.pop('mnu')
@@ -679,6 +708,10 @@ cdef class Class:
         if 'omch2' in self._pars:
           
           self._pars['omega_cdm'] = self._pars.pop('omch2')
+
+        if 'omega_c' in self._pars:
+          
+          self._pars['omega_cdm'] = self._pars.pop('omega_c')
         
         if 'ombh2' in self._pars:
         
@@ -695,6 +728,10 @@ cdef class Class:
         if 'Omega_cdm' in self._pars:
         
           self._pars['omega_cdm'] = self._pars.pop('Omega_cdm')*(self._pars['H0']/100.)**2.
+
+        if 'Omega_c' in self._pars:
+        
+          self._pars['omega_cdm'] = self._pars.pop('Omega_c')*(self._pars['H0']/100.)**2.
 
 
         if "pressure_profile" in self._pars: 
@@ -720,19 +757,19 @@ cdef class Class:
 
             self._pars['skip_cmb'] = 1
 
-        if contains_specific_keys(self._pars,{"mPk"}):
+        #if contains_specific_keys(self._pars,{"mPk"}):
+        #
+        #    self._pars['skip_pkl'] = 0
 
-            self._pars['skip_pkl'] = 0
+        non_linear_check = 'non_linear' in self._pars
 
-            non_linear_check = 'non_linear' in self._pars
+        if non_linear_check:
 
-            if non_linear_check:
+            self._pars['skip_pknl'] = 0
 
-                self._pars['skip_pknl'] = 0
+        else:
 
-            else:
-
-                self._pars['skip_pknl'] = 1
+            self._pars['skip_pknl'] = 1
 
 
         # test is anything else than class quantities are requested.
@@ -788,12 +825,14 @@ cdef class Class:
 
         if 'age' in self._pars:
 
+            # in this case the corresponding h value as been found 
+            # so we delete age and set H0
             params_settings['H0'] = 100.*self.h()
 
             del params_settings['age'] 
 
 
-        cszfast = Class_szfast(**params_settings)
+        cszfast = Class_szfast(params_settings=params_settings)
 
 
         if '100*theta_s' in self._pars:
@@ -802,8 +841,11 @@ cdef class Class:
 
         if 'sigma8' in self._pars:
 
-          cszfast.find_As(params_settings)
+            cszfast.find_As(params_settings)
 
+            cszfast.logA_fast = params_settings['ln10^{10}A_s']
+
+            cszfast.A_s_fast = np.exp(cszfast.logA_fast)*1e-10
 
 
         cszfast.params_for_emulators = params_settings
@@ -811,19 +853,15 @@ cdef class Class:
 
         if self._pars['skip_cmb'] == 0:
 
-          start = time.time()
-
-          if self.tsz.use_cmb_cls_from_file == 0:
-
             cszfast.calculate_cmb(want_tt=True,
                                   want_te=True,
                                   want_ee=True,
+                                  want_pp=True,
                                   **params_settings)
-          else:
 
-            cszfast.load_cmb_cls_from_file(**params_settings)
+            # deactivate this option (15/06/2024)
+            # cszfast.load_cmb_cls_from_file(**params_settings)
 
-          end = time.time()
 
 
 
@@ -852,7 +890,11 @@ cdef class Class:
 
           self.sigma8_fast = cszfast.sigma8
           self.Neff_fast = cszfast.Neff
+          self.A_s_fast = cszfast.A_s_fast
+          self.logA_fast = cszfast.logA_fast
+
         else:
+          
           self.sigma8_fast = 0.
 
 
@@ -898,21 +940,18 @@ cdef class Class:
             start = time.time()
 
             cszfast.calculate_sigma(**params_settings)
-            # print('lnsigma2',cszfast.cszfast_pk_grid_lnsigma2_flat)
-            # print('dsigma2',cszfast.cszfast_pk_grid_dsigma2_flat)
-            # print('ln1pz',cszfast.cszfast_pk_grid_ln1pz)
-            # print('lnr',cszfast.cszfast_pk_grid_lnr)
+
             if self.tsz.need_sigma == 1:
 
               index_z_r = 0
 
-            for index_z in range(self.tsz.n_arraySZ):
-                ln1pzc = cszfast.cszfast_pk_grid_ln1pz[index_z]
-                # print(">>> filling sig/pk array at z = %.3e"%(np.exp(ln1pzc)-1.))
+            for index_z in range(self.tsz.ndim_redshifts):
 
+                ln1pzc = cszfast.cszfast_pk_grid_ln1pz[index_z]
+                
                 self.tsz.array_redshift[index_z] = ln1pzc
 
-                for index_r in range(self.tsz.ndim_redshifts):
+                for index_r in range(self.tsz.ndim_masses):
 
                     if index_z == 0:
 
@@ -1141,70 +1180,7 @@ cdef class Class:
               self.tsz.L0_cib = pdict_to_update['Most_efficient_halo_mass_in_Msun']
           if k == 'Size_of_halo_masses_sourcing_CIB_emission':
               self.tsz.sigma2_LM_cib = pdict_to_update['Size_of_halo_masses_sourcing_CIB_emission']
-        # print('array_redshift:',
-        #       self.tsz.array_redshift[0],
-        #       self.tsz.array_redshift[1],
-        #       self.tsz.array_redshift[self.tsz.n_arraySZ-1])
-        # print('array_radius:',
-        #       self.tsz.array_radius[0],
-        #       self.tsz.array_radius[1],
-        #       self.tsz.array_radius[self.tsz.ndim_redshifts-1])
-        # print('array_dsigma2dR_at_z_and_R:',
-        #       self.tsz.array_dsigma2dR_at_z_and_R[0],
-        #       self.tsz.array_dsigma2dR_at_z_and_R[1],
-        #       self.tsz.array_dsigma2dR_at_z_and_R[self.tsz.n_arraySZ*self.tsz.ndim_redshifts-1])
-        # print('array_sigma_at_z_and_R:',
-        #       self.tsz.array_sigma_at_z_and_R[0],
-        #       self.tsz.array_sigma_at_z_and_R[1],
-        #       self.tsz.array_sigma_at_z_and_R[self.tsz.n_arraySZ*self.tsz.ndim_redshifts-1])
-
-        # # BB playground for emulators
-
-        # print(self._pars)
-        # params_settings = self._pars
-        # cszfast = classy_szfast(**params_settings)
-
-
-        # print('calculating cmb')
-        # start = time.time()
-        # cszfast.calculate_cmb(**params_settings)
-        # end = time.time()
-        # print('cmb calculation took:',end-start)
-
-
-        # print('calculating pkl')
-        # start = time.time()
-        # cszfast.calculate_pkl(**params_settings)
-        # end = time.time()
-        # print('pk calculation took:',end-start)
-
-        # print('calculating pknl')
-        # start = time.time()
-        # cszfast.calculate_pknl(**params_settings)
-        # end = time.time()
-        # print('pknl calculation took:',end-start)
-
-
-        # print('tabulate sigma')
-        # start = time.time()
-        # cszfast.calculate_sigma(**params_settings)
-        # print('lnsigma2',cszfast.cszfast_pk_grid_lnsigma2_flat)
-        # print('dsigma2',cszfast.cszfast_pk_grid_dsigma2_flat)
-        # print('ln1pz',cszfast.cszfast_pk_grid_ln1pz)
-        # print('lnr',cszfast.cszfast_pk_grid_lnr)
-        # index_z_r = 0
-        # for index_z in range(self.tsz.n_arraySZ):
-        #   for index_r in range(self.tsz.ndim_redshifts):
-        #         self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
-        #         self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
-        #         self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
-        #         self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
-        #         self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
-        #         self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
-        #         self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
-        #         index_z_r += 1
-        # end = time.time()
-        # print('end tabulate sigma:',end-start)
+  
         if class_sz_tabulate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
         &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
             self.struct_cleanup()
@@ -2128,11 +2104,17 @@ cdef class Class:
         return self.th.tau_reio
 
     def Omega_m(self):
-        if self.tsz.skip_background_and_thermo:
+        print('Omega_m in classy')
+        if self._pars['skip_background_and_thermo']:
+          
           params_settings = self._pars
+          print('params_settings in classy',params_settings)
           result = (params_settings['omega_b']+params_settings['omega_cdm'])*(100./params_settings['H0'])**2.
+          print('result in classy',result)
           return result
+
         else:
+          
           return self.ba.Omega0_m
 
     def Omega_r(self):
@@ -3852,7 +3834,9 @@ cdef class Class:
         return get_T10_alpha_at_z(z,&self.tsz)
 
     def get_dndlnM_at_z_and_M(self,z,m):
+    
         r = get_dndlnM_at_z_and_M(z,m,&self.tsz)
+    
         return r
 
    
@@ -3876,7 +3860,7 @@ cdef class Class:
         """
         # Check if both inputs are scalars
         if isinstance(z_input, (float, np.float64)) and isinstance(m_input, (float, np.float64)):
-            return self.get_dndlnM_at_z_and_M_unvectorized(z_input, m_input)
+            return self.get_dndlnM_at_z_and_M(z_input, m_input)
         
         # Check if z_input is a scalar and m_input is an array
         elif isinstance(z_input, (float, np.float64)) and isinstance(m_input, np.ndarray) and m_input.ndim == 1 and m_input.dtype == np.float64:
@@ -5272,7 +5256,7 @@ cdef class Class:
 
         derived = {}
         for name in names:
-            # print('name:',name)
+                        
             if name == 'h':
                 value = self.ba.h
             elif name == 'H0':
@@ -5285,25 +5269,46 @@ cdef class Class:
                 value = self.ba.age
             elif name == 'conformal_age':
                 value = self.ba.conformal_age
+
+
             elif name == 'm_ncdm_in_eV':
-                value = self.ba.m_ncdm_in_eV[0]
+
+                
+                if self._pars['skip_background_and_thermo']:
+                
+                    value =  self._pars['m_ncdm']  
+                
+                else:
+                
+                    value = self.ba.m_ncdm_in_eV[0]
+            
             elif name == 'm_ncdm_tot':
                 value = self.ba.Omega0_ncdm_tot*self.ba.h*self.ba.h*93.14
+            
             elif name == 'Neff':
+            
                 value = self.ba.Neff
+            
                 if self.tsz.use_class_sz_fast_mode == 1:
+            
                   value = self.Neff_fast
+            
                 else:
+            
                   value = self.ba.Neff
+            
             elif name == 'Omega_m':
-                if self.tsz.skip_background_and_thermo:
+
+                if self._pars['skip_background_and_thermo']:
+            
                   params_settings = self._pars
                   value = (params_settings['omega_b']+params_settings['omega_cdm'])*(100./params_settings['H0'])**2.
+            
                 else:
+            
                   value = self.ba.Omega0_m
-                # print(value)
-            # elif name == 'omegam':
-            #     value = self.ba.Omega0_m
+
+            
             elif name == 'omega_m':
                 value = self.ba.Omega0_m*self.ba.h**2
             elif name == 'xi_idr':
@@ -5372,10 +5377,52 @@ cdef class Class:
                 value = self.th.YHe
             elif name == 'n_e':
                 value = self.th.n_e
+
             elif name == 'A_s':
-                value = self.pm.A_s
-            elif name == 'ln10^{10}A_s':
-                value = log(1.e10*self.pm.A_s)
+
+                if self.tsz.use_class_sz_fast_mode == 1:
+
+                    # print('self._pars:',self._pars)
+
+                    if ('logA' in self._pars) or ('ln10^{10}A_s' in self._pars):
+
+                        if 'ln10^{10}A_s' in self._pars:
+                        
+                            lna = self._pars['ln10^{10}A_s']
+                        
+                        else:
+
+                            lna = self._pars['logA']
+
+                        value = 1e-10*np.exp(lna)
+                    
+                    else:
+                    
+                        value = self.A_s_fast
+            
+                else:
+            
+                  value = self.pm.A_s
+
+            elif name == 'ln10^{10}A_s' or name == 'logA':
+
+                if 'ln10^{10}A_s' in self._pars:
+
+                    value = self._pars['ln10^{10}A_s']
+                
+                elif 'logA' in self._pars:
+                
+                    value = self._pars['logA']
+
+                elif self.tsz.use_class_sz_fast_mode == 1:
+
+                    value = self.logA_fast
+
+                else:
+                
+                    value = log(1.e10*self.pm.A_s)
+
+
             elif name == 'n_s':
                 value = self.pm.n_s
             elif name == 'alpha_s':
