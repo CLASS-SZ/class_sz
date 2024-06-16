@@ -247,6 +247,8 @@ cdef class Class:
     cdef double Neff_fast
     cdef object class_szfast
 
+    cdef int likelihood_mode
+
     # Defining two new properties to recover, respectively, the parameters used
     # or the age (set after computation). Follow this syntax if you want to
     # access other quantities. Alternatively, you can also define a method, and
@@ -298,6 +300,7 @@ cdef class Class:
         cdef char* dumc
         self.allocated = False
         self.computed = False
+        self.likelihood_mode = False
         self._pars = {}
         self.fc.size=0
         self.fc.filename = <char*>malloc(sizeof(char)*30)
@@ -670,7 +673,8 @@ cdef class Class:
 
     # @cython.boundscheck(False)
     # @cython.wraparound(False)
-    def compute_class_szfast(self):
+    # the likelihood_mode parameter is used to identify whether we run within cobaya
+    def compute_class_szfast(self,likelihood_mode=False):
         
 
         ## deal with names 
@@ -757,9 +761,11 @@ cdef class Class:
 
             self._pars['skip_cmb'] = 1
 
-        #if contains_specific_keys(self._pars,{"mPk"}):
-        #
-        #    self._pars['skip_pkl'] = 0
+        ## when running in likelihood mode, we don't need to compute Pk
+        ## unless we are asked for it.
+        if contains_specific_keys(self._pars,{"mPk"}) and (likelihood_mode == False):
+        
+            self._pars['skip_pkl'] = 0
 
         non_linear_check = 'non_linear' in self._pars
 
@@ -909,11 +915,17 @@ cdef class Class:
 
 
         if self._pars['skip_background_and_thermo']:
+          
           if self._pars['skip_chi'] == 0:
+          
             cszfast.calculate_chi(**params_settings)
+          
           if self._pars['skip_hubble'] == 0:
+          
             cszfast.calculate_hubble(**params_settings)
+          
           self.tsz.use_class_sz_fast_mode = 1
+          self.tsz.skip_background_and_thermo = 1
           self.class_szfast = cszfast
           self.computed = True
           return
@@ -1505,8 +1517,6 @@ cdef class Class:
 
         pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
 
-        ###print(">>>>> This function is unclear (BB112023)\n")
-        ## check Mat M's code: https://github.com/simonsobs/hmvec/blob/f35865c32088ce22af3279e829d770dfc1b6e186/hmvec/cosmology.py#L642 Thanks Mat!
 
         ### raise CosmoSevereError(self.ba.error_message)
 
@@ -2104,13 +2114,13 @@ cdef class Class:
         return self.th.tau_reio
 
     def Omega_m(self):
-        print('Omega_m in classy')
+
         if self._pars['skip_background_and_thermo']:
           
           params_settings = self._pars
-          print('params_settings in classy',params_settings)
+
           result = (params_settings['omega_b']+params_settings['omega_cdm'])*(100./params_settings['H0'])**2.
-          print('result in classy',result)
+
           return result
 
         else:
@@ -2226,20 +2236,25 @@ cdef class Class:
         cdef int last_index #junk
         cdef double * pvecback
 
-        pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
 
         if self.tsz.skip_background_and_thermo:
-          D_A = self.class_szfast.get_chi(z)/(1.+z)
+
+            D_A = self.class_szfast.get_chi(z)/(1.+z)
+        
         else:
-          if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
-              raise CosmoSevereError(self.ba.error_message)
+            
+            pvecback = <double*> calloc(self.ba.bg_size,sizeof(double))
 
-          if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
-              raise CosmoSevereError(self.ba.error_message)
+        
+            if background_tau_of_z(&self.ba,z,&tau)==_FAILURE_:
+                raise CosmoSevereError(self.ba.error_message)
 
-          D_A = pvecback[self.ba.index_bg_ang_distance]
+            if background_at_tau(&self.ba,tau,self.ba.long_info,self.ba.inter_normal,&last_index,pvecback)==_FAILURE_:
+                raise CosmoSevereError(self.ba.error_message)
 
-        free(pvecback)
+            D_A = pvecback[self.ba.index_bg_ang_distance]
+
+            free(pvecback)
 
         return D_A
 
@@ -2400,18 +2415,25 @@ cdef class Class:
         cdef np.ndarray H_array
 
         if isinstance(z, (float, int)):
+
             z_array = np.array([z], dtype=np.float64)
+        
         else:
+        
             z_array = np.array(z, dtype=np.float64)
 
         H_array = np.empty_like(z_array)
 
-        for i in range(z_array.size):
-            pvecback = <double*> calloc(self.ba.bg_size, sizeof(double))
+        for i in range(z_array.size):    
 
             if self.tsz.skip_background_and_thermo:
+        
                 H_array[i] = self.class_szfast.get_hubble(z_array[i])
+
             else:
+
+                pvecback = <double*> calloc(self.ba.bg_size, sizeof(double))
+                
                 if background_tau_of_z(&self.ba, z_array[i], &tau) == _FAILURE_:
                     free(pvecback)
                     raise CosmoSevereError(self.ba.error_message)
@@ -2422,11 +2444,14 @@ cdef class Class:
 
                 H_array[i] = pvecback[self.ba.index_bg_H]
 
-            free(pvecback)
+                free(pvecback)
 
         if H_array.size == 1:
+
             return H_array[0]
+        
         else:
+        
             return H_array
 
     def get_H(self, z):
@@ -5309,8 +5334,10 @@ cdef class Class:
                   value = self.ba.Omega0_m
 
             
-            elif name == 'omega_m':
+            elif name == 'omega_mh2':
+
                 value = self.ba.Omega0_m*self.ba.h**2
+            
             elif name == 'xi_idr':
                 value = self.ba.T_idr/self.ba.T_cmb
             elif name == 'N_dg':
