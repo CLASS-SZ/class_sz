@@ -248,6 +248,8 @@ class_sz_pclass_sz_parameter(ngal_ngal_auto_only,int,0)
 
 class_sz_pclass_sz_parameter(use_fft_for_profiles_transform,int,0)
 
+class_sz_pclass_sz_parameter(has_tracer_bias_zdependence,int,0)
+
 class_sz_pclass_sz_parameter(k_min_gas_pressure_profile_2h,double,1e-2)
 class_sz_pclass_sz_parameter(k_max_gas_pressure_profile_2h,double,1e2)
 class_sz_pclass_sz_parameter(normalize_gas_density_profile,int,0)

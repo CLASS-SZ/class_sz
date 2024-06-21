@@ -294,6 +294,17 @@ cdef class Class:
             'omega_b': 0.022383,
             'n_s': 0.9665,
             }
+    ### note on ncdm:
+    # N_ncdm : 3
+    # m_ncdm : 0.02, 0.02, 0.02
+    # deg_ncdm: 1
+    # and
+    # N_ncdm: 1
+    # deg_ncdm: 3
+    # m_ncdm : 0.02
+    # are equivalent
+
+    
         self.set(**_pars)
 
     def __cinit__(self, default=True):

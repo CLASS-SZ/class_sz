@@ -14389,6 +14389,8 @@ if     (((V->pclass_sz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->pclass_sz->
 
   }
   else if ((V->pclass_sz->has_ngal_ngal_hf == _TRUE_) && (index_md == V->pclass_sz->index_md_ngal_ngal_hf)) {
+
+    
     int index_l = (int) V->pvectsz[V->pclass_sz->index_multipole];
     double l = V->pclass_sz->ell[index_l];
     double pk1;
@@ -14420,7 +14422,7 @@ if     (((V->pclass_sz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->pclass_sz->
     }
 
 
-    // printf("b=%.5e pk=%.5e\n",V->pvectsz[V->pclass_sz->index_halo_bias],pk1);
+    // printf("result = %.5e b=%.5e pk=%.5e\n",result,V->pvectsz[V->pclass_sz->index_halo_bias],pk1);
 
   }
   else if ((V->pclass_sz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_gal_hf)) {
@@ -15014,7 +15016,7 @@ if ( ((V->pclass_sz->has_ngal_ngal_1h == _TRUE_) && (index_md == V->pclass_sz->i
 int index_g = (int) V->pvectsz[V->pclass_sz->index_ngal_for_galaxy_profile];
 int index_g_prime = (int) V->pvectsz[V->pclass_sz->index_ngal_prime_for_galaxy_profile];
 
-
+// printf("getting kernels\n");
 double Wg = radial_kernel_W_galaxy_ngal_at_z(index_g,
                                              V->pvecback,
                                              z,
@@ -15026,6 +15028,8 @@ double Wg_galprime = radial_kernel_W_galaxy_ngal_at_z(index_g_prime,
                                                       z,
                                                       V->pba,
                                                       V->pclass_sz);
+
+// printf("getting kernels: wg = %.5e wgp = %.5e\n",Wg,Wg_galprime);
 
 result *= Wg*Wg_galprime*pow(1/V->pvectsz[V->pclass_sz->index_chi2],2.);
 }

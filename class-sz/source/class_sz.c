@@ -13631,6 +13631,17 @@ if (pclass_sz->has_ng_in_bh){
 }
 
 
+if (pclass_sz->has_tracer_bias_zdependence){
+
+
+  b = pclass_sz->effective_galaxy_bias_ngal[index_g]*(0.278*(pow(1 + z,2) - 6.565) + 2.393);
+  pvectsz[pclass_sz->index_halo_bias] = b;
+
+
+
+}
+
+
 
    return _SUCCESS_;
 }
@@ -22152,37 +22163,37 @@ else  phig =  pwl_value_1d(pclass_sz->normalized_dndz_ngal_size[index_g],
 // H_over_c_in_h_over_Mpc = dz/dChi
 // phi_galaxy_at_z = dng/dz normalized
 
-if (pclass_sz->photo_z_params_ngal[index_g]==1.){
-        // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
-        double shift= pclass_sz->dndz_shift_ngal[index_g];
-        double stretch = pclass_sz->dndz_stretch_ngal[index_g];
-        double z_mean = 0.;
+// if (pclass_sz->photo_z_params_ngal[index_g]==1.){
+//         // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
+//         double shift= pclass_sz->dndz_shift_ngal[index_g];
+//         double stretch = pclass_sz->dndz_stretch_ngal[index_g];
+//         double z_mean = 0.;
 
-        int i, N;
-        double dz = 1/(pclass_sz->normalized_dndz_ngal_z[index_g][1]-pclass_sz->normalized_dndz_ngal_z[index_g][0]);
-        N = pclass_sz->ndim_redshifts;
-        for ( i = 0; i < N; i++ ){
-          z_mean   = z_mean + pclass_sz->normalized_dndz_ngal_z[index_g][i]*pclass_sz->normalized_dndz_ngal_phig[index_g][i]/dz;
-            }
+//         int i, N;
+//         double dz = 1/(pclass_sz->normalized_dndz_ngal_z[index_g][1]-pclass_sz->normalized_dndz_ngal_z[index_g][0]);
+//         N = pclass_sz->ndim_redshifts;
+//         for ( i = 0; i < N; i++ ){
+//           z_mean   = z_mean + pclass_sz->normalized_dndz_ngal_z[index_g][i]*pclass_sz->normalized_dndz_ngal_phig[index_g][i]/dz;
+//             }
 
-        // printf("z_mean= %.2e\n",z_mean);
-        // printf("stretch= %.2e\n",stretch);
-        // printf("shift= %.2e\n",shift);
+//         // printf("z_mean= %.2e\n",z_mean);
+//         // printf("stretch= %.2e\n",stretch);
+//         // printf("shift= %.2e\n",shift);
 
-        double phig_shifted = 0;
-        double z_asked_shifted;
-        z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
-        if (z_asked_shifted<pclass_sz->normalized_dndz_ngal_z[index_g][0])
-           phig_shifted = 0.;
-        else if (z_asked_shifted>pclass_sz->normalized_dndz_ngal_z[index_g][pclass_sz->normalized_dndz_ngal_size[index_g]-1])
-           phig_shifted = 0.;
-        else phig_shifted =  pwl_value_1d(pclass_sz->normalized_dndz_ngal_size[index_g],
-                                   pclass_sz->normalized_dndz_ngal_z[index_g],
-                                   pclass_sz->normalized_dndz_ngal_phig[index_g],
-                                   z_asked_shifted);
+//         double phig_shifted = 0;
+//         double z_asked_shifted;
+//         z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
+//         if (z_asked_shifted<pclass_sz->normalized_dndz_ngal_z[index_g][0])
+//            phig_shifted = 0.;
+//         else if (z_asked_shifted>pclass_sz->normalized_dndz_ngal_z[index_g][pclass_sz->normalized_dndz_ngal_size[index_g]-1])
+//            phig_shifted = 0.;
+//         else phig_shifted =  pwl_value_1d(pclass_sz->normalized_dndz_ngal_size[index_g],
+//                                    pclass_sz->normalized_dndz_ngal_z[index_g],
+//                                    pclass_sz->normalized_dndz_ngal_phig[index_g],
+//                                    z_asked_shifted);
 
-        phig = (1./stretch) * phig_shifted;
-      }
+//         phig = (1./stretch) * phig_shifted;
+//       }
 
 double result = H_over_c_in_h_over_Mpc*phig;
 
