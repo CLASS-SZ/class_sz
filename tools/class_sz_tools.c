@@ -9222,6 +9222,7 @@ for (index_m=0;
           x_out = pclass_sz->x_outSZ;
       }
 
+
 for (ix=0; ix<N; ix++){
     x[ix] = exp(log(x_min)+ix/(N-1.)*(log(x_max)-log(x_min)));
     if (x[ix]>x_out){
@@ -9236,6 +9237,7 @@ for (ix=0; ix<N; ix++){
           double m200_over_msol = pvectsz[pclass_sz->index_m200c]/pba->h; // convert to Msun
           double z = pvectsz[pclass_sz->index_z];
           //
+          // printf("m200_over_msol 2: %f\n",m200_over_msol);
           //
           double P0 = pclass_sz->P0_B12*pow(m200_over_msol/1e14,pclass_sz->alpha_m_P0_B12)*pow(1+z,pclass_sz->alpha_z_P0_B12);
           double xc = pclass_sz->xc_B12*pow(m200_over_msol/1e14,pclass_sz->alpha_m_xc_B12)*pow(1+z,pclass_sz->alpha_z_xc_B12);
@@ -9245,6 +9247,16 @@ for (ix=0; ix<N; ix++){
           double alpha = pclass_sz->alpha_B12;
 
           double p_gnfw_x = P0*pow(x[ix]/xc,gamma)*pow(1.+ pow(x[ix]/xc,alpha),-beta);
+
+          if (pclass_sz->use_broken_pressure == 1) {
+              double M_break = pclass_sz->M_break_pressure/pba->h;; //convert to Msun 
+              double alpha_break = pclass_sz->alpha_break_pressure;
+              // printf("Mbreak: %f\n",M_break);
+              if (m200_over_msol < M_break) {
+                  p_gnfw_x *= pow(m200_over_msol / M_break, alpha_break);
+              }
+          }    
+          
           Px[ix] = p_gnfw_x;
 
           // double c_asked = pclass_sz->c_B12;//what we pass there?
@@ -13535,6 +13547,7 @@ int p_gnfw(double * p_gnfw_x,
         // double P0;
         //
         double m200_over_msol = pvectsz[pclass_sz->index_m200c]/pba->h; // convert to Msun
+        // printf("m200_over_msol: %f\n",m200_over_msol);
         // double z = pvectsz[pclass_sz->index_z];
         //
         //

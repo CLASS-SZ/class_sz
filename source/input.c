@@ -4396,18 +4396,19 @@ class_read_double("C1_IA",pclass_sz->C1_IA);
     }
 
     else if (pclass_sz->pressure_profile==2){
-    // //Arnaud et al pressure profile 2010, Eq B2 of [arXiv:0910.1234].
-    //  pclass_sz->P0GNFW = 8.130;
-    //  pclass_sz->c500 = 1.156;
-    //  pclass_sz->gammaGNFW = 0.3292;
-    //  pclass_sz->alphaGNFW = 1.0620;
-    //  pclass_sz->betaGNFW = 5.4807;
+    //Arnaud et al pressure profile 2010, Eq B2 of [arXiv:0910.1234].
+     pclass_sz->P0GNFW = 8.130;
+     pclass_sz->c500 = 1.156;
+     pclass_sz->gammaGNFW = 0.3292;
+     pclass_sz->alphaGNFW = 1.0620;
+     pclass_sz->betaGNFW = 5.4807;
         //Arnaud et al pressure profile 2010, Eq 12 of https://www.aanda.org/articles/aa/pdf/2010/09/aa13416-09.pdf
-     pclass_sz->P0GNFW = 8.403;
-     pclass_sz->c500 = 1.177;
-     pclass_sz->gammaGNFW = 0.3081;
-     pclass_sz->alphaGNFW = 1.0510;
-     pclass_sz->betaGNFW = 5.4905;
+    //  pclass_sz->P0GNFW = 8.403;
+    //  pclass_sz->c500 = 1.177;
+    //  pclass_sz->gammaGNFW = 0.3081;
+    //  pclass_sz->alphaGNFW = 1.0510;
+    //  pclass_sz->betaGNFW = 5.4905;
+    
     }
 
     // else if (pclass_sz->pressure_profile==5){
@@ -4474,6 +4475,9 @@ class_read_double("C1_IA",pclass_sz->C1_IA);
 
 
 class_read_int("use_websky_m200m_to_m200c_conversion",pclass_sz->use_websky_m200m_to_m200c_conversion);
+class_read_double("M_break_pressure",pclass_sz->M_break_pressure);// = 0.731;
+class_read_double("alpha_break_pressure",pclass_sz->alpha_break_pressure);// = 0.415;
+class_read_int("use_broken_pressure",pclass_sz->use_broken_pressure);
 class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
       /* mass function */
       class_call(parser_read_string(pfc,"sub_halo_mass_function",&string1,&flag1,errmsg),
@@ -7057,7 +7061,9 @@ int input_default_params(
    pclass_sz->alpha_c_xc_B12 = 0.;
    pclass_sz->alpha_c_beta_B12 = 0.;
 
-
+   pclass_sz->use_broken_pressure = 0;
+   pclass_sz->alpha_break_pressure = 0.;
+   pclass_sz->M_break_pressure = 1.e13;
 
    pclass_sz->use_websky_m200m_to_m200c_conversion = 0;
 

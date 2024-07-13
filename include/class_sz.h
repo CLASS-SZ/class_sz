@@ -1727,6 +1727,10 @@ double szcounts_ntot;
   double alpha_c_P0_B12;
   double alpha_c_xc_B12;
   double alpha_c_beta_B12;
+  
+  double alpha_break_pressure;
+  double M_break_pressure;
+  int use_broken_pressure;
 
 
     // B.H.

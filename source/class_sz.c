@@ -17501,6 +17501,8 @@ if (pclass_sz->create_ref_trispectrum_for_cobaya){
       + pclass_sz->has_lens_lensmag_hf
       + pclass_sz->has_tSZ_gal_1h
       + pclass_sz->has_tSZ_gal_2h
+      + pclass_sz->has_ngal_tsz_1h
+      + pclass_sz->has_ngal_tsz_2h
       + pclass_sz->has_tSZ_cib_1h
       + pclass_sz->has_tSZ_cib_2h
       + pclass_sz->has_lens_cib_1h
@@ -18313,6 +18315,11 @@ if   (pclass_sz->has_sz_ps
             printf("->Pressure Profile:  Planck 2013\n");
          if (pclass_sz->pressure_profile == 2)
             printf("->Pressure Profile:  Arnaud et al 2010\n");
+                  printf("P0GNFW = %e\n",pclass_sz->P0GNFW);
+            printf("c500 = %e\n",pclass_sz->c500);
+            printf("gammaGNFW = %e\n",pclass_sz->gammaGNFW);
+            printf("alphaGNFW = %e\n",pclass_sz->alphaGNFW);
+            printf("betaGNFW = %e\n",pclass_sz->betaGNFW);
          if (pclass_sz->pressure_profile == 3){
             printf("->Pressure Profile:  Custom. GNFW\n");
             printf("P0GNFW = %e\n",pclass_sz->P0GNFW);
