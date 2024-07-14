@@ -1016,6 +1016,10 @@ cdef class Class:
               self.tsz.alpha_z_xc_B12 = pdict_to_update['alpha_z_xc_B12']
           if k == 'alpha_z_beta_B12':
               self.tsz.alpha_z_beta_B12 = pdict_to_update['alpha_z_beta_B12']
+          if k == 'alpha_break_pressure':
+              self.tsz.alpha_break_pressure = pdict_to_update['alpha_break_pressure']
+          if k == 'M_break_pressure':
+              self.tsz.M_break_pressure = pdict_to_update['M_break_pressure']
           if k == 'c_B12':
               self.tsz.c_B12 = pdict_to_update['cp_B12']
           if k == 'mcut_B12':

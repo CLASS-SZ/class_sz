@@ -524,6 +524,9 @@ cdef extern from "class.h":
         double alpha_z_P0_B12
         double alpha_z_xc_B12
         double alpha_z_beta_B12
+        double alpha_break_pressure
+        double M_break_pressure
+        int use_broken_pressure
         double mcut_B12
         double c_B12
         double alphap_m_P0_B12
