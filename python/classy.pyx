@@ -928,6 +928,9 @@ cdef class Class:
             for index_g in range(N_ngal):
                 if k == 'dndz_shift_ngal_'+str(index_g):
                     self.tsz.dndz_shift_ngal[index_g] = pdict_to_update['dndz_shift_ngal_'+str(index_g)]
+            for index_g in range(N_ngal):
+                if k == 'x_out_truncated_nfw_profile_satellite_galaxies_ngal_'+str(index_g):
+                    self.tsz.x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g] = pdict_to_update['x_out_truncated_nfw_profile_satellite_galaxies_ngal_'+str(index_g)]
           if k == 'dndz_shift_source_gal':
               self.tsz.dndz_shift_source_gal = pdict_to_update[k]
           if k == 'dndz_stretch_source_gal':
@@ -940,6 +943,8 @@ cdef class Class:
               self.tsz.shear_calibration_m = pdict_to_update[k]
           if k == 'A_IA':
               self.tsz.A_IA = pdict_to_update[k]
+          if k == 'eta_IA':
+              self.tsz.eta_IA = pdict_to_update[k]
           if k == 'fNL':
             self.tsz.fNL = pdict_to_update[k]
           if k == 'P0GNFW':
