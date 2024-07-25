@@ -293,6 +293,8 @@ cdef class Class:
             'classy_sz_verbose': 'none',
             'omega_b': 0.022383,
             'n_s': 0.9665,
+            'ndim_masses': 500,
+            'ndim_redshifts': 100,
             }
     ### note on ncdm:
     # N_ncdm : 3
@@ -1042,6 +1044,7 @@ cdef class Class:
 
 
     def compute_class_sz(self,pdict_to_update):
+        integrate_only = False
         try: 
             N_ngal = self._pars['galaxy_samples_list_num']
         except KeyError:
@@ -1203,15 +1206,24 @@ cdef class Class:
               self.tsz.L0_cib = pdict_to_update['Most_efficient_halo_mass_in_Msun']
           if k == 'Size_of_halo_masses_sourcing_CIB_emission':
               self.tsz.sigma2_LM_cib = pdict_to_update['Size_of_halo_masses_sourcing_CIB_emission']
-  
-        if class_sz_tabulate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
-        &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
-            self.struct_cleanup()
-            raise CosmoComputationError(self.tsz.error_message)
+          
+          #pk at z parameter:
+          if k == 'z_for_pk_hm':
+              self.tsz.z_for_pk_hm = pdict_to_update['z_for_pk_hm']
+              integrate_only = True
+            
+        if not integrate_only:
+            if class_sz_tabulate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+            &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
+                self.struct_cleanup()
+                raise CosmoComputationError(self.tsz.error_message)
+        
         if class_sz_integrate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
         &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
             self.struct_cleanup()
             raise CosmoComputationError(self.tsz.error_message)
+
+
         self.computed = True
         return
 
@@ -2436,9 +2448,9 @@ cdef class Class:
         H_array = np.empty_like(z_array)
 
         for i in range(z_array.size):    
-
+            # if self.tsz.use_class_sz_fast_mode == 1:
             if self.tsz.skip_background_and_thermo:
-        
+                    
                 H_array[i] = self.class_szfast.get_hubble(z_array[i])
 
             else:
@@ -3876,7 +3888,6 @@ cdef class Class:
         return r
 
    
-    # Define the vectorized method
     def get_dndlnm(self, z_input, m_input):
         """
         Vectorized computation of dndlnM at given redshifts and masses.
@@ -3892,47 +3903,98 @@ cdef class Class:
         np.ndarray: An array of dndlnM values corresponding to the input redshifts and masses.
 
         Raises:
-        TypeError: If the inputs are not floats or 1D arrays of floats, or if the lengths of the input arrays do not match.
+        TypeError: If the inputs are not floats or 1D arrays of floats.
         """
-        # Check if both inputs are scalars
-        if isinstance(z_input, (float, np.float64)) and isinstance(m_input, (float, np.float64)):
-            return self.get_dndlnM_at_z_and_M(z_input, m_input)
+        # Convert scalar inputs to arrays
+        if isinstance(z_input, (float, np.float64)):
+            z_input = np.array([z_input], dtype=np.float64)
+        if isinstance(m_input, (float, np.float64)):
+            m_input = np.array([m_input], dtype=np.float64)
+
+        # Ensure inputs are 1D arrays of type float64
+        if not (isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64):
+            raise TypeError("z_input should be a float or a 1D NumPy array of type float64")
+        if not (isinstance(m_input, np.ndarray) and m_input.ndim == 1 and m_input.dtype == np.float64):
+            raise TypeError("m_input should be a float or a 1D NumPy array of type float64")
+
+        # Use broadcasting to handle different sizes
+        z_broadcasted, m_broadcasted = np.broadcast_arrays(z_input[:, np.newaxis], m_input)
+
+        # Flatten the broadcasted arrays for iteration
+        z_flattened = z_broadcasted.flatten()
+        m_flattened = m_broadcasted.flatten()
+
+        # Initialize result array
+        result = np.empty(z_flattened.shape[0], dtype=np.float64)
+
+        # Compute dndlnM for each pair
+        for i in range(z_flattened.shape[0]):
+            result[i] = self.get_dndlnM_at_z_and_M(z_flattened[i], m_flattened[i])
+
+        # Reshape the result to match the broadcasted shape
+        result = result.reshape(z_broadcasted.shape)
+
+        return result
+
+
+
+    # # Define the vectorized method
+    # def get_dndlnm(self, z_input, m_input):
+    #     """
+    #     Vectorized computation of dndlnM at given redshifts and masses.
+
+    #     This method handles both scalar and array inputs for redshifts (z_input) and masses (m_input).
+    #     It returns dndlnM for each pair of redshift and mass.
+
+    #     Parameters:
+    #     z_input (float or np.ndarray): A scalar or 1D array of redshifts.
+    #     m_input (float or np.ndarray): A scalar or 1D array of masses.
+
+    #     Returns:
+    #     np.ndarray: An array of dndlnM values corresponding to the input redshifts and masses.
+
+    #     Raises:
+    #     TypeError: If the inputs are not floats or 1D arrays of floats, or if the lengths of the input arrays do not match.
+    #     """
+    #     # Check if both inputs are scalars
+    #     if isinstance(z_input, (float, np.float64)) and isinstance(m_input, (float, np.float64)):
+    #         return self.get_dndlnM_at_z_and_M(z_input, m_input)
         
-        # Check if z_input is a scalar and m_input is an array
-        elif isinstance(z_input, (float, np.float64)) and isinstance(m_input, np.ndarray) and m_input.ndim == 1 and m_input.dtype == np.float64:
-            n = m_input.shape[0]
-            result = np.empty(n, dtype=np.float64)
+    #     # Check if z_input is a scalar and m_input is an array
+    #     elif isinstance(z_input, (float, np.float64)) and isinstance(m_input, np.ndarray) and m_input.ndim == 1 and m_input.dtype == np.float64:
+    #         n = m_input.shape[0]
+    #         result = np.empty(n, dtype=np.float64)
             
-            for i in range(n):
-                result[i] = self.get_dndlnM_at_z_and_M(z_input, m_input[i])
+    #         for i in range(n):
+    #             result[i] = self.get_dndlnM_at_z_and_M(z_input, m_input[i])
             
-            return result
+    #         return result
         
-        # Check if z_input is an array and m_input is a scalar
-        elif isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64 and isinstance(m_input, (float, np.float64)):
-            n = z_input.shape[0]
-            result = np.empty(n, dtype=np.float64)
+    #     # Check if z_input is an array and m_input is a scalar
+    #     elif isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64 and isinstance(m_input, (float, np.float64)):
+    #         n = z_input.shape[0]
+    #         result = np.empty(n, dtype=np.float64)
             
-            for i in range(n):
-                result[i] = self.get_dndlnM_at_z_and_M(z_input[i], m_input)
+    #         for i in range(n):
+    #             result[i] = self.get_dndlnM_at_z_and_M(z_input[i], m_input)
             
-            return result
+    #         return result
         
-        # Check if both inputs are arrays of the same length
-        elif (isinstance(z_input, np.ndarray) and isinstance(m_input, np.ndarray) and
-              z_input.ndim == 1 and m_input.ndim == 1 and
-              z_input.dtype == np.float64 and m_input.dtype == np.float64 and
-              z_input.shape[0] == m_input.shape[0]):
-            n = z_input.shape[0]
-            result = np.empty(n, dtype=np.float64)
+    #     # Check if both inputs are arrays of the same length
+    #     elif (isinstance(z_input, np.ndarray) and isinstance(m_input, np.ndarray) and
+    #           z_input.ndim == 1 and m_input.ndim == 1 and
+    #           z_input.dtype == np.float64 and m_input.dtype == np.float64 and
+    #           z_input.shape[0] == m_input.shape[0]):
+    #         n = z_input.shape[0]
+    #         result = np.empty(n, dtype=np.float64)
             
-            for i in range(n):
-                result[i] = self.get_dndlnM_at_z_and_M(z_input[i], m_input[i])
+    #         for i in range(n):
+    #             result[i] = self.get_dndlnM_at_z_and_M(z_input[i], m_input[i])
             
-            return result
+    #         return result
         
-        else:
-            raise TypeError("Inputs should be floats or 1D NumPy arrays of type float64, and when both are arrays, they should have the same length.")
+    #     else:
+    #         raise TypeError("Inputs should be floats or 1D NumPy arrays of type float64, and when both are arrays, they should have the same length.")
 
 
 
@@ -4207,7 +4269,7 @@ cdef class Class:
         General computation of the power spectrum at given wavenumbers and redshifts.
 
         This method handles both scalar and array inputs for wavenumbers (kh_input) and redshifts (z_input).
-        It returns the corresponding power spectrum based on the specified profile type.
+        It returns the corresponding power spectrum based on the specified power spectrum type.
 
         Parameters
         ----------
@@ -4215,13 +4277,13 @@ cdef class Class:
             The wavenumber in units of h/Mpc.
         z_input : float or np.ndarray
             The redshift at which the power spectrum is evaluated.
-        profile : str
+        type : str
             Optional; the type, default is "lin". Available types are "lin" and "nonlin".
 
         Returns
         -------
         np.ndarray
-            An array of power spectrum values corresponding to the input wavenumbers and redshifts for the specified profile type.
+            An array of power spectrum values corresponding to the input wavenumbers and redshifts for the specified power spcetrum type.
 
         Raises
         ------
@@ -4561,7 +4623,8 @@ cdef class Class:
         nu = self.get_nu_at_z_and_m(z,m)
         return get_first_order_bias_at_z_and_nu(z,nu,&self.tsz)
 
-    # Define the vectorized method
+
+   # Define the vectorized method
     def get_first_order_bias_at_z_and_m(self, z_input, m_input):
         """
         Vectorized computation of the first order bias at given redshifts and masses.
@@ -4577,47 +4640,96 @@ cdef class Class:
         np.ndarray: An array of first order bias values corresponding to the input redshifts and masses.
 
         Raises:
-        TypeError: If the inputs are not floats or 1D arrays of floats, or if the lengths of the input arrays do not match.
+        TypeError: If the inputs are not floats or 1D arrays of floats.
         """
-        # Check if both inputs are scalars
-        if isinstance(z_input, (float, np.float64)) and isinstance(m_input, (float, np.float64)):
-            return self.get_first_order_bias_at_z_and_m(z_input, m_input)
+        # Convert scalar inputs to arrays
+        if isinstance(z_input, (float, np.float64)):
+            z_input = np.array([z_input], dtype=np.float64)
+        if isinstance(m_input, (float, np.float64)):
+            m_input = np.array([m_input], dtype=np.float64)
+
+        # Ensure inputs are 1D arrays of type float64
+        if not (isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64):
+            raise TypeError("z_input should be a float or a 1D NumPy array of type float64")
+        if not (isinstance(m_input, np.ndarray) and m_input.ndim == 1 and m_input.dtype == np.float64):
+            raise TypeError("m_input should be a float or a 1D NumPy array of type float64")
+
+        # Use broadcasting to handle different sizes
+        z_broadcasted, m_broadcasted = np.broadcast_arrays(z_input[:, np.newaxis], m_input)
+
+        # Flatten the broadcasted arrays for iteration
+        z_flattened = z_broadcasted.flatten()
+        m_flattened = m_broadcasted.flatten()
+
+        # Initialize result array
+        result = np.empty(z_flattened.shape[0], dtype=np.float64)
+
+        # Compute the first order bias for each pair
+        for i in range(z_flattened.shape[0]):
+            result[i] = self.get_first_order_bias_at_z_and_m_unvectorized(z_flattened[i], m_flattened[i])
+
+        # Reshape the result to match the broadcasted shape
+        result = result.reshape(z_broadcasted.shape)
+
+        return result
+
+    # # Define the vectorized method
+    # def get_first_order_bias_at_z_and_m(self, z_input, m_input):
+    #     """
+    #     Vectorized computation of the first order bias at given redshifts and masses.
+
+    #     This method handles both scalar and array inputs for redshifts (z_input) and masses (m_input).
+    #     It returns the first order bias for each pair of redshift and mass.
+
+    #     Parameters:
+    #     z_input (float or np.ndarray): A scalar or 1D array of redshifts.
+    #     m_input (float or np.ndarray): A scalar or 1D array of masses.
+
+    #     Returns:
+    #     np.ndarray: An array of first order bias values corresponding to the input redshifts and masses.
+
+    #     Raises:
+    #     TypeError: If the inputs are not floats or 1D arrays of floats, or if the lengths of the input arrays do not match.
+    #     """
+    #     # Check if both inputs are scalars
+    #     if isinstance(z_input, (float, np.float64)) and isinstance(m_input, (float, np.float64)):
+    #         return self.get_first_order_bias_at_z_and_m(z_input, m_input)
         
-        # Check if z_input is a scalar and m_input is an array
-        elif isinstance(z_input, (float, np.float64)) and isinstance(m_input, np.ndarray) and m_input.ndim == 1 and m_input.dtype == np.float64:
-            n = m_input.shape[0]
-            result = np.empty(n, dtype=np.float64)
+    #     # Check if z_input is a scalar and m_input is an array
+    #     elif isinstance(z_input, (float, np.float64)) and isinstance(m_input, np.ndarray) and m_input.ndim == 1 and m_input.dtype == np.float64:
+    #         n = m_input.shape[0]
+    #         result = np.empty(n, dtype=np.float64)
             
-            for i in range(n):
-                result[i] = self.get_first_order_bias_at_z_and_m_unvectorized(z_input, m_input[i])
+    #         for i in range(n):
+    #             result[i] = self.get_first_order_bias_at_z_and_m_unvectorized(z_input, m_input[i])
             
-            return result
+    #         return result
         
-        # Check if z_input is an array and m_input is a scalar
-        elif isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64 and isinstance(m_input, (float, np.float64)):
-            n = z_input.shape[0]
-            result = np.empty(n, dtype=np.float64)
+    #     # Check if z_input is an array and m_input is a scalar
+    #     elif isinstance(z_input, np.ndarray) and z_input.ndim == 1 and z_input.dtype == np.float64 and isinstance(m_input, (float, np.float64)):
+    #         n = z_input.shape[0]
+    #         result = np.empty(n, dtype=np.float64)
             
-            for i in range(n):
-                result[i] = self.get_first_order_bias_at_z_and_m_unvectorized(z_input[i], m_input)
+    #         for i in range(n):
+    #             result[i] = self.get_first_order_bias_at_z_and_m_unvectorized(z_input[i], m_input)
             
-            return result
+    #         return result
         
-        # Check if both inputs are arrays of the same length
-        elif (isinstance(z_input, np.ndarray) and isinstance(m_input, np.ndarray) and
-              z_input.ndim == 1 and m_input.ndim == 1 and
-              z_input.dtype == np.float64 and m_input.dtype == np.float64 and
-              z_input.shape[0] == m_input.shape[0]):
-            n = z_input.shape[0]
-            result = np.empty(n, dtype=np.float64)
+    #     # Check if both inputs are arrays of the same length
+    #     elif (isinstance(z_input, np.ndarray) and isinstance(m_input, np.ndarray) and
+    #           z_input.ndim == 1 and m_input.ndim == 1 and
+    #           z_input.dtype == np.float64 and m_input.dtype == np.float64 and
+    #           z_input.shape[0] == m_input.shape[0]):
+    #         n = z_input.shape[0]
+    #         result = np.empty(n, dtype=np.float64)
             
-            for i in range(n):
-                result[i] = self.get_first_order_bias_at_z_and_m_unvectorized(z_input[i], m_input[i])
+    #         for i in range(n):
+    #             result[i] = self.get_first_order_bias_at_z_and_m_unvectorized(z_input[i], m_input[i])
             
-            return result
+    #         return result
         
-        else:
-            raise TypeError("Inputs should be floats or 1D NumPy arrays of type float64, and when both are arrays, they should have the same length.")
+    #     else:
+    #         raise TypeError("Inputs should be floats or 1D NumPy arrays of type float64, and when both are arrays, they should have the same length.")
 
     def get_cib_Snu_z_and_nu(self,z,nu):
         return get_cib_Snu_z_and_nu(z,nu,&self.tsz)
@@ -5820,6 +5932,31 @@ make        nonlinear_scale_cb(z, z_size)
 
         return pk_cb
 
+    def get_fftlog_ComputeXiLMsloz(self, int l, int m, int N, np.ndarray[DTYPE_t,ndim=1] k, np.ndarray[DTYPE_t,ndim=1] pk, np.ndarray[DTYPE_t,ndim=1] r, np.ndarray[DTYPE_t,ndim=1] xi):
+        fftlog_ComputeXiLMsloz(l, m, N, <double*> k.data, <double*> pk.data, <double*> r.data, <double*> xi.data, &self.tsz)
+
+    def get_n5k_z_of_chi(self, double chi):
+        return get_n5k_z_of_chi(chi, &self.tsz)
+
+    def get_n5k_pk_at_z_and_k(self, double z_asked, double k_asked):
+        return get_n5k_pk_at_z_and_k(z_asked, k_asked, &self.tsz)
+    
+    def get_n5k_cl_K1_at_chi(self, double chi):
+        return get_n5k_cl_K1_at_chi(chi, &self.tsz) 
+
+    def load_n5k_cl_K1(self):
+        load_n5k_cl_K1(&self.tsz)
+        return 1
+
+    def load_n5k_pk_zk(self):
+        load_n5k_pk_zk(&self.tsz)
+        return 1
+    
+    def load_n5k_z_of_chi(self):
+        load_n5k_z_of_chi(&self.tsz)
+        return 1
+    
+    
     def Omega0_k(self):
         """ Curvature contribution """
         return self.ba.Omega0_k

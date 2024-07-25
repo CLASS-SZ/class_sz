@@ -281,6 +281,7 @@ cdef extern from "class.h":
         double delta_cib
         double L0_cib
         double sigma2_LM_cib
+        double z_for_pk_hm
         double P0GNFW
         double c500
         double gammaGNFW
@@ -1256,3 +1257,28 @@ cdef extern from "class.h":
                                         
     double get_b_custom1_at_z(double z,
                               void * pclass_sz)
+
+
+    void fftlog_ComputeXiLMsloz(int l, 
+                                 int m, 
+                                 int N, 
+                                 double * k, 
+                                 double * pk, 
+                                 double * r, 
+                                 double * xi, 
+                                 void * pclass_sz)
+
+
+    double get_n5k_z_of_chi(double chi,
+                            void * pclass_sz)
+
+    double get_n5k_pk_at_z_and_k(double z_asked, 
+                                double k_asked, 
+                                void * pclass_sz)
+
+    double get_n5k_cl_K1_at_chi(double chi,
+                                void * pclass_sz)   
+
+    int load_n5k_cl_K1(void * pclass_sz)
+    int load_n5k_pk_zk(void * pclass_sz)
+    int load_n5k_z_of_chi(void * pclass_sz)

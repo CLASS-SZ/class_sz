@@ -1350,7 +1350,7 @@ int load_n5k_pk_zk(
 
 
 
-class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_z.txt", "r",pclass_sz->error_message);
+class_open(process,pclass_sz->full_path_to_n5k_z, "r",pclass_sz->error_message);
 
   while (fgets(line, sizeof(line)-1, process) != NULL) {
     sscanf(line, "%lf", &this_lnx);
@@ -1398,7 +1398,7 @@ class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_z.txt", "r",p
   lnx   = (double *)malloc(n_data_guess*sizeof(double));
 
 
-  class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_k.txt", "r",pclass_sz->error_message);
+  class_open(process,pclass_sz->full_path_to_n5k_k, "r",pclass_sz->error_message);
 
   // printf("-> %s\n",Filepath);
 
@@ -1465,7 +1465,7 @@ class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_z.txt", "r",p
   }
 
 
-  class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_pk_nl.txt", "r",pclass_sz->error_message);
+  class_open(process,pclass_sz->full_path_to_n5k_pk_nl, "r",pclass_sz->error_message);
 
 
   int z =0;
@@ -11540,7 +11540,7 @@ if (pclass_sz->sz_verbose >= 1)
   // char Filepath[_ARGUMENT_LENGTH_MAX_];
   // if (pclass_sz->sz_verbose >= 1)
   //   printf("-> File Name: %s\n",pclass_sz->cmb_lensing_noise_file);
-  class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_gg_chi_K0.txt", "r",pclass_sz->error_message);
+  class_open(process,pclass_sz->full_path_to_n5k_gg_chi_K0, "r",pclass_sz->error_message);
   // if (pclass_sz->sz_verbose >= 1)
   //   printf("-> File Name: %s\n",pclass_sz->cmb_lensing_noise_file);
 
@@ -11845,21 +11845,9 @@ if (pclass_sz->sz_verbose >= 1)
 
 
 
-  /* Prepare the command */
-  /* If the command is just a "cat", no arguments need to be passed */
-  // if(strncmp("cat ", pclass_sz->command, 4) == 0)
-  // {
-  // sprintf(arguments, " ");
-  // }
 
-  /** 2. Launch the command and retrieve the output */
-  /* Launch the process */
-  // char Filepath[_ARGUMENT_LENGTH_MAX_];
-  // if (pclass_sz->sz_verbose >= 1)
-  //   printf("-> File Name: %s\n",pclass_sz->cmb_lensing_noise_file);
-  class_open(process,"class_sz_auxiliary_files/excludes/galaxies/n5k_z_chi.txt", "r",pclass_sz->error_message);
-  // if (pclass_sz->sz_verbose >= 1)
-  //   printf("-> File Name: %s\n",pclass_sz->cmb_lensing_noise_file);
+  class_open(process,pclass_sz->full_path_to_n5k_z_chi, "r",pclass_sz->error_message);
+
 
   //int il = 0;
   /* Read output and store it */

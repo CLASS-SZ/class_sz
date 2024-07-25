@@ -19,6 +19,7 @@
 #include "class_sz_clustercounts.h"
 #include "class_sz_custom_profiles.h"
 #include "class_sz_custom_bias.h"
+#include "fft.h"
 
 /* macro for reading parameter values with routines from the parser */
 #define class_read_double(name,destination)				\

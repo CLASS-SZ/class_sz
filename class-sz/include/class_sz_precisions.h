@@ -14,6 +14,14 @@ class_sz_string_parameter(full_path_and_prefix_to_dndz_ngal,"/class_sz_auxiliary
 class_sz_string_parameter(full_path_to_source_dndz_gal,"/class_sz_auxiliary_files/includes/WISC_bin3.txt","custom dndz file")
 class_sz_string_parameter(full_path_to_redshift_dependent_M_min,"/class_sz_auxiliary_files/websky_halo_mass_completion_z_Mmin_in_Msun_over_h.txt","custom M_min file")
 
+
+class_sz_string_parameter(full_path_to_n5k_gg_chi_K0,"/class_sz_auxiliary_files/excludes/galaxies/n5k_gg_chi_K0.txt","n5k_gg_chi_K0")
+class_sz_string_parameter(full_path_to_n5k_z_chi,"/class_sz_auxiliary_files/excludes/galaxies/n5k_z_chi.txt","n5k_z_chi")
+class_sz_string_parameter(full_path_to_n5k_z,"/class_sz_auxiliary_files/excludes/galaxies/n5k_z.txt","n5k_z")
+class_sz_string_parameter(full_path_to_n5k_k,"/class_sz_auxiliary_files/excludes/galaxies/n5k_k.txt","n5k_k")
+class_sz_string_parameter(full_path_to_n5k_pk_nl,"/class_sz_auxiliary_files/excludes/galaxies/n5k_pk_nl.txt","n5k_pk_nl")
+
+
 class_sz_string_parameter(cmb_cls_filename,"/class_sz_auxiliary_files/cmb_cls_test.pickle","cmb_cls_filename")
 
 
