@@ -23264,6 +23264,11 @@ if isnan(ug_at_ell){
   exit(0);
 }
 
+if (pclass_sz->sz_verbose>3){
+  printf("evaluate_galaxy_profile_1h: ng_bar = %.3e, ns = %.3e, us = %.3e, nc = %.3e\n", ng_bar, ns, us, nc);
+  // exit(0);
+  }
+
 }
 
 
