@@ -22345,47 +22345,47 @@ double get_galaxy_number_counts(double z,
 
   double result;
 
-// if (pclass_sz->photo_z_params==1){
-//   // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
-//   double shift;
-//   double stretch;
+if (pclass_sz->photo_z_params==1){
+  // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
+  double shift;
+  double stretch;
 
-//   double z_mean;
-// // printf("z_asked= %.8e\n",z_asked);
-// shift = pclass_sz->dndz_shift_gal;
-// stretch = pclass_sz->dndz_stretch_gal;
-// // z_mean = 0.45669327716997216;
-// z_mean = 0.0;
+  double z_mean;
+// printf("z_asked= %.8e\n",z_asked);
+shift = pclass_sz->dndz_shift_gal;
+stretch = pclass_sz->dndz_stretch_gal;
+// z_mean = 0.45669327716997216;
+z_mean = 0.0;
 
-// int i, N;
-// N = pclass_sz->normalized_dndz_size;
-// double dz = 1/(pclass_sz->normalized_dndz_z[1]-pclass_sz->normalized_dndz_z[0]);
-// for ( i = 0; i < N; i++ )
-// {z_mean   = z_mean + pclass_sz->normalized_dndz_z[i]*pclass_sz->normalized_dndz_phig[i]/dz;}
-// //
-// // printf("z_mean= %.2e\n",z_mean);
-// // printf("stretch= %.2e\n",stretch);
-// // printf("shift= %.2e\n",shift);
-// double phig_shifted = 0;
-// double z_asked_shifted;
-// z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
-// // printf("z_asked_shifted= %.8e\n",z_asked_shifted);
-// if (z_asked_shifted<pclass_sz->normalized_dndz_z[0])
-//    phig_shifted = 0.;
-// else if (z_asked_shifted>pclass_sz->normalized_dndz_z[pclass_sz->normalized_dndz_size-1])
-//    phig_shifted = 0.;
-// else phig_shifted =  pwl_value_1d(pclass_sz->normalized_dndz_size,
-//                            pclass_sz->normalized_dndz_z,
-//                            pclass_sz->normalized_dndz_phig,
-//                            z_asked_shifted);
+int i, N;
+N = pclass_sz->normalized_dndz_size;
+double dz = 1/(pclass_sz->normalized_dndz_z[1]-pclass_sz->normalized_dndz_z[0]);
+for ( i = 0; i < N; i++ )
+{z_mean   = z_mean + pclass_sz->normalized_dndz_z[i]*pclass_sz->normalized_dndz_phig[i]/dz;}
+//
+// printf("z_mean= %.2e\n",z_mean);
+// printf("stretch= %.2e\n",stretch);
+// printf("shift= %.2e\n",shift);
+double phig_shifted = 0;
+double z_asked_shifted;
+z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
+// printf("z_asked_shifted= %.8e\n",z_asked_shifted);
+if (z_asked_shifted<pclass_sz->normalized_dndz_z[0])
+   phig_shifted = 0.;
+else if (z_asked_shifted>pclass_sz->normalized_dndz_z[pclass_sz->normalized_dndz_size-1])
+   phig_shifted = 0.;
+else phig_shifted =  pwl_value_1d(pclass_sz->normalized_dndz_size,
+                           pclass_sz->normalized_dndz_z,
+                           pclass_sz->normalized_dndz_phig,
+                           z_asked_shifted);
 
-// result = (1./stretch) * phig_shifted;
+result = (1./stretch) * phig_shifted;
 
-// }
+}
 
-// else result =phig;
+else result =phig;
 
-result =phig;
+// result =phig;
 
 return result;
 
