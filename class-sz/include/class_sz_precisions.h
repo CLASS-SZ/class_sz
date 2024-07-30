@@ -9,7 +9,7 @@ class_sz_string_parameter(append_name_trispectrum_ref,"append_name_trispectrum_r
 class_sz_string_parameter(path_to_ref_trispectrum_for_cobaya,"path_to_ref_trispectrum_for_cobaya","path_to_ref_trispectrum_for_cobaya")
 class_sz_string_parameter(full_path_to_noise_curve_for_y_y,"full_path_to_noise_curve_for_y_y","full_path_to_noise_curve_for_y_y")
 class_sz_string_parameter(full_path_to_noise_curve_for_t_t,"full_path_to_noise_curve_for_t_t","full_path_to_noise_curve_for_t_t")
-class_sz_string_parameter(full_path_to_dndz_gal,"/class_sz_auxiliary_files/includes/WISC_bin3.txt","custom dndz file")
+class_sz_string_parameter(full_path_to_dndz_gal,"/class_sz_auxiliary_files/includes/WISC_bin3_ngal_example1.txt","custom dndz file")
 class_sz_string_parameter(full_path_and_prefix_to_dndz_ngal,"/class_sz_auxiliary_files/includes/WISC_bin3_ngal_example","custom dndz file")
 class_sz_string_parameter(full_path_to_source_dndz_gal,"/class_sz_auxiliary_files/includes/WISC_bin3.txt","custom dndz file")
 class_sz_string_parameter(full_path_to_redshift_dependent_M_min,"/class_sz_auxiliary_files/websky_halo_mass_completion_z_Mmin_in_Msun_over_h.txt","custom M_min file")

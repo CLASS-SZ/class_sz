@@ -1036,7 +1036,12 @@ if (
   ){
 
 // only performed if requested:
-load_normalized_dndz(pclass_sz);
+
+
+class_call(load_normalized_dndz(pclass_sz),
+          pclass_sz->error_message,
+          pclass_sz->error_message);
+
 // if (  pclass_sz->has_gal_gallens_1h
 //    || pclass_sz->has_gal_gallens_2h
 //    || pclass_sz->has_gallens_gallens_1h
@@ -10543,8 +10548,6 @@ if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  6) {
 
   else if (_gal_gal_1h_){
 
-    // int index_l = (int) pvectsz[pclass_sz->index_multipole];
-    // pvectsz[pclass_sz->index_multipole_for_galaxy_profile] = pclass_sz->ell[index_l];
     evaluate_galaxy_profile_1h(kl,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,pclass_sz);
     double galaxy_profile_at_ell_1 = pvectsz[pclass_sz->index_galaxy_profile];
 
@@ -10553,7 +10556,10 @@ if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  6) {
                                           *galaxy_profile_at_ell_1
                                           *damping_1h_term;
 
-  // printf("hmf = %.5e ug = %.5e\n",pvectsz[pclass_sz->index_hmf],galaxy_profile_at_ell_1);
+  if (pclass_sz->sz_verbose > 3) {
+    printf("hmf = %.5e ug = %.5e\n",pvectsz[pclass_sz->index_hmf],galaxy_profile_at_ell_1);
+    }
+
    }
 
    else if (_gal_gal_2h_){
@@ -16868,10 +16874,23 @@ double evaluate_mean_galaxy_number_density_at_z(
 //           i, pclass_sz->array_redshift[i],pclass_sz->array_mean_galaxy_number_density[i]);
 // }
 
-    return exp(pwl_value_1d(pclass_sz->ndim_redshifts,
+    double result = exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                             pclass_sz->array_redshift,
                             pclass_sz->array_mean_galaxy_number_density,
                             z_asked));
+    
+   if (isnan(result)) {
+     printf("Error: NaN result in evaluate_mean_galaxy_number_density_at_z\n");
+     printf("z_asked = %.15e\n", z_asked);
+     exit(1);
+   }
+   if (isinf(result)) {
+     printf("Error: Inf result in evaluate_mean_galaxy_number_density_at_z\n");
+     printf("z_asked = %.15e\n", z_asked);
+     exit(1);
+   }
+
+   return result;
    //pvectsz[pclass_sz->index_mean_galaxy_number_density] = 1.; // debug BB
 
 // return _SUCCESS_;
@@ -22326,45 +22345,47 @@ double get_galaxy_number_counts(double z,
 
   double result;
 
-if (pclass_sz->photo_z_params==1){
-  // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
-  double shift;
-  double stretch;
+// if (pclass_sz->photo_z_params==1){
+//   // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
+//   double shift;
+//   double stretch;
 
-  double z_mean;
-// printf("z_asked= %.8e\n",z_asked);
-shift = pclass_sz->dndz_shift_gal;
-stretch = pclass_sz->dndz_stretch_gal;
-// z_mean = 0.45669327716997216;
-z_mean = 0.0;
+//   double z_mean;
+// // printf("z_asked= %.8e\n",z_asked);
+// shift = pclass_sz->dndz_shift_gal;
+// stretch = pclass_sz->dndz_stretch_gal;
+// // z_mean = 0.45669327716997216;
+// z_mean = 0.0;
 
-int i, N;
-N = pclass_sz->normalized_dndz_size;
-double dz = 1/(pclass_sz->normalized_dndz_z[1]-pclass_sz->normalized_dndz_z[0]);
-for ( i = 0; i < N; i++ )
-{z_mean   = z_mean + pclass_sz->normalized_dndz_z[i]*pclass_sz->normalized_dndz_phig[i]/dz;}
-//
-// printf("z_mean= %.2e\n",z_mean);
-// printf("stretch= %.2e\n",stretch);
-// printf("shift= %.2e\n",shift);
-double phig_shifted = 0;
-double z_asked_shifted;
-z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
-// printf("z_asked_shifted= %.8e\n",z_asked_shifted);
-if (z_asked_shifted<pclass_sz->normalized_dndz_z[0])
-   phig_shifted = 0.;
-else if (z_asked_shifted>pclass_sz->normalized_dndz_z[pclass_sz->normalized_dndz_size-1])
-   phig_shifted = 0.;
-else phig_shifted =  pwl_value_1d(pclass_sz->normalized_dndz_size,
-                           pclass_sz->normalized_dndz_z,
-                           pclass_sz->normalized_dndz_phig,
-                           z_asked_shifted);
+// int i, N;
+// N = pclass_sz->normalized_dndz_size;
+// double dz = 1/(pclass_sz->normalized_dndz_z[1]-pclass_sz->normalized_dndz_z[0]);
+// for ( i = 0; i < N; i++ )
+// {z_mean   = z_mean + pclass_sz->normalized_dndz_z[i]*pclass_sz->normalized_dndz_phig[i]/dz;}
+// //
+// // printf("z_mean= %.2e\n",z_mean);
+// // printf("stretch= %.2e\n",stretch);
+// // printf("shift= %.2e\n",shift);
+// double phig_shifted = 0;
+// double z_asked_shifted;
+// z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
+// // printf("z_asked_shifted= %.8e\n",z_asked_shifted);
+// if (z_asked_shifted<pclass_sz->normalized_dndz_z[0])
+//    phig_shifted = 0.;
+// else if (z_asked_shifted>pclass_sz->normalized_dndz_z[pclass_sz->normalized_dndz_size-1])
+//    phig_shifted = 0.;
+// else phig_shifted =  pwl_value_1d(pclass_sz->normalized_dndz_size,
+//                            pclass_sz->normalized_dndz_z,
+//                            pclass_sz->normalized_dndz_phig,
+//                            z_asked_shifted);
 
-result = (1./stretch) * phig_shifted;
+// result = (1./stretch) * phig_shifted;
 
-}
+// }
 
-else result =phig;
+// else result =phig;
+
+result =phig;
 
 return result;
 
@@ -23230,6 +23251,18 @@ double ug_at_ell;
 ug_at_ell  = (1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us);
 
 pvectsz[pclass_sz->index_galaxy_profile] = ug_at_ell;
+
+
+if isinf(ug_at_ell){
+  printf("inf in evaluate_galaxy_profile_1h: r_delta = %.3e, c_delta = %.3e\n", r_delta, c_delta);
+  printf("ng_bar = %.3e, ns = %.3e, us = %.3e, nc = %.3e\n", ng_bar, ns, us, nc);
+  exit(0);
+}
+if isnan(ug_at_ell){
+  printf("nan in evaluate_galaxy_profile_1h: r_delta = %.3e, c_delta = %.3e\n", r_delta, c_delta);
+  printf("ng_bar = %.3e, ns = %.3e, us = %.3e, nc = %.3e\n", ng_bar, ns, us, nc);
+  exit(0);
+}
 
 }
 

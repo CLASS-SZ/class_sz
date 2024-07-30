@@ -4864,6 +4864,22 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
         pclass_sz->galaxy_sample=2;
       }
 
+      if (pclass_sz->sz_verbose > 3) {
+        switch(pclass_sz->galaxy_sample) {
+          case 0:
+            printf("Galaxy sample: WIxSC\n");
+            break;
+          case 1:
+            printf("Galaxy sample: unwise\n");
+            break;
+          case 2:
+            printf("Galaxy sample: custom\n");
+            break;
+          default:
+            printf("Galaxy sample: unknown\n");
+        }
+      }
+
 
       /* unwise galaxy sample id */
       class_call(parser_read_string(pfc,"galaxy_sample_id",&string1,&flag1,errmsg),
@@ -6936,7 +6952,7 @@ int input_default_params(
   pclass_sz->use_m500c_in_ym_relation = 1;
   pclass_sz->use_m200c_in_ym_relation = 0;
   pclass_sz->use_hod = 1;
-  pclass_sz->galaxy_sample = 0; // WIxSC
+  pclass_sz->galaxy_sample = 2; // WIxSC
   pclass_sz->unwise_galaxy_sample_id = -1; // red
   //pclass_sz->unwise_m_min_cut = 1e10; // Msun/h
 
@@ -7220,7 +7236,7 @@ int input_default_params(
   //Array size
   pclass_sz->ndim_redshifts = 100;//number of z in the sigma Interpolation
 
-  pclass_sz->ndim_redshifts = 100;
+  pclass_sz->ndim_masses = 100;
   pclass_sz->logR1SZ = -10; // 0.0034Mpc/h, 1.8e4  solar mass
   pclass_sz->logR2SZ = 10.; //default =4 , i.e., 54.9Mpc/h, 7.5e16 solar mass
 

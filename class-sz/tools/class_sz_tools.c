@@ -12703,7 +12703,12 @@ if (pclass_sz->sz_verbose>=1){
       // printf("-> File Name: %s\n",pclass_sz->UNWISE_fdndz_file);
       // printf("-> File Name: %s\n",pclass_sz->A10_file);
     }
+
+  // char Filepath[_ARGUMENT_LENGTH_MAX_];
+  sprintf(Filepath,"%s",pclass_sz->full_path_to_dndz_gal);
   class_open(process,pclass_sz->full_path_to_dndz_gal, "r",pclass_sz->error_message);
+  // class_open(process,Filepath, "r",pclass_sz->error_message);
+
   if (pclass_sz->sz_verbose > 0)
     printf("-> File opened successfully\n");
   // sprintf(Filepath,
@@ -12714,6 +12719,7 @@ if (pclass_sz->sz_verbose>=1){
   // process = popen(Filepath, "r");
         }
 
+// exit(0);
 
   // process = popen(Filepath, "r");
 
@@ -12812,8 +12818,14 @@ if (pclass_sz->sz_verbose>=1){
   for (index_x=0; index_x<pclass_sz->normalized_dndz_size; index_x++) {
     pclass_sz->normalized_dndz_z[index_x] = lnx[index_x];
     pclass_sz->normalized_dndz_phig[index_x] = lnI[index_x];
-    // printf("z=%.3e phig=%.3e\n",pclass_sz->normalized_dndz_z[index_x],pclass_sz->normalized_dndz_z[index_x]);
+    
+    if (pclass_sz->sz_verbose > 10) {
+    printf("load_normalized_dndz z=%.3e phig=%.3e\n",pclass_sz->normalized_dndz_z[index_x],pclass_sz->normalized_dndz_z[index_x]);
+    }
   };
+
+  // exit(0);
+
 
   /** Release the memory used locally */
   free(lnx);
@@ -14760,71 +14772,72 @@ else if ((V->pclass_sz->has_lens_lens_hf == _TRUE_) && (index_md == V->pclass_sz
                                  V->ppt,
                                  V->pclass_sz);
 
-if ((V->pclass_sz->has_hmf == _TRUE_) && (index_md == V->pclass_sz->index_md_hmf)){
- // printf("returning integrated obver mass, intm = %.3e\n",result);
- result *= (1.+V->pvectsz[V->pclass_sz->index_z])*get_volume_at_z(V->pvectsz[V->pclass_sz->index_z],V->pba);
- return result;
-}
+  if (V->pclass_sz->sz_verbose>10)
+    printf("Result of mass integration at z = %.3e: %.3e\n", z, result);
+
+  if ((V->pclass_sz->has_hmf == _TRUE_) && (index_md == V->pclass_sz->index_md_hmf)){
+      // printf("returning integrated obver mass, intm = %.3e\n",result);
+      result *= (1.+V->pvectsz[V->pclass_sz->index_z])*get_volume_at_z(V->pvectsz[V->pclass_sz->index_z],V->pba);
+      return result;
+      }
 
 
 // if computing 3d matter power spectrum P(k) of bispectrum:
 // this are not integrated over volume
 if( ((V->pclass_sz->has_pk_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_at_z_1h))
- || ((V->pclass_sz->has_pk_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_at_z_2h))
- || ((V->pclass_sz->has_pk_gg_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_gg_at_z_1h))
- || ((V->pclass_sz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_gg_at_z_2h))
- || ((V->pclass_sz->has_pk_bb_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_bb_at_z_1h))
- || ((V->pclass_sz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_bb_at_z_2h))
- || ((V->pclass_sz->has_pk_b_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_b_at_z_2h))
- || ((V->pclass_sz->has_pk_em_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_em_at_z_1h))
- || ((V->pclass_sz->has_pk_em_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_em_at_z_2h))
- || ((V->pclass_sz->has_pk_HI_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_HI_at_z_1h))
- || ((V->pclass_sz->has_pk_HI_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_HI_at_z_2h))
- || ((V->pclass_sz->has_bk_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_at_z_1h))
- || ((V->pclass_sz->has_bk_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_at_z_2h))
- || ((V->pclass_sz->has_bk_at_z_3h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_at_z_3h))
- || ((V->pclass_sz->has_bk_ttg_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_1h))
- || ((V->pclass_sz->has_bk_ttg_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_2h))
- || ((V->pclass_sz->has_bk_ttg_at_z_3h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_3h))
-){
-int index_k = (int) V->pvectsz[V->pclass_sz->index_k_for_pk_hm];
-kl = V->pclass_sz->k_for_pk_hm[index_k];
+    || ((V->pclass_sz->has_pk_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_at_z_2h))
+    || ((V->pclass_sz->has_pk_gg_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_gg_at_z_1h))
+    || ((V->pclass_sz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_gg_at_z_2h))
+    || ((V->pclass_sz->has_pk_bb_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_bb_at_z_1h))
+    || ((V->pclass_sz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_bb_at_z_2h))
+    || ((V->pclass_sz->has_pk_b_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_b_at_z_2h))
+    || ((V->pclass_sz->has_pk_em_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_em_at_z_1h))
+    || ((V->pclass_sz->has_pk_em_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_em_at_z_2h))
+    || ((V->pclass_sz->has_pk_HI_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_HI_at_z_1h))
+    || ((V->pclass_sz->has_pk_HI_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_HI_at_z_2h))
+    || ((V->pclass_sz->has_bk_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_at_z_1h))
+    || ((V->pclass_sz->has_bk_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_at_z_2h))
+    || ((V->pclass_sz->has_bk_at_z_3h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_at_z_3h))
+    || ((V->pclass_sz->has_bk_ttg_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_1h))
+    || ((V->pclass_sz->has_bk_ttg_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_2h))
+    || ((V->pclass_sz->has_bk_ttg_at_z_3h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_3h))
+    ){
+      int index_k = (int) V->pvectsz[V->pclass_sz->index_k_for_pk_hm];
+      kl = V->pclass_sz->k_for_pk_hm[index_k];
 
-if (((V->pclass_sz->has_pk_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_at_z_2h))
- || ((V->pclass_sz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_bb_at_z_2h))
- || ((V->pclass_sz->has_pk_b_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_b_at_z_2h))
- || ((V->pclass_sz->has_pk_em_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_em_at_z_2h))
- || ((V->pclass_sz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_gg_at_z_2h))
- || ((V->pclass_sz->has_pk_HI_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_HI_at_z_2h))
-){
-   result *= get_pk_lin_at_k_and_z(kl,z,V->pba,V->ppm,V->pnl,V->pclass_sz);
-   // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->pclass_sz);
-   // result *= V->pvectsz[V->pclass_sz->index_pk_for_halo_bias];
- }
-
-
-
-   // if ((V->pclass_sz->has_bk_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_at_z_2h)){
-   //   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->pclass_sz);
-   //   result *= 3.*V->pvectsz[V->pclass_sz->index_pk_for_halo_bias];
-   // }
-
- if (((V->pclass_sz->has_bk_ttg_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_1h))
- || ((V->pclass_sz->has_bk_ttg_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_2h))
- || ((V->pclass_sz->has_bk_ttg_at_z_3h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_3h))){
-
-  evaluate_vrms2(V->pvecback,V->pvectsz,V->pba,V->pnl,V->pclass_sz);
-  result *= V->pvectsz[V->pclass_sz->index_vrms2]/3./pow(_c_*1e-3,2.);
-  // // multiply by radial kernel for galaxies
-  // double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->pclass_sz);
-  // result *= Wg/V->pvectsz[V->pclass_sz->index_chi2];
-
- }
+        if (((V->pclass_sz->has_pk_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_at_z_2h))
+          || ((V->pclass_sz->has_pk_bb_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_bb_at_z_2h))
+          || ((V->pclass_sz->has_pk_b_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_b_at_z_2h))
+          || ((V->pclass_sz->has_pk_em_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_em_at_z_2h))
+          || ((V->pclass_sz->has_pk_gg_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_gg_at_z_2h))
+          || ((V->pclass_sz->has_pk_HI_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_pk_HI_at_z_2h))
+          ){
+            result *= get_pk_lin_at_k_and_z(kl,z,V->pba,V->ppm,V->pnl,V->pclass_sz);
+            // evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->pclass_sz);
+            // result *= V->pvectsz[V->pclass_sz->index_pk_for_halo_bias];
+          }
 
 
 
-   return result;
- }
+        // if ((V->pclass_sz->has_bk_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_at_z_2h)){
+        //   evaluate_pk_at_ell_plus_one_half_over_chi(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->pclass_sz);
+        //   result *= 3.*V->pvectsz[V->pclass_sz->index_pk_for_halo_bias];
+        // }
+
+      if (((V->pclass_sz->has_bk_ttg_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_1h))
+      || ((V->pclass_sz->has_bk_ttg_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_2h))
+      || ((V->pclass_sz->has_bk_ttg_at_z_3h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_3h))){
+
+        evaluate_vrms2(V->pvecback,V->pvectsz,V->pba,V->pnl,V->pclass_sz);
+        result *= V->pvectsz[V->pclass_sz->index_vrms2]/3./pow(_c_*1e-3,2.);
+
+
+      }
+
+
+
+        return result;
+    }  
 
  if ((V->pclass_sz->has_sz_rates == _TRUE_) && (index_md == V->pclass_sz->index_md_szrates)){
    // if (V->pclass_sz->sz_verbose>0) printf("finnished mass integration for szrates.\n");
@@ -14834,7 +14847,7 @@ if (((V->pclass_sz->has_pk_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->inde
 
 
   // exit(0);
-}// END MASS INTEGRATION
+  }// END MASS INTEGRATION
   // NOW MULTIPLY BY REDSHIFT DEPENDENT KERNELS
 
 if (((V->pclass_sz->has_sz_2halo == _TRUE_) && (index_md == V->pclass_sz->index_md_2halo))
@@ -14990,7 +15003,9 @@ if ( ((V->pclass_sz->has_gal_gal_1h == _TRUE_) && (index_md == V->pclass_sz->ind
   ){
 // multiply by radial kernel for galaxies (squared for gxg quantities)
 double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->pclass_sz);
-// printf("z = %.5e Wg = %.5e\n",z,Wg);
+ if (V->pclass_sz->sz_verbose>10)
+    printf("multiply by radial kernel for galaxies z = %.5e Wg = %.5e\n",z,Wg);  
+
 result *= pow(Wg/V->pvectsz[V->pclass_sz->index_chi2],2.);
 }
 
@@ -15305,13 +15320,18 @@ if (V->pclass_sz->use_maniyar_cib_model == 0){
   // printf("multiplying by volume %.3e %.3e\n",V->pvectsz[V->pclass_sz->index_chi2]/H_over_c_in_h_over_Mpc, get_volume_at_z(V->pvectsz[V->pclass_sz->index_z],V->pba));
   // result = (1.+V->pvectsz[V->pclass_sz->index_z])*result/H_over_c_in_h_over_Mpc;
 
-  result *= (1.+V->pvectsz[V->pclass_sz->index_z])*get_volume_at_z(V->pvectsz[V->pclass_sz->index_z],V->pba);
+  double volume = (1.+V->pvectsz[V->pclass_sz->index_z])*get_volume_at_z(V->pvectsz[V->pclass_sz->index_z],V->pba);
+  
+
+  
+  result *= volume;
   // note : get_vol is c/H*chi2...dchi/dz*ch2
 
 
 
+
   if (isnan(result)||isinf(result)){
-  printf("nan or inf in integrand redshift 1h\n");
+  printf("nan or inf in integrand redshift 1h, volume = %.3e\n",volume);
   exit(0);
   }
   return result;
@@ -20994,8 +21014,8 @@ m_max = pclass_sz->M_max_ng_bar;
 // }
 
 
-if (pclass_sz->sz_verbose){
-  printf("tabulating mean ngal from hod between %.3e  and %.3e Msun/h\n",m_min,m_max);
+if (pclass_sz->sz_verbose> 3){
+  printf("-> tabulating mean ngal from hod between %.3e  and %.3e Msun/h\n",m_min,m_max);
 }
 
 double * pvecback;
@@ -25459,6 +25479,16 @@ class_alloc( pclass_sz->array_dsigma2dR_at_z_and_R,
   //Array of R in Mpc
   double logR_min = log(exp(pclass_sz->logR1SZ)/pba->h); //in Mpc
   double logR_max = log(exp(pclass_sz->logR2SZ)/pba->h); //in Mpc
+
+  // Print R_min and R_max
+  double R_min = exp(logR_min);
+  double R_max = exp(logR_max);
+  if (pclass_sz->sz_verbose>2){
+  printf("R_min = %.6e Mpc\n", R_min);
+  printf("R_max = %.6e Mpc\n", R_max);
+  }
+// exit(0);
+  
   int index_R;
 
   int index_z_R = 0;
