@@ -23,14 +23,14 @@ M.set({
 # 'galaxy_samples_list_num' : 1, # the number of galaxy samples
 # 'galaxy_samples_list' : '1', # the id string of each sample, can be any integer
 # 'full_path_and_prefix_to_dndz_ngal':'/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/class_sz_auxiliary_files/WISC_bin3_ngal_example',
-'full_path_to_dndz_gal':'/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/class_sz_auxiliary_files/WISC_bin3_ngal_example1.txt',
+'full_path_to_dndz_gal':'/Users/boris/Work/CLASS-SZ/SO-SZ/class_sz/class-sz/class_sz_auxiliary_files/includes/WISC_bin3_ngal_example1.txt',
 'galaxy_sample' : 'custom'
 })
 M.set({# class_sz parameters:
 
 'mass function': 'T08M200c',
 'concentration parameter' : 'D08',
-'hm_consistency': 0,
+'hm_consistency': 1,
 
 'delta for galaxies' : '200c',
 'delta for matter density' : '200c',
@@ -90,10 +90,12 @@ M.set({# class_sz parameters:
 'mass_epsabs' : 1e-40,
 'mass_epsrel' : 0.0001,    
 'class_sz_verbose' : 10,
+
+'cosmo_model' : 6,
         })
         
-# M.compute_class_szfast()
-M.compute()
+M.compute_class_szfast()
+# M.compute()
 cl_galn_lens = M.cl_galn_lens()
 cl_gal_lens = M.cl_kg()
 
