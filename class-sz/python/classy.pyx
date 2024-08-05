@@ -751,6 +751,12 @@ cdef class Class:
           self._pars['omega_cdm'] = self._pars.pop('Omega_c')*(self._pars['H0']/100.)**2.
 
 
+        if 'Omega_m' in self._pars:
+
+          self._pars['omega_cdm'] = (self._pars.pop('Omega_m')-self._pars['omega_b']*(self._pars['H0']/100.)**-2.)*(self._pars['H0']/100.)**2.
+
+
+
         if "pressure_profile" in self._pars: 
 
             self._pars["pressure profile"] = self._pars.pop("pressure_profile")
@@ -2170,6 +2176,9 @@ cdef class Class:
 
     def omega_b(self):
         return self.ba.Omega0_b * self.ba.h * self.ba.h
+
+    def omega_cdm(self):
+        return self.ba.Omega0_cdm * self.ba.h * self.ba.h
 
     def Neff(self):
         if self.tsz.use_class_sz_fast_mode == 1:
