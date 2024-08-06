@@ -3983,9 +3983,9 @@ int input_read_parameters(
      class_read_double("Dust_temperature_today_in_Kelvins",ptsz->T0_cib);  // dust temperature today in Kelvins
      class_read_double("Emissivity_index_of_sed",ptsz->beta_cib); // emissivity index of sed
      class_read_double("Power_law_index_of_SED_at_high_frequency",ptsz->gamma_cib); // Power law index of SED at high frequency
-     class_read_double("Redshift_evolution_of_L_-_M_normalisation",ptsz->delta_cib); // Redshift evolution of L − M normalisation
+     class_read_double("Redshift_evolution_of_L_M_normalisation",ptsz->delta_cib); // Redshift evolution of L − M normalisation
      class_read_double("Most_efficient_halo_mass_in_Msun",ptsz->m_eff_cib); // Most efficient halo mass in Msun
-     class_read_double("Normalisation_of_L_-_M_relation_in_[JyMPc2/Msun]",ptsz->L0_cib); // Normalisation of L − M relation in [Jy MPc2/Msun]
+     class_read_double("Normalisation_of_L_M_relation_in_[JyMPc2/Msun]",ptsz->L0_cib); // Normalisation of L − M relation in [Jy MPc2/Msun]
      class_read_double("Size_of_halo_masses_sourcing_CIB_emission",ptsz->sigma2_LM_cib); // Size of of halo masses sourcing CIB emission
      class_read_double("z_obs_(CIB)",ptsz->z_obs_cib);
      class_read_double("z_plateau_cib",ptsz->z_plateau_cib);
