@@ -23253,12 +23253,12 @@ ug_at_ell  = (1./ng_bar)*sqrt(ns*ns*us*us+2.*ns*us);
 pvectsz[pclass_sz->index_galaxy_profile] = ug_at_ell;
 
 
-if isinf(ug_at_ell){
+if (isinf(ug_at_ell)){
   printf("inf in evaluate_galaxy_profile_1h: r_delta = %.3e, c_delta = %.3e\n", r_delta, c_delta);
   printf("ng_bar = %.3e, ns = %.3e, us = %.3e, nc = %.3e\n", ng_bar, ns, us, nc);
   exit(0);
 }
-if isnan(ug_at_ell){
+if (isnan(ug_at_ell)){
   printf("nan in evaluate_galaxy_profile_1h: r_delta = %.3e, c_delta = %.3e\n", r_delta, c_delta);
   printf("ng_bar = %.3e, ns = %.3e, us = %.3e, nc = %.3e\n", ng_bar, ns, us, nc);
   exit(0);
