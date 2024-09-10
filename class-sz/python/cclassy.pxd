@@ -281,6 +281,7 @@ cdef extern from "class.h":
         double delta_cib
         double L0_cib
         double sigma2_LM_cib
+        double m_eff_cib
         double z_for_pk_hm
         double P0GNFW
         double c500
