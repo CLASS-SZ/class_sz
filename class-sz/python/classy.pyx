@@ -1206,8 +1206,8 @@ cdef class Class:
               self.tsz.beta_cib = pdict_to_update['Emissivity_index_of_sed']
           if k == 'Power_law_index_of_SED_at_high_frequency':
               self.tsz.gamma_cib = pdict_to_update['Power_law_index_of_SED_at_high_frequency']
-          if k == 'Redshift_evolution_of_L_-_M_normalisation':
-              self.tsz.delta_cib = pdict_to_update['Redshift_evolution_of_L_-_M_normalisation']
+          if k == 'Redshift_evolution_of_L_M_normalisation':
+              self.tsz.delta_cib = pdict_to_update['Redshift_evolution_of_L_M_normalisation']
           if k == 'Most_efficient_halo_mass_in_Msun':
               self.tsz.L0_cib = pdict_to_update['Most_efficient_halo_mass_in_Msun']
           if k == 'Size_of_halo_masses_sourcing_CIB_emission':
