@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools", "wheel", "Cython>=0.29.21","classy_szfast>=0.0.7"]
+build-backend = "setuptools.build_meta"
+
+[project]
+dynamic = ["version"]
+name = "classy_sz"
+maintainers = [{name = "Boris Bolliet",email="bb667@cam.ac.uk"}]
+description = "The class_sz code from https://github.com/CLASS-SZ"
+readme = "https://github.com/CLASS-SZ/.github/blob/main/profile/README.md"
+
+[project.urls]
+Homepage = "https://github.com/CLASS-SZ"
+GitHub = "https://github.com/CLASS-SZ"

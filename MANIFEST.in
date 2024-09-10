@@ -1,0 +1,9 @@
+recursive-include class-sz *
+recursive-exclude class-sz/output *
+recursive-exclude class-sz/class_sz_auxiliary_files/excludes *
+recursive-exclude class-sz/build *
+recursive-exclude class-sz/test *
+recursive-exclude class-sz/cpp * 
+exclude .DS_Store
+recursive-exclude * .DS_Store
+prune .git
