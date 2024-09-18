@@ -284,6 +284,17 @@ cdef class Class:
             'skip_sigma8_and_der':0,
             'skip_cmb': 0,
             'cosmo_model': 6, # set ede-v2 emulators as default
+
+            # cosmo_model_list = [
+            #     'lcdm',
+            #     'mnu',
+            #     'neff',
+            #     'wcdm',
+            #     'ede',
+            #     'mnu-3states',
+            #     'ede-v2'
+            # ]
+            #    
             # here we set the default values for these emulator parameters. 
             # they can be overwritten by the user. 
             'N_ur': 0.00441,
@@ -1206,82 +1217,27 @@ cdef class Class:
               self.tsz.beta_cib = pdict_to_update['Emissivity_index_of_sed']
           if k == 'Power_law_index_of_SED_at_high_frequency':
               self.tsz.gamma_cib = pdict_to_update['Power_law_index_of_SED_at_high_frequency']
-          if k == 'Redshift_evolution_of_L_M_normalisation':
-              self.tsz.delta_cib = pdict_to_update['Redshift_evolution_of_L_M_normalisation']
-          if k == 'Most_efficient_halo_mass_in_Msun':
-              self.tsz.m_eff_cib = pdict_to_update['Most_efficient_halo_mass_in_Msun']
+          if k == 'Redshift_evolution_of_L_-_M_normalisation':
+              self.tsz.delta_cib = pdict_to_update['Redshift_evolution_of_L_-_M_normalisation']
+          if k == 'Normalisation_of_L_-_M_relation_in_[JyMPc2/Msun]':
+              self.tsz.L0_cib = pdict_to_update['Normalisation_of_L_-_M_relation_in_[JyMPc2/Msun]']
           if k == 'Size_of_halo_masses_sourcing_CIB_emission':
               self.tsz.sigma2_LM_cib = pdict_to_update['Size_of_halo_masses_sourcing_CIB_emission']
-          if k == 'Normalisation_of_L_M_relation_in_[JyMPc2/Msun]':
-              self.tsz.L0_cib = pdict_to_update['Normalisation_of_L_M_relation_in_[JyMPc2/Msun]']
-        # print('array_redshift:',
-        #       self.tsz.array_redshift[0],
-        #       self.tsz.array_redshift[1],
-        #       self.tsz.array_redshift[self.tsz.n_arraySZ-1])
-        # print('array_radius:',
-        #       self.tsz.array_radius[0],
-        #       self.tsz.array_radius[1],
-        #       self.tsz.array_radius[self.tsz.ndimSZ-1])
-        # print('array_dsigma2dR_at_z_and_R:',
-        #       self.tsz.array_dsigma2dR_at_z_and_R[0],
-        #       self.tsz.array_dsigma2dR_at_z_and_R[1],
-        #       self.tsz.array_dsigma2dR_at_z_and_R[self.tsz.n_arraySZ*self.tsz.ndimSZ-1])
-        # print('array_sigma_at_z_and_R:',
-        #       self.tsz.array_sigma_at_z_and_R[0],
-        #       self.tsz.array_sigma_at_z_and_R[1],
-        #       self.tsz.array_sigma_at_z_and_R[self.tsz.n_arraySZ*self.tsz.ndimSZ-1])
-
-        # # BB playground for emulators
-
-        # print(self._pars)
-        # params_settings = self._pars
-        # cszfast = classy_szfast(**params_settings)
+          if k =='Most_efficient_halo_mass_in_Msun':
+              self.tsz.m_eff_cib = pdict_to_update['Most_efficient_halo_mass_in_Msun']
 
 
-        # print('calculating cmb')
-        # start = time.time()
-        # cszfast.calculate_cmb(**params_settings)
-        # end = time.time()
-        # print('cmb calculation took:',end-start)
-
-
-        # print('calculating pkl')
-        # start = time.time()
-        # cszfast.calculate_pkl(**params_settings)
-        # end = time.time()
-        # print('pk calculation took:',end-start)
-
-        # print('calculating pknl')
-        # start = time.time()
-        # cszfast.calculate_pknl(**params_settings)
-        # end = time.time()
-        # print('pknl calculation took:',end-start)
-
-
-        # print('tabulate sigma')
-        # start = time.time()
-        # cszfast.calculate_sigma(**params_settings)
-        # print('lnsigma2',cszfast.cszfast_pk_grid_lnsigma2_flat)
-        # print('dsigma2',cszfast.cszfast_pk_grid_dsigma2_flat)
-        # print('ln1pz',cszfast.cszfast_pk_grid_ln1pz)
-        # print('lnr',cszfast.cszfast_pk_grid_lnr)
-        # index_z_r = 0
-        # for index_z in range(self.tsz.n_arraySZ):
-        #   for index_r in range(self.tsz.ndimSZ):
-        #         self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
-        #         self.tsz.array_redshift[index_z] = cszfast.cszfast_pk_grid_ln1pz[index_z]
-        #         self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
-        #         self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
-        #         self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pk_flat[index_z_r]
-        #         self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
-        #         self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
-        #         index_z_r += 1
-        # end = time.time()
-        # print('end tabulate sigma:',end-start)
-        if class_sz_tabulate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
-        &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
-            self.struct_cleanup()
-            raise CosmoComputationError(self.tsz.error_message)
+          #pk at z parameter:
+          if k == 'z_for_pk_hm':
+              self.tsz.z_for_pk_hm = pdict_to_update['z_for_pk_hm']
+              integrate_only = True
+            
+        if not integrate_only:
+            if class_sz_tabulate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
+            &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
+                self.struct_cleanup()
+                raise CosmoComputationError(self.tsz.error_message)
+        
         if class_sz_integrate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
         &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
             self.struct_cleanup()
