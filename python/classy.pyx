@@ -998,11 +998,11 @@ cdef class Class:
           if k == 'Redshift_evolution_of_L_M_normalisation':
               self.tsz.delta_cib = pdict_to_update['Redshift_evolution_of_L_M_normalisation']
           if k == 'Most_efficient_halo_mass_in_Msun':
-              self.tsz.L0_cib = pdict_to_update['Most_efficient_halo_mass_in_Msun']
+              self.tsz.m_eff_cib = pdict_to_update['Most_efficient_halo_mass_in_Msun']
           if k == 'Size_of_halo_masses_sourcing_CIB_emission':
               self.tsz.sigma2_LM_cib = pdict_to_update['Size_of_halo_masses_sourcing_CIB_emission']
           if k == 'Normalisation_of_L_M_relation_in_[JyMPc2/Msun]':
-              self.tsz.sigma2_LM_cib = pdict_to_update['Normalisation_of_L_M_relation_in_[JyMPc2/Msun]']
+              self.tsz.L0_cib = pdict_to_update['Normalisation_of_L_M_relation_in_[JyMPc2/Msun]']
         # print('array_redshift:',
         #       self.tsz.array_redshift[0],
         #       self.tsz.array_redshift[1],
