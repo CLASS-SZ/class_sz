@@ -20029,6 +20029,8 @@ int read_Planck_noise_map(struct class_sz_structure * pclass_sz)
   /////////////////////////////start read theta file
   if (pclass_sz->sz_verbose >= 3){
     printf("Loading theta file\n");
+    printf("Planck thetas file: %s\n", pclass_sz->Planck_thetas_file);
+
   }
 
   //read the thetas
