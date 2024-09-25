@@ -59,13 +59,13 @@ class_sz_string_parameter(SZ_cat_file,"/class_sz_auxiliary_files/includes/SZ_cat
 class_sz_string_parameter(classy_sz_verbose,"none","classy_sz_verbose")
 
 
-class_sz_string_parameter(Planck_thetas_file,"/class_sz_auxiliary_files/includes/SZ_thetas.txt","Planck_thetas_file")
+class_sz_string_parameter(Planck_thetas_file,"/class_sz_auxiliary_files/includes/SZ_thetas.txt","sz_selection_function_thetas_file")
 class_sz_string_parameter(SO_thetas_file,"/class_sz_auxiliary_files/nemo_sim_thetas_030722_50bins.txt","sz_selection_function_thetas_file")
 
-class_sz_string_parameter(Planck_skyfracs_file,"/class_sz_auxiliary_files/includes/SZ_skyfracs.txt","Planck_skyfracs_file")
+class_sz_string_parameter(Planck_skyfracs_file,"/class_sz_auxiliary_files/includes/SZ_skyfracs.txt","sz_selection_function_skyfracs_file")
 class_sz_string_parameter(SO_skyfracs_file,"/class_sz_auxiliary_files/nemo_sims_skyfracs_030722_50bins.txt","sz_selection_function_skyfracs_file")
 
-class_sz_string_parameter(Planck_ylims_file,"/class_sz_auxiliary_files/includes/SZ_ylims.txt","Planck_ylims_file")
+class_sz_string_parameter(Planck_ylims_file,"/class_sz_auxiliary_files/includes/SZ_ylims.txt","sz_selection_function_ylims_file")
 class_sz_string_parameter(SO_ylims_file,"/class_sz_auxiliary_files/nemo_sim_ylims_030722_50bins.txt","sz_selection_function_ylims_file")
 
 class_sz_pclass_sz_parameter(no_spline_in_tinker,int,0)

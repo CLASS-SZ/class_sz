@@ -4529,6 +4529,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
           if  (strstr(string1,"T08M500c") != NULL){
           pclass_sz->MF=5;
           pclass_sz->integrate_wrt_m500c = 1;
+          pclass_sz->integrate_wrt_m200c = 0;
           }
         }
         else  if ((strstr(string1,"M500") != NULL) || (strstr(string1,"T08M500c") != NULL)){

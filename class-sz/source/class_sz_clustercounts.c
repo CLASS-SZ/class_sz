@@ -1195,7 +1195,9 @@ for (itab = 0;itab<ntab;itab++){
         //
         if (pclass_sz->integrate_wrt_m500c == 1){
           m500c = mtab;
-          m200c = get_m500c_to_m200c_at_z_and_M(z,mtab,pclass_sz);
+          if (pclass_sz->use_m200c_in_ym_relation == 1){
+            m200c = get_m500c_to_m200c_at_z_and_M(z,mtab,pclass_sz);
+          }
         }
 
         if (pclass_sz->use_m500c_in_ym_relation == 1){
@@ -1983,7 +1985,9 @@ if (pcsz->has_completeness == 1){
         //
         if (pclass_sz->integrate_wrt_m500c == 1){
           m500c = mp;
-          m200c = get_m500c_to_m200c_at_z_and_M(zp,mp,pclass_sz);
+          if (pclass_sz->use_m200c_in_ym_relation == 1){
+            m200c = get_m500c_to_m200c_at_z_and_M(zp,mp,pclass_sz);
+          }
         }
 
         if (pclass_sz->use_m500c_in_ym_relation == 1){
@@ -2279,7 +2283,9 @@ else{
         //
         if (pclass_sz->integrate_wrt_m500c == 1){
           m500c = mp;
-          m200c = get_m500c_to_m200c_at_z_and_M(zp,mp,pclass_sz);
+          if (pclass_sz->use_m200c_in_ym_relation == 1){
+            m200c = get_m500c_to_m200c_at_z_and_M(zp,mp,pclass_sz);
+          }
         }
 
         if (pclass_sz->use_m500c_in_ym_relation == 1){
@@ -3095,7 +3101,7 @@ else if (pclass_sz->experiment==1){
   for (index_y = 0; index_y<pcsz->Nbins_y; index_y ++){
     pcsz->logy[index_y] = logy[index_y];
 if (pclass_sz->sz_verbose>3){
-    printf("index_y=%d, logy=%e\n",index_y,logy[index_y]);
+    printf("index_y=%d, log10y=%e\n",index_y,logy[index_y]);
   }
 }
   // if (pcsz->logy_max <= pcsz->logy[pcsz->Nbins_y-1]){
