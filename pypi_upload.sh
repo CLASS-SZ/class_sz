@@ -12,7 +12,7 @@ increment_version() {
   patch=${version_parts[2]}
 
   patch=$((patch + 1))
-  if [ $patch -ge 10 ]; then
+  if [ $patch -ge 100 ]; then
     patch=0
     minor=$((minor + 1))
   fi
