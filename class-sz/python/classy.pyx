@@ -854,7 +854,17 @@ cdef class Class:
         else:
 
             if not self._pars['skip_input']:
-              self.compute(level=["input"])
+            
+                self.compute(level=["input"])
+
+            else:
+
+                if 'H0' in self._pars:
+
+                    self.ba.h = self._pars['H0']/100.
+
+              
+
 
         params_settings = self._pars.copy()
 
