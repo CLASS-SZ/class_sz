@@ -9,6 +9,9 @@ on:
   release:
     types: [published]
 
+permissions:  # Ensure the workflow has permission to push changes
+  contents: write  # Allow write access for pushing to the repository
+
 jobs:
   bump_version:
     runs-on: ubuntu-latest
