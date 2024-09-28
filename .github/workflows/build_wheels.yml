@@ -135,9 +135,11 @@ jobs:
 
       - name: Upload distributions to PyPI
         run: |
+          ls -R wheels-and-sdist-*
+          ls 
           mkdir -p wheelhouse dist
-          # mv wheels-and-sdist-*/wheelhouse/* wheelhouse/
-          mv wheels-and-sdist-*/dist/* dist/
+          # mv wheels-and-sdist--${{ matrix.os }}-${{ matrix.python-version }}/wheelhouse/* wheelhouse/
+          mv wheels-and-sdist--${{ matrix.os }}-${{ matrix.python-version }}/dist/* dist/
           twine upload wheelhouse/* dist/*
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
