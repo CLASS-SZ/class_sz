@@ -32,6 +32,10 @@ MVEC_STRING = sbp.Popen(['gcc', '-lmvec'], stderr=sbp.PIPE).communicate()[1]
 if b"mvec" not in MVEC_STRING:
     liblist += ["mvec", "m"]
 
+# Check the platform to determine the correct OpenMP library
+openmp_flag = '-lgomp' if sys.platform.startswith('linux') else '-lomp'
+
+
 # Define Cython extension
 classy_sz_ext = Extension(
     "classy_sz",
@@ -39,7 +43,7 @@ classy_sz_ext = Extension(
     include_dirs=[np.get_include(), os.path.join("class-sz", "include")],
     libraries=liblist,
     library_dirs=["class-sz", GCCPATH],
-    extra_link_args=['-lgomp', '-lgsl', '-lfftw3', '-lgslcblas']
+    extra_link_args=[openmp_flag, '-lgsl', '-lfftw3', '-lgslcblas']
 )
 
 classy_sz_ext.cython_directives = {'language_level': "3" if sys.version_info.major >= 3 else "2"}
