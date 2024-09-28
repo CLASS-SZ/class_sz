@@ -46,6 +46,7 @@ jobs:
           
   build_wheels:
     runs-on: ${{ matrix.os }}
+    needs: bump_version
     strategy:
       matrix:
         os: [macos-latest]
