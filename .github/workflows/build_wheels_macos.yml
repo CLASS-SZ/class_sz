@@ -52,6 +52,15 @@ jobs:
           chmod +x select_makefile.sh
           ./select_makefile.sh
           make clean
+
+            # Check that omp.h is available in the include directory
+          if [ -f /opt/homebrew/opt/libomp/include/omp.h ]; then
+            echo "omp.h found"
+          else
+            echo "omp.h not found" && exit 1
+          fi
+
+
           export LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$LIBRARY_PATH
           export C_INCLUDE_PATH=/opt/homebrew/opt/libomp/include:$C_INCLUDE_PATH
           export DYLD_LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$DYLD_LIBRARY_PATH # (Mac M1 users only)
