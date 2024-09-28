@@ -83,6 +83,7 @@ jobs:
       - name: Build wheels for macOS
         if: matrix.os == 'macos-latest'
         env:
+          CIBW_BUILD: "cp39-macosx_arm64"  # Restrict to cp39-macosx_arm64
           CIBW_ARCHS: "arm64"
           LDFLAGS: "-L/opt/homebrew/opt/libomp/lib -L/opt/homebrew/opt/gsl/lib -L/opt/homebrew/opt/fftw/lib"
           CPPFLAGS: "-I/opt/homebrew/opt/libomp/include -I/opt/homebrew/opt/gsl/include -I/opt/homebrew/opt/fftw/include"
