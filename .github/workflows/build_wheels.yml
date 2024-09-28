@@ -110,7 +110,13 @@ jobs:
             wheelhouse/*.whl
             dist/*.tar.gz
 
+      - name: Install the built wheel
+        run: |
+          python -m pip install wheelhouse/*.whl
 
+      - name: Check import of classy_sz
+        run: |
+          python -c "import classy_sz; print('classy_sz imported successfully')"
 
 
   publish_wheels:
