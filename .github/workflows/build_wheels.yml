@@ -128,6 +128,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
+          path: wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
 
 
       - name: Install dependencies for uploading
@@ -135,13 +136,13 @@ jobs:
 
       - name: Upload distributions to PyPI
         run: |
-
           ls 
+          ls -R wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
           # mkdir -p wheelhouse dist
           # mv wheels-and-sdist--${{ matrix.os }}-${{ matrix.python-version }}/wheelhouse/* wheelhouse/
-          mv wheels-and-sdist--${{ matrix.os }}-${{ matrix.python-version }}/dist/* dist/
+          # mv wheels-and-sdist--${{ matrix.os }}-${{ matrix.python-version }}/dist/* dist/
           # twine upload wheelhouse/* dist/*
-          twine upload dist/*
+          # twine upload dist/*
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
