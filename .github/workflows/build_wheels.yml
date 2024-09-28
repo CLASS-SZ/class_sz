@@ -136,13 +136,29 @@ jobs:
 
       - name: Upload distributions to PyPI
         run: |
-          ls 
+          ls
           ls -R wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
           mkdir -p wheelhouse dist
-          # mv wheels-and-sdist--${{ matrix.os }}-${{ matrix.python-version }}/wheelhouse/* wheelhouse/
-          mv wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}/dist/* dist/
-          twine upload wheelhouse/* dist/*
-          # twine upload dist/*
+          if [ -d "wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}/wheelhouse" ]; then
+            mv wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}/wheelhouse/* wheelhouse/
+          fi
+          if [ -d "wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}/dist" ]; then
+            mv wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}/dist/* dist/
+          fi
+      
+          if [ "$(ls -A wheelhouse)" ]; then
+            echo "Uploading wheels..."
+            twine upload wheelhouse/*
+          else
+            echo "No wheels to upload."
+          fi
+      
+          if [ "$(ls -A dist)" ]; then
+            echo "Uploading source distribution..."
+            twine upload dist/*
+          else
+            echo "No source distribution to upload."
+          fi
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
