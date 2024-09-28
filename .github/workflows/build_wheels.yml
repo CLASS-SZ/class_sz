@@ -96,7 +96,7 @@ jobs:
 
       - name: Install dependencies for source distribution
         run: |
-          python -m pip install Cython numpy classy_szfast
+          python -m pip install build Cython numpy classy_szfast
 
       - name: Build source distribution (sdist)
         run: python -m build --sdist --outdir dist
