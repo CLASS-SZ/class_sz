@@ -122,7 +122,8 @@ jobs:
       - name: Download built wheels and sdist
         uses: actions/download-artifact@v4
         with:
-          name: wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
+          name: wheels-and-sdist-${{ needs.build_wheels.outputs.os }}-${{ needs.build_wheels.outputs.python-version }}
+
 
       - name: Install dependencies for uploading
         run: python -m pip install -U pip twine
