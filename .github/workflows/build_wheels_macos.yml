@@ -73,6 +73,10 @@ jobs:
           CIBW_ARCHS: "arm64"
           LDFLAGS: "-L/opt/homebrew/opt/libomp/lib"
           CPPFLAGS: "-I/opt/homebrew/opt/libomp/include"
+          LIBRARY_PATH: "/opt/homebrew/opt/libomp/lib:$LIBRARY_PATH"
+          C_INCLUDE_PATH: "/opt/homebrew/opt/libomp/include:$C_INCLUDE_PATH"
+          DYLD_LIBRARY_PATH: "/opt/homebrew/opt/libomp/lib:$DYLD_LIBRARY_PATH"
+ 
         run: python -m cibuildwheel --output-dir wheelhouse
 
       - name: Build source distribution (sdist)
