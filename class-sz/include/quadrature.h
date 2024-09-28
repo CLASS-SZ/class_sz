@@ -16,7 +16,7 @@ enum ncdm_quadrature_method {qm_auto, qm_Laguerre, qm_trapz_indefinite, qm_trapz
 
 typedef struct adaptive_integration_tree_node{
   /* binary tree node: */
-  double I;		/* Estimate of integral */
+  double Ie;		/* Estimate of integral */
   double err;		/* Estimated error */
   double *x;		/* Pointer to the abscissas of node */
   double *w;		/* Pointer to the corresponding weights */

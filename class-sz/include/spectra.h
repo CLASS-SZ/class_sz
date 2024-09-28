@@ -3,10 +3,10 @@
 #ifndef __SPECTRA__
 #define __SPECTRA__
 
-#include "common.h"
+// #include "common.h"
 #include "transfer.h"
 #include "class_sz.h"
-#include "lensing.h"
+// #include "lensing.h"
 
 /**
  * Structure containing everything about anisotropy and Fourier power spectra that other modules need to know.

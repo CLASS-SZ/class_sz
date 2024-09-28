@@ -46,7 +46,7 @@ classy_ext.cython_directives = {'language_level': "3" if six.PY3 else "2"}
 
 setup(
     name='classy_sz',
-    version="0.0.X",
+    version="0.0.0",
     author="Boris Bolliet, Ola Kusiak",
     author_email="bb667@cam.ac.uk, akk2175@columbia.edu",
     description='CLASS-SZ in Python',

@@ -28,17 +28,38 @@ increment_version() {
 }
 
 # Increment the version
-increment_version
+# increment_version
 
+cd class-sz/
+
+make clean
+
+cd ..
 
 # Remove old build files
 rm -rf build dist *.egg-info
 
-# Build the package
-python setup.py sdist bdist_wheel
+rm -rf class-sz/python/classy_sz.*so
+rm -rf class-sz/python/classy_sz.*egg-info
 
-# Upload the package
-twine upload dist/*
+# check docker is running
+docker --version
 
-# Clean up build directories
-rm -rf build dist *.egg-info
+# build wheels for linux
+# CIBW_BEFORE_BUILD="apt-get install -y libgsl-dev libfftw3-dev" CIBW_PLATFORM=linux cibuildwheel --output-dir dist
+# CIBW_BUILD="cp39-manylinux_aarch64" CIBW_ARCHS="aarch64" CIBW_BEFORE_BUILD="yum install -y gsl-devel fftw-devel" CIBW_PLATFORM=linux cibuildwheel --output-dir dist
+
+
+# 3. Windows Wheels
+CIBW_BUILD="cp39-win_amd64 cp39-win32" \
+CIBW_PLATFORM=windows cibuildwheel --output-dir dist
+
+# # build the wheel for mac
+# # Build the package
+# python setup.py sdist bdist_wheel
+
+# # Upload the package
+# twine upload dist/*
+
+# # Clean up build directories
+# rm -rf build dist *.egg-info

@@ -1,10 +1,11 @@
 [build-system]
-requires = ["setuptools", "wheel", "Cython>=0.29.21","classy_szfast>=0.0.7"]
+requires = ["setuptools", "wheel", "Cython>=0.29.21", "numpy"]
 build-backend = "setuptools.build_meta"
 
 [project]
 dependencies = [
     "classy_szfast",
+    "classy_szfast>=0.0.13",
 ]
 dynamic = ["version"]
 name = "classy_sz"

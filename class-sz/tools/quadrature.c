@@ -478,7 +478,7 @@ double get_integral(qss_node *node, int level){
   double IL,IR;
   /* An updated leaf_count is assumed. */
   if (node->leaf_childs<=level){
-    return node->I;
+    return node->Ie;
   }
   else{
     IL = get_integral(node->left, level);
@@ -518,14 +518,14 @@ int gk_adapt(
   (*node)->left = NULL; (*node)->right = NULL;
 
   gk_quad((*test), (*function), params_for_function, *node, a, b, isindefinite);
-  if ((fabs((*node)->err/(*node)->I) < tol)||(tol>=1.0)){
+  if ((fabs((*node)->err/(*node)->Ie) < tol)||(tol>=1.0)){
     /* Stop recursion and return. tol>=1.0 in case of I=0 infinite recursion */
     return _SUCCESS_;
   }
   else{
     /* Call gk_adapt recursively on children:*/
     mid = 0.5*(a+b);
-    //printf("<-%g,%g,%g,%g",mid,tol,(*node)->err,(*node)->I);
+    //printf("<-%g,%g,%g,%g",mid,tol,(*node)->err,(*node)->Ie);
     gk_adapt(&((*node)->left),(*test),(*function), params_for_function, 1.5*tol,
 	     treemode, a, mid, isindefinite, errmsg);
     //printf("%g->",mid);
@@ -534,7 +534,7 @@ int gk_adapt(
     /* Update integral and error in this node and return: */
     /* Actually, it is more convenient just to keep the nodes own estimate of the
        integral for our purposes.
-       (*node)->I = (*node)->left->I + (*node)->right->I;
+       (*node)->Ie = (*node)->left->Ie + (*node)->right->Ie;
        (*node)->err = sqrt(pow(node->left->err,2)+pow(node->right->err,2));
     */
     return _SUCCESS_;
@@ -726,7 +726,7 @@ int gk_quad(int (*test)(void * params_for_function, double q, double *psi),
     }
   }
   node->err = pow(200*fabs(Ik-Ig),1.5);
-  node->I = Ik;
+  node->Ie = Ik;
   return _SUCCESS_;
 }
 

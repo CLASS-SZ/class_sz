@@ -431,14 +431,14 @@ int array_integrate_all_trapzd_or_spline(
   int array_trapezoidal_integral(double * __restrict__ integrand,
                                  int n,
                                  double * __restrict__ w_trapz,
-                                 double * __restrict__ I,
+                                 double * __restrict__ Ie,
                                  ErrorMsg errmsg);
 
   int array_trapezoidal_convolution(double * __restrict__ integrand1,
                                     double * __restrict__ integrand2,
                                     int n,
                                     double * __restrict__ w_trapz,
-                                    double * __restrict__ I,
+                                    double * __restrict__ Ie,
                                     ErrorMsg errmsg);
 
 #ifdef __cplusplus
