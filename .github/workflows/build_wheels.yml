@@ -36,61 +36,61 @@ jobs:
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.14.1
 
-      # # Build wheels for Linux (with custom build options)
-      # - name: Build wheels for Linux
-      #   if: matrix.os == 'ubuntu-latest'
-      #   env:
-      #     CIBW_BEFORE_BUILD: "yum install -y gsl-devel fftw-devel"
-      #     CIBW_ARCHS: aarch64
-      #     CIBW_BUILD: cp39-manylinux_aarch64
-      #   run: python -m cibuildwheel --output-dir wheelhouse
+      # Build wheels for Linux (with custom build options)
+      - name: Build wheels for Linux
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          CIBW_BEFORE_BUILD: "yum install -y gsl-devel fftw-devel"
+          CIBW_ARCHS: aarch64
+          CIBW_BUILD: cp39-manylinux_aarch64
+        run: python -m cibuildwheel --output-dir wheelhouse
 
-      # - name: Install dependencies on macOS
-      #   if: matrix.os == 'macos-latest'
-      #   run: |
-      #     brew install gsl fftw libomp
-      #     chmod +x select_makefile.sh
-      #     ./select_makefile.sh
-      #     make clean
+      - name: Install dependencies on macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install gsl fftw libomp
+          chmod +x select_makefile.sh
+          ./select_makefile.sh
+          make clean
 
-      #       # Check that omp.h is available in the include directory
-      #     if [ -f /opt/homebrew/opt/libomp/include/omp.h ]; then
-      #       echo "omp.h found"
-      #     else
-      #       echo "omp.h not found" && exit 1
-      #     fi
+            # Check that omp.h is available in the include directory
+          if [ -f /opt/homebrew/opt/libomp/include/omp.h ]; then
+            echo "omp.h found"
+          else
+            echo "omp.h not found" && exit 1
+          fi
 
-      #       # Check that gsl_integration.h and fftw3.h are available
-      #     if [ -f /opt/homebrew/opt/gsl/include/gsl/gsl_integration.h ]; then
-      #       echo "gsl_integration.h found"
-      #     else
-      #       echo "gsl_integration.h not found" && exit 1
-      #     fi
+            # Check that gsl_integration.h and fftw3.h are available
+          if [ -f /opt/homebrew/opt/gsl/include/gsl/gsl_integration.h ]; then
+            echo "gsl_integration.h found"
+          else
+            echo "gsl_integration.h not found" && exit 1
+          fi
           
-      #     if [ -f /opt/homebrew/opt/fftw/include/fftw3.h ]; then
-      #       echo "fftw3.h found"
-      #     else
-      #       echo "fftw3.h not found" && exit 1
-      #     fi
+          if [ -f /opt/homebrew/opt/fftw/include/fftw3.h ]; then
+            echo "fftw3.h found"
+          else
+            echo "fftw3.h not found" && exit 1
+          fi
 
 
-      #     export LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$LIBRARY_PATH
-      #     export C_INCLUDE_PATH=/opt/homebrew/opt/libomp/include:$C_INCLUDE_PATH
-      #     export DYLD_LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$DYLD_LIBRARY_PATH # (Mac M1 users only)
-      #   working-directory: class-sz
+          export LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$LIBRARY_PATH
+          export C_INCLUDE_PATH=/opt/homebrew/opt/libomp/include:$C_INCLUDE_PATH
+          export DYLD_LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$DYLD_LIBRARY_PATH # (Mac M1 users only)
+        working-directory: class-sz
           
-      # # Build wheels for macOS (with Apple Silicon support)
-      # - name: Build wheels for macOS
-      #   if: matrix.os == 'macos-latest'
-      #   env:
-      #     CIBW_ARCHS: "arm64"
-      #     LDFLAGS: "-L/opt/homebrew/opt/libomp/lib -L/opt/homebrew/opt/gsl/lib -L/opt/homebrew/opt/fftw/lib"
-      #     CPPFLAGS: "-I/opt/homebrew/opt/libomp/include -I/opt/homebrew/opt/gsl/include -I/opt/homebrew/opt/fftw/include"
-      #     LIBRARY_PATH: "/opt/homebrew/opt/libomp/lib:/opt/homebrew/opt/gsl/lib:/opt/homebrew/opt/fftw/lib:$LIBRARY_PATH"
-      #     C_INCLUDE_PATH: "/opt/homebrew/opt/libomp/include:/opt/homebrew/opt/gsl/include:/opt/homebrew/opt/fftw/include:$C_INCLUDE_PATH"
-      #     DYLD_LIBRARY_PATH: "/opt/homebrew/opt/libomp/lib:/opt/homebrew/opt/gsl/lib:/opt/homebrew/opt/fftw/lib:$DYLD_LIBRARY_PATH"
+      # Build wheels for macOS (with Apple Silicon support)
+      - name: Build wheels for macOS
+        if: matrix.os == 'macos-latest'
+        env:
+          CIBW_ARCHS: "arm64"
+          LDFLAGS: "-L/opt/homebrew/opt/libomp/lib -L/opt/homebrew/opt/gsl/lib -L/opt/homebrew/opt/fftw/lib"
+          CPPFLAGS: "-I/opt/homebrew/opt/libomp/include -I/opt/homebrew/opt/gsl/include -I/opt/homebrew/opt/fftw/include"
+          LIBRARY_PATH: "/opt/homebrew/opt/libomp/lib:/opt/homebrew/opt/gsl/lib:/opt/homebrew/opt/fftw/lib:$LIBRARY_PATH"
+          C_INCLUDE_PATH: "/opt/homebrew/opt/libomp/include:/opt/homebrew/opt/gsl/include:/opt/homebrew/opt/fftw/include:$C_INCLUDE_PATH"
+          DYLD_LIBRARY_PATH: "/opt/homebrew/opt/libomp/lib:/opt/homebrew/opt/gsl/lib:/opt/homebrew/opt/fftw/lib:$DYLD_LIBRARY_PATH"
 
-      #   run: python -m cibuildwheel --output-dir wheelhouse
+        run: python -m cibuildwheel --output-dir wheelhouse
 
 
 
