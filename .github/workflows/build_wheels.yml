@@ -136,7 +136,7 @@ jobs:
       - name: Upload distributions to PyPI
         run: |
           mkdir -p wheelhouse dist
-          mv wheels-and-sdist-*/wheelhouse/* wheelhouse/
+          # mv wheels-and-sdist-*/wheelhouse/* wheelhouse/
           mv wheels-and-sdist-*/dist/* dist/
           twine upload wheelhouse/* dist/*
         env:
