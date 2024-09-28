@@ -53,12 +53,14 @@ jobs:
           ./select_makefile.sh
           make clean
         working-directory: class-sz
-
+          
       # Build wheels for macOS (with Apple Silicon support)
       - name: Build wheels for macOS
         if: matrix.os == 'macos-latest'
         env:
           CIBW_ARCHS: "arm64"
+          LDFLAGS: "-L/opt/homebrew/opt/libomp/lib"
+          CPPFLAGS: "-I/opt/homebrew/opt/libomp/include"
         run: python -m cibuildwheel --output-dir wheelhouse
 
       - name: Build source distribution (sdist)
