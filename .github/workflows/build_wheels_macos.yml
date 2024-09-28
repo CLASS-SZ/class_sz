@@ -52,6 +52,9 @@ jobs:
           chmod +x select_makefile.sh
           ./select_makefile.sh
           make clean
+          export LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$LIBRARY_PATH
+          export C_INCLUDE_PATH=/opt/homebrew/opt/libomp/include:$C_INCLUDE_PATH
+          export DYLD_LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$DYLD_LIBRARY_PATH # (Mac M1 users only)
         working-directory: class-sz
           
       # Build wheels for macOS (with Apple Silicon support)
