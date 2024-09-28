@@ -95,7 +95,7 @@ jobs:
       - name: Build source distribution (sdist)
         run: |
           python -m pip install Cython numpy classy_szfast
-          python -m pip install build
+          python setup.py sdist
 
       - uses: actions/upload-artifact@v4
         with:
