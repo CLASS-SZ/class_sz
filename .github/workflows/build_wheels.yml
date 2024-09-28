@@ -109,6 +109,11 @@ jobs:
             wheelhouse/*.whl
             dist/*.tar.gz
 
+      - name: Set output variables
+        id: vars
+        run: |
+          echo "::set-output name=os::${{ matrix.os }}"
+          echo "::set-output name=python_version::${{ matrix.python-version }}"
 
 
   publish_wheels:
