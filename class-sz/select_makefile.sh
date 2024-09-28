@@ -18,7 +18,7 @@ else
     echo "OS not supported yet: $UNAME_S. See README.md for preM1 mac. Otherwise, please get in touch or open an issue on the CLASS-SZ github."
     echo "UNAME_S: $UNAME_S"
     echo "UNAME_M: $UNAME_M"
-    echo "will try with Makefile_linux"
-    cp Makefile_linux Makefile
+    echo "will try with Makefile_m1x"
+    cp Makefile_m1 Makefile
 fi
 
