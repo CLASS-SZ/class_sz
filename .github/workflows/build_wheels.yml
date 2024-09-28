@@ -13,6 +13,37 @@ permissions:  # Ensure the workflow has permission to push changes
   contents: write  # Allow write access for pushing to the repository
 
 jobs:
+  bump_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install bump2version
+        run: python -m pip install bump2version
+
+      - name: Bump version (patch)
+        run: |
+          bump2version patch --current-version $(grep -Eo 'version="[^"]*' setup.py | cut -d'"' -f2) setup.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and push version bump
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git commit -am "Bump version"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
   build_wheels:
     runs-on: ${{ matrix.os }}
     strategy:
