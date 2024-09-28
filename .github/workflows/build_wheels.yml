@@ -52,12 +52,15 @@ jobs:
           CIBW_BUILD: cp39-manylinux_aarch64
         run: python -m cibuildwheel --output-dir wheelhouse
 
+      - name: Install dependencies on macOS
+        if: matrix.os == 'macos-latest'
+        run: brew install gsl fftw
+
       # Build wheels for macOS (with Apple Silicon support)
       - name: Build wheels for macOS
         if: matrix.os == 'macos-latest'
         env:
           CIBW_ARCHS: "x86_64 arm64"
-          CIBW_BUILD: cp39-macosx_11_0_arm64
         run: python -m cibuildwheel --output-dir wheelhouse
 
       # Build wheels for Windows (default)
