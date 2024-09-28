@@ -92,12 +92,44 @@ jobs:
 
       #   run: python -m cibuildwheel --output-dir wheelhouse
 
-      - name: Build source distribution (sdist)
+
+
+      - name: Install dependencies for source distribution
         run: |
           python -m pip install Cython numpy classy_szfast
-          python setup.py sdist
 
-      - uses: actions/upload-artifact@v4
+      - name: Build source distribution (sdist)
+        run: python -m build --sdist --outdir dist
+
+      - name: Upload built distributions (wheels and sdist)
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}-${{ matrix.python-version }}
-          path: wheelhouse/*.whl
+          name: wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
+          path: |
+            wheelhouse/*.whl
+            dist/*.tar.gz
+
+
+ 
+  publish_wheels:
+    runs-on: ubuntu-latest
+    needs: build_wheels
+    if: github.event_name == 'release' && github.event.action == 'published'
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Download built wheels and sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-and-sdist-*
+
+      - name: Install dependencies for uploading
+        run: python -m pip install -U pip twine
+
+      - name: Upload distributions to PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: twine upload wheelhouse/* dist/*
