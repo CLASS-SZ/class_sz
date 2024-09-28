@@ -33,13 +33,6 @@ jobs:
         run: |
           rm -rf build dist *.egg-info class-sz/python/classy_sz.*so class-sz/python/classy_sz.*egg-info
 
-      - name: Make clean (for class-sz)
-        run: |
-          chmod +x select_makefile.sh
-          ./select_makefile.sh
-          make clean
-        working-directory: class-sz
-
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.14.1
 
@@ -54,7 +47,12 @@ jobs:
 
       - name: Install dependencies on macOS
         if: matrix.os == 'macos-latest'
-        run: brew install gsl fftw
+        run: |
+          brew install gsl fftw
+          chmod +x select_makefile.sh
+          ./select_makefile.sh
+          make clean
+        working-directory: class-sz
 
       # Build wheels for macOS (with Apple Silicon support)
       - name: Build wheels for macOS
