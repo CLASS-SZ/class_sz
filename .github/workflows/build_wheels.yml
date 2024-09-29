@@ -84,6 +84,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         env:
           CIBW_ENVIRONMENT: "LDFLAGS='-L/usr/lib/x86_64-linux-gnu' CFLAGS='-I/usr/include' LIBRARY_PATH='/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH' C_INCLUDE_PATH='/usr/include:$C_INCLUDE_PATH' LD_LIBRARY_PATH='/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH'"
+          CIBW_BUILD: "cp39-manylinux_x86_64"  # Constrain build to cp39-manylinux_x86_64
           CIBW_BEFORE_BUILD: |
             # Build GSL from source
             curl -O https://ftp.gnu.org/gnu/gsl/gsl-2.7.1.tar.gz
