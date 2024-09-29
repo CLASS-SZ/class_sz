@@ -72,28 +72,15 @@ class ClassyBuildExt(build_ext):
 
         # Run the script to select the correct Makefile
         print("Running the script to select the correct Makefile")
-        #sbp.run(["./select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
+        if os.path.exists(os.path.join(os.getcwd(), "class-sz", "select_makefile.sh")):
+            print("Running the script to select the correct Makefile")
+            sbp.run(["./select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
+        else:
+            raise FileNotFoundError("select_makefile.sh not found in class-sz directory")
 
-        def select_makefile():
-            UNAME_S = os.name
-            UNAME_M = os.environ.get('PROCESSOR_ARCHITECTURE', 'unknown')
-            print(f"UNAME_S: {UNAME_S}")
-            print(f"UNAME_M: {UNAME_M}")
-            
-            if UNAME_S == 'posix' and UNAME_M == 'arm64':
-                print("Using M1 Makefile")
-                sbp.run(["cp", "Makefile_m1", "Makefile"], cwd=os.path.join(os.getcwd(), "class-sz"), check=True)
-            elif UNAME_S == 'posix':
-                print("Using Linux Makefile")
-                sbp.run(["cp", "Makefile_linux", "Makefile"], cwd=os.path.join(os.getcwd(), "class-sz"), check=True)
-            elif UNAME_S == 'nt':  # Windows
-                print("Using Windows Makefile")
-                sbp.run(["copy", "Makefile_windows", "Makefile"], shell=True, cwd=os.path.join(os.getcwd(), "class-sz"), check=True)
-            else:
-                raise RuntimeError(f"OS not supported: {UNAME_S}, {UNAME_M}")
-        
-        # Call this function instead of using the Bash script
-        select_makefile()
+        # sbp.run(["./select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
+        sbp.run(["bash", "./select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
+
         
         # Build the library
         print("Building the library")
