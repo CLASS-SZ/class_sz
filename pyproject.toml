@@ -4,8 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 dependencies = [
-    "classy_szfast",
-    "classy_szfast>=0.0.13",
+    "classy_szfast"
 ]
 dynamic = ["version"]
 name = "classy_sz"
@@ -17,3 +16,5 @@ readme = "class-sz/README.md"
 [project.urls]
 Homepage = "https://github.com/CLASS-SZ"
 GitHub = "https://github.com/CLASS-SZ"
+
+
