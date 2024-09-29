@@ -35,6 +35,8 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
    :maxdepth: 2
    :caption: Installation
 
+   # check here for example of clickable platforms: https://github.com/pypa/cibuildwheel/blob/main/docs/options.md
+
    notebooks/classy_szfast_install
 
 
