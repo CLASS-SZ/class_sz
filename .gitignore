@@ -301,3 +301,5 @@ set_class_sz_env.sh
 class-sz/test
 build
 class-sz/test/test_b12.ini
+
+docs/_*
