@@ -72,7 +72,7 @@ jobs:
       - name: Build wheels for Linux
         if: matrix.os == 'ubuntu-latest'
         env:
-          CIBW_BEFORE_BUILD: "yum install -y gsl-devel fftw-devel"
+          CIBW_BEFORE_BUILD: "apt-get install -y libgsl-dev libfftw3-dev"
         run: python -m cibuildwheel --output-dir wheelhouse
 
       - name: Install dependencies on macOS
