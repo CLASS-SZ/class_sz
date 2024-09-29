@@ -76,26 +76,25 @@ jobs:
         run: |
           rm -rf build dist *.egg-info class-sz/python/classy_sz.*so class-sz/python/classy_sz.*egg-info
 
-      # Set the correct CIBW_BUILD for the specific Python version
       - name: Set CIBW_BUILD for the correct CPython version
         run: |
           if [ "${{ matrix.python-version }}" == "3.9" ]; then
-            export CIBW_BUILD="cp39-*"
+            echo "CIBW_BUILD=cp39-*" >> $GITHUB_ENV
           elif [ "${{ matrix.python-version }}" == "3.10" ]; then
-            export CIBW_BUILD="cp310-*"
+            echo "CIBW_BUILD=cp310-*" >> $GITHUB_ENV
           fi
-          echo "Using CIBW_BUILD: $CIBW_BUILD"
 
-      - name: Install system dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get install -y libgsl-dev libfftw3-dev
-          echo "Include paths for GSL and FFTW:"
-          dpkg -L libgsl-dev | grep '/include'
-          dpkg -L libfftw3-dev | grep '/include'
-          echo "Library paths for GSL and FFTW:"
-          dpkg -L libgsl-dev | grep '/lib'
-          dpkg -L libfftw3-dev | grep '/lib'
+
+      # - name: Install system dependencies (Linux)
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: |
+      #     sudo apt-get install -y libgsl-dev libfftw3-dev
+      #     echo "Include paths for GSL and FFTW:"
+      #     dpkg -L libgsl-dev | grep '/include'
+      #     dpkg -L libfftw3-dev | grep '/include'
+      #     echo "Library paths for GSL and FFTW:"
+      #     dpkg -L libgsl-dev | grep '/lib'
+      #     dpkg -L libfftw3-dev | grep '/lib'
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.14.1
@@ -106,7 +105,7 @@ jobs:
         env:
           CIBW_ENVIRONMENT: "LDFLAGS='-L/usr/lib/x86_64-linux-gnu' CFLAGS='-I/usr/include' LIBRARY_PATH='/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH' C_INCLUDE_PATH='/usr/include:$C_INCLUDE_PATH' LD_LIBRARY_PATH='/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH'"
           #CIBW_BUILD: "cp39-manylinux_x86_64"  # Constrain build to cp39-manylinux_x86_64
-          CIBW_BUILD: $CIBW_BUILD
+          CIBW_BUILD: ${{ env.CIBW_BUILD }}
           CIBW_SKIP: "cp27-* cp34-* cp35-* cp36-* cp37-* cp38-* pp* *-manylinux_i686 *musllinux*"
           CIBW_BEFORE_BUILD: |
             # Build GSL from source
@@ -206,7 +205,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         env:
           # CIBW_BUILD: "cp39-macosx_arm64"  # Restrict to cp39-macosx_arm64
-          CIBW_BUILD: $CIBW_BUILD
+          CIBW_BUILD: ${{ env.CIBW_BUILD }}
           CIBW_ARCHS: "arm64"
           CIBW_SKIP: "cp27-* cp34-* cp35-* cp36-* cp37-* cp38-* pp*"
           LDFLAGS: "-L/opt/homebrew/opt/libomp/lib -L/opt/homebrew/opt/gsl/lib -L/opt/homebrew/opt/fftw/lib"
