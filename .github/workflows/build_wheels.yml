@@ -49,7 +49,7 @@ jobs:
     needs: bump_version
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [ubuntu-latest, macos-latest]
         python-version: ["3.9"]
 
     steps:
@@ -156,7 +156,7 @@ jobs:
     needs: build_wheels
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [ubuntu-latest, macos-latest]
         python-version: ["3.9"]
         
     steps:
