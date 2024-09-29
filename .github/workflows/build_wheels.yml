@@ -74,7 +74,12 @@ jobs:
 
       - name: Clean up previous builds (if any)
         run: |
-          rm -rf build dist *.egg-info class-sz/python/classy_sz.*so class-sz/python/classy_sz.*egg-info
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            Remove-Item -Recurse -Force build, dist, *.egg-info, class-sz/python/classy_sz.*so, class-sz/python/classy_sz.*egg-info
+          else
+            rm -rf build dist *.egg-info class-sz/python/classy_sz.*so class-sz/python/classy_sz.*egg-info
+          fi
+        shell: bash
 
       - name: Set CIBW_BUILD for the correct CPython version
         run: |
