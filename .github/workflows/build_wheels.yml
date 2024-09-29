@@ -234,7 +234,7 @@ jobs:
           C_INCLUDE_PATH: "$(pwd)/fftw/include;$(pwd)/gsl/include"
 
           CIBW_BEFORE_BUILD: |
-            # Build GSL from source
+            
             curl -O https://ftp.gnu.org/gnu/gsl/gsl-2.7.1.tar.gz
             tar -xzf gsl-2.7.1.tar.gz
             cd gsl-2.7.1
@@ -242,10 +242,10 @@ jobs:
             make
             make install
             
-            # Go back to the root directory to build FFTW
+            
             cd ..
             
-            # Build FFTW from source
+            
             curl -O http://www.fftw.org/fftw-3.3.10.tar.gz
             tar -xzf fftw-3.3.10.tar.gz
             cd fftw-3.3.10
