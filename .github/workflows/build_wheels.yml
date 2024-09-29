@@ -233,15 +233,15 @@ jobs:
 
       # Build wheels for Windows using bash
       - name: Build wheels for Windows
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-latest' && matrix.arch == 'x86'
         env:
           CIBW_BUILD: ${{ env.CIBW_BUILD }}
           CIBW_SKIP: "cp27-* cp34-* cp35-* cp36-* cp37-* cp38-* pp* *-win32"
+          CIBW_ARCHS: "x86"  # Force cibuildwheel to use x86 only
           LIBRARY_PATH: "$(pwd)/fftw/lib;$(pwd)/gsl/lib"
           C_INCLUDE_PATH: "$(pwd)/fftw/include;$(pwd)/gsl/include"
 
           CIBW_BEFORE_BUILD: |
-            
             curl -O https://ftp.gnu.org/gnu/gsl/gsl-2.7.1.tar.gz
             tar -xzf gsl-2.7.1.tar.gz
             cd gsl-2.7.1
