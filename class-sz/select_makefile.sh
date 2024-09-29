@@ -16,11 +16,11 @@ elif [ "$UNAME_S" == "Linux" ]; then
     cp Makefile_linux Makefile
     
     # Print contents of /usr/include/ and /usr/lib/x86_64-linux-gnu/
-    echo "Contents of /usr/include/:"
-    ls -la /usr/include/
+    #echo "Contents of /usr/include/:"
+    #ls -la /usr/include/
     
-    echo "Contents of /usr/lib/x86_64-linux-gnu/:"
-    ls -la /usr/lib/x86_64-linux-gnu/
+    #echo "Contents of /usr/lib/x86_64-linux-gnu/:"
+    #ls -la /usr/lib/x86_64-linux-gnu/
     
     # Print environment variables
     echo "Environment Variables:"
