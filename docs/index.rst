@@ -33,9 +33,7 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
 .. toctree::
    :maxdepth: 2
-   :caption: Installation
-
-   # # check here for example of clickable platforms: https://github.com/pypa/cibuildwheel/blob/main/docs/options.md
+   :caption: Advanced Installation
 
    notebooks/classy_szfast_install
 
