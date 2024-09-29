@@ -7,3 +7,4 @@ recursive-exclude class-sz/class_sz_auxiliary_files/excludes *
 exclude .DS_Store
 recursive-exclude * .DS_Store
 prune .git
+include class-sz/bbn/*.dat
