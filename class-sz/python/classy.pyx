@@ -211,7 +211,7 @@ cdef class Class:
 
     The actual Class wrapping, the only class we will call from MontePython
     (indeed the only one we will import, with the command:
-    from classy import Class
+    from classy_sz import Class
 
     """
     # List of used structures, defined in the header file. They have to be
@@ -266,6 +266,10 @@ cdef class Class:
         def __get__(self):
             return self.nl.method
 
+    property PATH_TO_CLASS_SZ_DATA:
+        def __get__(self):
+            return classy_szfast.path_to_cosmopower_organization
+
 
 
 # BB: modified for class_sz
@@ -306,6 +310,8 @@ cdef class Class:
             'n_s': 0.9665,
             'ndim_masses': 500,
             'ndim_redshifts': 100,
+
+            'sBBB file': self.PATH_TO_CLASS_SZ_DATA + '/PRIMAT21_class_format.dat',
             }
     ### note on ncdm:
     # N_ncdm : 3
