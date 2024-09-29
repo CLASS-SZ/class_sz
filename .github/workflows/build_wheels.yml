@@ -88,7 +88,21 @@ jobs:
           LIBRARY_PATH: "/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH"
           C_INCLUDE_PATH: "/usr/include:$C_INCLUDE_PATH"
           LD_LIBRARY_PATH: "/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"            
-        run: 
+        run: |
+          # Check GSL library and include files
+          if [ ! -f /usr/lib/x86_64-linux-gnu/libgsl.so ]; then
+            echo "GSL library not found in /usr/lib/x86_64-linux-gnu/"; exit 1;
+          fi
+          if [ ! -f /usr/include/gsl/gsl_sf_bessel.h ]; then
+            echo "GSL include files not found in /usr/include/gsl/"; exit 1;
+          fi
+          # Check FFTW library and include files
+          if [ ! -f /usr/lib/x86_64-linux-gnu/libfftw3.so ]; then
+            echo "FFTW library not found in /usr/lib/x86_64-linux-gnu/"; exit 1;
+          fi
+          if [ ! -f /usr/include/fftw3.h ]; then
+            echo "FFTW include files not found in /usr/include/"; exit 1;
+          fi
           python -m cibuildwheel --output-dir wheelhouse
 
       - name: Install dependencies on macOS
