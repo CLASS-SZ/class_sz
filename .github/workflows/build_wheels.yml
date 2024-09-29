@@ -72,14 +72,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Clean up previous builds (if any)
+      # Clean up on Unix-like systems
+      - name: Clean up previous builds (Unix)
+        if: runner.os != 'Windows'
         run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            Remove-Item -Recurse -Force build, dist, *.egg-info, class-sz/python/classy_sz.*so, class-sz/python/classy_sz.*egg-info
-          else
-            rm -rf build dist *.egg-info class-sz/python/classy_sz.*so class-sz/python/classy_sz.*egg-info
-          fi
+          rm -rf build dist *.egg-info class-sz/python/classy_sz.*so class-sz/python/classy_sz.*egg-info
         shell: bash
+
+      # Clean up on Windows
+      - name: Clean up previous builds (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Remove-Item -Recurse -Force build, dist, *.egg-info, class-sz/python/classy_sz.*so, class-sz/python/classy_sz.*egg-info
+        shell: pwsh
 
       - name: Set CIBW_BUILD for the correct CPython version
         run: |
