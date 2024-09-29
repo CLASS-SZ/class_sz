@@ -1,0 +1,75 @@
+########################################################
+###### LINES TO ADAPT TO YOUR PLATFORM #################
+########################################################
+
+# your C compiler:
+CC       = x86_64-w64-mingw32-gcc  # For MSYS2/MinGW on Windows
+# Alternative: CC = clang  # For Visual Studio with Clang
+
+# your tool for creating static libraries:
+AR        = x86_64-w64-mingw32-ar rv  # For MSYS2/MinGW on Windows
+
+PYTHON ?= python
+
+# your optimization flag
+OPTFLAG = -O3 -m64  # On Windows, use -m64 for 64-bit architecture
+
+# your openmp flag (comment for compiling without openmp)
+OMPFLAG   = -fopenmp  # On Windows with MSYS2/MinGW
+
+# all other compilation flags
+CCFLAG = -g
+LDFLAG = -g
+
+# Add flags for linking OpenMP, GSL, FFTW, and other libraries
+LDFLAG += -lgomp -lgsl -lgslcblas -lfftw3 -lm
+
+# Library and include paths for Windows (adjust as needed for your MSYS2/MinGW installation)
+INCLUDES = -I/c/msys64/mingw64/include/gsl -I/c/msys64/mingw64/include/fftw3
+
+########################################################
+###### IN PRINCIPLE THE REST SHOULD BE LEFT UNCHANGED ##
+########################################################
+
+# pass current working directory to the code
+CCFLAG += -D__CLASSDIR__='"$(MDIR)"'
+
+# where to find include files *.h
+INCLUDES += -I../include
+
+# External programs if needed
+EXTERNAL =
+
+# Update flags for including HyRec if needed
+ifneq ($(HYREC),)
+vpath %.c $(HYREC)
+CCFLAG += -DHYREC
+INCLUDES += -I../hyrec
+EXTERNAL += hyrectools.o helium.o hydrogen.o history.o
+endif
+
+# Suppress warnings if needed
+CFLAGS += -w
+
+%.o:  %.c .base
+	cd $(WRKDIR);$(CC) $(OPTFLAG) $(OMPFLAG) $(CCFLAG) $(CFLAGS) $(INCLUDES) -c ../$< -o $*.o
+
+# The rest of the makefile remains the same
+
+TOOLS = growTable.o dei_rkck.o sparse.o evolver_rkck.o  evolver_ndf15.o arrays.o parser.o quadrature.o hyperspherical.o common.o trigonometric_integrals.o r8lib.o class_sz_tools.o class_sz_custom_profiles.o class_sz_custom_bias.o Patterson.o fft.o
+
+SOURCE = input.o background.o thermodynamics.o perturbations.o primordial.o nonlinear.o transfer.o spectra.o lensing.o class_sz.o class_sz_clustercounts.o
+
+# Compile everything
+all: class_sz libclass.a classy_sz
+
+libclass.a: $(TOOLS) $(SOURCE) $(EXTERNAL)
+	$(AR) $@ $(addprefix build/, $(TOOLS) $(SOURCE) $(EXTERNAL))
+
+class_sz: $(TOOLS) $(SOURCE) $(EXTERNAL) $(OUTPUT) $(CLASS_SZ)
+	$(CC) $(CFLAGS) $(OPTFLAG) $(OMPFLAG) $(LDFLAG) -g -o class_sz $(addprefix build/,$(notdir $^)) -lgsl -lgslcblas -lfftw3 -lm
+
+clean:
+	rm -rf $(WRKDIR);
+	rm -f libclass.a
+	rm -f class_sz
