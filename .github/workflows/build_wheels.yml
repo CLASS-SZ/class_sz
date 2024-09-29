@@ -222,28 +222,7 @@ jobs:
 
         run: python -m cibuildwheel --output-dir wheelhouse
 
-      # Install and set up FFTW and GSL on Windows using bash
-      - name: Install FFTW and GSL on Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          # Download and install FFTW
-          curl -LO http://www.fftw.org/fftw-3.3.10-dll64.zip
-          unzip fftw-3.3.10-dll64.zip -d fftw
-      
-          # Download and install GSL
-          curl -LO https://www.gfd-dennou.org/arch/davis/gsl/gsl-2.6/gsl-2.6-windows.zip
-          unzip gsl-2.6-windows.zip -d gsl
-      
-          # Set environment variables to link FFTW and GSL
-          echo "::add-path::$(pwd)/fftw"
-          echo "::add-path::$(pwd)/gsl"
-          echo "::add-path::$(pwd)/fftw/lib"
-          echo "::add-path::$(pwd)/gsl/lib"
-          echo "::set-env name=FFTW_INCLUDE_PATH::$(pwd)/fftw/include"
-          echo "::set-env name=GSL_INCLUDE_PATH::$(pwd)/gsl/include"
-          echo "::set-env name=FFTW_LIB_PATH::$(pwd)/fftw/lib"
-          echo "::set-env name=GSL_LIB_PATH::$(pwd)/gsl/lib"
-        shell: bash
+ 
 
       # Build wheels for Windows using bash
       - name: Build wheels for Windows
@@ -253,6 +232,26 @@ jobs:
           CIBW_SKIP: "cp27-* cp34-* cp35-* cp36-* cp37-* cp38-* pp* *-win32"
           LIBRARY_PATH: "$(pwd)/fftw/lib;$(pwd)/gsl/lib"
           C_INCLUDE_PATH: "$(pwd)/fftw/include;$(pwd)/gsl/include"
+
+          CIBW_BEFORE_BUILD: |
+            # Build GSL from source
+            curl -O https://ftp.gnu.org/gnu/gsl/gsl-2.7.1.tar.gz
+            tar -xzf gsl-2.7.1.tar.gz
+            cd gsl-2.7.1
+            ./configure --prefix=/usr/local
+            make
+            make install
+            
+            # Go back to the root directory to build FFTW
+            cd ..
+            
+            # Build FFTW from source
+            curl -O http://www.fftw.org/fftw-3.3.10.tar.gz
+            tar -xzf fftw-3.3.10.tar.gz
+            cd fftw-3.3.10
+            ./configure --prefix=/usr/local --enable-shared
+            make
+            make install
         run: python -m cibuildwheel --output-dir wheelhouse
         shell: bash
 
