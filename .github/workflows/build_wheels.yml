@@ -87,6 +87,7 @@ jobs:
           elif [ "${{ matrix.python-version }}" == "3.10" ]; then
             echo "CIBW_BUILD=cp310-*" >> $GITHUB_ENV
           fi
+          shell: bash
 
 
       # - name: Install system dependencies (Linux)
