@@ -9,7 +9,22 @@
 project = 'class_sz'
 copyright = '2024, Bolliet, Kusiak, McCarthy et al'
 author = 'Bolliet, Kusiak, McCarthy et al'
-release = '0.0.0'
+
+
+import os
+import tomli
+
+
+# Extract version from pyproject.toml
+def get_version_from_pyproject():
+    with open(os.path.join(os.path.dirname(__file__), '..', 'pyproject.toml'), 'rb') as f:
+        data = tomli.load(f)
+        return data['project']['version']
+
+try:
+    release = get_version_from_pyproject()
+except (FileNotFoundError, KeyError):
+    release = '0.0.0'  # Fallback version
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
