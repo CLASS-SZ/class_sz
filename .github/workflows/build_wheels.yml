@@ -221,17 +221,17 @@ jobs:
 
         run: python -m cibuildwheel --output-dir wheelhouse
 
-      
+      # Install and set up FFTW and GSL on Windows using bash
       - name: Install FFTW and GSL on Windows
         if: matrix.os == 'windows-latest'
         run: |
           # Download and install FFTW
           curl -LO http://www.fftw.org/fftw-3.3.10-dll64.zip
-          Expand-Archive fftw-3.3.10-dll64.zip -DestinationPath fftw
+          unzip fftw-3.3.10-dll64.zip -d fftw
       
           # Download and install GSL
           curl -LO https://www.gfd-dennou.org/arch/davis/gsl/gsl-2.6/gsl-2.6-windows.zip
-          Expand-Archive gsl-2.6-windows.zip -DestinationPath gsl
+          unzip gsl-2.6-windows.zip -d gsl
       
           # Set environment variables to link FFTW and GSL
           echo "::add-path::$(pwd)/fftw"
@@ -242,20 +242,18 @@ jobs:
           echo "::set-env name=GSL_INCLUDE_PATH::$(pwd)/gsl/include"
           echo "::set-env name=FFTW_LIB_PATH::$(pwd)/fftw/lib"
           echo "::set-env name=GSL_LIB_PATH::$(pwd)/gsl/lib"
-        shell: pwsh
+        shell: bash
 
-
-      # Build wheels for Windows
+      # Build wheels for Windows using bash
       - name: Build wheels for Windows
         if: matrix.os == 'windows-latest'
         env:
           CIBW_BUILD: ${{ env.CIBW_BUILD }}
           CIBW_SKIP: "cp27-* cp34-* cp35-* cp36-* cp37-* cp38-* pp* *-win32"
-            # Add FFTW and GSL paths to the environment variables
           LIBRARY_PATH: "$(pwd)/fftw/lib;$(pwd)/gsl/lib"
           C_INCLUDE_PATH: "$(pwd)/fftw/include;$(pwd)/gsl/include"
         run: python -m cibuildwheel --output-dir wheelhouse
-        shell: pwsh
+        shell: bash
 
       - name: Install dependencies for source distribution
         run: |
