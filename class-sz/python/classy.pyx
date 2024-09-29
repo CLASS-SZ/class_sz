@@ -333,7 +333,7 @@ cdef class Class:
         sprintf(self.fc.filename,"%s",dumc)
         self.ncp = set()
         if default: self.set_default()
-        print('PATH_TO_CLASS_SZ_DATA',class_szfast.path_to_cosmopower_organization)
+        print('PATH_TO_CLASS_SZ_DATA',classy_szfast.path_to_cosmopower_organization)
 
     def __dealloc__(self):
         if self.allocated:
