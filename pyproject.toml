@@ -12,6 +12,7 @@ maintainers = [{name = "Boris Bolliet",email="bb667@cam.ac.uk"}]
 authors = [{name = "Boris Bolliet", email = "bb667@cam.ac.uk"}]
 description = "The class_sz code from https://github.com/CLASS-SZ"
 readme = "class-sz/README.md"
+license = { text = "MIT" }
 
 [project.urls]
 Homepage = "https://github.com/CLASS-SZ"
