@@ -82,7 +82,14 @@ jobs:
       # Build wheels for Linux (with custom build options)
       - name: Build wheels for Linux
         if: matrix.os == 'ubuntu-latest'
-        run: python -m cibuildwheel --output-dir wheelhouse
+        env:
+          LDFLAGS: "-L/usr/lib/x86_64-linux-gnu"
+          CPPFLAGS: "-I/usr/include"
+          LIBRARY_PATH: "/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH"
+          C_INCLUDE_PATH: "/usr/include:$C_INCLUDE_PATH"
+          LD_LIBRARY_PATH: "/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"            
+        run: 
+          python -m cibuildwheel --output-dir wheelhouse
 
       - name: Install dependencies on macOS
         if: matrix.os == 'macos-latest'
