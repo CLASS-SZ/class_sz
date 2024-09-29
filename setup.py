@@ -74,7 +74,7 @@ print(pck_files)
 # Setup function
 setup(
     name='classy_sz',
-    version="0.1.32",
+    version="0.1.33",
     author="Boris Bolliet, Ola Kusiak",
     author_email="bb667@cam.ac.uk, akk2175@columbia.edu",
     description='CLASS-SZ in Python',
