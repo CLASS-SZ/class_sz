@@ -73,8 +73,6 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         env:
           CIBW_BEFORE_BUILD: "yum install -y gsl-devel fftw-devel"
-          CIBW_ARCHS: aarch64
-          CIBW_BUILD: cp39-manylinux_aarch64
         run: python -m cibuildwheel --output-dir wheelhouse
 
       - name: Install dependencies on macOS
