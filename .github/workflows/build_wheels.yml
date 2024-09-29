@@ -237,7 +237,7 @@ jobs:
         env:
           CIBW_BUILD: ${{ env.CIBW_BUILD }}
           CIBW_SKIP: "cp27-* cp34-* cp35-* cp36-* cp37-* cp38-* pp* *-win32"
-          CIBW_ARCHS: "x86"  # Force cibuildwheel to use x86 only
+          # CIBW_ARCHS: "x86"  # Force cibuildwheel to use x86 only
           LIBRARY_PATH: "$(pwd)/fftw/lib;$(pwd)/gsl/lib"
           C_INCLUDE_PATH: "$(pwd)/fftw/include;$(pwd)/gsl/include"
 
