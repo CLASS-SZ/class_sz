@@ -1,10 +1,10 @@
-Sphinx==4.0.2
-sphinx-rtd-theme==0.5.2
+Sphinx
+sphinx-rtd-theme
 readthedocs-sphinx-ext
-nbsphinx==0.8.6
+nbsphinx
 ipython
-Pygments==2.15.0
-sphinxcontrib-bibtex>=2.1
+Pygments
+sphinxcontrib-bibtex
 sphinxcontrib-svg2pdfconverter
 sphinx-gallery
 myst_parser
