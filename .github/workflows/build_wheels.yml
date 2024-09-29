@@ -84,7 +84,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         env:
           LDFLAGS: "-L/usr/lib/x86_64-linux-gnu"
-          CPPFLAGS: "-I/usr/include"
+          CFLAGS: "-I/usr/include"
           LIBRARY_PATH: "/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH"
           C_INCLUDE_PATH: "/usr/include:$C_INCLUDE_PATH"
           LD_LIBRARY_PATH: "/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"            
