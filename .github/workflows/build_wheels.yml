@@ -84,6 +84,35 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         env:
           CIBW_ENVIRONMENT: "LDFLAGS='-L/usr/lib/x86_64-linux-gnu' CFLAGS='-I/usr/include' LIBRARY_PATH='/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH' C_INCLUDE_PATH='/usr/include:$C_INCLUDE_PATH' LD_LIBRARY_PATH='/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH'"
+          CIBW_BEFORE_BUILD: |
+            # Build GSL from source
+            curl -O https://ftp.gnu.org/gnu/gsl/gsl-2.7.1.tar.gz
+            tar -xzf gsl-2.7.1.tar.gz
+            cd gsl-2.7.1
+            ./configure --prefix=/usr/local
+            make
+            make install
+            
+            # Go back to the root directory to build FFTW
+            cd ..
+            
+            # Build FFTW from source
+            curl -O http://www.fftw.org/fftw-3.3.10.tar.gz
+            tar -xzf fftw-3.3.10.tar.gz
+            cd fftw-3.3.10
+            ./configure --prefix=/usr/local --enable-shared
+            make
+            make install
+            
+            # Print to check the files are correctly installed
+            echo "Contents of /usr/local/include/gsl:"
+            ls -la /usr/local/include/gsl/
+            
+            echo "Contents of /usr/local/include:"
+            ls -la /usr/local/include/
+            
+            echo "Contents of /usr/local/lib:"
+            ls -la /usr/local/lib/
 
         run: |
           # Check GSL library and include files
