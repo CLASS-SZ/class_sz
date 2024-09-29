@@ -272,7 +272,7 @@ jobs:
           path: |
             wheelhouse/*.whl
             dist/*.tar.gz
-        shell: bash
+        
 
       - name: Install the built wheel
         run: |
