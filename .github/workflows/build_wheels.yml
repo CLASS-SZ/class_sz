@@ -49,7 +49,7 @@ jobs:
     needs: bump_version
     strategy:
       matrix:
-        os: [ubuntu-latest,macos-latest]
+        os: [ubuntu-latest,macos-latest,windows-latest]
         python-version: ["3.9","3.10"]
         include:
           - os: ubuntu-latest
@@ -216,7 +216,13 @@ jobs:
 
         run: python -m cibuildwheel --output-dir wheelhouse
 
-
+      # Build wheels for Windows
+      - name: Build wheels for Windows
+        if: matrix.os == 'windows-latest'
+        env:
+          CIBW_BUILD: ${{ env.CIBW_BUILD }}
+          CIBW_SKIP: "cp27-* cp34-* cp35-* cp36-* cp37-* cp38-* pp* *-win32"
+        run: python -m cibuildwheel --output-dir wheelhouse
 
       - name: Install dependencies for source distribution
         run: |
