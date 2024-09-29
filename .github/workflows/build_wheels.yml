@@ -114,7 +114,7 @@ jobs:
           else
             echo "FFTW include files not found in /usr/include/"; exit 1;
           fi
-
+          export CFLAGS="-I/usr/include"
           python -m cibuildwheel --output-dir wheelhouse
 
       - name: Install dependencies on macOS
