@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-cmbagent
+class_sz
 ====================================
 
 .. image:: https://img.shields.io/github/stars/CLASS-SZ/class_sz?style=social
@@ -21,7 +21,7 @@ cmbagent
 Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, LSS and Halo Model Observables Computations
 
 .. note::
-   This software is under MIT license. We bear no responsibility for any misuse of this software or its outputs.
+   This software is being actively developed. We welcome contributions from the community.
 
 
 .. toctree::
