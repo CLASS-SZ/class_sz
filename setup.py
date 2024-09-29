@@ -22,19 +22,30 @@ def package_files(directory, exclude_dirs):
 exclude_dirs = ['class-sz/output', 'class-sz/test', 'class-sz/class_sz_auxiliary_files/excludes']
 pck_files = package_files('class-sz', exclude_dirs)
 
-# Get the GCC compiler path
-GCCPATH_STRING = sbp.Popen(['gcc', '-print-libgcc-file-name'], stdout=sbp.PIPE).communicate()[0]
-GCCPATH = os.path.normpath(os.path.dirname(GCCPATH_STRING)).decode()
+# Check for GCC on Windows (via MinGW or WSL)
+def get_gcc_path():
+    try:
+        gcc_output = sbp.check_output(['gcc', '-print-libgcc-file-name']).strip()
+        gcc_path = os.path.normpath(os.path.dirname(gcc_output))
+        return gcc_path.decode() if isinstance(gcc_path, bytes) else gcc_path
+    except Exception as e:
+        print(f"Error finding GCC: {e}")
+        return None
 
-# Determine libraries to link
+GCCPATH = get_gcc_path()
+
+# Libraries to link
 liblist = ["class"]
-MVEC_STRING = sbp.Popen(['gcc', '-lmvec'], stderr=sbp.PIPE).communicate()[1]
-if b"mvec" not in MVEC_STRING:
-    liblist += ["mvec", "m"]
+try:
+    MVEC_STRING = sbp.check_output(['gcc', '-lmvec'], stderr=sbp.PIPE)
+    if b"mvec" not in MVEC_STRING:
+        liblist += ["mvec", "m"]
+except Exception:
+    # GCC or mvec might not exist on Windows; handle it gracefully
+    liblist += ["m"]
 
 # Check the platform to determine the correct OpenMP library
 openmp_flag = '-lgomp' if sys.platform.startswith('linux') else '-lomp'
-
 
 # Define Cython extension
 classy_sz_ext = Extension(
@@ -42,7 +53,7 @@ classy_sz_ext = Extension(
     [os.path.join("class-sz/python", "classy.pyx")],
     include_dirs=[np.get_include(), os.path.join("class-sz", "include")],
     libraries=liblist,
-    library_dirs=["class-sz", GCCPATH],
+    library_dirs=["class-sz"] + ([GCCPATH] if GCCPATH else []),
     extra_link_args=[openmp_flag, '-lgsl', '-lfftw3', '-lgslcblas']
 )
 
@@ -52,18 +63,19 @@ classy_sz_ext.cython_directives = {'language_level': "3" if sys.version_info.maj
 class ClassyBuildExt(build_ext):
     def run(self):
         run_env = dict(CLASSDIR=path_install, **os.environ.copy())
-        # Print the current working directory for debugging purposes
         print("Current working directory:", os.getcwd())
 
-        # Change permissions on the select_makefile.sh script
-        print("Running chmod to make select_makefile.sh executable")
-        sbp.run(["chmod", "+x", "select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
+        # Skip chmod on Windows since it's unnecessary
+        if not sys.platform.startswith('win'):
+            print("Running chmod to make select_makefile.sh executable")
+            sbp.run(["chmod", "+x", "select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
 
         # Run the script to select the correct Makefile
         print("Running the script to select the correct Makefile")
         sbp.run(["./select_makefile.sh"], cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env, check=True)
 
-        print("Building the library") ## prints wont print unless -vvv is used
+        # Build the library
+        print("Building the library")
         result = sbp.run("make libclass.a -j", shell=True, cwd=os.path.join(os.getcwd(), "class-sz"), env=run_env)
         if result.returncode != 0:
             raise RuntimeError("Building libclass.a failed")
