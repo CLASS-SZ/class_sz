@@ -83,11 +83,12 @@ jobs:
       - name: Build wheels for Linux
         if: matrix.os == 'ubuntu-latest'
         env:
-          LDFLAGS: "-L/usr/lib/x86_64-linux-gnu"
-          CFLAGS: "-I/usr/include"
-          LIBRARY_PATH: "/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH"
-          C_INCLUDE_PATH: "/usr/include:$C_INCLUDE_PATH"
-          LD_LIBRARY_PATH: "/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"            
+          CIBW_ENVIRONMENT: |
+            LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
+            CFLAGS="-I/usr/include"
+            LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH"
+            C_INCLUDE_PATH="/usr/include:$C_INCLUDE_PATH"
+            LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"
         run: |
           # Check GSL library and include files
           if [ -f /usr/lib/x86_64-linux-gnu/libgsl.so ]; then
@@ -114,7 +115,7 @@ jobs:
           else
             echo "FFTW include files not found in /usr/include/"; exit 1;
           fi
-          export CFLAGS="-I/usr/include"
+          
           python -m cibuildwheel --output-dir wheelhouse
 
       - name: Install dependencies on macOS
