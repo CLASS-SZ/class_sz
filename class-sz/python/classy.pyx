@@ -268,7 +268,7 @@ cdef class Class:
 
     property PATH_TO_CLASS_SZ_DATA:
         def __get__(self):
-            return classy_szfast.path_to_cosmopower_organization
+            return classy_szfast.path_to_cosmopower_organization + '/class_sz/class-sz/'
 
 
 
@@ -311,7 +311,26 @@ cdef class Class:
             'ndim_masses': 500,
             'ndim_redshifts': 100,
 
-            'sBBB file': self.PATH_TO_CLASS_SZ_DATA + '/PRIMAT21_class_format.dat',
+            'sBBN file': self.PATH_TO_CLASS_SZ_DATA + '/bbn/PRIMAT21_class_format.dat',
+            
+            'A10_file': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_A10.txt',
+            'P13_file': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_P13.txt',
+            'Tinker_et_al_10_alpha_consistency_msyriac_file': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/Tinker_et_al_10_alpha_consistency_msyriac.txt',
+
+            'full_path_to_dndz_gal': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/WISC_bin3_ngal_example1.txt',
+            'full_path_and_prefix_to_dndz_ngal': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/WISC_bin3_ngal_example',
+            'full_path_to_source_dndz_gal': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/WISC_bin3.txt',    
+
+
+            'cib_Snu_file_snu': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/filtered_snu_planck_fine.txt',
+            'cib_Snu_file_z': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/filtered_snu_planck_z_fine.txt',
+            'cib_Snu_file_nu': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/filtered_snu_planck_nu_fine.txt',
+
+            'SZ_cat_file': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/SZ_cat.txt',
+            'sz_selection_function_thetas_file': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/SZ_thetas.txt',
+            'sz_selection_function_skyfracs_file': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/SZ_skyfracs.txt',
+            'sz_selection_function_ylims_file': self.PATH_TO_CLASS_SZ_DATA + '/class_sz_auxiliary_files/includes/SZ_ylims.txt',
+
             }
     ### note on ncdm:
     # N_ncdm : 3
@@ -339,7 +358,7 @@ cdef class Class:
         sprintf(self.fc.filename,"%s",dumc)
         self.ncp = set()
         if default: self.set_default()
-        print('PATH_TO_CLASS_SZ_DATA',classy_szfast.path_to_cosmopower_organization)
+        # print('PATH_TO_CLASS_SZ_DATA',classy_szfast.path_to_cosmopower_organization)
 
     def __dealloc__(self):
         if self.allocated:
