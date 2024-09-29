@@ -65,14 +65,16 @@ jobs:
         run: |
           rm -rf build dist *.egg-info class-sz/python/classy_sz.*so class-sz/python/classy_sz.*egg-info
 
+      - name: Install system dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y libgsl-dev libfftw3-dev
+
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.14.1
 
       # Build wheels for Linux (with custom build options)
       - name: Build wheels for Linux
         if: matrix.os == 'ubuntu-latest'
-        env:
-          CIBW_BEFORE_BUILD: "yum install -y libgsl-devel fftw-devel"
         run: python -m cibuildwheel --output-dir wheelhouse
 
       - name: Install dependencies on macOS
