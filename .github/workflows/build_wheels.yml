@@ -1,0 +1,203 @@
+name: Build  wheels
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:  # Ensure the workflow has permission to push changes
+  contents: write  # Allow write access for pushing to the repository
+
+jobs:
+  bump_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install bump2version
+        run: python -m pip install bump2version
+
+      - name: Bump version (patch)
+        run: |
+          bump2version patch --current-version $(grep -Eo 'version="[^"]*' setup.py | cut -d'"' -f2) setup.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and push version bump
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git commit -am "Bump version"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+  build_wheels:
+    runs-on: ${{ matrix.os }}
+    needs: bump_version
+    strategy:
+      matrix:
+        os: [macos-latest]
+        python-version: ["3.9"]
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Clean up previous builds (if any)
+        run: |
+          rm -rf build dist *.egg-info class-sz/python/classy_sz.*so class-sz/python/classy_sz.*egg-info
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.14.1
+
+      # Build wheels for Linux (with custom build options)
+      - name: Build wheels for Linux
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          CIBW_BEFORE_BUILD: "yum install -y gsl-devel fftw-devel"
+          CIBW_ARCHS: aarch64
+          CIBW_BUILD: cp39-manylinux_aarch64
+        run: python -m cibuildwheel --output-dir wheelhouse
+
+      - name: Install dependencies on macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install gsl fftw libomp
+          chmod +x select_makefile.sh
+          ./select_makefile.sh
+          make clean
+
+            # Check that omp.h is available in the include directory
+          if [ -f /opt/homebrew/opt/libomp/include/omp.h ]; then
+            echo "omp.h found"
+          else
+            echo "omp.h not found" && exit 1
+          fi
+
+            # Check that gsl_integration.h and fftw3.h are available
+          if [ -f /opt/homebrew/opt/gsl/include/gsl/gsl_integration.h ]; then
+            echo "gsl_integration.h found"
+          else
+            echo "gsl_integration.h not found" && exit 1
+          fi
+          
+          if [ -f /opt/homebrew/opt/fftw/include/fftw3.h ]; then
+            echo "fftw3.h found"
+          else
+            echo "fftw3.h not found" && exit 1
+          fi
+
+
+          export LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$LIBRARY_PATH
+          export C_INCLUDE_PATH=/opt/homebrew/opt/libomp/include:$C_INCLUDE_PATH
+          export DYLD_LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$DYLD_LIBRARY_PATH # (Mac M1 users only)
+        working-directory: class-sz
+          
+      # Build wheels for macOS (with Apple Silicon support)
+      - name: Build wheels for macOS
+        if: matrix.os == 'macos-latest'
+        env:
+          CIBW_BUILD: "cp39-macosx_arm64"  # Restrict to cp39-macosx_arm64
+          CIBW_ARCHS: "arm64"
+          LDFLAGS: "-L/opt/homebrew/opt/libomp/lib -L/opt/homebrew/opt/gsl/lib -L/opt/homebrew/opt/fftw/lib"
+          CPPFLAGS: "-I/opt/homebrew/opt/libomp/include -I/opt/homebrew/opt/gsl/include -I/opt/homebrew/opt/fftw/include"
+          LIBRARY_PATH: "/opt/homebrew/opt/libomp/lib:/opt/homebrew/opt/gsl/lib:/opt/homebrew/opt/fftw/lib:$LIBRARY_PATH"
+          C_INCLUDE_PATH: "/opt/homebrew/opt/libomp/include:/opt/homebrew/opt/gsl/include:/opt/homebrew/opt/fftw/include:$C_INCLUDE_PATH"
+          DYLD_LIBRARY_PATH: "/opt/homebrew/opt/libomp/lib:/opt/homebrew/opt/gsl/lib:/opt/homebrew/opt/fftw/lib:$DYLD_LIBRARY_PATH"
+
+        run: python -m cibuildwheel --output-dir wheelhouse
+
+
+
+      - name: Install dependencies for source distribution
+        run: |
+          python -m pip install build Cython numpy classy_szfast
+
+      - name: Build source distribution (sdist)
+        run: python -m build --sdist --outdir dist
+
+      - name: Upload built distributions (wheels and sdist)
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
+          path: |
+            wheelhouse/*.whl
+            dist/*.tar.gz
+
+      - name: Install the built wheel
+        run: |
+          python -m pip install wheelhouse/*.whl
+
+      - name: Check import of classy_sz
+        run: |
+          python -c "import classy_sz; print('classy_sz imported successfully')"
+
+
+  publish_wheels:
+    runs-on: ubuntu-latest
+    needs: build_wheels
+    strategy:
+      matrix:
+        os: [macos-latest]
+        python-version: ["3.9"]
+        
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Download built wheels and sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
+          path: wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
+
+
+      - name: Install dependencies for uploading
+        run: python -m pip install -U pip twine
+
+      - name: Upload distributions to PyPI
+        run: |
+          ls
+          ls -R wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
+          mkdir -p wheelhouse dist
+          if [ -d "wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}/wheelhouse" ]; then
+            mv wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}/wheelhouse/* wheelhouse/
+          fi
+          if [ -d "wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}/dist" ]; then
+            mv wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}/dist/* dist/
+          fi
+      
+          if [ "$(ls -A wheelhouse)" ]; then
+            echo "Uploading wheels..."
+            twine upload wheelhouse/*
+          else
+            echo "No wheels to upload."
+          fi
+      
+          if [ "$(ls -A dist)" ]; then
+            echo "Uploading source distribution..."
+            twine upload dist/*
+          else
+            echo "No source distribution to upload."
+          fi
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
