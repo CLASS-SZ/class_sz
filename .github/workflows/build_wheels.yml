@@ -352,14 +352,14 @@ jobs:
       
           if [ "$(ls -A wheelhouse)" ]; then
             echo "Uploading wheels..."
-            twine upload wheelhouse/*
+            twine upload wheelhouse/* || echo "WARNING: Failed to upload wheels, probably because they already exist. Continuing the job..."
           else
             echo "No wheels to upload."
           fi
 
           if [ -d "dist" ] && [ "$(ls -A dist)" ]; then
             echo "Uploading source distribution to PyPI..."
-            twine upload dist/*.tar.gz || echo "Source distribution upload failed, probably cause it's already there continuing..."
+            twine upload dist/*.tar.gz ||  || echo "Source distribution upload failed, probably cause it's already there continuing..."
           else
             echo "No source distribution to upload."
           fi
