@@ -26,9 +26,26 @@ jobs:
       - name: Install bump2version
         run: python -m pip install bump2version
 
-      - name: Bump version (patch)
+      - name: Bump version with post increment
         run: |
-          bump2version patch --current-version $(grep -Eo 'version="[^"]*' setup.py | cut -d'"' -f2) setup.py
+          # Extract current version
+          current_version=$(grep -Eo 'version="[^"]*' setup.py | cut -d'"' -f2)
+
+          # Check if it has a post-release (e.g., .post1)
+          if [[ "$current_version" == *".post"* ]]; then
+            # Increment post-release number
+            base_version=$(echo $current_version | sed 's/\.post[0-9]*//')
+            post_number=$(echo $current_version | grep -Eo 'post[0-9]+' | grep -Eo '[0-9]+')
+            new_post_number=$((post_number + 1))
+            new_version="${base_version}.post${new_post_number}"
+          else
+            # First post release if there's no post number yet
+            new_version="${current_version}.post1"
+          fi
+
+          # Bump version using bump2version
+          bump2version --new-version $new_version setup.py
+          
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -36,10 +53,11 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git commit -am "Bump version"
+          git commit -am "Bump version to $new_version"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
           
   build_wheels:
     runs-on: ${{ matrix.os }}
