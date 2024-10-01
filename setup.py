@@ -164,7 +164,7 @@ print(pck_files)
 setup(
     name='classy_sz',
     version="0.1.70",
-    author="Boris Bolliet, Ola Kusiak",
+    author="Boris Bolliet, Ola Kusiak, Fiona McCarthy, Alina Sabyr, Kristen Surrao",
     author_email="bb667@cam.ac.uk, akk2175@columbia.edu",
     description='CLASS-SZ in Python',
     long_description="See ('https://github.com/CLASS-SZ').",
