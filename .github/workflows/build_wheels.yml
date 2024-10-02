@@ -23,14 +23,12 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install bump2version
-        run: python -m pip install bump2version
-
       - name: Bump version with post increment
         run: |
           # Extract current version
           current_version=$(grep -Eo 'version="[^"]*' setup.py | cut -d'"' -f2)
-
+          echo "Current version: $current_version"
+          
           # Check if it has a post-release (e.g., .post1)
           if [[ "$current_version" == *".post"* ]]; then
             # Increment post-release number
@@ -42,9 +40,13 @@ jobs:
             # First post release if there's no post number yet
             new_version="${current_version}.post1"
           fi
-
-          # Bump version using bump2version
-          bump2version --new-version $new_version setup.py
+          
+          echo "New version: $new_version"
+          
+          # Use bump2version with --current-version flag
+          # bump2version --current-version "$current_version" --new-version "$new_version" patch setup.py
+          # Update version in setup.py using sed
+          sed -i '' "s/version=\"$current_version\"/version=\"$new_version\"/" setup.py
           
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
