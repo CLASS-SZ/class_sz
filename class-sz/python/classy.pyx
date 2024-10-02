@@ -268,7 +268,7 @@ cdef class Class:
 
     property PATH_TO_CLASS_SZ_DATA:
         def __get__(self):
-            return classy_szfast.path_to_cosmopower_organization + '/class_sz/class-sz/'
+            return classy_szfast.path_to_class_sz_data + '/class_sz/class-sz/'
 
 
 
@@ -358,7 +358,7 @@ cdef class Class:
         sprintf(self.fc.filename,"%s",dumc)
         self.ncp = set()
         if default: self.set_default()
-        # print('PATH_TO_CLASS_SZ_DATA',classy_szfast.path_to_cosmopower_organization)
+
 
     def __dealloc__(self):
         if self.allocated:
