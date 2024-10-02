@@ -42,6 +42,8 @@ jobs:
           fi
           
           echo "New version: $new_version"
+
+          ls -alh
           
           # Use bump2version with --current-version flag
           # bump2version --current-version "$current_version" --new-version "$new_version" patch setup.py
