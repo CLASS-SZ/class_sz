@@ -48,7 +48,8 @@ jobs:
           # Use bump2version with --current-version flag
           # bump2version --current-version "$current_version" --new-version "$new_version" patch setup.py
           # Update version in setup.py using sed
-          sed -i '' "s/version=\"$current_version\"/version=\"$new_version\"/" setup.py
+          # sed -i '' "s/version=\"$current_version\"/version=\"$new_version\"/" setup.py
+          sed -i "s|version=\"[^\"]*\"|version=\"$new_version\"|" setup.py
           
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
