@@ -303,3 +303,4 @@ build
 class-sz/test/test_b12.ini
 
 docs/_*
+test_ver.sh
