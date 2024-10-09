@@ -335,7 +335,6 @@ jobs:
           fi
         shell: bash
 
-
   publish_wheels:
     runs-on: ubuntu-latest
     needs: build_wheels
@@ -343,20 +342,20 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-  
+    
     steps:
       - name: Checkout the code
         uses: actions/checkout@v4
-  
+    
       - name: Download built wheels and sdist
         uses: actions/download-artifact@v4
         with:
           name: wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
           path: wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
-  
+    
       - name: Install dependencies for uploading
         run: python -m pip install -U pip twine
-  
+    
       - name: Upload distributions to PyPI
         run: |
           ls
@@ -368,11 +367,11 @@ jobs:
           if [ -d "wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}/dist" ]; then
             mv wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}/dist/* dist/
           fi
-  
+    
           upload_files_in_dir() {
             local dir=$1
             local filetype=$2  # This could be "wheelhouse" or "dist"
-  
+    
             if [ -d "$dir" ] && [ "$(ls -A $dir)" ]; then
               echo "Uploading files in $dir..."
               for file in "$dir"/*; do
@@ -387,13 +386,13 @@ jobs:
               echo "No $filetype files to upload."
             fi
           }
-  
+    
           # Upload wheel files
           upload_files_in_dir wheelhouse "wheel"
-  
+    
           # Upload source distribution files
           upload_files_in_dir dist "source distribution"
-  
+    
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
