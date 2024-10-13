@@ -5,6 +5,7 @@ class-sz/class_sz
 *.prof
 class-sz/libclass.a
 *out
+ini_tests/
 class-sz/python/classy.c
 class-sz/python/classy_szfast/classy_szfast/.ipynb*
 class-sz/python/classy_szfast/classy_szfast/__pycache__
