@@ -277,17 +277,18 @@ cdef class Class:
         # print('setting default')
         _pars = {
             "output":"tCl",
-            'skip_input': 1,
-            'skip_background_and_thermo': 1,
-            'skip_pknl': 1,
-            'skip_pkl': 1,
-            'skip_chi': 1,
-            'skip_hubble': 1,
-            'skip_class_sz': 1,
+            'skip_input': 1, # just use input params and emulate
+            'skip_background_and_thermo': 1, # skip background and thermo solving
+            'skip_pknl': 1, # do not emulate pk_nl
+            'skip_pkl': 1, # do not emulate pk_l
+            'skip_chi': 1, # do not emulate chi
+            'skip_hubble': 1, # do not emulate hubble
+            'skip_class_sz': 1, # do not compute class_sz LSS (i.e., just cls)
             'skip_sigma8_at_z': 1,
-            'skip_sigma8_and_der':0,
+            'skip_sigma8_and_der':0, # emulate derived parameters
             'skip_cmb': 0,
             'cosmo_model': 6, # set ede-v2 emulators as default
+            ### TBD adjust default neutrino settings to avoid inconsistency. 11 oct 2024. 
 
             # cosmo_model_list = [
             #     'lcdm',
@@ -301,13 +302,17 @@ cdef class Class:
             #    
             # here we set the default values for these emulator parameters. 
             # they can be overwritten by the user. 
-            'N_ur': 0.00441,
-            'N_ncdm': 1,
-            'deg_ncdm': 3,
-            'm_ncdm': 0.02,
+            # 'N_ur': 0.00441, # this is the default value in class v3 to get Neff = 3.044
+            #  'N_ncdm': 1,
+            # 'deg_ncdm': 3,
+            # 'm_ncdm': 0.02,
+
+            # note that other emulators have different default values
+            # see classy_szfast/cosmopower.py
+
+
             'classy_sz_verbose': 'none',
-            'omega_b': 0.022383,
-            'n_s': 0.9665,
+
             'ndim_masses': 500,
             'ndim_redshifts': 100,
 
@@ -383,8 +388,77 @@ cdef class Class:
         if viewdictitems(self._pars) <= viewdictitems(oldpars):
           return # Don't change the computed states, if the new dict was already contained in the previous dict
         self.computed=False
-        set_verbosity(self._pars["classy_sz_verbose"])
+        try:
+            set_verbosity(self._pars["classy_sz_verbose"])
+        except:
+            pass
         self.logger = logging.getLogger(__name__)
+
+        
+        if len(pars)==1:
+            # import pprint
+            # print('_pars:')
+            # pprint.pprint(dict(pars[0]))
+                # sys.exit(0)
+            ## ensure consistency when passing cosmo_model parameter
+            pars = dict(pars[0])
+            if 'cosmo_model' in pars:
+                self._pars['T_ncdm'] = 0.71611 # this is the default value in class 
+                if pars['cosmo_model'] == 5:
+                    #print('cosmo_model is set to mnu-3states')
+                    self._pars['N_ur'] = 0.00641 # this is the default value in class v2 to get Neff = 3.046
+                    self._pars['N_ncdm'] = 1
+                    self._pars['deg_ncdm'] = 3
+                    self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
+                    if 'm_ncdm' in pars:
+                        self._pars['m_ncdm'] = pars['m_ncdm']
+                    else:
+                        self._pars['m_ncdm'] = 0.02
+                elif pars['cosmo_model'] == 6:
+                    #print('cosmo_model is set to ede-v2')
+                    self._pars['N_ur'] = 0.00441 # this is the default value in class v3 to get Neff = 3.044
+                    self._pars['N_ncdm'] = 1
+                    self._pars['deg_ncdm'] = 3
+                    if 'm_ncdm' in pars:
+                        self._pars['m_ncdm'] = pars['m_ncdm']
+                    else:
+                        self._pars['m_ncdm'] = 0.02
+                    self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/PRIMAT21_class_format.dat'
+                elif pars['cosmo_model'] == 1:
+                    #print('cosmo_model is set to mnu')
+                    self._pars['N_ur'] = 2.0328  # this is the default value in class v2 to get Neff = 3.046
+                    self._pars['N_ncdm'] = 1
+                    self._pars['deg_ncdm'] = 1
+                    if 'm_ncdm' in pars:
+                        self._pars['m_ncdm'] = pars['m_ncdm']
+                    else:
+                        self._pars['m_ncdm'] = 0.06
+                    self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
+                elif pars['cosmo_model'] == 2:
+                    #print('cosmo_model is set to neff')
+                    # self._pars['N_ur'] = 2.0328  # this is the default value in class v2 to get Neff = 3.046
+                    self._pars['N_ncdm'] = 1
+                    self._pars['deg_ncdm'] = 1
+                    self._pars['m_ncdm'] = 0.06
+                    if 'N_ur' in pars:
+                        self._pars['N_ur'] = pars['N_ur']
+                    else:
+                        self._pars['N_ur'] = 2.0328 
+                    self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
+                else:
+                    self._pars['N_ur'] =  2.0328 # this is the default value in class v2 to get Neff = 3.046
+                    self._pars['N_ncdm'] = 1
+                    self._pars['deg_ncdm'] = 1
+                    self._pars['m_ncdm'] = 0.06
+                    self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
+
+                # sys.exit()
+
+        #print('final _pars:')
+        #pprint.pprint(self._pars)
+        # print('pars:')
+        # pprint(pars)
+
         return True
 
     def empty(self):
@@ -725,8 +799,8 @@ cdef class Class:
     # @cython.wraparound(False)
     # the likelihood_mode parameter is used to identify whether we run within cobaya
     def compute_class_szfast(self,likelihood_mode=False):
-        
 
+        
         ## deal with names 
         if 'sigma_8' in self._pars:
 
@@ -791,8 +865,6 @@ cdef class Class:
         if 'Omega_m' in self._pars:
 
           self._pars['omega_cdm'] = (self._pars.pop('Omega_m')-self._pars['omega_b']*(self._pars['H0']/100.)**-2.)*(self._pars['H0']/100.)**2.
-
-
 
         if "pressure_profile" in self._pars: 
 
@@ -900,6 +972,14 @@ cdef class Class:
             params_settings['H0'] = 100.*self.h()
 
             del params_settings['age'] 
+
+
+        
+
+        #print('--------> input parameters just before calculations:')
+        # import pprint
+        # pprint.pprint(params_settings)
+        # exit(0)
 
 
         cszfast = Class_szfast(params_settings=params_settings)
