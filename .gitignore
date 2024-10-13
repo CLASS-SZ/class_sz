@@ -305,3 +305,4 @@ class-sz/test/test_b12.ini
 
 docs/_*
 test_ver.sh
+class-sz/test/__pycache__/test_classy_sz_clyy_b12.cpython-39-pytest-7.2.0.pyc
