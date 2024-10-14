@@ -335,6 +335,15 @@ jobs:
           fi
         shell: bash
 
+      # - name: Run pytests if classy_sz is installed
+      #   run: |
+      #     if grep -q "SUCCESS" wheel_install_status.txt; then
+      #       pytest --maxfail=1 --disable-warnings
+      #     else
+      #       echo "Skipping pytest due to previous wheel installation failure.";
+      #     fi
+      #   shell: bash
+
   publish_wheels:
     runs-on: ubuntu-latest
     needs: build_wheels
