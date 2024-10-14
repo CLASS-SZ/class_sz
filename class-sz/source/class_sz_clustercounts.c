@@ -1313,14 +1313,25 @@ product_out = fftw_alloc_complex(2*N);
     double m = exp(lnm);
     double dNdlnm = get_dndlnM_at_z_and_M(z,m,pclass_sz);
 
-    // if (i % 100 == 0)
+    // if (i  == 0 && fabs(m-3.e14)<1 && fabs(z-0.5)<0.1)
     //  printf("thread %d z = %.5e lnq = %.5e m = %.5e dNdlnm = %.5e\n",id,z,x,m,dNdlnm);
+if (pclass_sz->sz_verbose == 1){
+if (fabs(m - 3.e14) < 0.01e14 && fabs(z - 0.5) < 0.01) {
+    printf("thread %d z = %.5e lnq = %.5e m = %.5e dNdlnm = %.5e\n", id, z, x, m, dNdlnm);
+}
+}
+
 if (pclass_sz->use_skyaveraged_noise){
     // printf("using sky averaged sigma.\n");
     dNdlnm *= get_volume_at_z(z,pba)*4.*M_PI*pclass_sz->fsky_from_skyfracs;
   }
 else{
     dNdlnm *= get_volume_at_z(z,pba)*4.*M_PI*pclass_sz->skyfracs[index_patchesloop];
+   if (pclass_sz->sz_verbose == 1){
+    if (fabs(m - 3.e14) < 0.01e14 && fabs(z - 0.5) < 0.01) {
+      printf("volume = %.5e\n",get_volume_at_z(z,pba));
+    }
+  }
 }
 
     // compute derivative dlnmdlnq
@@ -1421,7 +1432,7 @@ fftw_free(product_out);
 } // end patches loop
 #ifdef _OPENMP
 tstop = omp_get_wtime();
-if (pclass_sz->sz_verbose > 0)
+if (pclass_sz->sz_verbose > 1)
 printf("In %s: time spent in parallel region (loop over cluster counts final ffts) = %e s for thread %d\n",
          __func__,tstop-tstart,omp_get_thread_num());
 
@@ -1618,7 +1629,7 @@ for(i = 0; i < N; i++) {
   }
   // fclose(fp);
 
-if (pclass_sz->sz_verbose>=1)
+if (pclass_sz->sz_verbose>=2)
   printf("second convolution done for z = %.5e.\n",z);
 
      }// end zloop

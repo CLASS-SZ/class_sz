@@ -112,17 +112,17 @@ cl_yy_2h_A10 = np.asarray(classy_sz_A10.cl_sz()['2h'])
 
 def test_classy_sz_clyy_a10_1h():
     assert cl_yy_1h_A10.sum() == pytest.approx(33.73, rel=1e-2), f"Sum of '1h' values is {cl_yy_1h_A10.sum()}, expected close to 33.73"
-    print(f"Test passed: sum is {cl_yy_1h_A10.sum()}, close to 33.73")
+    print(f"Test passed for a10 tabulated 1h: sum is {cl_yy_1h_A10.sum()}, close to 33.73")
 
 
 def test_classy_sz_clyy_a10_2h():
     assert cl_yy_2h_A10.sum() == pytest.approx(0.550, rel=1e-2), f"Sum of '2h' values is {cl_yy_2h_A10.sum()}, expected close to 0.55"
-    print(f"Test passed: sum is {cl_yy_2h_A10.sum()}, close to 0.55")
+    print(f"Test passed for a10 tabulated 2h: sum is {cl_yy_2h_A10.sum()}, close to 0.55")
 
 def test_classy_sz_clyy_a10_ffts_1h():
     assert cl_yy_1h.sum() == pytest.approx(35.32, rel=1e-2), f"Sum of '1h' values is {cl_yy_1h.sum()}, expected close to 35.32"
-    print(f"Test passed: sum is {cl_yy_1h.sum()}, close to 35.32")
+    print(f"Test passed for a10 ffts 1h: sum is {cl_yy_1h.sum()}, close to 35.32")
 
 def test_classy_sz_clyy_a10_ffts_2h():
     assert cl_yy_2h.sum() == pytest.approx(0.559, rel=1e-2), f"Sum of '2h' values is {cl_yy_2h.sum()}, expected close to 0.559"
-    print(f"Test passed: sum is {cl_yy_2h.sum()}, close to 0.559")
+    print(f"Test passed for a10 ffts 2h: sum is {cl_yy_2h.sum()}, close to 0.559")

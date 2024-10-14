@@ -20285,7 +20285,7 @@ for (index_thetas = 0; index_thetas<pclass_sz->nthetas; index_thetas ++){
   {
     pclass_sz->sky_averaged_ylims[index_thetas] += pclass_sz->skyfracs[index_patches]*pclass_sz->ylims[index_patches][index_thetas]/sum_skyfracs;
   }
-  if (pclass_sz->sz_verbose >= 1){
+  if (pclass_sz->sz_verbose >= 2){
 printf("sky_ave idtheta = %d sigmac = %.5e\n",index_thetas,pclass_sz->sky_averaged_ylims[index_thetas]);
   }
 }

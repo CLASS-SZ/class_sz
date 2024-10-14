@@ -1104,6 +1104,8 @@ cdef class Class:
             for index_z in range(self.tsz.ndim_redshifts):
 
                 ln1pzc = cszfast.cszfast_pk_grid_ln1pz[index_z]
+                # if index_z == 100:
+                #   print(">>> filling sig/pk array at z = %.3e"%(np.exp(ln1pzc)-1.))
                 
                 self.tsz.array_redshift[index_z] = ln1pzc
 
@@ -1118,7 +1120,13 @@ cdef class Class:
                     self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
                     self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
                     self.tsz.array_pkl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pkl_flat[index_z_r]
-
+                    
+                    #  if index_z == 100 and index_r == 100:
+                    #    print(">>> filling sig/pk array at z = %.3e"%(np.exp(ln1pzc)-1.))
+                    #    print(">>> array_sigma_at_z_and_R:",self.tsz.array_sigma_at_z_and_R[index_z_r])
+                    #    print(">>> array_dsigma2dR_at_z_and_R:",self.tsz.array_dsigma2dR_at_z_and_R[index_z_r])
+                    #    print(">>> array_pknl_at_z_and_k:",self.tsz.array_pknl_at_z_and_k[index_z_r])
+                    #    print(">>> array_pkl_at_z_and_k:",self.tsz.array_pkl_at_z_and_k[index_z_r])
                     index_z_r += 1
 
 
