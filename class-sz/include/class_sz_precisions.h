@@ -98,6 +98,7 @@ class_sz_pclass_sz_parameter(tol_dlnm_dlnq,double,0.5)
 class_sz_pclass_sz_parameter(ntab_dlnm_dlnq,int,250)
 
 class_sz_pclass_sz_parameter(use_skyaveraged_noise,int,0)
+class_sz_pclass_sz_parameter(use_edge_noise_values,int,0)
 class_sz_pclass_sz_parameter(szcounts_fft_nqobs,int,50)
 class_sz_pclass_sz_parameter(szcounts_fft_nexpected_qobs_n,int,50)
 class_sz_pclass_sz_parameter(szcounts_fft_nexpected_qobs_min,double,5.)

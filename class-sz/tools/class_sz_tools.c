@@ -29250,6 +29250,9 @@ if (pclass_sz->use_skyaveraged_noise == 0){
         double y1 = pclass_sz->ylims[index_patches][l1];
         double y2 = pclass_sz->ylims[index_patches][l2];
         y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
+        if (pclass_sz->use_edge_noise_values == 1){
+           y = y1;
+           }
         }
     else if (theta > pclass_sz->thetas[pclass_sz->nthetas-1]){
         int l1 = pclass_sz->nthetas - 1;
@@ -29259,6 +29262,9 @@ if (pclass_sz->use_skyaveraged_noise == 0){
         double y1 = pclass_sz->ylims[index_patches][l1];
         double y2 = pclass_sz->ylims[index_patches][l2];
         y = y1 + (y2-y1)/(th2-th1)*(theta-th1);
+        if (pclass_sz->use_edge_noise_values == 1){
+           y = y2;
+           }
         }
 
     else{
