@@ -1216,12 +1216,22 @@ for (itab = 0;itab<ntab;itab++){
     }
 
     double sigtab = get_szcountsz_sigma_at_theta_in_patch(thetatab,idpatch,pclass_sz);
+
+
     // if (log(sigtab)>10)
     //   lnq_tab[itab] = -100.;
     // else
+    // // opt bias correction
+    // double q = ytab/sigtab;
+    // double corr = 1. + pclass_sz->A_opt_bias_ym/q + pclass_sz->B_opt_bias_ym/pow(q,2.);
+    // ytab *= corr;
+    // if (q < 2.0) corr = 1.0;
 
-    // lnq_tab[itab] = log(sqrt(ytab/sigtab*ytab/sigtab+pclass_sz->szcc_dof));
     lnq_tab[itab] = log(ytab/sigtab);
+    // lnq_tab[itab] = log(sqrt(ytab/sigtab*ytab/sigtab+pclass_sz->szcc_dof));
+    // lnq_tab[itab] = log(ytab/sigtab);
+
+
 
     if (isinf(lnq_tab[itab])||isnan(lnq_tab[itab])){
       printf("lnq_tab[itab] = %.5e ytab =%.5e sigtab = %.5e\n",lnq_tab[itab],ytab,sigtab);
@@ -1405,9 +1415,16 @@ for (i = 0; i < 2*N; i++){
       // if (pclass_sz->sz_verbose>=1)
       //   printf("fft nexpected thread %d i = %d r = %.5e\n",id,i,product_out[i][0]);
       }
-  int shift = (int) (N/2);
-  shiftArray(result_qmconv, 2*N, shift);
+    int shift = (int) (N/2);
+    shiftArray(result_qmconv, 2*N, shift);
 
+
+
+    // opt bias correction
+    double q = exp(result_qmconv[i]);
+    double corr = 1. + pclass_sz->A_opt_bias_ym/q + pclass_sz->B_opt_bias_ym/pow(q,2.);
+    if (q < 2.0) corr = 1.0;
+    result_qmconv[i] = log(q*corr);
 
   // FILE *fp;
   // char Filepath[_ARGUMENT_LENGTH_MAX_];
@@ -2049,7 +2066,7 @@ if (pcsz->has_completeness == 1){
           // double y = y1 + (y2-y1)/(th2-th1)*(thp-th1);
 
 
-          double y_interp = get_szcountsz_sigma_at_theta_in_patch(thp,index_patches,pclass_sz);;
+          double y_interp = get_szcountsz_sigma_at_theta_in_patch(thp,index_patches,pclass_sz);
           // if((index_m == 235)&& (index_z == 5) && (index_patches == 49)){
           //   printf("y_interp = %.5e thp = %.9e\n",y_interp, thp);
           //   exit(0);
@@ -2200,16 +2217,17 @@ else{
       for (index1=0;index1<pclass_sz->Ny;index1++)
       {
         double y0=exp(pclass_sz->erfs_2d_to_1d_y_array[index1]);
+
         for (index_patches=0;index_patches<npatches;index_patches++){
           //fsky += pclass_sz->skyfracs[index_patches];
 
-          double y1;
-          if (pclass_sz->use_skyaveraged_noise == 0){
-            y1 = pclass_sz->ylims[index_patches][index2];
-          }
-          else{
-            y1 =  pclass_sz->sky_averaged_ylims[index2];
-          }
+                double y1;
+                if (pclass_sz->use_skyaveraged_noise == 0){
+                  y1 = pclass_sz->ylims[index_patches][index2];
+                }
+                else{
+                  y1 =  pclass_sz->sky_averaged_ylims[index2];
+                }
 
 
           // double y1 = get_ylim_of_theta(th1,pclass_sz->ylims[index_patches][index2];
@@ -2221,6 +2239,13 @@ else{
           // double q_max=log10(y_max);
 
           double c2;
+
+
+          // //opt bias correction
+          // double q = y0/y1;
+          // double corr = 1. + pclass_sz->A_opt_bias_ym/q + pclass_sz->B_opt_bias_ym/q**2;
+          // if (q < 2.0) corr = 1.0;
+          // y0 *= corr;
 
           if (pclass_sz->use_planck_binned_proba == 1){
               if (y0/y1<pclass_sz->szcc_qtrunc){
@@ -2325,6 +2350,8 @@ else{
         double mu = log(yp);
         double int_comp =1.e-300;
 
+        //double y_interp = get_szcountsz_sigma_at_theta_in_patch(thp,index_patches,pclass_sz);
+
         // double mu_high = mu + 5.*(sqrt(2.)*pclass_sz->sigmaM_ym);
         // int l1y_high, l2y_high;
         // int l1y_low, l2y_low;
@@ -2414,7 +2441,7 @@ else{
           // if (py*dy<0)
           // printf("k = %d int_comp15 = %.5e py = %.5e dy = %.5e win0 = %.5e win = %.5e th1 = %.5e th2 = %.5e thp = %.5e\n",k,int_comp,py,dy,win0,win,th1,th2,thp);
           //
-          }
+          } // end loop over lny
         // }
 //
 // // printf("int_compe = %.3e\n",int_comp);
@@ -2455,7 +2482,7 @@ else{
               if (isnan(int_comp)) printf("comp=nan.\n");
             }
         int_comp=1.e-300;
-}
+        }
 
         completeness_2d[index_m][index_z] = int_comp;
         completeness_2d_to_1d[index_m_z] = log(int_comp);

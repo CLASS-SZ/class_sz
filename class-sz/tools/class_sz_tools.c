@@ -29852,7 +29852,7 @@ if (pclass_sz->y_m_relation == 1){
           f_rel = 1. + 3.79*t -28.2*t*t;
         }
 
-        double h70 = pba->h/0.70;
+        double h70 = 1.;//pba->h/0.70;
 
         yp = A*pow(Eh,2.)*pow(mp_bias/(pclass_sz->m_pivot_ym*pba->h)*h70,1.+B)*f_rel;
 
@@ -29864,6 +29864,7 @@ if (pclass_sz->y_m_relation == 1){
         // double M200m_ws = mp_bias/pba->h;
         // yp = 1e-4*exp(a*exp(-pow(log(M200m_ws/3e14/e),2.))
         // +(b*(log(M200m_ws))+c)*(1.-exp(-pow(log(M200m_ws/3e14/d),2.))));
+        // """Return optimization bias correction factor - multiply true y0 by this to get what the cluster finder recovers """
 
 
 
