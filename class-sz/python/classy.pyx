@@ -4229,6 +4229,31 @@ cdef class Class:
         return delta
 
     def get_r_delta_of_m_delta_at_z(self,delta,m_delta,z):
+        """
+        Get the radius corresponding to a given overdensity delta for a halo of mass m_delta at redshift z.
+
+        To get the radius for the mean density definition, use delta = <number>*class_sz.Om_m(z)
+
+        Parameters
+        ----------
+        delta : float
+            The overdensity with respect to the critical density.
+        m_delta : float
+            The mass of the halo within the radius r_delta.
+        z : float
+            The redshift.
+
+        Returns
+        -------
+        float
+            The radius r_delta in units consistent with the input mass (typically Mpc/h).
+
+        Notes
+        -----
+        This function uses the critical density at the given redshift to calculate the radius.
+        The formula used is: r_delta = (3 * m_delta / (4 * pi * delta * rho_crit(z)))^(1/3)
+
+        """
         return (m_delta*3./4./np.pi/delta/self.get_rho_crit_at_z(z))**(1./3.)
 
     def get_m200m_to_m200c_at_z_and_M(self,z_asked,m_asked):
@@ -4259,7 +4284,7 @@ cdef class Class:
         return get_c200c_at_m_and_z_B13(M,z,&self.ba,&self.tsz)
 
     def get_f_b(self):
-        return self.ba.Omega0_b/self.tsz.Omega_m_0
+        return self.ba.Omega0_b/self.get_Omega_m_0()
 
     def get_f_free(self):
         return self.tsz.f_free
@@ -4268,9 +4293,14 @@ cdef class Class:
         return self.tsz.mu_e
 
     def get_Omega_m_0(self):
-        return self.tsz.Omega_m_0
+        return self.Omega_m()
+
+
     def get_Omega_r_0(self):
-        return self.tsz.Omega_r_0
+        if self.tsz.skip_class_sz == 0:
+            return self.tsz.Omega_r_0
+        else:
+            return self.ba.Omega0_r
 
     def get_m_nfw(self,x):
         return m_nfw(x)
