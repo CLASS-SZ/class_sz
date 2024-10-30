@@ -97,6 +97,7 @@ class_sz_pclass_sz_parameter(szcounts_lnqmax_fft,double,5.)
 class_sz_pclass_sz_parameter(tol_dlnm_dlnq,double,0.5)
 class_sz_pclass_sz_parameter(ntab_dlnm_dlnq,int,250)
 
+// optimization bias correction for cluster counts
 class_sz_pclass_sz_parameter(A_opt_bias_ym,double,0.)
 class_sz_pclass_sz_parameter(B_opt_bias_ym,double,0.)
 

@@ -1175,7 +1175,8 @@ double dlnm_tab = (lnm_tab_mmax-lnm_tab_mmin)/(ntab-1.);
   // sprintf(Filepath,"%s%s%d%s",pclass_sz->root,"test_lnq_lnm_iz_",index_zloop,".txt");
   // fp=fopen(Filepath, "w");
 
-for (itab = 0;itab<ntab;itab++){
+for (itab = 0;itab<ntab;itab++){ // loop over the tabulated m values
+
     lnm_tab[itab] = lnm_tab_mmin+itab*dlnm_tab;
     double mtab = exp(lnm_tab[itab]);
 
@@ -1209,6 +1210,7 @@ for (itab = 0;itab<ntab;itab++){
 
     double ytab = get_y_at_m_and_z(m_ym,z,pclass_sz,pba);
     double thetatab = get_theta_at_m_and_z(m500c,z,pclass_sz,pba);
+
     if (pclass_sz->experiment == 1){
       double m_pivot = pclass_sz->m_pivot_ym*pba->h;// 1. convert to msun/h //not that it used to be *0.7 as in hasselfield paper.
       double m_over_m_pivot_500c = m500c/m_pivot;
@@ -1956,22 +1958,14 @@ int index_m_z = 0;
 
 
 
-  index_y = (int) pvecsz[pcsz->index_y];
+  index_y = (int) pvecsz[pcsz->index_y]; // index_y is the index of the signal-to-noise bin
 
   double y_min,y_max;
 
-  y_min = pow(10., pcsz->logy[index_y] - pcsz->dlogy/2.);
-  y_max = pow(10., pcsz->logy[index_y] + pcsz->dlogy/2.);
+  y_min = pow(10., pcsz->logy[index_y] - pcsz->dlogy/2.); // lower edge of the signal-to-noise bin
+  y_max = pow(10., pcsz->logy[index_y] + pcsz->dlogy/2.); // upper edge of the signal-to-noise bin
 
-//   if (index_y != pcsz->Nbins_y){
-//   y_min = pow(10., pcsz->logy[index_y] - pcsz->dlogy/2.);
-//   y_max = pow(10., pcsz->logy[index_y] + pcsz->dlogy/2.);
-//   }
-//   else{
-//
-//   y_min = pow(10., pcsz->logy[index_y] - pclass_sz->bin_dlog10_snr_last_bin/2.);
-//   y_max = 1e100;//pow(10., pcsz->logy[index_y] + pclass_sz->bin_dlog10_snr_last_bin/2.);
-// }
+
 
   if (pclass_sz->sz_verbose > 3){
     printf("->SZ_counts grid_C_2d.\n");
@@ -1980,13 +1974,15 @@ int index_m_z = 0;
     }
 
 if (pcsz->has_completeness == 1){
+  
+  // case with no scatter in the y-m relation
   if (pclass_sz->sigmaM_ym == 0.){
+
     if (pclass_sz->sz_verbose>0){
       printf("--> No scatter in ym relation.\n");
-    }
-    int index_m_z = 0;
+     }
 
-// for (index_m=0;index_m<pcsz->nsteps_m;index_m++){
+    int index_m_z = 0;
 
     for (index_z=0;index_z<pcsz->nsteps_z;index_z++){
       double zp = pcsz->steps_z[index_z];
@@ -2024,20 +2020,8 @@ if (pcsz->has_completeness == 1){
         else if (pclass_sz->use_m200c_in_ym_relation == 1){
         m_ym = m200c;
         }
-        // printf("m_ym = %.5e\n",m_ym);
-        // exit(0);
-        // zp = 1.00000e-05;
+
         double yp = get_y_at_m_and_z(m_ym,zp,pclass_sz,pba);
-
-        // if (index_y == 2  && index_z == 0 && index_m == 0){
-        // printf("\n");
-        // printf("\n");
-        // printf("m_ym = %.5e zp = %.5e yp = %.5e\n",m_ym,zp,yp);
-        // printf("\n");
-        // printf("\n");
-        // exit(0);
-        // }
-
 
         double thp = get_theta_at_m_and_z(m500c,zp,pclass_sz,pba);
         //Planck
@@ -2050,122 +2034,72 @@ if (pcsz->has_completeness == 1){
         }
 
 
-        // find_theta_bin(pclass_sz,thp,l_array,theta_array);
-        // int l1 = l_array[1];
-        // int l2 = l_array[2];
-        // double th1 = theta_array[1];
-        // double th2 = theta_array[2];
-
 
         int index_patches;
         double comp_sky_tot = 0.;
         for (index_patches =0;index_patches<npatches;index_patches++){
 
-          // double y1 = pclass_sz->ylims[index_patches][l1];
-          // double y2 = pclass_sz->ylims[index_patches][l2];
-          // double y = y1 + (y2-y1)/(th2-th1)*(thp-th1);
 
 
           double y_interp = get_szcountsz_sigma_at_theta_in_patch(thp,index_patches,pclass_sz);
-          // if((index_m == 235)&& (index_z == 5) && (index_patches == 49)){
-          //   printf("y_interp = %.5e thp = %.9e\n",y_interp, thp);
-          //   exit(0);
-          // }
 
-          // double y_interp = pwl_value_1d(pclass_sz->nthetas,
-          //                                pclass_sz->thetas,
-          //                                pclass_sz->ylims[index_patches],
-          //                                thp);
-          // double y_interp = pwl_value_1d(pclass_sz->nthetas,
-          //                                pclass_sz->thetas,
-          //                                pclass_sz->sky_averaged_ylims,
-          //                                thp); // ~5% difference
+          // here we can implement the optimization bias correction
+          double y1 = get_szcountsz_sigma_at_theta_in_patch(thp,index_patches,pclass_sz);
+          // //opt bias correction
+          double q = yp/y1;
+          double corr = 1. + pclass_sz->A_opt_bias_ym/q + pclass_sz->B_opt_bias_ym/pow(q,2.);
+          if (q < 2.0) corr = 1.0;
+          y_interp *= corr;
+          // end opt bias correction
+
+
 
           double y = y_interp;
-          // printf("y = %.5e y_interp = %.5e r = %.5e\n",y,y_interp,y/y_interp);
+
 
           double c2;
 
           if (pclass_sz->use_planck_binned_proba == 1){
-          c2 = erf_compl(yp,y,pclass_sz->sn_cutoff,pclass_sz->szcc_dof);
-          c2 *= erf_compl(yp,y,y_min,pclass_sz->szcc_dof);
-          c2 *= (1.-erf_compl(yp,y,y_max,pclass_sz->szcc_dof));
 
-          // if (index_y == 2 && index_patches == 0 && index_z == 0 && index_m == 0){
-          // printf("\n");
-          // printf("mp = %.5e zp = %.5e yp = %.5e y = %.5e c2 = %.5e\n",mp,zp,yp,y,c2);
-          // printf("\n");
-          // exit(0);
-          // }
-
-
-          if (index_y == 0){
             c2 = erf_compl(yp,y,pclass_sz->sn_cutoff,pclass_sz->szcc_dof);
+            c2 *= erf_compl(yp,y,y_min,pclass_sz->szcc_dof);
             c2 *= (1.-erf_compl(yp,y,y_max,pclass_sz->szcc_dof));
 
+            if (index_y == 0){
+              c2 = erf_compl(yp,y,pclass_sz->sn_cutoff,pclass_sz->szcc_dof);
+              c2 *= (1.-erf_compl(yp,y,y_max,pclass_sz->szcc_dof));
+            }
 
+            if (index_y == pcsz->Nbins_y-1){
+              c2 = erf_compl(yp,y,pclass_sz->sn_cutoff,pclass_sz->szcc_dof) ;
+              c2 *= erf_compl(yp,y,y_min,pclass_sz->szcc_dof);
+            }
           }
-
-          if (index_y == pcsz->Nbins_y-1){
-            c2 = erf_compl(yp,y,pclass_sz->sn_cutoff,pclass_sz->szcc_dof) ;
-            c2 *= erf_compl(yp,y,y_min,pclass_sz->szcc_dof);
-
-
-          }}
 
           else {
-
             c2 = erf_compl_nicola(yp,y,pclass_sz->sn_cutoff,y_min,y_max,pclass_sz->szcc_dof);
-            // if((index_m == 235)&& (index_z == 5) && (index_patches == 49)){
-            //   printf("c2 = %.5e yp = %.5e y = %.5e y_min = %..5e y_max = %.5e\n",
-            //           c2,yp,y,y_min,y_max);
-            //   exit(0);
-            // }
           }
 
-if (pclass_sz->use_skyaveraged_noise){
-          completeness_2d[index_m][index_z] += c2*pclass_sz->fsky_from_skyfracs;///fsky;
-
-        }
-else{
-     completeness_2d[index_m][index_z] += c2*pclass_sz->skyfracs[index_patches];///fsky;
-
-//      if((index_m == 235)&& (index_z == 5))   {
-// printf("c = %.5e index_m = %d index_z = %d skyfrac = %.5e idskyfrac  = %d\n",
-//     completeness_2d[index_m][index_z],
-//     index_m,index_z,pclass_sz->skyfracs[index_patches],index_patches);
-//     // exit(0);
-//     }
-}
-          // printf("%d\n",index_patches);
-
-          // completeness_2d_to_1d[index_m_z] += c2*pclass_sz->skyfracs[index_patches];
-          // completeness_2d_to_1d[index_m_z] += 1.*pclass_sz->skyfracs[index_patches];
-
+          if (pclass_sz->use_skyaveraged_noise){
+            completeness_2d[index_m][index_z] += c2*pclass_sz->fsky_from_skyfracs;///fsky;
+          }
+          else{
+            completeness_2d[index_m][index_z] += c2*pclass_sz->skyfracs[index_patches];///fsky;
+          } 
+        
         } // end loop patches
-        // completeness_2d_to_1d[index_m_z] = log(completeness_2d_to_1d[index_m_z]);
+
         index_m_z += 1;
 
         if (completeness_2d[index_m][index_z]>1.) completeness_2d[index_m][index_z] = 1.;
         else if (completeness_2d[index_m][index_z]<=0.) completeness_2d[index_m][index_z] = 0.;
-        // else   {printf("c = %.5e index_m = %d index_z = %d nsteps_z = %d\n",
-        //         completeness_2d[index_m][index_z],
-        //         index_m,index_z,pcsz->nsteps_z);
-        //         // exit(0);
-        //         }
-                // printf("c = %.5e index_m = %d index_z = %d nsteps_z = %d\n",
-                //         completeness_2d[index_m][index_z],
-                //         index_m,index_z,pcsz->nsteps_z);
 
-// if((index_m == 235)&& (index_z == 5)) exit(0);
       }//end m loop
-      // if (index_z == 5){
-      //   exit(0);
-      // }
     }//end z loop
     // exit(0);
   }//end if sigmaM=0
 
+  // case with intrinsic scatter in the y-m relation
   else {
     double fac =1./sqrt(2.*_PI_*pow(pclass_sz->sigmaM_ym,2));
 
@@ -2218,6 +2152,7 @@ else{
       {
         double y0=exp(pclass_sz->erfs_2d_to_1d_y_array[index1]);
 
+        // loop over tiles
         for (index_patches=0;index_patches<npatches;index_patches++){
           //fsky += pclass_sz->skyfracs[index_patches];
 
@@ -2230,7 +2165,7 @@ else{
                 }
 
 
-          // double y1 = get_ylim_of_theta(th1,pclass_sz->ylims[index_patches][index2];
+          // double y1p = get_ylim_of_theta(th1,pclass_sz->ylims[index_patches][index2];
           // int k = index_y;
           //
           // double qmin=pcsz->logy[k]-pcsz->dlogy/2.;
@@ -2273,7 +2208,8 @@ else{
           // erfs_2d_to_1d[index_th_y] += c2*pclass_sz->skyfracs[index_patches]/fsky;
 
 
-        } //end loop patches
+        } //end loop patches/tiles 
+
         // erfs_2d_to_1d[index_th_y] = log(erfs_2d_to_1d[index_th_y]);
         index_th_y += 1;
       } //end loop y
@@ -2332,7 +2268,8 @@ else{
         }
 
         double yp = get_y_at_m_and_z(m_ym,zp,pclass_sz,pba);
-        double thp = get_theta_at_m_and_z(m500c,zp,pclass_sz,pba);
+        double thp = get_theta_at_m_and_z(m500c,zp,pclass_sz,pba); 
+        // nbote that here we are already out of the tile loop
 
         // if not planck, apply the mismatch function with C correction
         if (pclass_sz->experiment == 1){
