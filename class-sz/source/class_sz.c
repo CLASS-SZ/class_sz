@@ -3002,7 +3002,7 @@ if (pclass_sz->has_sz_rates){
 
   if ( (pclass_sz->has_gal_gallens_1h || pclass_sz->has_gal_gallens_2h) && pclass_sz->convert_cls_to_gamma){
     // shear
-    if (pclass_sz->sz_verbose > 0) printf("converting cls to gamma\n");
+    if (pclass_sz->sz_verbose > 0) printf("converting cls to gamma with n_thetas = %d\n",pclass_sz->nlSZ);
     class_alloc(pclass_sz->thetas_arcmin,sizeof(double *)*pclass_sz->nlSZ,pclass_sz->error_message);
     class_alloc(pclass_sz->gamma_gal_gallens_1h,sizeof(double *)*pclass_sz->nlSZ,pclass_sz->error_message);
     class_alloc(pclass_sz->gamma_gal_gallens_2h,sizeof(double *)*pclass_sz->nlSZ,pclass_sz->error_message);

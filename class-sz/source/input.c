@@ -4509,6 +4509,9 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
       class_call(parser_read_string(pfc,"mass function",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"mass_function",&string1,&flag1,errmsg),errmsg,errmsg);
+      }
      if (flag1 == _TRUE_) {
         if ((strstr(string1,"T10") != NULL)){
             pclass_sz->MF=1;
@@ -4615,6 +4618,9 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
 
 
       class_call(parser_read_string(pfc,"delta for galaxies",&string1,&flag1,errmsg),errmsg,errmsg);
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"delta_for_galaxies",&string1,&flag1,errmsg),errmsg,errmsg);
+      }
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"200m") != NULL))
           pclass_sz->delta_def_galaxies=0;
@@ -4626,6 +4632,9 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
 
 
       class_call(parser_read_string(pfc,"delta for cib",&string1,&flag1,errmsg),errmsg,errmsg);
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"delta_for_cib",&string1,&flag1,errmsg),errmsg,errmsg);
+      }
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"200m") != NULL))
           pclass_sz->delta_def_cib=0;
@@ -6423,6 +6432,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
   //            errmsg);
   // class_read_string("sBBN_file",ppr->sBBN_file);
   class_read_string("ksz_filter_file",pclass_sz->ksz_filter_file);
+  class_read_string("projected_field_filter_file",pclass_sz->ksz_filter_file);
   class_read_string("full_path_to_dndz_gal",pclass_sz->full_path_to_dndz_gal);
   class_read_string("full_path_and_prefix_to_dndz_ngal",pclass_sz->full_path_and_prefix_to_dndz_ngal);
   class_read_string("full_path_to_redshift_dependent_M_min",pclass_sz->full_path_to_redshift_dependent_M_min);
