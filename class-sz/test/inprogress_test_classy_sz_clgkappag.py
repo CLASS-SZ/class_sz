@@ -44,7 +44,7 @@ def test_classy_sz_clgkappag():
     'mass_function': 'T08M200c',
     'concentration parameter': 'D08',
 
-    'dlogell': 0.3,
+    'dell':200.0, 
     'multipoles_sz': 'ell_mock',
     'ell_max': 3000.0,
     'ell_min': 2.0,
