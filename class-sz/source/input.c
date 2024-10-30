@@ -4265,6 +4265,12 @@ int input_read_parameters(
       class_call(parser_read_string(pfc,"M0 equal M_min (HOD)",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc, "M0_equal_M_min_HOD", &string1, &flag1, errmsg), //new format without spaces
+                  errmsg,
+                  errmsg);
+      }
+
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"no") != NULL))
           pclass_sz->M0_Mmin_flag=0;
