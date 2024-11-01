@@ -12,5 +12,19 @@ cosmo_params = {
 'tau_reio': 0.0561,
 'ln10^{10}A_s': 3.047,
 'n_s': 0.9665   
-
 }
+
+
+classy_sz = Class_sz()
+classy_sz.set(cosmo_params)
+classy_sz.set({
+'output':' ',
+'skip_hubble':0,
+})
+
+classy_sz.compute_class_szfast()
+
+
+def test_classy_sz_hz_fast():
+    z = np.linspace(0.,20,1000)
+    assert classy_sz.get_hubble_at_z(z,params_values_dict = cosmo_params)[0] == pytest.approx(0.00022571238269609295,rel=1e-9)
