@@ -1360,7 +1360,8 @@ if (pclass_sz->has_dcib0dz){
 
 if (pclass_sz->has_dydz){
   tabulate_dydz(pba,pnl,ppm,pclass_sz);
-  // printf("%.8e\n",get_dydz_at_z(1.,pclass_sz));
+  printf(" tabulate %.8e\n",get_dydz_at_z(1.,pclass_sz));
+  printf(" dydz %.8e\n", get_dydz_at_z(1.0, pclass_sz));
 }
 
 
@@ -17567,11 +17568,7 @@ if (pclass_sz->create_ref_trispectrum_for_cobaya){
 
        if (pclass_sz->pressure_profile == 3){
           fprintf(fp,"# Pressure Profile:  Custom. GNFW\n");
-          fprintf(fp,"# P0GNFW = %e\n",pclass_sz->P0GNFW);
-          fprintf(fp,"# c500 = %e\n",pclass_sz->c500);
-          fprintf(fp,"# gammaGNFW = %e\n",pclass_sz->gammaGNFW);
-          fprintf(fp,"# alphaGNFW = %e\n",pclass_sz->alphaGNFW);
-          fprintf(fp,"# betaGNFW = %e\n",pclass_sz->betaGNFW);
+
        }
        if (pclass_sz->pressure_profile == 4)
           fprintf(fp,"# Pressure Profile:  Battaglia et al 2012\n");
@@ -22438,6 +22435,10 @@ double HOD_mean_number_of_satellite_galaxies(double z,
 double result;
 if (M_halo>M_min){
 
+if (pclass_sz->centrals_only_HOD==1){
+  M_min=1e100;
+    }
+
 result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
 
  }
@@ -23183,9 +23184,16 @@ double xout = pclass_sz->x_out_truncated_nfw_profile_satellite_galaxies;
 us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
 
 double ug_at_ell;
+// ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+if (pclass_sz->satellites_only_HOD==1){
+        ug_at_ell  = (1./ng_bar)*(ns*us);
+        }
+if (pclass_sz->satellites_only_HOD==0){
+        ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+        }
 
 
-ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+
 if (isinf(ug_at_ell) || isnan(ug_at_ell)){
 printf("ng_bar = %.3e nc = %.3e ns = %.3e us = %.3e\n",ng_bar,nc,ns,us);
 exit(0);

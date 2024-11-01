@@ -896,6 +896,12 @@ cdef class Class:
             self.tsz.HSEbias = pdict_to_update[k]
           if k == 'betaGNFW':
             self.tsz.betaGNFW = pdict_to_update[k]
+          if k == 'alphaGNFW':
+            self.tsz.alphaGNFW = pdict_to_update[k]
+          if k == 'gammaGNFW':
+            self.tsz.gammaGNFW = pdict_to_update[k]
+          if k == 'c500':
+            self.tsz.c500 = pdict_to_update[k]
           if k == 'P0GNFW':
             self.tsz.P0GNFW = pdict_to_update[k]
           if k == 'alpha_s_HOD':
@@ -947,10 +953,6 @@ cdef class Class:
               self.tsz.eta_IA = pdict_to_update[k]
           if k == 'fNL':
             self.tsz.fNL = pdict_to_update[k]
-          if k == 'P0GNFW':
-            self.tsz.P0GNFW = pdict_to_update[k]
-          if k == 'c500':
-            self.tsz.c500 = pdict_to_update[k]
           if k == 'M_min':
             self.tsz.M1SZ = pdict_to_update[k]
           if k == 'M_max':
@@ -3664,6 +3666,8 @@ cdef class Class:
 
     def get_dydzdlnm_at_z_and_m(self,z,m,l=0):
         return get_dyldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
+    def get_dygdzdlnm_at_z_and_m(self,z,m,l=0):
+        return get_dygldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
 
     def get_c_delta_at_m_and_z(self,m,z,delta_def):
         if delta_def == 0:

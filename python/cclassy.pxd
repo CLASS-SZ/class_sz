@@ -974,6 +974,13 @@ cdef extern from "class.h":
                                       void * pnl,
                                       void * pclass_sz)
 
+    double get_dygldzdlnm_at_l_z_and_m(double l,
+                                      double z,
+                                      double m,
+                                      void * pba,
+                                      void * pnl,
+                                      void * pclass_sz)
+
     double get_m200m_to_m200c_at_z_and_M(double z_asked,
                                          double m_asked,
                                          void * pclass_sz)
