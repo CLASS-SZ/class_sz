@@ -301,7 +301,7 @@ class-sz/set_class_sz_env.sh
 set_class_sz_env.sh
 class-sz/test
 build
-class-sz/test/test_b12.ini
+class-sz/tests/test_b12.ini
 
 docs/_*
 test_ver.sh
