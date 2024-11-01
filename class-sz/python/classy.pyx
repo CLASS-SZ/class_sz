@@ -2660,6 +2660,12 @@ cdef class Class:
         else:
             return H_over_c_in_h_over_Mpc_array
 
+    def get_hubble_at_z(self, z_asked, params_values_dict=None):
+
+        self.class_szfast.calculate_hubble(**params_values_dict)
+
+        return self.class_szfast.hz_interp(z_asked)
+
     def Om_m(self, z):
         """
         Omega_m(z)
