@@ -28,6 +28,9 @@ import mcfit
 import time
 import re
 
+import jax.numpy as jnp
+import jax.scipy as jscipy
+
 import warnings
 from contextlib import contextmanager
 
@@ -232,6 +235,7 @@ cdef class Class:
 
     cdef int computed # Flag to see if classy has already computed with the given pars
     cdef int allocated # Flag to see if classy structs are allocated already
+    cdef int jax_mode # Flag to see if jax is used
 
     cdef object _pars # Dictionary of the parameters
     cdef object ncp   # Keeps track of the structures initialized, in view of cleaning.
@@ -266,6 +270,10 @@ cdef class Class:
         def __get__(self):
             return self.nl.method
 
+    property jax_mode:
+        def __get__(self):
+            return self.jax_mode
+
     property PATH_TO_CLASS_SZ_DATA:
         def __get__(self):
             return classy_szfast.path_to_class_sz_data + '/class_sz/class-sz/'
@@ -288,6 +296,7 @@ cdef class Class:
             'skip_sigma8_and_der':0, # emulate derived parameters
             'skip_cmb': 0,
             'cosmo_model': 6, # set ede-v2 emulators as default
+            'jax': 0,
             ### TBD adjust default neutrino settings to avoid inconsistency. 11 oct 2024. 
 
             # cosmo_model_list = [
@@ -799,6 +808,11 @@ cdef class Class:
     # @cython.wraparound(False)
     # the likelihood_mode parameter is used to identify whether we run within cobaya
     def compute_class_szfast(self,likelihood_mode=False):
+
+        if self._pars['jax'] == 1:
+            self.jax_mode = True
+        else:
+            self.jax_mode = False
 
         
         ## deal with names 
@@ -2581,6 +2595,20 @@ cdef class Class:
         cdef double * pvecback
         cdef np.ndarray z_array
         cdef np.ndarray H_array
+
+        if self.jax_mode:
+            # print("JAX MODE in Hubble classy.pyx")
+            H_array_jax = jnp.array([])
+            z_array_jax = jnp.array([])
+
+            if isinstance(z, (float, int)):
+                z_array_jax = jnp.array([z], dtype=jnp.float64)
+            else:
+                z_array_jax = jnp.array(z, dtype=jnp.float64)
+
+            H_array_jax = self.class_szfast.get_hubble(z_array_jax)
+
+            return H_array_jax
 
         if isinstance(z, (float, int)):
 

@@ -20,11 +20,20 @@ classy_sz.set(cosmo_params)
 classy_sz.set({
 'output':' ',
 'skip_hubble':0,
+'jax': 0,
 })
 
+print(classy_sz.pars)
+
 classy_sz.compute_class_szfast()
+
+print("classy_sz.jax_mode",classy_sz.jax_mode)
+
 
 
 def test_classy_sz_hz_fast():
     z = np.linspace(0.,20,1000)
     assert classy_sz.get_hubble_at_z(z,params_values_dict = cosmo_params)[0] == pytest.approx(0.00022571238269609295,rel=1e-9)
+
+
+test_classy_sz_hz_fast()

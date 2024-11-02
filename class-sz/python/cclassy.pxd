@@ -257,6 +257,7 @@ cdef extern from "class.h":
         double M1SZ
         double M2SZ
         int do_real_space_with_mcfit
+        int jax
         int skip_class_sz
         int skip_pk
         int skip_cmb

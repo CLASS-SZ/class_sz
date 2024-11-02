@@ -4,6 +4,8 @@ class_sz_string_parameter(A10_file,"/class_sz_auxiliary_files/includes/class_sz_
 class_sz_string_parameter(P13_file,"/class_sz_auxiliary_files/includes/class_sz_lnIgnfw-and-d2lnIgnfw-vs-lnell-over-ell500_P13.txt","P13 file")
 class_sz_string_parameter(Tinker_et_al_10_alpha_consistency_msyriac_file,"/class_sz_auxiliary_files/includes/Tinker_et_al_10_alpha_consistency_msyriac.txt","Tinker_et_al_10_alpha_consistency_msyriac_file")
 
+class_sz_pclass_sz_parameter(jax,int,0)
+
 
 class_sz_string_parameter(append_name_trispectrum_ref,"append_name_trispectrum_ref","append_name_trispectrum_ref")
 class_sz_string_parameter(path_to_ref_trispectrum_for_cobaya,"path_to_ref_trispectrum_for_cobaya","path_to_ref_trispectrum_for_cobaya")
