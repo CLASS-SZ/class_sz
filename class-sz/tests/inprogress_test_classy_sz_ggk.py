@@ -65,10 +65,10 @@ unWISE_common = {
 'hm_consistency': 1,
 
 
-'delta for galaxies': "200c",
-'delta for matter density': "200c",
-'mass function': 'T08M200c',
-'concentration parameter': 'B13' ,
+'delta_for_galaxies': "200c",
+'delta_for_matter_density': "200c",
+'mass_function': 'T08M200c',
+'concentration_parameter': 'B13' ,
     
 
 }

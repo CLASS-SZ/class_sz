@@ -4161,6 +4161,9 @@ int input_read_parameters(
       class_call(parser_read_string(pfc,"concentration parameter",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"concentration_parameter",&string1,&flag1,errmsg),errmsg,errmsg);
+      } 
      if (flag1 == _TRUE_) {
         if ((strstr(string1,"D08") != NULL))
           pclass_sz->concentration_parameter=0;
@@ -4190,6 +4193,9 @@ int input_read_parameters(
       class_call(parser_read_string(pfc,"pressure profile",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"pressure_profile",&string1,&flag1,errmsg),errmsg,errmsg);
+      } 
 
 
       if (flag1 == _TRUE_) {
@@ -4513,7 +4519,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
         class_call(parser_read_string(pfc,"mass_function",&string1,&flag1,errmsg),errmsg,errmsg);
       }
      if (flag1 == _TRUE_) {
-        if ((strstr(string1,"T10") != NULL)){
+        if ((strstr(string1,"T10M200m") != NULL)){
             pclass_sz->MF=1;
             pclass_sz->integrate_wrt_m200m = 1;
         }
@@ -4530,7 +4536,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
           pclass_sz->MF=8;
           pclass_sz->integrate_wrt_m200c = 1;
         }
-        else  if ((strstr(string1,"T08") != NULL)){
+        else  if ((strstr(string1,"T08M200m") != NULL)){
           pclass_sz->MF=4;
           pclass_sz->integrate_wrt_m200m = 1;
 
@@ -4541,7 +4547,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
           pclass_sz->integrate_wrt_m200c = 0;
           }
         }
-        else  if ((strstr(string1,"M500") != NULL) || (strstr(string1,"T08M500c") != NULL)){
+        else  if ((strstr(string1,"T08M500c") != NULL)){
           pclass_sz->MF=5;
           pclass_sz->integrate_wrt_m500c = 1;
         }
@@ -4685,6 +4691,9 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
 
 
       class_call(parser_read_string(pfc,"delta for electron density",&string1,&flag1,errmsg),errmsg,errmsg);
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"delta_for_electron_density",&string1,&flag1,errmsg),errmsg,errmsg);
+      } 
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"200m") != NULL))
           pclass_sz->delta_def_electron_density=0;
@@ -4695,6 +4704,9 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
           }
 
       class_call(parser_read_string(pfc,"delta for electron pressure",&string1,&flag1,errmsg),errmsg,errmsg);
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"delta_for_electron_pressure",&string1,&flag1,errmsg),errmsg,errmsg);
+      } 
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"200m") != NULL))
           pclass_sz->delta_def_electron_pressure=0;

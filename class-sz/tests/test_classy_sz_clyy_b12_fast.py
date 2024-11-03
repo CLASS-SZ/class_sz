@@ -36,9 +36,9 @@ def test_classy_sz_clyy_b12():
 
     'output': 'tSZ_1h',
 
-    'pressure profile':'B12',
-    'delta for electron pressure':'200c',
-    "concentration parameter":"D08",
+    'pressure_profile':'B12',
+    'delta_for_electron_pressure':'200c',
+    "concentration_parameter":"D08",
     "ell_min" : 125,
     "ell_max" : 9725,
     'dell': 200,
@@ -83,7 +83,7 @@ def test_classy_sz_clyy_b12():
 
     'truncate_gas_pressure_wrt_rvir' : 1,
     'x_outSZ': 2.,
-    'mass function' : 'T10',
+    'mass_function' : 'T10M200m',
     'T10_alpha_fixed' : 1,
         
         
