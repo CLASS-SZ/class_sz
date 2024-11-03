@@ -23,7 +23,7 @@ This command sets the `PATH_TO_CLASS_SZ_DATA` variable for the current session.
 
 To ensure this variable is set every time you open a terminal, you can add this line to your `~/.bashrc` or `~/.bash_profile` file automatically using the `echo` command.
 
-For `~/.bashrc` (common for most Linux systems):
+For `~/.bashrc` (common for most Linux systems), type in your terminal:
 ```bash
 echo -e "\n# Set path for CLASS-SZ data\nexport PATH_TO_CLASS_SZ_DATA=/path/to/store/data" >> ~/.bashrc
 echo -e "\n# Create directory for CLASS-SZ data\nmkdir -p \$PATH_TO_CLASS_SZ_DATA/class_sz_data_directory" >> ~/.bashrc
