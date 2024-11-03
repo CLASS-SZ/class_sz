@@ -44,18 +44,7 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
    notebooks/class_szfast_parameters_and_derived_parameters
 
-.. toctree::
-   :maxdepth: 2
-   :caption: CMB power spectra 
 
-   notebooks/classy_szfast_cmb_cls
-
-.. toctree::
-   :maxdepth: 2
-   :caption: TSZ power spectrum
-
-   notebooks/class_sz_tszpowerspectrum
-   
    
 .. toctree::
    :maxdepth: 2
@@ -70,6 +59,25 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
    notebooks/classy_szfast_daz
 
+.. toctree::
+   :maxdepth: 2
+   :caption: CMB power spectra 
+
+   notebooks/classy_szfast_cmb_cls
+   
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Linear matter power spectrum
+
+   notebooks/classy_szfast_matter_pk_linear
+
+.. toctree::
+   :maxdepth: 2
+   :caption: TSZ power spectrum
+
+   notebooks/class_sz_tszpowerspectrum
+   
 
 .. toctree::
    :maxdepth: 2

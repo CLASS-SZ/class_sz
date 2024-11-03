@@ -1743,6 +1743,29 @@ cdef class Class:
         return lum_distance
 
     def get_pkl_at_z(self, z_asked, params_values_dict=None):
+        """
+        Calculate the linear matter power spectrum at a given redshift.
+
+        Parameters
+        ----------
+        z_asked : float
+            Redshift at which to evaluate the power spectrum
+        params_values_dict : dict, optional
+            Dictionary of cosmological parameters to use. If None, uses current parameters.
+
+        Returns
+        -------
+        tuple
+            A tuple containing:
+            - array of power spectrum values in (Mpc/h)^3 
+            - array of corresponding k values in h/Mpc
+            
+        Examples
+        --------
+        >>> z = 0.3
+        >>> pks, ks = classy_sz.get_pkl_at_z(z, params_values_dict=cosmo_params)
+
+        """
         return self.class_szfast.calculate_pkl_at_z(z_asked, params_values_dict = params_values_dict)
 
     def get_pknl_at_z(self, z_asked, params_values_dict=None):
