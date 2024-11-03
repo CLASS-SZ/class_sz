@@ -2398,7 +2398,10 @@ cdef class Class:
         if np.isscalar(z):
             return self.angular_distance(z) * (1. + z) * h
         else:
-            return np.array([self.angular_distance(zi) * (1. + zi) * h for zi in z])
+            if self.jax_mode:
+                return jnp.array([self.angular_distance(zi) * (1. + zi) * h for zi in z])
+            else:
+                return np.array([self.angular_distance(zi) * (1. + zi) * h for zi in z])
         
 
 

@@ -66,6 +66,13 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
 .. toctree::
    :maxdepth: 2
+   :caption: Comoving distance
+
+   notebooks/classy_szfast_daz
+
+
+.. toctree::
+   :maxdepth: 2
    :caption: Biased tracers
 
    notebooks/class_sz_quaia_example
