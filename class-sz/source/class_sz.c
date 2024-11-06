@@ -288,6 +288,17 @@ int class_sz_cosmo_init(  struct background * pba,
       pclass_sz->ln_k_for_tSZ[i]=log(pclass_sz->k_min_for_pk_in_tSZ)+i*log(10.)/pclass_sz->k_per_decade_for_tSZ;
 
 
+// for vrms2
+      pclass_sz->ln_k_size_for_vrms2 = (int)(log(pclass_sz->k_max_for_pk_in_vrms2
+                                       /pclass_sz->k_min_for_pk_in_vrms2)
+                                   /log(10.)*pclass_sz->k_per_decade_for_vrms2) + 2;
+    class_alloc(pclass_sz->ln_k_for_vrms2,pclass_sz->ln_k_size_for_vrms2*sizeof(double),pclass_sz->error_message);
+    int j;
+    for (j=0; j<pclass_sz->ln_k_size_for_vrms2; j++)
+        pclass_sz->ln_k_for_vrms2[j]=log(pclass_sz->k_min_for_pk_in_vrms2)+j*log(10.)/pclass_sz->k_per_decade_for_vrms2;
+
+
+
    // printf("need_hmf = %d\n",pclass_sz->need_hmf);
    select_multipole_array(pclass_sz);
    // printf("=============l array selected.\n");
@@ -4119,6 +4130,7 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
  free(pclass_sz->normalized_dndz_ngal_z);
  free(pclass_sz->normalized_dndz_ngal_phig);
  free(pclass_sz->galaxy_samples_list);
+ free(pclass_sz->normalized_dndz_ngal_size);
 
 
     if (pclass_sz->has_ngal_ngal_hf
@@ -4144,7 +4156,6 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
           free(pclass_sz->f_cen_HOD_ngal);//[index_g] = 1.;
           free(pclass_sz->centrals_only_ngal);
           free(pclass_sz->satellites_only_ngal);
-          free(pclass_sz->photo_z_params_ngal);
           free(pclass_sz->dndz_shift_ngal);
           free(pclass_sz->dndz_stretch_ngal);
         }
@@ -4272,7 +4283,8 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
    free(pclass_sz->r_Y_N);
    free(pclass_sz->r_cl_clp);
    free(pclass_sz->trispectrum_ref);
-   free(pclass_sz->ln_k_for_tSZ); //BB: added for class_sz
+   free(pclass_sz->ln_k_for_tSZ); 
+   free(pclass_sz->ln_k_for_vrms2); 
 
 // printf("free 1\n");
 
@@ -13154,6 +13166,17 @@ double get_pressure_P_over_P_delta_at_x_M_z_b12_200c(double x_asked,
 
   //putting everything together
   double result =  plc_x;
+
+  if (pclass_sz->use_broken_pressure == 1) {
+      double M_break = pclass_sz->M_break_pressure/pba->h;; //convert to Msun 
+      double alpha_break = pclass_sz->alpha_break_pressure;
+      // printf("Mbreak: %f\n",M_break);
+      if (m200_over_msol < M_break) {
+          result *= pow(m200_over_msol / M_break, alpha_break);
+      }
+  }  
+
+  
 
   return result;
 
@@ -22198,37 +22221,37 @@ else  phig =  pwl_value_1d(pclass_sz->normalized_dndz_ngal_size[index_g],
 // H_over_c_in_h_over_Mpc = dz/dChi
 // phi_galaxy_at_z = dng/dz normalized
 
-// if (pclass_sz->photo_z_params_ngal[index_g]==1.){
-//         // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
-//         double shift= pclass_sz->dndz_shift_ngal[index_g];
-//         double stretch = pclass_sz->dndz_stretch_ngal[index_g];
-//         double z_mean = 0.;
+if (pclass_sz->photo_z_params == 1){
+        // Eq. 23 from https://arxiv.org/pdf/2210.08633.pdf
+        double shift= pclass_sz->dndz_shift_ngal[index_g];
+        double stretch = pclass_sz->dndz_stretch_ngal[index_g];
+        double z_mean = 0.;
 
-//         int i, N;
-//         double dz = 1/(pclass_sz->normalized_dndz_ngal_z[index_g][1]-pclass_sz->normalized_dndz_ngal_z[index_g][0]);
-//         N = pclass_sz->ndim_redshifts;
-//         for ( i = 0; i < N; i++ ){
-//           z_mean   = z_mean + pclass_sz->normalized_dndz_ngal_z[index_g][i]*pclass_sz->normalized_dndz_ngal_phig[index_g][i]/dz;
-//             }
+        int i, N;
+        double dz = 1/(pclass_sz->normalized_dndz_ngal_z[index_g][1]-pclass_sz->normalized_dndz_ngal_z[index_g][0]);
+        N = pclass_sz->ndim_redshifts;
+        for ( i = 0; i < N; i++ ){
+          z_mean   = z_mean + pclass_sz->normalized_dndz_ngal_z[index_g][i]*pclass_sz->normalized_dndz_ngal_phig[index_g][i]/dz;
+            }
 
-//         // printf("z_mean= %.2e\n",z_mean);
-//         // printf("stretch= %.2e\n",stretch);
-//         // printf("shift= %.2e\n",shift);
+        // printf("z_mean= %.2e\n",z_mean);
+        // printf("stretch= %.2e\n",stretch);
+        // printf("shift= %.2e\n",shift);
 
-//         double phig_shifted = 0;
-//         double z_asked_shifted;
-//         z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
-//         if (z_asked_shifted<pclass_sz->normalized_dndz_ngal_z[index_g][0])
-//            phig_shifted = 0.;
-//         else if (z_asked_shifted>pclass_sz->normalized_dndz_ngal_z[index_g][pclass_sz->normalized_dndz_ngal_size[index_g]-1])
-//            phig_shifted = 0.;
-//         else phig_shifted =  pwl_value_1d(pclass_sz->normalized_dndz_ngal_size[index_g],
-//                                    pclass_sz->normalized_dndz_ngal_z[index_g],
-//                                    pclass_sz->normalized_dndz_ngal_phig[index_g],
-//                                    z_asked_shifted);
+        double phig_shifted = 0;
+        double z_asked_shifted;
+        z_asked_shifted = pow((z_asked - z_mean - shift)/stretch + z_mean, 1.);
+        if (z_asked_shifted<pclass_sz->normalized_dndz_ngal_z[index_g][0])
+           phig_shifted = 0.;
+        else if (z_asked_shifted>pclass_sz->normalized_dndz_ngal_z[index_g][pclass_sz->normalized_dndz_ngal_size[index_g]-1])
+           phig_shifted = 0.;
+        else phig_shifted =  pwl_value_1d(pclass_sz->normalized_dndz_ngal_size[index_g],
+                                   pclass_sz->normalized_dndz_ngal_z[index_g],
+                                   pclass_sz->normalized_dndz_ngal_phig[index_g],
+                                   z_asked_shifted);
 
-//         phig = (1./stretch) * phig_shifted;
-//       }
+        phig = (1./stretch) * phig_shifted;
+      }
 
 double result = H_over_c_in_h_over_Mpc*phig;
 
@@ -22455,7 +22478,7 @@ double HOD_mean_number_of_satellite_galaxies(double z,
 
 
 double result;
-if (M_halo>M_min){
+if ((M_halo>M_min) && (pclass_sz->centrals_only_HOD == 0)){
 
 result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
 
@@ -23204,7 +23227,15 @@ us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
 double ug_at_ell;
 
 
-ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+/// see Ola's notes  (added 6nov2024)
+if (pclass_sz->satellites_only_HOD==1){
+        ug_at_ell  = (1./ng_bar)*(ns*us);
+        }
+else{
+        ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+        }
+
+
 if (isinf(ug_at_ell) || isnan(ug_at_ell)){
 printf("ng_bar = %.3e nc = %.3e ns = %.3e us = %.3e\n",ng_bar,nc,ns,us);
 exit(0);

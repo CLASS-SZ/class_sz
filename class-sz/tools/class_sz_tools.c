@@ -4286,7 +4286,7 @@ int spectra_vrms2(
   index_num=i;
 
   class_alloc(array_for_sigma,
-              pclass_sz->ln_k_size_for_tSZ*index_num*sizeof(double),
+              pclass_sz->ln_k_size_for_vrms2*index_num*sizeof(double),
               pnl->error_message);
 
     //background quantities @ z:
@@ -4319,72 +4319,63 @@ int spectra_vrms2(
 
     free(pvecback);
 
+      for (i = 0; i < pclass_sz->ln_k_size_for_vrms2; i++) {
+        k = exp(pclass_sz->ln_k_for_vrms2[i]);
+        if (i == (pclass_sz->ln_k_size_for_vrms2-1)) {
+          k *= 0.9999999;
+        }
 
+        enum pk_outputs pk_for_vrms2;
+        if (pclass_sz->pk_nonlinear_for_vrms2 == 1) {
+          pk_for_vrms2 = pk_nonlinear;
+        }
+        else {
+          pk_for_vrms2 = pk_linear;
+        }
 
-      for (i=0;i<pclass_sz->ln_k_size_for_tSZ;i++) {
-        k=exp(pclass_sz->ln_k_for_tSZ[i]);
-        if (i == (pclass_sz->ln_k_size_for_tSZ-1)) k *= 0.9999999;
-// printf("ok k = %e I = %e\n",k,pk*W*W);
-    // //Input: wavenumber in 1/Mpc
-    // //Output: total matter power spectrum P(k) in \f$ Mpc^3 \f$
-  enum pk_outputs pk_for_vrms2;
-  if (pclass_sz->pk_nonlinear_for_vrms2 == 1){
-    pk_for_vrms2 = pk_nonlinear;
-  }
-  else {
-    pk_for_vrms2 = pk_linear;
-  }
-  // printf("ok k2 = %e I = %e\n",k,pk*W*W);
+        class_call(nonlinear_pk_at_k_and_z(pba,
+                                          ppm,
+                                          pnl,
+                                          pk_for_vrms2,
+                                          k,
+                                          z,
+                                          pnl->index_pk_cb,
+                                          &pk,  // number *out_pk_l
+                                          pk_ic // array out_pk_ic_l[index_ic_ic]
+                                          ),
+                  pnl->error_message,
+                  pnl->error_message);
 
-   class_call(nonlinear_pk_at_k_and_z(
-                                     pba,
-                                     ppm,
-                                     pnl,
-                                     pk_for_vrms2,
-                                     k,
-                                     z,
-                                     pnl->index_pk_cb,
-                                     &pk, // number *out_pk_l
-                                     pk_ic // array out_pk_ic_l[index_ic_ic]
-                                   ),
-                                   pnl->error_message,
-                                   pnl->error_message);
+        array_for_sigma[i*index_num+index_k] = k;
+        array_for_sigma[i*index_num+index_y] = pk*W*W;
+      }
 
-  // printf("ok k3 = %e I = %e\n",k,pk*W*W);
+      class_call(array_spline(array_for_sigma,
+                             index_num,
+                             pclass_sz->ln_k_size_for_vrms2,
+                             index_k,
+                             index_y,
+                             index_ddy,
+                             _SPLINE_EST_DERIV_,
+                             pnl->error_message),
+                pnl->error_message,
+                pnl->error_message);
 
+      class_call(array_integrate_all_spline(array_for_sigma,
+                                          index_num,
+                                          pclass_sz->ln_k_size_for_vrms2,
+                                          index_k,
+                                          index_y,
+                                          index_ddy,
+                                          vrms2,
+                                          pnl->error_message),
+                pnl->error_message,
+                pnl->error_message);
 
-    array_for_sigma[i*index_num+index_k]=k;
-    array_for_sigma[i*index_num+index_y]=pk*W*W;
-    // printf("ok k = %e I = %e\n",k,pk*W*W);
-  }
-// printf("ok z = %e\n",W);
-  class_call(array_spline(array_for_sigma,
-                          index_num,
-                          pclass_sz->ln_k_size_for_tSZ,
-                          index_k,
-                          index_y,
-                          index_ddy,
-                          _SPLINE_EST_DERIV_,
-                          pnl->error_message),
-             pnl->error_message,
-             pnl->error_message);
-//printf("ok z = %e\n",W);
-  class_call(array_integrate_all_spline(array_for_sigma,
-                                        index_num,
-                                        pclass_sz->ln_k_size_for_tSZ,
-                                        index_k,
-                                        index_y,
-                                        index_ddy,
-                                        vrms2,
-                                        pnl->error_message),
-             pnl->error_message,
-             pnl->error_message);
-//printf("ok z = %e\n",W);
-  free(array_for_sigma);
-  *vrms2 = *vrms2/(2.*_PI_*_PI_);
-// printf("ok z = %e\n",*vrms2);
-  return _SUCCESS_;
+      free(array_for_sigma);
+      *vrms2 = *vrms2/(2.*_PI_*_PI_);
 
+      return _SUCCESS_;
 }
 
 
@@ -7202,6 +7193,85 @@ double get_dyldzdlnm_at_l_z_and_m(double l,
 return result;
                                 }
 
+double get_dygldzdlnm_at_l_z_and_m(double l,
+                                  double z,
+                                  double m,
+                                  struct background * pba,
+                                  struct nonlinear * pnl,
+                                  struct class_sz_structure * pclass_sz){
+// double result = get_dndlnM_at_z_and_M(z_asked,m,pclass_sz)
+//                 *get_volume_at_z(z,pba)
+//                 *evaluate_pressure_profile(kl,pvecback,pvectsz,pba,pclass_sz);
+  // double M_halo = m;
+  double tau;
+  int first_index_back = 0;
+  double * pvecback;
+  double * pvectsz;
+ class_alloc(pvectsz,pclass_sz->tsz_size*sizeof(double),pclass_sz->error_message);
+   int i;
+   for(i = 0; i<pclass_sz->tsz_size;i++) pvectsz[i] = 0.;
+
+      class_alloc(pvecback,pba->bg_size*sizeof(double),pclass_sz->error_message);
+      class_call(background_tau_of_z(pba,z,&tau),
+                 pba->error_message,
+                 pba->error_message);
+      class_call(background_at_tau(pba,
+                                   tau,
+                                   pba->long_info,
+                                   pba->inter_normal,
+                                   &first_index_back,
+                                   pvecback),
+                 pba->error_message,
+                 pba->error_message);
+      pvectsz[pclass_sz->index_z] = z;
+      pvectsz[pclass_sz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *pvecback[pba->index_bg_rho_crit]
+                                            /pow(pba->h,2);
+      double omega = pvecback[pba->index_bg_Omega_m];
+      pvectsz[pclass_sz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      pvectsz[pclass_sz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+
+
+   // request appropriate mass conversion
+      pvectsz[pclass_sz->index_has_electron_pressure] = 1 ;
+      pvectsz[pclass_sz->index_has_galaxy] = 1 ;
+      // pclass_sz->delta_def_galaxies == 1
+      do_mass_conversions(log(m),z,pvecback,pvectsz,pba,pclass_sz);
+      evaluate_HMF_at_logM_and_z(log(m),z,pvecback,pvectsz,pba,pnl,pclass_sz);
+      double hmf = pvectsz[pclass_sz->index_hmf];
+      pvectsz[pclass_sz->index_md] = -1;//pclass_sz->index_md_dydz;
+      double kl;
+      if (l==0)
+        kl = 0.;
+      else
+        kl = (l+0.5)/sqrt(pvectsz[pclass_sz->index_chi2]);
+        
+      //Ola 
+      double r_delta_gal, c_delta_gal;
+      r_delta_gal = pvectsz[pclass_sz->index_r200c];
+      c_delta_gal = pvectsz[pclass_sz->index_c200c];
+      // ev_2h has the ng^-1 factor
+      evaluate_galaxy_profile_2h(kl,m,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,pclass_sz); //takes mass, not logM as eg hmf
+      double Wg = radial_kernel_W_galaxy_at_z(pvecback,pvectsz,pba,pclass_sz); // this has the H/c factor (H_over_c_in_h_over_Mpc)
+      // evaluate_tau_profile(kl,pvecback,pvectsz,pba,pclass_sz);
+      
+      evaluate_pressure_profile(kl,pvecback,pvectsz,pba,pclass_sz);
+      double result = hmf*pvectsz[pclass_sz->index_galaxy_profile]*pvectsz[pclass_sz->index_pressure_profile];
+      //galaxy factors
+      result *= Wg/pvectsz[pclass_sz->index_chi2]; //(H_over_c_in_h_over_Mpc) is in evaluate_galaxy_profile_2h
+      // multiply by volume element:
+      double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
+      result *= pvectsz[pclass_sz->index_chi2]/H_over_c_in_h_over_Mpc;  
+      result *= 1./pow(pclass_sz->Tcmb_gNU,1)/1.e6;
+      free(pvecback);
+      free(pvectsz);
+return result;
+                                }   
+
+
+
 double get_normalization_gas_density_profile(double z_asked, double m_asked, struct class_sz_structure * pclass_sz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
@@ -9598,6 +9668,17 @@ for (ix=0; ix<N; ix++){
 
           double p_gnfw_x = P0*pow(x[ix]/xc,gamma)*pow(1.+ pow(x[ix]/xc,alpha),-beta);
           Px[ix] = p_gnfw_x;
+
+          if (pclass_sz->use_broken_pressure == 1) {
+              double M_break = pclass_sz->M_break_pressure/pba->h;; //convert to Msun 
+              double alpha_break = pclass_sz->alpha_break_pressure;
+              // printf("Mbreak: %f\n",M_break);
+              if (m200_over_msol < M_break) {
+                  p_gnfw_x *= pow(m200_over_msol / M_break, alpha_break);
+              }
+          }  
+
+
 
           // double c_asked = pclass_sz->c_B12;//what we pass there?
           // Px[ix] = get_pressure_P_over_P_delta_at_x_M_z_b12_200c(x[ix],m200_over_msol,z,

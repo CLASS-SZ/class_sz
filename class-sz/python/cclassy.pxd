@@ -310,6 +310,7 @@ cdef extern from "class.h":
         double dndz_stretch_gal
         double shear_calibration_m
         double A_IA
+        double eta_IA
         double x_inSZ
         double x_outSZ
         double HSEbias
@@ -345,6 +346,8 @@ cdef extern from "class.h":
         double gamma0SZ
         double phi0SZ
         double eta0SZ
+        double alpha_break_pressure
+        double M_break_pressure
         double sigma8_Pcb
         double * frequencies_for_cib
         double * cib_monopole
@@ -979,6 +982,14 @@ cdef extern from "class.h":
                                       void * pba,
                                       void * pnl,
                                       void * pclass_sz)
+
+    double get_dygldzdlnm_at_l_z_and_m(double l,
+                                      double z,
+                                      double m,
+                                      void * pba,
+                                      void * pnl,
+                                      void * pclass_sz)
+
 
     double get_m200m_to_m200c_at_z_and_M(double z_asked,
                                          double m_asked,

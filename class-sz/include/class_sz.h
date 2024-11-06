@@ -459,6 +459,11 @@ struct class_sz_structure {
   int create_ref_trispectrum_for_cobaya;
 
 
+  double alpha_break_pressure;
+  double M_break_pressure;
+  int use_broken_pressure;
+
+
   int use_m500c_in_ym_relation;
   int use_m200c_in_ym_relation;
   //int has_sz_te_y_y;
@@ -1464,14 +1469,18 @@ double szcounts_ntot;
   double alpha_s_HOD;
   double M1_prime_HOD;
 
+  int centrals_only_HOD;
+  int satellites_only_HOD;
+
   double * M_min_HOD_ngal;
   double * M0_HOD_ngal;
   double * sigma_log10M_HOD_ngal;
   double * alpha_s_HOD_ngal;
   double * M1_prime_HOD_ngal;
-  double * centrals_only_ngal;
-  double * satellites_only_ngal;
-  double * photo_z_params_ngal;
+
+  int * centrals_only_ngal;
+  int * satellites_only_ngal;
+
   double * dndz_shift_ngal;
   double * dndz_stretch_ngal;
 
@@ -1871,6 +1880,13 @@ double szcounts_ntot;
   double k_min_for_pk_in_tSZ;
   double k_max_for_pk_in_tSZ;
   double * ln_k_for_tSZ;
+
+
+  int ln_k_size_for_vrms2;
+  double k_per_decade_for_vrms2;
+  double k_min_for_pk_in_vrms2;
+  double k_max_for_pk_in_vrms2;
+  double * ln_k_for_vrms2;
 
 
 int nsteps_m;
@@ -2658,6 +2674,14 @@ double get_dyldzdlnm_at_l_z_and_m(double l,
                                   struct background * pba,
                                   struct nonlinear * pnl,
                                   struct class_sz_structure * pclass_sz);
+
+double get_dygldzdlnm_at_l_z_and_m(double l,
+                                  double z,
+                                  double m,
+                                  struct background * pba,
+                                  struct nonlinear * pnl,
+                                  struct class_sz_structure * pclass_sz);
+
 
 double HOD_mean_number_of_central_galaxies(double z,
                                            double M_halo,

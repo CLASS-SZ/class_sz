@@ -1757,9 +1757,14 @@ int input_read_parameters(
 
       class_read_double("z_for_pk_hm",pclass_sz->z_for_pk_hm);
 
+
+      class_read_double("k_per_decade_for_vrms2",pclass_sz->k_per_decade_for_vrms2);
+      class_read_double("k_min_for_pk_in_vrms2",pclass_sz->k_min_for_pk_in_vrms2);
+      class_read_double("k_max_for_pk_in_vrms2",pclass_sz->k_max_for_pk_in_vrms2);
+
       class_read_double("kstar_damping_1h_term (1/Mpc)",pclass_sz->kstar_damping_1h_term_Mpc);
       class_read_int("damping_1h_term",pclass_sz->damping_1h_term);
-      class_read_double("photo_z_params",pclass_sz->photo_z_params);
+      class_read_int("photo_z_params",pclass_sz->photo_z_params);
       class_read_double("dndz_shift_source_gal",pclass_sz->dndz_shift_source_gal);
       class_read_double("dndz_shift_gal",pclass_sz->dndz_shift_gal);
       class_read_double("dndz_stretch_source_gal",pclass_sz->dndz_stretch_source_gal);
@@ -4061,11 +4066,13 @@ int input_read_parameters(
     class_alloc(pclass_sz->M0_HOD_ngal,sizeof(double *)*pclass_sz->galaxy_samples_list_num,pclass_sz->error_message);
     class_alloc(pclass_sz->x_out_truncated_nfw_profile_satellite_galaxies_ngal,sizeof(double *)*pclass_sz->galaxy_samples_list_num,pclass_sz->error_message);
     class_alloc(pclass_sz->f_cen_HOD_ngal,sizeof(double *)*pclass_sz->galaxy_samples_list_num,pclass_sz->error_message);
-    class_alloc(pclass_sz->centrals_only_ngal,sizeof(double *)*pclass_sz->galaxy_samples_list_num,pclass_sz->error_message);
-    class_alloc(pclass_sz->satellites_only_ngal,sizeof(double *)*pclass_sz->galaxy_samples_list_num,pclass_sz->error_message);
-    class_alloc(pclass_sz->photo_z_params_ngal,sizeof(double *)*pclass_sz->galaxy_samples_list_num,pclass_sz->error_message);
+    class_alloc(pclass_sz->centrals_only_ngal,sizeof(int *)*pclass_sz->galaxy_samples_list_num,pclass_sz->error_message);
+    class_alloc(pclass_sz->satellites_only_ngal,sizeof(int *)*pclass_sz->galaxy_samples_list_num,pclass_sz->error_message);
+
     class_alloc(pclass_sz->dndz_shift_ngal,sizeof(double *)*pclass_sz->galaxy_samples_list_num,pclass_sz->error_message);
     class_alloc(pclass_sz->dndz_stretch_ngal,sizeof(double *)*pclass_sz->galaxy_samples_list_num,pclass_sz->error_message);
+
+
 
     int index_g;
     for (index_g = 0;index_g<pclass_sz->galaxy_samples_list_num;index_g++){
@@ -4077,9 +4084,8 @@ int input_read_parameters(
         pclass_sz->M0_HOD_ngal[index_g] = 1e11;
         pclass_sz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g] = 1.;
         pclass_sz->f_cen_HOD_ngal[index_g] = 1.;
-        pclass_sz->centrals_only_ngal[index_g] = 0.;
-        pclass_sz->satellites_only_ngal[index_g] = 0.;
-        pclass_sz->photo_z_params_ngal[index_g] = 0.;
+        pclass_sz->centrals_only_ngal[index_g] = 0;
+        pclass_sz->satellites_only_ngal[index_g] = 0;
         pclass_sz->dndz_shift_ngal[index_g] = 0.;
         pclass_sz->dndz_stretch_ngal[index_g] = 1.;
 
@@ -4097,12 +4103,13 @@ int input_read_parameters(
         class_read_double(input_param_name,pclass_sz->x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g]);
         sprintf(input_param_name,"%s%d","f_cen_HOD_ngal_",index_g);
         class_read_double(input_param_name,pclass_sz->f_cen_HOD_ngal[index_g]);
+
         sprintf(input_param_name,"%s%d","centrals_only_ngal_",index_g);
-        class_read_double(input_param_name,pclass_sz->centrals_only_ngal[index_g]);
+        class_read_int(input_param_name,pclass_sz->centrals_only_ngal[index_g]);
+        
         sprintf(input_param_name,"%s%d","satellites_only_ngal_",index_g);
-        class_read_double(input_param_name,pclass_sz->satellites_only_ngal[index_g]);
-        sprintf(input_param_name,"%s%d","photo_z_params_ngal_",index_g);
-        class_read_double(input_param_name,pclass_sz->photo_z_params_ngal[index_g]);
+        class_read_int(input_param_name,pclass_sz->satellites_only_ngal[index_g]);
+
         sprintf(input_param_name,"%s%d","dndz_shift_ngal_",index_g);
         class_read_double(input_param_name,pclass_sz->dndz_shift_ngal[index_g]);
         sprintf(input_param_name,"%s%d","dndz_stretch_ngal_",index_g);
@@ -4293,6 +4300,8 @@ int input_read_parameters(
 
       class_read_double("M1_prime_HOD",pclass_sz->M1_prime_HOD);
 
+      class_read_int("centrals_only_HOD",pclass_sz->centrals_only_HOD);
+      class_read_int("satellites_only_HOD",pclass_sz->satellites_only_HOD);
 
       class_read_double("alpha_s_HOD",pclass_sz->alpha_s_HOD);
       class_read_double("sigma_log10M_HOD",pclass_sz->sigma_log10M_HOD);
@@ -4497,6 +4506,12 @@ class_read_double("C1_IA",pclass_sz->C1_IA);
 
 
 class_read_int("use_websky_m200m_to_m200c_conversion",pclass_sz->use_websky_m200m_to_m200c_conversion);
+
+class_read_double("M_break_pressure",pclass_sz->M_break_pressure);// = 0.731;
+class_read_double("alpha_break_pressure",pclass_sz->alpha_break_pressure);// = 0.415;
+class_read_int("use_broken_pressure",pclass_sz->use_broken_pressure);
+
+
 class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
       /* mass function */
       class_call(parser_read_string(pfc,"sub_halo_mass_function",&string1,&flag1,errmsg),
@@ -6914,7 +6929,7 @@ int input_default_params(
   pclass_sz->f_cen_HOD = 1.;
   pclass_sz->Delta_z_lens = 0.; // DES photo-z errors
   pclass_sz->Delta_z_source = 0.;
-  pclass_sz->photo_z_params = 0.; //
+  pclass_sz->photo_z_params = 0; //
   pclass_sz->dndz_shift_gal = 0; // shift and stretch params
   pclass_sz->dndz_shift_source_gal = 0; //as in https://arxiv.org/pdf/2210.08633.pdf
   pclass_sz->dndz_stretch_gal = 1.;
@@ -7114,6 +7129,10 @@ int input_default_params(
    pclass_sz->alpha_c_beta_B12 = 0.;
 
 
+   pclass_sz->use_broken_pressure = 0;
+   pclass_sz->alpha_break_pressure = 0.;
+   pclass_sz->M_break_pressure = 1.e13;
+
 
    pclass_sz->use_websky_m200m_to_m200c_conversion = 0;
 
@@ -7280,6 +7299,11 @@ int input_default_params(
   pclass_sz->k_min_for_pk_hm = 1e-4;
   pclass_sz->k_max_for_pk_hm = 1e2;
   pclass_sz->dlnk_for_pk_hm = 0.1;
+
+// for vrms2 calculation
+  pclass_sz->k_per_decade_for_vrms2 = 128.; //#default 40
+  pclass_sz->k_min_for_pk_in_vrms2 = 1.e-4;
+  pclass_sz->k_max_for_pk_in_vrms2 = 5.e1;
 
 
   //Multplicity function Tinker 2010
@@ -7773,6 +7797,9 @@ int input_default_params(
   pclass_sz->alpha_s_HOD = 1.;
   pclass_sz->sigma_log10M_HOD = 0.15;
   pclass_sz->rho_y_gal = -0.6;
+
+  pclass_sz->centrals_only_HOD = 0;
+  pclass_sz->satellites_only_HOD = 0;
 
 
   pclass_sz->include_noise_cov_y_y = 0;

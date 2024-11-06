@@ -1204,10 +1204,8 @@ cdef class Class:
             N_ngal = -1
         self._fillparfile()
         for k,v in pdict_to_update.items():
-          if k == 'betaGNFW':
-            self.tsz.betaGNFW = pdict_to_update[k]
-          if k == 'P0GNFW':
-            self.tsz.P0GNFW = pdict_to_update[k]
+          if k == 'B' or k == 'HSEbias':
+            self.tsz.HSEbias = pdict_to_update[k]
           if k == 'alpha_s_HOD':
             self.tsz.alpha_s_HOD = pdict_to_update[k]
           if k == 'sigma_log10M_HOD':
@@ -1220,22 +1218,18 @@ cdef class Class:
             for index_g in range(N_ngal):
                 if k == 'alpha_s_HOD_ngal_'+str(index_g):
                     self.tsz.alpha_s_HOD_ngal[index_g] = pdict_to_update['alpha_s_HOD_ngal_'+str(index_g)]
-            for index_g in range(N_ngal):
+                if k == 'x_out_truncated_nfw_profile_satellite_galaxies_ngal_'+str(index_g):
+                    self.tsz.x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g] = pdict_to_update['x_out_truncated_nfw_profile_satellite_galaxies_ngal_'+str(index_g)]
                 if k == 'sigma_log10M_HOD_ngal_'+str(index_g):
                     self.tsz.sigma_log10M_HOD_ngal[index_g] = pdict_to_update['sigma_log10M_HOD_ngal_'+str(index_g)]
-            for index_g in range(N_ngal):
                 if k == 'M_min_HOD_ngal_'+str(index_g):
                     self.tsz.M_min_HOD_ngal[index_g] = pdict_to_update['M_min_HOD_ngal_'+str(index_g)]
-            for index_g in range(N_ngal):
                 if k == 'M1_prime_HOD_ngal_'+str(index_g):
                     self.tsz.M1_prime_HOD_ngal[index_g] = pdict_to_update['M1_prime_HOD_ngal_'+str(index_g)]
-            for index_g in range(N_ngal):
                 if k == 'M0_HOD_ngal_'+str(index_g):
                     self.tsz.M0_HOD_ngal[index_g] = pdict_to_update['M0_HOD_ngal_'+str(index_g)]
-            for index_g in range(N_ngal):
                 if k == 'dndz_stretch_ngal_'+str(index_g):
                     self.tsz.dndz_stretch_ngal[index_g] = pdict_to_update['dndz_stretch_ngal_'+str(index_g)]
-            for index_g in range(N_ngal):
                 if k == 'dndz_shift_ngal_'+str(index_g):
                     self.tsz.dndz_shift_ngal[index_g] = pdict_to_update['dndz_shift_ngal_'+str(index_g)]
           if k == 'dndz_shift_source_gal':
@@ -1250,10 +1244,18 @@ cdef class Class:
               self.tsz.shear_calibration_m = pdict_to_update[k]
           if k == 'A_IA':
               self.tsz.A_IA = pdict_to_update[k]
+          if k == 'eta_IA':
+              self.tsz.eta_IA = pdict_to_update[k]
           if k == 'fNL':
             self.tsz.fNL = pdict_to_update[k]
+          if k == 'betaGNFW':
+            self.tsz.betaGNFW = pdict_to_update[k]
           if k == 'P0GNFW':
             self.tsz.P0GNFW = pdict_to_update[k]
+          if k == 'alphaGNFW':
+            self.tsz.alphaGNFW = pdict_to_update[k]
+          if k == 'gammaGNFW':
+            self.tsz.gammaGNFW = pdict_to_update[k]
           if k == 'c500':
             self.tsz.c500 = pdict_to_update[k]
           if k == 'M_min':
@@ -1342,6 +1344,10 @@ cdef class Class:
               self.tsz.alpha_c_xc_B12 = pdict_to_update['alpha_c_xc_B12']
           if k == 'alpha_c_beta_B12':
               self.tsz.alpha_c_beta_B12 = pdict_to_update['alpha_c_beta_B12']
+          if k == 'alpha_break_pressure':
+              self.tsz.alpha_break_pressure = pdict_to_update['alpha_break_pressure']
+          if k == 'M_break_pressure':
+              self.tsz.M_break_pressure = pdict_to_update['M_break_pressure'] 
           if k == 'x_outSZ':
               self.tsz.x_outSZ = pdict_to_update['x_outSZ']
           # CIB parameters
@@ -4286,6 +4292,9 @@ cdef class Class:
 
     def get_dydzdlnm_at_z_and_m(self,z,m,l=0):
         return get_dyldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
+
+    def get_dygdzdlnm_at_z_and_m(self,z,m,l=0):
+        return get_dygldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
 
     def get_c_delta_at_m_and_z(self,m,z,delta_def):
         if delta_def == 0:
