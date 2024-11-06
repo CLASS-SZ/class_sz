@@ -206,40 +206,9 @@ int class_sz_cosmo_init(  struct background * pba,
       + pclass_sz->has_isw_tsz;
 
 
-   // Skip the module if no SZ/halo-model computations are requested:
-    if (all_comps == _FALSE_)
-   {
-      if (pclass_sz->sz_verbose > 0)
-         printf("->No class_sz quantities requested - modules skipped.\n");
-         pclass_sz->skip_class_sz = 1;
-         return _SUCCESS_;
-   }
-
-   else
-   {
-     if (pclass_sz->sz_verbose > 0)
-        printf("->Class_sz computations. Initialization.\n");
-
-
-// printf("entering szp module");
-    pclass_sz->ln_k_size_for_tSZ = (int)(log(pclass_sz->k_max_for_pk_in_tSZ
-                                     /pclass_sz->k_min_for_pk_in_tSZ)
-                                 /log(10.)*pclass_sz->k_per_decade_for_tSZ) + 2;
-
-  class_alloc(pclass_sz->ln_k_for_tSZ,pclass_sz->ln_k_size_for_tSZ*sizeof(double),pclass_sz->error_message);
-  int i;
-  for (i=0; i<pclass_sz->ln_k_size_for_tSZ; i++)
-      pclass_sz->ln_k_for_tSZ[i]=log(pclass_sz->k_min_for_pk_in_tSZ)+i*log(10.)/pclass_sz->k_per_decade_for_tSZ;
-
-
-   // printf("need_hmf = %d\n",pclass_sz->need_hmf);
-   select_multipole_array(pclass_sz);
-   // printf("=============l array selected.\n");
-   // printf("=============ell_sz = %d\n",pclass_sz->ell_sz);
-   // printf("=============nlsz = %d\n",pclass_sz->nlSZ);
-
-   pclass_sz->chi_star = pth->ra_star*pba->h;
-   double tau;
+// initialize some background quantities
+// useful for external calculations
+    double tau;
    int first_index_back = 0;
    double * pvecback;
    double OmegaM;
@@ -284,9 +253,49 @@ int class_sz_cosmo_init(  struct background * pba,
       pclass_sz->Omega0_b = pba->Omega0_b;
       pclass_sz->Omega0_cdm = pba->Omega0_cdm;
 
+
       if (pclass_sz->f_b_gas == -1.){
         pclass_sz->f_b_gas = pba->Omega0_b/pclass_sz->Omega_m_0;
       }
+
+
+
+   // Skip the module if no SZ/halo-model computations are requested:
+    if (all_comps == _FALSE_)
+   {
+
+
+      if (pclass_sz->sz_verbose > 0)
+         printf("->No class_sz quantities requested - modules skipped.\n");
+         pclass_sz->skip_class_sz = 1;
+         return _SUCCESS_;
+   }
+
+   else
+   {
+     if (pclass_sz->sz_verbose > 0)
+        printf("->Class_sz computations. Initialization.\n");
+
+
+// printf("entering szp module");
+    pclass_sz->ln_k_size_for_tSZ = (int)(log(pclass_sz->k_max_for_pk_in_tSZ
+                                     /pclass_sz->k_min_for_pk_in_tSZ)
+                                 /log(10.)*pclass_sz->k_per_decade_for_tSZ) + 2;
+
+  class_alloc(pclass_sz->ln_k_for_tSZ,pclass_sz->ln_k_size_for_tSZ*sizeof(double),pclass_sz->error_message);
+  int i;
+  for (i=0; i<pclass_sz->ln_k_size_for_tSZ; i++)
+      pclass_sz->ln_k_for_tSZ[i]=log(pclass_sz->k_min_for_pk_in_tSZ)+i*log(10.)/pclass_sz->k_per_decade_for_tSZ;
+
+
+   // printf("need_hmf = %d\n",pclass_sz->need_hmf);
+   select_multipole_array(pclass_sz);
+   // printf("=============l array selected.\n");
+   // printf("=============ell_sz = %d\n",pclass_sz->ell_sz);
+   // printf("=============nlsz = %d\n",pclass_sz->nlSZ);
+
+   pclass_sz->chi_star = pth->ra_star*pba->h;
+ 
 
 if (pclass_sz->use_class_sz_fast_mode == 0)
    show_preamble_messages(pba,pth,pnl,ppm,pclass_sz);
@@ -13962,11 +13971,13 @@ if (pclass_sz->hmf_apply_zthreshold_to_hmf_and_bias){
   // double om0 = pclass_sz->Omega_m_0;
   // double ol0 = 1.-pclass_sz->Omega_m_0;
   // double Omega_m_at_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0);
-  double om0 = pclass_sz->Omega_m_0;
-  double om0_nonu =  pclass_sz->Omega0_cdm+pclass_sz->Omega0_b;
-  double or0 = pclass_sz->Omega_r_0;
-  double ol0 = 1.-om0-or0;
-  double Omega_m_at_z = om0_nonu*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.)); // omega_matter without neutrinos
+  // double om0 = pclass_sz->Omega_m_0;
+  // double om0_nonu =  pclass_sz->Omega0_cdm+pclass_sz->Omega0_b;
+  // double or0 = pclass_sz->Omega_r_0;
+  // double ol0 = 1.-om0-or0;
+  // double Omega_m_at_z = om0_nonu*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.)); // omega_matter without neutrinos
+
+  double Omega_m_at_z = get_Omega_m_nonu_at_z(z,pclass_sz);
 
 // Omega_m_0
 
@@ -15735,17 +15746,20 @@ class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
                       );
    }
    //HMF evaluation:
-   //Tinker et al 2008
+   //Tinker et al 2008 at 200m
    else if (pclass_sz->MF==4) {
        double zz = z;
        // if(z>3.) zz=3.;
        // double om0 = pclass_sz->Omega_m_0;
        // double ol0 = 1.-pclass_sz->Omega_m_0;
        // double Omega_m_z = om0*pow(1.+zz,3.)/(om0*pow(1.+zz,3.)+ ol0);
-       double om0 = pclass_sz->Omega_m_0;
-       double or0 = pclass_sz->Omega_r_0;
-       double ol0 = 1.-om0-or0;
-       double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.));
+      //  double om0 = pclass_sz->Omega_m_0;
+      //  double or0 = pclass_sz->Omega_r_0;
+      //  double ol0 = 1.-om0-or0;
+      //  double Omega_m_z = om0*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.));
+
+      double Omega_m_z =  get_Omega_m_nonu_at_z(z,pclass_sz);
+
       class_call(
                       // MF_T08(
                       //            &pvectsz[pclass_sz->index_mf],
@@ -15773,7 +15787,7 @@ class_alloc(pvecback,pba->bg_size*sizeof(double),pba->error_message);
    }
 
    //HMF evaluation:
-   //Tinker et al 2008 @ m500
+   //Tinker et al 2008 @ m500c
    else if (pclass_sz->MF==5) {
       class_call(
                       MF_T08_m500(
@@ -15947,11 +15961,13 @@ int evaluate_HMF_at_logM_and_z(
        // double om0 = pclass_sz->Omega_m_0;
        // double ol0 = 1.-pclass_sz->Omega_m_0;
        // double Omega_m_z = om0*pow(1.+zz,3.)/(om0*pow(1.+zz,3.)+ ol0);
-       double om0 = pclass_sz->Omega_m_0;
-       double om0_nonu = pclass_sz->Omega0_cdm+pclass_sz->Omega0_b;
-       double or0 = pclass_sz->Omega_r_0;
-       double ol0 = 1.-om0-or0;
-       double Omega_m_z = om0_nonu*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.)); //// omega_matter without neutrinos
+      //  double om0 = pclass_sz->Omega_m_0;
+      //  double om0_nonu = pclass_sz->Omega0_cdm+pclass_sz->Omega0_b;
+      //  double or0 = pclass_sz->Omega_r_0;
+      //  double ol0 = 1.-om0-or0;
+      //  double Omega_m_z = om0_nonu*pow(1.+z,3.)/(om0*pow(1.+z,3.)+ ol0 + or0*pow(1.+z,4.)); //// omega_matter without neutrinos
+      
+       double Omega_m_z = get_Omega_m_nonu_at_z(z,pclass_sz);
       class_call(
                       // MF_T08(
                       //            &pvectsz[pclass_sz->index_mf],

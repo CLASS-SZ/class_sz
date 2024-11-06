@@ -279,7 +279,6 @@ cdef class Class:
             return classy_szfast.path_to_class_sz_data + '/class_sz/class-sz/'
 
 
-
 # BB: modified for class_sz
     def set_default(self):
         # print('setting default')
@@ -372,6 +371,7 @@ cdef class Class:
         sprintf(self.fc.filename,"%s",dumc)
         self.ncp = set()
         if default: self.set_default()
+
 
 
     def __dealloc__(self):
@@ -2835,6 +2835,9 @@ cdef class Class:
         """
         return self.ba.T_cmb
 
+    def z_grid(self):
+        return self.class_szfast.cszfast_pk_grid_z
+
     # redundent with a previous Omega_m() funciton,
     # but we leave it not to break compatibility
     def Omega0_m(self):
@@ -2955,7 +2958,17 @@ cdef class Class:
         return get_f_of_sigma_at_m_and_z(m,z,&self.ba,&self.nl,&self.tsz)
 
     def get_delta_mean_from_delta_crit_at_z(self,delta_crit,z):
-        return get_delta_mean_from_delta_crit_at_z(delta_crit,z,&self.tsz)
+        if self.jax_mode:
+            om0 = self.tsz.Omega_m_0
+            om0_nonu = self.tsz.Omega0_cdm + self.tsz.Omega0_b
+            or0 = self.tsz.Omega_r_0
+            ol0 = 1. - om0 - or0
+            Omega_m_z = om0_nonu * (1. + z)**3. / (om0 * (1. + z)**3. + ol0 + or0 * (1. + z)**4.) # omega_matter without neutrinos
+            # print(Omega_m_z,om0,om0_nonu,or0,ol0)
+            delta_mean = delta_crit / Omega_m_z
+            return delta_mean
+        else:
+            return get_delta_mean_from_delta_crit_at_z(delta_crit,z,&self.tsz)
 
 
     def get_galaxy_number_counts(self,z):
@@ -4095,9 +4108,12 @@ cdef class Class:
         return get_T10_alpha_at_z(z,&self.tsz)
 
     def get_dndlnM_at_z_and_M(self,z,m):
-    
-        r = get_dndlnM_at_z_and_M(z,m,&self.tsz)
-    
+
+        if self.jax_mode:
+            # TODO: implement this
+            r = 0. 
+        else:
+            r = get_dndlnM_at_z_and_M(z,m,&self.tsz)
         return r
 
    

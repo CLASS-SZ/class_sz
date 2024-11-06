@@ -13589,15 +13589,29 @@ int load_T10_alpha_norm(struct class_sz_structure * pclass_sz)
 double get_delta_mean_from_delta_crit_at_z(double delta_crit,
                                            double z,
                                            struct class_sz_structure *  pclass_sz){
+    // double om0 = pclass_sz->Omega_m_0;
+    // double om0_nonu = pclass_sz->Omega0_cdm + pclass_sz->Omega0_b;
+    // double or0 = pclass_sz->Omega_r_0;
+    // double ol0 = 1. - om0 - or0;
+    // double Omega_m_z = om0_nonu * pow(1. + z, 3.) / (om0 * pow(1. + z, 3.) + ol0 + or0 * pow(1. + z, 4.)); // omega_matter without neutrinos
+    
+    double Omega_m_z = get_Omega_m_nonu_at_z(z,pclass_sz);
+    double delta_mean = delta_crit / Omega_m_z;
+
+    return delta_mean;
+}
+
+double get_Omega_m_nonu_at_z(double z,
+                             struct class_sz_structure * pclass_sz){
+
     double om0 = pclass_sz->Omega_m_0;
     double om0_nonu = pclass_sz->Omega0_cdm + pclass_sz->Omega0_b;
     double or0 = pclass_sz->Omega_r_0;
     double ol0 = 1. - om0 - or0;
     double Omega_m_z = om0_nonu * pow(1. + z, 3.) / (om0 * pow(1. + z, 3.) + ol0 + or0 * pow(1. + z, 4.)); // omega_matter without neutrinos
-    double delta_mean = delta_crit / Omega_m_z;
 
-    return delta_mean;
-}
+    return Omega_m_z;
+                             }
 
 
 //HMF Tinker et al 2008

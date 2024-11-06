@@ -24,7 +24,8 @@ double get_delta_mean_from_delta_crit_at_z(double delta_crit,
                                            double z,
                                            struct class_sz_structure * pclass_sz);
 
-
+double get_Omega_m_nonu_at_z(double z,
+                             struct class_sz_structure * pclass_sz);
 
 
 double get_z_of_chi(

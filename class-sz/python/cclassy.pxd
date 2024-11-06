@@ -316,6 +316,8 @@ cdef extern from "class.h":
         double mu_e
         double Omega_m_0
         double Omega_r_0
+        double Omega0_cdm
+        double Omega0_b
         double f_free
         int delta_def_custom1
         double x_out_custom1
