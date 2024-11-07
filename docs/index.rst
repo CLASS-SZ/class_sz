@@ -86,6 +86,12 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
    notebooks/class_sz_quaia_example
 
 
+.. toctree::
+   :maxdepth: 2
+   :caption: TSZ X Galaxies
+
+   notebooks/class_sz_ngal_tSZ
+
 
 
    
