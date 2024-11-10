@@ -567,7 +567,7 @@ extern "C" {
 //@{
 
 #define _Mpc_over_m_ 3.085677581282e22  /**< conversion factor from meters to megaparsecs */
-/* remark: CAMB uses 3.085678e22: good to know if you want to compare  with high accuracy */
+/* remark: CAMB uses Mpc = 3.085677581e22: good to know if you want to compare  with high accuracy */
 
 #define _Gyr_over_Mpc_ 3.06601394e2 /**< conversion factor from megaparsecs to gigayears
 				         (c=1 units, Julian years of 365.25 days) */

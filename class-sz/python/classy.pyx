@@ -2963,14 +2963,15 @@ cdef class Class:
     def get_f_of_sigma_at_m_and_z(self,m,z):
         return get_f_of_sigma_at_m_and_z(m,z,&self.ba,&self.nl,&self.tsz)
 
-    def get_delta_mean_from_delta_crit_at_z(self,delta_crit,z):
+    def get_delta_mean_from_delta_crit_at_z(self,delta_crit,z,params_values_dict=None):
         if self.jax_mode:
-            om0 = self.tsz.Omega_m_0
-            om0_nonu = self.tsz.Omega0_cdm + self.tsz.Omega0_b
-            or0 = self.tsz.Omega_r_0
-            ol0 = 1. - om0 - or0
+            params_values = self.class_szfast.get_all_relevant_params(params_values_dict)
+            
+            om0 = params_values['Omega0_m']
+            om0_nonu = params_values['Omega0_m_nonu']
+            or0 = params_values['Omega0_r']
+            ol0 = params_values['Omega_Lambda']
             Omega_m_z = om0_nonu * (1. + z)**3. / (om0 * (1. + z)**3. + ol0 + or0 * (1. + z)**4.) # omega_matter without neutrinos
-            # print(Omega_m_z,om0,om0_nonu,or0,ol0)
             delta_mean = delta_crit / Omega_m_z
             return delta_mean
         else:
