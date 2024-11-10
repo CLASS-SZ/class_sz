@@ -79,6 +79,12 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
 .. toctree::
    :maxdepth: 2
+   :caption: Halo mass function
+
+   notebooks/classy_szfast_hmf_and_sigma
+
+.. toctree::
+   :maxdepth: 2
    :caption: TSZ power spectrum
 
    notebooks/class_sz_tszpowerspectrum
