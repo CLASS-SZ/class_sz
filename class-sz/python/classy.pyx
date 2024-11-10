@@ -2720,6 +2720,25 @@ cdef class Class:
         else:
             return H_over_c_in_h_over_Mpc_array
 
+    def get_all_relevant_params(self,params_values_dict=None):
+        """
+        get_all_relevant_params(params_values_dict=None)
+
+        Get all relevant cosmological parameters from the CLASS-SZ fast mode.
+
+        Parameters
+        ----------
+        params_values_dict : dict, optional
+            Dictionary of cosmological parameters to use. If None, uses current parameters.
+
+        Returns
+        -------
+        dict
+            Dictionary containing all relevant cosmological parameters from CLASS-SZ fast mode
+        """
+        return self.class_szfast.get_all_relevant_params(params_values_dict=params_values_dict)
+
+
     def get_hubble_at_z(self, z_asked, params_values_dict=None):
         """
         get_hubble_at_z(z_asked, params_values_dict=None)
@@ -2964,6 +2983,29 @@ cdef class Class:
         return get_f_of_sigma_at_m_and_z(m,z,&self.ba,&self.nl,&self.tsz)
 
     def get_delta_mean_from_delta_crit_at_z(self,delta_crit,z,params_values_dict=None):
+        """
+        Calculates the mean density contrast at a given redshift based on a specified critical density contrast.
+
+        Parameters
+        ----------
+        delta_crit : float
+            The critical density contrast threshold
+        z : float
+            The redshift at which to calculate the mean density contrast
+        params_values_dict : dict, optional
+            Dictionary of cosmological parameters to use. If None, uses current parameters.
+
+        Returns
+        -------
+        float
+            The mean density contrast adjusted for the matter density at redshift z.
+
+        Notes
+        -----
+        Computes the mean density contrast using:
+        delta_mean = delta_crit / Omega_m_z
+        where Omega_m_z is the matter density parameter at redshift z, without neutrinos.
+        """
         if self.jax_mode:
             params_values = self.class_szfast.get_all_relevant_params(params_values_dict)
             
@@ -2977,6 +3019,15 @@ cdef class Class:
         else:
             return get_delta_mean_from_delta_crit_at_z(delta_crit,z,&self.tsz)
 
+    def get_delta_crit_from_delta_mean_at_z(self,delta_mean,z,params_values_dict=None):
+        params_values = self.class_szfast.get_all_relevant_params(params_values_dict)
+        om0 = params_values['Omega0_m']
+        om0_nonu = params_values['Omega0_m_nonu']
+        or0 = params_values['Omega0_r']
+        ol0 = params_values['Omega_Lambda']
+        Omega_m_z = om0_nonu * (1. + z)**3. / (om0 * (1. + z)**3. + ol0 + or0 * (1. + z)**4.) # omega_matter without neutrinos
+        delta_crit = delta_mean * Omega_m_z
+        return delta_crit
 
     def get_galaxy_number_counts(self,z):
         return get_galaxy_number_counts(z,&self.tsz)
@@ -4322,7 +4373,7 @@ cdef class Class:
           delta = Delta_c
         return delta
 
-    def get_r_delta_of_m_delta_at_z(self,delta,m_delta,z):
+    def get_r_delta_of_m_delta_at_z(self,delta,m_delta,z,params_values_dict=None):
         """
         Get the radius corresponding to a given overdensity delta for a halo of mass m_delta at redshift z.
 
@@ -4336,6 +4387,8 @@ cdef class Class:
             The mass of the halo within the radius r_delta.
         z : float
             The redshift.
+        params_values_dict : dict, optional
+            A dictionary of parameters to pass to the critical density calculation.
 
         Returns
         -------
@@ -4348,7 +4401,10 @@ cdef class Class:
         The formula used is: r_delta = (3 * m_delta / (4 * pi * delta * rho_crit(z)))^(1/3)
 
         """
-        return (m_delta*3./4./np.pi/delta/self.get_rho_crit_at_z(z))**(1./3.)
+        if self.jax_mode:
+            return self.class_szfast.get_r_delta_of_m_delta_at_z(delta,m_delta,z,params_values_dict=params_values_dict)
+        else:
+            return (m_delta*3./4./np.pi/delta/self.get_rho_crit_at_z(z))**(1./3.)
 
     def get_m200m_to_m200c_at_z_and_M(self,z_asked,m_asked):
         return get_m200m_to_m200c_at_z_and_M(z_asked,m_asked,&self.tsz)
@@ -4399,8 +4455,11 @@ cdef class Class:
     def get_m_nfw(self,x):
         return m_nfw(x)
 
-    def get_rho_crit_at_z(self,z_asked):
-        return get_rho_crit_at_z(z_asked,&self.ba,&self.tsz)
+    def get_rho_crit_at_z(self,z_asked,params_values_dict=None):
+        if self.jax_mode:
+            return self.class_szfast.get_rho_crit_at_z(z_asked,params_values_dict=params_values_dict)
+        else:
+            return get_rho_crit_at_z(z_asked,&self.ba,&self.tsz)
 
 
     def get_pkl_unvectorized(self,kh, z):
@@ -5260,10 +5319,28 @@ cdef class Class:
     def get_bispectrum_f2_kernel(self, double k1, double k2, double k3):
         return bispectrum_f2_kernel(k1, k2, k3)
 
-    def get_nu_at_z_and_m(self,z,m):
-        # (delc/sigma)**2
-        return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)
+    def get_nu_at_z_and_m(self,z,m,params_values_dict=None):
+        """Get the peak height nu = (delta_c/sigma)^2 at a given redshift z and mass m.
 
+        Parameters
+        ----------
+        z : float
+            Redshift
+        m : float 
+            Mass in solar masses
+        params_values_dict : dict, optional
+            Dictionary of cosmological parameters. If None, uses stored parameters.
+
+        Returns
+        -------
+        float
+            Peak height nu = (delta_c/sigma)^2 at the given z and m
+        """
+        if self.jax_mode:
+            return self.class_szfast.get_nu_at_z_and_m(z,m,params_values_dict=params_values_dict)
+        else:
+            # (delc/sigma)**2
+            return get_nu_at_z_and_m(z,m,&self.tsz,&self.ba)
 
     def get_matter_bispectrum_at_z_effective_approach_smoothed(self,k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z):
         return get_matter_bispectrum_at_z_effective_approach_smoothed(k1_in_h_over_Mpc,k2_in_h_over_Mpc,k3_in_h_over_Mpc,z,&self.tsz,&self.ba,&self.nl,&self.pm)
