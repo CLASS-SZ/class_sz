@@ -25,6 +25,22 @@ class_sz
 
 Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, LSS and Halo Model Observables Computations
 
+.. note:: 
+
+   .. raw:: html
+
+      <div style="border: 1px solid #7cb342; background-color: #e8f5e9; padding: 10px; border-radius: 5px;">
+      
+   **Class_sz** is compatible with **Jax** and now allows for **automatic differentiation** on some of its output. See
+   `here <https://class-sz.readthedocs.io/en/latest/notebooks/classy_szfast_matter_pk_linear.html#Gradients-at-all-k's>`_ 
+   for an example on the matter power spectrum. The code can now be used in Hamiltonian Monte Carlo and Simulation-Based 
+   Inference pipelines.
+
+   .. raw:: html
+
+      </div>
+
+
 .. note::
    This software is being actively developed. We welcome contributions from the community.
 
