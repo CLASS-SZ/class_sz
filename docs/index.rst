@@ -18,6 +18,11 @@ class_sz
    :target: https://class_sz.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
+.. image:: https://img.shields.io/pypi/v/classy_sz.svg
+   :target: https://pypi.org/project/classy_sz/
+   :alt: PyPI version
+
+
 Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, LSS and Halo Model Observables Computations
 
 .. note::
