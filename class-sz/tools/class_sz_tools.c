@@ -9667,8 +9667,7 @@ for (ix=0; ix<N; ix++){
           double alpha = pclass_sz->alpha_B12;
 
           double p_gnfw_x = P0*pow(x[ix]/xc,gamma)*pow(1.+ pow(x[ix]/xc,alpha),-beta);
-          Px[ix] = p_gnfw_x;
-
+          
           if (pclass_sz->use_broken_pressure == 1) {
               double M_break = pclass_sz->M_break_pressure/pba->h;; //convert to Msun 
               double alpha_break = pclass_sz->alpha_break_pressure;
@@ -9677,6 +9676,7 @@ for (ix=0; ix<N; ix++){
                   p_gnfw_x *= pow(m200_over_msol / M_break, alpha_break);
               }
           }  
+          Px[ix] = p_gnfw_x;
 
 
 
