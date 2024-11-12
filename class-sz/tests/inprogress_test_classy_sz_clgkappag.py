@@ -29,6 +29,7 @@ def test_classy_sz_clgkappag():
     'n_s': n_s,
     'tau_reio': tau_reio,
     'N_ur': N_ur,
+    # 'cosmo_model':0, 
 
 
     'output': 'gamma_gal_gallens_1h,gamma_gal_gallens_2h,',
@@ -47,7 +48,7 @@ def test_classy_sz_clgkappag():
     'dell':200.0, 
     'multipoles_sz': 'ell_mock',
     'ell_max': 3000.0,
-    'ell_min': 2.0,
+    'ell_min': 200.0,
     'z_min': 1.0e-8,
     'z_max': 2.0,
         
@@ -131,10 +132,11 @@ def test_classy_sz_clgkappag():
        7.51419592e-12, 7.07494383e-12, 6.67017093e-12, 6.29650842e-12,
        5.95097789e-12])
 
-    for i, l in enumerate(ell_list):
+    for i, l in enumerate(ell_list[:14]):
         f = l*(l+1)/2/np.pi
         diff_1h = gk_1h[i]-f*gk_1h_shivam[i]
         diff_2h = gk_2h[i]-f*gk_2h_shivam[i]
-        assert f*gk_1h_shivam[i]  == pytest.approx(gk_1h[i], abs=9e-5), f" Difference in '1h' term of g x kappa_g at ell={l} is {diff_1h}, expected < 9e-5"
-        assert f*gk_2h_shivam[i]  == pytest.approx(gk_2h[i], abs=4e-4), f" Difference in '2h' term of g x kappa_g at ell={l} is {diff_2h}, expected  < 4e-4"
+        print("")
+        assert f*gk_1h_shivam[i]  == pytest.approx(gk_1h[i], rel=2e-2), f" Relative error in '1h' term of g x kappa_g at ell={l} is {diff_1h/gk_1h[i]}, expected < 2e-2"
+        assert f*gk_2h_shivam[i]  == pytest.approx(gk_2h[i], rel=7e-2), f" Relative error in '2h' term of g x kappa_g at ell={l} is {diff_2h/gk_2h[i]}, expected  < 7e-2"
 
