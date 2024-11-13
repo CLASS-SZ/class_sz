@@ -74,12 +74,6 @@ def test_classy_sz_clgkappag():
     'class_sz_verbose': 0,
     'nonlinear_verbose': 0,
 
-    'use_fft_for_profiles_transform': 1,
-    'N_samp_fftw': 1024, #precision parameter for the bessel transform to theta space
-    'l_min_samp_fftw': 1e-12,
-    'l_max_samp_fftw': 1e12,
-    'x_min_gas_pressure_fftw': 1e-4,
-    'x_max_gas_pressure_fftw': 1e3,
 
     'P_k_max_h/Mpc':100.0,
     'k_min_for_pk_class_sz': 0.0001,
