@@ -4791,6 +4791,10 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
       class_call(parser_read_string(pfc,"gas profile",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"gas_profile",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);}
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"nfw") != NULL))
           pclass_sz->tau_profile=0;
@@ -4809,6 +4813,11 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
       class_call(parser_read_string(pfc,"gas profile mode",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"gas_profile_mode",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+      }
       if (flag1 == _TRUE_) {
         if ((strstr(string1,"agn") != NULL)){
           pclass_sz->tau_profile_mode=0;
