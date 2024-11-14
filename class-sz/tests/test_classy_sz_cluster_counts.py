@@ -41,7 +41,6 @@ pdict = {
     'redshift_epsrel': 1e-06,
     'sigma8': 0.811,
     'sigmaM_ym': 0.173,
-    'sigma_derivative': 0,
     'signal-to-noise_cut-off_for_survey_cluster_completeness': 5.0,
     'sz_selection_function_skyfracs_file': os.environ['PATH_TO_CLASS_SZ_DATA'] + '/class_sz/class-sz/class_sz_auxiliary_files/includes/so_sim_sz_mf_noise_skyfracs.txt',
     'sz_selection_function_thetas_file': os.environ['PATH_TO_CLASS_SZ_DATA'] + '/class_sz/class-sz/class_sz_auxiliary_files/includes/so_sim_sz_mf_noise_thetas.txt',

@@ -2911,8 +2911,11 @@ cdef class Class:
         r['2h'] = np.asarray(self.cl_sz()['2h'])*Tcmb_gNU**2.
         return r
 
-    def get_volume_dVdzdOmega_at_z(self,z):
-        return get_volume_at_z(z,&self.ba)
+    def get_volume_dVdzdOmega_at_z(self,z,params_values_dict=None):
+        if self.jax_mode:
+            return self.class_szfast.get_volume_dVdzdOmega_at_z(z,params_values_dict=params_values_dict)
+        else:
+            return get_volume_at_z(z,&self.ba)
 
  
     def get_z_of_chi_unvectorized(self,chi):
