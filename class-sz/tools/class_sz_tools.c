@@ -14652,7 +14652,7 @@ if     (((V->pclass_sz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->pclass_sz->
     else{
         pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->pclass_sz);
         }
-
+  result = pk1;
   evaluate_effective_galaxy_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->pclass_sz);
 
   result *= V->pvectsz[V->pclass_sz->index_halo_bias];
