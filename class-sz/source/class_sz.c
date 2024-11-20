@@ -374,6 +374,9 @@ if (pclass_sz->need_sigma == 1 || pclass_sz->has_vrms2 || pclass_sz->has_pk){
 
 // }
 
+if (pclass_sz->has_vrms2 ){
+  class_alloc(pclass_sz->array_vrms2_at_z,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
+}
 
 
    return _SUCCESS_;

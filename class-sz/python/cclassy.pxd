@@ -339,6 +339,7 @@ cdef extern from "class.h":
         double * szcat_snr
         double * szcat_z
         int need_sigma
+        int has_vrms2
         int has_pk
         double effective_galaxy_bias
         double alphaSZ
@@ -502,6 +503,7 @@ cdef extern from "class.h":
         double * array_lnk
         double * array_pknl_at_z_and_k
         double * array_pkl_at_z_and_k
+        double * array_vrms2_at_z
         int array_b_custom1_n_z
         double * array_b_custom1_ln1pz
         double * array_b_custom1_bias

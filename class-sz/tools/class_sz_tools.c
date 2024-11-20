@@ -14923,10 +14923,8 @@ if( ((V->pclass_sz->has_pk_at_z_1h == _TRUE_) && (index_md == V->pclass_sz->inde
       || ((V->pclass_sz->has_bk_ttg_at_z_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_2h))
       || ((V->pclass_sz->has_bk_ttg_at_z_3h == _TRUE_) && (index_md == V->pclass_sz->index_md_bk_ttg_at_z_3h))){
 
-        evaluate_vrms2(V->pvecback,V->pvectsz,V->pba,V->pnl,V->pclass_sz);
-        result *= V->pvectsz[V->pclass_sz->index_vrms2]/3./pow(_c_*1e-3,2.);
-
-
+        double vrms2 = get_vrms2_at_z(z,V->pclass_sz);
+        result *= vrms2;
       }
 
 
@@ -15348,8 +15346,9 @@ if (
  || ((V->pclass_sz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lensmag_1halo))
 ){
   // printf("evaluating vrms2\n");
-  evaluate_vrms2(V->pvecback,V->pvectsz,V->pba,V->pnl,V->pclass_sz);
-  result *= V->pvectsz[V->pclass_sz->index_vrms2]/3./pow(_c_*1e-3,2.);
+
+  double vrms2 = get_vrms2_at_z(z,V->pclass_sz);
+  result *= vrms2;
 }
 
 
@@ -20796,6 +20795,17 @@ return _SUCCESS_;
 // }
 
 
+if (pclass_sz->sz_verbose>1)
+    printf("-> entering tabulation routine...\n");
+
+if (pclass_sz->use_class_sz_fast_mode){
+  return _SUCCESS_;
+}
+
+
+class_alloc(pclass_sz->array_vrms2_at_z,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
+
+
 
 double * vrms2_var;
 class_alloc(vrms2_var,
@@ -20803,7 +20813,11 @@ class_alloc(vrms2_var,
             pclass_sz->error_message);
 
 
-class_alloc(pclass_sz->array_vrms2_at_z,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
+
+if (pclass_sz->sz_verbose>1){
+    printf("-> vrms array allocated...\n");
+}
+
 
 int index_z;
 
@@ -20817,6 +20831,7 @@ int index_z;
       //                                 +index_z*(log(1.+z_max)-log(1.+z_min))
       //                                 /(pclass_sz->ndim_redshifts-1.); // log(1+z)
       //                               }
+
 
             spectra_vrms2(pba,
                           ppm,

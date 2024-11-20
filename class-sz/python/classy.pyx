@@ -971,9 +971,7 @@ cdef class Class:
             else:
 
                 if 'H0' in self._pars:
-                    self.ba.h = self._pars['H0']/100.
-
-              
+                    self.ba.h = self._pars['H0']/100.              
 
 
         params_settings = self._pars.copy()
@@ -1144,6 +1142,13 @@ cdef class Class:
                     index_z_r += 1
 
 
+            if self.tsz.has_vrms2:
+              cszfast.calculate_hubble(**params_settings)
+              cszfast.calculate_vrms2(**params_settings)
+              for index_z in range(self.tsz.ndim_redshifts):
+                self.tsz.array_vrms2_at_z[index_z] = cszfast.cszfast_3c2vrms2[index_z]
+                # print(">>> array_vrms2_at_z:",self.tsz.array_vrms2_at_z[index_z])
+            # exit(0)
 
             end = time.time()
             # print('end tabulate sigma:',end-start)
@@ -2514,6 +2519,9 @@ cdef class Class:
         Return the scale invariant growth factor D(a) for CDM perturbations
         (exactly, the quantity defined by Class as index_bg_D in the background module)
 
+        Current implementation means that the background must be computed exactly. 
+        Do not set skip_background_and_thermo to True.
+
         Parameters
         ----------
         z : float
@@ -2654,7 +2662,7 @@ cdef class Class:
 
         for i in range(z_array.size):    
             # if self.tsz.use_class_sz_fast_mode == 1:
-            if self.tsz.skip_background_and_thermo:
+            if self.tsz.skip_background_and_thermo and self.tsz.use_class_sz_fast_mode == 1:
                     
                 H_array[i] = self.class_szfast.get_hubble(z_array[i])
 
@@ -5368,9 +5376,24 @@ cdef class Class:
 
 
 
-    def get_vrms2_at_z(self,z):
-        return get_vrms2_at_z(z,&self.tsz)
-
+    def get_vrms2_at_z(self, z):
+        """Get velocity dispersion at redshift z.
+        
+        Parameters
+        ----------
+        z : float or array-like
+            Redshift(s) at which to evaluate velocity dispersion
+            
+        Returns
+        -------
+        float or ndarray
+            Velocity dispersion at requested redshift(s)
+        """
+        import numpy as np
+        z = np.asarray(z)
+        if z.ndim == 0:
+            return get_vrms2_at_z(float(z), &self.tsz)
+        return np.array([get_vrms2_at_z(float(zi), &self.tsz) for zi in z])
 
     def get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(self,z,m,x):
         return get_1e6xdy_from_battaglia_pressure_at_x_z_and_m200c(z,m,x,&self.ba,&self.tsz)
