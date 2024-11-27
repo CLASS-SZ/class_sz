@@ -93,6 +93,14 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
    notebooks/classy_szfast_matter_pk_linear
 
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Biased tracers
+
+   notebooks/class_sz_quaia_example
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Halo mass function
@@ -106,18 +114,26 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
    notebooks/class_sz_tszpowerspectrum
    
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Biased tracers
-
-   notebooks/class_sz_quaia_example
-
 
 .. toctree::
    :maxdepth: 2
    :caption: TSZ X Galaxies
 
    notebooks/class_sz_ngal_tSZ
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: CIB auto
+
+   notebooks/class_sz_cibauto
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: CIB x CMB lensing
+
+   notebooks/class_sz_cibxcmblensing
    
 
 .. toctree::

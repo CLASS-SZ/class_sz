@@ -3998,7 +3998,7 @@ int input_read_parameters(
 
     class_read_int("has_cib_flux_cut",pclass_sz->has_cib_flux_cut);
     if (pclass_sz->has_cib_flux_cut != _FALSE_){
-      class_read_list_of_doubles("cib_Snu_cutoff_list [mJy]",pclass_sz->cib_Snu_cutoff_list_in_mJy,pclass_sz->cib_frequency_list_num);
+      class_read_list_of_doubles("cib_Snu_cutoff_list_in_mJy",pclass_sz->cib_Snu_cutoff_list_in_mJy,pclass_sz->cib_frequency_list_num);
     }
 
     class_read_int("galaxy_samples_list_num",pclass_sz->galaxy_samples_list_num);
@@ -4142,7 +4142,7 @@ int input_read_parameters(
      class_read_int("use_nc_1_for_all_halos_cib_HOD",pclass_sz->use_nc_1_for_all_halos_cib_HOD);
 
      class_read_int("cib_nu0_norm",pclass_sz->cib_nu0_norm);
-     class_read_int("use scale dependent bias (from non Gaussianity)",pclass_sz->has_ng_in_bh);
+     class_read_int("use_png_scale_dependent_bias",pclass_sz->has_ng_in_bh);
      class_read_double("fNL",pclass_sz->fNL);
      class_read_int("cosmo_model",pclass_sz->cosmo_model);
 
