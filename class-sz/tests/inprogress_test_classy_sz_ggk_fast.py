@@ -32,7 +32,7 @@ HOD_blue = {
 'full_path_to_dndz_gal': os.environ['PATH_TO_CLASS_SZ_DATA'] + '/class_sz/class-sz/class_sz_auxiliary_files/includes/normalised_dndz_cosmos_0.txt',
 }
 
-
+nl_tab_terms = 30
 
 
 unWISE_common = {
@@ -87,7 +87,7 @@ other_params = {
 
 
 'ndim_masses' : 80,
-'ndim_redshifts' : 50,
+'ndim_redshifts' : 30,
 
 
 'k_per_decade_for_pk' : 50,
@@ -96,24 +96,24 @@ other_params = {
 
     
 # fast:
-'n_z_psi_b1g' : 50,
-'n_l_psi_b1g' : 50,
+'n_z_psi_b1g' : nl_tab_terms,
+'n_l_psi_b1g' : nl_tab_terms,
 
-'n_z_psi_b2g' : 50,
-'n_l_psi_b2g' : 50,
+'n_z_psi_b2g' : nl_tab_terms,
+'n_l_psi_b2g' : nl_tab_terms,
 
-'n_z_psi_b2kg' : 50,
-'n_l_psi_b2kg' : 50,
+'n_z_psi_b2kg' : nl_tab_terms,
+'n_l_psi_b2kg' : nl_tab_terms,
 
-'n_z_psi_b1kg' : 50,
-'n_l_psi_b1kg' : 50,
+'n_z_psi_b1kg' : nl_tab_terms,
+'n_l_psi_b1kg' : nl_tab_terms,
 
-'n_z_psi_b1kgg' : 50,
-'n_l_psi_b1kgg' : 50,
+'n_z_psi_b1kgg' : nl_tab_terms,
+'n_l_psi_b1kgg' : nl_tab_terms,
 
-'N_samp_fftw' : 2048, # fast: 800 ;  slow: 2000
-'l_min_samp_fftw' : 1e-9,
-'l_max_samp_fftw' : 1e9,
+# 'N_samp_fftw' : 2048, # fast: 800 ;  slow: 2000
+# 'l_min_samp_fftw' : 1e-9,
+# 'l_max_samp_fftw' : 1e9,
     
 }
 
@@ -136,7 +136,7 @@ M.set({
 
 'projected_field_filter_file' : os.environ['PATH_TO_CLASS_SZ_DATA'] + '/class_sz/class-sz/class_sz_auxiliary_files/includes/wl_data_blue_50_300.txt',           
 
-'dlogell' : 0.1,
+'dlogell' : 0.2,
 'ell_max' : 10000.0,
 'ell_min' : 10.0,
 
@@ -150,7 +150,7 @@ M.set({
 # 'use_bg_at_z_in_ksz2g_eff' : 1,
 'non_linear' : 'halofit',
     
-'N_samp_fftw' : 2048, # fast: 800 ;  slow: 2000
+'N_samp_fftw' : 800, # fast: 800 ;  slow: 2000
 'l_min_samp_fftw' : 1e-8,
 'l_max_samp_fftw' : 1e8,
       })

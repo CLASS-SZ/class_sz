@@ -119,7 +119,7 @@ def contains_specific_pattern_or_keys(d):
     # Define the regular expression pattern
     pattern1 = re.compile(r'^[^,]+_(1h|2h|hf|3h|covmat|lensing_term|hsv)$')
     pattern2 = re.compile(r'^m\d+[a-zA-Z]*_to_m\d+[a-zA-Z]*$')
-    pattern3 = re.compile(r'^\((1h|2h|3h)\)$')
+    pattern3 = re.compile(r'.*\((1h|2h|3h)\)$')
     
 
     other_class_sz_keys = {"tabulate_rhob_xout_at_m_and_z", 
