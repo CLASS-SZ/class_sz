@@ -107,6 +107,22 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
    notebooks/classy_szfast_hmf_and_sigma
 
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: CMB Lensing x Galaxy lensing
+
+   notebooks/class_sz_cmblensing-x-galaxylensing
+   
+   
+.. toctree::
+   :maxdepth: 2
+   :caption: Galaxy x Galaxy lensing
+
+   notebooks/class_sz_galaxy-x-galaxylensing
+   
+
 .. toctree::
    :maxdepth: 2
    :caption: TSZ power spectrum
