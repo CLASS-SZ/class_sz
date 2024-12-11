@@ -23,6 +23,12 @@ class_sz
    :alt: PyPI version
 
 
+.. image:: https://img.shields.io/badge/arXiv-2310.18482-b31b1b.svg
+   :target: https://arxiv.org/abs/2310.18482
+   :alt: arXiv paper
+
+
+
 Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, LSS and Halo Model Observables Computations
 
 .. note:: 
