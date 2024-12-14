@@ -145,7 +145,7 @@ jobs:
       #     dpkg -L libfftw3-dev | grep '/lib'
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.14.1
+        run: python -m pip install cibuildwheel
         shell: bash
 
       # Build wheels for Linux (with custom build options)
