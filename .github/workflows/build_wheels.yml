@@ -257,6 +257,7 @@ jobs:
           CIBW_BUILD: ${{ env.CIBW_BUILD }}
           CIBW_ARCHS: "arm64"
           CIBW_SKIP: "cp27-* cp34-* cp35-* cp36-* cp37-* cp38-* pp*"
+          MACOSX_DEPLOYMENT_TARGET: "14.0"
           LDFLAGS: "-L/opt/homebrew/opt/libomp/lib -L/opt/homebrew/opt/gsl/lib -L/opt/homebrew/opt/fftw/lib"
           CPPFLAGS: "-I/opt/homebrew/opt/libomp/include -I/opt/homebrew/opt/gsl/include -I/opt/homebrew/opt/fftw/include"
           LIBRARY_PATH: "/opt/homebrew/opt/libomp/lib:/opt/homebrew/opt/gsl/lib:/opt/homebrew/opt/fftw/lib:$LIBRARY_PATH"
