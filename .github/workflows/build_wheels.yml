@@ -69,7 +69,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest,macos-latest]
-        python-version: ["3.9","3.10","3.11","3.12"]
+        python-version: ["3.9","3.10","3.11","3.12","3.13"]
         include:
           - os: ubuntu-latest
             arch: aarch64
@@ -83,6 +83,9 @@ jobs:
           - os: ubuntu-latest
             arch: aarch64
             python-version: '3.12'
+          - os: ubuntu-latest
+            arch: aarch64
+            python-version: '3.13'
           - os: macos-latest
             arch: arm64
             python-version: '3.9'
@@ -95,7 +98,9 @@ jobs:
           - os: macos-latest
             arch: arm64
             python-version: '3.12'
-
+          - os: macos-latest
+            arch: arm64
+            python-version: '3.13'
 
 
           # # Specific inclusion for Windows x86 architecture
@@ -350,7 +355,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     
     steps:
       - name: Checkout the code
