@@ -1859,6 +1859,7 @@ private(tstart, tstop,pvecsz,index_y)
     int i;
     for(i = 0; i<pcsz->pvecsz_size;i++) pvecsz[i] = 0.;
 
+// loop over y, i.e., SZ SNR bins
 #pragma omp for schedule (dynamic)
     for (index_y=0; index_y<pcsz->Nbins_y; index_y ++){
 #pragma omp flush(abort)
