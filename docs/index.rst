@@ -78,6 +78,12 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
    :caption: Hubble function
 
    notebooks/classy_szfast_hz
+   
+.. toctree::
+   :maxdepth: 2
+   :caption: Critical Density
+
+   notebooks/classy_szfast_rhos
 
 
 .. toctree::
