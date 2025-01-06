@@ -4226,6 +4226,7 @@ int input_read_parameters(
         else  if ((strstr(string1,"Custom. GNFW") != NULL)
                || (strstr(string1,"custom_gnfw") != NULL)
                || (strstr(string1,"custom_GNFW") != NULL)
+               || (strstr(string1,"GNFW") != NULL)
                || (strstr(string1,"Custom_GNFW") != NULL))
 
           pclass_sz->pressure_profile=3;
