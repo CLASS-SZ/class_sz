@@ -9,6 +9,8 @@ pip install classy_sz
 
 should work on most platforms as we uploaded pre-compiled binaries to [PyPi](https://pypi.org/project/classy-sz/#files) for Linux and MacOS, and Python version >= 3.9.
 
+You can check [our colab notebook](https://colab.research.google.com/github/CLASS-SZ/class_sz/blob/master/docs/notebooks/classy_sz_get_started.ipynb) for a working installation example. 
+
 ## setting path for CLASS-SZ data (optional)
 
 By default, the neural nets emulators (~1GB of files) will be installed in your home directory. If you're working on a computing cluster or prefer to store the data elsewhere, you can specify a custom directory.
