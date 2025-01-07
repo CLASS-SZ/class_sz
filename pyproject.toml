@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 dependencies = [
-    "classy_szfast >= 0.0.25.post12"
+    "classy_szfast >= 0.0.25.post14"
 ]
 dynamic = ["version"]
 name = "classy_sz"
