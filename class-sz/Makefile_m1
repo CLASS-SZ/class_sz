@@ -147,11 +147,6 @@ tar: $(C_ALL) $(C_TEST) $(H_ALL) $(PRE_ALL) $(INI_ALL) $(MISC_FILES) $(HYREC) $(
 
 classy_sz: libclass.a python/classy.pyx python/cclassy.pxd
 	cd python; pip install -e .
-	if [ -d "$(MDIR)/python/classy_szfast" ]; then \
-	  cd python/classy_szfast; pip install -e . ; \
-	  echo "export PYTHONPATH=$(MDIR)/python/classy_szfast:$(MDIR)/python:PYTHONPATH" >> $(MDIR)/set_class_sz_env.sh; \
-	fi
-
 
 clean: 
 	rm -rf $(WRKDIR);

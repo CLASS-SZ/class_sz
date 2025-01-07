@@ -33,6 +33,13 @@ classy_sz.compute_class_szfast()
 print("classy_sz.jax_mode",classy_sz.jax_mode)
 
 
+z = 1.
+def Hubble(H0):
+    cosmo_params.update({'H0':H0})
+    hz = classy_sz.get_hubble_at_z(z,params_values_dict = cosmo_params)
+    return hz
+
+
 
 def test_classy_sz_hz_fast():
     z = jnp.linspace(0.,20,1000)
@@ -59,3 +66,7 @@ def test_jaxification():
         assert jnp.allclose(hubble_values, jitted_hubble), "Jitted Hubble should match original"
     except Exception as e:
         assert False, f"Hubble(z) should support JAX jit, but got error: {str(e)}"
+
+def test_classy_sz_hz_fast_grad():
+    dHubble = grad(Hubble)
+    print(dHubble(76.))
