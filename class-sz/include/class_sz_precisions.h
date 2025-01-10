@@ -78,6 +78,13 @@ class_sz_pclass_sz_parameter(use_pknl_in_2hterms_IA_only,int,0)
 
 class_sz_pclass_sz_parameter(use_pkl_in_linbias_calc,int,0)
 
+class_sz_pclass_sz_parameter(use_pk_z_bins,int,0)
+class_sz_pclass_sz_parameter(pk_z_bins_z1,double,0.)
+class_sz_pclass_sz_parameter(pk_z_bins_z2,double,0.)
+class_sz_pclass_sz_parameter(pk_z_bins_A0,double,0.)
+class_sz_pclass_sz_parameter(pk_z_bins_A1,double,0.)
+class_sz_pclass_sz_parameter(pk_z_bins_A2,double,0.)
+
 class_sz_pclass_sz_parameter(n_k_density_profile,int,100)
 class_sz_pclass_sz_parameter(n_m_density_profile,int,100)
 class_sz_pclass_sz_parameter(n_z_density_profile,int,100)

@@ -2120,11 +2120,12 @@ if (pcsz->has_completeness == 1){
                 pcsz->error_message);
 
     int index_y_th = 0;
+    // initialize accrosss dim_1, i.e., y or snr 
     for (index1=0;index1<dim_1;index1++)
     {
       class_alloc(erfs[index1],dim_2*sizeof(double*),pcsz->error_message);
 
-
+      // initialize accrosss dim_2, i.e., theta
       for (index2=0;index2<dim_2;index2++){
 
           erfs[index1][index2]=0.;
@@ -2157,12 +2158,12 @@ if (pcsz->has_completeness == 1){
         for (index_patches=0;index_patches<npatches;index_patches++){
           //fsky += pclass_sz->skyfracs[index_patches];
 
-                double y1;
+                double y1; // noise or "ylim"
                 if (pclass_sz->use_skyaveraged_noise == 0){
                   y1 = pclass_sz->ylims[index_patches][index2];
                 }
                 else{
-                  y1 =  pclass_sz->sky_averaged_ylims[index2];
+                  y1 = pclass_sz->sky_averaged_ylims[index2];
                 }
 
 
@@ -2287,34 +2288,6 @@ if (pcsz->has_completeness == 1){
 
         double mu = log(yp);
         double int_comp =1.e-300;
-
-        //double y_interp = get_szcountsz_sigma_at_theta_in_patch(thp,index_patches,pclass_sz);
-
-        // double mu_high = mu + 5.*(sqrt(2.)*pclass_sz->sigmaM_ym);
-        // int l1y_high, l2y_high;
-        // int l1y_low, l2y_low;
-        // find_y_bin(pclass_sz,mu_high,l_array,theta_array);
-        // l1y_high = l_array[1];
-        // l2y_high = l_array[2];
-        // // double y1 = theta_array[1];
-        // // double y2 = theta_array[2];
-        //
-        // double mu_low = mu - 5.*(sqrt(2.)*pclass_sz->sigmaM_ym);
-        // find_y_bin(pclass_sz,mu_low,l_array,theta_array);
-        // l1y_low = l_array[1];
-        // l2y_low = l_array[2];
-        // // double y1 = theta_array[1];
-        // // double y2 = theta_array[2];
-
-        //
-        // if (l1y_low != l2y_low && l1y_high != l2y_high){
-
-
-
-        // double y = yp;
-
-
-
 
         // double lny=pcsz->lnymin;
         int k;
