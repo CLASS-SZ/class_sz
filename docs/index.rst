@@ -108,8 +108,9 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
 .. toctree::
    :maxdepth: 2
-   :caption: Biased tracers
+   :caption: Linearly biased tracers
 
+   notebooks/class_sz_linearlybiased_tracer
    notebooks/class_sz_quaia_example
 
 
