@@ -2759,7 +2759,7 @@ cdef class Class:
         get_angular_distance_at_z(z_asked, params_values_dict=None)
         """
         self.class_szfast.calculate_chi(**params_values_dict)
-        return self.class_szfast.chi_interp(z_asked)
+        return self.class_szfast.chi_interp(z_asked)/(1.+z_asked)
 
     def Om_m(self, z):
         """

@@ -33,7 +33,7 @@ def test_classy_sz_daz_fast():
     expected_values = np.array([   0.          , 3663.16238962, 5619.19639645, 6811.47532722, 7626.15118295,
                                8226.71965179, 8692.09953795, 9066.6049671, 9375.83447402, 9637.42733764])
     
-    result = classy_sz.get_angular_distance_at_z(z, params_values_dict=cosmo_params)
+    result = classy_sz.get_angular_distance_at_z(z, params_values_dict=cosmo_params)*(1.+z)
 
     
     np.testing.assert_allclose(result, expected_values, rtol=1e-5)
@@ -52,7 +52,7 @@ def test_classy_sz_daz_fast_cosmomodel_0():
     expected_values = np.array([0.          , 3663.04149234, 5618.94079371, 6811.03765429, 7625.75439281,
                                8226.01526502, 8691.41376217, 9065.71293446, 9375.23339903, 9636.58188782])
     
-    result = classy_sz.get_angular_distance_at_z(z, params_values_dict=cosmo_params)
+    result = classy_sz.get_angular_distance_at_z(z, params_values_dict=cosmo_params)*(1.+z)
 
     
     np.testing.assert_allclose(result, expected_values, rtol=1e-5)
