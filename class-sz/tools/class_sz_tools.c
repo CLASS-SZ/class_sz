@@ -9079,6 +9079,8 @@ pclass_sz->has_kSZ_kSZ_gal_1h = has_ksz_bkp;
 double get_gas_pressure_profile_at_k(double k_asked,
                                      struct class_sz_structure * pclass_sz){
 
+// this function is used for halo model cl's 
+// for custom gnfw profile 
   if (log(k_asked)<pclass_sz->array_pressure_profile_ln_k[0])
     return 0.;
   if (log(k_asked)>pclass_sz->array_pressure_profile_ln_k[pclass_sz->n_k_pressure_profile-1])
