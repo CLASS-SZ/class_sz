@@ -368,7 +368,7 @@ jobs:
           path: wheels-and-sdist-${{ matrix.os }}-${{ matrix.python-version }}
     
       - name: Install dependencies for uploading
-        run: python -m pip install -U pip twine
+        run: python -m pip install -U pip twine packaging
     
       - name: Upload distributions to PyPI
         run: |
