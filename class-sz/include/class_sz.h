@@ -2675,6 +2675,13 @@ double get_dyldzdlnm_at_l_z_and_m(double l,
                                   struct nonlinear * pnl,
                                   struct class_sz_structure * pclass_sz);
 
+double get_dyl2dzdlnm_at_l_z_and_m(double l,
+                                   double z,
+                                   double m,
+                                   struct background * pba,
+                                   struct nonlinear * pnl,
+                                   struct class_sz_structure * pclass_sz);
+
 double get_dygldzdlnm_at_l_z_and_m(double l,
                                   double z,
                                   double m,
