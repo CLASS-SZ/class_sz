@@ -2925,6 +2925,9 @@ cdef class Class:
         else:
             return get_volume_at_z(z,&self.ba)
 
+    def get_sigma8_and_der(self,params_values_dict=None):
+        return self.class_szfast.get_sigma8_and_der(params_values_dict=params_values_dict)
+
  
     def get_z_of_chi_unvectorized(self,chi):
         return get_z_of_chi(chi,&self.tsz,&self.ba)
