@@ -69,7 +69,7 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
    :maxdepth: 2
    :caption: Input parameters
 
-   notebooks/class_szfast_parameters_and_derived_parameters
+   notebooks/classy_szfast_parameters_and_derived_parameters
 
 
    
