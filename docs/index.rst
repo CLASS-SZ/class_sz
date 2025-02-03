@@ -120,7 +120,11 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
    notebooks/classy_szfast_hmf_and_sigma
 
+.. toctree::
+   :maxdepth: 2
+   :caption: CMB Lensing
 
+   notebooks/classy_szfast_cmblensing.ipynb
 
 .. toctree::
    :maxdepth: 2
