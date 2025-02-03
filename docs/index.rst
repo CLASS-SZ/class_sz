@@ -51,6 +51,10 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
    This software is being actively developed. We welcome contributions from the community.
 
 
+.. note::
+   This documentation shows some of the capabilities of the code. `Legacy notebooks <https://github.com/CLASS-SZ/notebooks>`_ (not maintained and which may not run smoothly) present further calculations (almost all you need for CMB/LSS) and are gradually being imported into this documentation.
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Getting Started
