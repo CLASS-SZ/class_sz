@@ -9,8 +9,7 @@
 #include "gsl/gsl_sf_expint.h"
 #include "gsl/gsl_sf_lambert.h"
 # include <fftw3.h>
-// # include <gsl_integration.h>
-// #include "fft.h"
+
 
 
 #define _pk_at_z_1h_ ((pclass_sz->has_pk_at_z_1h == _TRUE_) && (index_md == pclass_sz->index_md_pk_at_z_1h))
