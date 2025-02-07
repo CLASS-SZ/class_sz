@@ -387,13 +387,18 @@ cdef class Class:
             free(self.fc.filename)
 
     # Set up the dictionary
-    def set(self,*pars,**kars):
+    def set(self,*pars,**kargs):
         oldpars = self._pars.copy()
+        # pars = kargs
+        # print('pars:',pars)
+        # print('kargs:',kargs)
+        # print('len(pars):',len(pars))
+        # print('len(kargs):',len(kargs))
         if len(pars)==1:
             self._pars.update(dict(pars[0]))
         elif len(pars)!=0:
             raise CosmoSevereError("bad call")
-        self._pars.update(kars)
+        self._pars.update(kargs)
         if viewdictitems(self._pars) <= viewdictitems(oldpars):
           return # Don't change the computed states, if the new dict was already contained in the previous dict
         self.computed=False
@@ -403,67 +408,71 @@ cdef class Class:
             pass
         self.logger = logging.getLogger(__name__)
 
-        
-        if len(pars)==1:
-            # import pprint
-            # print('_pars:')
-            # pprint.pprint(dict(pars[0]))
-                # sys.exit(0)
-            ## ensure consistency when passing cosmo_model parameter
-            pars = dict(pars[0])
-            if 'cosmo_model' in pars:
-                self._pars['T_ncdm'] = 0.71611 # this is the default value in class 
-                if pars['cosmo_model'] == 5:
-                    #print('cosmo_model is set to mnu-3states')
-                    self._pars['N_ur'] = 0.00641 # this is the default value in class v2 to get Neff = 3.046
-                    self._pars['N_ncdm'] = 1
-                    self._pars['deg_ncdm'] = 3
-                    self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
-                    if 'm_ncdm' in pars:
-                        self._pars['m_ncdm'] = pars['m_ncdm']
-                    else:
-                        self._pars['m_ncdm'] = 0.02
-                elif pars['cosmo_model'] == 6:
-                    #print('cosmo_model is set to ede-v2')
-                    self._pars['N_ur'] = 0.00441 # this is the default value in class v3 to get Neff = 3.044
-                    self._pars['N_ncdm'] = 1
-                    self._pars['deg_ncdm'] = 3
-                    if 'm_ncdm' in pars:
-                        self._pars['m_ncdm'] = pars['m_ncdm']
-                    else:
-                        self._pars['m_ncdm'] = 0.02
-                    self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/PRIMAT21_class_format.dat'
-                elif pars['cosmo_model'] == 1:
-                    #print('cosmo_model is set to mnu')
-                    self._pars['N_ur'] = 2.0328  # this is the default value in class v2 to get Neff = 3.046
-                    self._pars['N_ncdm'] = 1
-                    self._pars['deg_ncdm'] = 1
-                    if 'm_ncdm' in pars:
-                        self._pars['m_ncdm'] = pars['m_ncdm']
-                    else:
-                        self._pars['m_ncdm'] = 0.06
-                    self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
-                elif pars['cosmo_model'] == 2:
-                    #print('cosmo_model is set to neff')
-                    # self._pars['N_ur'] = 2.0328  # this is the default value in class v2 to get Neff = 3.046
-                    self._pars['N_ncdm'] = 1
-                    self._pars['deg_ncdm'] = 1
-                    self._pars['m_ncdm'] = 0.06
-                    if 'N_ur' in pars:
-                        self._pars['N_ur'] = pars['N_ur']
-                    else:
-                        self._pars['N_ur'] = 2.0328 
-                    self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
+        # print('parsing pars:',pars)
+        # print('parsing kargs:',kargs)
+        # if len(pars)==1 or len(kargs)>=1:
+        # import pprint
+        # print('_pars:')
+        # pprint.pprint(dict(pars[0]))
+            # sys.exit(0)
+        ## ensure consistency when passing cosmo_model parameter
+        # pars = dict(pars[0])
+        if len(pars)==0:
+            pars = kargs
+        if 'cosmo_model' in pars or 'cosmo_model' in kargs:
+            self._pars['T_ncdm'] = 0.71611 # this is the default value in class 
+            if pars['cosmo_model'] == 5:
+                #print('cosmo_model is set to mnu-3states')
+                self._pars['N_ur'] = 0.00641 # this is the default value in class v2 to get Neff = 3.046
+                self._pars['N_ncdm'] = 1
+                self._pars['deg_ncdm'] = 3
+                self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
+                if 'm_ncdm' in pars:
+                    self._pars['m_ncdm'] = pars['m_ncdm']
                 else:
-                    self._pars['N_ur'] =  2.0328 # this is the default value in class v2 to get Neff = 3.046
-                    self._pars['N_ncdm'] = 1
-                    self._pars['deg_ncdm'] = 1
+                    self._pars['m_ncdm'] = 0.02
+            elif pars['cosmo_model'] == 6:
+                #print('cosmo_model is set to ede-v2')
+                self._pars['N_ur'] = 0.00441 # this is the default value in class v3 to get Neff = 3.044
+                self._pars['N_ncdm'] = 1
+                self._pars['deg_ncdm'] = 3
+                if 'm_ncdm' in pars:
+                    self._pars['m_ncdm'] = pars['m_ncdm']
+                else:
+                    self._pars['m_ncdm'] = 0.02
+                self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/PRIMAT21_class_format.dat'
+            elif pars['cosmo_model'] == 1:
+                #print('cosmo_model is set to mnu')
+                self._pars['N_ur'] = 2.0328  # this is the default value in class v2 to get Neff = 3.046
+                self._pars['N_ncdm'] = 1
+                self._pars['deg_ncdm'] = 1
+                if 'm_ncdm' in pars:
+                    self._pars['m_ncdm'] = pars['m_ncdm']
+                else:
                     self._pars['m_ncdm'] = 0.06
-                    self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
+                self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
+            elif pars['cosmo_model'] == 2:
+                #print('cosmo_model is set to neff')
+                # self._pars['N_ur'] = 2.0328  # this is the default value in class v2 to get Neff = 3.046
+                self._pars['N_ncdm'] = 1
+                self._pars['deg_ncdm'] = 1
+                self._pars['m_ncdm'] = 0.06
+                if 'N_ur' in pars:
+                    self._pars['N_ur'] = pars['N_ur']
+                else:
+                    self._pars['N_ur'] = 2.0328 
+                self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
+            else:
+                # print('cosmo_model is set to 0, lcdm with Neff = 3.046 and mnu = 0.06 eV')
+                self._pars['N_ur'] =  2.0328 # this is the default value in class v2 to get Neff = 3.046
+                self._pars['N_ncdm'] = 1
+                self._pars['deg_ncdm'] = 1
+                self._pars['m_ncdm'] = 0.06
+                self._pars['sBBN file'] = self.PATH_TO_CLASS_SZ_DATA + '/bbn/sBBN_2017.dat'
 
-                # sys.exit()
+            # sys.exit()
 
-        #print('final _pars:')
+        # print('final _pars:', self._pars)
         #pprint.pprint(self._pars)
         # print('pars:')
         # pprint(pars)
