@@ -85,6 +85,7 @@
 #define _gal_gallens_1h_ ((pclass_sz->has_gal_gallens_1h == _TRUE_) && (index_md == pclass_sz->index_md_gal_gallens_1h))
 #define _gallens_gallens_2h_ ((pclass_sz->has_gallens_gallens_2h == _TRUE_) && (index_md == pclass_sz->index_md_gallens_gallens_2h))
 #define _gallens_gallens_1h_ ((pclass_sz->has_gallens_gallens_1h == _TRUE_) && (index_md == pclass_sz->index_md_gallens_gallens_1h))
+#define _gallens_gallens_hf_ ((pclass_sz->has_gallens_gallens_hf == _TRUE_) && (index_md == pclass_sz->index_md_gallens_gallens_hf))
 #define _gallens_lens_2h_ ((pclass_sz->has_gallens_lens_2h == _TRUE_) && (index_md == pclass_sz->index_md_gallens_lens_2h))
 #define _gallens_lens_1h_ ((pclass_sz->has_gallens_lens_1h == _TRUE_) && (index_md == pclass_sz->index_md_gallens_lens_1h))
 #define _gal_lensmag_hf_ ((pclass_sz->has_gal_lensmag_hf == _TRUE_) && (index_md == pclass_sz->index_md_gal_lensmag_hf))
@@ -239,6 +240,7 @@ struct class_sz_structure {
   double * cl_gal_gallens_2h;
   double * cl_gallens_gallens_1h;
   double * cl_gallens_gallens_2h;
+  double * cl_gallens_gallens_hf;
   double * cl_gallens_lens_1h;
   double * cl_gallens_lens_2h;
   double * thetas_arcmin;
@@ -891,6 +893,11 @@ struct class_sz_structure {
   int index_md_gallens_lens_2h;
   int index_integrand_id_gallens_lens_2h_first;
   int index_integrand_id_gallens_lens_2h_last;
+
+  int has_gallens_gallens_hf;
+  int index_md_gallens_gallens_hf;
+  int index_integrand_id_gallens_gallens_hf_first;
+  int index_integrand_id_gallens_gallens_hf_last;
 
   int has_gallens_lens_1h;
   int index_md_gallens_lens_1h;

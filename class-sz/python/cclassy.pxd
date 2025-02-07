@@ -400,6 +400,7 @@ cdef extern from "class.h":
         double * cl_gal_gallens_2h
         double * cl_gallens_gallens_1h
         double * cl_gallens_gallens_2h
+        double * cl_gallens_gallens_hf
         double * cl_gallens_lens_1h
         double * cl_gallens_lens_2h
         double * thetas_arcmin

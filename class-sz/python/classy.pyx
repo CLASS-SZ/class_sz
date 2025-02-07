@@ -3077,9 +3077,11 @@ cdef class Class:
         cl['ell'] = []
         cl['1h'] = []
         cl['2h'] = []
+        cl['hf'] = []
         for index in range(self.tsz.nlSZ):
             cl['1h'].append(self.tsz.cl_gallens_gallens_1h[index])
             cl['2h'].append(self.tsz.cl_gallens_gallens_2h[index])
+            cl['hf'].append(self.tsz.cl_gallens_gallens_hf[index])
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
@@ -4356,8 +4358,6 @@ cdef class Class:
     def get_dydzdlnm_at_z_and_m(self,z,m,l=0):
         return get_dyldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
 
-    def get_dyl2dzdlnm_at_z_and_m(self,z,m,l=0):
-        return get_dyl2dzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
 
     def get_dygdzdlnm_at_z_and_m(self,z,m,l=0):
         return get_dygldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
