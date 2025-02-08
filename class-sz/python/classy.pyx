@@ -107,47 +107,42 @@ def contains_specific_keys(d,specific_keys = {"tCl", "lCl", "pCl", "mPk"}):
     return False
 
 
-
+import re
 
 def contains_specific_pattern_or_keys(d):
-    # Extract the string from dict["output"]
     output_string = d.get("output", "")
     
-    # Split the string into individual keys
-    output_keys = {key.strip() for key in output_string.split(",") if key.strip()}
+    # Split on commas and/or whitespace
+    output_keys = {key.strip() for key in re.split(r'[\s,]+', output_string) if key.strip()}
     
-    # Define the regular expression pattern
     pattern1 = re.compile(r'^[^,]+_(1h|2h|hf|3h|covmat|lensing_term|hsv)$')
     pattern2 = re.compile(r'^m\d+[a-zA-Z]*_to_m\d+[a-zA-Z]*$')
     pattern3 = re.compile(r'.*\((1h|2h|3h)\)$')
     
-
-    other_class_sz_keys = {"tabulate_rhob_xout_at_m_and_z", 
-                            "scale_dependent_bias", 
-                            "n5k",
-                            "sz_unbinned_cluster_counts",
-                            "sz_cluster_counts_fft",
-                            "dndM","dndm","dndlnM","dndlnm",
-                            "sz_cluster_counts",
-                            "isw_auto",
-                            "isw_tsz",
-                            "isw_lens",
-                            "vrms2",
-                            "hmf",
-                            "cov(N,N)",
-                            "te_y_y",
-                            "dydz"
-                            }
+    other_class_sz_keys = {
+        "tabulate_rhob_xout_at_m_and_z", 
+        "scale_dependent_bias", 
+        "n5k",
+        "sz_unbinned_cluster_counts",
+        "sz_cluster_counts_fft",
+        "dndM","dndm","dndlnM","dndlnm",
+        "sz_cluster_counts",
+        "isw_auto",
+        "isw_tsz",
+        "isw_lens",
+        "vrms2",
+        "hmf",
+        "cov(N,N)",
+        "te_y_y",
+        "dydz",
+        "tSZ_1h"
+    }
     
-    # Check if any key matches the patterns
     for key in output_keys:
         if pattern1.match(key) or pattern2.match(key) or pattern3.match(key):
             return True
-
-
         if key in other_class_sz_keys:
             return True
-    
     return False
 
 
@@ -943,6 +938,8 @@ cdef class Class:
                 self._pars['skip_background_and_thermo'] = 0
                 self._pars['skip_pkl'] = 0
 
+                #print(self._pars)
+
 
                 ## check if we need pknl : 
 
@@ -1052,6 +1049,7 @@ cdef class Class:
           end = time.time()
 
 
+        #print("skip_sigma8_and_der", self._pars['skip_sigma8_and_der'])
 
         if self._pars['skip_sigma8_and_der'] == 0:
 
@@ -1060,6 +1058,7 @@ cdef class Class:
           end = time.time()
 
           self.sigma8_fast = cszfast.sigma8
+          #print("sigma8_fast", self.sigma8_fast)
           self.Neff_fast = cszfast.Neff
           self.A_s_fast = cszfast.A_s_fast
           self.logA_fast = cszfast.logA_fast
@@ -1078,7 +1077,7 @@ cdef class Class:
 
 
 
-
+        #print("skip_background_and_thermo", self._pars['skip_background_and_thermo'])
         if self._pars['skip_background_and_thermo']:
           
           if self._pars['skip_chi'] == 0:
@@ -1099,8 +1098,9 @@ cdef class Class:
           # start = time.time()
           # self.compute(level=["thermodynamics"])
           # end = time.time()
-          # print('>>> class_sz bg/th calculation took:',end-start) # this takes < 1e-4s
+          #print('>>> class_sz bg/th calculation took:',end-start) # this takes < 1e-4s
           self.tsz.use_class_sz_fast_mode = 1
+          #print("init cosmo")
           if class_sz_cosmo_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
           &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
               self.struct_cleanup()
@@ -1115,7 +1115,7 @@ cdef class Class:
           else:
 
             start = time.time()
-
+            #print("calculate sigma")
             cszfast.calculate_sigma(**params_settings)
 
             if self.tsz.need_sigma == 1:
@@ -1161,6 +1161,7 @@ cdef class Class:
 
             end = time.time()
             # print('end tabulate sigma:',end-start)
+            #print("tabulate sigma")
             if class_sz_tabulate_init(&(self.ba), &(self.th), &(self.pt), &(self.nl), &(self.pm),
             &(self.sp),&(self.le),&(self.tsz),&(self.pr)) == _FAILURE_:
                 self.struct_cleanup()
