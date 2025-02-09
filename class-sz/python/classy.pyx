@@ -4357,7 +4357,9 @@ cdef class Class:
 
     def get_dydzdlnm_at_z_and_m(self,z,m,l=0):
         return get_dyldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
-
+    
+    def get_dyl2dzdlnm_at_z_and_m(self,z,m,l=0):
+        return get_dyl2dzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
 
     def get_dygdzdlnm_at_z_and_m(self,z,m,l=0):
         return get_dygldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)

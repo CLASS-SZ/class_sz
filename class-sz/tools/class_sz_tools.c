@@ -7107,6 +7107,86 @@ double get_dkappacmbdz_at_l_and_z(double l,
       return result;
                                   }
 
+
+                                  
+double get_dyl2dzdlnm_at_l_z_and_m(double l,
+                                   double z,
+                                   double m,
+                                   struct background * pba,
+                                   struct nonlinear * pnl,
+                                   struct class_sz_structure * pclass_sz){
+
+
+  double tau;
+  int first_index_back = 0;
+
+
+  double * pvecback;
+  double * pvectsz;
+ class_alloc(pvectsz,pclass_sz->tsz_size*sizeof(double),pclass_sz->error_message);
+   int i;
+   for(i = 0; i<pclass_sz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc(pvecback,pba->bg_size*sizeof(double),pclass_sz->error_message);
+      class_call(background_tau_of_z(pba,z,&tau),
+                 pba->error_message,
+                 pba->error_message);
+
+      class_call(background_at_tau(pba,
+                                   tau,
+                                   pba->long_info,
+                                   pba->inter_normal,
+                                   &first_index_back,
+                                   pvecback),
+                 pba->error_message,
+                 pba->error_message);
+
+
+
+
+      pvectsz[pclass_sz->index_z] = z;
+      pvectsz[pclass_sz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *pvecback[pba->index_bg_rho_crit]
+                                            /pow(pba->h,2);
+
+      double omega = pvecback[pba->index_bg_Omega_m];
+      pvectsz[pclass_sz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      pvectsz[pclass_sz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+
+
+      // request appropriate mass conversion
+      pvectsz[pclass_sz->index_has_electron_pressure] = 1 ;
+
+      do_mass_conversions(log(m),z,pvecback,pvectsz,pba,pclass_sz);
+      evaluate_HMF_at_logM_and_z(log(m),z,pvecback,pvectsz,pba,pnl,pclass_sz);
+
+      double hmf = pvectsz[pclass_sz->index_hmf];
+      pvectsz[pclass_sz->index_md] = -1;//pclass_sz->index_md_dydz;
+
+
+      double kl;
+      if (l==0)
+        kl = 0.;
+      else
+        kl = (l+0.5)/sqrt(pvectsz[pclass_sz->index_chi2]);
+
+      evaluate_pressure_profile(kl,pvecback,pvectsz,pba,pclass_sz);
+
+
+      double result = hmf*pow(pvectsz[pclass_sz->index_pressure_profile],2);
+
+      // multiply by volume element:
+      double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
+      result *= pvectsz[pclass_sz->index_chi2]/H_over_c_in_h_over_Mpc;
+      result *= 1./pow(pclass_sz->Tcmb_gNU,2);
+      free(pvecback);
+      free(pvectsz);
+
+return result;
+                                }
+
 double get_dyldzdlnm_at_l_z_and_m(double l,
                                   double z,
                                   double m,
