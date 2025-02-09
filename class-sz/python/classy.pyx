@@ -412,9 +412,13 @@ cdef class Class:
             # sys.exit(0)
         ## ensure consistency when passing cosmo_model parameter
         # pars = dict(pars[0])
+        # print(len(pars))
         if len(pars)==0:
             pars = kargs
+        else:
+            pars = dict(pars[0])
         if 'cosmo_model' in pars or 'cosmo_model' in kargs:
+            # print("cosmo_model", pars['cosmo_model'])
             self._pars['T_ncdm'] = 0.71611 # this is the default value in class 
             if pars['cosmo_model'] == 5:
                 #print('cosmo_model is set to mnu-3states')
