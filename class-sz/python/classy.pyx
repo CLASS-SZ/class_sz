@@ -27,7 +27,8 @@ from libc.math cimport pow
 import mcfit
 import time
 import re
-
+import jax
+jax.config.update("jax_enable_x64", False)
 import jax.numpy as jnp
 import jax.scipy as jscipy
 
