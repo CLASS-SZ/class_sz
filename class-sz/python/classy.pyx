@@ -280,8 +280,8 @@ cdef class Class:
         # print('setting default')
         _pars = {
             "output":"tCl",
-            'skip_input': 1, # just use input params and emulate
-            'skip_background_and_thermo': 1, # skip background and thermo solving
+            'skip_input': 0, # set to 1 to just use input params and emulate
+            'skip_background_and_thermo': 0, # set to 1 to skip background and thermo solving
             'skip_pknl': 1, # do not emulate pk_nl
             'skip_pkl': 1, # do not emulate pk_l
             'skip_chi': 1, # do not emulate chi
@@ -290,7 +290,7 @@ cdef class Class:
             'skip_sigma8_at_z': 1,
             'skip_sigma8_and_der':0, # emulate derived parameters
             'skip_cmb': 0,
-            'cosmo_model': 6, # set ede-v2 emulators as default
+            'cosmo_model': 0, # set lcdm emulators as default # 6 for ede-v2
             'jax': 0,
             ### TBD adjust default neutrino settings to avoid inconsistency. 11 oct 2024. 
 
@@ -316,6 +316,8 @@ cdef class Class:
 
 
             'classy_sz_verbose': 'none',
+
+            'non_linear': 'hmcode',
 
             'ndim_masses': 500,
             'ndim_redshifts': 100,
@@ -524,26 +526,27 @@ cdef class Class:
         if self.tsz.use_class_sz_fast_mode == 1 and self.tsz.skip_class_sz == 0:
             szcounts_free(&self.csz,&self.tsz)
             class_sz_free(&self.tsz)
-        if "szcount" in self.ncp: #BB: added for class_sz
-            szcounts_free(&self.csz,&self.tsz)
-        if "class_sz_integrate" in self.ncp:  #BB: added for class_sz
-            class_sz_free(&self.tsz)
-        if "lensing" in self.ncp:
-            lensing_free(&self.le)
-        if "spectra" in self.ncp:
-            spectra_free(&self.sp)
-        if "transfer" in self.ncp:
-            transfer_free(&self.tr)
-        if "nonlinear" in self.ncp:
-            nonlinear_free(&self.nl)
-        if "primordial" in self.ncp:
-            primordial_free(&self.pm)
-        if "perturb" in self.ncp:
-            perturb_free(&self.pt)
-        if "thermodynamics" in self.ncp:
-            thermodynamics_free(&self.th)
-        if "background" in self.ncp:
-            background_free(&self.ba)
+        if self.ncp:
+            if "szcount" in self.ncp: #BB: added for class_sz
+                szcounts_free(&self.csz,&self.tsz)
+            if "class_sz_integrate" in self.ncp:  #BB: added for class_sz
+                class_sz_free(&self.tsz)
+            if "lensing" in self.ncp:
+                lensing_free(&self.le)
+            if "spectra" in self.ncp:
+                spectra_free(&self.sp)
+            if "transfer" in self.ncp:
+                transfer_free(&self.tr)
+            if "nonlinear" in self.ncp:
+                nonlinear_free(&self.nl)
+            if "primordial" in self.ncp:
+                primordial_free(&self.pm)
+            if "perturb" in self.ncp:
+                perturb_free(&self.pt)
+            if "thermodynamics" in self.ncp:
+                thermodynamics_free(&self.th)
+            if "background" in self.ncp:
+                background_free(&self.ba)
         self.allocated = False
         self.computed = False
 
@@ -813,10 +816,21 @@ cdef class Class:
         params_settings = self._pars
         return self.class_szfast.get_pkl_reconstructed_from_fftlog(zpk=zpk,**params_settings)
 
+    def compute_class_szfast(self, likelihood_mode=False):
+        import warnings
+        warnings.warn(
+            "compute_class_szfast is deprecated. Use initialize_classy_szfast instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return self.initialize_classy_szfast(likelihood_mode)
+
+
     # @cython.boundscheck(False)
     # @cython.wraparound(False)
     # the likelihood_mode parameter is used to identify whether we run within cobaya
-    def compute_class_szfast(self,likelihood_mode=False):
+    def initialize_classy_szfast(self,likelihood_mode=False):
+
 
         if self._pars['jax'] == 1:
             self.jax_mode = True
@@ -1120,12 +1134,16 @@ cdef class Class:
           else:
 
             start = time.time()
-            #print("calculate sigma")
+            # print("calculate sigma")
+            ## use mcfit to get sigma(M)
             cszfast.calculate_sigma(**params_settings)
 
-            if self.tsz.need_sigma == 1:
+            # self.tsz.need_sigma == 1     
 
-              index_z_r = 0
+            #index_z_r = 0
+
+            if  self.tsz.need_sigma == 1: # set to true when has_pk is switched on. 
+                index_z_r = 0     
 
             for index_z in range(self.tsz.ndim_redshifts):
 
@@ -1142,6 +1160,7 @@ cdef class Class:
                         self.tsz.array_lnk[index_r] = cszfast.cszfast_pk_grid_lnk[index_r]
                         self.tsz.array_radius[index_r] = cszfast.cszfast_pk_grid_lnr[index_r]
 
+                    # print("filling sigma and pks index_z_r", index_z_r)
                     self.tsz.array_sigma_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_lnsigma2_flat[index_z_r]
                     self.tsz.array_dsigma2dR_at_z_and_R[index_z_r] = cszfast.cszfast_pk_grid_dsigma2_flat[index_z_r]
                     self.tsz.array_pknl_at_z_and_k[index_z_r] = cszfast.cszfast_pk_grid_pknl_flat[index_z_r]
@@ -2768,6 +2787,7 @@ cdef class Class:
         """
         self.class_szfast.calculate_hubble(**params_values_dict)
         return self.class_szfast.hz_interp(z_asked)
+
 
     def get_angular_distance_at_z(self, z_asked, params_values_dict=None):
         """

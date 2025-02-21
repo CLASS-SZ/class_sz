@@ -4791,7 +4791,7 @@ if (pclass_sz->need_sigma == 1 ){
    //free(pclass_sz->array_redshift);
 
 if (pclass_sz->sz_verbose>10) printf("-> freeing sigma(M,r).\n");
-
+// printf("freeing sigmas...\n");
    free(pclass_sz->array_radius);
 
    free(pclass_sz->array_sigma_at_z_and_R);
@@ -4799,6 +4799,7 @@ if (pclass_sz->sz_verbose>10) printf("-> freeing sigma(M,r).\n");
  }
 
 // if (pclass_sz->use_class_sz_fast_mode){
+// printf("freeing pks...\n");
   free(pclass_sz->array_pkl_at_z_and_k);
   free(pclass_sz->array_pknl_at_z_and_k);
   free(pclass_sz->array_lnk);
