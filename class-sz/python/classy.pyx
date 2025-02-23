@@ -28,7 +28,7 @@ import mcfit
 import time
 import re
 import jax
-jax.config.update("jax_enable_x64", False)
+jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
 import jax.scipy as jscipy
 
