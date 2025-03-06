@@ -563,6 +563,7 @@ cdef extern from "class.h":
         double alpha_c_beta
         double xc_B16
         double gamma_B16
+        double kmin_cut
         
 
 

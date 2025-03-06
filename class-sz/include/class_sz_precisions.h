@@ -296,6 +296,9 @@ class_sz_pclass_sz_parameter(m_to_xout_epsrel,double,1e-6)
 class_sz_pclass_sz_parameter(m_to_xout_epsabs,double,1e-40)
 
 
+class_sz_pclass_sz_parameter(kmin_cut,double,1e-10)
+
+
 // class_sz_pclass_sz_parameter(n_m_dndlnM,int,200)
 
 //printf("-> File Name pr: %s\n",pclass_sz->WISC3_dndz_file);
