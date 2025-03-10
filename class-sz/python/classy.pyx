@@ -839,6 +839,9 @@ cdef class Class:
 
         
         ## deal with names 
+        if "non linear" in self._pars:
+            self._pars["non_linear"] = self._pars.pop("non linear")
+
         if 'sigma_8' in self._pars:
 
           self._pars['sigma8'] = self._pars.pop('sigma_8')
