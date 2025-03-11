@@ -134,9 +134,14 @@ jobs:
             echo "CIBW_BUILD=cp39-*" >> $GITHUB_ENV
           elif [ "${{ matrix.python-version }}" == "3.10" ]; then
             echo "CIBW_BUILD=cp310-*" >> $GITHUB_ENV
+          elif [ "${{ matrix.python-version }}" == "3.11" ]; then
+            echo "CIBW_BUILD=cp311-*" >> $GITHUB_ENV
+          elif [ "${{ matrix.python-version }}" == "3.12" ]; then
+            echo "CIBW_BUILD=cp312-*" >> $GITHUB_ENV
+          elif [ "${{ matrix.python-version }}" == "3.13" ]; then
+            echo "CIBW_BUILD=cp313-*" >> $GITHUB_ENV
           fi
         shell: bash
-
 
       # - name: Install system dependencies (Linux)
       #   if: matrix.os == 'ubuntu-latest'
