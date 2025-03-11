@@ -153,6 +153,10 @@ jobs:
         run: python -m pip install cibuildwheel
         shell: bash
 
+      - name: Clear pip cache
+        run: pip cache purge
+        shell: bash
+
       # Build wheels for Linux (with custom build options)
       - name: Build wheels for Linux
         if: matrix.os == 'ubuntu-latest'
