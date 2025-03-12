@@ -83,9 +83,10 @@ jobs:
           - os: ubuntu-latest
             arch: aarch64
             python-version: '3.12'
-          - os: ubuntu-latest
-            arch: aarch64
-            python-version: '3.13'
+          # not yet supported because of tensorflow dependency.
+          # - os: ubuntu-latest
+          #   arch: aarch64
+          #   python-version: '3.13'
           - os: macos-latest
             arch: arm64
             python-version: '3.9'
@@ -98,9 +99,10 @@ jobs:
           - os: macos-latest
             arch: arm64
             python-version: '3.12'
-          - os: macos-latest
-            arch: arm64
-            python-version: '3.13'
+          # not yet supported because of tensorflow dependency.
+          # - os: macos-latest
+          #   arch: arm64
+          #   python-version: '3.13'
 
 
           # # Specific inclusion for Windows x86 architecture
