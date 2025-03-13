@@ -1524,6 +1524,45 @@ cdef class Class:
 
         return cl
 
+    def get_cmb_cls(self,params_values_dict=None):
+        """
+        get_cmb_cls(params_values_dict=None)
+
+        Return the angular CMB power spectrum
+        
+        """
+                # bypass all together and replace by cosmopower call.
+        cls = {}
+        if self.jax_mode:
+            cls['ell'] = jnp.arange(20000)
+            cls['tt'] = jnp.zeros(20000)
+            cls['te'] = jnp.zeros(20000)
+            cls['ee'] = jnp.zeros(20000)
+            cls['pp'] = jnp.zeros(20000)
+            cls['bb'] = jnp.zeros(20000)
+        else:
+            cls['ell'] = np.arange(20000)
+            cls['tt'] = np.zeros(20000)
+            cls['te'] = np.zeros(20000)
+            cls['ee'] = np.zeros(20000)
+            cls['pp'] = np.zeros(20000)
+            cls['bb'] = np.zeros(20000)
+
+        self.class_szfast.calculate_cmb(
+            want_tt=True,
+            want_te=True,
+            want_ee=True,
+            want_pp=1,
+            **params_values_dict
+        )
+        nl = len(self.class_szfast.cp_predicted_tt_spectrum)
+        cls['tt'][2:nl+2] = self.class_szfast.cp_predicted_tt_spectrum
+        cls['te'][2:nl+2] = self.class_szfast.cp_predicted_te_spectrum
+        cls['ee'][2:nl+2] = self.class_szfast.cp_predicted_ee_spectrum
+        cls['pp'][2:nl+2] = self.class_szfast.cp_predicted_pp_spectrum 
+        return cls
+
+
     def lensed_cl(self, lmax=-1,nofail=False):
         """
         lensed_cl(lmax=-1, nofail=False)
