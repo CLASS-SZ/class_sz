@@ -3060,6 +3060,29 @@ cdef class Class:
     def get_sigma8_and_der(self,params_values_dict=None):
         return self.class_szfast.get_sigma8_and_der(params_values_dict=params_values_dict)
 
+    def get_derived_parameters(self,params_values_dict=None):
+        derived_params_names = ['100*theta_s',
+                                   'sigma8',
+                                   'YHe',
+                                   'z_reio',
+                                   'Neff',
+                                   'tau_rec',  # conformal time at which the visibility reaches its maximum (= recombination time)
+                                   'z_rec', # z at which the visibility reaches its maximum (= recombination redshift)
+                                   'rs_rec', # comoving sound horizon at recombination in Mpc
+                                   'chi_rec', # comoving distance to recombination in Mpc
+                                   'tau_star', # conformal time at which photon optical depth crosses one
+                                   'z_star', # redshift at which photon optical depth crosses one, i.e., last scattering surface
+                                   'rs_star', # comoving sound horizon at z_star in Mpc
+                                   'chi_star', # comoving distance to the last scattering surface in Mpc
+                                   'rs_drag'] # comoving sound horizon at baryon drag in Mpc
+                                   
+        derived_params_values = self.class_szfast.get_sigma8_and_der(params_values_dict=params_values_dict)
+        derived_params = {}
+        for name, value in zip(derived_params_names, derived_params_values):
+            derived_params[name] = value
+        
+        return derived_params
+
  
     def get_z_of_chi_unvectorized(self,chi):
         return get_z_of_chi(chi,&self.tsz,&self.ba)
