@@ -232,6 +232,7 @@ cdef class Class:
     cdef int computed # Flag to see if classy has already computed with the given pars
     cdef int allocated # Flag to see if classy structs are allocated already
     cdef int jax_mode # Flag to see if jax is used
+    cdef int fast_mode # Flag to see if fast mode is used
 
     cdef object _pars # Dictionary of the parameters
     cdef object ncp   # Keeps track of the structures initialized, in view of cleaning.
@@ -387,6 +388,7 @@ cdef class Class:
     # Set up the dictionary
     def set(self,*pars,**kargs):
         oldpars = self._pars.copy()
+        # self.fast_mode = False
         # pars = kargs
         # print('pars:',pars)
         # print('kargs:',kargs)
@@ -830,6 +832,8 @@ cdef class Class:
     # @cython.wraparound(False)
     # the likelihood_mode parameter is used to identify whether we run within cobaya
     def initialize_classy_szfast(self,likelihood_mode=False):
+
+        self.fast_mode = True
 
 
         if self._pars['jax'] == 1:
@@ -1836,27 +1840,78 @@ cdef class Class:
         Parameters
         ----------
         z_asked : float
-            Redshift at which to evaluate the power spectrum
+            Redshift at which to evaluate the power spectrum.
         params_values_dict : dict, optional
-            Dictionary of cosmological parameters to use. If None, uses current parameters.
+            Dictionary of cosmological parameters to use. (Not used in this simplified version.)
 
         Returns
         -------
         tuple
             A tuple containing:
-            - array of power spectrum values in (Mpc/h)^3 
-            - array of corresponding k values in h/Mpc
-            
+            - array of power spectrum values in (Mpc)^3
+            - array of corresponding k values in 1/Mpc
+
         Examples
         --------
         >>> z = 0.3
-        >>> pks, ks = classy_sz.get_pkl_at_z(z, params_values_dict=cosmo_params)
-
+        >>> pk_values, k_values = classy_sz.get_pkl_at_z(z)
         """
-        return self.class_szfast.calculate_pkl_at_z(z_asked, params_values_dict = params_values_dict)
+        # Maximum redshift available for the pk grid.
+        zmax = self.class_szfast.cszfast_pk_grid_zmax
+        # Retrieve the array of k values.
+
+        if z_asked > zmax:
+            # For z above zmax, use the linear power spectrum at zmax and scale it.
+            pk_lin, k= self.class_szfast.calculate_pkl_at_z(zmax, params_values_dict=params_values_dict)
+            # In matter domination, the growth factor scales as D(z) ∝ 1/(1+z),
+            # so the power spectrum scales as (1/(1+z))^2.
+            factor = ((1 + zmax) / (1 + z_asked)) ** 2
+            pk_lin = pk_lin * factor
+        else:
+            pk_lin, k = self.class_szfast.calculate_pkl_at_z(z_asked, params_values_dict=params_values_dict)
+
+        return pk_lin, k
+
 
     def get_pknl_at_z(self, z_asked, params_values_dict=None):
-        return self.class_szfast.calculate_pknl_at_z(z_asked, params_values_dict = params_values_dict)
+        """
+        Calculate the non-linear matter power spectrum at a given redshift.
+
+        Parameters
+        ----------
+        z_asked : float
+            Redshift at which to evaluate the power spectrum.
+        params_values_dict : dict, optional
+            Dictionary of cosmological parameters to use. 
+
+        Returns
+        -------
+        tuple
+            A tuple containing:
+            - array of power spectrum values (non-linear P(k) approximated as linear for z > zmax)
+            - array of corresponding k values in 1/Mpc
+
+        Examples
+        --------
+        >>> z = 0.3
+        >>> pknl_values, k_values = classy_sz.get_pknl_at_z(z)
+        """
+        # Maximum redshift available for the pk grid.
+        zmax = self.class_szfast.cszfast_pk_grid_zmax
+        # Retrieve the array of k values.
+
+        if z_asked > zmax:
+            # For z above zmax, use the linear power spectrum at zmax and scale it.
+            pk_lin, k= self.class_szfast.calculate_pkl_at_z(zmax, params_values_dict=params_values_dict)
+            # In matter domination, the growth factor scales as D(z) ∝ 1/(1+z),
+            # so the power spectrum scales as (1/(1+z))^2.
+            factor = ((1 + zmax) / (1 + z_asked)) ** 2
+            pknl = pk_lin * factor
+        else:
+            pknl, k = self.class_szfast.calculate_pknl_at_z(z_asked, params_values_dict=params_values_dict)
+
+        return pknl, k
+
 
     # Gives the total matter pk for a given (k,z)
     def pk_unvectorized(self,double k,double z):
@@ -4552,7 +4607,7 @@ cdef class Class:
         return m_nfw(x)
 
     def get_rho_crit_at_z(self,z_asked,params_values_dict=None):
-        if self.jax_mode:
+        if self.jax_mode or self.fast_mode:
             return self.class_szfast.get_rho_crit_at_z(z_asked,params_values_dict=params_values_dict)
         else:
             return get_rho_crit_at_z(z_asked,&self.ba,&self.tsz)
