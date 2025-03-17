@@ -1856,19 +1856,23 @@ cdef class Class:
         >>> z = 0.3
         >>> pk_values, k_values = classy_sz.get_pkl_at_z(z)
         """
-        # Maximum redshift available for the pk grid.
-        zmax = self.class_szfast.cszfast_pk_grid_zmax
-        # Retrieve the array of k values.
 
-        if z_asked > zmax:
-            # For z above zmax, use the linear power spectrum at zmax and scale it.
-            pk_lin, k= self.class_szfast.calculate_pkl_at_z(zmax, params_values_dict=params_values_dict)
-            # In matter domination, the growth factor scales as D(z) ∝ 1/(1+z),
-            # so the power spectrum scales as (1/(1+z))^2.
-            factor = ((1 + zmax) / (1 + z_asked)) ** 2
-            pk_lin = pk_lin * factor
-        else:
+
+        if self.jax_mode:
             pk_lin, k = self.class_szfast.calculate_pkl_at_z(z_asked, params_values_dict=params_values_dict)
+
+        else:
+            # Maximum redshift available for the pk grid.
+            zmax = self.class_szfast.cszfast_pk_grid_zmax
+            if z_asked > zmax:
+                # For z above zmax, use the linear power spectrum at zmax and scale it.
+                pk_lin, k= self.class_szfast.calculate_pkl_at_z(zmax, params_values_dict=params_values_dict)
+                # In matter domination, the growth factor scales as D(z) ∝ 1/(1+z),
+                # so the power spectrum scales as (1/(1+z))^2.
+                factor = ((1 + zmax) / (1 + z_asked)) ** 2
+                pk_lin = pk_lin * factor
+            else:
+                pk_lin, k = self.class_szfast.calculate_pkl_at_z(z_asked, params_values_dict=params_values_dict)
 
         return pk_lin, k
 
@@ -1896,19 +1900,23 @@ cdef class Class:
         >>> z = 0.3
         >>> pknl_values, k_values = classy_sz.get_pknl_at_z(z)
         """
-        # Maximum redshift available for the pk grid.
-        zmax = self.class_szfast.cszfast_pk_grid_zmax
-        # Retrieve the array of k values.
-
-        if z_asked > zmax:
-            # For z above zmax, use the linear power spectrum at zmax and scale it.
-            pk_lin, k= self.class_szfast.calculate_pkl_at_z(zmax, params_values_dict=params_values_dict)
-            # In matter domination, the growth factor scales as D(z) ∝ 1/(1+z),
-            # so the power spectrum scales as (1/(1+z))^2.
-            factor = ((1 + zmax) / (1 + z_asked)) ** 2
-            pknl = pk_lin * factor
-        else:
+        if self.jax_mode:
             pknl, k = self.class_szfast.calculate_pknl_at_z(z_asked, params_values_dict=params_values_dict)
+
+        else:
+            # Maximum redshift available for the pk grid.
+            zmax = self.class_szfast.cszfast_pk_grid_zmax
+            # Retrieve the array of k values.
+
+            if z_asked > zmax:
+                # For z above zmax, use the linear power spectrum at zmax and scale it.
+                pk_lin, k= self.class_szfast.calculate_pkl_at_z(zmax, params_values_dict=params_values_dict)
+                # In matter domination, the growth factor scales as D(z) ∝ 1/(1+z),
+                # so the power spectrum scales as (1/(1+z))^2.
+                factor = ((1 + zmax) / (1 + z_asked)) ** 2
+                pknl = pk_lin * factor
+            else:
+                pknl, k = self.class_szfast.calculate_pknl_at_z(z_asked, params_values_dict=params_values_dict)
 
         return pknl, k
 
