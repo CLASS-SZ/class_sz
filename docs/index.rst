@@ -31,6 +31,14 @@ class_sz
 
 Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, LSS and Halo Model Observables Computations
 
+.. note::
+   .. raw:: html
+
+      <div style="color: red; border: 1px solid red; background-color: #ffe6e6; padding: 10px; border-radius: 5px;">
+         <strong>Important:</strong> classy_sz is not directly maintained anymore as we are focusing on the development of 
+         <a href="https://github.com/CMBAgents/cmbagent">cmbagent</a>, which should largely supersede classy_sz.
+      </div>
+
 .. note:: 
 
    .. raw:: html
@@ -45,11 +53,6 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
    .. raw:: html
 
       </div>
-
-
-.. note::
-   This software is being actively developed. We welcome contributions from the community.
-
 
 .. note::
    This documentation shows some of the capabilities of the code. `Legacy notebooks <https://github.com/CLASS-SZ/notebooks>`_ (not maintained and which may not run smoothly) present further calculations (almost all you need for CMB/LSS) and are gradually being imported into this documentation.
