@@ -63,7 +63,7 @@ def suppress_warnings():
 
 with suppress_warnings():
     import classy_szfast
-    from classy_szfast import Class_szfast
+    from classy_szfast import Class_szfast, Const
 
 
 
@@ -2890,6 +2890,7 @@ cdef class Class:
         """
         get_angular_distance_at_z(z_asked, params_values_dict=None)
         """
+
         self.class_szfast.calculate_chi(**params_values_dict)
         return self.class_szfast.chi_interp(z_asked)/(1.+z_asked)
 
@@ -3061,6 +3062,8 @@ cdef class Class:
         return self.class_szfast.get_sigma8_and_der(params_values_dict=params_values_dict)
 
     def get_derived_parameters(self,params_values_dict=None):
+        more_params = self.get_all_relevant_params(params_values_dict=params_values_dict)
+
         derived_params_names = ['100*theta_s',
                                    'sigma8',
                                    'YHe',
@@ -3075,11 +3078,18 @@ cdef class Class:
                                    'rs_star', # comoving sound horizon at z_star in Mpc
                                    'chi_star', # comoving distance to the last scattering surface in Mpc
                                    'rs_drag'] # comoving sound horizon at baryon drag in Mpc
-                                   
+
         derived_params_values = self.class_szfast.get_sigma8_and_der(params_values_dict=params_values_dict)
         derived_params = {}
         for name, value in zip(derived_params_names, derived_params_values):
             derived_params[name] = value
+        derived_params['h'] = more_params['h']
+        derived_params['Omega_m'] = more_params['Omega0_m']
+        derived_params['Omega_Lambda'] = more_params['Omega_Lambda']
+        derived_params['Omega_r'] = more_params['Omega0_r']
+        derived_params['Omega_b'] = more_params['Omega_b']
+        derived_params['Omega_cdm'] = more_params['Omega_cdm']
+        derived_params['Omega_m_nonu'] = more_params['Omega0_m_nonu']
         
         return derived_params
 
