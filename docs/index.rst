@@ -191,4 +191,12 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
 
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Velocity dispersion
+
+   notebooks/class_sz_vrms2
+
+
+
    
