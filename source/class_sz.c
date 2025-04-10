@@ -1054,6 +1054,10 @@ if (ptsz->has_kSZ_kSZ_gal_1h
  || ptsz->has_kSZ_kSZ_gal_3h
  || ptsz->has_kSZ_kSZ_gal_hf)
 load_ksz_filter(ptsz);
+if (ptsz->read_vrms2_file == 1) {
+             load_vrms2_file(ptsz);
+             }
+
 
 
 if (ptsz->has_tSZ_gal_1h
@@ -4197,6 +4201,12 @@ if(ptsz->has_kSZ_kSZ_gal_1h
   // free(ptsz->theta_kSZ2_gal_theta_grid);
   free(ptsz->l_unwise_filter);
   free(ptsz->f_unwise_filter);
+
+  if (ptsz->read_vrms2_file == 1) {
+  free(ptsz->normalized_vrms2_z);
+  free(ptsz->normalized_vrms2_vrms2);
+  }
+
 }
 if(ptsz->has_kSZ_kSZ_gal_1h
 || ptsz->has_kSZ_kSZ_gal_2h
@@ -15418,20 +15428,37 @@ int evaluate_vrms2(double * pvecback,
                    struct nonlinear * pnl,
                    struct tszspectrum * ptsz)
   {
-
    double z = pvectsz[ptsz->index_z];
    double z_asked = log(1.+z);
+   double v2;
 
+  if (ptsz->read_vrms2_file == 1) {
+
+///interpolating not on a log scale, this prob could be improved //OK
+   if (z<ptsz->array_redshift[0])
+      v2 = 1e-100;
+   if (z>ptsz->array_redshift[ptsz->n_arraySZ-1])
+      v2 = 1e-100;
+     v2 = pwl_value_1d(ptsz->normalized_vrms2_size,
+                             ptsz->normalized_vrms2_z,
+                             ptsz->normalized_vrms2_vrms2,
+                             z); 
+
+    pvectsz[ptsz->index_vrms2] = v2*3.*pow(_c_*1e-3,2.);
+  }
+
+  else{
    if (z<exp(ptsz->array_redshift[0])-1.)
       z_asked = ptsz->array_redshift[0];
    if (z>exp(ptsz->array_redshift[ptsz->n_arraySZ-1])-1.)
       z_asked =  ptsz->array_redshift[ptsz->n_arraySZ-1];
-
-
    pvectsz[ptsz->index_vrms2] =  exp(pwl_value_1d(ptsz->n_arraySZ,
                                                   ptsz->array_redshift,
                                                   ptsz->array_vrms2_at_z,
-                                                  z_asked));
+                                                  z_asked)); 
+      }
+
+// printf("Evaluated z = %.3e , vrms2 = %.3e\n", z_asked, pvectsz[ptsz->index_vrms2]/3./pow(_c_*1e-3,2.));
 
 return _SUCCESS_;
 }
@@ -16174,7 +16201,6 @@ double vrms2 =  exp(pwl_value_1d(ptsz->n_arraySZ,
                                  ptsz->array_redshift,
                                  ptsz->array_vrms2_at_z,
                                  z_asked));
-
 
 return vrms2/3./pow(_c_*1e-3,2.);
 }

@@ -8,6 +8,7 @@ class_sz_string_parameter(full_path_to_dndz_gal,"/class_sz_auxiliary_files/WISC_
 class_sz_string_parameter(full_path_and_prefix_to_dndz_ngal,"/class_sz_auxiliary_files/WISC_bin3_ngal_example","custom dndz file")
 class_sz_string_parameter(full_path_to_source_dndz_gal,"/class_sz_auxiliary_files/WISC_bin3.txt","custom dndz file")
 class_sz_string_parameter(full_path_to_redshift_dependent_M_min,"/class_sz_auxiliary_files/websky_halo_mass_completion_z_Mmin_in_Msun_over_h.txt","custom M_min file")
+class_sz_string_parameter(full_path_to_vrms2_file,"/class_sz_auxiliary_files/vrms2_web_bspline.txt","custom vrms2 file")
 
 class_sz_string_parameter(cmb_cls_filename,"/class_sz_auxiliary_files/cmb_cls_test.pickle","cmb_cls_filename")
 

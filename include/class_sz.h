@@ -1809,6 +1809,7 @@ double szcounts_ntot;
   double k_min_for_pk_in_vrms2;
   double k_max_for_pk_in_vrms2;
   double * ln_k_for_vrms2;
+  int read_vrms2_file;
 
 
 int nsteps_m;
@@ -1993,6 +1994,11 @@ double * steps_m;
   double * normalized_source_dndz_phig;
 
   int normalized_source_dndz_size;
+
+  double * normalized_vrms2_z;
+  double * normalized_vrms2_vrms2;
+
+  int normalized_vrms2_size;
 
   double * normalized_dndz_z;
   double * normalized_dndz_phig;

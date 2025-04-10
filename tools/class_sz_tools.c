@@ -3886,10 +3886,9 @@ int spectra_vrms2(
                                         pnl->error_message),
              pnl->error_message,
              pnl->error_message);
-//printf("ok z = %e\n",W);
+// printf("ok z = %e\n",W);
   free(array_for_sigma);
   *vrms2 = *vrms2/(2.*_PI_*_PI_);
-// printf("ok z = %e\n",*vrms2);
   return _SUCCESS_;
 
 }
@@ -11816,6 +11815,151 @@ if (ptsz->sz_verbose>=1){
     ptsz->normalized_source_dndz_z[index_x] = lnx[index_x];
     ptsz->normalized_source_dndz_phig[index_x] = lnI[index_x];
     // printf("z=%.3e phig=%.3e\n",ptsz->normalized_source_dndz_z[index_x],ptsz->normalized_source_dndz_z[index_x]);
+  };
+
+  // exit(0);
+
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  return _SUCCESS_;
+}
+
+
+int load_vrms2_file(struct tszspectrum * ptsz)
+{
+
+// if (
+//      (ptsz->has_gal_gallens_1h != _TRUE_ )
+// )
+//   return 0;
+
+if (ptsz->sz_verbose>=1){
+
+    printf("-> Loading external vrms2 file\n");
+}
+
+  class_alloc(ptsz->normalized_vrms2_z,sizeof(double *)*100,ptsz->error_message);
+  class_alloc(ptsz->normalized_vrms2_vrms2,sizeof(double *)*100,ptsz->error_message);
+
+  //class_alloc(ptsz->PP_d2lnI,sizeof(double *)*100,ptsz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI, this_lnJ, this_lnK;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+
+  /* Prepare the command */
+  /* If the command is just a "cat", no arguments need to be passed */
+  // if(strncmp("cat ", ptsz->command, 4) == 0)
+  // {
+  // sprintf(arguments, " ");
+  // }
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+    if (ptsz->sz_verbose > 0){
+      printf("-> Openning the vrms2 file\n");
+      printf("-> File Name: %s\n",ptsz->full_path_to_vrms2_file);
+      // printf("-> File Name: %s\n",ptsz->UNWISE_fdndz_file);
+      // printf("-> File Name: %s\n",ptsz->A10_file);
+    }
+  class_open(process,ptsz->full_path_to_vrms2_file, "r",ptsz->error_message);
+  if (ptsz->sz_verbose > 0)
+    printf("-> File opened successfully\n");
+
+
+  // process = popen(Filepath, "r");
+
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+
+    sscanf(line, "%lf %lf ", &this_lnx, &this_lnI);
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the vrms2 file.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 ptsz->error_message,
+                 "Error allocating memory to read the vrms2 file.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 ptsz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  // if (ptsz->galaxy_sample == 2){
+  // // if (ptsz->galaxy_sample == 2 || ptsz->galaxy_sample == 0 ){
+  //   status = pclose(process);
+  // }
+  // else{
+    status = fclose(process);
+  //}
+  // status = pclose(process);
+
+  class_test(status != 0.,
+             ptsz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  ptsz->normalized_vrms2_size = n_data;
+  /** Make room */
+
+  class_realloc(ptsz->normalized_vrms2_z,
+                ptsz->normalized_vrms2_z,
+                ptsz->normalized_vrms2_size*sizeof(double),
+                ptsz->error_message);
+  class_realloc(ptsz->normalized_vrms2_vrms2,
+                ptsz->normalized_vrms2_vrms2,
+                ptsz->normalized_vrms2_size*sizeof(double),
+                ptsz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<ptsz->normalized_vrms2_size; index_x++) {
+    ptsz->normalized_vrms2_z[index_x] = lnx[index_x];
+    ptsz->normalized_vrms2_vrms2[index_x] = lnI[index_x];
+    // printf("Loaded z=%.3e vrms2=%.3e\n",ptsz->normalized_vrms2_z[index_x],ptsz->normalized_vrms2_vrms2[index_x]);
   };
 
   // exit(0);
@@ -19862,7 +20006,6 @@ int index_z;
       //                                 +index_z*(log(1.+z_max)-log(1.+z_min))
       //                                 /(ptsz->n_arraySZ-1.); // log(1+z)
       //                               }
-
             spectra_vrms2(pba,
                           ppm,
                           pnl,
@@ -19871,8 +20014,8 @@ int index_z;
                           vrms2_var
                           );
           ptsz->array_vrms2_at_z[index_z] = log(*vrms2_var);
-          // printf("z = %.3e vrms2 = %.3e\n",ptsz->array_redshift[index_z],ptsz->array_vrms2_at_z[index_z]);
-
+          // printf(" z = %.3e vrms2 = %.3e\n",ptsz->array_redshift[index_z],ptsz->array_vrms2_at_z[index_z]);
+    
        }
 
 free(vrms2_var);
