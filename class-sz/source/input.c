@@ -1734,7 +1734,7 @@ int input_read_parameters(
 
       //BB: read SZ parameters from ini file
       class_read_int("class_sz_verbose",pclass_sz->sz_verbose);
-      class_read_int("nlSZ",pclass_sz->nlSZ);
+     
       class_read_int("convert_cls_to_gamma",pclass_sz->convert_cls_to_gamma);
 
       class_read_int("N_kSZ2_gal_multipole_grid",pclass_sz->N_kSZ2_gal_multipole_grid);
@@ -3947,15 +3947,22 @@ int input_read_parameters(
         }
       }
 
-      /* multipoles SZ */
+      /* multipoles*/
       class_call(parser_read_string(pfc,"multipoles_sz",&string1,&flag1,errmsg),
                  errmsg,
                  errmsg);
+      if(flag1 == _FALSE_) {
+          class_call(parser_read_string(pfc, "multipoles", &string1, &flag1, errmsg),
+                    errmsg,
+                    errmsg);
+      }
      if (flag1 == _TRUE_) {
         if ((strstr(string1,"DKS") != NULL))
           pclass_sz->ell_sz=0;
-        else  if ((strstr(string1,"P15") != NULL))
+        else  if ((strstr(string1,"P15") != NULL)){
           pclass_sz->ell_sz=1;
+          pclass_sz->nlSZ=18;
+        }
         else  if ((strstr(string1,"KS02") != NULL))
           pclass_sz->ell_sz=2;
         else  if ((strstr(string1,"low-ell") != NULL))
@@ -3964,7 +3971,61 @@ int input_read_parameters(
           pclass_sz->ell_sz=4;
         else  if ((strstr(string1,"Pl15_no_low_ell") != NULL))
           pclass_sz->ell_sz=5;
+        else {
+        pclass_sz->ell_sz=6;
+        if (pclass_sz->sz_verbose>0){
+        printf("reading multipoles from file %s\n",string1);
+        }
+       /* Otherwise, assume that 'string1' is a file path containing the multipole values */
+        FILE *process;
+        int n_data = 0, n_data_guess = 100, status;
+        double this_value, *tmp;
+        char line[256];
+
+        /* Allocate initial memory for the multipoles */
+        pclass_sz->ell = (double *)malloc(n_data_guess * sizeof(double));
+        class_test(pclass_sz->ell == NULL,
+                   pclass_sz->error_message,
+                   "Memory allocation error for multipoles\n");
+
+        /* Open the file using the provided path in string1 */
+        class_open(process, string1, "r", pclass_sz->error_message);
+
+        while (fgets(line, sizeof(line)-1, process) != NULL) {
+            /* Read the current multipole value from the line */
+            sscanf(line, "%lf", &this_value);
+
+            /* Check if we need to reallocate memory */
+            if ((n_data + 1) > n_data_guess) {
+                n_data_guess *= 2;
+                tmp = (double *)realloc(pclass_sz->ell, n_data_guess * sizeof(double));
+                class_test(tmp == NULL,
+                           pclass_sz->error_message,
+                           "Error allocating memory to read the multipoles file.\n");
+                pclass_sz->ell = tmp;
+            }
+
+            /* Store the value and increment the counter */
+            pclass_sz->ell[n_data] = this_value;
+            n_data++;
+        }
+        status = fclose(process);
+
+        /* Set the number of multipoles read */
+        pclass_sz->nlSZ = n_data;
+        if (pclass_sz->sz_verbose>0){
+        printf("number of multipoles read: %d\n",pclass_sz->nlSZ);
+        for (int i = 0; i < pclass_sz->nlSZ; i++) {
+            printf("multipole %d: %f\n", i, pclass_sz->ell[i]);
+        }
+        }
+          }
      }
+
+
+
+      class_read_int("nlSZ",pclass_sz->nlSZ);
+      class_read_int("n_multipoles",pclass_sz->nlSZ); 
 
 
 

@@ -6003,7 +6003,7 @@ cdef class Class:
                 if self._pars['skip_background_and_thermo']:
             
                   params_settings = self._pars
-                  value = (params_settings['omega_b']+params_settings['omega_cdm'])*(100./params_settings['H0'])**2.
+                  value = (params_settings['omega_b']+params_settings['omega_cdm'])*(100./params_settings['H0'])**2. ### need to add M.Omega_m()+cosmo_params['N_ncdm']*cosmo_params['m_ncdm']/93.14/M.h()**2
             
                 else:
             
