@@ -138,6 +138,8 @@
 #define _ngal_IA_2h_ ((pclass_sz->has_ngal_IA_2h == _TRUE_) && (index_md == pclass_sz->index_md_ngal_IA_2h))
 #define _nlensmag_gallens_1h_ ((pclass_sz->has_nlensmag_gallens_1h == _TRUE_) && (index_md == pclass_sz->index_md_nlensmag_gallens_1h))
 #define _nlensmag_gallens_2h_ ((pclass_sz->has_nlensmag_gallens_2h == _TRUE_) && (index_md == pclass_sz->index_md_nlensmag_gallens_2h))
+#define _nlensmag_lens_1h_ ((pclass_sz->has_nlensmag_lens_1h == _TRUE_) && (index_md == pclass_sz->index_md_nlensmag_lens_1h))
+#define _nlensmag_lens_2h_ ((pclass_sz->has_nlensmag_lens_2h == _TRUE_) && (index_md == pclass_sz->index_md_nlensmag_lens_2h))
 #define _nlensmag_tsz_1h_ ((pclass_sz->has_nlensmag_tsz_1h == _TRUE_) && (index_md == pclass_sz->index_md_nlensmag_tsz_1h))
 #define _nlensmag_tsz_2h_ ((pclass_sz->has_nlensmag_tsz_2h == _TRUE_) && (index_md == pclass_sz->index_md_nlensmag_tsz_2h))
 #define _cib_cib_1h_ ((pclass_sz->has_cib_cib_1h == _TRUE_) && (index_md == pclass_sz->index_md_cib_cib_1h))
@@ -289,6 +291,8 @@ struct class_sz_structure {
   double ** cl_ngal_IA_2h;
   double ** cl_nlensmag_gallens_1h;
   double ** cl_nlensmag_gallens_2h;
+  double ** cl_nlensmag_lens_1h;
+  double ** cl_nlensmag_lens_2h;
   double ** cl_nlensmag_tsz_1h;
   double ** cl_nlensmag_tsz_2h;
   double *** cl_cib_cib_1h;
@@ -1192,6 +1196,16 @@ struct class_sz_structure {
   int index_md_nlensmag_gallens_2h;
   int index_integrand_id_nlensmag_gallens_2h_first;
   int index_integrand_id_nlensmag_gallens_2h_last;
+
+  int has_nlensmag_lens_1h;
+  int index_md_nlensmag_lens_1h;
+  int index_integrand_id_nlensmag_lens_1h_first;
+  int index_integrand_id_nlensmag_lens_1h_last;
+
+  int has_nlensmag_lens_2h;
+  int index_md_nlensmag_lens_2h;
+  int index_integrand_id_nlensmag_lens_2h_first;
+  int index_integrand_id_nlensmag_lens_2h_last;
 
   int has_ngal_IA_2h;
   int index_md_ngal_IA_2h;

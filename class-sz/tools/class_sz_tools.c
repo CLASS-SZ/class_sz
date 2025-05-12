@@ -15054,6 +15054,7 @@ if (((V->pclass_sz->has_sz_2halo == _TRUE_) && (index_md == V->pclass_sz->index_
  || ((V->pclass_sz->has_ngal_tsz_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_ngal_tsz_2h))
  || ((V->pclass_sz->has_nlensmag_tsz_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_nlensmag_tsz_2h))
  || ((V->pclass_sz->has_nlensmag_gallens_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_nlensmag_gallens_2h))
+ || ((V->pclass_sz->has_nlensmag_lens_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_nlensmag_lens_2h))
  || ((V->pclass_sz->has_gallens_cib_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_gallens_cib_2h))
  || ((V->pclass_sz->has_gal_cib_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_gal_cib_2h))
  || ((V->pclass_sz->has_lens_cib_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_lens_cib_2h))
@@ -15257,6 +15258,8 @@ result *= Wg/V->pvectsz[V->pclass_sz->index_chi2];
 
 if ( ((V->pclass_sz->has_nlensmag_gallens_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_nlensmag_gallens_1h))
    ||((V->pclass_sz->has_nlensmag_gallens_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_nlensmag_gallens_2h))
+   ||((V->pclass_sz->has_nlensmag_lens_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_nlensmag_lens_1h))
+   ||((V->pclass_sz->has_nlensmag_lens_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_nlensmag_lens_2h))
    ||((V->pclass_sz->has_nlensmag_tsz_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_nlensmag_tsz_1h))
    ||((V->pclass_sz->has_nlensmag_tsz_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_nlensmag_tsz_2h))
   ){
@@ -15304,6 +15307,8 @@ if (
     ||((V->pclass_sz->has_gal_lens_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_gal_lens_2h))
     ||((V->pclass_sz->has_ngal_lens_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_ngal_lens_1h))
     ||((V->pclass_sz->has_ngal_lens_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_ngal_lens_2h))
+    ||((V->pclass_sz->has_nlensmag_lens_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_nlensmag_lens_1h))
+    ||((V->pclass_sz->has_nlensmag_lens_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_nlensmag_lens_2h))
     ||((V->pclass_sz->has_lens_lensmag_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_lens_lensmag_1h))
     ||((V->pclass_sz->has_lens_lensmag_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_lens_lensmag_2h))
     ||((V->pclass_sz->has_lens_cib_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_lens_cib_1h))
@@ -16719,7 +16724,53 @@ else{
       r = r_m_1*r_m_2;
         }
 
+ else if ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_nlensmag_lens_2h){
+      double r_m_1; // first part of redshift integrand
+      double r_m_2; // second part of redshift integrand
 
+      pvectsz[pclass_sz->index_part_id_cov_hsv] = 1;
+      V.pvectsz = pvectsz;
+      params = &V;
+
+      // integrate over the whole mass range ('Y' part)
+      r_m_1=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_mass,
+                                               params,pclass_sz->patterson_show_neval);
+
+     if (pclass_sz->M1SZ == pclass_sz->m_min_counter_terms)  {
+       double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[pclass_sz->index_z],pclass_sz);
+       double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[pclass_sz->index_z],pclass_sz)*nmin;
+       double I0 = integrand_mass(log(pclass_sz->m_min_counter_terms),params);
+       double bmin_umin = bmin*I0/pvectsz[pclass_sz->index_hmf]/pvectsz[pclass_sz->index_halo_bias];
+       r_m_1 += bmin_umin;
+       // printf("counter terms done r_m_1\n");
+    }
+
+
+      pvectsz[pclass_sz->index_part_id_cov_hsv] = 2;
+      V.pvectsz = pvectsz;
+      params = &V;
+
+
+      // integrate over the whole mass range ('galaxy' part)
+      r_m_2=Integrate_using_Patterson_adaptive(log(m_min), log(m_max),
+                                               epsrel, epsabs,
+                                               integrand_mass,
+                                               params,pclass_sz->patterson_show_neval);
+
+       if (pclass_sz->M1SZ == pclass_sz->m_min_counter_terms)  {
+       double nmin = get_hmf_counter_term_nmin_at_z(pvectsz[pclass_sz->index_z],pclass_sz);
+       double bmin = get_hmf_counter_term_b1min_at_z(pvectsz[pclass_sz->index_z],pclass_sz)*nmin;
+       double I0 = integrand_mass(log(pclass_sz->m_min_counter_terms),params);
+       double bmin_umin = bmin*I0/pvectsz[pclass_sz->index_hmf]/pvectsz[pclass_sz->index_halo_bias];
+       r_m_2 += bmin_umin;
+       // printf("counter terms done r_m_2\n");
+     }
+
+
+      r = r_m_1*r_m_2;
+        }
 
 
   else if ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_tSZ_lensmag_2h){
@@ -20132,6 +20183,7 @@ else {
                     || ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_lens_lensmag_2h)
                     || ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_gallens_lensmag_2h)
                     || ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_nlensmag_gallens_2h)
+                    || ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_nlensmag_lens_2h)
                     || (((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_cib_cib_2h)  && (pvectsz[pclass_sz->index_frequency_for_cib_profile] == pvectsz[pclass_sz->index_frequency_prime_for_cib_profile]) )
                     || ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_gal_gal_2h)
                     || ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_gallens_gallens_2h)
@@ -26028,6 +26080,8 @@ int tabulate_redshift_int_nlensmag(struct class_sz_structure * pclass_sz,
 
 if (pclass_sz->has_nlensmag_gallens_1h
   + pclass_sz->has_nlensmag_gallens_2h
+  + pclass_sz->has_nlensmag_lens_1h
+  + pclass_sz->has_nlensmag_lens_2h
   + pclass_sz->has_nlensmag_tsz_1h
   + pclass_sz->has_nlensmag_tsz_2h
    == _FALSE_){

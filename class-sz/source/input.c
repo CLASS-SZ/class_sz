@@ -3110,6 +3110,25 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         pclass_sz->need_hmf = 1;
       }
+      if ((strstr(string1,"lensmagn_lens_1h") != NULL) ) {
+        pclass_sz->has_nlensmag_lens_1h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        pclass_sz->need_hmf = 1;
+      }
+
+      if ((strstr(string1,"lensmagn_lens_2h") != NULL) ) {
+        pclass_sz->has_nlensmag_lens_2h =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        pclass_sz->need_hmf = 1;
+      }
 
       if ((strstr(string1,"lensmagn_tsz_1h") != NULL) ) {
         pclass_sz->has_nlensmag_tsz_1h =_TRUE_;
@@ -4029,6 +4048,8 @@ int input_read_parameters(
       +  pclass_sz->has_nlensmag_gallens_2h
       +  pclass_sz->has_nlensmag_tsz_1h
       +  pclass_sz->has_nlensmag_tsz_2h
+      +  pclass_sz->has_nlensmag_lens_1h
+      +  pclass_sz->has_nlensmag_lens_2h
     )
       != _FALSE_){
     class_read_list_of_integers("galaxy_samples_list",pclass_sz->galaxy_samples_list,pclass_sz->galaxy_samples_list_num);
@@ -6188,6 +6209,8 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
       + pclass_sz->has_ngal_tsz_2h
       + pclass_sz->has_nlensmag_tsz_1h
       + pclass_sz->has_nlensmag_tsz_2h
+      + pclass_sz->has_nlensmag_lens_1h
+      + pclass_sz->has_nlensmag_lens_2h
       + pclass_sz->has_cib_cib_2h
       + pclass_sz->has_gal_gal_1h
       + pclass_sz->has_gal_gal_2h
@@ -7474,6 +7497,8 @@ int input_default_params(
   pclass_sz->has_ngal_tsz_2h = _FALSE_;
   pclass_sz->has_nlensmag_tsz_1h = _FALSE_;
   pclass_sz->has_nlensmag_tsz_2h = _FALSE_;
+  pclass_sz->has_nlensmag_lens_1h = _FALSE_;
+  pclass_sz->has_nlensmag_lens_2h = _FALSE_;
   pclass_sz->has_ngal_gallens_1h = _FALSE_;
   pclass_sz->has_ngal_gallens_2h = _FALSE_;
   pclass_sz->has_ngal_IA_2h = _FALSE_;
@@ -7753,6 +7778,9 @@ int input_default_params(
   pclass_sz->index_md_nlensmag_tsz_2h = 140;
 
   pclass_sz->index_md_gallens_gallens_hf = 141;
+
+  pclass_sz->index_md_nlensmag_lens_1h = 142;
+  pclass_sz->index_md_nlensmag_lens_2h = 143;
 
   pclass_sz->integrate_wrt_mvir = 0;
   pclass_sz->integrate_wrt_m500c = 0;
