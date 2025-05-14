@@ -3845,6 +3845,25 @@ cdef class Class:
                 cl['ell'].append(self.tsz.ell[index])
             cl_mkg[str(int(nu1))] = cl
         return cl_mkg
+    
+    def cl_lensmagn_lens(self):
+        """
+        (class_sz) Return the 1-halo and 2-halo terms of gal x lens power spectrum
+        """
+        cl_mk = {}
+
+        for id_nu1 in range(self.tsz.galaxy_samples_list_num):
+            nu1 = self.tsz.galaxy_samples_list[id_nu1]
+            cl = {}
+            cl['ell'] = []
+            cl['1h'] = []
+            cl['2h'] = []
+            for index in range(self.tsz.nlSZ):
+                cl['1h'].append(self.tsz.cl_nlensmag_lens_1h[id_nu1][index])
+                cl['2h'].append(self.tsz.cl_nlensmag_lens_2h[id_nu1][index])
+                cl['ell'].append(self.tsz.ell[index])
+            cl_mk[str(int(nu1))] = cl
+        return cl_mk
 
     def cl_lensmagn_tsz(self):
         """

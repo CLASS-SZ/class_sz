@@ -447,6 +447,8 @@ cdef extern from "class.h":
         double ** cl_ngal_IA_2h
         double ** cl_nlensmag_gallens_1h
         double ** cl_nlensmag_gallens_2h
+        double ** cl_nlensmag_lens_1h
+        double ** cl_nlensmag_lens_2h
         double ** cl_nlensmag_tsz_1h
         double ** cl_nlensmag_tsz_2h
         double *** cl_cib_cib_2h
