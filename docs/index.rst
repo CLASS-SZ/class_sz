@@ -146,7 +146,11 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
    notebooks/class_sz_tszpowerspectrum
    
+.. toctree::
+   :maxdepth: 2
+   :caption: TSZ bispectrum
 
+   notebooks/class_sz_tsz_bispectrum
 
 .. toctree::
    :maxdepth: 2
@@ -181,6 +185,13 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
    :caption: SZ cluster cosmology
 
    notebooks/class_szfast_cluster_counts
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Cross-correlations COMBO
+
+   notebooks/class_sz_combo
 
 
 
