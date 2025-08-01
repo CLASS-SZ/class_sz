@@ -4259,7 +4259,7 @@ int input_read_parameters(
         else  if ((strstr(string1,"B13") != NULL))
           pclass_sz->concentration_parameter=6; // https://arxiv.org/pdf/1112.5479.pdf
         else  if ((strstr(string1,"fixed") != NULL))
-          pclass_sz->concentration_parameter=7; // https://arxiv.org/pdf/1112.5479.pdf
+          pclass_sz->concentration_parameter=7;
           // in this case the concentration is read (see class_sz_precisions.h)
           }
 
