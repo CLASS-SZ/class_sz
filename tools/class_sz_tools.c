@@ -6850,6 +6850,104 @@ double get_dyldzdlnm_at_l_z_and_m(double l,
 return result;
                                 }
 
+double get_dygldzdlnm_at_l_z_and_m(double l,
+                                  double z,
+                                  double m,
+                                  struct background * pba,
+                                  struct nonlinear * pnl,
+                                  struct class_sz_structure * pclass_sz){
+
+
+// double result = get_dndlnM_at_z_and_M(z_asked,m,pclass_sz)
+//                 *get_volume_at_z(z,pba)
+//                 *evaluate_pressure_profile(kl,pvecback,pvectsz,pba,pclass_sz);
+
+
+
+  // double M_halo = m;
+
+  double tau;
+  int first_index_back = 0;
+
+
+  double * pvecback;
+  double * pvectsz;
+ class_alloc(pvectsz,pclass_sz->tsz_size*sizeof(double),pclass_sz->error_message);
+   int i;
+   for(i = 0; i<pclass_sz->tsz_size;i++) pvectsz[i] = 0.;
+
+ class_alloc(pvecback,pba->bg_size*sizeof(double),pclass_sz->error_message);
+      class_call(background_tau_of_z(pba,z,&tau),
+                 pba->error_message,
+                 pba->error_message);
+
+      class_call(background_at_tau(pba,
+                                   tau,
+                                   pba->long_info,
+                                   pba->inter_normal,
+                                   &first_index_back,
+                                   pvecback),
+                 pba->error_message,
+                 pba->error_message);
+
+
+
+
+      pvectsz[pclass_sz->index_z] = z;
+      pvectsz[pclass_sz->index_Rho_crit] = (3./(8.*_PI_*_G_*_M_sun_))
+                                            *pow(_Mpc_over_m_,1)
+                                            *pow(_c_,2)
+                                            *pvecback[pba->index_bg_rho_crit]
+                                            /pow(pba->h,2);
+
+      double omega = pvecback[pba->index_bg_Omega_m];
+      pvectsz[pclass_sz->index_Delta_c]= Delta_c_of_Omega_m(omega);
+      pvectsz[pclass_sz->index_chi2] = pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,2);
+
+
+      // request appropriate mass conversion
+      pvectsz[pclass_sz->index_has_electron_pressure] = 1 ;
+      pvectsz[pclass_sz->index_has_galaxy] = 1 ;
+      // pclass_sz->delta_def_galaxies == 1
+
+      do_mass_conversions(log(m),z,pvecback,pvectsz,pba,pclass_sz);
+      evaluate_HMF_at_logM_and_z(log(m),z,pvecback,pvectsz,pba,pnl,pclass_sz);
+
+      double hmf = pvectsz[pclass_sz->index_hmf];
+      pvectsz[pclass_sz->index_md] = -1;//pclass_sz->index_md_dydz;
+
+
+      double kl;
+      if (l==0)
+        kl = 0.;
+      else
+        kl = (l+0.5)/sqrt(pvectsz[pclass_sz->index_chi2]);
+      
+      //Ola 
+      double r_delta_gal, c_delta_gal;
+      r_delta_gal = pvectsz[pclass_sz->index_r200c];
+      c_delta_gal = pvectsz[pclass_sz->index_c200c];
+      // ev_2h has the ng^-1 factor
+      evaluate_galaxy_profile_2h(kl,m,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,pclass_sz); //takes mass, not logM as eg hmf
+      double Wg = radial_kernel_W_galaxy_at_z(pvecback,pvectsz,pba,pclass_sz); // this has the H/c factor (H_over_c_in_h_over_Mpc)
+      // evaluate_tau_profile(kl,pvecback,pvectsz,pba,pclass_sz);
+      
+      evaluate_pressure_profile(kl,pvecback,pvectsz,pba,pclass_sz);
+
+      double result = hmf*pvectsz[pclass_sz->index_galaxy_profile]*pvectsz[pclass_sz->index_pressure_profile];
+
+      //galaxy factors
+      result *= Wg/pvectsz[pclass_sz->index_chi2]; //(H_over_c_in_h_over_Mpc) is in evaluate_galaxy_profile_2h
+      // multiply by volume element:
+      double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
+      result *= pvectsz[pclass_sz->index_chi2]/H_over_c_in_h_over_Mpc;  
+      result *= 1./pow(pclass_sz->Tcmb_gNU,1)/1.e6;
+      free(pvecback);
+      free(pvectsz);
+
+return result;
+                                }
+
 double get_normalization_gas_density_profile(double z_asked, double m_asked, struct class_sz_structure * pclass_sz){
   double z = log(1.+z_asked);
   double m = log(m_asked);
@@ -20470,7 +20568,7 @@ double integrand_mean_galaxy_bias(double lnM_halo, void *p){
       sigma_log10M = V->pclass_sz->sigma_log10M_HOD;
       // }
       nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],M_min,sigma_log10M,V->pclass_sz->f_cen_HOD,V->pclass_sz,V->pba);
-      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc,M0,V->pclass_sz->alpha_s_HOD,M1_prime,V->pclass_sz,V->pba);
+      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc/V->pclass_sz->f_cen_HOD,M0,V->pclass_sz->alpha_s_HOD,M1_prime,V->pclass_sz,V->pba);
       evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ppt,V->pclass_sz);
       double result = hmf*V->pvectsz[V->pclass_sz->index_halo_bias]*(ns+nc);
 
@@ -20553,7 +20651,7 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
       sigma_log10M = V->pclass_sz->sigma_log10M_HOD;
       // }
       nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],M_min,sigma_log10M,V->pclass_sz->f_cen_HOD,V->pclass_sz,V->pba);
-      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc,M0,V->pclass_sz->alpha_s_HOD,M1_prime,V->pclass_sz,V->pba);
+      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc/V->pclass_sz->f_cen_HOD,M0,V->pclass_sz->alpha_s_HOD,M1_prime,V->pclass_sz,V->pba);
 
       if (V->pclass_sz->sz_verbose>3){
         printf("got nc ns hmf %.3e and %.3e %.3e at z = %.3e and m = %.3e\n",nc,ns,hmf,z,exp(lnM_halo));
@@ -20631,7 +20729,7 @@ double integrand_mean_galaxy_number_ngal(double lnM_halo, void *p){
       sigma_log10M = V->pclass_sz->sigma_log10M_HOD_ngal[index_g];
       // }
       nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],M_min,sigma_log10M,V->pclass_sz->f_cen_HOD_ngal[index_g],V->pclass_sz,V->pba);
-      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc,M0,V->pclass_sz->alpha_s_HOD_ngal[index_g],M1_prime,V->pclass_sz,V->pba);
+      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc/V->pclass_sz->f_cen_HOD_ngal[index_g],M0,V->pclass_sz->alpha_s_HOD_ngal[index_g],M1_prime,V->pclass_sz,V->pba);
 
 
     //   printf("%.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n",
@@ -28807,8 +28905,6 @@ double get_psi_b1kgg_at_k1_k2_and_z(double l_asked,double l_asked2, double z_ask
 double get_dydz_at_z(double z_asked, struct class_sz_structure * pclass_sz)
 {
   double z = log(1.+z_asked);
-
-
  if (z<pclass_sz->array_dydz_redshift[0])
     return 0.;
     // z = pclass_sz->array_dydz_redshift[0];

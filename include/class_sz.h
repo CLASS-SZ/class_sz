@@ -1463,6 +1463,8 @@ double szcounts_ntot;
   double sigma_log10M_HOD;
   double alpha_s_HOD;
   double M1_prime_HOD;
+  double centrals_only_HOD;
+  double satellites_only_HOD;
 
   double * M_min_HOD_ngal;
   double * M0_HOD_ngal;
@@ -2661,6 +2663,13 @@ double get_mean_galaxy_bias_at_z(double z,
 
 
 double get_dyldzdlnm_at_l_z_and_m(double l,
+                                  double z,
+                                  double m,
+                                  struct background * pba,
+                                  struct nonlinear * pnl,
+                                  struct class_sz_structure * pclass_sz);
+
+double get_dygldzdlnm_at_l_z_and_m(double l,
                                   double z,
                                   double m,
                                   struct background * pba,

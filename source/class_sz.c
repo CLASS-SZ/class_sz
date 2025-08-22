@@ -1360,7 +1360,8 @@ if (pclass_sz->has_dcib0dz){
 
 if (pclass_sz->has_dydz){
   tabulate_dydz(pba,pnl,ppm,pclass_sz);
-  // printf("%.8e\n",get_dydz_at_z(1.,pclass_sz));
+  printf(" tabulate %.8e\n",get_dydz_at_z(1.,pclass_sz));
+  printf(" dydz %.8e\n", get_dydz_at_z(1.0, pclass_sz));
 }
 
 
@@ -17567,11 +17568,7 @@ if (pclass_sz->create_ref_trispectrum_for_cobaya){
 
        if (pclass_sz->pressure_profile == 3){
           fprintf(fp,"# Pressure Profile:  Custom. GNFW\n");
-          fprintf(fp,"# P0GNFW = %e\n",pclass_sz->P0GNFW);
-          fprintf(fp,"# c500 = %e\n",pclass_sz->c500);
-          fprintf(fp,"# gammaGNFW = %e\n",pclass_sz->gammaGNFW);
-          fprintf(fp,"# alphaGNFW = %e\n",pclass_sz->alphaGNFW);
-          fprintf(fp,"# betaGNFW = %e\n",pclass_sz->betaGNFW);
+
        }
        if (pclass_sz->pressure_profile == 4)
           fprintf(fp,"# Pressure Profile:  Battaglia et al 2012\n");
@@ -22438,6 +22435,10 @@ double HOD_mean_number_of_satellite_galaxies(double z,
 double result;
 if (M_halo>M_min){
 
+if (pclass_sz->centrals_only_HOD==1){
+  M_min=1e100;
+    }
+
 result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
 
  }
@@ -23174,7 +23175,7 @@ M0 = pclass_sz->M0_HOD;
 
 nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,pclass_sz->f_cen_HOD,pclass_sz,pba);
 
-ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,pclass_sz->alpha_s_HOD,M1_prime,pclass_sz,pba);
+ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc/pclass_sz->f_cen_HOD,M0,pclass_sz->alpha_s_HOD,M1_prime,pclass_sz,pba);
 double xout = pclass_sz->x_out_truncated_nfw_profile_satellite_galaxies;
 // pvectsz[pclass_sz->index_multipole_for_truncated_nfw_profile] = pvectsz[pclass_sz->index_multipole_for_galaxy_profile];
 // double l = pvectsz[pclass_sz->index_multipole_for_truncated_nfw_profile];
@@ -23183,9 +23184,16 @@ double xout = pclass_sz->x_out_truncated_nfw_profile_satellite_galaxies;
 us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
 
 double ug_at_ell;
+// ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+if (pclass_sz->satellites_only_HOD==1){
+        ug_at_ell  = (1./ng_bar)*(ns*us);
+        }
+if (pclass_sz->satellites_only_HOD==0){
+        ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+        }
 
 
-ug_at_ell  = (1./ng_bar)*(nc+ns*us);
+
 if (isinf(ug_at_ell) || isnan(ug_at_ell)){
 printf("ng_bar = %.3e nc = %.3e ns = %.3e us = %.3e\n",ng_bar,nc,ns,us);
 exit(0);
@@ -23234,7 +23242,7 @@ M0 = pclass_sz->M0_HOD;
 
 nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,pclass_sz->f_cen_HOD,pclass_sz,pba);
 
-ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,pclass_sz->alpha_s_HOD,M1_prime,pclass_sz,pba);
+ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc/pclass_sz->f_cen_HOD,M0,pclass_sz->alpha_s_HOD,M1_prime,pclass_sz,pba);
 double xout = pclass_sz->x_out_truncated_nfw_profile_satellite_galaxies;
 // pvectsz[pclass_sz->index_multipole_for_truncated_nfw_profile] = pvectsz[pclass_sz->index_multipole_for_galaxy_profile];
 // double l = pvectsz[pclass_sz->index_multipole_for_truncated_nfw_profile];
@@ -23354,7 +23362,7 @@ double ug_at_ell;
 // 1-halo auto terms
 if (_ngal_ngal_1h_){
   nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,f_cen_HOD,pclass_sz,pba);
-  ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,alpha_s_HOD,M1_prime,pclass_sz,pba);
+  ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc/f_cen_HOD,M0,alpha_s_HOD,M1_prime,pclass_sz,pba);
   us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
   ng_bar = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g,pclass_sz);
     if (index_g_prime == index_g){
@@ -23365,7 +23373,7 @@ if (_ngal_ngal_1h_){
       // exit(0);
       ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,pclass_sz);
       nc_galprime = HOD_mean_number_of_central_galaxies(z,M_halo,M_min_galprime,sigma_log10M_galprime,f_cen_HOD_galprime,pclass_sz,pba);
-      ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,pclass_sz,pba);
+      ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc_galprime/f_cen_HOD_galprime,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,pclass_sz,pba);
       us_galprime = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout_galprime);
 
       ug_at_ell  = sqrt((1./ng_bar)*(nc+ns*us)*(1./ng_bar_galprime)*(nc_galprime+ns_galprime*us_galprime));
@@ -23391,7 +23399,7 @@ if (_ngal_ngal_2h_
     if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  1
        || (int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  0) {
     nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,f_cen_HOD,pclass_sz,pba);
-    ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,alpha_s_HOD,M1_prime,pclass_sz,pba);
+    ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc/f_cen_HOD,M0,alpha_s_HOD,M1_prime,pclass_sz,pba);
     us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
     ng_bar = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g,pclass_sz);
     ug_at_ell  = (1./ng_bar)*(nc+ns*us);
@@ -23403,7 +23411,7 @@ if (_ngal_ngal_2h_
     if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  2) { // gal_gal_2h for index_g_prime
     ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,pclass_sz);
     nc_galprime = HOD_mean_number_of_central_galaxies(z,M_halo,M_min_galprime,sigma_log10M_galprime,f_cen_HOD_galprime,pclass_sz,pba);
-    ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,pclass_sz,pba);
+    ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc_galprime/f_cen_HOD_galprime,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,pclass_sz,pba);
     us_galprime = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout_galprime);
     ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,pclass_sz);
     ug_at_ell  = (1./ng_bar_galprime)*(nc_galprime+ns_galprime*us_galprime);
@@ -23421,7 +23429,7 @@ if (_ngal_lens_1h_
   ){
     //printf("M0_min = %.5e\n", M0);
     nc = HOD_mean_number_of_central_galaxies(z,M_halo,M_min,sigma_log10M,f_cen_HOD,pclass_sz,pba);
-    ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0,alpha_s_HOD,M1_prime,pclass_sz,pba);
+    ns = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc/f_cen_HOD,M0,alpha_s_HOD,M1_prime,pclass_sz,pba);
     us = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout);
     ng_bar = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g,pclass_sz);
     if (pclass_sz->satellites_only_ngal[index_g]==1){

@@ -4263,7 +4263,8 @@ int input_read_parameters(
 
 
       class_read_double("M1_prime_HOD",pclass_sz->M1_prime_HOD);
-
+      class_read_double("centrals_only_HOD",pclass_sz->centrals_only_HOD);
+      class_read_double("satellites_only_HOD",pclass_sz->satellites_only_HOD);
 
       class_read_double("alpha_s_HOD",pclass_sz->alpha_s_HOD);
       class_read_double("sigma_log10M_HOD",pclass_sz->sigma_log10M_HOD);
@@ -7729,6 +7730,8 @@ int input_default_params(
   pclass_sz->alpha_s_HOD = 1.;
   pclass_sz->sigma_log10M_HOD = 0.15;
   pclass_sz->rho_y_gal = -0.6;
+  pclass_sz->centrals_only_HOD = 0.;
+  pclass_sz->satellites_only_HOD = 0.;
 
 
   pclass_sz->include_noise_cov_y_y = 0;

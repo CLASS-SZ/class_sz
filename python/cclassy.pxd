@@ -287,6 +287,7 @@ cdef extern from "class.h":
         double alphaGNFW
         double betaGNFW
         double B
+        double f_cen_HOD
         double alpha_s_HOD
         double sigma_log10M_HOD
         double M1_prime_HOD
@@ -968,6 +969,13 @@ cdef extern from "class.h":
                                             void * pclass_sz)
 
     double get_dyldzdlnm_at_l_z_and_m(double l,
+                                      double z,
+                                      double m,
+                                      void * pba,
+                                      void * pnl,
+                                      void * pclass_sz)
+
+    double get_dygldzdlnm_at_l_z_and_m(double l,
                                       double z,
                                       double m,
                                       void * pba,

@@ -931,6 +931,10 @@ cdef class Class:
             for index_g in range(N_ngal):
                 if k == 'x_out_truncated_nfw_profile_satellite_galaxies_ngal_'+str(index_g):
                     self.tsz.x_out_truncated_nfw_profile_satellite_galaxies_ngal[index_g] = pdict_to_update['x_out_truncated_nfw_profile_satellite_galaxies_ngal_'+str(index_g)]
+            for index_g in range(N_ngal):
+                if k == 'f_cen_HOD_ngal_'+str(index_g):
+                    self.tsz.f_cen_HOD_ngal[index_g] = pdict_to_update['f_cen_HOD_ngal_'+str(index_g)]
+     
           if k == 'dndz_shift_source_gal':
               self.tsz.dndz_shift_source_gal = pdict_to_update[k]
           if k == 'dndz_stretch_source_gal':
@@ -3664,6 +3668,8 @@ cdef class Class:
 
     def get_dydzdlnm_at_z_and_m(self,z,m,l=0):
         return get_dyldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
+    def get_dygdzdlnm_at_z_and_m(self,z,m,l=0):
+        return get_dygldzdlnm_at_l_z_and_m(l,z,m,&self.ba,&self.nl,&self.tsz)
 
     def get_c_delta_at_m_and_z(self,m,z,delta_def):
         if delta_def == 0:
