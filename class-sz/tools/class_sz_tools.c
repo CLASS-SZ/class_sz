@@ -21079,7 +21079,7 @@ double integrand_mean_galaxy_bias(double lnM_halo, void *p){
       sigma_log10M = V->pclass_sz->sigma_log10M_HOD;
       // }
       nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],M_min,sigma_log10M,V->pclass_sz->f_cen_HOD,V->pclass_sz,V->pba);
-      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc,M0,V->pclass_sz->alpha_s_HOD,M1_prime,V->pclass_sz,V->pba);
+      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc/V->pclass_sz->f_cen_HOD,M0,V->pclass_sz->alpha_s_HOD,M1_prime,V->pclass_sz,V->pba);
       evaluate_halo_bias(V->pvecback,V->pvectsz,V->pba,V->ppm,V->pnl,V->ppt,V->pclass_sz);
       double result = hmf*V->pvectsz[V->pclass_sz->index_halo_bias]*(ns+nc);
 
@@ -21162,7 +21162,7 @@ double integrand_mean_galaxy_number(double lnM_halo, void *p){
       sigma_log10M = V->pclass_sz->sigma_log10M_HOD;
       // }
       nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],M_min,sigma_log10M,V->pclass_sz->f_cen_HOD,V->pclass_sz,V->pba);
-      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc,M0,V->pclass_sz->alpha_s_HOD,M1_prime,V->pclass_sz,V->pba);
+      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc/V->pclass_sz->f_cen_HOD,M0,V->pclass_sz->alpha_s_HOD,M1_prime,V->pclass_sz,V->pba);
 
       if (V->pclass_sz->sz_verbose>3){
         printf("got nc ns hmf %.3e and %.3e %.3e at z = %.3e and m = %.3e\n",nc,ns,hmf,z,exp(lnM_halo));
@@ -21240,7 +21240,7 @@ double integrand_mean_galaxy_number_ngal(double lnM_halo, void *p){
       sigma_log10M = V->pclass_sz->sigma_log10M_HOD_ngal[index_g];
       // }
       nc = HOD_mean_number_of_central_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],M_min,sigma_log10M,V->pclass_sz->f_cen_HOD_ngal[index_g],V->pclass_sz,V->pba);
-      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc,M0,V->pclass_sz->alpha_s_HOD_ngal[index_g],M1_prime,V->pclass_sz,V->pba);
+      ns = HOD_mean_number_of_satellite_galaxies(z,V->pvectsz[V->pclass_sz->index_mass_for_galaxies],nc/V->pclass_sz->f_cen_HOD_ngal[index_g],M0,V->pclass_sz->alpha_s_HOD_ngal[index_g],M1_prime,V->pclass_sz,V->pba);
 
 
     //   printf("%.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n",

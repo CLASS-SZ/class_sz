@@ -290,6 +290,7 @@ cdef extern from "class.h":
         double alphaGNFW
         double betaGNFW
         double alpha_s_HOD
+        double f_cen_HOD
         double sigma_log10M_HOD
         double M1_prime_HOD
         double M_min_HOD

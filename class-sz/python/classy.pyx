@@ -1219,6 +1219,8 @@ cdef class Class:
             self.tsz.M_min_HOD = pdict_to_update[k]
           if k == 'M1_prime_HOD':
             self.tsz.M1_prime_HOD = pdict_to_update[k]
+          if k == 'f_cen_HOD':
+            self.tsz.f_cen_HOD = pdict_to_update[k]
           if N_ngal != -1:
             for index_g in range(N_ngal):
                 if k == 'alpha_s_HOD_ngal_'+str(index_g):
@@ -1237,6 +1239,8 @@ cdef class Class:
                     self.tsz.dndz_stretch_ngal[index_g] = pdict_to_update['dndz_stretch_ngal_'+str(index_g)]
                 if k == 'dndz_shift_ngal_'+str(index_g):
                     self.tsz.dndz_shift_ngal[index_g] = pdict_to_update['dndz_shift_ngal_'+str(index_g)]
+                if k == 'f_cen_HOD_ngal_'+str(index_g):
+                    self.tsz.f_cen_HOD_ngal[index_g] = pdict_to_update['f_cen_HOD_ngal_'+str(index_g)]
           if k == 'dndz_shift_source_gal':
               self.tsz.dndz_shift_source_gal = pdict_to_update[k]
           if k == 'dndz_stretch_source_gal':
