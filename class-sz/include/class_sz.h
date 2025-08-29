@@ -3,6 +3,7 @@
 #define __SZ__
 
 #include "common.h"
+#include "spectra.h"   /* defines struct spectra */
 #include "lensing.h"
 #include "gsl/gsl_integration.h"
 #include "gsl/gsl_sf_erf.h"

@@ -5,6 +5,8 @@
 
 #include "spectra.h"
 
+struct spectra;       /* <— this line fixes the incompatible-pointer issue */
+
 /**
  * Structure containing everything about lensed spectra that other modules need to know.
  *
