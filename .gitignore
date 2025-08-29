@@ -311,3 +311,10 @@ docs/.ipynb_checkpoints
 class-sz/tests/.ipynb_checkpoints
 class-sz/python/classy_sz.cpython-310-darwin.so
 class-sz/python/classy_sz.cpython-312-darwin.so
+
+
+lib/
+bin/
+wheelhouse/
+include/
+pyvenv.cfg

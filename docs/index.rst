@@ -28,6 +28,11 @@ class_sz
    :alt: arXiv paper
 
 
+.. image:: https://img.shields.io/badge/arXiv-2507.07346-b31b1b.svg
+   :target: https://arxiv.org/abs/2507.07346
+   :alt: arXiv paper
+
+
 
 Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, LSS and Halo Model Observables Computations
 

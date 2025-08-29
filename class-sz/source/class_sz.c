@@ -302,9 +302,12 @@ int class_sz_cosmo_init(  struct background * pba,
 
    // printf("need_hmf = %d\n",pclass_sz->need_hmf);
    select_multipole_array(pclass_sz);
-   // printf("=============l array selected.\n");
-   // printf("=============ell_sz = %d\n",pclass_sz->ell_sz);
-   // printf("=============nlsz = %d\n",pclass_sz->nlSZ);
+
+   if (pclass_sz->sz_verbose>0){
+   printf("=============l array selected.\n");
+   printf("=============ell_sz = %d\n",pclass_sz->ell_sz);
+   printf("=============nlsz = %d\n",pclass_sz->nlSZ);
+   }
 
    pclass_sz->chi_star = pth->ra_star*pba->h;
  
@@ -7208,10 +7211,10 @@ double integrand_at_m_and_z(double logM,
     }
 
 
-  if (kl < pclass_sz->kmin_cut){
-    pvectsz[pclass_sz->index_integrand] = 0.;
-    return pvectsz[pclass_sz->index_integrand];
-  }
+  // if (kl < pclass_sz->kmin_cut){
+  //   pvectsz[pclass_sz->index_integrand] = 0.;
+  //   return pvectsz[pclass_sz->index_integrand];
+  // }
 
 
 double damping_1h_term;
@@ -19021,6 +19024,8 @@ int select_multipole_array(struct class_sz_structure * pclass_sz)
 
   }
 
+
+   if (pclass_sz->ell_sz != 6){
    class_alloc(pclass_sz->ell,sizeof(double *)*pclass_sz->nlSZ,pclass_sz->error_message);
    int index_l;
    for (index_l=0;index_l<pclass_sz->nlSZ;index_l++)
@@ -19042,6 +19047,7 @@ int select_multipole_array(struct class_sz_structure * pclass_sz)
          pclass_sz->ell[index_l] = pclass_sz->ell_mock[index_l];
      else if (pclass_sz->ell_sz == 5)
         pclass_sz->ell[index_l] = pclass_sz->ell_plc_no_low_ell[index_l];
+   }
    }
 
    if (pclass_sz->sz_verbose>0){
@@ -22199,7 +22205,7 @@ if (_ngal_ngal_1h_){
       // exit(0);
       ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,pclass_sz);
       nc_galprime = HOD_mean_number_of_central_galaxies(z,M_halo,M_min_galprime,sigma_log10M_galprime,f_cen_HOD_galprime,pclass_sz,pba);
-      ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,pclass_sz,pba);
+      ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc_galprime,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,pclass_sz,pba);
       us_galprime = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout_galprime);
 
       ug_at_ell  = sqrt((1./ng_bar)*(nc+ns*us)*(1./ng_bar_galprime)*(nc_galprime+ns_galprime*us_galprime));
@@ -22237,7 +22243,7 @@ if (_ngal_ngal_2h_
     if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  2) { // gal_gal_2h for index_g_prime
     ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,pclass_sz);
     nc_galprime = HOD_mean_number_of_central_galaxies(z,M_halo,M_min_galprime,sigma_log10M_galprime,f_cen_HOD_galprime,pclass_sz,pba);
-    ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,pclass_sz,pba);
+    ns_galprime = HOD_mean_number_of_satellite_galaxies(z,M_halo,nc_galprime,M0_galprime,alpha_s_HOD_galprime,M1_prime_galprime,pclass_sz,pba);
     us_galprime = evaluate_truncated_nfw_profile(z,kl,r_delta,c_delta,xout_galprime);
     ng_bar_galprime = evaluate_mean_galaxy_number_density_at_z_ngal(z,index_g_prime,pclass_sz);
     ug_at_ell  = (1./ng_bar_galprime)*(nc_galprime+ns_galprime*us_galprime);
