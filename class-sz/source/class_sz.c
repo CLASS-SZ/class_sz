@@ -12485,12 +12485,12 @@ exit(0);
     double th1,th2;
 
 
-  if (thp > pclass_sz->theta_bin_max){
-          l1 = pclass_sz->nthetas - 1;
-          l2 = pclass_sz->nthetas - 2;
-          th1 = pclass_sz->thetas[l1];
-          th2 = pclass_sz->thetas[l2];
-       }
+    if (thp > pclass_sz->theta_bin_max){
+            l1 = pclass_sz->nthetas - 1;
+            l2 = pclass_sz->nthetas - 2;
+            th1 = pclass_sz->thetas[l1];
+            th2 = pclass_sz->thetas[l2];
+        }
 
     else if (thp < pclass_sz->theta_bin_min){
        l1 = 0;
