@@ -7166,8 +7166,8 @@ double integrand_at_m_and_z(double logM,
    r_delta_cib = pvectsz[pclass_sz->index_radius_for_cib];
    c_delta_cib = pvectsz[pclass_sz->index_concentration_for_cib];
 
-   // evaluate_completeness(pvecback,pvectsz,pba,pclass_sz);
-   pvectsz[pclass_sz->index_completeness] = 1.;
+   evaluate_completeness(pvecback,pvectsz,pba,pclass_sz);
+  //  pvectsz[pclass_sz->index_completeness] = 1.;
 
 
 
@@ -12440,44 +12440,47 @@ int evaluate_completeness(double * pvecback,
 
     double comp_at_M_and_z = 0.;
 
-printf("check units of dA!!.\n");
-exit(0);
+// printf("check units of dA!!.\n");
+// exit(0);
 
     if (pclass_sz->has_completeness_for_ps_SZ == 1){
 
     comp_at_M_and_z = 0.;
 
-    double mp_bias = pvectsz[pclass_sz->index_m500c]/pclass_sz->HSEbias; //biased mass = M/B
-    //double redshift = pvectsz[pclass_sz->index_z];
+    double thp = get_theta_at_m_and_z(pvectsz[pclass_sz->index_m500c],pvectsz[pclass_sz->index_z],pclass_sz,pba);
+    double yp = get_y_at_m_and_z(pvectsz[pclass_sz->index_m500c],pvectsz[pclass_sz->index_z],pclass_sz,pba);
 
-    //printf("mass m500 = %e\n",mp_bias);
-    //printf("mass m200 = %e\n",pvectsz[pclass_sz->index_m200]); //true mass
-    //printf("bias = %e\n",pclass_sz->HSEbias);
-    //printf("redshift = %e\n",redshift);
-    double Eh = pvecback[pba->index_bg_H]/pba->H0;
-    double d_A = pvecback[pba->index_bg_ang_distance]; //units Mpc
+    // // double mp_bias = pvectsz[pclass_sz->index_m500c]/pclass_sz->HSEbias; //biased mass = M/B
+    // //double redshift = pvectsz[pclass_sz->index_z];
 
-    //! szcounts.f90: angular diameter distance in units of h^-1 Mpc
+    // //printf("mass m500 = %e\n",mp_bias);
+    // //printf("mass m200 = %e\n",pvectsz[pclass_sz->index_m200]); //true mass
+    // //printf("bias = %e\n",pclass_sz->HSEbias);
+    // //printf("redshift = %e\n",redshift);
+    // double Eh = pvecback[pba->index_bg_H]/pba->H0;
+    // double d_A = pvecback[pba->index_bg_ang_distance]; //units Mpc
+
+    // //! szcounts.f90: angular diameter distance in units of h^-1 Mpc
 
 
-    double H0 = pba->h*100.;
+    // double H0 = pba->h*100.;
 
 
-    double thetastar = 6.997;
-    double alpha_theta = 1./3.;
-    double alpha = 1.78;//pcsz->alpha; //1.78;
-    double beta = 0.66;
+    // double thetastar = 6.997;
+    // double alpha_theta = 1./3.;
+    // double alpha = 1.78;//pcsz->alpha; //1.78;
+    // double beta = 0.66;
 
-    double thetastar2 = thetastar * pow(H0/70.,-2./3.);
-    double theta500_for_mp_at_zp =  thetastar2 * pow(mp_bias/3.e14* (100./H0),alpha_theta);
-    theta500_for_mp_at_zp *=    pow(Eh,-2./3) *pow(100.*d_A/(500.0*H0),-1.);
-    double thp = theta500_for_mp_at_zp;
-    double ystar = pow(10.,-0.19)/pow(2., alpha)*0.00472724;
-    double ystar2 = ystar;
-    ystar2 *=  pow(H0/70.,-2.+alpha);
-    double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/3.e14* (100./H0),alpha);
-    y500_for_mp_at_zp *=   pow(Eh,beta) *pow(100.*d_A/(500.0*H0),-2.);
-    double yp = y500_for_mp_at_zp;
+    // double thetastar2 = thetastar * pow(H0/70.,-2./3.);
+    // double theta500_for_mp_at_zp =  thetastar2 * pow(mp_bias/3.e14* (100./H0),alpha_theta);
+    // theta500_for_mp_at_zp *=    pow(Eh,-2./3) *pow(100.*d_A/(500.0*H0),-1.);
+    // double thp = theta500_for_mp_at_zp;
+    // double ystar = pow(10.,-0.19)/pow(2., alpha)*0.00472724;
+    // double ystar2 = ystar;
+    // ystar2 *=  pow(H0/70.,-2.+alpha);
+    // double y500_for_mp_at_zp =  ystar2 * pow(mp_bias/3.e14* (100./H0),alpha);
+    // y500_for_mp_at_zp *=   pow(Eh,beta) *pow(100.*d_A/(500.0*H0),-2.);
+    // double yp = y500_for_mp_at_zp;
     double sn_cutoff = pclass_sz->sn_cutoff;
     //printf("with cutoff = %.3e\n",sn_cutoff); // BB debug
     double y;
