@@ -3584,16 +3584,17 @@ cdef class Class:
     def cl_ee(self):
         """
         (class_sz) Return the 1-halo and 2-halo terms of electron x electron power spectrum
+        and the (effective) halo-fit term
         """
         cl = {}
         cl['ell'] = []
         cl['1h'] = []
         cl['2h'] = []
-        # cl['hf'] = []
+        cl['hf'] = []
         for index in range(self.tsz.nlSZ):
             cl['1h'].append(self.tsz.cl_tau_tau_1h[index])
             cl['2h'].append(self.tsz.cl_tau_tau_2h[index])
-            # cl['hf'].append(self.tsz.cl_tau_gal_hf[index])
+            cl['hf'].append(self.tsz.cl_tau_tau_hf[index])
             cl['ell'].append(self.tsz.ell[index])
         return cl
 

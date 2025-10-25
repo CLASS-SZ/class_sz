@@ -14602,6 +14602,21 @@ if     (((V->pclass_sz->has_tSZ_gal_1h == _TRUE_) && (index_md == V->pclass_sz->
     // printf("result = %.5e b=%.5e pk=%.5e\n",result,V->pvectsz[V->pclass_sz->index_halo_bias],pk1);
 
   }
+
+  else if ((V->pclass_sz->has_tau_tau_hf == _TRUE_) && (index_md == V->pclass_sz->index_md_tau_tau_hf)) {
+
+    int index_l = (int) V->pvectsz[V->pclass_sz->index_multipole];
+    double l = V->pclass_sz->ell[index_l];
+    double pk1;
+    if (V->pclass_sz->use_pkl_in_linbias_calc){
+        pk1 =  get_pk_lin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->pclass_sz);
+       }
+    else{
+        pk1 =  get_pk_nonlin_at_k_and_z((l+0.5)/chi,z,V->pba,V->ppm,V->pnl,V->pclass_sz);
+        }
+    result = pk1;
+  }
+
   else if ((V->pclass_sz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_gal_hf)) {
 
   int index_theta_1 = (int) V->pvectsz[V->pclass_sz->index_multipole_1];
@@ -15185,6 +15200,13 @@ double Wg = radial_kernel_W_galaxy_at_z(V->pvecback,V->pvectsz,V->pba,V->pclass_
 result *= Wg/V->pvectsz[V->pclass_sz->index_chi2];
 }
 
+// tau_tau effective approach Wtau^2:
+
+if ( ((V->pclass_sz->has_tau_tau_hf == _TRUE_) && (index_md == V->pclass_sz->index_md_tau_tau_hf)) ){
+double Wtau = radial_kernel_W_tau_at_z(V->pvecback,V->pvectsz,V->pba,V->pclass_sz);
+result *= pow(Wtau,2.);
+}
+
 // gxg needs Wg^2:
 if ( ((V->pclass_sz->has_gal_gal_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_gal_gal_1h))
    ||((V->pclass_sz->has_gal_gal_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_gal_gal_2h))
@@ -15518,6 +15540,9 @@ if (V->pclass_sz->use_maniyar_cib_model == 0){
   // printf("multiplying by volume %.3e %.3e\n",V->pvectsz[V->pclass_sz->index_chi2]/H_over_c_in_h_over_Mpc, get_volume_at_z(V->pvectsz[V->pclass_sz->index_z],V->pba));
   // result = (1.+V->pvectsz[V->pclass_sz->index_z])*result/H_over_c_in_h_over_Mpc;
 
+
+
+  
   double volume = (1.+V->pvectsz[V->pclass_sz->index_z])*get_volume_at_z(V->pvectsz[V->pclass_sz->index_z],V->pba);
   
 
@@ -15532,7 +15557,16 @@ if (V->pclass_sz->use_maniyar_cib_model == 0){
   printf("nan or inf in integrand redshift 1h, volume = %.3e\n",volume);
   exit(0);
   }
-  return result;
+
+  // try implementing the k-cutoff here:
+  double kmin = V->pclass_sz->kmin_cut;
+  int index_l = (int) V->pvectsz[V->pclass_sz->index_multipole];
+  double ell = V->pclass_sz->ell[index_l];
+  double klimb = (ell+0.5)/sqrt(V->pvectsz[V->pclass_sz->index_chi2]);
+  if (klimb < kmin)
+    return 1e-100*result;
+  else
+    return result;
 // }
 
 }

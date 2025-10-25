@@ -2952,13 +2952,6 @@ int input_read_parameters(
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
         pclass_sz->has_pk = _TRUE_;
-        // pclass_sz->need_sigma = 1;
-
-        // printf("has_pk = %d\n",pclass_sz->has_pk);
-        // exit(0);
-
-
-        // pclass_sz->need_hmf = 1;
       }
 
       if ((strstr(string1,"galn_galn_hf") != NULL) ) {
@@ -3171,6 +3164,17 @@ int input_read_parameters(
         pnl->has_pk_m = _TRUE_;
         pclass_sz->need_hmf = 1;
       }
+
+      if ((strstr(string1,"tau_tau_hf") != NULL) ) {
+        pclass_sz->has_tau_tau_hf =_TRUE_;
+        ppt->has_density_transfers=_TRUE_;
+        ppt->has_pk_matter = _TRUE_;
+        ppt->has_perturbations = _TRUE_;
+        pnl->has_pk_cb = _TRUE_;
+        pnl->has_pk_m = _TRUE_;
+        pclass_sz->has_pk = _TRUE_;
+      }
+
 
       if ((strstr(string1,"gal_lens_1h") != NULL) ) {
         pclass_sz->has_gal_lens_1h =_TRUE_;
@@ -4382,6 +4386,8 @@ int input_read_parameters(
 
 
       class_read_double("x_out_truncated_density_profile (electrons)",pclass_sz->x_out_truncated_nfw_profile_electrons);
+      class_read_double("x_out_truncated_density_profile_electrons",pclass_sz->x_out_truncated_nfw_profile_electrons); // new name
+
       // class_read_double("x_out_truncated_density_profile",pclass_sz->x_out_truncated_density_profile);
 
       class_read_double("x_out_truncated_nfw_profile",pclass_sz->x_out_truncated_nfw_profile);
@@ -4606,6 +4612,12 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
       if (flag1 == _FALSE_) {
         class_call(parser_read_string(pfc,"mass_function",&string1,&flag1,errmsg),errmsg,errmsg);
       }
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"halo_mass_function",&string1,&flag1,errmsg),errmsg,errmsg);
+      }
+      if (flag1 == _FALSE_) {
+        class_call(parser_read_string(pfc,"hmf",&string1,&flag1,errmsg),errmsg,errmsg);
+      }
      if (flag1 == _TRUE_) {
         if ((strstr(string1,"T10M200m") != NULL)){
             pclass_sz->MF=1;
@@ -4702,7 +4714,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
         }
 
         else if (flag1 == _TRUE_) {
-          if ((strstr(string1,"nfw") != NULL)){
+          if ((strstr(string1,"nfw") != NULL) || (strstr(string1,"NFW") != NULL)){
             pclass_sz->profile_matter_density=0;
             if (pclass_sz->sz_verbose>0){
               printf("using standard nfw profile for matter profile.\n",pclass_sz->matter_nfw_power_law_index);
@@ -4869,7 +4881,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
                  errmsg,
                  errmsg);}
       if (flag1 == _TRUE_) {
-        if ((strstr(string1,"nfw") != NULL))
+        if ((strstr(string1,"nfw") != NULL) || (strstr(string1,"NFW") != NULL))
           pclass_sz->tau_profile=0;
         else  if ((strstr(string1,"B16") != NULL)){
           pclass_sz->tau_profile=1;
@@ -6258,6 +6270,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",pclass_sz->no_tt_noise_in_kSZ2X_cov);
       + pclass_sz->has_tau_gal_2h
       + pclass_sz->has_tau_tau_1h
       + pclass_sz->has_tau_tau_2h
+      + pclass_sz->has_tau_tau_hf
       + pclass_sz->has_gal_lens_1h
       + pclass_sz->has_gal_lens_2h
       + pclass_sz->has_gal_lens_hf
@@ -7492,6 +7505,7 @@ int input_default_params(
   pclass_sz->has_tau_gal_2h = _FALSE_;
   pclass_sz->has_tau_tau_1h = _FALSE_;
   pclass_sz->has_tau_tau_2h = _FALSE_;
+  pclass_sz->has_tau_tau_hf = _FALSE_;
   pclass_sz->has_gal_lens_1h = _FALSE_;
   pclass_sz->has_gal_lens_2h = _FALSE_;
   pclass_sz->has_gal_lens_hf = _FALSE_;
@@ -7814,6 +7828,7 @@ int input_default_params(
   pclass_sz->index_md_nlensmag_tsz_2h = 140;
 
   pclass_sz->index_md_gallens_gallens_hf = 141;
+  pclass_sz->index_md_tau_tau_hf = 142;
 
   pclass_sz->integrate_wrt_mvir = 0;
   pclass_sz->integrate_wrt_m500c = 0;
@@ -7870,7 +7885,7 @@ int input_default_params(
 
   pclass_sz->f_free  = 1.; //  Ionization state of Helium (0.86 = neutral, 0.93 = singly ionized, 1 = completely ionized for Y_p = 0.24)
   pclass_sz->f_b_gas  = -1.;
-  pclass_sz->mu_e = 1.14;
+  pclass_sz->mu_e = 1.14; //Mean molecular weight per free electron for primordial helium: μe = 2/(1+X) = 2/(1+0.76) = 1.1368 ≈ 1.14
 
   pclass_sz->csat_over_cdm = 1.;
   pclass_sz->cl_gal_gal_A_sn = 0.;

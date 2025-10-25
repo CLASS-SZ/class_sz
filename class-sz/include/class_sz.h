@@ -76,6 +76,7 @@
 #define _tau_gal_2h_ ((pclass_sz->has_tau_gal_2h == _TRUE_) && (index_md == pclass_sz->index_md_tau_gal_2h))
 #define _tau_tau_1h_ ((pclass_sz->has_tau_tau_1h == _TRUE_) && (index_md == pclass_sz->index_md_tau_tau_1h))
 #define _tau_tau_2h_ ((pclass_sz->has_tau_tau_2h == _TRUE_) && (index_md == pclass_sz->index_md_tau_tau_2h))
+#define _tau_tau_hf_ ((pclass_sz->has_tau_tau_hf == _TRUE_) && (index_md == pclass_sz->index_md_tau_tau_hf))
 #define _gal_lens_2h_ ((pclass_sz->has_gal_lens_2h == _TRUE_) && (index_md == pclass_sz->index_md_gal_lens_2h))
 #define _gal_lens_hf_ ((pclass_sz->has_gal_lens_hf == _TRUE_) && (index_md == pclass_sz->index_md_gal_lens_hf))
 #define _gal_lens_1h_ ((pclass_sz->has_gal_lens_1h == _TRUE_) && (index_md == pclass_sz->index_md_gal_lens_1h))
@@ -232,6 +233,7 @@ struct class_sz_structure {
   double * cl_tau_gal_1h;
   double * cl_tau_tau_2h;
   double * cl_tau_tau_1h;
+  double * cl_tau_tau_hf;
   double * cl_gal_lens_2h;
   double * cl_gal_lens_1h;
   double * cl_gal_lensmag_hf;
@@ -805,6 +807,12 @@ struct class_sz_structure {
   int index_md_gal_gal_hf;
   int index_integrand_id_gal_gal_hf_first;
   int index_integrand_id_gal_gal_hf_last;
+
+
+  int has_tau_tau_hf;
+  int index_md_tau_tau_hf;
+  int index_integrand_id_tau_tau_hf_first;
+  int index_integrand_id_tau_tau_hf_last;
 
   int has_n5k;
   int index_md_n5k;
@@ -2814,6 +2822,10 @@ double get_f_of_sigma_at_m_and_z(double m,
 
 double get_source_galaxy_number_counts(double z,
                                 struct class_sz_structure * pclass_sz);
+double radial_kernel_W_tau_at_z( double * pvecback,
+                                  double * pvectsz,
+                                  struct background * pba,
+                                  struct class_sz_structure * pclass_sz);
 double radial_kernel_W_galaxy_at_z( double * pvecback,
                                     double * pvectsz,
                                     struct background * pba,

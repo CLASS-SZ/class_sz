@@ -134,6 +134,7 @@ int class_sz_cosmo_init(  struct background * pba,
       + pclass_sz->has_gal_gal_1h
       + pclass_sz->has_gal_gal_2h
       + pclass_sz->has_gal_gal_hf
+      + pclass_sz->has_tau_tau_hf
       + pclass_sz->has_tau_gal_1h
       + pclass_sz->has_tau_gal_2h
       + pclass_sz->has_tau_tau_1h
@@ -513,6 +514,7 @@ int class_sz_tabulate_init(
       + pclass_sz->has_tau_gal_2h
       + pclass_sz->has_tau_tau_1h
       + pclass_sz->has_tau_tau_2h
+      + pclass_sz->has_tau_tau_hf
       + pclass_sz->has_gal_lens_1h
       + pclass_sz->has_gal_lens_2h
       + pclass_sz->has_gal_lens_hf
@@ -1896,6 +1898,7 @@ int class_sz_integrate_init(
       + pclass_sz->has_tau_gal_2h
       + pclass_sz->has_tau_tau_1h
       + pclass_sz->has_tau_tau_2h
+      + pclass_sz->has_tau_tau_hf
       + pclass_sz->has_gal_lens_1h
       + pclass_sz->has_gal_lens_2h
       + pclass_sz->has_gal_lens_hf
@@ -2717,6 +2720,7 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
       + pclass_sz->has_tau_gal_2h
       + pclass_sz->has_tau_tau_1h
       + pclass_sz->has_tau_tau_2h
+      + pclass_sz->has_tau_tau_hf
       + pclass_sz->has_gal_lens_1h
       + pclass_sz->has_gal_lens_2h
       + pclass_sz->has_gal_lens_hf
@@ -2833,6 +2837,7 @@ int class_sz_free(struct class_sz_structure *pclass_sz)
    free(pclass_sz->cl_tau_gal_2h);
    free(pclass_sz->cl_tau_tau_1h);
    free(pclass_sz->cl_tau_tau_2h);
+   free(pclass_sz->cl_tau_tau_hf);
    free(pclass_sz->cl_gal_lens_1h);
    free(pclass_sz->cl_gal_lens_2h);
    free(pclass_sz->cl_gal_lens_hf);
@@ -4986,6 +4991,12 @@ int compute_sz(struct background * pba,
           Pvectsz[pclass_sz->index_multipole] = (double) (index_integrand - pclass_sz->index_integrand_id_tau_tau_2h_first);
           if (pclass_sz->sz_verbose > 0) printf("computing cl^tau_tau_2h @ ell_id = %.0f\n",Pvectsz[pclass_sz->index_multipole]);
         }
+      else if (index_integrand>=pclass_sz->index_integrand_id_tau_tau_hf_first && index_integrand <= pclass_sz->index_integrand_id_tau_tau_hf_last && pclass_sz->has_tau_tau_hf){
+         Pvectsz[pclass_sz->index_md] = pclass_sz->index_md_tau_tau_hf;
+         Pvectsz[pclass_sz->index_has_electron_density] = 1;
+         Pvectsz[pclass_sz->index_multipole] = (double) (index_integrand - pclass_sz->index_integrand_id_tau_tau_hf_first);
+         if (pclass_sz->sz_verbose > 0) printf("computing cl^tau_tau_hf @ ell_id = %.0f\n",Pvectsz[pclass_sz->index_multipole]);
+       }
        else if (index_integrand>=pclass_sz->index_integrand_id_gal_lens_hf_first && index_integrand <= pclass_sz->index_integrand_id_gal_lens_hf_last && pclass_sz->has_gal_lens_hf){
           Pvectsz[pclass_sz->index_md] = pclass_sz->index_md_gal_lens_hf;
           // Pvectsz[pclass_sz->index_has_galaxy] = 1;
@@ -6198,7 +6209,15 @@ if (_tau_tau_2h_){
 
 }
 
-
+// Collect tau_tau effective approach at each multipole:
+// units??
+// [l(l+1)/2pi]*cl
+if (_tau_tau_hf_){
+ int index_l = (int) Pvectsz[pclass_sz->index_multipole];
+ pclass_sz->cl_tau_tau_hf[index_l] = Pvectsz[pclass_sz->index_integral]
+                                 *pclass_sz->ell[index_l]*(pclass_sz->ell[index_l]+1.)
+                                 /(2*_PI_);
+}
 
 // Collect gxlens 1-halo at each multipole:
 // result in y-units (dimensionless)
@@ -17366,7 +17385,7 @@ int show_results(struct background * pba,
                          struct class_sz_structure * pclass_sz){
 
 
-  if (pclass_sz->has_sz_ps){
+  if (pclass_sz->has_sz_ps){ // tsz_tsz_1h
 printf("\n\n");
 printf("########################################\n");
 printf("tSZ power spectrum 1-halo term:\n");
@@ -17424,7 +17443,7 @@ printf("\n");
  }
 }
 
- if (pclass_sz->has_sz_2halo){
+ if (pclass_sz->has_sz_2halo){ // tsz_tsz_2h
 
 
 printf("\n\n");
@@ -18074,6 +18093,19 @@ int index_l;
 for (index_l=0;index_l<pclass_sz->nlSZ;index_l++){
 
 printf("ell = %e\t\t cl_tau_tau (2h) = %e \n",pclass_sz->ell[index_l],pclass_sz->cl_tau_tau_2h[index_l]);
+}
+}
+
+if (pclass_sz->has_tau_tau_hf){
+printf("\n\n");
+printf("##########################################################\n");
+printf("electron x electron power spectrum (effective approach):\n");
+printf("##########################################################\n");
+printf("\n");
+int index_l;
+for (index_l=0;index_l<pclass_sz->nlSZ;index_l++){
+
+printf("ell = %e\t\t cl_tau_tau (hf) = %e \n",pclass_sz->ell[index_l],pclass_sz->cl_tau_tau_hf[index_l]);
 }
 }
 
@@ -19963,6 +19995,7 @@ if (pclass_sz->need_hmf){
    class_alloc(pclass_sz->cl_custom1_gallens_2h,sizeof(double *)*pclass_sz->nlSZ,pclass_sz->error_message);
    class_alloc(pclass_sz->cl_gal_gal_2h,sizeof(double *)*pclass_sz->nlSZ,pclass_sz->error_message);
    class_alloc(pclass_sz->cl_gal_gal_hf,sizeof(double *)*pclass_sz->nlSZ,pclass_sz->error_message);
+   class_alloc(pclass_sz->cl_tau_tau_hf,sizeof(double *)*pclass_sz->nlSZ,pclass_sz->error_message);
    class_alloc(pclass_sz->cl_gal_lens_1h,sizeof(double *)*pclass_sz->nlSZ,pclass_sz->error_message);
    class_alloc(pclass_sz->cl_gal_lens_2h,sizeof(double *)*pclass_sz->nlSZ,pclass_sz->error_message);
    class_alloc(pclass_sz->cl_gal_lens_hf,sizeof(double *)*pclass_sz->nlSZ,pclass_sz->error_message);
@@ -20081,6 +20114,7 @@ if (pclass_sz->need_hmf){
       pclass_sz->cl_gal_gal_1h[index_l] = 0.;
       pclass_sz->cl_gal_gal_2h[index_l] = 0.;
       pclass_sz->cl_gal_gal_hf[index_l] = 0.;
+      pclass_sz->cl_tau_tau_hf[index_l] = 0.;
       //pclass_sz->cl_tSZ_cib_1h[index_l] = 0.;
       //pclass_sz->cl_tSZ_cib_2h[index_l] = 0.;
       //pclass_sz->cl_cib_cib_1h[index_l] = 0.;
@@ -20540,6 +20574,10 @@ for (index_l=0;index_l<pclass_sz->nlSZ;index_l++){
    pclass_sz->index_integrand_id_bk_ttg_at_z_3h_last = pclass_sz->index_integrand_id_bk_ttg_at_z_3h_first + pclass_sz->n_k_for_pk_hm - 1;
    last_index_integrand_id =  pclass_sz->index_integrand_id_bk_ttg_at_z_3h_last;
  }
+
+   pclass_sz->index_integrand_id_tau_tau_hf_first = last_index_integrand_id + 1;
+   pclass_sz->index_integrand_id_tau_tau_hf_last = pclass_sz->index_integrand_id_tau_tau_hf_first + pclass_sz->nlSZ - 1;
+   last_index_integrand_id = pclass_sz->index_integrand_id_tau_tau_hf_last;
 
    pclass_sz->index_integrand_id_gal_gal_hf_first = last_index_integrand_id + 1;
    pclass_sz->index_integrand_id_gal_gal_hf_last = pclass_sz->index_integrand_id_gal_gal_hf_first + pclass_sz->nlSZ - 1;
@@ -21044,6 +21082,30 @@ double result = 3.*pow(Omega_m,1.)*pow(pba->H0/pba->h,2)/(pow(ell+0.5,2.))*dgdz*
 
 return result;
                                 }
+
+double radial_kernel_W_tau_at_z( double * pvecback,
+                                  double * pvectsz,
+                                  struct background * pba,
+                                  struct class_sz_structure * pclass_sz){
+// double H_over_c_in_h_over_Mpc = pvecback[pba->index_bg_H]/pba->h;
+// double result = 1./pvectsz[pclass_sz->index_chi2];
+double z = pvectsz[pclass_sz->index_z];
+double sigmaT_over_mp = 8.305907197761162e-17 * pow(pba->h,2)/pba->h; // !this is sigmaT / m_prot in (Mpc/h)**2/(Msun/h)
+double a = 1./ (1. + z);
+double tau_fac = a*sigmaT_over_mp*pclass_sz->f_b_gas/pclass_sz->mu_e*pclass_sz->f_free; // L^2 / M
+double rho_crit  = (3./(8.*_PI_*_G_*_M_sun_))
+                                *pow(_Mpc_over_m_,1)
+                                *pow(_c_,2)
+                                *pvecback[pba->index_bg_rho_crit]
+                                /pow(pba->h,2);
+
+double tau_normalisation =tau_fac
+                          *pow(pvecback[pba->index_bg_ang_distance]*(1.+z)*pba->h,-2.) // 1/ L^2
+                          // *pow((pba->Omega0_cdm+pba->Omega0_b)*pclass_sz->Rho_crit_0,1);
+                          *pvecback[pba->index_bg_Omega_m]*rho_crit; // M / L^3
+
+return tau_normalisation; //
+}
 
 
 
