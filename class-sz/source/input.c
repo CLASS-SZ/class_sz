@@ -2421,6 +2421,7 @@ int input_read_parameters(
         ppt->has_perturbations = _TRUE_;
         pnl->has_pk_cb = _TRUE_;
         pnl->has_pk_m = _TRUE_;
+        pclass_sz->has_pk = _TRUE_; // needed for vrms2 calculation with emulators
       }
 
       if ((strstr(string1,"kSZ_kSZ_lensmag_1h") != NULL) ) {
