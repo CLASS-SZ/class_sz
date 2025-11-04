@@ -15346,11 +15346,11 @@ if (
     ||((V->pclass_sz->has_kSZ_kSZ_lens_hf == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lens_hf)) // this is not correct??
 ){
 
-if (((V->pclass_sz->has_kSZ_kSZ_lens_hf == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lens_hf))){
-  printf("this seems not correct, check lensing kernel for kSZ_kSZ_lens_hf!\n");
-  printf(" i think in the lensing hf case the kernel should be radial_kernel_W_lensing_at_z.\n");
-  exit(0);
-}
+// if (((V->pclass_sz->has_kSZ_kSZ_lens_hf == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lens_hf))){
+//   printf("this seems not correct, check lensing kernel for kSZ_kSZ_lens_hf!\n");
+//   printf(" i think in the lensing hf case the kernel should be radial_kernel_W_lensing_at_z.\n");
+//   exit(0);
+// }
 double Wg = radial_kernel_W_cmb_lensing_at_z(z,V->pvectsz,V->pba,V->pclass_sz);
 result *= Wg;
 
@@ -20939,8 +20939,7 @@ if (pclass_sz->sz_verbose>1)
 if (pclass_sz->use_class_sz_fast_mode){
   return _SUCCESS_;
 }
-
-
+            
 class_alloc(pclass_sz->array_vrms2_at_z,sizeof(double *)*pclass_sz->ndim_redshifts,pclass_sz->error_message);
 
 
@@ -20949,6 +20948,8 @@ double * vrms2_var;
 class_alloc(vrms2_var,
             sizeof(double *),
             pclass_sz->error_message);
+
+
 
 
 
