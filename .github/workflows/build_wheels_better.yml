@@ -126,23 +126,35 @@ jobs:
       - name: Build wheels for Linux
         if: matrix.os == 'ubuntu-latest'
         env:
-          CIBW_ENVIRONMENT: "LDFLAGS='-L/usr/lib/x86_64-linux-gnu' CFLAGS='-I/usr/include' LIBRARY_PATH='/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH' C_INCLUDE_PATH='/usr/include:$C_INCLUDE_PATH' LD_LIBRARY_PATH='/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH'"
+          # architectures: set if you want aarch64 too
+          CIBW_ARCHS_LINUX: "x86_64"
           CIBW_BUILD: ${{ env.CIBW_BUILD }}
-          CIBW_SKIP: "cp27-* cp34-* cp35-* cp36-* cp37-* cp38-* pp* *-manylinux_i686 *musllinux*"
-          CIBW_BEFORE_BUILD: |
-            curl -O https://ftp.gnu.org/gnu/gsl/gsl-2.7.1.tar.gz
+          CIBW_SKIP: "pp* *-manylinux_i686 *musllinux*"
+          CIBW_BEFORE_ALL_LINUX: |
+            set -euxo pipefail
+            curl -sSLO https://ftp.gnu.org/gnu/gsl/gsl-2.7.1.tar.gz
             tar -xzf gsl-2.7.1.tar.gz
             cd gsl-2.7.1
             ./configure --prefix=/usr/local
-            make
+            make -j"$(nproc)"
             make install
             cd ..
-            curl -O http://www.fftw.org/fftw-3.3.10.tar.gz
+            curl -sSLO http://www.fftw.org/fftw-3.3.10.tar.gz
             tar -xzf fftw-3.3.10.tar.gz
             cd fftw-3.3.10
             ./configure --prefix=/usr/local --enable-shared
-            make
+            make -j"$(nproc)"
             make install
+            cd ..
+            test -f /usr/local/include/gsl/gsl_integration.h
+            test -f /usr/local/include/fftw3.h
+          CIBW_ENVIRONMENT: >
+            CFLAGS="-I/usr/local/include -I/usr/include"
+            CPPFLAGS="-I/usr/local/include -I/usr/include"
+            LDFLAGS="-L/usr/local/lib -L/usr/lib/x86_64-linux-gnu"
+            LIBRARY_PATH="/usr/local/lib:/usr/lib/x86_64-linux-gnu:${LIBRARY_PATH}"
+            C_INCLUDE_PATH="/usr/local/include:/usr/include:${C_INCLUDE_PATH}"
+            LD_LIBRARY_PATH="/usr/local/lib:/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
         run: python -m cibuildwheel --output-dir wheelhouse
 
       - name: Install dependencies on macOS
