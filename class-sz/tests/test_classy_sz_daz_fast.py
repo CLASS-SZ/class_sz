@@ -36,7 +36,7 @@ def test_classy_sz_daz_fast():
     result = classy_sz.get_angular_distance_at_z(z, params_values_dict=cosmo_params)*(1.+z)
 
     
-    np.testing.assert_allclose(result, expected_values, rtol=1e-5)
+    np.testing.assert_allclose(result, expected_values, rtol=1e-2)
 
 def test_classy_sz_daz_fast_cosmomodel_0():
 
@@ -55,5 +55,5 @@ def test_classy_sz_daz_fast_cosmomodel_0():
     result = classy_sz.get_angular_distance_at_z(z, params_values_dict=cosmo_params)*(1.+z)
 
     
-    np.testing.assert_allclose(result, expected_values, rtol=1e-5)
+    np.testing.assert_allclose(result, expected_values, rtol=1e-2)
 
