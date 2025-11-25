@@ -1594,6 +1594,10 @@ double szcounts_ntot;
   double * f_unwise_filter;
   int unwise_filter_size;
 
+  double * l_unwise_filter2;
+  double * f_unwise_filter2;
+  int unwise_filter2_size;
+
   double * M_min_of_z_z;
   double * M_min_of_z_M_min;
   int M_min_of_z_size;
@@ -2496,6 +2500,8 @@ double get_tau_profile_at_z_m_l(double z,
 
 
 double get_ksz_filter_at_l(double l,
+                           struct class_sz_structure * pclass_sz);
+double get_ksz_filter_at_l2(double l,
                            struct class_sz_structure * pclass_sz);
 
 double get_M_min_of_z(double l,
