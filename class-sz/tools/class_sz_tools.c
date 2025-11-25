@@ -13622,6 +13622,121 @@ int load_ksz_filter(struct class_sz_structure * pclass_sz)
   return _SUCCESS_;
 }
 
+int load_ksz_filter2(struct class_sz_structure * pclass_sz)
+{
+
+  if (pclass_sz->sz_verbose >= 1)
+    printf("-> loading the filter f(l) for cl^kSZ2_gal\n");
+
+
+  class_alloc(pclass_sz->l_unwise_filter2,sizeof(double *)*100,pclass_sz->error_message);
+  class_alloc(pclass_sz->f_unwise_filter2,sizeof(double *)*100,pclass_sz->error_message);
+  //class_alloc(pclass_sz->PP_d2lnI,sizeof(double *)*100,pclass_sz->error_message);
+
+  //char arguments[_ARGUMENT_LENGTH_MAX_];
+  char line[_LINE_LENGTH_MAX_];
+  //char command_with_arguments[2*_ARGUMENT_LENGTH_MAX_];
+  FILE *process;
+  int n_data_guess, n_data = 0;
+  double *lnx = NULL, *lnI = NULL,  *tmp = NULL;
+  double this_lnx, this_lnI;
+  int status;
+  int index_x;
+
+
+  /** 1. Initialization */
+  /* Prepare the data (with some initial size) */
+  n_data_guess = 100;
+  lnx   = (double *)malloc(n_data_guess*sizeof(double));
+  lnI = (double *)malloc(n_data_guess*sizeof(double));
+
+
+  /** 2. Launch the command and retrieve the output */
+  /* Launch the process */
+  char Filepath[_ARGUMENT_LENGTH_MAX_];
+
+  class_open(process,pclass_sz->ksz_filter_file2, "r",pclass_sz->error_message);
+  if (pclass_sz->sz_verbose >= 1)
+    printf("-> File Name: %s\n",pclass_sz->ksz_filter_file2);
+
+
+  /* Read output and store it */
+  while (fgets(line, sizeof(line)-1, process) != NULL) {
+    sscanf(line, "%lf %lf", &this_lnx, &this_lnI);
+    //printf("lnx = %e\n",this_lnx);
+
+
+
+
+    /* Standard technique in C:
+     /*if too many data, double the size of the vectors */
+    /* (it is faster and safer that reallocating every new line) */
+    if((n_data+1) > n_data_guess) {
+      n_data_guess *= 2;
+      tmp = (double *)realloc(lnx,   n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 pclass_sz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnx = tmp;
+      tmp = (double *)realloc(lnI, n_data_guess*sizeof(double));
+      class_test(tmp == NULL,
+                 pclass_sz->error_message,
+                 "Error allocating memory to read the pressure profile.\n");
+      lnI = tmp;
+    };
+    /* Store */
+    lnx[n_data]   = this_lnx;
+    lnI[n_data]   = this_lnI;
+
+    n_data++;
+    /* Check ascending order of the k's */
+    if(n_data>1) {
+      class_test(lnx[n_data-1] <= lnx[n_data-2],
+                 pclass_sz->error_message,
+                 "The ell/ells's are not strictly sorted in ascending order, "
+                 "as it is required for the calculation of the splines.\n");
+    }
+  }
+
+  /* Close the process */
+  // status = pclose(process);
+  status = fclose(process);
+  class_test(status != 0.,
+             pclass_sz->error_message,
+             "The attempt to launch the external command was unsuccessful. "
+             "Try doing it by hand to check for errors.");
+
+  /** 3. Store the read results into CLASS structures */
+  pclass_sz->unwise_filter2_size = n_data;
+  /** Make room */
+
+  class_realloc(pclass_sz->l_unwise_filter2,
+                pclass_sz->l_unwise_filter2,
+                pclass_sz->unwise_filter2_size*sizeof(double),
+                pclass_sz->error_message);
+  class_realloc(pclass_sz->f_unwise_filter2,
+                pclass_sz->f_unwise_filter2,
+                pclass_sz->unwise_filter2_size*sizeof(double),
+                pclass_sz->error_message);
+
+
+
+  /** Store them */
+  for (index_x=0; index_x<pclass_sz->unwise_filter2_size; index_x++) {
+    pclass_sz->l_unwise_filter2[index_x] = lnx[index_x];
+    pclass_sz->f_unwise_filter2[index_x] = lnI[index_x];
+  };
+
+  /** Release the memory used locally */
+  free(lnx);
+  free(lnI);
+
+  if (pclass_sz->sz_verbose >= 1)
+    printf("-> filter f(l) for cl^kSZ2_x successfully loaded.\n");
+
+
+  return _SUCCESS_;
+}
 
 
 
@@ -18134,6 +18249,7 @@ double k[N], Pk1[N],Pk2[N], Pkr[N];
 double lnk[N],lnpk[N];
 int ik;
 double fl;
+double fl2;
 // double taul;
 double l;
 // double m = exp(logM);
@@ -18155,7 +18271,8 @@ if (isnan(Pk1[ik])||isinf(Pk1[ik])){
 // pvectsz[pclass_sz->index_multipole_for_pk] = l;
 // evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,pclass_sz);
 double pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,pba,ppm,pnl,pclass_sz);//pvectsz[pclass_sz->index_pk_for_halo_bias];
-Pk2[ik] = fl*pkl*get_psi_b1t_at_k_and_z((l+0.5)/chi,z,pclass_sz);
+fl2 = get_ksz_filter_at_l2(l,pclass_sz);
+Pk2[ik] = fl2*pkl*get_psi_b1t_at_k_and_z((l+0.5)/chi,z,pclass_sz);
 // if(l>3e3)
   // printf("l = %.5e pk2 = %.5e\n",l,Pk2[ik]);
 }
@@ -18257,6 +18374,7 @@ double t12_xi12[N],t12_Pkr[N];
 double lnk[N];
 int ik;
 double fl;
+double fl2;
 // double taul;
 double l;
 double pkl=0.;
@@ -18293,6 +18411,7 @@ l = k[ik];
 // pkl = pvectsz[pclass_sz->index_pk_for_halo_bias];
 pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,pba,ppm,pnl,pclass_sz);
 fl = get_ksz_filter_at_l(l,pclass_sz);
+fl2 = get_ksz_filter_at_l2(l,pclass_sz);
 // if ((l+0.5)/chi>1e-2) fl = 0.;
 psi_bt = get_psi_b1t_at_k_and_z((l+0.5)/chi,z,pclass_sz);
 
@@ -18304,10 +18423,10 @@ pk_phi_m2[ik] = pow((l+0.5)/chi,-2)*fl*psi_bt;
 pk_phi_4[ik] = pow((l+0.5)/chi,4)*fl*psi_bt;
 pk_phi_2[ik] = pow((l+0.5)/chi,2)*fl*psi_bt;
 
-pk_tilde_phi_0[ik] = fl*pkl*psi_bt;
-pk_tilde_phi_m2[ik] = pow((l+0.5)/chi,-2)*fl*pkl*psi_bt;
-pk_tilde_phi_2[ik] = pow((l+0.5)/chi,2)*fl*pkl*psi_bt;
-pk_tilde_phi_b20[ik] =  fl*pkl*psi_b2t;
+pk_tilde_phi_0[ik] = fl2*pkl*psi_bt;
+pk_tilde_phi_m2[ik] = pow((l+0.5)/chi,-2)*fl2*pkl*psi_bt;
+pk_tilde_phi_2[ik] = pow((l+0.5)/chi,2)*fl2*pkl*psi_bt;
+pk_tilde_phi_b20[ik] =  fl2*pkl*psi_b2t;
 
 
 
@@ -18526,6 +18645,7 @@ double k[N], Pk1[N],Pk2[N], Pkr[N];
 double lnk[N],lnpk[N];
 int ik;
 double fl;
+double fl2;
 // double taul;
 double l;
 // double m = exp(logM);
@@ -18547,7 +18667,8 @@ if (isnan(Pk1[ik])||isinf(Pk1[ik])){
 // pvectsz[pclass_sz->index_multipole_for_pk] = l;
 // evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,pclass_sz);
 double pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,pba,ppm,pnl,pclass_sz);//pvectsz[pclass_sz->index_pk_for_halo_bias];
-Pk2[ik] = fl*pkl*get_psi_b1t_at_k_and_z((l+0.5)/chi,z,pclass_sz);
+fl2 = get_ksz_filter_at_l2(l,pclass_sz);
+Pk2[ik] = fl2*pkl*get_psi_b1t_at_k_and_z((l+0.5)/chi,z,pclass_sz);
 // if(l>3e3)
   // printf("k = %.5e pk = %.5e\n",l,Pk2[ik]);
 }
@@ -18655,6 +18776,7 @@ double k[N], Pk1[N],Pk2[N], Pkr[N];
 double lnk[N],lnpk[N];
 int ik;
 double fl;
+double fl2;
 // double taul;
 double l;
 // double m = exp(logM);
@@ -18676,7 +18798,8 @@ if (isnan(Pk1[ik])||isinf(Pk1[ik])){
 // pvectsz[pclass_sz->index_multipole_for_pk] = l;
 // evaluate_pk_at_ell_plus_one_half_over_chi(pvecback,pvectsz,pba,ppm,pnl,pclass_sz);
 double pkl = get_pk_lin_at_k_and_z((l+0.5)/chi,z,pba,ppm,pnl,pclass_sz);//pvectsz[pclass_sz->index_pk_for_halo_bias];
-Pk2[ik] = fl*pkl*get_psi_b1g_at_k_and_z((l+0.5)/chi,z,pclass_sz);
+fl2 = get_ksz_filter_at_l2(l,pclass_sz);
+Pk2[ik] = fl2*pkl*get_psi_b1g_at_k_and_z((l+0.5)/chi,z,pclass_sz);
 // if(l>3e3)
   // printf("k = %.5e pk = %.5e\n",l,Pk2[ik]);
 }
@@ -18771,6 +18894,7 @@ double t12_xi12[N],t12_Pkr[N];
 double lnk[N];
 int ik;
 double fl;
+double fl2;
 // double taul;
 double l;
 double pkl=0.;
@@ -18818,10 +18942,11 @@ pk_phi_m2[ik] = pow((l+0.5)/chi,-2)*fl*psi_bt;
 pk_phi_4[ik] = pow((l+0.5)/chi,4)*fl*psi_bt;
 pk_phi_2[ik] = pow((l+0.5)/chi,2)*fl*psi_bt;
 
-pk_tilde_phi_0[ik] = fl*pkl*psi_bt;
-pk_tilde_phi_m2[ik] = pow((l+0.5)/chi,-2)*fl*pkl*psi_bt;
-pk_tilde_phi_2[ik] = pow((l+0.5)/chi,2)*fl*pkl*psi_bt;
-pk_tilde_phi_b20[ik] =  fl*pkl*psi_b2t;
+fl2 = get_ksz_filter_at_l2(l,pclass_sz);
+pk_tilde_phi_0[ik] = fl2*pkl*psi_bt;
+pk_tilde_phi_m2[ik] = pow((l+0.5)/chi,-2)*fl2*pkl*psi_bt;
+pk_tilde_phi_2[ik] = pow((l+0.5)/chi,2)*fl2*pkl*psi_bt;
+pk_tilde_phi_b20[ik] =  fl2*pkl*psi_b2t;
 
 
 
@@ -19028,6 +19153,7 @@ double t12_xi12[N],t12_Pkr[N];
 double lnk[N];
 int ik;
 double fl;
+double fl2;
 // double taul;
 double l;
 double pkl=0.;
@@ -19075,10 +19201,11 @@ pk_phi_m2[ik] = pow((l+0.5)/chi,-2)*fl*psi_bt;
 pk_phi_4[ik] = pow((l+0.5)/chi,4)*fl*psi_bt;
 pk_phi_2[ik] = pow((l+0.5)/chi,2)*fl*psi_bt;
 
-pk_tilde_phi_0[ik] = fl*pkl*psi_bt;
-pk_tilde_phi_m2[ik] = pow((l+0.5)/chi,-2)*fl*pkl*psi_bt;
-pk_tilde_phi_2[ik] = pow((l+0.5)/chi,2)*fl*pkl*psi_bt;
-pk_tilde_phi_b20[ik] =  fl*pkl*psi_b2t;
+fl2 = get_ksz_filter_at_l2(l,pclass_sz);
+pk_tilde_phi_0[ik] = fl2*pkl*psi_bt;
+pk_tilde_phi_m2[ik] = pow((l+0.5)/chi,-2)*fl2*pkl*psi_bt;
+pk_tilde_phi_2[ik] = pow((l+0.5)/chi,2)*fl2*pkl*psi_bt;
+pk_tilde_phi_b20[ik] =  fl2*pkl*psi_b2t;
 
 
 
