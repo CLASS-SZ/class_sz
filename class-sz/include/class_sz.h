@@ -2030,6 +2030,11 @@ double * steps_m;
   double * f_cen_HOD_ngal;
   double Delta_z_lens;
   double Delta_z_source;
+  //ELG HOD parameters
+  double p_max_elg_hod;
+  double Q_elg_hod;
+  double gamma_elg_hod;
+  int use_elg_hod_model;
 
   double fEDE;
   double log10z_c;
@@ -2704,6 +2709,16 @@ double get_dygldzdlnm_at_l_z_and_m(double l,
                                   struct nonlinear * pnl,
                                   struct class_sz_structure * pclass_sz);
 
+static inline double Gaussian_fun(double x, double mean, double sigma);
+static inline double phi_fun(double logM_h, double logM_cut, double sigma);
+static inline double Phi_fun(double logM_h, double logM_cut, double sigma, double gamma_elg_hod);
+double N_cen_ELG_v1(double M_h,
+                    double p_max_elg_hod,
+                    double Q_elg_hod,
+                    double logM_cut,
+                    double sigma,
+                    double gamma_elg_hod,
+                    double Anorm);
 
 double HOD_mean_number_of_central_galaxies(double z,
                                            double M_halo,

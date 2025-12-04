@@ -4349,6 +4349,12 @@ int input_read_parameters(
       class_read_double("Delta_z_lens",pclass_sz->Delta_z_lens);
       class_read_double("Delta_z_source",pclass_sz->Delta_z_source);
 
+
+      class_read_int("use_elg_hod_model",pclass_sz->use_elg_hod_model);
+      class_read_double("p_max_elg_hod",pclass_sz->p_max_elg_hod);
+      class_read_double("Q_elg_hod",pclass_sz->Q_elg_hod);
+      class_read_double("gamma_elg_hod",pclass_sz->gamma_elg_hod);
+
       class_read_double("bispectrum_lambda_2",pclass_sz->bispectrum_lambda_k2);
       class_read_double("bispectrum_lambda_3",pclass_sz->bispectrum_lambda_k3);
 
@@ -7022,6 +7028,11 @@ int input_default_params(
   pclass_sz->bispectrum_lambda_k2 = 1.;
   pclass_sz->bispectrum_lambda_k3 = 1.;
 
+  pclass_sz->p_max_elg_hod = .18;
+  pclass_sz->Q_elg_hod = 100.; 
+  pclass_sz->gamma_elg_hod = 6.12;
+  pclass_sz->use_elg_hod_model = 0;
+  
   pclass_sz->M0_Mmin_flag = 0;
   pclass_sz->f_cen_HOD = 1.;
   pclass_sz->Delta_z_lens = 0.; // DES photo-z errors

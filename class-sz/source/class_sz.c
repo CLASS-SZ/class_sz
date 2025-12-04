@@ -310,6 +310,11 @@ int class_sz_cosmo_init(  struct background * pba,
    printf("=============nlsz = %d\n",pclass_sz->nlSZ);
    }
 
+   if (pclass_sz->sz_verbose>10){
+    printf("->allocating chi_star...\n");
+  }
+  
+
    pclass_sz->chi_star = pth->ra_star*pba->h;
  
 
@@ -339,6 +344,11 @@ if (pclass_sz->use_class_sz_fast_mode == 0)
 pclass_sz->sigmaT_over_mec2_times_50eV_per_cm3_times_Tcmb = 283.2980000259841/0.5176*pba->T_cmb/2.725;
 
 
+if (pclass_sz->sz_verbose>10){
+  printf("-> array_redshift allocating...\n");
+}
+
+
 if (pclass_sz->need_sigma == 1 || pclass_sz->has_vrms2 || pclass_sz->has_pk){
 
 
@@ -358,6 +368,10 @@ if (pclass_sz->need_sigma == 1 || pclass_sz->has_vrms2 || pclass_sz->has_pk){
 
                                       }
                                     }
+
+if (pclass_sz->sz_verbose>10){
+  printf("-> array_redshift allocated...\n");
+}
 
 
 // these arrays are overwritten in fast mode (see classy_szfast.py and classy.pyx)
@@ -384,6 +398,10 @@ if (pclass_sz->has_vrms2 ){
 }
 
 
+if (pclass_sz->sz_verbose>10){
+  printf("-> array_vrms2_at_z allocated...\n");
+}
+
    return _SUCCESS_;
    }
 }
@@ -407,6 +425,9 @@ int class_sz_tabulate_init(
 // printf("%.5e %d\n",pclass_sz->fixed_c200m,pclass_sz->n_m_matter_density_profile);
 // exit(0);
 
+if (pclass_sz->sz_verbose>10){
+  printf("-> entering class_sz_tabulate_init...\n");
+}
   int all_comps = pclass_sz->has_sz_ps
       + pclass_sz->has_hmf
       + pclass_sz->has_n5k
@@ -15813,6 +15834,10 @@ if (z<exp(pclass_sz->array_redshift[0])-1.)
 if (z>exp(pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1])-1.)
   z_asked =  pclass_sz->array_redshift[pclass_sz->ndim_redshifts-1];
 
+// for (int i = 0; i < pclass_sz->ndim_redshifts; i++){
+//   printf("z = %.3e vrms2 = %.8e\n",exp(pclass_sz->array_redshift[i])-1.,pclass_sz->array_vrms2_at_z[i]);
+// }
+
 
 double vrms2 =  exp(pwl_value_1d(pclass_sz->ndim_redshifts,
                                  pclass_sz->array_redshift,
@@ -21493,7 +21518,52 @@ double HOD_mean_number_of_central_galaxies(double z,
                                            struct background * pba){
  double result = 0.;
  result = f_cen*0.5*(1.+gsl_sf_erf((log10(M_halo/M_min)/sigma_log10M)));
+
+
+ if (pclass_sz->use_elg_hod_model == 1){
+   result = N_cen_ELG_v1(M_halo, 
+                         pclass_sz->p_max_elg_hod, 
+                         pclass_sz->Q_elg_hod, 
+                         log10(M_min), 
+                         sigma_log10M, 
+                         pclass_sz->gamma_elg_hod, 
+                         1.);
+ }
  return result;
+}
+
+
+static inline double Gaussian_fun(double x, double mean, double sigma) {
+  /* Gaussian normalized such that prefactor = 1/sqrt(2π) = 0.3989422804... */
+  return 0.3989422804014327 / sigma *
+         exp(-((x - mean) * (x - mean)) / (2.0 * sigma * sigma));
+}
+
+static inline double phi_fun(double logM_h, double logM_cut, double sigma) {
+  return Gaussian_fun(logM_h, logM_cut, sigma);
+}
+
+static inline double Phi_fun(double logM_h, double logM_cut,
+                           double sigma, double gamma_elg_hod) {
+
+  double x = gamma_elg_hod * (logM_h - logM_cut) / sigma;
+  return 0.5 * (1.0 + erf(x / sqrt(2.0)));
+}
+
+double N_cen_ELG_v1(double M_h,
+                  double p_max_elg_hod,
+                  double Q_elg_hod,
+                  double logM_cut,
+                  double sigma,
+                  double gamma_elg_hod,
+                  double Anorm) {
+
+  double logM_h = log10(M_h);
+
+  double phi = phi_fun(logM_h, logM_cut, sigma);
+  double Phi = Phi_fun(logM_h, logM_cut, sigma, gamma_elg_hod);
+
+  return 2.0 * (p_max_elg_hod - 1.0 / Q_elg_hod) * phi * Phi / Anorm;
 }
 
 
