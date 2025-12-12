@@ -1154,7 +1154,7 @@ if (pclass_sz->has_kSZ_kSZ_gal_1h
  || pclass_sz->has_kSZ_kSZ_gal_3h
  || pclass_sz->has_kSZ_kSZ_gal_hf)
 load_ksz_filter(pclass_sz);
-
+load_ksz_filter2(pclass_sz);  
 
 if (pclass_sz->has_tSZ_gal_1h
  || pclass_sz->has_tSZ_gal_2h
@@ -2215,6 +2215,7 @@ double cl_tt_lensed_fft[N];
 double cl_ksz_fft[N];
 double cl_noise_fft[N];
 double Fl_bl;
+double Fl_bl2;
 double cl_ttf[N];
 int i;
 double * cl_tot;
@@ -2259,15 +2260,15 @@ cl_noise_fft[i] = pwl_value_1d(pclass_sz->unbinned_nl_tt_size,pclass_sz->unbinne
 cl_ksz_fft[i] = cl_ksz_fft[i]/l[i]/(l[i]+1.)*2.*_PI_*1e-12/pba->T_cmb/pba->T_cmb;
 cl_noise_fft[i] = cl_noise_fft[i]*1e-12/pba->T_cmb/pba->T_cmb;
 Fl_bl = get_ksz_filter_at_l(l[i],pclass_sz);
-
+Fl_bl2 = get_ksz_filter_at_l2(l[i],pclass_sz);
 
 double result_ttf;
 if (pclass_sz->compute_ksz2ksz2==1){
-result_ttf = Fl_bl*Fl_bl*(cl_ksz_fft[i])*sqrt(2./(2.*_PI_)/(2.*_PI_)); // divide by 2pi^2 and multiply by 2 -- see formula
+result_ttf = Fl_bl*Fl_bl2*(cl_ksz_fft[i])*sqrt(2./(2.*_PI_)/(2.*_PI_)); // divide by 2pi^2 and multiply by 2 -- see formula
 
 }
 else{
-result_ttf = Fl_bl*Fl_bl*(cl_tt_lensed_fft[i]+cl_ksz_fft[i]+cl_noise_fft[i])*sqrt(2./(2.*_PI_)/(2.*_PI_)); // divide by 2pi^2 and multiply by 2 -- see formula
+result_ttf = Fl_bl*Fl_bl2*(cl_tt_lensed_fft[i]+cl_ksz_fft[i]+cl_noise_fft[i])*sqrt(2./(2.*_PI_)/(2.*_PI_)); // divide by 2pi^2 and multiply by 2 -- see formula
 }
 
 if (l[i]<l_lensed[0]){
@@ -2535,7 +2536,7 @@ double l = pclass_sz->ell[i];
 
 double flprime = get_ksz_filter_at_l(lprime,pclass_sz);
 double abs_l_plus_lprime = sqrt(l*l+lprime*lprime+2.*l*lprime*cos(theta));
-double fl_plus_lprime = get_ksz_filter_at_l(abs_l_plus_lprime,pclass_sz);
+double fl_plus_lprime = get_ksz_filter_at_l2(abs_l_plus_lprime,pclass_sz);
 
 double clprime_tt_unlensed = pwl_value_1d(ppt->l_scalar_max-2,l_unlensed,cl_tt_unlensed,lprime);
 if (lprime<l_unlensed[0])
@@ -3305,6 +3306,8 @@ if(pclass_sz->has_kSZ_kSZ_gal_1h
   // free(pclass_sz->theta_kSZ2_gal_theta_grid);
   free(pclass_sz->l_unwise_filter);
   free(pclass_sz->f_unwise_filter);
+  free(pclass_sz->l_unwise_filter2);
+  free(pclass_sz->f_unwise_filter2);
 }
 if(pclass_sz->has_kSZ_kSZ_gal_1h
 || pclass_sz->has_kSZ_kSZ_gal_2h
@@ -7980,6 +7983,7 @@ if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  6) {
         double lnk[N],lnpk[N];
         int ik;
         double fl;
+        double fl2;
         double taul;
         double l;
         double m = exp(logM);
@@ -7989,12 +7993,13 @@ if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  6) {
         lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
         l = k[ik];
         fl = get_ksz_filter_at_l(l,pclass_sz);
+        fl2 = get_ksz_filter_at_l2(l,pclass_sz);
 
         // pvectsz[pclass_sz->index_multipole_for_tau_profile] = l;
         evaluate_tau_profile((l+0.5)/chi,pvecback,pvectsz,pba,pclass_sz);
         taul = pvectsz[pclass_sz->index_tau_profile];
         Pk[ik] = fl*taul;
-        Pko[ik] = fl*taul;
+        Pko[ik] = fl2*taul;
         }
 
         double r[N], xi[N];
@@ -8045,6 +8050,7 @@ if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  6) {
         double lnk[N],lnpk[N];
         int ik;
         double fl;
+        double fl2;
         double taul;
         double l;
         double m = exp(logM);
@@ -8054,12 +8060,13 @@ if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  6) {
         lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
         l = k[ik];
         fl = get_ksz_filter_at_l(l,pclass_sz);
+        fl2 = get_ksz_filter_at_l2(l,pclass_sz);
 
         // pvectsz[pclass_sz->index_multipole_for_tau_profile] = l;
         evaluate_tau_profile((l+0.5)/chi,pvecback,pvectsz,pba,pclass_sz);
         taul = pvectsz[pclass_sz->index_tau_profile];
         Pk[ik] = fl*taul;
-        Pko[ik] = fl*taul;
+        Pko[ik] = fl2*taul;
         }
 
         double r[N], xi[N];
@@ -8109,6 +8116,7 @@ if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  6) {
         double lnk[N],lnpk[N];
         int ik;
         double fl;
+        double fl2;
         double taul;
         double l;
         double m = exp(logM);
@@ -8118,13 +8126,13 @@ if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  6) {
         lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
         l = k[ik];
         fl = get_ksz_filter_at_l(l,pclass_sz);
-
+        fl2 = get_ksz_filter_at_l2(l,pclass_sz);
         // pvectsz[pclass_sz->index_multipole_for_tau_profile] = l;
         double kp = (l+0.5)/chi;
         evaluate_galaxy_profile_2h(kp,m_delta_gal,r_delta_gal,c_delta_gal,pvecback,pvectsz,pba,pclass_sz);
         taul = pvectsz[pclass_sz->index_galaxy_profile];
         Pk[ik] = fl*taul;
-        Pko[ik] = fl*taul;
+        Pko[ik] = fl2*taul;
         }
 
         double r[N], xi[N];
@@ -8257,6 +8265,7 @@ double k[N], Pk[N],Pko[N];
 double lnk[N],lnpk[N];
 int ik;
 double fl;
+double fl2;
 double taul;
 double l;
 // double m = exp(logM);
@@ -8266,12 +8275,12 @@ k[ik] = exp(log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min)));
 lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
 l = k[ik];
 fl = get_ksz_filter_at_l(l,pclass_sz);
-
+fl2 = get_ksz_filter_at_l2(l,pclass_sz);
 // pvectsz[pclass_sz->index_multipole_for_tau_profile] = l;//pclass_sz->ell_kSZ2_gal_multipole_grid[index_l_2];
 evaluate_tau_profile((l+0.5)/chi,pvecback,pvectsz,pba,pclass_sz);
 taul = pvectsz[pclass_sz->index_tau_profile];//get_tau_profile_at_z_m_l(z,m,l,pclass_sz,pba);
 Pk[ik] = fl*taul;
-Pko[ik] = fl*taul;
+Pko[ik] = fl2*taul;
 // if(l>3e3)
 //   printf("k = %.5e pk = %.5e\n",l,Pk[ik]);
 }
@@ -8356,6 +8365,7 @@ double k[N], Pk[N],Pko[N];
 double lnk[N],lnpk[N];
 int ik;
 double fl;
+double fl2;
 double taul;
 double l;
 // double m = exp(logM);
@@ -8365,7 +8375,7 @@ k[ik] = exp(log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min)));
 lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
 l = k[ik];
 fl = get_ksz_filter_at_l(l,pclass_sz);
-
+fl2 = get_ksz_filter_at_l2(l,pclass_sz);
 // pvectsz[pclass_sz->index_multipole_for_tau_profile] = l;//pclass_sz->ell_kSZ2_gal_multipole_grid[index_l_2];
 // evaluate_tau_profile((l+0.5)/chi,pvecback,pvectsz,pba,pclass_sz);
 
@@ -8375,7 +8385,7 @@ fl = get_ksz_filter_at_l(l,pclass_sz);
 
 taul = pvectsz[pclass_sz->index_galaxy_profile];//get_tau_profile_at_z_m_l(z,m,l,pclass_sz,pba);
 Pk[ik] = fl*taul;
-Pko[ik] = fl*taul;
+Pko[ik] = fl2*taul;
 // if(l>3e3)
 //   printf("k = %.5e pk = %.5e\n",l,Pk[ik]);
 }
@@ -8460,6 +8470,7 @@ double k[N], Pk[N],Pko[N];
 double lnk[N],lnpk[N];
 int ik;
 double fl;
+double fl2;
 double taul;
 double l;
 // double m = exp(logM);
@@ -8469,12 +8480,12 @@ k[ik] = exp(log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min)));
 lnk[ik] = log(l_min)+ik/(N-1.)*(log(l_max)-log(l_min));
 l = k[ik];
 fl = get_ksz_filter_at_l(l,pclass_sz);
-
+fl2 = get_ksz_filter_at_l2(l,pclass_sz);
 // pvectsz[pclass_sz->index_multipole_for_tau_profile] = l;//pclass_sz->ell_kSZ2_gal_multipole_grid[index_l_2];
 evaluate_tau_profile((l+0.5)/chi,pvecback,pvectsz,pba,pclass_sz);
 taul = pvectsz[pclass_sz->index_tau_profile];//get_tau_profile_at_z_m_l(z,m,l,pclass_sz,pba);
 Pk[ik] = fl*taul;
-Pko[ik] = fl*taul;
+Pko[ik] = fl2*taul;
 // if(l>3e3)
 //   printf("k = %.5e pk = %.5e\n",l,Pk[ik]);
 }
@@ -11096,6 +11107,18 @@ else
                     ell);
 return fl;
                            }
+double get_ksz_filter_at_l2(double ell,
+                            struct class_sz_structure * pclass_sz){
+ double fl = 1.;
+ if  (ell <= pclass_sz->l_unwise_filter2[0] || ell >= pclass_sz->l_unwise_filter2[pclass_sz->unwise_filter2_size-1])
+   fl = 0.;
+ else
+   fl = pwl_value_1d(pclass_sz->unwise_filter2_size,
+                     pclass_sz->l_unwise_filter2,
+                     pclass_sz->f_unwise_filter2,
+                     ell);
+ return fl;
+                            }
 
 double get_M_min_of_z(double ell,
                       struct class_sz_structure * pclass_sz){

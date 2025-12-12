@@ -38,6 +38,7 @@ class_sz_string_parameter(cib_Snu_file_nu,"/class_sz_auxiliary_files/includes/fi
 
 
 class_sz_string_parameter(ksz_filter_file,"/class_sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl.txt","ksz filter file")
+class_sz_string_parameter(ksz_filter_file2,"/class_sz_auxiliary_files/UNWISE_galaxy_distributions/unwise_filter_functions_l_fl2.txt","ksz filter file2")
 class_sz_string_parameter(ksz_template_file,"/class_sz_auxiliary_files/cl_ksz_bat.dat","ksz template file")
 class_sz_string_parameter(ksz_reio_template_file,"/class_sz_auxiliary_files/FBN_kSZ_PS_patchy.d.txt","ksz template file, reio contribution")
 
