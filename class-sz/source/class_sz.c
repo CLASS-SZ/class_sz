@@ -21580,14 +21580,19 @@ double HOD_mean_number_of_satellite_galaxies(double z,
 double result;
 if ((M_halo>M_min) && (pclass_sz->centrals_only_HOD == 0)){
 
-result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
-
- }
+if (pclass_sz->use_elg_hod_model == 1) {
+  result = pow((M_halo-M_min)/M1_prime,alpha_s);
+}
+else {
+  result = Nc_mean*pow((M_halo-M_min)/M1_prime,alpha_s);
+}
+}
 else {
 result = 0.;
 }
 return result;
 }
+
 
 
 int evaluate_cib_profile(double m_delta,
