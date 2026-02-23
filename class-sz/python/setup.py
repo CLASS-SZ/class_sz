@@ -36,10 +36,10 @@ with open(os.path.join(include_folder, 'common.h'), 'r') as v_file:
 
 # Define cython extension and fix Python version
 classy_ext = Extension("classy_sz", [os.path.join(classy_folder, "classy.pyx")],
-                           include_dirs=[nm.get_include(), include_folder],
+                           include_dirs=[nm.get_include(), include_folder, "/opt/homebrew/include", "/opt/homebrew/opt/libomp/include"],
                            libraries=liblist,
-                           library_dirs=[root_folder, GCCPATH],
-                           extra_link_args=['-lgomp','-lgsl','-lfftw3','-lgslcblas']
+                           library_dirs=[root_folder, GCCPATH, "/opt/homebrew/lib", "/opt/homebrew/opt/libomp/lib"],
+                           extra_link_args=['-lomp','-lgsl','-lfftw3','-lgslcblas']
                            ) 
 import six
 classy_ext.cython_directives = {'language_level': "3" if six.PY3 else "2"}

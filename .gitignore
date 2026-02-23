@@ -318,3 +318,6 @@ bin/
 wheelhouse/
 include/
 pyvenv.cfg
+
+
+emulator_competition/

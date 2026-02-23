@@ -1877,6 +1877,70 @@ cdef class Class:
         return pk_lin, k
 
 
+    def get_pkl_at_z_array(self, z_array, params_values_dict=None):
+        """
+        Calculate the linear matter power spectrum at multiple redshifts
+        in a single batched call through the emulator network.
+
+        Parameters
+        ----------
+        z_array : array-like
+            1-D array of redshifts at which to evaluate the power spectrum.
+        params_values_dict : dict, optional
+            Dictionary of cosmological parameters.
+
+        Returns
+        -------
+        tuple
+            A tuple containing:
+            - pk_array : ndarray of shape (n_z, n_k) — power spectrum values in (Mpc)^3
+            - k : ndarray of shape (n_k,) — wavenumber values in 1/Mpc
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> z_arr = np.linspace(0, 2, 20)
+        >>> pk_array, k = classy_sz.get_pkl_at_z_array(z_arr, params_values_dict=params)
+        >>> pk_array.shape  # (20, n_k)
+        """
+        import numpy as np
+        z_array = np.atleast_1d(np.asarray(z_array, dtype=float))
+
+        zmax = self.class_szfast.cszfast_pk_grid_zmax
+
+        if self.jax_mode or np.all(z_array <= zmax):
+            # All redshifts within emulator range: single batched call
+            pk_array, k = self.class_szfast.calculate_pkl_at_z_array(
+                z_array, params_values_dict=params_values_dict
+            )
+        else:
+            # Some z values exceed zmax: split into in-range and out-of-range
+            mask_in = z_array <= zmax
+            pk_array = np.empty((len(z_array), len(self.class_szfast.cszfast_pk_grid_k)))
+            k = self.class_szfast.cszfast_pk_grid_k
+
+            # Batch call for in-range redshifts
+            if np.any(mask_in):
+                z_in = z_array[mask_in]
+                pk_in, _ = self.class_szfast.calculate_pkl_at_z_array(
+                    z_in, params_values_dict=params_values_dict
+                )
+                pk_array[mask_in] = pk_in
+
+            # Handle out-of-range redshifts: scale from zmax
+            if np.any(~mask_in):
+                z_out = z_array[~mask_in]
+                # Get P(k) at zmax (single call)
+                pk_zmax, _ = self.class_szfast.calculate_pkl_at_z(
+                    zmax, params_values_dict=params_values_dict
+                )
+                # Scale: in matter domination D(z) ~ 1/(1+z)
+                factors = ((1 + zmax) / (1 + z_out)) ** 2
+                pk_array[~mask_in] = pk_zmax[np.newaxis, :] * factors[:, np.newaxis]
+
+        return pk_array, k
+
+
     def get_pknl_at_z(self, z_asked, params_values_dict=None):
         """
         Calculate the non-linear matter power spectrum at a given redshift.
