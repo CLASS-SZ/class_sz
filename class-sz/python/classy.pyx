@@ -489,6 +489,9 @@ cdef class Class:
 
     # Create an equivalent of the parameter file. Non specified values will be
     # taken at their default (in Class)
+    # Python-only keys that should not be passed to the C code
+    _python_only_keys = {'use_resnet_pkl', 'resnet_pkl_path'}
+
     def _fillparfile(self):
         cdef char* dumc
 
@@ -496,24 +499,27 @@ cdef class Class:
             free(self.fc.name)
             free(self.fc.value)
             free(self.fc.read)
-        self.fc.size = len(self._pars)
-        self.fc.name = <FileArg*> malloc(sizeof(FileArg)*len(self._pars))
+
+        _pars_for_c = {k: v for k, v in self._pars.items() if k not in self._python_only_keys}
+
+        self.fc.size = len(_pars_for_c)
+        self.fc.name = <FileArg*> malloc(sizeof(FileArg)*len(_pars_for_c))
         assert(self.fc.name!=NULL)
 
-        self.fc.value = <FileArg*> malloc(sizeof(FileArg)*len(self._pars))
+        self.fc.value = <FileArg*> malloc(sizeof(FileArg)*len(_pars_for_c))
         assert(self.fc.value!=NULL)
 
-        self.fc.read = <short*> malloc(sizeof(short)*len(self._pars))
+        self.fc.read = <short*> malloc(sizeof(short)*len(_pars_for_c))
         assert(self.fc.read!=NULL)
 
         # fill parameter file
         i = 0
-        for kk in self._pars:
+        for kk in _pars_for_c:
 
             dumcp = kk.encode()
             dumc = dumcp
             sprintf(self.fc.name[i],"%s",dumc)
-            dumcp = str(self._pars[kk]).encode()
+            dumcp = str(_pars_for_c[kk]).encode()
             dumc = dumcp
             sprintf(self.fc.value[i],"%s",dumc)
             self.fc.read[i] = _FALSE_
