@@ -6235,6 +6235,7 @@ class_read_int("no_tt_noise_in_kSZ2X_cov",ptsz->no_tt_noise_in_kSZ2X_cov);
   class_read_string("full_path_and_prefix_to_dndz_ngal",ptsz->full_path_and_prefix_to_dndz_ngal);
   class_read_string("full_path_to_redshift_dependent_M_min",ptsz->full_path_to_redshift_dependent_M_min);
   class_read_string("full_path_to_source_dndz_gal",ptsz->full_path_to_source_dndz_gal);
+  class_read_string("full_path_to_vrms2_file",ptsz->full_path_to_vrms2_file);
   // printf("-> File Name: %s\n",ptsz->ksz_filter_file);
     // printf("-> File Name: %s\n",ptsz->full_path_to_dndz_gal);
     // exit(0);

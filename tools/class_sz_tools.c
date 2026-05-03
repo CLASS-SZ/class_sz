@@ -11878,7 +11878,7 @@ if (ptsz->sz_verbose>=1){
     if (ptsz->sz_verbose > 0){
       printf("-> Openning the vrms2 file\n");
       printf("-> File Name: %s\n",ptsz->full_path_to_vrms2_file);
-      // printf("-> File Name: %s\n",ptsz->UNWISE_fdndz_file);
+      printf("-> File Name: %s\n",ptsz->full_path_to_vrms2_file);
       // printf("-> File Name: %s\n",ptsz->A10_file);
     }
   class_open(process,ptsz->full_path_to_vrms2_file, "r",ptsz->error_message);
