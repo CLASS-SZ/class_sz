@@ -2513,9 +2513,16 @@ double lprime = exp(pclass_sz->ell_kSZ2_gal_multipole_grid[index_lprime]);
 double theta = pclass_sz->theta_kSZ2_gal_theta_grid[index_theta];
 double l = pclass_sz->ell[i];
 
-double flprime = get_ksz_filter_at_l(lprime,pclass_sz);
 double abs_l_plus_lprime = sqrt(l*l+lprime*lprime+2.*l*lprime*cos(theta));
-double fl_plus_lprime = get_ksz_filter_at_l2(abs_l_plus_lprime,pclass_sz);
+/* Symmetrise over the two filters: average both filter assignments so that
+   swapping ksz_filter_file and ksz_filter_file2 gives identical results. */ 
+  //  See Ferraro et al, Eqs.17-20: "while the second and third terms are the lowest
+  //  order CMB lensing contribution and are equal in magnitude by symmetry."--> this assumes filters are the same 
+double f1_lprime        = get_ksz_filter_at_l (lprime,           pclass_sz);
+double f2_l_plus_lprime = get_ksz_filter_at_l2(abs_l_plus_lprime,pclass_sz);
+double f2_lprime        = get_ksz_filter_at_l2(lprime,           pclass_sz);
+double f1_l_plus_lprime = get_ksz_filter_at_l (abs_l_plus_lprime,pclass_sz);
+double filter_sym = 0.5*(f1_lprime*f2_l_plus_lprime + f2_lprime*f1_l_plus_lprime);
 
 double clprime_tt_unlensed = pwl_value_1d(ppt->l_scalar_max-2,l_unlensed,cl_tt_unlensed,lprime);
 if (lprime<l_unlensed[0])
@@ -2524,7 +2531,7 @@ if (lprime>l_unlensed[ppt->l_scalar_max-3])
   clprime_tt_unlensed = 0.;
 
 
-integrand_l_lprime_phi[index_lprime_theta] = lprime*lprime*flprime*clprime_tt_unlensed*fl_plus_lprime*cos(theta);
+integrand_l_lprime_phi[index_lprime_theta] = lprime*lprime*filter_sym*clprime_tt_unlensed*cos(theta);
 integrand_l_lprime_phi[index_lprime_theta] *= lprime; //for integration in log(ell)
 // printf("l = %.4e lp = %.4e th = %.3e flprime = %.5e fl_plus_lprime = %.5e clprime = %.5e integrand_l_lprime_phi = %.5e\n",
 // l,lprime,theta,flprime,fl_plus_lprime,clprime_tt_unlensed,
@@ -7981,12 +7988,13 @@ if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  6) {
         Pko[ik] = fl2*taul;
         }
 
-        double r[N], xi[N];
+        double r[N], xi[N], xio[N];
 
         xi2pk(N,k,Pk,r,xi,pclass_sz);
+        xi2pk(N,k,Pko,r,xio,pclass_sz);
         for (ik=0; ik<N; ik++){
-        // convolution:
-        xi[ik] = pow(xi[ik],2.);
+        // cross-convolution of filter1*tau and filter2*tau:
+        xi[ik] = xi[ik]*xio[ik];
         }
 
         pk2xi(N,r,xi,k,Pk,pclass_sz);
@@ -8048,12 +8056,13 @@ if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  6) {
         Pko[ik] = fl2*taul;
         }
 
-        double r[N], xi[N];
+        double r[N], xi[N], xio[N];
 
         xi2pk(N,k,Pk,r,xi,pclass_sz);
+        xi2pk(N,k,Pko,r,xio,pclass_sz);
         for (ik=0; ik<N; ik++){
-        // convolution:
-        xi[ik] = pow(xi[ik],2.);
+        // cross-convolution of filter1*tau and filter2*tau:
+        xi[ik] = xi[ik]*xio[ik];
         }
 
         pk2xi(N,r,xi,k,Pk,pclass_sz);
@@ -8114,12 +8123,13 @@ if ((int) pvectsz[pclass_sz->index_part_id_cov_hsv] ==  6) {
         Pko[ik] = fl2*taul;
         }
 
-        double r[N], xi[N];
+        double r[N], xi[N], xio[N];
 
         xi2pk(N,k,Pk,r,xi,pclass_sz);
+        xi2pk(N,k,Pko,r,xio,pclass_sz);
         for (ik=0; ik<N; ik++){
-        // convolution:
-        xi[ik] = pow(xi[ik],2.);
+        // cross-convolution of filter1*tau and filter2*tau:
+        xi[ik] = xi[ik]*xio[ik];
         }
 
         pk2xi(N,r,xi,k,Pk,pclass_sz);
@@ -8264,12 +8274,16 @@ Pko[ik] = fl2*taul;
 //   printf("k = %.5e pk = %.5e\n",l,Pk[ik]);
 }
 
-double r[N], xi[N];
+double r[N], xi[N], xio[N];
 
-// printf("\n\n####################\n");
-// printf("To position space:\n");
-// printf("####################\n\n");
-// pk2xi(N,k,Pk,r,xi,pclass_sz);
+xi2pk(N,k,Pk,r,xi,pclass_sz);
+xi2pk(N,k,Pko,r,xio,pclass_sz);
+for (ik=0; ik<N; ik++){
+// cross-convolution of filter1*tau and filter2*tau:
+xi[ik] = xi[ik]*xio[ik];
+}
+
+pk2xi(N,r,xi,k,Pk,pclass_sz);
 xi2pk(N,k,Pk,r,xi,pclass_sz);
 for (ik=0; ik<N; ik++){
 // printf("r = %.5e xi = %.5e\n",r[ik],xi[ik]);
@@ -8369,12 +8383,16 @@ Pko[ik] = fl2*taul;
 //   printf("k = %.5e pk = %.5e\n",l,Pk[ik]);
 }
 
-double r[N], xi[N];
+double r[N], xi[N], xio[N];
 
-// printf("\n\n####################\n");
-// printf("To position space:\n");
-// printf("####################\n\n");
-// pk2xi(N,k,Pk,r,xi,pclass_sz);
+xi2pk(N,k,Pk,r,xi,pclass_sz);
+xi2pk(N,k,Pko,r,xio,pclass_sz);
+for (ik=0; ik<N; ik++){
+// cross-convolution of filter1*tau and filter2*tau:
+xi[ik] = xi[ik]*xio[ik];
+}
+
+pk2xi(N,r,xi,k,Pk,pclass_sz);
 xi2pk(N,k,Pk,r,xi,pclass_sz);
 for (ik=0; ik<N; ik++){
 // printf("r = %.5e xi = %.5e\n",r[ik],xi[ik]);
@@ -8469,12 +8487,16 @@ Pko[ik] = fl2*taul;
 //   printf("k = %.5e pk = %.5e\n",l,Pk[ik]);
 }
 
-double r[N], xi[N];
+double r[N], xi[N], xio[N];
 
-// printf("\n\n####################\n");
-// printf("To position space:\n");
-// printf("####################\n\n");
-// pk2xi(N,k,Pk,r,xi,pclass_sz);
+xi2pk(N,k,Pk,r,xi,pclass_sz);
+xi2pk(N,k,Pko,r,xio,pclass_sz);
+for (ik=0; ik<N; ik++){
+// cross-convolution of filter1*tau and filter2*tau:
+xi[ik] = xi[ik]*xio[ik];
+}
+
+pk2xi(N,r,xi,k,Pk,pclass_sz);
 xi2pk(N,k,Pk,r,xi,pclass_sz);
 for (ik=0; ik<N; ik++){
 // printf("r = %.5e xi = %.5e\n",r[ik],xi[ik]);
