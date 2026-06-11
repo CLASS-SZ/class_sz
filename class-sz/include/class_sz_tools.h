@@ -315,6 +315,7 @@ double delta_to_delta_prime_nfw(
   int load_unbinned_nl_yy(struct class_sz_structure * pclass_sz);
   int load_unbinned_nl_tt(struct class_sz_structure * pclass_sz);
   int load_ksz_filter(struct class_sz_structure * pclass_sz);
+  int load_ksz_filter2(struct class_sz_structure * pclass_sz);
   int load_M_min_of_z(struct class_sz_structure * pclass_sz);
   double get_T10_alpha_at_z(double z_asked, struct class_sz_structure * pclass_sz);
   double get_knl_at_z(double z_asked, struct class_sz_structure * pclass_sz);
