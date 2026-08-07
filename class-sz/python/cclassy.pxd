@@ -386,11 +386,15 @@ cdef extern from "class.h":
         double * cl_kSZ_kSZ_lens_1h_fft
         double * cl_kSZ_kSZ_lens_2h_fft
         double * cl_kSZ_kSZ_lens_3h_fft
+        double * cl_kSZ_kSZ_lensmag_1h_fft
+        double * cl_kSZ_kSZ_lensmag_2h_fft
+        double * cl_kSZ_kSZ_lensmag_3h_fft
         double * cl_gal_gal_lens_1h_fft
         double * cl_gal_gal_lens_2h_fft
         double * cl_gal_gal_lens_3h_fft
         double * cl_kSZ_kSZ_lens_hf
         double * cl_kSZ_kSZ_lens_lensing_term
+        double * cl_kSZ_kSZ_lensmag_lensing_term
         double * cov_ll_kSZ_kSZ_lens
         double * cl_tSZ_lensmag_1h
         double * cl_tSZ_lensmag_2h

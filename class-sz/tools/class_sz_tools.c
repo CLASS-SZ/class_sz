@@ -7565,6 +7565,9 @@ if (pclass_sz->has_kSZ_kSZ_lensmag_1halo
 + pclass_sz->has_kSZ_kSZ_lens_1h_fft
 + pclass_sz->has_kSZ_kSZ_lens_2h_fft
 + pclass_sz->has_kSZ_kSZ_lens_3h_fft
++ pclass_sz->has_kSZ_kSZ_lensmag_1h_fft
++ pclass_sz->has_kSZ_kSZ_lensmag_2h_fft
++ pclass_sz->has_kSZ_kSZ_lensmag_3h_fft
 == _FALSE_
 )
   return 0;
@@ -8610,6 +8613,9 @@ if (pclass_sz->has_kSZ_kSZ_lensmag_1halo
 + pclass_sz->has_kSZ_kSZ_lens_1h_fft
 + pclass_sz->has_kSZ_kSZ_lens_2h_fft
 + pclass_sz->has_kSZ_kSZ_lens_3h_fft
++ pclass_sz->has_kSZ_kSZ_lensmag_1h_fft
++ pclass_sz->has_kSZ_kSZ_lensmag_2h_fft
++ pclass_sz->has_kSZ_kSZ_lensmag_3h_fft
 == _FALSE_
 )
   return 0;
@@ -12751,6 +12757,9 @@ if (   (pclass_sz->has_tSZ_gal_1h != _TRUE_ )
     && (pclass_sz->has_bk_ttg_at_z_2h != _TRUE_ )
     && (pclass_sz->has_bk_ttg_at_z_3h != _TRUE_ )
     && (pclass_sz->has_kSZ_kSZ_lensmag_1halo != _TRUE_ )
+    && (pclass_sz->has_kSZ_kSZ_lensmag_1h_fft != _TRUE_ )
+    && (pclass_sz->has_kSZ_kSZ_lensmag_2h_fft != _TRUE_ )
+    && (pclass_sz->has_kSZ_kSZ_lensmag_3h_fft != _TRUE_ )
     && (pclass_sz->has_gal_gal_1h != _TRUE_ )
     && (pclass_sz->has_tau_gal_1h != _TRUE_ )
     && (pclass_sz->has_tau_gal_2h != _TRUE_ )
@@ -13016,6 +13025,9 @@ if (   (pclass_sz->has_tSZ_gal_1h != _TRUE_ )
     && (pclass_sz->has_kSZ_kSZ_gal_3h != _TRUE_ )
     && (pclass_sz->has_kSZ_kSZ_gal_hf != _TRUE_ )
     && (pclass_sz->has_kSZ_kSZ_lensmag_1halo != _TRUE_ )
+    && (pclass_sz->has_kSZ_kSZ_lensmag_1h_fft != _TRUE_ )
+    && (pclass_sz->has_kSZ_kSZ_lensmag_2h_fft != _TRUE_ )
+    && (pclass_sz->has_kSZ_kSZ_lensmag_3h_fft != _TRUE_ )
     && (pclass_sz->has_gal_gal_1h != _TRUE_ )
     && (pclass_sz->has_tau_gal_1h != _TRUE_ )
     && (pclass_sz->has_tau_gal_2h != _TRUE_ )
@@ -13206,6 +13218,9 @@ if (   (pclass_sz->has_tSZ_gal_1h != _TRUE_ )
     && (pclass_sz->has_kSZ_kSZ_gal_3h != _TRUE_ )
     && (pclass_sz->has_kSZ_kSZ_gal_hf != _TRUE_ )
     && (pclass_sz->has_kSZ_kSZ_lensmag_1halo != _TRUE_ )
+    && (pclass_sz->has_kSZ_kSZ_lensmag_1h_fft != _TRUE_ )
+    && (pclass_sz->has_kSZ_kSZ_lensmag_2h_fft != _TRUE_ )
+    && (pclass_sz->has_kSZ_kSZ_lensmag_3h_fft != _TRUE_ )
     && (pclass_sz->has_gal_gal_1h != _TRUE_ )
     && (pclass_sz->has_tau_gal_1h != _TRUE_ )
     && (pclass_sz->has_tau_gal_2h != _TRUE_ )
@@ -15412,6 +15427,9 @@ result *= Wg;
 // lensing magification needs lensing kernel:
 
 if (((V->pclass_sz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lensmag_1halo))
+    ||((V->pclass_sz->has_kSZ_kSZ_lensmag_1h_fft == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lensmag_1h_fft))
+    ||((V->pclass_sz->has_kSZ_kSZ_lensmag_2h_fft == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lensmag_2h_fft))
+    ||((V->pclass_sz->has_kSZ_kSZ_lensmag_3h_fft == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lensmag_3h_fft))
     ||((V->pclass_sz->has_tSZ_lensmag_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_tSZ_lensmag_1h))
     ||((V->pclass_sz->has_tSZ_lensmag_2h == _TRUE_) && (index_md == V->pclass_sz->index_md_tSZ_lensmag_2h))
     ||((V->pclass_sz->has_gal_lensmag_1h == _TRUE_) && (index_md == V->pclass_sz->index_md_gal_lensmag_1h))
@@ -15585,6 +15603,9 @@ if (
  || ((V->pclass_sz->has_kSZ_kSZ_tSZ_3h == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_tSZ_3h))
  // || (V->pclass_sz->has_kSZ_kSZ_gal_hf == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_gal_hf)
  || ((V->pclass_sz->has_kSZ_kSZ_lensmag_1halo == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lensmag_1halo))
+ || ((V->pclass_sz->has_kSZ_kSZ_lensmag_1h_fft == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lensmag_1h_fft))
+ || ((V->pclass_sz->has_kSZ_kSZ_lensmag_2h_fft == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lensmag_2h_fft))
+ || ((V->pclass_sz->has_kSZ_kSZ_lensmag_3h_fft == _TRUE_) && (index_md == V->pclass_sz->index_md_kSZ_kSZ_lensmag_3h_fft))
 ){
   // printf("evaluating vrms2\n");
 
@@ -18596,6 +18617,7 @@ if (isnan(r) || isinf(r)){
   else if (
           ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_kSZ_kSZ_gallens_2h_fft)
        || ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_kSZ_kSZ_lens_2h_fft)
+       || ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_kSZ_kSZ_lensmag_2h_fft)
 ){
   double r_m_11; // first part of redshift integrand
   double r_m_21; // second part of redshift integrand
@@ -18857,6 +18879,7 @@ if (isnan(r) || isinf(r)){
   else if (
     ((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_kSZ_kSZ_gallens_3h_fft)
   ||((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_kSZ_kSZ_lens_3h_fft)
+  ||((int) pvectsz[pclass_sz->index_md] == pclass_sz->index_md_kSZ_kSZ_lensmag_3h_fft)
 
   ){
   double t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12;
@@ -25949,6 +25972,10 @@ int tabulate_redshift_int_lensmag(struct class_sz_structure * pclass_sz,
                                   struct background * pba){
 
 if (pclass_sz->has_kSZ_kSZ_lensmag_1halo
+  + pclass_sz->has_kSZ_kSZ_lensmag_lensing_term
+  + pclass_sz->has_kSZ_kSZ_lensmag_1h_fft
+  + pclass_sz->has_kSZ_kSZ_lensmag_2h_fft
+  + pclass_sz->has_kSZ_kSZ_lensmag_3h_fft
   + pclass_sz->has_gal_lensmag_1h
   + pclass_sz->has_gal_lensmag_2h
   + pclass_sz->has_gal_lensmag_hf

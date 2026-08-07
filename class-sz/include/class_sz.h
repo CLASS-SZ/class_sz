@@ -59,6 +59,9 @@
 #define _kSZ_kSZ_lens_1h_fft_ ((pclass_sz->has_kSZ_kSZ_lens_1h_fft == _TRUE_) && (index_md == pclass_sz->index_md_kSZ_kSZ_lens_1h_fft))
 #define _kSZ_kSZ_lens_2h_fft_ ((pclass_sz->has_kSZ_kSZ_lens_2h_fft == _TRUE_) && (index_md == pclass_sz->index_md_kSZ_kSZ_lens_2h_fft))
 #define _kSZ_kSZ_lens_3h_fft_ ((pclass_sz->has_kSZ_kSZ_lens_3h_fft == _TRUE_) && (index_md == pclass_sz->index_md_kSZ_kSZ_lens_3h_fft))
+#define _kSZ_kSZ_lensmag_1h_fft_ ((pclass_sz->has_kSZ_kSZ_lensmag_1h_fft == _TRUE_) && (index_md == pclass_sz->index_md_kSZ_kSZ_lensmag_1h_fft))
+#define _kSZ_kSZ_lensmag_2h_fft_ ((pclass_sz->has_kSZ_kSZ_lensmag_2h_fft == _TRUE_) && (index_md == pclass_sz->index_md_kSZ_kSZ_lensmag_2h_fft))
+#define _kSZ_kSZ_lensmag_3h_fft_ ((pclass_sz->has_kSZ_kSZ_lensmag_3h_fft == _TRUE_) && (index_md == pclass_sz->index_md_kSZ_kSZ_lensmag_3h_fft))
 #define _gal_gal_lens_1h_fft_ ((pclass_sz->has_gal_gal_lens_1h_fft == _TRUE_) && (index_md == pclass_sz->index_md_gal_gal_lens_1h_fft))
 #define _gal_gal_lens_2h_fft_ ((pclass_sz->has_gal_gal_lens_2h_fft == _TRUE_) && (index_md == pclass_sz->index_md_gal_gal_lens_2h_fft))
 #define _gal_gal_lens_3h_fft_ ((pclass_sz->has_gal_gal_lens_3h_fft == _TRUE_) && (index_md == pclass_sz->index_md_gal_gal_lens_3h_fft))
@@ -325,12 +328,16 @@ struct class_sz_structure {
   double * cl_kSZ_kSZ_lens_1h_fft;
   double * cl_kSZ_kSZ_lens_2h_fft;
   double * cl_kSZ_kSZ_lens_3h_fft;
+  double * cl_kSZ_kSZ_lensmag_1h_fft;
+  double * cl_kSZ_kSZ_lensmag_2h_fft;
+  double * cl_kSZ_kSZ_lensmag_3h_fft;
   double * cl_gal_gal_lens_1h_fft;
   double * cl_gal_gal_lens_2h_fft;
   double * cl_gal_gal_lens_3h_fft;
   double * cl_kSZ_kSZ_lens_hf;
   double * cov_ll_kSZ_kSZ_lens;
   double * cl_kSZ_kSZ_lens_lensing_term;
+  double * cl_kSZ_kSZ_lensmag_lensing_term;
   double * cl_kSZ_kSZ_gal_2h;
   double * cl_kSZ_kSZ_gal_3h;
   double * cl_kSZ_kSZ_gal_hf;
@@ -675,6 +682,7 @@ struct class_sz_structure {
   int has_kSZ_kSZ_gal_lensing_term;
   int has_kSZ_kSZ_gallens_lensing_term;
   int has_kSZ_kSZ_lens_lensing_term;
+  int has_kSZ_kSZ_lensmag_lensing_term;
 
   int has_kSZ_kSZ_gal_hf;
   int index_md_kSZ_kSZ_gal_hf;
@@ -715,6 +723,21 @@ struct class_sz_structure {
   int index_md_kSZ_kSZ_lens_3h_fft;
   int index_integrand_id_kSZ_kSZ_lens_3h_fft_first;
   int index_integrand_id_kSZ_kSZ_lens_3h_fft_last;
+
+  int has_kSZ_kSZ_lensmag_1h_fft;
+  int index_md_kSZ_kSZ_lensmag_1h_fft;
+  int index_integrand_id_kSZ_kSZ_lensmag_1h_fft_first;
+  int index_integrand_id_kSZ_kSZ_lensmag_1h_fft_last;
+
+  int has_kSZ_kSZ_lensmag_2h_fft;
+  int index_md_kSZ_kSZ_lensmag_2h_fft;
+  int index_integrand_id_kSZ_kSZ_lensmag_2h_fft_first;
+  int index_integrand_id_kSZ_kSZ_lensmag_2h_fft_last;
+
+  int has_kSZ_kSZ_lensmag_3h_fft;
+  int index_md_kSZ_kSZ_lensmag_3h_fft;
+  int index_integrand_id_kSZ_kSZ_lensmag_3h_fft_first;
+  int index_integrand_id_kSZ_kSZ_lensmag_3h_fft_last;
 
   int has_gal_gal_lens_1h_fft;
   int index_md_gal_gal_lens_1h_fft;

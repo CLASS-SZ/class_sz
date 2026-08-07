@@ -3498,6 +3498,26 @@ cdef class Class:
             cl['ell'].append(self.tsz.ell[index])
         return cl
 
+    def cl_kSZ_kSZ_mu(self):
+        """
+        (class_sz) Return the 1-halo, 2-halo and 3-halo terms of kSZ x kSZ x mu (lensmag) power spectrum
+        """
+        cl = {}
+        cl['ell'] = []
+        cl['1h'] = []
+        cl['2h'] = []
+        cl['3h'] = []
+        cl['hf'] = []
+        cl['covmat'] = []
+        cl['lensing term'] = []
+        for index in range(self.tsz.nlSZ):
+            cl['1h'].append(self.tsz.cl_kSZ_kSZ_lensmag_1h_fft[index])
+            cl['2h'].append(self.tsz.cl_kSZ_kSZ_lensmag_2h_fft[index])
+            cl['3h'].append(self.tsz.cl_kSZ_kSZ_lensmag_3h_fft[index])
+            cl['lensing term'].append(self.tsz.cl_kSZ_kSZ_lensmag_lensing_term[index])
+            cl['ell'].append(self.tsz.ell[index])
+        return cl
+
     def cl_gal_gal_kcmb(self):
         """
         (class_sz) Return the 1-halo, 2-halo and 3-halo terms of gal x gal x kcmb power spectrum
