@@ -113,7 +113,7 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
 .. toctree::
    :maxdepth: 2
-   :caption: Early dark energy matter power spectrum
+   :caption: EDE matter power spectrum
 
    notebooks/classy_szfast_matter_pk_ede
 
