@@ -113,6 +113,13 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
 .. toctree::
    :maxdepth: 2
+   :caption: Early dark energy matter power spectrum
+
+   notebooks/classy_szfast_matter_pk_ede
+
+
+.. toctree::
+   :maxdepth: 2
    :caption: Linearly biased tracers
 
    notebooks/class_sz_linearlybiased_tracer
