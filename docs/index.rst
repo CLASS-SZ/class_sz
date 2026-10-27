@@ -48,6 +48,11 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
    for an example on the matter power spectrum. The code can now be used in Hamiltonian Monte Carlo and Simulation-Based 
    Inference pipelines.
 
+   A pure-JAX, pip-installable implementation of the tSZ power spectrum :math:`C_\ell^{yy}` is available in
+   `classy_szlite <https://github.com/CLASS-SZ/classy_szlite>`_ (``pip install classy-szlite``,
+   `documentation <https://classy-szlite.readthedocs.io>`_): JIT-compiled and differentiable with ``jax.grad``,
+   with the same emulators for the CMB power spectra, the matter power spectrum and distances.
+
    .. raw:: html
 
       </div>
@@ -151,6 +156,10 @@ Cosmic Linear Anisotropy Solving System with Machine Learning Accelerated CMB, L
 
    notebooks/class_sz_galaxy-x-galaxylensing
    
+
+.. note::
+   For a fully JAX and pip-installable implementation of the tSZ power spectrum :math:`C_\ell^{yy}`, see
+   `classy_szlite <https://github.com/CLASS-SZ/classy_szlite>`_ (``pip install classy-szlite``).
 
 .. toctree::
    :maxdepth: 2

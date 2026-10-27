@@ -4,4 +4,7 @@
 
 
 
-See the main page at https://github.com/CLASS-SZ and our [evolving documentation](https://class-sz.readthedocs.io/en/latest/index.html). 
+See the main page at https://github.com/CLASS-SZ and our [evolving documentation](https://class-sz.readthedocs.io/en/latest/index.html).
+
+A pure-JAX, pip-installable implementation of the tSZ power spectrum $C_\ell^{yy}$ (halo model, Arnaud et al. 2010 pressure profile), JIT-compiled and differentiable with `jax.grad`, is available in [classy_szlite](https://github.com/CLASS-SZ/classy_szlite) (`pip install classy-szlite`, [documentation](https://classy-szlite.readthedocs.io)). It uses the same CosmoPower emulators for the CMB power spectra, the matter power spectrum and distances.
+
