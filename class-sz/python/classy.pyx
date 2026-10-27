@@ -291,7 +291,7 @@ cdef class Class:
             'skip_sigma8_at_z': 1,
             'skip_sigma8_and_der':0, # emulate derived parameters
             'skip_cmb': 0,
-            'cosmo_model': 0, # set lcdm emulators as default # 6 for ede-v2
+            'cosmo_model': 0, # set lcdm emulators as default # 6 for ede-v2, 7 for ede-v3
             'jax': 0,
             ### TBD adjust default neutrino settings to avoid inconsistency. 11 oct 2024. 
 
@@ -302,7 +302,8 @@ cdef class Class:
             #     'wcdm',
             #     'ede',
             #     'mnu-3states',
-            #     'ede-v2'
+            #     'ede-v2',
+            #     'ede-v3'
             # ]
             #    
             # here we set the default values for these emulator parameters. 
@@ -435,8 +436,8 @@ cdef class Class:
                     self._pars['m_ncdm'] = pars['m_ncdm']
                 else:
                     self._pars['m_ncdm'] = 0.02
-            elif pars['cosmo_model'] == 6:
-                #print('cosmo_model is set to ede-v2')
+            elif pars['cosmo_model'] in (6, 7):
+                # ede-v2 (6) and ede-v3 (7) emulators: 3 degenerate massive neutrinos, PRIMAT BBN
                 self._pars['N_ur'] = 0.00441 # this is the default value in class v3 to get Neff = 3.044
                 self._pars['N_ncdm'] = 1
                 self._pars['deg_ncdm'] = 3
